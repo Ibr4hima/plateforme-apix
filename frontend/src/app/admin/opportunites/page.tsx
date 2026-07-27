@@ -16,6 +16,19 @@ import { badge_gris } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
+// Niveaux et secteurs — mêmes libellés et couleurs que la page publique
+const NIVEAUX_POTS = [
+  {key:"pole",           label:"Pôles territoires", unit:"pôle",           color:"#004f91"},
+  {key:"region",         label:"Régions",           unit:"région",         color:"#ca631f"},
+  {key:"departement",    label:"Départements",      unit:"département",    color:"#188038"},
+  {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"#6A1B9A"},
+] as const;
+const SECTEURS_AVGS = [
+  {key:"primaire",   label:"Secteur Primaire",   color:"#188038"},
+  {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
+  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
+] as const;
+
 const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
@@ -1145,12 +1158,7 @@ export default function OpportunitesAdminPage() {
             <>
             {/* ── Sélecteur de niveau territorial (gabarit public) ── */}
             <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:14}}>
-              {([
-                {key:"pole",           label:"Pôles territoires", unit:"Pôle",          color:"#004f91"},
-                {key:"region",         label:"Régions",           unit:"Région",        color:"#ca631f"},
-                {key:"departement",    label:"Départements",      unit:"Département",   color:"#188038"},
-                {key:"arrondissement", label:"Arrondissements",   unit:"Arrondissement",color:"#6A1B9A"},
-              ] as const).map(n=>{
+              {NIVEAUX_POTS.map(n=>{
                 const count = pots.filter((p:any)=>p.niveau===n.key).length;
                 const total = n.key==="pole" ? poles.length
                   : n.key==="region" ? geoTotaux.regions
@@ -1197,15 +1205,10 @@ export default function OpportunitesAdminPage() {
             {selectedNiveau!==null && (
               <div className="charge-in">
               {(()=>{
-                const meta = ([
-                  {key:"pole",           label:"Pôles territoires", color:"#004f91"},
-                  {key:"region",         label:"Régions",           color:"#ca631f"},
-                  {key:"departement",    label:"Départements",      color:"#188038"},
-                  {key:"arrondissement", label:"Arrondissements",   color:"#6A1B9A"},
-                ] as const).find(x=>x.key===selectedNiveau)!;
+                const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                const bandeau = (
-                  <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
+                const bandeauNiveau = (
+                  <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 14px",borderRadius:16,
                     background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
                     border:`1px solid ${meta.color}22`}}>
                     <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
@@ -1217,7 +1220,8 @@ export default function OpportunitesAdminPage() {
                     </div>
                   </div>
                 );
-                if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
+                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
+
                 // Rattachements géographiques via le référentiel déjà chargé
                 const regionDuDept = (nom:string) => {
                   const dep = geoRef.departements.find((d:any)=>d.nom===nom);
@@ -1228,92 +1232,104 @@ export default function OpportunitesAdminPage() {
                   return geoRef.departements.find((d:any)=>d.id===arr?.departement_id)?.nom || null;
                 };
                 const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
-                return (
+                // Regroupement des fiches par rattachement territorial
+                const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
+                  : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
+                  : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
+                  : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
+                const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
+                const groupes = new Map<string, any[]>();
+                items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
+                const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
+
+                // Tuile compacte (gabarit public) + actions d'administration
+                const Tuile = ({p}:{p:any}) => {
+                  const nbActs = (p.activite_ids||[]).length;
+                  return (
+                    <div onClick={()=>setPotVue(p)}
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:p.est_publie===false?0.7:1}}
+                      onMouseEnter={ev=>{
+                        ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                        // Nom trop long : glisse pour révéler la fin
+                        const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                        const span = box?.firstElementChild as HTMLElement | null;
+                        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                      }}
+                      onMouseLeave={ev=>{
+                        ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                        const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                      }}>
+                      <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                        <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                      </div>
+                      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                      {/* Actions d'administration */}
+                      <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                        <button onClick={()=>{setPotEdit(p);setPotModal(true);}} title="Modifier"
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,79,145,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.14)"}
+                          onMouseLeave={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.07)"}>
+                          <Pencil size={12} style={{color:"#004f91"}}/>
+                        </button>
+                        <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} title={p.est_publie?"Retirer de la page publique":"Publier"}
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:p.est_publie?"rgba(24,128,56,0.07)":"rgba(202,99,31,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
+                          {potToggle===p.id
+                            ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"#9aa5b4"}}/>
+                            : p.est_publie ? <EyeOff size={12} style={{color:"#188038"}}/> : <Eye size={12} style={{color:"#ca631f"}}/>}
+                        </button>
+                        <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} title="Supprimer"
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
+                          onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
+                          {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                };
+
+                // Pôles : pas de regroupement pertinent → conteneur sans en-tête
+                if (selectedNiveau==="pole") return (
                   <>
-                  {bandeau}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
-                    {items.map((p:any)=>{
-                      const nbActs = (p.activite_ids||[]).length;
-                      // Premier bloc contextuel selon le niveau
-                      const info1 = selectedNiveau==="pole"
-                        ? { label:(poles.find((x:any)=>x.id===p.pole_id)?.localisation||"").includes(",")?"Régions":"Région", value: poles.find((x:any)=>x.id===p.pole_id)?.localisation||null }
-                        : selectedNiveau==="region"
-                        ? { label:"Pôle", value: poleDeRegion(p.region_nom||"") }
-                        : selectedNiveau==="departement"
-                        ? { label:"Région", value: p.region_nom||regionDuDept(p.departement_nom||"") }
-                        : { label:"Département", value: p.departement_nom||deptDeArr(p.arrondissement_nom||"") };
+                  {bandeauNiveau}
+                  <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                      {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                    </div>
+                  </div>
+                  </>
+                );
+                // Autres niveaux : un bandeau de rattachement par groupe
+                return (
+                  <div style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
+                    {cles.map(cle=>{
+                      const fiches = groupes.get(cle)!;
                       return (
-                        <div key={p.id} onClick={()=>setPotVue(p)}
-                          style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",display:"flex",flexDirection:"column" as const,overflow:"hidden",minWidth:0,opacity:p.est_publie===false?0.85:1}}
-                          onMouseEnter={ev=>{
-                            ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.33)";
-                            // Contenus trop longs : glissent pour révéler la fin
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                            });
-                          }}
-                          onMouseLeave={ev=>{
-                            ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";
-                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
-                              const span = box.firstElementChild as HTMLElement | null;
-                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                            });
-                          }}>
-
-                          <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
-                            {/* Titre (défile au survol si trop long) | publication */}
-                            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
-                              <div data-marquee style={{flex:1,minWidth:0,fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                <span style={{display:"inline-block"}}>{potTitle(p)}</span>
-                              </div>
-                              {p.est_publie===false&&<span style={{...badge_gris,whiteSpace:"nowrap" as const,flexShrink:0}}>Non publié</span>}
+                        <div key={cle}>
+                          {/* Bandeau du rattachement territorial */}
+                          <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                            background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                            border:`1px solid ${meta.color}22`}}>
+                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                              <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                             </div>
-
-                            {/* Rattachement · Activités porteuses en rangée épurée */}
-                            <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
-                              <div style={{flex:1,minWidth:0}}>
-                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{info1.label}</p>
-                                <p data-marquee style={{fontSize:12.5,fontWeight:700,color:info1.value?"#1a1a2e":"#C5BFBB",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                  <span style={{display:"inline-block"}}>{info1.value||"—"}</span>
-                                </p>
-                              </div>
-                              <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
-                              <div style={{flex:1,minWidth:0}}>
-                                <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Activité{nbActs>1?"s":""} porteuse{nbActs>1?"s":""}</p>
-                                <p style={{fontSize:12.5,fontWeight:700,color:nbActs>0?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{nbActs||"—"}</p>
-                              </div>
+                            <div style={{minWidth:0,flex:1}}>
+                              <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                              <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
                             </div>
                           </div>
-
-                          {/* Actions */}
-                          <div className="ro-w" style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
-                            <button className="ro-w" onClick={()=>{setPotEdit(p);setPotModal(true);}}
-                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                              onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                              <Pencil size={12}/> Modifier
-                            </button>
-                            <div style={{width:1,background:"#F2F0EF"}}/>
-                            <button onClick={()=>togglePot(p)} disabled={potToggle===p.id}
-                              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:p.est_publie?"#188038":"#ca631f",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                              onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(202,99,31,0.06)"}
-                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                              {potToggle===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}
-                            </button>
-                            <div style={{width:1,background:"#F2F0EF"}}/>
-                            <button className="ro-w" onClick={()=>deletePot(p.id)} disabled={potDel===p.id}
-                              style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
-                              onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
-                              onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                              {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                            </button>
+                          {/* Fiches du groupe */}
+                          <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
+                            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                              {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  </>
                 );
               })()}
               </div>
@@ -1339,11 +1355,7 @@ export default function OpportunitesAdminPage() {
             <>
             {/* ── Sélecteur de secteur (gabarit public) ── */}
             <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
-              {([
-                {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
-                {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
-                {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
-              ] as const).map(s=>{
+              {SECTEURS_AVGS.map(s=>{
                 const count = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key)).length;
                 const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
                 const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
@@ -1390,11 +1402,7 @@ export default function OpportunitesAdminPage() {
             {selectedSec!==null && (
               <div className="charge-in">
               {(()=>{
-                const meta = ([
-                  {key:"primaire",   label:"Secteur Primaire",   color:"#004f91"},
-                  {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
-                  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#188038"},
-                ] as const).find(x=>x.key===selectedSec)!;
+                const meta = SECTEURS_AVGS.find(x=>x.key===selectedSec)!;
                 const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
                 const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
                 filtered.forEach((a:any)=>{
@@ -1404,38 +1412,29 @@ export default function OpportunitesAdminPage() {
                 });
                 const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
                 return (
-                  <div>
-                    {/* En-tête du secteur — même bandeau que la page publique */}
-                    <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
-                      background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                      border:`1px solid ${meta.color}22`}}>
-                      <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
-                        <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{filtered.length}</span>
-                      </div>
-                      <div style={{minWidth:0,flex:1}}>
-                        <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Secteur d&apos;activité</p>
-                        <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{filtered[0]?.secteur_nom || meta.label}</div>
-                      </div>
-                    </div>
-
-                    {/* Une card par branche */}
-                    <div style={{display:"flex",flexDirection:"column" as const,gap:16}}>
-                      {bras.map(bra=>(
-                        <div key={bra.id} style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,overflow:"hidden",boxShadow:"none"}}>
-                          {/* En-tête de branche */}
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"12px 18px",borderBottom:"1px solid #F2F0EF",background:"#FCFBFA"}}>
-                            <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
-                              <span style={{width:8,height:8,borderRadius:"50%",background:"#ca631f",["--pc" as any]:"rgba(202,99,31,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
-                              <span style={{fontSize:13.5,fontWeight:700,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</span>
-                            </div>
+                  <div style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
+                    {bras.map(bra=>(
+                      <div key={bra.id}>
+                        {/* Bandeau de la branche */}
+                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                          background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
+                          border:`1px solid ${meta.color}22`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                           </div>
-                          {/* Activités */}
+                          <div style={{minWidth:0,flex:1}}>
+                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                            <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                          </div>
+                        </div>
+                        {/* Activités de la branche */}
+                        <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
                           <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSec==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                             {bra.items.map((a:any)=>(
                               <div key={a.id} onClick={()=>setAvgVue(a)}
-                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                   const span = box?.firstElementChild as HTMLElement | null;
@@ -1446,22 +1445,37 @@ export default function OpportunitesAdminPage() {
                                   const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:"#188038",["--pc" as any]:"rgba(24,128,56,0.4)",animation:"pulseDotC 1.6s ease-out infinite",flexShrink:0}}/>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
                                 <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
-                                <button className="ro-w" onClick={ev=>{ev.stopPropagation();deleteAvg(a.id);}} disabled={avgDel===a.id}
-                                  style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 8px",flexShrink:0,transition:"background 0.15s"}}
-                                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
-                                  onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
-                                  {avgDel===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                                </button>
+                                {/* Actions d'administration */}
+                                <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                                  <button onClick={()=>{setAvgEdit(a);setAvgModal(true);}} title="Modifier"
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,79,145,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.14)"}
+                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.07)"}>
+                                    <Pencil size={12} style={{color:"#004f91"}}/>
+                                  </button>
+                                  <button onClick={()=>toggleAvg(a)} disabled={avgToggle===a.id} title={a.est_publie?"Retirer de la page publique":"Publier"}
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:a.est_publie?"rgba(24,128,56,0.07)":"rgba(202,99,31,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
+                                    {avgToggle===a.id
+                                      ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"#9aa5b4"}}/>
+                                      : a.est_publie ? <EyeOff size={12} style={{color:"#188038"}}/> : <Eye size={12} style={{color:"#ca631f"}}/>}
+                                  </button>
+                                  <button onClick={()=>deleteAvg(a.id)} disabled={avgDel===a.id} title="Supprimer"
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
+                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
+                                    {avgDel===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 );
               })()}
