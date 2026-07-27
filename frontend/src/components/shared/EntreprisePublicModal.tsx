@@ -9,9 +9,10 @@ import { fmtPhone } from "@/lib/telephone";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 
-interface Props { entreprise: any | null; onClose: () => void; zIndex?: number; }
+// `actions` : boutons additionnels dans le pied (ex. « Modifier » en admin).
+interface Props { entreprise: any | null; onClose: () => void; zIndex?: number; actions?: React.ReactNode; }
 
-export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex = 500 }: Props) {
+export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex = 500, actions }: Props) {
   // Référentiels NAEMA servis par le cache partagé (une seule requête par session)
   const { secteurs, branches, activites } = useNaema();
 
@@ -180,11 +181,12 @@ export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex =
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
           <button onClick={onClose}
             style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
+          {actions}
         </div>
       </div>
     </div>

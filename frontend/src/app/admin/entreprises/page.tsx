@@ -5,18 +5,20 @@ import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FBut
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
-import { parsePhoneNumber } from "libphonenumber-js";
-import { Building2, Check, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
+import { Building2, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import BarreTitre from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import { fetchTous } from "@/lib/fetchTous";
+import { fmtDate } from "@/lib/format";
+import { badgePole, poleAccent, badge_gris } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-function fmtPhone(raw: string): string {
-  if (!raw) return raw;
-  try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
-}
 
 const FORMES_JURIDIQUES = [
   "Société en nom collectif (SNC)", "Société en commandite simple (SCS)",
@@ -461,173 +463,72 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
     </FModal>
   );
 }
-
-// ── Vue entreprise (inchangée) ────────────────────────────────────────────────
-function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; onEdit:(e:any)=>void }) {
-  const [secteurs, setSecteurs]   = useState<any[]>([]);
-  const [branches, setBranches]   = useState<any[]>([]);
-  const [activites, setActivites] = useState<any[]>([]);
-
-  useEffect(()=>{
-    Promise.all([
-      fetch(`${API_BASE}/entreprises/ref/secteurs`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/branches`).then(r=>r.json()),
-      fetch(`${API_BASE}/entreprises/ref/activites`).then(r=>r.json()),
-    ]).then(([s,b,a])=>{ setSecteurs(s||[]); setBranches(b||[]); setActivites(a||[]); }).catch(()=>{});
-  },[e.id]);
-
-  const fmtD = (d:string) => d ? new Date(d+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}) : "";
-  const secIds:number[] = e.secteur_ids||[]; const braIds:number[] = e.branche_ids||[]; const actIds:number[] = e.activite_ids||[];
-  const hasNaema = secIds.length>0||braIds.length>0||actIds.length>0;
-  const locStr = [e.arrondissement_nom, e.departement_nom, e.region_nom].filter(Boolean).join(", ");
-  const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
-  );
-  const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
-      {children}
-    </div>
-  );
-
+// ── Carte entreprise (gabarit public + barre d'actions d'administration) ──────
+function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
+  e: any; onVoir: () => void; onEditer: () => void; onPublier: () => void; onSupprimer: () => void;
+  publiant: boolean; supprimant: boolean;
+}) {
+  // Couleur du pôle territoire : jetons partagés du design system.
+  const accentPole = poleAccent(e.pole_territoire_nom || "");
   return (
-    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={ev=>ev.stopPropagation()} style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:640,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
-        {/* Liseré d'accent */}
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+    <div onClick={onVoir}
+      style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
+      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accentPole; }}
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
 
-        {/* En-tête */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
-          <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{e.nom}</h2>
-            {e.forme_juridique&&(
-              <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999}}>{e.forme_juridique}</span>
-              </div>
+      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
+        {/* Dénomination + forme juridique | publication & pôle territoire */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
+            {e.forme_juridique && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexShrink: 1, justifyContent: "flex-end" }}>
+            {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
+            {e.pole_territoire_nom && (
+              <span title={e.pole_territoire_nom} style={{ ...badgePole(e.pole_territoire_nom), whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
+                {e.pole_territoire_nom}
+              </span>
             )}
           </div>
-          <button onClick={onClose}
-            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
-          </button>
         </div>
 
-        {/* Corps */}
-        <div style={{padding:"22px 28px",overflowY:"auto" as const,flex:1,display:"flex",flexDirection:"column" as const,gap:22}}>
-
-          {/* Informations */}
-          <section>
-            <SecTitle>Informations</SecTitle>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {e.date_creation&&<Bloc label="Création"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtD(e.date_creation)}</p></Bloc>}
-              {locStr&&<Bloc label="Localisation"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{locStr}</p></Bloc>}
-              {e.adresse&&<Bloc label="Adresse"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{e.adresse}</p></Bloc>}
-              {e.siteweb&&<Bloc label="Site web"><a href={e.siteweb.startsWith("http")?e.siteweb:`https://${e.siteweb}`} target="_blank" rel="noopener noreferrer" style={{fontSize:12.5,fontWeight:600,color:"#004f91",textDecoration:"none",wordBreak:"break-all" as const}}>{e.siteweb}</a></Bloc>}
-            </div>
-          </section>
-
-          {/* Contact */}
-          {(e.telephone||e.mail)&&(
-            <section>
-              <SecTitle>Contact</SecTitle>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {e.telephone&&(
-                  <Bloc label={e.telephone.includes(",")?"Téléphones":"Téléphone"}>
-                    {e.telephone.split(",").map((t:string,i:number)=><p key={i} style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{fmtPhone(t.trim())}</p>)}
-                  </Bloc>
-                )}
-                {e.mail&&(
-                  <Bloc label={e.mail.includes(",")?"Emails":"Email"}>
-                    {e.mail.split(",").map((m:string,i:number)=><p key={i} style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e",wordBreak:"break-all" as const}}>{m.trim()}</p>)}
-                  </Bloc>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Activités */}
-          {hasNaema&&(
-            <section>
-              <SecTitle>Activités de l&apos;entreprise</SecTitle>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-                {secIds.map((secId:number)=>{
-                  const sec=secteurs.find(s=>s.id===secId); if (!sec) return null;
-                  const brasDuSec=branches.filter(b=>b.secteur_id===secId&&braIds.includes(b.id));
-                  return (
-                    <div key={secId}>
-                      <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/><span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{sec.nom}</span>
-                      </div>
-                      {brasDuSec.length>0&&<div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:5}}>
-                        {brasDuSec.map((bra:any)=>{
-                          const actsDeBra=activites.filter(a=>a.branche_id===bra.id&&actIds.includes(a.id));
-                          return (
-                            <div key={bra.id}>
-                              <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?4:0}}>
-                                <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/><span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
-                              </div>
-                              {actsDeBra.length>0&&<div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
-                                {actsDeBra.map((act:any)=>(
-                                  <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                    <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/><span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
-                                  </div>
-                                ))}
-                              </div>}
-                            </div>
-                          );
-                        })}
-                      </div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Points focaux */}
-          {e.points_focaux?.length>0&&(
-            <section>
-              <SecTitle>Points focaux</SecTitle>
-              <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
-                {e.points_focaux.map((pf:any,i:number)=>(
-                  <div key={i} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"11px 14px",fontSize:12}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap" as const}}>
-                      <span style={{fontWeight:700,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</span>
-                      {pf.poste&&<span style={{color:"#9aa5b4"}}>{pf.poste}</span>}
-                      {pf.est_principal&&<span style={{fontSize:10,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",borderRadius:999,padding:"2px 8px"}}>Principal</span>}
-                    </div>
-                    {(pf.telephone||pf.mail)&&(
-                      <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
-                        {pf.telephone&&pf.telephone.split(",").map((t:string,ti:number)=>(
-                          <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t.trim())}</span>
-                        ))}
-                        {pf.mail&&pf.mail.split(",").map((m:string,mi:number)=>(
-                          <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
+        {/* Date de création · Région en rangée épurée */}
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.date_creation ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.region_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
+          </div>
         </div>
+      </div>
 
-        {/* Pied */}
-        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
-          <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
-            Fermer
-          </button>
-          <button className="ro-w" onClick={()=>{onClose();onEdit(e);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
-            <Pencil size={13}/> Modifier
-          </button>
-        </div>
+      {/* Actions d'administration */}
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+        <button onClick={onEditer}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          <Pencil size={12} /> Modifier
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onPublier} disabled={publiant}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
+        </button>
+        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
+          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
+          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+        </button>
       </div>
     </div>
   );
@@ -636,130 +537,94 @@ function EntrepriseVue({ ent:e, onClose, onEdit }: { ent:any; onClose:()=>void; 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AdminEntreprises() {
   const [entreprises, setEntreprises] = useState<any[]>([]);
-  const [total,       setTotal]       = useState(0);
   const [loading,     setLoading]     = useState(true);
+  const [erreur,      setErreur]      = useState(false);
   const [modal,       setModal]       = useState(false);
   const [editItem,    setEditItem]    = useState<any>(null);
   const [vue,         setVue]         = useState<any>(null);
   const [deleting,    setDeleting]    = useState<string|null>(null);
   const [togglingId,  setTogglingId]  = useState<string|null>(null);
 
-  const charger = useCallback(async()=>{
-    setLoading(true);
+  const charger = useCallback(async () => {
+    setLoading(true); setErreur(false);
     try {
-      const res = await fetch(`${API_BASE}/entreprises?per_page=100&admin=true`);
-      const data = await res.json();
-      setEntreprises(data.data||[]); setTotal(data.total||0);
-    } catch {} finally { setLoading(false); }
-  },[]);
+      // Pagination complète : la liste n'est pas tronquée au-delà de 100 fiches.
+      setEntreprises(await fetchTous(`${API_BASE}/entreprises?admin=true`));
+    } catch (e) { console.error(e); setErreur(true); }
+    finally { setLoading(false); }
+  }, []);
 
-  useEffect(()=>{ charger(); },[charger]);
+  useEffect(() => { charger(); }, [charger]);
 
-  const handleDelete = async (id:string) => {
+  const openCreate = () => { setEditItem(null); setModal(true); };
+  const openEdit   = (e: any) => { setEditItem(e); setModal(true); };
+
+  const handleDelete = async (id: string) => {
     if (!(await confirmer("Supprimer cette entreprise ?"))) return;
     setDeleting(id);
-    try { await fetch(`${API_BASE}/entreprises/${id}`,{method:"DELETE",headers:await authHeaders()}); charger(); }
+    try { await fetch(`${API_BASE}/entreprises/${id}`, { method: "DELETE", headers: await authHeaders() }); charger(); }
     finally { setDeleting(null); }
   };
 
-  const handleTogglePublie = async (e:any) => {
+  const handleTogglePublie = async (e: any) => {
     setTogglingId(e.id);
     try {
-      await fetch(`${API_BASE}/entreprises/${e.id}`,{method:"PATCH",headers:{"Content-Type":"application/json", ...(await authHeaders())},body:JSON.stringify({est_publie:!e.est_publie})});
+      await fetch(`${API_BASE}/entreprises/${e.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ est_publie: !e.est_publie }) });
       charger();
     } finally { setTogglingId(null); }
   };
 
-  const fmtD = (d:string) => d ? new Date(d+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}) : "";
-
   return (
-    <div style={{padding:"36px 40px 80px",fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:32}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <h1 style={{fontWeight:800,fontSize:"1.75rem",color:"#1a1a2e"}}>Entreprises installées</h1>
-          <span style={{fontSize:14,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"3px 12px",borderRadius:999}}>{total}</span>
-        </div>
-        <button className="ro-w" onClick={()=>{setEditItem(null);setModal(true);}} style={{display:"flex",alignItems:"center",gap:8,background:"#004f91",color:"#fff",fontWeight:700,fontSize:13,padding:"11px 20px",borderRadius:12,border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(0,79,145,0.3)"}}>
-          <Plus size={15}/> Ajouter une entreprise
-        </button>
+    <div style={{ fontFamily: "var(--font-google-sans)" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Entreprises installées" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={
+          <button className="ro-w" onClick={openCreate}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={ev => { ev.currentTarget.style.background = "#FFF6EF"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.transform = "none"; }}>
+            <Plus size={15} /> Ajouter une entreprise
+          </button>
+        }>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{entreprises.length}</span>
+      </BarreTitre>
+
+      {/* ── Grille pleine largeur (3 colonnes) ── */}
+      <div style={{ padding: "28px 40px 80px" }}>
+        {loading ? (
+          <SkeletonCards n={6} cols={3} height={200} />
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => charger()} />
+        ) : entreprises.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+            <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
+            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucune entreprise enregistrée</p>
+            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter une entreprise » pour commencer.</p>
+          </div>
+        ) : (
+          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
+            {entreprises.map(e => (
+              <CarteEntreprise key={e.id} e={e}
+                onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
+                onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
+                publiant={togglingId === e.id} supprimant={deleting === e.id} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:200,gap:10,color:"#9aa5b4"}}>
-          <Loader2 size={22} style={{animation:"spin 1s linear infinite"}}/>
-        </div>
-      ) : entreprises.length===0 ? (
-        <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
-          <Building2 size={40} style={{marginBottom:12,opacity:0.25}}/>
-          <p style={{fontSize:14,color:"#4a5568"}}>Aucune entreprise — cliquez sur "Ajouter" pour commencer.</p>
-        </div>
-      ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
-          {entreprises.map(e=>(
-            <div key={e.id} onClick={()=>setVue(e)}
-              style={{background:"#fff",border:"1px solid #ECEAE7",borderRadius:14,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"var(--ombre-1)",display:"flex",flexDirection:"column" as const,overflow:"hidden"}}
-              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-2)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="#ECEAE7";}}>
+      {/* Fiche (même modal que la page publique) + raccourci de modification */}
+      <EntreprisePublicModal entreprise={vue} onClose={() => setVue(null)} actions={vue ? (
+        <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          <Pencil size={13} /> Modifier
+        </button>
+      ) : null} />
 
-              <div style={{height:3,background:"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",flexShrink:0}}/>
-              <div style={{padding:"14px 16px 14px",flex:1}}>
-                {/* Forme juridique + pôle territoire */}
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:12,minWidth:0}}>
-                  {e.forme_juridique ? (
-                    <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</span>
-                  ) : <span/>}
-                  {e.pole_territoire_nom ? (
-                    <span title={e.pole_territoire_nom} style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>{e.pole_territoire_nom}</span>
-                  ) : <span/>}
-                </div>
-
-                {/* Dénomination */}
-                <div style={{fontWeight:700,fontSize:13.5,color:"#1a1a2e",lineHeight:1.35,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-
-                {/* Infos libellées */}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:10}}>
-                  <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px"}}>
-                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Création</p>
-                    <p style={{fontSize:12,fontWeight:600,color:e.date_creation?"#1a1a2e":"#9aa5b4"}}>{e.date_creation?fmtD(e.date_creation):"—"}</p>
-                  </div>
-                  <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"8px 11px",minWidth:0}}>
-                    <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>Région</p>
-                    <p style={{fontSize:12,fontWeight:600,color:e.region_nom?"#1a1a2e":"#9aa5b4",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="ro-w" style={{display:"flex",alignItems:"stretch",borderTop:"1px solid #F2F0EF"}} onClick={ev=>ev.stopPropagation()}>
-                <button onClick={()=>{setEditItem(e);setModal(true);}}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:"#004f91",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  <Pencil size={12}/> Modifier
-                </button>
-                <div style={{width:1,background:"#F2F0EF"}}/>
-                <button onClick={()=>handleTogglePublie(e)} disabled={togglingId===e.id}
-                  style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,background:"none",border:"none",cursor:"pointer",padding:"10px 0",fontSize:11.5,color:e.est_publie?"#188038":"#6b7280",fontWeight:600,fontFamily:"var(--font-google-sans)",transition:"background 0.15s"}}
-                  onMouseEnter={ev=>ev.currentTarget.style.background=e.est_publie?"rgba(24,128,56,0.05)":"rgba(156,163,175,0.07)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  {togglingId===e.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:e.est_publie?<><EyeOff size={12}/> Public</>:<><Eye size={12}/> Publier</>}
-                </button>
-                <div style={{width:1,background:"#F2F0EF"}}/>
-                <button onClick={()=>handleDelete(e.id)} disabled={deleting===e.id}
-                  style={{width:46,display:"flex",alignItems:"center",justifyContent:"center",background:"none",border:"none",cursor:"pointer",transition:"background 0.15s"}}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  {deleting===e.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {vue&&<EntrepriseVue ent={vue} onClose={()=>setVue(null)} onEdit={e=>{setVue(null);setEditItem(e);setModal(true);}}/>}
-      <EntrepriseModal open={modal} onClose={()=>setModal(false)} editItem={editItem} onSaved={charger}/>
+      <EntrepriseModal open={modal} onClose={() => setModal(false)} editItem={editItem} onSaved={charger} />
     </div>
   );
 }
