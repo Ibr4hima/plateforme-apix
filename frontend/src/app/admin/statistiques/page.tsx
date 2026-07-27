@@ -2,103 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, ChevronDown, Database, Link2, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Database, Link2, Loader2, Trash2, UploadCloud, X } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonRows } from "@/components/shared/Skeleton";
+import {
+  Avis, Carte, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Tableau,
+  IS, NUM, TD, TH, btnDanger, btnPrincipal,
+} from "@/components/admin/UIAdmin";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-// ── Jetons de la page ─────────────────────────────────────────────────────────
-const CARTE: React.CSSProperties = { background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, boxShadow: "none" };
-const IS: React.CSSProperties = { background: "#FCFCFB", border: "1px solid #E2E1DE", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-// Tableaux : en-tête discret sur fond ivoire, lignes séparées par un filet fin
-const TH: React.CSSProperties = { padding: "11px 14px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#9aa5b4", background: "#FBFAF9", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid #F0EEEC", position: "sticky", top: 0, zIndex: 1 };
-const TD: React.CSSProperties = { padding: "11px 14px", fontSize: 12.5, color: "#2d3540", verticalAlign: "middle" };
-const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums" };
 
 type Indicateur = { code: string; libelle: string; unite: string; derive: boolean };
 type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };
 type Couverture = { pays_id: number; pays: string; code_iso3: string | null; series: Record<string, { min: number; max: number; nb: number }> };
 type ImportRes  = { pays: { pays: string; pays_id: number; insere: number; mis_a_jour: number }[]; erreurs: string[]; non_resolus: { label: string; nb_lignes: number }[] };
-
-// ── Briques d'interface partagées ─────────────────────────────────────────────
-function Carte({ titre, aide, extra, children, accent, style }: {
-  titre?: string; aide?: string; extra?: React.ReactNode; children: React.ReactNode; accent?: string; style?: React.CSSProperties;
-}) {
-  const c = accent || "#004f91";
-  return (
-    <div style={{ ...CARTE, borderColor: accent ? `${accent}55` : CARTE.border as string, padding: "22px 26px", ...style }}>
-      {titre && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
-          {extra}
-        </div>
-      )}
-      {aide && <p style={{ fontSize: 12.5, color: "#9aa5b4", lineHeight: 1.6, marginBottom: 16 }}>{aide}</p>}
-      {children}
-    </div>
-  );
-}
-
-// Pluriel automatique, sauf mots déjà invariables (« pays »)
-const Compteur = ({ n, mot, couleur = "#004f91" }: { n: number; mot: string; couleur?: string }) => (
-  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${couleur}12`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
-    {n.toLocaleString("fr-FR")} {mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
-  </span>
-);
-
-// Conteneur de tableau : filet fin, coins arrondis, défilement horizontal
-function Tableau({ children, hauteurMax }: { children: React.ReactNode; hauteurMax?: number }) {
-  return (
-    <div style={{ border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
-      <div style={{ overflowX: "auto", overflowY: hauteurMax ? "auto" : undefined, maxHeight: hauteurMax }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>{children}</table>
-      </div>
-    </div>
-  );
-}
-const Ligne = ({ children }: { children: React.ReactNode }) => (
-  <tr style={{ transition: "background 0.12s" }}
-    onMouseEnter={e => (e.currentTarget.style.background = "#FBFAF9")}
-    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-    {children}
-  </tr>
-);
-const LigneVide = ({ colSpan, texte }: { colSpan: number; texte: string }) => (
-  <tr><td colSpan={colSpan} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "34px 14px" }}>{texte}</td></tr>
-);
-
-// Champ de recherche compact
-function ChampRecherche({ value, onChange, placeholder, style }: {
-  value: string; onChange: (v: string) => void; placeholder: string; style?: React.CSSProperties;
-}) {
-  return (
-    <div style={{ position: "relative", ...style }}>
-      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...IS, paddingLeft: 32, paddingRight: value ? 30 : 12 }} />
-      {value && (
-        <button onClick={() => onChange("")} aria-label="Effacer" style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
-          <X size={12} style={{ color: "#9aa5b4" }} />
-        </button>
-      )}
-    </div>
-  );
-}
-
-// Bouton principal / secondaire
-const btnPrincipal = (actif: boolean): React.CSSProperties => ({
-  background: actif ? "#004f91" : "#D8D4D0", color: "#fff", border: "none", borderRadius: 999,
-  padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: actif ? "pointer" : "not-allowed",
-  display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)",
-  boxShadow: actif ? "0 3px 12px rgba(0,79,145,0.25)" : "none", transition: "background 0.15s",
-});
-const btnDanger: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(220,38,38,0.07)",
-  border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626", borderRadius: 999, padding: "9px 16px",
-  fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
-};
 
 // ── Sélecteur de pays du référentiel (association manuelle) ───────────────────
 function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect: (id: number, nom: string) => void }) {
@@ -131,51 +50,6 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
     </div>
   );
 }
-
-// ── Zone de dépôt de fichiers ─────────────────────────────────────────────────
-function FileZone({ files, onChange, hint }: { files: File[]; onChange: (f: File[]) => void; hint: string }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [drag, setDrag] = useState(false);
-  const addFiles = (nf: FileList | null) => { if (nf) onChange([...files, ...Array.from(nf).filter(f => !files.some(e => e.name === f.name))]); };
-  const actif = drag || files.length > 0;
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div onClick={() => inputRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
-        onDrop={e => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer.files); }}
-        style={{ border: `1.5px dashed ${actif ? "#004f91" : "#D8D4D0"}`, borderRadius: 14, padding: "28px 16px", textAlign: "center", cursor: "pointer", background: drag ? "rgba(0,79,145,0.06)" : actif ? "rgba(0,79,145,0.03)" : "#FCFCFB", transition: "all .15s" }}>
-        <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
-        <UploadCloud size={22} color={actif ? "#004f91" : "#9aa5b4"} style={{ marginBottom: 7 }} />
-        <div style={{ fontSize: 13, fontWeight: 700, color: actif ? "#004f91" : "#4a5568" }}>Déposez le ou les fichiers Excel / CSV</div>
-        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 3, lineHeight: 1.5 }}>{hint}</div>
-      </div>
-      {files.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          {files.map((f, i) => (
-            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.12)", borderRadius: 10, padding: "7px 12px", fontSize: 12.5 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-                <CheckCircle size={13} color="#004f91" style={{ flexShrink: 0 }} />
-                <span style={{ color: "#1a1a2e", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
-                <span style={{ color: "#9aa5b4", flexShrink: 0 }}>({(f.size / 1024).toFixed(0)} Ko)</span>
-              </span>
-              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#9aa5b4", padding: 0, display: "flex" }}><X size={13} /></button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Bandeaux de résultat ──────────────────────────────────────────────────────
-const Avis = ({ ton, children }: { ton: "ok" | "erreur"; children: React.ReactNode }) => {
-  const c = ton === "ok" ? "#188038" : "#dc2626";
-  return (
-    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${c}0F`, border: `1px solid ${c}33`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
-      {children}
-    </div>
-  );
-};
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function AdminStatistiquesPage() {

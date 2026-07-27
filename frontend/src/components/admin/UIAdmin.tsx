@@ -1,0 +1,184 @@
+"use client";
+
+// Briques d'interface communes aux pages d'administration « données » :
+// cartes, tableaux propres, champs de recherche, compteurs, zone de dépôt.
+// Une seule source pour garder Statistiques, IDE (et les suivantes) alignés.
+
+import { useRef, useState } from "react";
+import { CheckCircle, Search, UploadCloud, X } from "lucide-react";
+
+// ── Jetons ────────────────────────────────────────────────────────────────────
+export const CARTE: React.CSSProperties = { background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, boxShadow: "none" };
+export const IS: React.CSSProperties = { background: "#FCFCFB", border: "1px solid #E2E1DE", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+// Tableaux : en-tête discret sur fond ivoire, lignes séparées par un filet fin
+export const TH: React.CSSProperties = { padding: "11px 14px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#9aa5b4", background: "#FBFAF9", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid #F0EEEC", position: "sticky", top: 0, zIndex: 1 };
+export const TD: React.CSSProperties = { padding: "11px 14px", fontSize: 12.5, color: "#2d3540", verticalAlign: "middle", borderTop: "1px solid #F4F2F0" };
+export const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums" };
+
+export const btnPrincipal = (actif: boolean, couleur = "#004f91"): React.CSSProperties => ({
+  background: actif ? couleur : "#D8D4D0", color: "#fff", border: "none", borderRadius: 999,
+  padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: actif ? "pointer" : "not-allowed",
+  display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)",
+  boxShadow: actif && couleur === "#004f91" ? "0 3px 12px rgba(0,79,145,0.25)" : "none", transition: "background 0.15s",
+});
+export const btnDanger: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(220,38,38,0.07)",
+  border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626", borderRadius: 999, padding: "9px 16px",
+  fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
+};
+export const btnSecondaire: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: 7, background: "#fff", border: "1px solid #E4E1DE",
+  borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 600, color: "#2d3540",
+  cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
+};
+
+// ── Carte de section ──────────────────────────────────────────────────────────
+export function Carte({ titre, aide, extra, children, accent, style }: {
+  titre?: string; aide?: React.ReactNode; extra?: React.ReactNode; children: React.ReactNode; accent?: string; style?: React.CSSProperties;
+}) {
+  const c = accent || "#004f91";
+  return (
+    <div style={{ ...CARTE, borderColor: accent ? `${accent}55` : (CARTE.border as string), padding: "22px 26px", ...style }}>
+      {titre && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
+          {extra}
+        </div>
+      )}
+      {aide && <p style={{ fontSize: 12.5, color: "#9aa5b4", lineHeight: 1.6, marginBottom: 16 }}>{aide}</p>}
+      {children}
+    </div>
+  );
+}
+
+// Pluriel automatique, sauf mots déjà invariables (« pays »)
+export const Compteur = ({ n, mot, couleur = "#004f91" }: { n: number; mot: string; couleur?: string }) => (
+  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${couleur}12`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+    {n.toLocaleString("fr-FR")} {mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
+  </span>
+);
+
+// ── Tableau : filet fin, coins arrondis, défilement interne ───────────────────
+export function Tableau({ children, hauteurMax }: { children: React.ReactNode; hauteurMax?: number }) {
+  return (
+    <div style={{ border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
+      <div style={{ overflowX: "auto", overflowY: hauteurMax ? "auto" : undefined, maxHeight: hauteurMax }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>{children}</table>
+      </div>
+    </div>
+  );
+}
+export const Ligne = ({ children, fond, style }: { children: React.ReactNode; fond?: string; style?: React.CSSProperties }) => (
+  <tr style={{ transition: "background 0.12s", background: fond || "transparent", ...style }}
+    onMouseEnter={e => (e.currentTarget.style.background = fond || "#FBFAF9")}
+    onMouseLeave={e => (e.currentTarget.style.background = fond || "transparent")}>
+    {children}
+  </tr>
+);
+export const LigneVide = ({ colSpan, texte }: { colSpan: number; texte: string }) => (
+  <tr><td colSpan={colSpan} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "34px 14px" }}>{texte}</td></tr>
+);
+
+// ── Champ de recherche compact ────────────────────────────────────────────────
+export function ChampRecherche({ value, onChange, placeholder, style }: {
+  value: string; onChange: (v: string) => void; placeholder: string; style?: React.CSSProperties;
+}) {
+  return (
+    <div style={{ position: "relative", ...style }}>
+      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...IS, paddingLeft: 32, paddingRight: value ? 30 : 12 }} />
+      {value && (
+        <button onClick={() => onChange("")} aria-label="Effacer" style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+          <X size={12} style={{ color: "#9aa5b4" }} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Bascule segmentée ─────────────────────────────────────────────────────────
+export function Segments<T extends string>({ options, value, onChange }: {
+  options: readonly { v: T; l: string }[]; value: T; onChange: (v: T) => void;
+}) {
+  return (
+    <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3 }}>
+      {options.map(o => {
+        const actif = value === o.v;
+        return (
+          <button key={o.v} onClick={() => onChange(o.v)}
+            style={{ padding: "6px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+              background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#9aa5b4",
+              boxShadow: actif ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
+            {o.l}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Bandeau de résultat ───────────────────────────────────────────────────────
+export const Avis = ({ ton, children }: { ton: "ok" | "erreur" | "info"; children: React.ReactNode }) => {
+  const c = ton === "ok" ? "#188038" : ton === "erreur" ? "#dc2626" : "#004f91";
+  return (
+    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${c}0F`, border: `1px solid ${c}33`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
+      {children}
+    </div>
+  );
+};
+
+// ── Zone de dépôt de fichiers ─────────────────────────────────────────────────
+export function FileZone({ files, onChange, label, hint, compact }: {
+  files: File[]; onChange: (f: File[]) => void; label?: string; hint: string; compact?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [drag, setDrag] = useState(false);
+  const addFiles = (nf: FileList | null) => { if (nf) onChange([...files, ...Array.from(nf).filter(f => !files.some(e => e.name === f.name))]); };
+  const actif = drag || files.length > 0;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <div onClick={() => inputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
+        onDrop={e => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer.files); }}
+        style={{ border: `1.5px dashed ${actif ? "#004f91" : "#D8D4D0"}`, borderRadius: 14, padding: compact ? "16px 14px" : "28px 16px", textAlign: "center", cursor: "pointer", background: drag ? "rgba(0,79,145,0.06)" : actif ? "rgba(0,79,145,0.03)" : "#FCFCFB", transition: "all .15s" }}>
+        <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
+        <UploadCloud size={compact ? 18 : 22} color={actif ? "#004f91" : "#9aa5b4"} style={{ marginBottom: compact ? 5 : 7 }} />
+        <div style={{ fontSize: compact ? 12.5 : 13, fontWeight: 700, color: actif ? "#004f91" : "#4a5568" }}>{label || "Déposez le ou les fichiers Excel / CSV"}</div>
+        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 3, lineHeight: 1.5 }}>{hint}</div>
+      </div>
+      {files.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          {files.map((f, i) => (
+            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.12)", borderRadius: 10, padding: "6px 11px", fontSize: 12 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                <CheckCircle size={12} color="#004f91" style={{ flexShrink: 0 }} />
+                <span style={{ color: "#1a1a2e", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+                <span style={{ color: "#9aa5b4", flexShrink: 0 }}>({(f.size / 1024).toFixed(0)} Ko)</span>
+              </span>
+              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#9aa5b4", padding: 0, display: "flex" }}><X size={12} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Case à cocher ─────────────────────────────────────────────────────────────
+export function Case({ checked, indeterminate, onChange, disabled, titre }: {
+  checked: boolean; indeterminate?: boolean; onChange: () => void; disabled?: boolean; titre?: string;
+}) {
+  return (
+    <button onClick={e => { e.stopPropagation(); if (!disabled) onChange(); }} disabled={disabled} title={titre} aria-checked={checked} role="checkbox"
+      style={{ width: 17, height: 17, borderRadius: 5, flexShrink: 0, cursor: disabled ? "not-allowed" : "pointer", padding: 0,
+        border: `1.5px solid ${checked || indeterminate ? "#004f91" : "#C5BFBB"}`,
+        background: checked || indeterminate ? "#004f91" : "#fff",
+        opacity: disabled ? 0.35 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+      {indeterminate
+        ? <span style={{ width: 8, height: 2, borderRadius: 1, background: "#fff" }} />
+        : checked
+        ? <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.6 6.5L9 1" stroke="#fff" strokeWidth="1.9" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        : null}
+    </button>
+  );
+}
