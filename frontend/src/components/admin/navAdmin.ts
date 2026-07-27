@@ -35,6 +35,6 @@ export const IS_DEPLOYED = !!API_URL && !API_URL.includes("localhost") && !API_U
 
 // Pages d'administration déjà passées au nouveau gabarit (bandeau bleu + menu) :
 // elles n'affichent plus la barre latérale héritée.
-export const PAGES_REFONDUES = ["/admin/evenements", "/admin/accords", "/admin/entreprises", "/admin/gestion-zones", "/admin/opportunites", "/admin/prospects"];
+export const PAGES_REFONDUES = ["/admin/evenements", "/admin/accords", "/admin/entreprises", "/admin/gestion-zones", "/admin/opportunites", "/admin/prospects", "/admin/statistiques"];
 export const estPageRefondue = (pathname: string) =>
   PAGES_REFONDUES.some(p => pathname === p || pathname.startsWith(p + "/"));

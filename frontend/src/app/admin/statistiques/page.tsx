@@ -1,22 +1,106 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, ChevronDown, Link2, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Database, Link2, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import { SkeletonRows } from "@/components/shared/Skeleton";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
-const IS: any  = { background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-const TH: any  = { padding: "10px 14px", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const };
-const TD: any  = { padding: "9px 14px", verticalAlign: "middle" as const };
-const PGBTN: any = { background: "#F8F7F6", border: "1px solid #E8E5E3", borderRadius: 8, padding: "7px 16px", fontSize: 12.5, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)" };
+
+// ── Jetons de la page ─────────────────────────────────────────────────────────
+const CARTE: React.CSSProperties = { background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, boxShadow: "none" };
+const IS: React.CSSProperties = { background: "#FCFCFB", border: "1px solid #E2E1DE", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+// Tableaux : en-tête discret sur fond ivoire, lignes séparées par un filet fin
+const TH: React.CSSProperties = { padding: "11px 14px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#9aa5b4", background: "#FBFAF9", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid #F0EEEC", position: "sticky", top: 0, zIndex: 1 };
+const TD: React.CSSProperties = { padding: "11px 14px", fontSize: 12.5, color: "#2d3540", verticalAlign: "middle" };
+const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums" };
 
 type Indicateur = { code: string; libelle: string; unite: string; derive: boolean };
 type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };
 type Couverture = { pays_id: number; pays: string; code_iso3: string | null; series: Record<string, { min: number; max: number; nb: number }> };
 type ImportRes  = { pays: { pays: string; pays_id: number; insere: number; mis_a_jour: number }[]; erreurs: string[]; non_resolus: { label: string; nb_lignes: number }[] };
 
+// ── Briques d'interface partagées ─────────────────────────────────────────────
+function Carte({ titre, aide, extra, children, accent, style }: {
+  titre?: string; aide?: string; extra?: React.ReactNode; children: React.ReactNode; accent?: string; style?: React.CSSProperties;
+}) {
+  const c = accent || "#004f91";
+  return (
+    <div style={{ ...CARTE, borderColor: accent ? `${accent}55` : CARTE.border as string, padding: "22px 26px", ...style }}>
+      {titre && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
+          {extra}
+        </div>
+      )}
+      {aide && <p style={{ fontSize: 12.5, color: "#9aa5b4", lineHeight: 1.6, marginBottom: 16 }}>{aide}</p>}
+      {children}
+    </div>
+  );
+}
+
+// Pluriel automatique, sauf mots déjà invariables (« pays »)
+const Compteur = ({ n, mot, couleur = "#004f91" }: { n: number; mot: string; couleur?: string }) => (
+  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${couleur}12`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+    {n.toLocaleString("fr-FR")} {mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
+  </span>
+);
+
+// Conteneur de tableau : filet fin, coins arrondis, défilement horizontal
+function Tableau({ children, hauteurMax }: { children: React.ReactNode; hauteurMax?: number }) {
+  return (
+    <div style={{ border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, overflow: "hidden", background: "#fff" }}>
+      <div style={{ overflowX: "auto", overflowY: hauteurMax ? "auto" : undefined, maxHeight: hauteurMax }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>{children}</table>
+      </div>
+    </div>
+  );
+}
+const Ligne = ({ children }: { children: React.ReactNode }) => (
+  <tr style={{ transition: "background 0.12s" }}
+    onMouseEnter={e => (e.currentTarget.style.background = "#FBFAF9")}
+    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+    {children}
+  </tr>
+);
+const LigneVide = ({ colSpan, texte }: { colSpan: number; texte: string }) => (
+  <tr><td colSpan={colSpan} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "34px 14px" }}>{texte}</td></tr>
+);
+
+// Champ de recherche compact
+function ChampRecherche({ value, onChange, placeholder, style }: {
+  value: string; onChange: (v: string) => void; placeholder: string; style?: React.CSSProperties;
+}) {
+  return (
+    <div style={{ position: "relative", ...style }}>
+      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...IS, paddingLeft: 32, paddingRight: value ? 30 : 12 }} />
+      {value && (
+        <button onClick={() => onChange("")} aria-label="Effacer" style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+          <X size={12} style={{ color: "#9aa5b4" }} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Bouton principal / secondaire
+const btnPrincipal = (actif: boolean): React.CSSProperties => ({
+  background: actif ? "#004f91" : "#D8D4D0", color: "#fff", border: "none", borderRadius: 999,
+  padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: actif ? "pointer" : "not-allowed",
+  display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)",
+  boxShadow: actif ? "0 3px 12px rgba(0,79,145,0.25)" : "none", transition: "background 0.15s",
+});
+const btnDanger: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(220,38,38,0.07)",
+  border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626", borderRadius: 999, padding: "9px 16px",
+  fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
+};
+
+// ── Sélecteur de pays du référentiel (association manuelle) ───────────────────
 function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect: (id: number, nom: string) => void }) {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -29,15 +113,15 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
   }, []);
   const filtered = paysList.filter(p => p.nom_fr.toLowerCase().includes(search.toLowerCase())).slice(0, 30);
   return (
-    <div ref={ref} style={{ position: "relative", flex: 1 }}>
+    <div ref={ref} style={{ position: "relative", flex: 1, minWidth: 0 }}>
       <input value={chosen || search} onChange={e => { setSearch(e.target.value); setChosen(""); setOpen(true); }} onFocus={() => setOpen(true)}
-        placeholder="Rechercher un pays du référentiel…" style={{ ...IS, borderColor: chosen ? "#004f91" : undefined }} />
+        placeholder="Rechercher un pays du référentiel…" style={{ ...IS, borderColor: chosen ? "#004f91" : "#E2E1DE" }} />
       {open && filtered.length > 0 && !chosen && (
-        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #E4E1DE", borderRadius: 8, boxShadow: "0 12px 32px rgba(0,30,60,0.14)", maxHeight: 220, overflowY: "auto", marginTop: 2 }}>
+        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #E4E1DE", borderRadius: 12, boxShadow: "var(--ombre-2)", maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
           {filtered.map(p => (
             <div key={p.id} onClick={() => { setChosen(p.nom_fr); setSearch(""); setOpen(false); onSelect(p.id, p.nom_fr); }}
-              style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#F8F7F6")}
+              style={{ padding: "8px 13px", fontSize: 12.5, cursor: "pointer", borderBottom: "1px solid #F6F5F4" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,79,145,0.05)")}
               onMouseLeave={e => (e.currentTarget.style.background = "")}>
               {p.nom_fr}
             </div>
@@ -48,31 +132,33 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
   );
 }
 
+// ── Zone de dépôt de fichiers ─────────────────────────────────────────────────
 function FileZone({ files, onChange, hint }: { files: File[]; onChange: (f: File[]) => void; hint: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const addFiles = (nf: FileList | null) => { if (nf) onChange([...files, ...Array.from(nf).filter(f => !files.some(e => e.name === f.name))]); };
+  const actif = drag || files.length > 0;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <div onClick={() => inputRef.current?.click()}
         onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
         onDrop={e => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer.files); }}
-        style={{ border: `2px dashed ${drag || files.length ? "#004f91" : "#C5BFBB"}`, borderRadius: 12, padding: "26px 16px", textAlign: "center", cursor: "pointer", background: drag ? "#EEF4FB" : files.length ? "#F5F9FE" : "#FAFAF9", transition: "all .15s" }}>
+        style={{ border: `1.5px dashed ${actif ? "#004f91" : "#D8D4D0"}`, borderRadius: 14, padding: "28px 16px", textAlign: "center", cursor: "pointer", background: drag ? "rgba(0,79,145,0.06)" : actif ? "rgba(0,79,145,0.03)" : "#FCFCFB", transition: "all .15s" }}>
         <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
-        <UploadCloud size={22} color={files.length ? "#004f91" : "#9aa5b4"} style={{ marginBottom: 6 }} />
-        <div style={{ fontSize: 13, fontWeight: 600, color: files.length ? "#004f91" : "#4a5568" }}>Déposez le ou les fichiers Excel / CSV</div>
-        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 2 }}>{hint}</div>
+        <UploadCloud size={22} color={actif ? "#004f91" : "#9aa5b4"} style={{ marginBottom: 7 }} />
+        <div style={{ fontSize: 13, fontWeight: 700, color: actif ? "#004f91" : "#4a5568" }}>Déposez le ou les fichiers Excel / CSV</div>
+        <div style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 3, lineHeight: 1.5 }}>{hint}</div>
       </div>
       {files.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {files.map((f, i) => (
-            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F5F9FE", borderRadius: 8, padding: "6px 11px", fontSize: 12.5 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-                <CheckCircle size={13} color="#004f91" />
-                <span style={{ color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,79,145,0.04)", border: "1px solid rgba(0,79,145,0.12)", borderRadius: 10, padding: "7px 12px", fontSize: 12.5 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+                <CheckCircle size={13} color="#004f91" style={{ flexShrink: 0 }} />
+                <span style={{ color: "#1a1a2e", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
                 <span style={{ color: "#9aa5b4", flexShrink: 0 }}>({(f.size / 1024).toFixed(0)} Ko)</span>
               </span>
-              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#9aa5b4", padding: 0 }}><X size={13} /></button>
+              <button onClick={() => onChange(files.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: "#9aa5b4", padding: 0, display: "flex" }}><X size={13} /></button>
             </div>
           ))}
         </div>
@@ -81,6 +167,17 @@ function FileZone({ files, onChange, hint }: { files: File[]; onChange: (f: File
   );
 }
 
+// ── Bandeaux de résultat ──────────────────────────────────────────────────────
+const Avis = ({ ton, children }: { ton: "ok" | "erreur"; children: React.ReactNode }) => {
+  const c = ton === "ok" ? "#188038" : "#dc2626";
+  return (
+    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${c}0F`, border: `1px solid ${c}33`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
+      {children}
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
 export default function AdminStatistiquesPage() {
   const { data: session } = useSession();
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
@@ -95,7 +192,8 @@ export default function AdminStatistiquesPage() {
   const [associating, setAssociating] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [viding, setViding] = useState(false);
-  const [tab, setTab] = useState<"indicateurs"|"transactions">("indicateurs");
+  const [tab, setTab] = useState<"indicateurs" | "transactions">("indicateurs");
+  const [qPays, setQPays] = useState("");
 
   const headers = () => {
     const h: Record<string, string> = {};
@@ -165,172 +263,184 @@ export default function AdminStatistiquesPage() {
     setDeleting(null);
   }
 
+  // Unité attendue à l'import, selon l'indicateur choisi
+  const uniteAttendue = indActuel
+    ? indActuel.code === "population" ? "milliers d'habitants"
+      : ["pib", "importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"].includes(indActuel.code)
+        ? "millions de $ US" : indActuel.unite
+    : "";
+
+  const couvFiltree = useMemo(
+    () => couverture.filter(c => !qPays || c.pays.toLowerCase().includes(qPays.toLowerCase()) || (c.code_iso3 || "").toLowerCase().includes(qPays.toLowerCase())),
+    [couverture, qPays]);
+
   return (
-    <div style={{ padding: "36px 40px 80px", maxWidth: 1100, fontFamily: "var(--font-google-sans)" }}>
-      <div style={{ marginBottom: 8 }}>
-        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Données Statistiques</h1>
-        <p style={{ color: "#9aa5b4", fontSize: 13, marginTop: 4 }}>
-          Importez les données de la page Statistiques : indicateurs macro par pays, ou données transactionnelles bilatérales par ressource.
-        </p>
-      </div>
+    <div style={{ fontFamily: "var(--font-google-sans)" }}>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
-      {/* Onglets */}
-      <div style={{ display: "flex", borderBottom: "1px solid #E8E5E3", marginBottom: 24, marginTop: 12 }}>
-        {([["indicateurs","Indicateurs par pays"],["transactions","Données transactionnelles"]] as const).map(([k,l]) => {
-          const actif = tab === k;
-          return (
-            <button key={k} onClick={() => setTab(k)}
-              style={{ padding: "12px 20px", border: "none", borderBottom: `2px solid ${actif?"#004f91":"transparent"}`, background: "transparent", color: actif?"#004f91":"#9aa5b4", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
-              {l}
-            </button>
-          );
-        })}
-      </div>
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Données Statistiques" compact ton="orange" pleineLargeur actions={<AdminMenu />}>
+        <BarreTitreSegment
+          options={[
+            { v: "indicateurs",   l: "Indicateurs par pays" },
+            { v: "transactions",  l: "Données transactionnelles" },
+          ]}
+          value={tab} onChange={v => setTab(v)} />
+      </BarreTitre>
 
-      {tab === "transactions" ? <TransactionsPanel headers={headers} paysList={paysList} /> : (<>
+      <div style={{ padding: "28px 40px 80px", maxWidth: 1400 }}>
+        {tab === "transactions" ? <TransactionsPanel headers={headers} /> : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-      {/* ── Import ── */}
-      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginTop: 20, marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-        <div style={SEC}>Importer des données</div>
-
-        {/* Sélecteur d'indicateur */}
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 260px" }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "#4a5568", marginBottom: 6, display: "block", textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur à importer</label>
-            <div style={{ position: "relative" }}>
-              <select value={indicateur} onChange={e => { setIndicateur(e.target.value); setRes(null); }} style={{ ...IS, appearance: "none", cursor: "pointer", paddingRight: 34, fontWeight: 600 }}>
-                {importables.map(i => <option key={i.code} value={i.code}>{i.libelle} ({i.unite})</option>)}
-              </select>
-              <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4", pointerEvents: "none" }} />
-            </div>
-          </div>
-          {indActuel && (
-            <div style={{ fontSize: 12, color: "#9aa5b4", paddingBottom: 10 }}>
-              Unité attendue : <strong style={{ color: "#004f91" }}>{indActuel.code === "population" ? "milliers d'habitants" : ["pib","importations_marchandises","exportations_marchandises","importations_services","exportations_services"].includes(indActuel.code) ? "millions de $ US" : indActuel.unite}</strong>
-            </div>
-          )}
-          <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} »`}
-            style={{ marginBottom: 4, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 600, cursor: viding ? "default" : "pointer", fontFamily: "var(--font-google-sans)" }}>
-            {viding ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={14} />}
-            Vider l&apos;indicateur
-          </button>
-        </div>
-
-        <FileZone files={files} onChange={setFiles}
-          hint={indicateur === "superficie"
-            ? "Colonnes : ID · Pays · Superficie (sans année) · un fichier peut contenir plusieurs pays"
-            : "Colonnes Pays, Année et Valeur (ordre libre, en-têtes détectés automatiquement) · un fichier peut contenir plusieurs pays"} />
-
-        {res && (
-          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-            {res.pays.length > 0 && (
-              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.2)" }}>
-                {res.pays.map(p => <div key={p.pays} style={{ fontSize: 13, color: "#188038" }}>✓ <strong>{p.pays}</strong> — {p.insere} insérées, {p.mis_a_jour} mises à jour</div>)}
-              </div>
-            )}
-            {res.erreurs.length > 0 && (
-              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
-                {res.erreurs.map((e, i) => <div key={i} style={{ fontSize: 13, color: "#dc2626" }}>⚠ {e}</div>)}
-              </div>
-            )}
-          </div>
-        )}
-
-        <button onClick={handleImport} disabled={importing || !files.length}
-          style={{ marginTop: 16, background: importing || !files.length ? "#C5BFBB" : "#004f91", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: importing || !files.length ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)", boxShadow: importing || !files.length ? "none" : "0 3px 12px rgba(0,79,145,0.25)" }}>
-          {importing ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <UploadCloud size={15} />}
-          {importing ? "Import en cours…" : "Importer"}
-        </button>
-      </div>
-
-      {/* ── Pays non reconnus ── */}
-      {res?.non_resolus?.length ? (
-        <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "2px solid rgba(202,99,31,0.5)", padding: "24px 28px", marginBottom: 20 }}>
-          <div style={{ ...SEC, color: "#ca631f", borderBottomColor: "rgba(202,99,31,0.25)" }}>{res.non_resolus.length} pays non reconnus — association manuelle</div>
-          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 16 }}>Associez-les une fois — ils seront reconnus automatiquement lors des prochains imports.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {res.non_resolus.map(nr => (
-              <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(202,99,31,0.04)", borderRadius: 10, border: "1px solid rgba(202,99,31,0.18)" }}>
-                <div style={{ flex: "0 0 260px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#ca631f" }}>{nr.label}</div>
-                  <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
+          {/* ── Import ── */}
+          <Carte titre="Importer des données"
+            aide="Un fichier peut contenir plusieurs pays. Les en-têtes sont détectés automatiquement ; les valeurs existantes sont mises à jour.">
+            <div className="ro-w">
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
+                <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+                  <label style={{ fontSize: 10.5, fontWeight: 800, color: "#9aa5b4", marginBottom: 6, display: "block", textTransform: "uppercase", letterSpacing: "0.12em" }}>Indicateur à importer</label>
+                  <div style={{ position: "relative" }}>
+                    <select value={indicateur} onChange={e => { setIndicateur(e.target.value); setRes(null); }}
+                      style={{ ...IS, appearance: "none", cursor: "pointer", paddingRight: 34, fontWeight: 600 }}>
+                      {importables.map(i => <option key={i.code} value={i.code}>{i.libelle} ({i.unite})</option>)}
+                    </select>
+                    <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4", pointerEvents: "none" }} />
+                  </div>
                 </div>
-                <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssoc(p => ({ ...p, [nr.label]: { id, nom } }))} />
-                {assoc[nr.label] && <CheckCircle size={18} color="#188038" style={{ flexShrink: 0 }} />}
+                {indActuel && (
+                  <div style={{ paddingBottom: 10 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>Unité attendue</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "6px 13px", borderRadius: 999, display: "inline-block" }}>{uniteAttendue}</span>
+                  </div>
+                )}
+                <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} »`}
+                  style={{ ...btnDanger, marginLeft: "auto", marginBottom: 4, cursor: viding ? "default" : "pointer" }}>
+                  {viding ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={14} />}
+                  Vider l&apos;indicateur
+                </button>
               </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center" }}>
-            <button onClick={handleAssocier} disabled={associating || !Object.values(assoc).some(v => v.id)}
-              style={{ background: associating || !Object.values(assoc).some(v => v.id) ? "#C5BFBB" : "#ca631f", color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)" }}>
-              {associating ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Link2 size={15} />}
-              {associating ? "Association…" : "Associer et réimporter"}
-            </button>
-            <span style={{ fontSize: 12, color: "#9aa5b4" }}>{Object.values(assoc).filter(v => v.id).length}/{res.non_resolus.length} associés</span>
-          </div>
-        </div>
-      ) : null}
 
-      {/* ── Couverture ── */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", boxShadow: "var(--ombre-1)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid #E8E5E3" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" }}>Données importées par pays</span>
-          {!loading && <span style={{ background: "rgba(0,79,145,0.07)", color: "#004f91", borderRadius: 999, padding: "2px 11px", fontSize: 12, fontWeight: 700 }}>{couverture.length} pays</span>}
-        </div>
-        {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} color="#004f91" style={{ animation: "spin 1s linear infinite" }} /></div>
-        ) : couverture.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: "#9aa5b4", fontSize: 13 }}>Aucune donnée importée pour l&apos;instant.</div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid #ECEAE7" }}>
-                  <th style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>Pays</th>
-                  {importables.map(i => <th key={i.code} style={{ padding: "10px 12px", textAlign: "center", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>{i.libelle}</th>)}
-                  <th style={{ padding: "10px 12px", width: 60 }} className="ro-w"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {couverture.map(c => (
-                  <tr key={c.pays_id} style={{ borderBottom: "1px solid #F5F4F3", transition: "background 0.12s" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                    <td style={{ padding: "10px 12px" }}>
-                      <span style={{ fontWeight: 600, color: "#1a1a2e" }}>{c.pays}</span>
-                    </td>
-                    {importables.map(i => {
-                      const s = c.series[i.code];
-                      return (
-                        <td key={i.code} style={{ padding: "10px 12px", textAlign: "center" }}>
-                          {s ? <span style={{ background: "rgba(0,79,145,0.07)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, color: "#004f91", whiteSpace: "nowrap" }}>{i.code === "superficie" || s.max === 0 ? "✓" : `${s.min}–${s.max}`} <span style={{ color: "#9aa5b4" }}>({s.nb})</span></span> : <span style={{ color: "#DDD" }}>–</span>}
-                        </td>
-                      );
-                    })}
-                    <td style={{ padding: "10px 12px", textAlign: "center" }} className="ro-w">
-                      <button onClick={() => handleDelete(c.pays_id, c.pays)} disabled={deleting === c.pays_id} title="Supprimer toutes ses données"
-                        style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                        {deleting === c.pays_id ? <Loader2 size={13} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={13} style={{ color: "#dc2626" }} />}
-                      </button>
-                    </td>
-                  </tr>
+              <FileZone files={files} onChange={setFiles}
+                hint={indicateur === "superficie"
+                  ? "Colonnes : ID · Pays · Superficie (sans année)"
+                  : "Colonnes Pays, Année et Valeur — ordre libre"} />
+
+              {res && (res.pays.length > 0 || res.erreurs.length > 0) && (
+                <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {res.pays.length > 0 && (
+                    <Avis ton="ok">
+                      {res.pays.map(p => <div key={p.pays}>✓ <strong>{p.pays}</strong> — {p.insere} insérées, {p.mis_a_jour} mises à jour</div>)}
+                    </Avis>
+                  )}
+                  {res.erreurs.length > 0 && (
+                    <Avis ton="erreur">{res.erreurs.map((e, i) => <div key={i}>⚠ {e}</div>)}</Avis>
+                  )}
+                </div>
+              )}
+
+              <button onClick={handleImport} disabled={importing || !files.length} style={{ ...btnPrincipal(!importing && files.length > 0), marginTop: 16 }}>
+                {importing ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <UploadCloud size={15} />}
+                {importing ? "Import en cours…" : "Importer"}
+              </button>
+            </div>
+          </Carte>
+
+          {/* ── Pays non reconnus ── */}
+          {res?.non_resolus?.length ? (
+            <Carte accent="#ca631f"
+              titre={`${res.non_resolus.length} pays non reconnus — association manuelle`}
+              aide="Associez-les une fois : ils seront reconnus automatiquement lors des prochains imports."
+              extra={<Compteur n={Object.values(assoc).filter(v => v.id).length} mot="associé" couleur="#ca631f" />}>
+              <div className="ro-w" style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+                {res.non_resolus.map(nr => (
+                  <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(202,99,31,0.04)", borderRadius: 12, border: "1px solid rgba(202,99,31,0.18)" }}>
+                    <div style={{ flex: "0 0 240px", minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#ca631f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nr.label}</div>
+                      <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
+                    </div>
+                    <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssoc(p => ({ ...p, [nr.label]: { id, nom } }))} />
+                    {assoc[nr.label] && <CheckCircle size={18} color="#188038" style={{ flexShrink: 0 }} />}
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                <button onClick={handleAssocier} disabled={associating || !Object.values(assoc).some(v => v.id)}
+                  style={{ ...btnPrincipal(!associating && Object.values(assoc).some(v => v.id)), background: associating || !Object.values(assoc).some(v => v.id) ? "#D8D4D0" : "#ca631f", boxShadow: "none", marginTop: 6, alignSelf: "flex-start" }}>
+                  {associating ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Link2 size={15} />}
+                  {associating ? "Association…" : "Associer et réimporter"}
+                </button>
+              </div>
+            </Carte>
+          ) : null}
+
+          {/* ── Couverture par pays ── */}
+          <Carte titre="Données importées par pays"
+            extra={
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <ChampRecherche value={qPays} onChange={setQPays} placeholder="Rechercher un pays…" style={{ width: 240 }} />
+                {!loading && <Compteur n={couvFiltree.length} mot="pays" />}
+              </div>
+            }>
+            {loading ? <SkeletonRows n={8} /> : couverture.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "56px 24px", color: "#9aa5b4" }}>
+                <Database size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568" }}>Aucune donnée importée</p>
+                <p style={{ fontSize: 13, marginTop: 5 }}>Utilisez la zone d&apos;import ci-dessus pour commencer.</p>
+              </div>
+            ) : (
+              <Tableau hauteurMax={560}>
+                <thead>
+                  <tr>
+                    <th style={{ ...TH, position: "sticky", left: 0, zIndex: 2 }}>Pays</th>
+                    {importables.map(i => <th key={i.code} style={{ ...TH, textAlign: "center" }}>{i.libelle}</th>)}
+                    <th style={{ ...TH, width: 56 }} className="ro-w" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {couvFiltree.length === 0 ? <LigneVide colSpan={importables.length + 2} texte="Aucun pays ne correspond à cette recherche." /> :
+                  couvFiltree.map(c => (
+                    <Ligne key={c.pays_id}>
+                      <td style={{ ...TD, borderTop: "1px solid #F4F2F0", position: "sticky", left: 0, background: "#fff", fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap" }}>
+                        {c.pays}
+                        {c.code_iso3 && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#9aa5b4" }}>{c.code_iso3}</span>}
+                      </td>
+                      {importables.map(i => {
+                        const s = c.series[i.code];
+                        return (
+                          <td key={i.code} style={{ ...TD, borderTop: "1px solid #F4F2F0", textAlign: "center" }}>
+                            {s ? (
+                              <span style={{ ...NUM, background: "rgba(0,79,145,0.06)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "#004f91", whiteSpace: "nowrap" }}>
+                                {i.code === "superficie" || s.max === 0 ? "✓" : `${s.min}–${s.max}`}
+                                <span style={{ color: "#9aa5b4", fontWeight: 500 }}> ({s.nb})</span>
+                              </span>
+                            ) : <span style={{ color: "#E0DDDA" }}>–</span>}
+                          </td>
+                        );
+                      })}
+                      <td style={{ ...TD, borderTop: "1px solid #F4F2F0", textAlign: "center" }} className="ro-w">
+                        <button onClick={() => handleDelete(c.pays_id, c.pays)} disabled={deleting === c.pays_id} title="Supprimer toutes ses données"
+                          style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(220,38,38,0.15)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "rgba(220,38,38,0.07)")}>
+                          {deleting === c.pays_id ? <Loader2 size={13} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={13} style={{ color: "#dc2626" }} />}
+                        </button>
+                      </td>
+                    </Ligne>
+                  ))}
+                </tbody>
+              </Tableau>
+            )}
+          </Carte>
+        </div>
         )}
       </div>
-      </>)}
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
 
-
 // ══════════════════════════════════════════════════════════════════════════════
 // Panneau « Données transactionnelles » (resourcetrade.earth)
 // ══════════════════════════════════════════════════════════════════════════════
-function TransactionsPanel({ headers, paysList }: { headers: () => Record<string,string>; paysList: RefPays[] }) {
+function TransactionsPanel({ headers }: { headers: () => Record<string, string> }) {
   const [files, setFiles] = useState<File[]>([]);
   const [importing, setImporting] = useState(false);
   const [res, setRes] = useState<any>(null);
@@ -338,6 +448,7 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
   const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
   const [partenaires, setPartenaires] = useState<{ id: number; nom_fr: string; code_iso3: string | null }[]>([]);
   const [qPart, setQPart] = useState("");
+  const [qRess, setQRess] = useState("");
   const [deleting, setDeleting] = useState<number | null>(null);
 
   // Tableau des données importées
@@ -415,33 +526,37 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
     await fetch(`${API}/statistiques/ressources/${encodeURIComponent(nom_en)}`, { method: "PATCH", headers: { ...headers(), "Content-Type": "application/json" }, body: JSON.stringify({ libelle }) });
   }
 
-  return (
-    <>
-      {/* Import */}
-      <div className="ro-w" style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "24px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-        <div style={SEC}>Importer un fichier de transactions</div>
-        <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 14 }}>
-          Fichier resourcetrade.earth (colonnes Exporter ISO3, Importer ISO3, Resource, Year, Value 1000USD). Les pays sont résolus par code ISO3, la valeur convertie en dollars, les ressources enregistrées pour édition. Réimporter une année remplace ses données.
-        </p>
-        <FileZone files={files} onChange={setFiles} hint="Fichier Excel (.xlsx) ou CSV · un fichier par année" />
-        {res?.lignes !== undefined && (
-          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(24,128,56,0.06)", border: "1px solid rgba(24,128,56,0.2)", fontSize: 13, color: "#188038" }}>
-            ✓ {res.lignes.toLocaleString("fr-FR")} lignes importées · années {(res.annees || []).join(", ")} · {res.ressources_vues} ressources{res.partenaires_crees?.length ? ` · ${res.partenaires_crees.length} partenaire(s) ajouté(s) automatiquement` : ""}
-          </div>
-        )}
-        {res?.erreur && <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", fontSize: 13, color: "#dc2626" }}>⚠ {res.erreur}</div>}
-        <button onClick={handleImport} disabled={importing || !files.length}
-          style={{ marginTop: 16, background: importing || !files.length ? "#C5BFBB" : "#004f91", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: importing || !files.length ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)" }}>
-          {importing ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <UploadCloud size={15} />}
-          {importing ? "Import en cours (peut être long)…" : "Importer"}
-        </button>
-      </div>
+  const partFiltres = partenaires.filter(pa => !qPart || pa.nom_fr.toLowerCase().includes(qPart.toLowerCase()) || (pa.code_iso3 || "").toLowerCase().includes(qPart.toLowerCase()));
+  const ressFiltrees = ressources.filter(rr => !qRess || (rr.libelle || "").toLowerCase().includes(qRess.toLowerCase()) || rr.nom_en.toLowerCase().includes(qRess.toLowerCase()));
+  const btnPage: React.CSSProperties = { background: "#fff", border: "1px solid #E4E1DE", borderRadius: 999, padding: "7px 16px", fontSize: 12.5, fontWeight: 600, color: "#2d3540", fontFamily: "var(--font-google-sans)" };
 
-      {/* Partenaires ajoutés automatiquement */}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* ── Import ── */}
+      <Carte titre="Importer un fichier de transactions"
+        aide="Fichier resourcetrade.earth (colonnes Exporter ISO3, Importer ISO3, Resource, Year, Value 1000USD). Les pays sont résolus par code ISO3, la valeur convertie en dollars et les ressources enregistrées pour édition. Réimporter une année remplace ses données.">
+        <div className="ro-w">
+          <FileZone files={files} onChange={setFiles} hint="Fichier Excel (.xlsx) ou CSV · un fichier par année" />
+          {res?.lignes !== undefined && (
+            <div style={{ marginTop: 14 }}>
+              <Avis ton="ok">
+                ✓ {res.lignes.toLocaleString("fr-FR")} lignes importées · années {(res.annees || []).join(", ")} · {res.ressources_vues} ressources
+                {res.partenaires_crees?.length ? ` · ${res.partenaires_crees.length} partenaire(s) ajouté(s) automatiquement` : ""}
+              </Avis>
+            </div>
+          )}
+          {res?.erreur && <div style={{ marginTop: 14 }}><Avis ton="erreur">⚠ {res.erreur}</Avis></div>}
+          <button onClick={handleImport} disabled={importing || !files.length} style={{ ...btnPrincipal(!importing && files.length > 0), marginTop: 16 }}>
+            {importing ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <UploadCloud size={15} />}
+            {importing ? "Import en cours (peut être long)…" : "Importer"}
+          </button>
+        </div>
+      </Carte>
+
+      {/* ── Partenaires ajoutés automatiquement ── */}
       {res?.partenaires_crees?.length ? (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-          <div style={{ ...SEC, marginBottom: 10 }}>{res.partenaires_crees.length} partenaires ajoutés automatiquement</div>
-          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Ces exportateurs/importateurs étaient absents du référentiel (territoires, agrégats…). Ils ont été créés pour ne perdre aucune donnée et n&apos;apparaissent pas dans la liste des pays macro.</p>
+        <Carte titre={`${res.partenaires_crees.length} partenaires ajoutés automatiquement`}
+          aide="Ces exportateurs / importateurs étaient absents du référentiel (territoires, agrégats…). Ils ont été créés pour ne perdre aucune donnée et n'apparaissent pas dans la liste des pays macro.">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {res.partenaires_crees.map((pc: any) => (
               <span key={pc.nom} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "#4a5568", background: "#F5F4F3", padding: "4px 11px", borderRadius: 999 }}>
@@ -449,16 +564,17 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
               </span>
             ))}
           </div>
-        </div>
+        </Carte>
       ) : null}
 
-      {/* Années couvertes */}
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-        <div style={{ ...SEC, marginBottom: 12 }}>Années importées</div>
-        {couv.length === 0 ? <div style={{ fontSize: 13, color: "#9aa5b4" }}>Aucune transaction importée.</div> : (
+      {/* ── Années importées ── */}
+      <Carte titre="Années importées" extra={couv.length > 0 ? <Compteur n={couv.reduce((s, c) => s + c.nb_lignes, 0)} mot="ligne" /> : undefined}>
+        {couv.length === 0 ? (
+          <p style={{ fontSize: 13, color: "#9aa5b4" }}>Aucune transaction importée.</p>
+        ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {couv.map(cc => (
-              <span key={cc.annee} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.06)", borderRadius: 999, padding: "5px 6px 5px 13px", fontSize: 12.5, fontWeight: 600, color: "#004f91" }}>
+              <span key={cc.annee} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.06)", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 999, padding: "5px 6px 5px 14px", fontSize: 12.5, fontWeight: 700, color: "#004f91", ...NUM }}>
                 {cc.annee} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {cc.nb_lignes.toLocaleString("fr-FR")} lignes</span>
                 <button onClick={() => delAnnee(cc.annee)} className="ro-w" title="Supprimer cette année"
                   style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 999, width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
@@ -468,119 +584,134 @@ function TransactionsPanel({ headers, paysList }: { headers: () => Record<string
             ))}
           </div>
         )}
-      </div>
+      </Carte>
 
-      {/* Tableau des données importées */}
+      {/* ── Tableau des transactions ── */}
       {couv.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
-            <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Données transactionnelles importées</div>
-            <span style={{ fontSize: 12, color: "#9aa5b4", fontWeight: 600 }}>{total.toLocaleString("fr-FR")} ligne{total > 1 ? "s" : ""}</span>
-          </div>
-
+        <Carte titre="Données transactionnelles importées" extra={<Compteur n={total} mot="ligne" />}>
           {/* Filtres */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-            <div style={{ position: "relative", flex: "1 1 260px", minWidth: 200 }}>
-              <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays ou une ressource…" style={{ ...IS, paddingLeft: 30 }} />
-            </div>
-            <select value={fAnnee} onChange={e => setFAnnee(e.target.value)} style={{ ...IS, flex: "0 0 auto", cursor: "pointer" }}>
+            <ChampRecherche value={q} onChange={setQ} placeholder="Rechercher un pays ou une ressource…" style={{ flex: "1 1 280px", minWidth: 220 }} />
+            <select value={fAnnee} onChange={e => setFAnnee(e.target.value)} style={{ ...IS, width: "auto", cursor: "pointer", fontWeight: 600 }}>
               <option value="">Toutes les années</option>
               {couv.map(cc => <option key={cc.annee} value={cc.annee}>{cc.annee}</option>)}
             </select>
-            <select value={fRessource} onChange={e => setFRessource(e.target.value)} style={{ ...IS, flex: "0 0 auto", cursor: "pointer", maxWidth: 260 }}>
+            <select value={fRessource} onChange={e => setFRessource(e.target.value)} style={{ ...IS, width: "auto", maxWidth: 280, cursor: "pointer", fontWeight: 600 }}>
               <option value="">Toutes les ressources</option>
               {ressources.map(rr => <option key={rr.nom_en} value={rr.nom_en}>{rr.libelle || rr.nom_en}</option>)}
             </select>
           </div>
 
-          <div style={{ overflowX: "auto", border: "1px solid #F0EEEC", borderRadius: 10 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-              <thead>
-                <tr style={{ background: "#FAF9F8", textAlign: "left", color: "#6b7684" }}>
-                  <th style={TH}>Exportateur</th>
-                  <th style={TH}>Importateur</th>
-                  <th style={{ ...TH, width: 70 }}>Année</th>
-                  <th style={TH}>Ressource</th>
-                  <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loadingTable ? (
-                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "28px" }}><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /></td></tr>
-                ) : lignes.length === 0 ? (
-                  <tr><td colSpan={5} style={{ ...TD, textAlign: "center", color: "#9aa5b4", padding: "28px" }}>Aucune ligne ne correspond.</td></tr>
-                ) : lignes.map(l => (
-                  <tr key={l.id} style={{ borderTop: "1px solid #F4F2F0", transition: "background 0.12s" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                    <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.exportateur}</td>
-                    <td style={{ ...TD, fontWeight: 600, color: "#2d3540" }}>{l.importateur}</td>
-                    <td style={{ ...TD, fontVariantNumeric: "tabular-nums" }}>{l.annee}</td>
-                    <td style={{ ...TD, color: "#4a5568" }}>{l.ressource}</td>
-                    <td style={{ ...TD, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 600, color: "#004f91" }} title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtVal(l.valeur)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Tableau hauteurMax={620}>
+            <thead>
+              <tr>
+                <th style={TH}>Exportateur</th>
+                <th style={TH}>Importateur</th>
+                <th style={{ ...TH, width: 80 }}>Année</th>
+                <th style={TH}>Ressource</th>
+                <th style={{ ...TH, textAlign: "right" }}>Valeur</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingTable ? (
+                <tr><td colSpan={5} style={{ padding: 16 }}><SkeletonRows n={6} h={30} /></td></tr>
+              ) : lignes.length === 0 ? (
+                <LigneVide colSpan={5} texte="Aucune ligne ne correspond à ces filtres." />
+              ) : lignes.map(l => (
+                <Ligne key={l.id}>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", fontWeight: 600, color: "#1a1a2e" }}>{l.exportateur}</td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", fontWeight: 600, color: "#1a1a2e" }}>{l.importateur}</td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", ...NUM, color: "#4a5568" }}>{l.annee}</td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", color: "#4a5568" }}>{l.ressource}</td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", textAlign: "right", ...NUM, fontWeight: 700, color: "#004f91" }}
+                    title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtVal(l.valeur)}</td>
+                </Ligne>
+              ))}
+            </tbody>
+          </Tableau>
 
           {/* Pagination */}
           {total > TAILLE && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 14 }}>
-              <span style={{ fontSize: 12, color: "#9aa5b4" }}>Page {page} / {nbPages}</span>
+              <span style={{ fontSize: 12, color: "#9aa5b4", ...NUM }}>Page {page} sur {nbPages}</span>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-                  style={{ ...PGBTN, opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
+                  style={{ ...btnPage, opacity: page <= 1 ? 0.4 : 1, cursor: page <= 1 ? "not-allowed" : "pointer" }}>Précédent</button>
                 <button onClick={() => setPage(p => Math.min(nbPages, p + 1))} disabled={page >= nbPages}
-                  style={{ ...PGBTN, opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
+                  style={{ ...btnPage, opacity: page >= nbPages ? 0.4 : 1, cursor: page >= nbPages ? "not-allowed" : "pointer" }}>Suivant</button>
               </div>
             </div>
           )}
-        </div>
+        </Carte>
       )}
 
-      {/* Partenaires hors référentiel (noms éditables) */}
-      {partenaires.length > 0 && (() => {
-        const filt = partenaires.filter(pa => !qPart || pa.nom_fr.toLowerCase().includes(qPart.toLowerCase()) || (pa.code_iso3 || "").toLowerCase().includes(qPart.toLowerCase()));
-        return (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", marginBottom: 20, boxShadow: "var(--ombre-1)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
-            <div style={{ ...SEC, marginBottom: 0, borderBottom: "none", paddingBottom: 0 }}>Partenaires hors référentiel — noms éditables</div>
-            <span style={{ fontSize: 12, color: "#9aa5b4" }}>{partenaires.length}</span>
-          </div>
-          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Territoires et agrégats ajoutés à l&apos;import. Renommez-les en français (ex : Western Sahara → Sahara occidental) ; le nom d&apos;origine reste reconnu aux imports suivants.</p>
-          <div style={{ position: "relative", marginBottom: 12, maxWidth: 340 }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-            <input value={qPart} onChange={e => setQPart(e.target.value)} placeholder="Rechercher un partenaire…" style={{ ...IS, paddingLeft: 30 }} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
-            {filt.map(pa => (
-              <div key={pa.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {pa.code_iso3 && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 8px", borderRadius: 999, flexShrink: 0 }}>{pa.code_iso3}</span>}
-                <input defaultValue={pa.nom_fr || ""} onBlur={e => savePartenaire(pa.id, e.target.value)} style={IS} />
-              </div>
-            ))}
-          </div>
-        </div>
-        );
-      })()}
+      {/* ── Partenaires hors référentiel ── */}
+      {partenaires.length > 0 && (
+        <Carte titre="Partenaires hors référentiel — noms éditables"
+          aide="Territoires et agrégats ajoutés à l'import. Renommez-les en français (ex : Western Sahara → Sahara occidental) ; le nom d'origine reste reconnu aux imports suivants."
+          extra={
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <ChampRecherche value={qPart} onChange={setQPart} placeholder="Rechercher un partenaire…" style={{ width: 240 }} />
+              <Compteur n={partFiltres.length} mot="partenaire" />
+            </div>
+          }>
+          <Tableau hauteurMax={420}>
+            <thead>
+              <tr>
+                <th style={{ ...TH, width: 90 }}>Code</th>
+                <th style={TH}>Nom affiché</th>
+              </tr>
+            </thead>
+            <tbody>
+              {partFiltres.length === 0 ? <LigneVide colSpan={2} texte="Aucun partenaire ne correspond." /> :
+              partFiltres.map(pa => (
+                <Ligne key={pa.id}>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0" }}>
+                    {pa.code_iso3
+                      ? <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.07)", padding: "3px 9px", borderRadius: 999 }}>{pa.code_iso3}</span>
+                      : <span style={{ color: "#E0DDDA" }}>–</span>}
+                  </td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", padding: "7px 14px" }}>
+                    <input defaultValue={pa.nom_fr || ""} onBlur={e => savePartenaire(pa.id, e.target.value)} style={IS} />
+                  </td>
+                </Ligne>
+              ))}
+            </tbody>
+          </Tableau>
+        </Carte>
+      )}
 
-      {/* Ressources (éditables) */}
+      {/* ── Ressources ── */}
       {ressources.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ECEAE7", padding: "22px 28px", boxShadow: "var(--ombre-1)" }}>
-          <div style={{ ...SEC, marginBottom: 12 }}>Ressources — libellés éditables</div>
-          <p style={{ fontSize: 12, color: "#9aa5b4", marginBottom: 12 }}>Traduisez ou renommez ; le libellé s&apos;applique partout où la ressource apparaît.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 10 }}>
-            {ressources.map(rr => (
-              <div key={rr.nom_en} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 11, color: "#9aa5b4", flex: "0 0 auto", minWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={rr.nom_en}>{rr.nom_en}</span>
-                <input defaultValue={rr.libelle || ""} onBlur={e => saveRessource(rr.nom_en, e.target.value)} style={IS} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <Carte titre="Ressources — libellés éditables"
+          aide="Traduisez ou renommez ; le libellé s'applique partout où la ressource apparaît."
+          extra={
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <ChampRecherche value={qRess} onChange={setQRess} placeholder="Rechercher une ressource…" style={{ width: 240 }} />
+              <Compteur n={ressFiltrees.length} mot="ressource" />
+            </div>
+          }>
+          <Tableau hauteurMax={420}>
+            <thead>
+              <tr>
+                <th style={{ ...TH, width: "40%" }}>Nom d&apos;origine</th>
+                <th style={TH}>Libellé affiché</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ressFiltrees.length === 0 ? <LigneVide colSpan={2} texte="Aucune ressource ne correspond." /> :
+              ressFiltrees.map(rr => (
+                <Ligne key={rr.nom_en}>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 0 }} title={rr.nom_en}>{rr.nom_en}</td>
+                  <td style={{ ...TD, borderTop: "1px solid #F4F2F0", padding: "7px 14px" }}>
+                    <input defaultValue={rr.libelle || ""} onBlur={e => saveRessource(rr.nom_en, e.target.value)} style={IS} />
+                  </td>
+                </Ligne>
+              ))}
+            </tbody>
+          </Tableau>
+        </Carte>
       )}
-    </>
+    </div>
   );
 }
