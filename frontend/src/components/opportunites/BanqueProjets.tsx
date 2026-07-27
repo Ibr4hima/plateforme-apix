@@ -12,12 +12,17 @@ import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listeP
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtPhone } from "@/lib/telephone";
 
-// Bouton « + Ajouter » d'une liste de contacts : actif seulement si toutes les entrées sont valides
+// Bouton « + » rond en pointillés d'une liste de contacts : actif seulement si
+// toutes les entrées existantes sont complètes et valides.
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
   return (
-    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ fontSize:10, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.08)", border:"none", borderRadius:6, padding:"2px 8px", cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.35, fontFamily:"var(--font-google-sans)" }}>
-      + Ajouter
+    <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?"Ajouter":titre}
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
+        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+        display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      <Plus size={13}/>
     </button>
   );
 }
@@ -119,7 +124,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
       </div>
       <div style={{ marginBottom:10 }}>
         <label style={LS}>Nom / Organisation</label>
-        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} placeholder="Ex : Ministère des Finances" style={IS}/>
+        <input value={porteur.nom||""} onChange={e=>upd("nom",e.target.value)} style={IS}/>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
         {/* Téléphones */}
@@ -172,7 +177,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:600, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
       onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E4E1DE"; e.currentTarget.style.color="#9aa5b4"; }}>
       <Plus size={13}/> {label}
@@ -355,7 +360,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
       <FSection title="Informations générales">
         <div style={{ marginBottom:12 }}>
           <FLabel>Intitulé du projet *</FLabel>
-          <FInput value={form.titre_projet} onChange={e=>upd("titre_projet",e.target.value)} placeholder="Intitulé du projet" style={{ fontSize:14, fontWeight:600 }}/>
+          <FInput value={form.titre_projet} onChange={e=>upd("titre_projet",e.target.value)} placeholder="Intitulé du projet"/>
         </div>
         <div style={{ marginBottom:12 }}>
           <FLabel>Description</FLabel>
