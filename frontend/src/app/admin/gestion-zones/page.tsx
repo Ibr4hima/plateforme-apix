@@ -9,6 +9,11 @@ import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pe
 import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import AdminMenu from "@/components/admin/AdminMenu";
+import { SkeletonCards } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import { badgePole, poleAccent } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -924,6 +929,7 @@ export default function GestionZonesPage() {
   const [onglet,       setOnglet]       = useState<"zones"|"poles">("zones");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
+  const [erreur,       setErreur]       = useState(false);
   const [vueId,        setVueId]        = useState<string | null>(null);
   const [zoneModal,    setZoneModal]    = useState(false);
   const [zoneModalType,setZoneModalType]= useState("ZES");
@@ -944,11 +950,12 @@ export default function GestionZonesPage() {
   };
 
   const charger = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const res = await fetch(`${API_BASE}/zones-types`);
+      if (!res.ok) throw new Error();
       setZones(await res.json());
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
 
@@ -982,36 +989,40 @@ export default function GestionZonesPage() {
     finally { setDeletingEnt(null); }
   };
 
-  if (loading) return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400, color: "#9aa5b4" }}>
-      <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-    </div>
-  );
+  // Type visé par le bouton du bandeau : celui affiché, sinon le premier.
+  const typeAjout = selectedType ?? TYPE_ZONES[0].key;
 
   return (
-    <div style={{ padding: "36px 40px 80px", fontFamily: "var(--font-google-sans)" }}>
+    <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "#1a1a2e" }}>Pôles &amp; Zones d&apos;investissement</h1>
-      </div>
-
-      <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E8E5E3", marginBottom: 28 }}>
-        {[{ key: "zones", label: "Zones d'investissement", count: zones.length }, { key: "poles", label: "Pôles territoires", count: polesCount }].map(o => {
-          const actif = onglet === o.key;
-          return (
-          <button key={o.key} className={o.key === "poles" ? "ro-w" : undefined} onClick={() => setOnglet(o.key as any)}
-            style={{ padding: "14px 22px", border: "none", borderBottom: `2px solid ${actif ? "#004f91" : "transparent"}`, background: "transparent", color: actif ? "#004f91" : "#9aa5b4", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
-            {o.label}
-            {o.count > 0 && <span style={{ marginLeft: 7, fontSize: 11, fontWeight: 700, color: actif ? "#004f91" : "#9aa5b4", background: actif ? "rgba(0,79,145,0.1)" : "#F2F0EF", padding: "1px 7px", borderRadius: 999 }}>{o.count}</span>}
+      {/* ── Bandeau orange (espace d'administration) ── */}
+      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+        droite={onglet === "zones" ? (
+          // Le type est explicite dans le libellé : aucune ambiguïté sur ce qui
+          // sera créé (les pôles, eux, sont un référentiel fixe).
+          <button className="ro-w" onClick={() => openAjouterZone(typeAjout)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={ev => { ev.currentTarget.style.background = "#FFF6EF"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.transform = "none"; }}>
+            <Plus size={15} /> Ajouter une zone {typeAjout}
           </button>
-          );
-        })}
-      </div>
+        ) : undefined}>
+        <BarreTitreSegment
+          options={[
+            { v: "zones", l: "Zones d'investissement", count: zones.length },
+            { v: "poles", l: "Pôles territoires",      count: polesCount },
+          ]}
+          value={onglet} onChange={v => setOnglet(v)} />
+      </BarreTitre>
 
-      {onglet === "poles" ? <OngletPoles /> : (
+      <div style={{ padding: "28px 40px 80px" }}>
+      {loading ? (
+        <SkeletonCards n={3} cols={3} height={190} />
+      ) : erreur ? (
+        <ErreurChargement onRetry={() => charger()} />
+      ) : onglet === "poles" ? <OngletPoles /> : (
         <div>
           {/* Cards types — style page publique */}
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(TYPE_ZONES.length, 3)},1fr)`, gap: 14, marginBottom: selectedType ? 32 : 0 }}>
@@ -1095,16 +1106,39 @@ export default function GestionZonesPage() {
             const t = TYPE_ZONES.find(x => x.key === selectedType)!;
             const zDuT = zones.filter(z => z.type_zone === t.key);
             return zDuT.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "28px 0", color: "#9aa5b4", fontSize: 13 }}>
-                Aucune zone {t.code} — cliquez sur &quot;+ Zone&quot; pour en ajouter.
+              <div style={{ textAlign: "center", padding: "60px 24px", color: "#9aa5b4" }}>
+                <Building2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568" }}>Aucune zone {t.code}</p>
+                <p style={{ fontSize: 13.5, marginTop: 6 }}>Utilisez « Ajouter une zone {t.key} » pour en créer une.</p>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
-                {zDuT.map(z => (
+              <>
+              {/* En-tête du type sélectionné — même bandeau que la page publique */}
+              <div style={{ display: "flex", alignItems: "center", gap: 15, padding: "15px 20px", marginBottom: 20, borderRadius: 16,
+                background: `linear-gradient(100deg, ${t.color}14 0%, ${t.color}06 42%, rgba(255,255,255,0) 100%)`,
+                border: `1px solid ${t.color}22` }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${t.color}1a` }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.02em", color: t.color }}>{t.code}</span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: t.color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>Type de zone</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "#1a1a2e", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{t.label}</div>
+                </div>
+                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "#fff", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${t.color}40` }}>
+                  {zDuT.length} zone{zDuT.length > 1 ? "s" : ""}
+                </span>
+              </div>
+
+              <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
+                {zDuT.map(z => {
+                  // Accent de survol = couleur du pôle (comme la page publique)
+                  const hoverC = z.pole_nom ? poleAccent(z.pole_nom) : `${t.color}55`;
+                  const nbEnt = z.entreprises?.length || 0;
+                  return (
                   <div key={z.id} onClick={() => setVueId(z.id)}
-                    style={{ background: "#fff", border: "1px solid #ECEAE7", borderRadius: 14, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "var(--ombre-1)", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+                    style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
                     onMouseEnter={ev => {
-                      ev.currentTarget.style.boxShadow = "var(--ombre-2)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${t.color}40`;
+                      ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = hoverC;
                       // Contenus trop longs : glissent pour révéler la fin
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
@@ -1112,36 +1146,41 @@ export default function GestionZonesPage() {
                       });
                     }}
                     onMouseLeave={ev => {
-                      ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "#ECEAE7";
+                      ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)";
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
                         if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                       });
                     }}>
 
-                    <div style={{ height: 3, background: `linear-gradient(90deg,${t.color}CC 0%,${t.color} 50%,${t.color}99 100%)`, flexShrink: 0 }}/>
-                    <div style={{ padding: "14px 16px 14px", flex: 1 }}>
-                      {/* Pôle */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                        {z.pole_nom ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: t.color, background: `${t.color}12`, padding: "3px 10px", borderRadius: 999, overflow: "hidden", whiteSpace: "nowrap" as const, maxWidth: "100%" }}>{z.pole_nom}</span>
-                        ) : <span />}
+                    <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
+                      {/* Nom + superficie | badge pôle */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div data-marquee style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                            <span style={{ display: "inline-block" }}>{z.nom_zone}</span>
+                          </div>
+                          {z.superficie && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</div>}
+                        </div>
+                        {z.pole_nom && (
+                          <span title={z.pole_nom} style={{ ...badgePole(z.pole_nom), whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
+                            {z.pole_nom}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Nom de la zone */}
-                      <div style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{z.nom_zone}</div>
-
-                      {/* Infos libellées */}
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                        <div style={{ background: `${t.color}0A`, border: `1px solid ${t.color}1F`, borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: t.color, textTransform: "uppercase" as const, marginBottom: 3 }}>Localisation</p>
-                          <p data-marquee style={{ fontSize: 12, fontWeight: 600, color: (z.departement_nom || z.region_nom) ? "#1a1a2e" : "#9aa5b4", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                      {/* Localisation · Entreprises en rangée épurée */}
+                      <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Localisation</p>
+                          <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: (z.departement_nom || z.region_nom) ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", whiteSpace: "nowrap" as const }}>
                             <span style={{ display: "inline-block" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ") || "—"}</span>
                           </p>
                         </div>
-                        <div style={{ background: `${t.color}0A`, border: `1px solid ${t.color}1F`, borderRadius: 10, padding: "8px 11px" }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: t.color, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{(z.entreprises?.length || 0) > 1 ? "s" : ""}</p>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: (z.entreprises?.length || 0) > 0 ? "#1a1a2e" : "#9aa5b4" }}>{z.entreprises?.length || 0}</p>
+                        <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
+                          <p style={{ fontSize: 12.5, fontWeight: 700, color: nbEnt > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbEnt}</p>
                         </div>
                       </div>
                     </div>
@@ -1170,12 +1209,15 @@ export default function GestionZonesPage() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
+              </>
             );
           })()}
         </div>
       )}
+      </div>
 
       {vue && (
         <ZoneVue
