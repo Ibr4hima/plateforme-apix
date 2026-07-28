@@ -16,6 +16,7 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
+import { drapeauEmoji } from "@/lib/drapeaux";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 
@@ -1887,6 +1888,228 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
 
+// ── Vue mondiale (agrégat de tous les pays) ───────────────────────────────────
+// Affichée par défaut dans la vue Monde : totaux mondiaux (séries + KPIs) et
+// top 10 des pays récepteurs / émetteurs avec curseur Cumul ⇆ année.
+
+// Drapeau emoji (liste validée), image flagcdn sinon, globe sans ISO2
+function DrapeauMonde({ iso, nom }: { iso?: string | null; nom: string }) {
+  if (iso) {
+    const emoji = drapeauEmoji(iso);
+    if (emoji) return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
+      style={{ width: 19, height: 13.5, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
+  }
+  return <span title={nom} style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
+}
+
+type TopPays = { pays: string; code_iso2?: string | null; valeur: number };
+
+// Tableau Top 10 des pays : rang · drapeau · pays · valeur · part · barre,
+// avec curseur Cumul (à droite) ⇆ années (vers la gauche, décroissantes)
+function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
+  titre: string; rows: TopPays[]; annees: number[]; annee: number | null;
+  onAnnee: (a: number | null) => void; chargement: boolean;
+}) {
+  const n = annees.length;
+  const total = rows.reduce((t, r) => t + Math.max(0, r.valeur), 0);
+  const max = Math.max(1e-9, ...rows.map(r => r.valeur));
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+        {n >= 2 && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <input type="range" min={0} max={n} step="any" defaultValue={n}
+              onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); onAnnee(i >= n ? null : annees[i]); }}
+              aria-label="Cumul ou année"
+              style={{ width: 150, accentColor: "#004f91", cursor: "pointer" }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" as const }}>
+              {annee ?? "Cumul"}
+            </span>
+          </span>
+        )}
+      </div>
+      {chargement ? (
+        <SkeletonRows n={Math.max(4, rows.length || 8)} h={26} />
+      ) : rows.length === 0 ? (
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "18px 0" }}>{annee !== null ? `Aucune donnée pour ${annee}.` : "Aucune donnée"}</p>
+      ) : (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const }}>Pays</span>
+            <span style={{ width: 74, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Valeur</span>
+            <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
+            <span style={{ width: "26%", flexShrink: 0 }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+            {rows.map((r, i) => {
+              const zebre = i % 2 === 1;
+              const podium = i < 3;
+              return (
+                <div key={r.pays} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
+                  <span style={{ width: 22, flexShrink: 0 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%",
+                      background: podium ? "#004f91" : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{i + 1}</span>
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <DrapeauMonde iso={r.code_iso2} nom={r.pays} />
+                    <span title={r.pays} style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
+                  </span>
+                  <span style={{ width: 74, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.valeur)}</span>
+                  <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right" as const, flexShrink: 0 }}>
+                    {total > 0 ? `${(Math.max(0, r.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
+                  </span>
+                  <div style={{ width: "26%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                    {r.valeur > 0 && <div style={{ height: "100%", width: `${Math.max(2, r.valeur / max * 100)}%`, borderRadius: 99, background: "#004f91", opacity: podium ? 0.9 : 0.55 }} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Libellés de la vue mondiale par catégorie de données
+const MONDE_LIBELLES: Record<string, { ind: string; kpiE: string; kpiS: string; serieE: string; serieS: string; topE: string; topS: string; top1E: string; top1S: string }> = {
+  fluxstock:  { ind: "flux",              kpiE: "Flux entrants · monde",  kpiS: "Flux sortants · monde",  serieE: "Flux d'IDE entrants · total mondial",       serieS: "Flux d'IDE sortants · total mondial",        topE: "Top 10 des pays récepteurs d'IDE",      topS: "Top 10 des pays émetteurs d'IDE",       top1E: "1er pays récepteur", top1S: "1er pays émetteur" },
+  greenfield: { ind: "greenfield_valeur", kpiE: "Greenfield reçus · monde", kpiS: "Greenfield émis · monde", serieE: "Investissements greenfield reçus · monde", serieS: "Investissements greenfield émis · monde",   topE: "Top 10 des pays d'accueil · greenfield", topS: "Top 10 des pays émetteurs · greenfield", top1E: "1er pays d'accueil", top1S: "1er pays émetteur" },
+  fusion:     { ind: "ma_valeur",         kpiE: "Rachats d'entreprises · monde", kpiS: "Acquisitions · monde", serieE: "Valeur des rachats d'entreprises · monde", serieS: "Valeur des acquisitions à l'étranger · monde", topE: "Top 10 des pays cibles · M&A",          topS: "Top 10 des pays acquéreurs · M&A",      top1E: "1er pays cible",     top1S: "1er pays acquéreur" },
+};
+
+function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec }: {
+  sousType: string; modeAnnees: "plage" | "specifiques"; anneeMin: number; anneeMax: number; anneesSpec: number[];
+}) {
+  const L = MONDE_LIBELLES[sousType] || MONDE_LIBELLES.fluxstock;
+  type Global = { series: { entrant: { annee: number; valeur: number }[]; sortant: { annee: number; valeur: number }[] }; tops: { entrant: TopPays[]; sortant: TopPays[] } };
+  const [donnees, setDonnees] = useState<Global | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
+  // Curseur Cumul ⇆ année de chaque top (données estampillées de leur année)
+  const [anneeTopE, setAnneeTopE] = useState<number | null>(null);
+  const [anneeTopS, setAnneeTopS] = useState<number | null>(null);
+  const [topAnneeE, setTopAnneeE] = useState<{ annee: number; rows: TopPays[] } | null>(null);
+  const [topAnneeS, setTopAnneeS] = useState<{ annee: number; rows: TopPays[] } | null>(null);
+  const anneeTopED = useDebounced(anneeTopE, 250);
+  const anneeTopSD = useDebounced(anneeTopS, 250);
+
+  const paramsPeriode = useCallback(() => {
+    const p = new URLSearchParams({ indicateur: L.ind });
+    if (modeAnnees === "specifiques" && anneesSpec.length > 0) p.set("annees", anneesSpec.join(","));
+    else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
+    return p;
+  }, [L.ind, modeAnnees, anneeMin, anneeMax, anneesSpec]);
+
+  useEffect(() => {
+    setLoading(true); setErreur(false);
+    fetch(`${API}/ide/monde/global?${paramsPeriode()}`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setDonnees)
+      .catch(e => { console.error(e); setErreur(true); })
+      .finally(() => setLoading(false));
+  }, [paramsPeriode, tick]);
+
+  // Top d'une année précise (par direction)
+  useEffect(() => {
+    if (anneeTopED === null) { setTopAnneeE(null); return; }
+    const annee = anneeTopED;
+    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}`)
+      .then(r => r.json()).then(d => setTopAnneeE({ annee, rows: d?.tops?.entrant || [] }))
+      .catch(() => setTopAnneeE({ annee, rows: [] }));
+  }, [anneeTopED, L.ind]);
+  useEffect(() => {
+    if (anneeTopSD === null) { setTopAnneeS(null); return; }
+    const annee = anneeTopSD;
+    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}`)
+      .then(r => r.json()).then(d => setTopAnneeS({ annee, rows: d?.tops?.sortant || [] }))
+      .catch(() => setTopAnneeS({ annee, rows: [] }));
+  }, [anneeTopSD, L.ind]);
+
+  if (loading) return <SkeletonChartGrid n={4} cols={2} height={230}/>;
+  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  const sE = donnees?.series?.entrant || [];
+  const sS = donnees?.series?.sortant || [];
+  if (!sE.length && !sS.length) return (
+    <div style={{ textAlign: "center" as const, padding: "80px 24px", color: "#9aa5b4" }}>
+      <p style={{ fontSize: 14, lineHeight: 1.7 }}>Aucune donnée mondiale pour cette catégorie.</p>
+    </div>
+  );
+
+  const annees = [...new Set([...sE, ...sS].map(d => d.annee))].sort((a, b) => a - b);
+  // KPIs : dernière année et variation vs précédente, 1ers pays au cumul
+  const kpiDe = (serie: { annee: number; valeur: number }[]) => {
+    const l = serie[serie.length - 1], p = serie.length > 1 ? serie[serie.length - 2] : null;
+    return { l, delta: l && p && p.valeur ? (l.valeur - p.valeur) / Math.abs(p.valeur) * 100 : null, ref: p?.annee ?? null };
+  };
+  const kE = kpiDe(sE), kS = kpiDe(sS);
+  const topsE = donnees?.tops?.entrant || [], topsS = donnees?.tops?.sortant || [];
+  const cards = [
+    { label: L.kpiE, annee: kE.l?.annee ?? null, val: kE.l ? fmtVal(kE.l.valeur) : "N/A", delta: kE.delta, ref: kE.ref, texte: false },
+    { label: L.kpiS, annee: kS.l?.annee ?? null, val: kS.l ? fmtVal(kS.l.valeur) : "N/A", delta: kS.delta, ref: kS.ref, texte: false },
+    { label: L.top1E, annee: null, val: topsE[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsE[0] ? `${fmtVal(topsE[0].valeur)} sur la période` : "" },
+    { label: L.top1S, annee: null, val: topsS[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsS[0] ? `${fmtVal(topsS[0].valeur)} sur la période` : "" },
+  ] as any[];
+  const seriesE = [{ nom: "Monde", couleur: "#004f91", data: sE }];
+  const seriesS = [{ nom: "Monde", couleur: "#ca631f", data: sS }];
+
+  return (
+    <div className="charge-in">
+      {/* KPIs mondiaux */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
+        {cards.map((c, i) => (
+          <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", transition: "border-color 0.18s", minWidth: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, flexWrap: "wrap" as const }}>
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase" as const, lineHeight: 1.4 }}>{c.label}</p>
+              {c.annee != null && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{c.annee}</span>}
+            </div>
+            <p title={c.texte ? c.val : undefined} style={{ fontSize: c.texte ? "0.98rem" : "1.15rem", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
+            <div style={{ marginTop: 5, minHeight: 12, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" as const }}>
+              {c.delta != null && c.ref != null ? (<>
+                <span style={{ fontSize: 10, fontWeight: 800, color: c.delta > 0 ? "#188038" : c.delta < 0 ? "#dc2626" : "#9aa5b4", whiteSpace: "nowrap" as const }}>{c.delta > 0 ? "▲" : c.delta < 0 ? "▼" : "="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}&nbsp;%</span>
+                <span style={{ fontSize: 9.5, color: "#9aa5b4", whiteSpace: "nowrap" as const }}>par rapport à {c.ref}</span>
+              </>) : (c.sous ? <p style={{ fontSize: 10, color: "#9aa5b4", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Totaux mondiaux */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+        <GrapheCard titre={L.serieE} sous_titre="M$ USD · CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}`} hideLegend hideSousTitre
+          fullChildren={<GrapheMultiPays series={seriesE} height={340}/>}>
+          <GrapheMultiPays series={seriesE} height={160}/>
+        </GrapheCard>
+        <GrapheCard titre={L.serieS} sous_titre="M$ USD · CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}`} hideLegend hideSousTitre
+          fullChildren={<GrapheMultiPays series={seriesS} height={340}/>}>
+          <GrapheMultiPays series={seriesS} height={160}/>
+        </GrapheCard>
+      </div>
+
+      {/* Top 10 mondiaux */}
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 14 }}>
+        <TableauTopPays titre={L.topE} annees={annees}
+          annee={anneeTopE} onAnnee={setAnneeTopE}
+          chargement={anneeTopE !== null && topAnneeE?.annee !== anneeTopE}
+          rows={anneeTopE !== null ? (topAnneeE?.annee === anneeTopE ? topAnneeE.rows : []) : topsE} />
+        <TableauTopPays titre={L.topS} annees={annees}
+          annee={anneeTopS} onAnnee={setAnneeTopS}
+          chargement={anneeTopS !== null && topAnneeS?.annee !== anneeTopS}
+          rows={anneeTopS !== null ? (topAnneeS?.annee === anneeTopS ? topAnneeS.rows : []) : topsS} />
+      </div>
+    </div>
+  );
+}
+
 function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
   const [donnees,     setDonnees]    = useState<any[]>([]);
   const [loading,     setLoading]    = useState(false);
@@ -1910,21 +2133,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
-  const mondeInit = useRef(false);
 
   useEffect(() => {
     fetch(`${API}/ide/monde/groupements`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
   }, []);
 
-  useEffect(() => {
-    if (mondeInit.current || !groupements.length) return;
-    const defaultNames = ["Afrique","Amérique","Asie","Europe"];
-    const codes = groupements
-      .filter(g => g.categorie === "continent" && defaultNames.includes(g.nom_fr))
-      .slice(0, 4)
-      .map(g => g.code);
-    if (codes.length > 0) { mondeInit.current = true; setGrpSelec(codes); }
-  }, [groupements]);
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
     const g = groupements.find(x => x.code === code);
@@ -2089,6 +2302,20 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#004f91":"#9aa5b4", background:grpSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
           </div>
 
+          {/* ── Monde (agrégat mondial) — sélectionné quand rien d'autre ne l'est ── */}
+          {(() => { const mondeSel = grpSelec.length === 0; return (
+            <button onClick={()=>setGrpSelec([])}
+              style={{ display:"flex", alignItems:"center", gap:9, padding:"7px 10px", borderRadius:9, border:"none", cursor:"pointer", background:mondeSel?"rgba(0,79,145,0.07)":"transparent", textAlign:"left" as const, width:"100%", marginBottom:10 }}
+              onMouseEnter={e=>{ if(!mondeSel)(e.currentTarget as HTMLElement).style.background="#F8F7F6"; }}
+              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background=mondeSel?"rgba(0,79,145,0.07)":"transparent"; }}>
+              <div style={{ width:11, height:11, borderRadius:"50%", border:`2px solid ${mondeSel?"#004f91":"#C5BFBB"}`, background:mondeSel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                {mondeSel&&<div style={{ width:3.5, height:3.5, borderRadius:"50%", background:"#fff" }}/>}
+              </div>
+              <span style={{ fontSize:13, color:"#1a1a2e", fontWeight:mondeSel?700:500 }}>Monde</span>
+            </button>
+          ); })()}
+          <div style={{ height:1, background:"#F2F0EF", marginBottom:12 }}/>
+
           {groupements.length===0&&<div style={{ padding:"8px 0" }}><SkeletonRows n={8} h={26}/></div>}
 
           {/* Helper render d'un item */}
@@ -2216,11 +2443,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         </div>
 
         {grpSelec.length===0 ? (
-          <div style={{ display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", height:300, gap:12, color:"#9aa5b4" }}>
-            <span style={{ fontSize:32 }}>🌍</span>
-            <p style={{ fontSize:14, fontWeight:600, color:"#4a5568" }}>Sélectionnez un ou plusieurs groupements</p>
-            <p style={{ fontSize:13 }}>Les statistiques agrégées s'afficheront ici.</p>
-          </div>
+          <VueMondeGlobale sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}/>
         ) : loading ? (
           <SkeletonChartGrid n={4} cols={2} height={230}/>
         ) : erreur ? (

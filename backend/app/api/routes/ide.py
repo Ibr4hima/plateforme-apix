@@ -143,6 +143,69 @@ async def get_monde_details(
             for r in rows]
 
 
+# ── GET /ide/monde/global ─────────────────────────────────────────────────────
+# Vue mondiale : somme de tous les pays par année (séries entrant/sortant) et
+# top 10 des pays récepteurs / émetteurs sur la période (cumul), pour un
+# indicateur donné (flux, greenfield_valeur, ma_valeur…).
+@router.get("/monde/global")
+async def get_monde_global(
+    indicateur: str           = Query(default="flux"),
+    annee_min:  Optional[int] = Query(None),
+    annee_max:  Optional[int] = Query(None),
+    annees:     Optional[str] = Query(None),    # "2003,2008" — année(s) précises
+    db: AsyncSession = Depends(get_db),
+):
+    from sqlalchemy import func as _f, or_
+
+    conds = [IdeCnuced.indicateur == indicateur, IdeCnuced.valeur.is_not(None)]
+    if annees:
+        liste = [int(a.strip()) for a in annees.split(",") if a.strip().isdigit()]
+        if liste:
+            conds.append(IdeCnuced.annee.in_(liste))
+    else:
+        if annee_min: conds.append(IdeCnuced.annee >= annee_min)
+        if annee_max: conds.append(IdeCnuced.annee <= annee_max)
+
+    # Séries mondiales : somme de tous les pays, par année et direction
+    s_res = await db.execute(
+        select(IdeCnuced.direction, IdeCnuced.annee, _f.sum(IdeCnuced.valeur))
+        .where(*conds).group_by(IdeCnuced.direction, IdeCnuced.annee)
+        .order_by(IdeCnuced.annee)
+    )
+    series: dict = {"entrant": [], "sortant": []}
+    for direction, annee, somme in s_res.all():
+        if direction in series:
+            series[direction].append({"annee": annee, "valeur": float(somme or 0)})
+
+    # Top 10 des pays par direction (cumul sur la période demandée)
+    t_res = await db.execute(
+        select(IdeCnuced.direction, IdeCnuced.pays, _f.sum(IdeCnuced.valeur).label("v"))
+        .where(*conds).group_by(IdeCnuced.direction, IdeCnuced.pays)
+    )
+    tops: dict = {"entrant": [], "sortant": []}
+    for direction, pays, somme in t_res.all():
+        if direction in tops:
+            tops[direction].append({"pays": pays, "valeur": float(somme or 0)})
+    for direction in tops:
+        tops[direction] = sorted(tops[direction], key=lambda x: x["valeur"], reverse=True)[:10]
+
+    # Drapeaux : code ISO2 par nom (nom_fr ou nom_cnuced)
+    noms = list({t["pays"] for d in tops.values() for t in d})
+    iso2: dict = {}
+    if noms:
+        refs = (await db.execute(
+            select(RefPays).where(or_(RefPays.nom_fr.in_(noms), RefPays.nom_cnuced.in_(noms)))
+        )).scalars().all()
+        for p in refs:
+            if p.nom_fr: iso2.setdefault(p.nom_fr, p.code_iso2)
+            if p.nom_cnuced: iso2.setdefault(p.nom_cnuced, p.code_iso2)
+    for d in tops.values():
+        for t in d:
+            t["code_iso2"] = iso2.get(t["pays"])
+
+    return {"series": series, "tops": tops}
+
+
 # ── GET /ide/monde ─────────────────────────────────────────────────────────────
 @router.get("/monde")
 async def get_monde(
