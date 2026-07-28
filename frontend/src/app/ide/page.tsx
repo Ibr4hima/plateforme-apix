@@ -6,7 +6,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Pin } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -275,6 +275,134 @@ function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: number 
         </div>
       ))}
       {rows.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "20px 0" }}>Aucune donnée</p>}
+    </div>
+  );
+}
+
+// ── Card tableau des nombres de projets (greenfield / M&A, vue Pays) ──────────
+// Les 7 dernières années non nulles en tableau (année · nombre · Δ vs N-1 ·
+// barre), un curseur pour explorer n'importe quelle année de la période, et
+// l'épinglage : la ligne du curseur peut être épinglée (plusieurs fois) pour
+// comparer des années hors fenêtre — avec bilan quand ≥ 2 épingles.
+function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: number; valeur: number | null }[] }) {
+  const [epingles, setEpingles] = useState<number[]>([]);
+  const [curseur, setCurseur] = useState<number | null>(null);
+
+  const valides = rows.filter(r => r.valeur !== null).sort((a, b) => a.annee - b.annee) as { annee: number; valeur: number }[];
+  const valMap = new Map(valides.map(r => [r.annee, r.valeur]));
+  const nonNulles = valides.filter(r => r.valeur !== 0);
+  const base7 = [...nonNulles.slice(-7)].reverse();
+  const maxVal = Math.max(1, ...nonNulles.map(r => r.valeur));
+  const anMin = valides.length ? valides[0].annee : 0;
+  const anMax = valides.length ? valides[valides.length - 1].annee : 0;
+  const anCurseur = curseur ?? anMax;
+
+  // Variation vs l'année précédente disposant d'une valeur
+  const deltaDe = (annee: number): number | null => {
+    const v = valMap.get(annee);
+    if (v === undefined) return null;
+    const avant = valides.filter(r => r.annee < annee);
+    if (!avant.length) return null;
+    const prec = avant[avant.length - 1];
+    return prec.valeur === 0 ? null : (v - prec.valeur) / Math.abs(prec.valeur) * 100;
+  };
+
+  const togglePin = (annee: number) =>
+    setEpingles(prev => prev.includes(annee) ? prev.filter(a => a !== annee) : [...prev, annee]);
+
+  // Lignes : épinglées d'abord (ordre d'épinglage), puis celle du curseur,
+  // puis la fenêtre des 7 dernières — sans doublons
+  const lignes: { annee: number; type: "pin" | "curseur" | "base" }[] = [
+    ...epingles.map(a => ({ annee: a, type: "pin" as const })),
+    ...(curseur !== null && !epingles.includes(anCurseur) ? [{ annee: anCurseur, type: "curseur" as const }] : []),
+    ...base7.filter(r => !epingles.includes(r.annee) && !(curseur !== null && r.annee === anCurseur)).map(r => ({ annee: r.annee, type: "base" as const })),
+  ];
+
+  // Bilan de comparaison : plus ancienne → plus récente des années épinglées valorisées
+  const bilan = (() => {
+    const avecVal = [...epingles].filter(a => valMap.has(a)).sort((a, b) => a - b);
+    if (avecVal.length < 2) return null;
+    const de = avecVal[0], vers = avecVal[avecVal.length - 1];
+    const v0 = valMap.get(de)!, v1 = valMap.get(vers)!;
+    return { de, vers, diff: v1 - v0, pct: v0 !== 0 ? (v1 - v0) / Math.abs(v0) * 100 : null };
+  })();
+
+  const Ligne = ({ annee, type }: { annee: number; type: "pin" | "curseur" | "base" }) => {
+    const v = valMap.get(annee);
+    const delta = deltaDe(annee);
+    const fondDe = { pin: "rgba(0,79,145,0.06)", curseur: "#FAF7F0", base: "transparent" };
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: fondDe[type], border: type === "curseur" ? "1px dashed #E4D9C3" : "1px solid transparent" }}>
+        {/* Épingle : dépose (lignes épinglées) ou pose (ligne du curseur) */}
+        {type === "base"
+          ? <span style={{ width: 14, flexShrink: 0 }} />
+          : <button onClick={() => togglePin(annee)} aria-label={type === "pin" ? `Désépingler ${annee}` : `Épingler ${annee}`} title={type === "pin" ? "Désépingler" : "Épingler cette année"}
+              style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: type === "pin" ? "#004f91" : "#C5BFBB", flexShrink: 0 }}>
+              <Pin size={11} fill={type === "pin" ? "#004f91" : "none"} />
+            </button>}
+        <span style={{ width: 34, fontSize: 11, fontWeight: type === "base" ? 600 : 800, color: "#1a1a2e", flexShrink: 0 }}>{annee}</span>
+        <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "#C5BFBB" : "#004f91", textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
+        <span style={{ width: 58, fontSize: 9.5, fontWeight: 700, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const,
+          color: delta === null ? "#C5BFBB" : delta > 0 ? "#188038" : delta < 0 ? "#dc2626" : "#9aa5b4" }}>
+          {delta === null ? "—" : `${delta > 0 ? "▲" : delta < 0 ? "▼" : "="} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
+        </span>
+        <div style={{ flex: 1, height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden" }}>
+          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: "#004f91", opacity: type === "base" ? 0.55 : 1 }} />}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+      <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+      {valides.length === 0 ? (
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
+      ) : (
+        <>
+          {/* Curseur d'exploration : n'importe quelle année de la période, épinglable */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
+            <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, flexShrink: 0 }}>Explorer</span>
+            <input type="range" min={anMin} max={anMax} step={1} value={anCurseur}
+              onChange={e => setCurseur(Number(e.target.value))}
+              aria-label="Explorer une année"
+              style={{ flex: 1, accentColor: "#004f91", cursor: "pointer", minWidth: 0 }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
+            <button onClick={() => { setCurseur(anCurseur); togglePin(anCurseur); }}
+              title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année"}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
+                background: epingles.includes(anCurseur) ? "#004f91" : "rgba(0,79,145,0.08)", color: epingles.includes(anCurseur) ? "#fff" : "#004f91", fontFamily: "var(--font-google-sans)" }}>
+              <Pin size={10} fill={epingles.includes(anCurseur) ? "#fff" : "none"} />
+              {epingles.includes(anCurseur) ? "Épinglée" : "Épingler"}
+            </button>
+          </div>
+
+          {/* En-tête du tableau */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+            <span style={{ width: 14, flexShrink: 0 }} />
+            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
+            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
+            <span style={{ width: 58, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+            <span style={{ flex: 1 }} />
+          </div>
+
+          {/* Lignes : épinglées · curseur · 7 dernières années non nulles */}
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+            {lignes.map(l => <Ligne key={`${l.type}-${l.annee}`} annee={l.annee} type={l.type} />)}
+          </div>
+
+          {/* Bilan de comparaison entre années épinglées */}
+          {bilan && (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5 }}>
+              <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{bilan.de} → {bilan.vers}</span>
+              <span style={{ fontWeight: 800, color: bilan.diff > 0 ? "#188038" : bilan.diff < 0 ? "#dc2626" : "#9aa5b4" }}>
+                {bilan.diff > 0 ? "▲" : bilan.diff < 0 ? "▼" : "="} {bilan.diff > 0 ? "+" : ""}{fmtNombre(bilan.diff)}
+                {bilan.pct !== null && ` (${bilan.pct > 0 ? "+" : ""}${bilan.pct.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %)`}
+              </span>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -1125,12 +1253,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              {GRAPHES_PAYS.map(g=>(
+              {GRAPHES_PAYS.map(g=>{
+                // Greenfield / M&A hors comparatif : les « nombres de projets »
+                // s'affichent en tableau explorable (curseur + épinglage)
+                if (stActif && g.unite === "nombre" && !estComparatif)
+                  return <CarteTableauAnnees key={`${g.id}-${paysSelec}`} titre={g.titre}
+                    rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
+                return (
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                   <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
-              ))}
+                );
+              })}
               {grapheExtras && <>
                 {/* Flux nets = entrants − sortants */}
                 <GrapheCard titre="Flux nets des IDE · entrants − sortants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
