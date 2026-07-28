@@ -300,7 +300,6 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
   const anMin = valides.length ? valides[0].annee : 0;
   const anMax = valides.length ? valides[valides.length - 1].annee : 0;
   const anCurseur = Math.round(posCurseur ?? anMax);
-  const vCurseur = valMap.get(anCurseur);
 
   // Variation vs l'année précédente disposant d'une valeur
   const deltaDe = (annee: number): number | null => {
@@ -311,7 +310,6 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
     const prec = avant[avant.length - 1];
     return prec.valeur === 0 ? null : (v - prec.valeur) / Math.abs(prec.valeur) * 100;
   };
-  const deltaCurseur = deltaDe(anCurseur);
 
   const togglePin = (annee: number) =>
     setEpingles(prev => prev.includes(annee) ? prev.filter(a => a !== annee) : [...prev, annee]);
@@ -372,15 +370,11 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
         <>
           {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
-            <input type="range" min={anMin} max={anMax} step="any" value={posCurseur ?? anMax}
-              onChange={e => setPosCurseur(Number(e.target.value))}
+            <input type="range" min={anMin} max={anMax} step="any" defaultValue={anMax}
+              onInput={e => setPosCurseur(Number((e.target as HTMLInputElement).value))}
               aria-label="Explorer une année"
               style={{ flex: 1, accentColor: "#004f91", cursor: "pointer", minWidth: 0 }} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,79,145,0.08)", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91" }}>{anCurseur}</span>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: vCurseur === undefined ? "#9aa5b4" : "#1a1a2e" }}>{vCurseur === undefined ? "—" : fmtNombre(vCurseur)}</span>
-              <Delta delta={deltaCurseur} taille={9} />
-            </span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
             <button onClick={() => togglePin(anCurseur)}
               title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
