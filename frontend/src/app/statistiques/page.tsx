@@ -1464,11 +1464,11 @@ export default function StatistiquesPage() {
   const valeur = (paysId: number, code: string, annee: number) =>
     donnees.find(d => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
 
-  // Indicateurs proposés au remplacement (non épinglés), groupés par catégorie
+  // Indicateurs proposés au remplacement (non épinglés), liste à plat
   const pickerItems: PickerItem[] = indicateurs.filter(i => !kpisEpingles.includes(i.code)).map(i => ({
     id: i.code, label: i.libelle, badge: refAnnee ? String(refAnnee) : null,
     valeur: fmt(selection.length ? valeur(selection[0], i.code, refAnnee) : null, i.unite),
-    title: i.libelle, groupe: i.categorie,
+    title: i.libelle,
   }));
 
   // État des filtres (pour badge + réinitialisation)
