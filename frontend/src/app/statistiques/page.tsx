@@ -702,6 +702,11 @@ function CommercePanel() {
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
   const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; total: number; valeurs: number[] }[] } | null>(null);
+  // Vue Cumul / année des deux tableaux : année choisie + données dédiées
+  const [anneePoids, setAnneePoids] = useState<number | null>(null);
+  const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
+  const [topsAnnee, setTopsAnnee] = useState<typeof tops>(null);
+  const [repartAnnee, setRepartAnnee] = useState<typeof repart>(null);
   const [showTable, setShowTable] = useState(false);
   const TAILLE = 50;
 
@@ -759,6 +764,24 @@ function CommercePanel() {
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
   }, [vue, selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
+
+  // Données d'une année précise pour les tableaux (bascule Cumul / année)
+  const anneePoidsD = useDebounced(anneePoids, 250);
+  const anneeRepartD = useDebounced(anneeRepart, 250);
+  useEffect(() => {
+    if (!selId || anneePoidsD === null) { setTopsAnnee(null); return; }
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneePoidsD) });
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
+      .then(r => r.json()).then(setTopsAnnee).catch(() => setTopsAnnee(null));
+  }, [vue, selId, anneePoidsD, ressSel, ressources.length]);
+  useEffect(() => {
+    if (!selId || anneeRepartD === null) { setRepartAnnee(null); return; }
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneeRepartD) });
+    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
+      .then(r => r.json()).then(setRepartAnnee).catch(() => setRepartAnnee(null));
+  }, [vue, selId, anneeRepartD, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -1059,33 +1082,51 @@ function CommercePanel() {
           );
         })()}
 
-        {/* 4 & 5. Poids des ressources & Concentration */}
+        {/* 4 & 5. Poids des ressources & Concentration — Cumul ou année au curseur */}
         {(() => {
           const expDir = vue === "exportateur";
-          // Poids des ressources : top 8 + « Autres »
+          // Poids des ressources : top 8 + « Autres » (cumul ou année choisie)
+          const topsAff = anneePoids !== null ? topsAnnee : tops;
           let donutData: { label: string; valeur: number }[] = [];
-          if (tops && tops.ressources.length) {
-            const top8 = tops.ressources.slice(0, 8);
+          if (topsAff && topsAff.ressources.length) {
+            const top8 = topsAff.ressources.slice(0, 8);
             donutData = top8.map(r => ({ label: r.ressource, valeur: r.valeur }));
-            const autres = (tops.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
-            if (autres > 0.0001 && tops.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
+            const autres = (topsAff.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
+            if (autres > 0.0001 && topsAff.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
           }
-          const parts = repart?.partenaires || [];
-          const resLabels = repart?.ressources || [];
-          if (!donutData.length && !parts.length) return null;
+          const repartAff = anneeRepart !== null ? repartAnnee : repart;
+          const parts = repartAff?.partenaires || [];
+          const resLabels = repartAff?.ressources || [];
+          // Les cards restent tant que le cumul a des données (une année creuse affiche un état vide)
+          if (!(tops?.ressources?.length) && !(repart?.partenaires?.length)) return null;
           const carte: React.CSSProperties = { background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0 };
+          const titreStyle: React.CSSProperties = { fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0 };
+          const enTete: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" };
+          const Vide = ({ annee }: { annee: number }) => (
+            <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "22px 0" }}>Aucune donnée pour {annee}.</p>
+          );
           return (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
-              {donutData.length > 0 && (
+              {(tops?.ressources?.length || 0) > 0 && (
                 <div style={carte}>
-                  <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: "0 0 12px" }}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
-                  <TableauPoidsRessources data={donutData} total={tops?.total || 0} />
+                  <div style={enTete}>
+                    <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
+                    <BarreCumulAnnee annees={anneesTabs} annee={anneePoids} onAnnee={setAnneePoids} />
+                  </div>
+                  {donutData.length > 0
+                    ? <TableauPoidsRessources data={donutData} total={topsAff?.total || 0} />
+                    : anneePoids !== null && <Vide annee={anneePoids} />}
                 </div>
               )}
-              {parts.length > 0 && (
+              {(repart?.partenaires?.length || 0) > 0 && (
                 <div style={carte}>
-                  <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: "0 0 12px" }}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
-                  <TableauPartenairesRessources partenaires={parts} ressources={resLabels} />
+                  <div style={enTete}>
+                    <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
+                    <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} />
+                  </div>
+                  {parts.length > 0
+                    ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} />
+                    : anneeRepart !== null && <Vide annee={anneeRepart} />}
                 </div>
               )}
             </div>
@@ -1095,6 +1136,28 @@ function CommercePanel() {
       <ModalDonneesCommerce open={showTable} onClose={() => setShowTable(false)} selId={selId} vue={vue}
         nomPays={selPays?.nom || "—"} anneesTabs={anneesTabs} />
     </div>
+  );
+}
+
+// ── Bascule Cumul / année des tableaux de flux ────────────────────────────────
+// « Cumul » par défaut ; le curseur (continu, non contrôlé : fluidité native)
+// bascule sur l'année visée, la pastille Cumul revient à l'agrégat.
+function BarreCumulAnnee({ annees, annee, onAnnee }: { annees: number[]; annee: number | null; onAnnee: (a: number | null) => void }) {
+  if (annees.length < 2) return null;
+  const min = annees[0], max = annees[annees.length - 1];
+  const chip = (actif: boolean): React.CSSProperties => ({
+    fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
+    background: actif ? "#004f91" : "rgba(0,79,145,0.08)", color: actif ? "#fff" : "#004f91", fontFamily: "var(--font-google-sans)",
+  });
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
+      <button onClick={() => onAnnee(null)} style={chip(annee === null)}>Cumul</button>
+      <input type="range" min={min} max={max} step="any" defaultValue={max}
+        onInput={e => onAnnee(Math.round(Number((e.target as HTMLInputElement).value)))}
+        aria-label="Explorer une année"
+        style={{ width: 170, accentColor: "#004f91", cursor: "pointer" }} />
+      {annee !== null && <span style={{ ...chip(true), cursor: "default" }}>{annee}</span>}
+    </span>
   );
 }
 
@@ -1127,13 +1190,6 @@ function TableauPoidsRessources({ data, total }: { data: { label: string; valeur
           </div>
         );
       })}
-      {/* Total */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 8px", borderRadius: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.12)", marginTop: 3 }}>
-        <span style={{ flex: 1, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: "#004f91", textTransform: "uppercase" }}>Total</span>
-        <span style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(somme)}</span>
-        <span style={{ width: 56, fontSize: 10.5, fontWeight: 700, color: "#004f91", textAlign: "right", flexShrink: 0 }}>100 %</span>
-        <span style={{ width: "34%", flexShrink: 0 }} />
-      </div>
     </div>
   );
 }
@@ -1150,7 +1206,7 @@ function TableauPartenairesRessources({ partenaires, ressources }: {
           <tr>
             <th style={{ textAlign: "left", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Pays</th>
             {ressources.map(r => (
-              <th key={r} title={r} style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r}</th>
+              <th key={r} style={{ textAlign: "right", verticalAlign: "bottom", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", lineHeight: 1.35 }}>{r}</th>
             ))}
             <th style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
           </tr>
