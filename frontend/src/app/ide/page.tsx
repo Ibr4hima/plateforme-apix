@@ -422,6 +422,99 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
 }
 
 
+// ── Card tableau comparatif des nombres de projets (vue Pays, comparatif) ─────
+// Une ligne par pays (pastille couleur · nombre · Δ vs N-1 · part · barre),
+// triées par valeur. Le curseur bascule entre le Cumul de la période (tout à
+// droite) et chaque année en glissant vers la gauche — sans requête, tout est
+// déjà chargé.
+function CarteTableauComparatif({ titre, series }: {
+  titre: string;
+  series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
+}) {
+  const [annee, setAnnee] = useState<number | null>(null);
+
+  const annees = [...new Set(series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee)))].sort((a, b) => a - b);
+  const n = annees.length;
+  // Valeur d'un pays : somme de la période (Cumul) ou valeur de l'année
+  const valeurDe = (s: typeof series[number]): number | null => {
+    if (annee === null) {
+      const vs = s.data.filter(d => d.valeur !== null) as { annee: number; valeur: number }[];
+      return vs.length ? vs.reduce((t, d) => t + d.valeur, 0) : null;
+    }
+    return s.data.find(d => d.annee === annee)?.valeur ?? null;
+  };
+  const deltaDe = (s: typeof series[number]): number | null => {
+    if (annee === null) return null;
+    const v = s.data.find(d => d.annee === annee)?.valeur;
+    if (v === null || v === undefined) return null;
+    const avant = s.data.filter(d => d.valeur !== null && d.annee < annee) as { annee: number; valeur: number }[];
+    if (!avant.length) return null;
+    const prec = avant[avant.length - 1];
+    return prec.valeur === 0 ? null : (v - prec.valeur) / Math.abs(prec.valeur) * 100;
+  };
+  const lignes = series.map(s => ({ ...s, valeur: valeurDe(s), delta: deltaDe(s) }))
+    .sort((a, b) => (b.valeur ?? -1) - (a.valeur ?? -1));
+  const total = lignes.reduce((t, l) => t + Math.max(0, l.valeur ?? 0), 0);
+  const max = Math.max(1e-9, ...lignes.map(l => l.valeur ?? 0));
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+        {n >= 2 && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <input type="range" min={0} max={n} step="any" defaultValue={n}
+              onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); setAnnee(i >= n ? null : annees[i]); }}
+              aria-label="Cumul ou année"
+              style={{ width: 150, accentColor: "#004f91", cursor: "pointer" }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" as const }}>
+              {annee ?? "Cumul"}
+            </span>
+          </span>
+        )}
+      </div>
+
+      {/* En-tête */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const }}>Pays</span>
+        <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
+        <span style={{ width: 56, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+        <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
+        <span style={{ width: "30%", flexShrink: 0 }} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+        {lignes.map((l, i) => {
+          const zebre = i % 2 === 1;
+          return (
+            <div key={l.nom} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 8, background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
+              <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: l.couleur, flexShrink: 0 }} />
+                <span title={l.nom} style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{l.nom}</span>
+              </span>
+              <span style={{ width: 44, fontSize: 11.5, fontWeight: 800, color: l.valeur === null ? "#C5BFBB" : "#004f91", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{l.valeur === null ? "—" : fmtNombre(l.valeur)}</span>
+              <span style={{ width: 56, fontSize: 9.5, fontWeight: 700, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const,
+                color: l.delta === null ? "#C5BFBB" : l.delta > 0 ? "#188038" : l.delta < 0 ? "#dc2626" : "#9aa5b4" }}>
+                {l.delta === null ? "—" : `${l.delta > 0 ? "▲" : l.delta < 0 ? "▼" : "="} ${Math.abs(l.delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
+              </span>
+              <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right" as const, flexShrink: 0 }}>
+                {l.valeur !== null && total > 0 ? `${(Math.max(0, l.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
+              </span>
+              <div style={{ width: "30%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                {l.valeur !== null && l.valeur > 0 && <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99, background: l.couleur, opacity: 0.85 }} />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {annees.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "16px 0" }}>Aucune donnée</p>}
+    </div>
+  );
+}
+
+
 // ── Export Excel (XLSX) ───────────────────────────────────────────────────────
 async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: string, sousType: string = "fluxstock") {
   // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
@@ -1273,6 +1366,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 if (stActif && g.unite === "nombre" && !estComparatif)
                   return <CarteTableauAnnees key={`${g.id}-${paysSelec}`} titre={g.titre}
                     rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
+                // En comparatif : tableau par pays (Cumul ⇆ année au curseur)
+                if (stActif && g.unite === "nombre" && estComparatif)
+                  return <CarteTableauComparatif key={`${g.id}-${paysAvecCouleur.map(p=>p.nom).join(",")}`} titre={g.titre} series={g.series}/>;
                 return (
                 <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
