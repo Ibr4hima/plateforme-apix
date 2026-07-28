@@ -209,6 +209,86 @@ function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChange }: {
   );
 }
 
+// ── Bouton « + » d'ajout de groupement (vue Monde) ────────────────────────────
+// Même fonctionnement que l'ajout de pays : popover avec recherche, sections
+// groupées, reste ouvert pour enchaîner, fermeture automatique à 4. Seuls les
+// éléments compatibles avec la famille active sont proposés.
+function BtnAjoutGroupement({ groupements, exclus, famille, plein, onPick, onOpenChange }: {
+  groupements: { code: string; nom_fr: string; categorie: string }[];
+  exclus: string[]; famille: "cont" | "groupe" | null; plein: boolean;
+  onPick: (code: string) => void; onOpenChange?: (open: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQ(""); } };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+  useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
+  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
+  useEffect(() => { if (plein && open) { setOpen(false); setQ(""); } }, [plein, open]);
+
+  const match = (g: { code: string; nom_fr: string }) => !exclus.includes(g.code) && (!q || g.nom_fr.toLowerCase().includes(q.toLowerCase()) || g.code.toLowerCase().includes(q.toLowerCase()));
+  const continents = groupements.filter(g => g.categorie === "continent");
+  // Sections compatibles : continents & régions (par continent) et/ou groupements
+  const sections: { label: string; items: { code: string; nom_fr: string }[] }[] = [];
+  if (famille !== "groupe") {
+    const cs = continents.filter(match);
+    if (cs.length) sections.push({ label: "Continents", items: cs });
+    continents.forEach(cont => {
+      const regs = groupements.filter(g => g.categorie === cont.nom_fr).filter(match);
+      if (regs.length) sections.push({ label: cont.nom_fr, items: regs });
+    });
+  }
+  if (famille !== "cont") {
+    const gs = groupements.filter(g => g.categorie === "groupe").filter(match);
+    if (gs.length) sections.push({ label: "Groupements", items: gs });
+  }
+
+  return (
+    <div ref={ref} style={{ position:"relative", display:"inline-flex" }}>
+      <button onClick={() => !plein && setOpen(o => !o)} disabled={plein}
+        aria-label="Comparer avec d'autres groupements" title={plein ? "4 sélections maximum" : "Comparer avec d'autres groupements"}
+        style={{ width:28, height:28, borderRadius:999, border:`1.5px dashed ${plein ? "#D8D4D0" : open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
+          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: plein ? "#C5BFBB" : "#004f91",
+          cursor: plein ? "not-allowed" : "pointer",
+          display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
+        onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; } }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "#D8D4D0" : "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        <Plus size={14}/>
+      </button>
+      {open && (
+        <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:60, width:300,
+          border:"1px solid #E4E1DE", borderRadius:12, background:"#fff", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
+          <div style={{ padding:8, borderBottom:"1px solid #F2F0EF" }}>
+            <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un groupement…"
+              style={{ width:"100%", boxSizing:"border-box" as const, background:"#FCFCFB", borderWidth:1, borderStyle:"solid", borderColor:"#E2E1DE", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+          </div>
+          <div style={{ maxHeight:240, overflowY:"auto" as const }}>
+            {sections.map(sec => (
+              <div key={sec.label}>
+                <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{sec.label}</div>
+                {sec.items.map(g => (
+                  <button key={g.code} onClick={() => { onPick(g.code); setQ(""); inputRef.current?.focus(); }}
+                    style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500 }}>{g.nom_fr}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {sections.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"14px 0" }}>Aucun résultat</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SousTypeNav({ value, onChange, options }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void; options?: readonly { v: "fluxstock"|"greenfield"|"fusion"; l: string }[] }) {
   return (
     <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:3, gap:3, boxShadow:"var(--ombre-1)" }}>
@@ -2133,6 +2213,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
   // Raisonner par continents OU par régions (sélections séparées)
   const [contMode,    setContMode]    = useState<"continent"|"region">("continent");
+  // Popover d'ajout de groupement ouvert → le contenu est flouté derrière
+  const [ajoutOpen,   setAjoutOpen]   = useState(false);
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
 
@@ -2420,23 +2502,37 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         </div>
         <div style={{ marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-            <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
-            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Monde</h2>
+            {grpSelec.length >= 2 ? (
+              /* Comparatif : toutes les sélections en pastilles retirables */
+              grpAvecCouleur.map((g,i)=>(
+                <BadgeSerie key={g.nom} i={i} couleur={g.couleur} title={g.label}>
+                  {g.abrege}
+                  <button onClick={()=>setGrpSelec(p=>p.filter(c=>c!==g.nom))} aria-label={`Retirer ${g.label}`}
+                    style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", color:"inherit" }}>
+                    <X size={11}/>
+                  </button>
+                </BadgeSerie>
+              ))
+            ) : (
+              /* Monde ou sélection unique : le titre EST le choix */
+              <>
+                <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
+              </>
+            )}
+            <BtnAjoutGroupement groupements={groupements} exclus={grpSelec} famille={familleActive}
+              plein={grpSelec.length>=4}
+              onPick={code=>setGrpSelec(p=>p.includes(code)||p.length>=4?p:[...p,code])}
+              onOpenChange={setAjoutOpen}/>
             <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
                 : `${perMin} — ${perMax}`}
             </BadgePeriode>
           </div>
-          {grpAvecCouleur.length>0 && (
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
-              {grpAvecCouleur.map((g,i)=>(
-                <BadgeSerie key={g.nom} i={i} couleur={g.couleur} title={g.label}>{g.abrege}</BadgeSerie>
-              ))}
-            </div>
-          )}
         </div>
 
+        <div style={{ filter: ajoutOpen ? "blur(4px)" : "none", opacity: ajoutOpen ? 0.6 : 1, pointerEvents: ajoutOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
         {grpSelec.length===0 ? (
           <VueMondeGlobale sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}/>
         ) : loading ? (
@@ -2468,6 +2564,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           )}
           </div>
         )}
+        </div>
       </div>
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={grpAvecCouleur} sousType={sousType} />
     </div>
