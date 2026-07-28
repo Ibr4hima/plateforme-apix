@@ -207,6 +207,77 @@ function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChange }: {
   );
 }
 
+// ── Remplacement d'un KPI depuis sa card ──────────────────────────────────────
+// Icône « échanger » (Material Symbols « cached ») révélée au survol de la
+// card : popover listant les KPIs non affichés, groupés par catégorie, avec
+// recherche et aperçu de la valeur — un clic remplace le KPI de la card.
+const IconeCached = ({ size = 13 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+  </svg>
+);
+
+function PickerKpi({ kpis, dernAnnee, alignDroite, onPick, onClose }: {
+  kpis: KpiResult[];               // KPIs proposés (non épinglés), dans l'ordre canonique
+  dernAnnee: number;               // pour résoudre « — dernière année » en pastille
+  alignDroite?: boolean;           // ancrage à droite pour les cards de fin de ligne
+  onPick: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const clic = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    const touche = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("mousedown", clic);
+    document.addEventListener("keydown", touche);
+    return () => { document.removeEventListener("mousedown", clic); document.removeEventListener("keydown", touche); };
+  }, [onClose]);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const dispo = kpis.filter(k => !q || k.label.toLowerCase().includes(q.toLowerCase()));
+  // Groupes par catégorie, dans l'ordre d'apparition de la liste canonique
+  const groupes: [string, KpiResult[]][] = [];
+  dispo.forEach(k => {
+    const g = groupes.find(([c]) => c === k.categorie);
+    if (g) g[1].push(k); else groupes.push([k.categorie, [k]]);
+  });
+
+  return (
+    <div ref={ref} onClick={e => e.stopPropagation()}
+      style={{ position:"absolute", top:"calc(100% + 8px)", ...(alignDroite ? { right: 0 } : { left: 0 }), zIndex:60, width:320,
+        border:"1px solid #E4E1DE", borderRadius:12, background:"#fff", boxShadow:"var(--ombre-2)", overflow:"hidden", cursor:"default", textAlign:"left" as const }}>
+      <div style={{ padding:8, borderBottom:"1px solid #F2F0EF" }}>
+        <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un indicateur…"
+          style={{ width:"100%", boxSizing:"border-box" as const, background:"#FCFCFB", borderWidth:1, borderStyle:"solid", borderColor:"#E2E1DE", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+      </div>
+      <div style={{ maxHeight:262, overflowY:"auto" as const }}>
+        {groupes.map(([categorie, items]) => (
+          <div key={categorie}>
+            <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0, zIndex:1 }}>{categorie}</div>
+            {items.map(k => {
+              const { main, badge } = splitKpiLabel(k.label, dernAnnee);
+              return (
+                <button key={k.id} title={k.description} onClick={() => onPick(k.id)}
+                  style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s", fontFamily:"var(--font-google-sans)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>
+                  {badge && <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}
+                  {/* Aperçu de la valeur : on voit ce qu'on obtient avant de remplacer */}
+                  <span style={{ fontSize:11.5, fontWeight:700, color:"#004f91", whiteSpace:"nowrap" as const, flexShrink:0 }}>{fmtKpi(k)}</span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
+        {dispo.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"14px 0" }}>Aucun indicateur trouvé</p>}
+      </div>
+    </div>
+  );
+}
+
 function SousTypeNav({ value, onChange, options }: { value: string; onChange: (v: "fluxstock"|"greenfield"|"fusion") => void; options?: readonly { v: "fluxstock"|"greenfield"|"fusion"; l: string }[] }) {
   return (
     <div style={{ display:"inline-flex", background:"#fff", border:"1px solid #ECEAE7", borderRadius:999, padding:3, gap:3, boxShadow:"var(--ombre-1)" }}>
@@ -642,9 +713,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const anneesSpecD = useDebounced(anneesSpec, 300);
   // Alignement sur les bornes réelles dès qu'elles sont connues
   useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
-  const [kpisOrdre,   setKpisOrdre]   = useState<string[]>(KPI_25_IDS);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
+  // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
+  const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
   const [openConts,    setOpenConts]    = useState<Set<string>>(new Set());
   const [sidebarOpen,  setSidebarOpen]  = useState(true);
@@ -679,22 +751,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const donneesRef = estComparatif ? donnees.filter((d: any) => d.pays === paysSelec) : donnees;
 
   const tousKpis    = calculerKpis(donneesRef);
-  const kpisSidebar = kpisOrdre.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
   const kpisCards   = kpisEpingles.map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
+  // KPIs proposés au remplacement : les 25 canoniques non épinglés
+  const kpisDispo   = KPI_25_IDS.filter(id=>!kpisEpingles.includes(id)).map(id=>tousKpis.find(k=>k.id===id)).filter(Boolean) as KpiResult[];
+  const dernAnnee   = modeAnnees==="specifiques"&&anneesSpec.length>0?anneesSpec[anneesSpec.length-1]:anneeMax;
+  // Remplacement en place (slot occupé) ou ajout (slot vide) du KPI choisi
+  const remplacerKpi = (slot: number, id: string) => {
+    setKpisEpingles(prev => slot < prev.length ? prev.map((k,i)=>i===slot?id:k) : [...prev, id]);
+    setPickerSlot(-1);
+  };
 
   const filteredPays = searchPays ? paysDispo.filter(p=>p.nom.toLowerCase().includes(searchPays.toLowerCase())) : paysDispo;
   const groupedPays  = groupByContinent(filteredPays);
   const toggleCont   = (c: string) => setOpenConts(prev => { const n=new Set(prev); n.has(c)?n.delete(c):n.add(c); return n; });
-
-  const toggleEpingle = (id: string) => {
-    setKpisEpingles(prev => {
-      if (prev.includes(id)) return prev.filter(k=>k!==id);
-      if (prev.length >= 4) return prev;
-      return [...prev, id];
-    });
-  };
-
-  // Drag & drop handlers
 
   // Une série par pays sélectionné (1 seule en mode simple, jusqu'à 4 en comparatif)
   const buildSerie = (dir: string, ind: string) => paysAvecCouleur.map(p => ({
@@ -933,32 +1002,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   </div>
                 )}
               </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
-              {/* KPI — épinglage réservé aux Flux & Stocks (KPIs fixes pour
-                  greenfield/M&A) et masqué en mode comparatif (pas de KPIs) */}
-              {!stActif && !estComparatif && <div style={{ marginBottom:18 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Key Performance Indicators</span>
-                  <span style={{ fontSize:11, fontWeight:600, color:kpisEpingles.length>=4?"#004f91":"#9aa5b4", background:kpisEpingles.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{kpisEpingles.length}/4</span>
-                </div>
-                <div style={{ display:"flex", flexDirection:"column" as const, gap:2, maxHeight:200, overflowY:"auto" as const }}>
-                  {kpisSidebar.map((k,i)=>{
-                    const epingle = kpisEpingles.includes(k.id);
-                    const disabled = !epingle && kpisEpingles.length >= 4;
-                    return (
-                      <div key={k.id}
-                        title={k.description}
-                        onClick={()=>{ !disabled&&toggleEpingle(k.id); }}
-                        style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, background:"transparent", cursor:disabled?"not-allowed":"pointer", opacity:disabled?0.3:1, transition:"background 0.1s" }}
-                        onMouseEnter={ev=>{ ev.currentTarget.style.background="#F8F7F6"; }}
-                        onMouseLeave={ev=>{ ev.currentTarget.style.background="transparent"; }}>
-                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${epingle?"#004f91":"#C5BFBB"}`, background:epingle?"#004f91":"transparent", flexShrink:0 }}/>
-                        {(()=>{ const dernAnnee=modeAnnees==="specifiques"&&anneesSpec.length>0?anneesSpec[anneesSpec.length-1]:anneeMax; const {main,badge}=splitKpiLabel(k.label,dernAnnee); return (<><span style={{ fontSize:12, color:"#4a5568", flex:1, minWidth:0, lineHeight:1.35, fontWeight:epingle?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>{badge&&<span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}</>); })()}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>}
           </div>}
         </aside>
 
@@ -1046,16 +1089,29 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 </div>
               </div>
             )) : <>
-            {kpisCards.map(k=>{
+            <style>{`.kpi-swap{opacity:0;transform:rotate(0deg);transition:opacity .15s, transform .3s ease, background .15s, color .15s;}
+.kpi-card:hover .kpi-swap,.kpi-swap[data-open="true"]{opacity:1;}
+.kpi-swap:hover,.kpi-swap[data-open="true"]{transform:rotate(180deg);}`}</style>
+            {kpisCards.map((k,slot)=>{
               const indicatif = getIndicatif(k);
               const { delta, ref } = getVariation(k);
+              const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={k.id} onClick={()=>setKpiActif(k)}
-                  style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0 }}
+                <div key={k.id} className="kpi-card" onClick={()=>setKpiActif(k)}
+                  style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.35)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgba(16,26,46,0.12)"; }}>
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)"; }}>
+                  {/* Remplacer ce KPI — icône révélée au survol de la card */}
+                  <button className="kpi-swap" data-open={pickerOuvert}
+                    aria-label="Remplacer cet indicateur" title="Remplacer cet indicateur"
+                    onClick={e=>{ e.stopPropagation(); setPickerSlot(pickerOuvert?-1:slot); }}
+                    style={{ position:"absolute", top:8, right:8, width:24, height:24, borderRadius:999, border:"none",
+                      background:pickerOuvert?"#004f91":"rgba(0,79,145,0.08)", color:pickerOuvert?"#fff":"#004f91",
+                      display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
+                    <IconeCached/>
+                  </button>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
-                    <div style={{ marginBottom:7 }}>
+                    <div style={{ marginBottom:7, paddingRight:26 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
                         <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
                         {k.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{k.annee}</span>}
@@ -1070,15 +1126,30 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {ref}</span>
                     </>) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{indicatif}</p> : null)}
                   </div>
+                  {pickerOuvert && (
+                    <PickerKpi kpis={kpisDispo} dernAnnee={dernAnnee} alignDroite={slot>=2}
+                      onPick={id=>remplacerKpi(slot,id)} onClose={()=>setPickerSlot(-1)}/>
+                  )}
                 </div>
               );
             })}
-            {Array.from({length:Math.max(0,4-kpisCards.length)}).map((_,i)=>(
-              <div key={`empty-${i}`} style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1.5px dashed #E8E5E3", display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90 }}>
-                <span style={{ fontSize:20, color:"#C5BFBB", lineHeight:1 }}>+</span>
-                <span style={{ fontSize:10, color:"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Choisir dans<br/>le filtre</span>
-              </div>
-            ))}
+            {Array.from({length:Math.max(0,4-kpisCards.length)}).map((_,i)=>{
+              const slot = kpisCards.length + i;
+              const pickerOuvert = pickerSlot === slot;
+              return (
+                <div key={`empty-${i}`} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
+                  style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"#004f91":"#E8E5E3"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; }}
+                  onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="#E8E5E3"; }}>
+                  <span style={{ fontSize:20, color:pickerOuvert?"#004f91":"#C5BFBB", lineHeight:1 }}>+</span>
+                  <span style={{ fontSize:10, color:pickerOuvert?"#004f91":"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
+                  {pickerOuvert && (
+                    <PickerKpi kpis={kpisDispo} dernAnnee={dernAnnee} alignDroite={slot>=2}
+                      onPick={id=>remplacerKpi(slot,id)} onClose={()=>setPickerSlot(-1)}/>
+                  )}
+                </div>
+              );
+            })}
             </>}
           </div>}
 
