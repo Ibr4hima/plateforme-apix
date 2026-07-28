@@ -12,6 +12,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
@@ -1366,6 +1367,8 @@ export default function StatistiquesPage() {
   const [periodeTouchee, setPeriodeTouchee] = useState(false);
   // KPI (indicateurs épinglés)
   const [kpisEpingles, setKpisEpingles] = useState<string[]>([]);
+  // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
+  const [pickerSlot, setPickerSlot] = useState(-1);
   // Popover d'ajout de pays ouvert → floute la zone KPIs + graphes derrière lui
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -1415,7 +1418,11 @@ export default function StatistiquesPage() {
   }, [anneesDispo, periodeTouchee]);
 
   const toggleCont = (c: string) => setOpenConts(s => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; });
-  const toggleEpingle = (code: string) => setKpisEpingles(prev => prev.includes(code) ? prev.filter(c => c !== code) : (prev.length >= MAX_KPI ? prev : [...prev, code]));
+  // Remplacement en place (slot occupé) ou ajout (slot vide) du KPI choisi
+  const remplacerKpi = (slot: number, code: string) => {
+    setKpisEpingles(prev => slot < prev.length ? prev.map((c, i) => i === slot ? code : c) : [...prev, code]);
+    setPickerSlot(-1);
+  };
 
   // Ajout/retrait d'un pays : bascule automatiquement en comparatif au 2ᵉ pays ;
   // il en reste toujours au moins un ; plafond à MAX_SEL séries.
@@ -1452,10 +1459,17 @@ export default function StatistiquesPage() {
       : anneesDispo.filter(a => a >= anneeMin && a <= anneeMax)
   ), [anneesDispo, modeAnnees, anneesSpec, anneeMin, anneeMax]);
   const refAnnee = anneesActives[anneesActives.length - 1] ?? anneeMax;
-  const indicateursAffiches = indicateurs.filter(i => kpisEpingles.includes(i.code));
+  const indicateursAffiches = kpisEpingles.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
 
   const valeur = (paysId: number, code: string, annee: number) =>
     donnees.find(d => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
+
+  // Indicateurs proposés au remplacement (non épinglés), groupés par catégorie
+  const pickerItems: PickerItem[] = indicateurs.filter(i => !kpisEpingles.includes(i.code)).map(i => ({
+    id: i.code, label: i.libelle, badge: refAnnee ? String(refAnnee) : null,
+    valeur: fmt(selection.length ? valeur(selection[0], i.code, refAnnee) : null, i.unite),
+    title: i.libelle, groupe: i.categorie,
+  }));
 
   // État des filtres (pour badge + réinitialisation)
   const paysChange = selection.length > 1 || selection[0] !== senId;
@@ -1646,31 +1660,6 @@ export default function StatistiquesPage() {
                 </div>
               )}
             </div>
-            <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
-            {/* KPI */}
-            <div style={{ marginBottom: 18 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={LBL}>Key Performance Indicators</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: kpisEpingles.length >= MAX_KPI ? "#004f91" : "#9aa5b4", background: kpisEpingles.length >= MAX_KPI ? "rgba(0,79,145,0.08)" : "#F2F0EF", padding: "2px 8px", borderRadius: 999 }}>{kpisEpingles.length}/{MAX_KPI}</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 240, overflowY: "auto" }}>
-                {indicateurs.map(ind => {
-                  const epingle = kpisEpingles.includes(ind.code);
-                  const disabled = !epingle && kpisEpingles.length >= MAX_KPI;
-                  return (
-                    <div key={ind.code} title={ind.libelle}
-                      onClick={() => { if (!disabled) toggleEpingle(ind.code); }}
-                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, background: "transparent", cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.3 : 1, transition: "background 0.1s" }}
-                      onMouseEnter={ev => { ev.currentTarget.style.background = "#F8F7F6"; }}
-                      onMouseLeave={ev => { ev.currentTarget.style.background = "transparent"; }}>
-                      <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${epingle ? "#004f91" : "#C5BFBB"}`, background: epingle ? "#004f91" : "transparent", flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, color: "#4a5568", flex: 1, minWidth: 0, lineHeight: 1.35, fontWeight: epingle ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ind.libelle}</span>
-                      {refAnnee ? <span style={{ fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{refAnnee}</span> : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>}
         </aside>
 
@@ -1732,37 +1721,56 @@ export default function StatistiquesPage() {
 
                   {/* KPIs + graphes — floutés tant que le popover d'ajout de pays est ouvert */}
                   <div style={{ filter: popoverOpen ? "blur(4px)" : "none", opacity: popoverOpen ? 0.6 : 1, pointerEvents: popoverOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
-                    {/* KPI cards — uniquement en vue pays (les KPIs ne concernent que le pays de référence) */}
+                    {/* KPI cards — uniquement en vue pays (les KPIs ne concernent que le pays de référence),
+                        remplaçables via l'icône révélée au survol */}
                     {!estComparatif && (
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
-                        {indicateursAffiches.map(ind => {
+                        <style>{STYLE_KPI_SWAP}</style>
+                        {indicateursAffiches.map((ind, slot) => {
                           const v = valeur(selection[0], ind.code, refAnnee);
                           const prec = valeur(selection[0], ind.code, refAnnee - 1);
+                          const pickerOuvert = pickerSlot === slot;
                           return (
-                            <div key={ind.code} onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
-                              style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0 }}
+                            <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
+                              style={{ position: "relative", background: "#fff", borderRadius: 14, padding: "13px 14px", border: `1px solid ${pickerOuvert ? "rgba(0,79,145,0.35)" : "rgba(16,26,46,0.12)"}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0, zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
-                              <div style={{ marginBottom: 7 }}>
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgba(0,79,145,0.35)" : "rgba(16,26,46,0.12)"; }}>
+                              <BtnSwapKpi ouvert={pickerOuvert} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)} />
+                              <div style={{ marginBottom: 7, paddingRight: 26 }}>
                                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
                                 <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
                               </div>
                               <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
                               <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
+                              {pickerOuvert && (
+                                <PickerKpi items={pickerItems} alignDroite={slot >= 2}
+                                  onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
+                              )}
                             </div>
                           );
                         })}
-                        {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => (
-                          <div key={`empty-${i}`} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1.5px dashed #E8E5E3", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90 }}>
-                            <span style={{ fontSize: 20, color: "#C5BFBB", lineHeight: 1 }}>+</span>
-                            <span style={{ fontSize: 10, color: "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Choisir dans<br />le filtre</span>
-                          </div>
-                        ))}
+                        {Array.from({ length: Math.max(0, MAX_KPI - indicateursAffiches.length) }).map((_, i) => {
+                          const slot = indicateursAffiches.length + i;
+                          const pickerOuvert = pickerSlot === slot;
+                          return (
+                            <div key={`empty-${i}`} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)}
+                              style={{ position: "relative", background: "#fff", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "#004f91" : "#E8E5E3"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = "#004f91"; }}
+                              onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "#E8E5E3"; }}>
+                              <span style={{ fontSize: 20, color: pickerOuvert ? "#004f91" : "#C5BFBB", lineHeight: 1 }}>+</span>
+                              <span style={{ fontSize: 10, color: pickerOuvert ? "#004f91" : "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Ajouter un<br />indicateur</span>
+                              {pickerOuvert && (
+                                <PickerKpi items={pickerItems} alignDroite={slot >= 2}
+                                  onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
-                    {/* Graphes */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+                    {/* Graphes — floutés tant qu'un picker de remplacement de KPI est ouvert */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, filter: pickerSlot !== -1 ? "blur(4px)" : "none", opacity: pickerSlot !== -1 ? 0.6 : 1, pointerEvents: pickerSlot !== -1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
                       {graphIndics.map(ind => {
                         const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
                         return (
