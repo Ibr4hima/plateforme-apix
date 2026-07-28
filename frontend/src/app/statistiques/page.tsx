@@ -16,8 +16,6 @@ import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/compon
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
-import { GrapheBarresEmpilees } from "@/components/charts/GrapheBarresEmpilees";
-import { GrapheDonut } from "@/components/charts/GrapheDonut";
 import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -1079,14 +1077,14 @@ function CommercePanel() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {donutData.length > 0 && (
                 <GrapheCard titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} grapheId={`stat_poids_res_${vue}_${selId}`} hideLegend
-                  fullChildren={<GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} height={360} />}>
-                  <GrapheDonut data={donutData} fmt={(v) => fmtUSD(v)} />
+                  fullChildren={<TableauPoidsRessources data={donutData} total={tops?.total || 0} grand />}>
+                  <TableauPoidsRessources data={donutData.slice(0, 5).concat(donutData.length > 5 ? [{ label: "Autres", valeur: donutData.slice(5).reduce((s, d) => s + d.valeur, 0) }] : [])} total={tops?.total || 0} />
                 </GrapheCard>
               )}
               {parts.length > 0 && (
                 <GrapheCard titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} grapheId={`stat_repart_${vue}_${selId}`} hideLegend hideSousTitre
-                  fullChildren={<GrapheBarresEmpilees partenaires={parts} ressources={resLabels} fmt={(v) => fmtUSD(v)} rowH={42} />}>
-                  <GrapheBarresEmpilees partenaires={parts.slice(0, 5)} ressources={resLabels} fmt={(v) => fmtUSD(v)} showLegend={false} />
+                  fullChildren={<TableauPartenairesRessources partenaires={parts} ressources={resLabels} grand />}>
+                  <TableauPartenairesRessources partenaires={parts.slice(0, 5)} ressources={resLabels} />
                 </GrapheCard>
               )}
             </div>
@@ -1095,6 +1093,121 @@ function CommercePanel() {
       </div>
       <ModalDonneesCommerce open={showTable} onClose={() => setShowTable(false)} selId={selId} vue={vue}
         nomPays={selPays?.nom || "—"} anneesTabs={anneesTabs} />
+    </div>
+  );
+}
+
+// ── Tableau du poids des ressources (Flux bilatéraux) ─────────────────────────
+// Ressource · valeur · part du total · barre proportionnelle, total en pied.
+function TableauPoidsRessources({ data, total, grand }: {
+  data: { label: string; valeur: number }[]; total: number; grand?: boolean;
+}) {
+  const somme = total || data.reduce((s, d) => s + d.valeur, 0) || 1;
+  const max = Math.max(1e-9, ...data.map(d => d.valeur));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: grand ? 4 : 2.5, padding: grand ? "4px 2px" : undefined }}>
+      {/* En-tête */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px 2px" }}>
+        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>Ressource</span>
+        <span style={{ width: grand ? 78 : 64, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right" }}>Valeur</span>
+        <span style={{ width: grand ? 52 : 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right" }}>Part</span>
+        <span style={{ width: grand ? 120 : 72, flexShrink: 0 }} />
+      </div>
+      {data.map(d => {
+        const autres = d.label === "Autres";
+        return (
+          <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, transition: "background 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.03)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+            <span title={d.label} style={{ flex: 1, minWidth: 0, fontSize: grand ? 12 : 11, fontWeight: 600, color: autres ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.label}</span>
+            <span style={{ width: grand ? 78 : 64, fontSize: grand ? 11.5 : 10.5, fontWeight: 800, color: autres ? "#9aa5b4" : "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(d.valeur)}</span>
+            <span style={{ width: grand ? 52 : 44, fontSize: grand ? 10.5 : 9.5, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{(d.valeur / somme * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>
+            <div style={{ width: grand ? 120 : 72, height: grand ? 8 : 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ height: "100%", width: `${Math.max(1.5, d.valeur / max * 100)}%`, borderRadius: 99, background: autres ? "#C5BFBB" : "#004f91", opacity: autres ? 0.6 : 0.8 }} />
+            </div>
+          </div>
+        );
+      })}
+      {/* Total */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.12)", marginTop: 3 }}>
+        <span style={{ flex: 1, fontSize: grand ? 11 : 10, fontWeight: 800, letterSpacing: "0.06em", color: "#004f91", textTransform: "uppercase" }}>Total</span>
+        <span style={{ width: grand ? 78 : 64, fontSize: grand ? 11.5 : 10.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(somme)}</span>
+        <span style={{ width: grand ? 52 : 44, fontSize: grand ? 10.5 : 9.5, fontWeight: 700, color: "#004f91", textAlign: "right", flexShrink: 0 }}>100 %</span>
+        <span style={{ width: grand ? 120 : 72, flexShrink: 0 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Tableau des flux par partenaire et ressource (Flux bilatéraux) ────────────
+// Compact : pays · total · 1re ressource du partenaire (nom + part).
+// Grand : matrice complète pays × ressources avec colonne Total.
+function TableauPartenairesRessources({ partenaires, ressources, grand }: {
+  partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[]; grand?: boolean;
+}) {
+  if (grand) {
+    return (
+      <div style={{ overflowX: "auto", padding: "4px 2px" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 560 }}>
+          <thead>
+            <tr>
+              <th style={{ position: "sticky", left: 0, background: "#fff", textAlign: "left", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Pays</th>
+              {ressources.map(r => (
+                <th key={r} title={r} style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r}</th>
+              ))}
+              <th style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {partenaires.map(p => (
+              <tr key={p.nom}
+                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(0,79,145,0.03)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}>
+                <td style={{ position: "sticky", left: 0, background: "inherit", padding: "6px 10px", fontSize: 12, fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{p.nom}</td>
+                {ressources.map((r, ri) => {
+                  const v = p.valeurs[ri] ?? 0;
+                  return <td key={r} style={{ padding: "6px 10px", fontSize: 11, fontWeight: v > 0 ? 600 : 400, color: v > 0 ? "#1a1a2e" : "#C5BFBB", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
+                })}
+                <td style={{ padding: "6px 10px", fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{fmtUSD(p.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  const max = Math.max(1e-9, ...partenaires.map(p => p.total));
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+      {/* En-tête */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px 2px" }}>
+        <span style={{ width: 86, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", flexShrink: 0 }}>Pays</span>
+        <span style={{ width: 64, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Total</span>
+        <span style={{ width: 64, flexShrink: 0 }} />
+        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>1re ressource</span>
+      </div>
+      {partenaires.map(p => {
+        // Ressource dominante du partenaire + sa part dans son total
+        const iMax = p.valeurs.reduce((mi, v, i) => v > (p.valeurs[mi] ?? 0) ? i : mi, 0);
+        const vMax = p.valeurs[iMax] ?? 0;
+        return (
+          <div key={p.nom} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, transition: "background 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.03)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+            <span title={p.nom} style={{ width: 86, fontSize: 11, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{p.nom}</span>
+            <span style={{ width: 64, fontSize: 10.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(p.total)}</span>
+            <div style={{ width: 64, height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ height: "100%", width: `${Math.max(1.5, p.total / max * 100)}%`, borderRadius: 99, background: "#004f91", opacity: 0.8 }} />
+            </div>
+            {vMax > 0 ? (
+              <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "baseline", gap: 5, overflow: "hidden" }}>
+                <span title={ressources[iMax]} style={{ fontSize: 10.5, fontWeight: 600, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ressources[iMax]}</span>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", flexShrink: 0 }}>{p.total > 0 ? `${(vMax / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}</span>
+              </span>
+            ) : <span style={{ flex: 1, fontSize: 10.5, color: "#C5BFBB" }}>—</span>}
+          </div>
+        );
+      })}
     </div>
   );
 }
