@@ -15,7 +15,6 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
-import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -1063,25 +1062,6 @@ function CommercePanel() {
           );
         })()}
 
-        {/* 2 & 3. Top débouchés / origines & Top ressources */}
-        {tops && (tops.partenaires.length > 0 || tops.ressources.length > 0) && (() => {
-          const expDir = vue === "exportateur";
-          const dataPart = tops.partenaires.map(p => ({ label: p.nom, valeur: p.valeur }));
-          const dataRes = tops.ressources.map(r => ({ label: r.ressource, valeur: r.valeur }));
-          return (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-              <GrapheCard titre={expDir ? "Répartition des exportations par pays de destination" : "Répartition des importations par pays d'origine"} grapheId={`stat_top_part_${vue}_${selId}`} hideLegend
-                fullChildren={<GrapheBarresH data={dataPart} fmt={(v) => fmtUSD(v)} rowH={40} />}>
-                <GrapheBarresH data={dataPart.slice(0, 5)} fmt={(v) => fmtUSD(v)} />
-              </GrapheCard>
-              <GrapheCard titre={expDir ? "Classement des ressources exportées" : "Classement des ressources importées"} grapheId={`stat_top_res_${vue}_${selId}`} hideLegend
-                fullChildren={<GrapheBarresH data={dataRes} fmt={(v) => fmtUSD(v)} rowH={40} />}>
-                <GrapheBarresH data={dataRes.slice(0, 5)} fmt={(v) => fmtUSD(v)} />
-              </GrapheCard>
-            </div>
-          );
-        })()}
-
         {/* 4 & 5. Poids des ressources & Concentration — Cumul ou année au curseur */}
         {(() => {
           const expDir = vue === "exportateur";
@@ -1140,23 +1120,22 @@ function CommercePanel() {
 }
 
 // ── Bascule Cumul / année des tableaux de flux ────────────────────────────────
-// « Cumul » par défaut ; le curseur (continu, non contrôlé : fluidité native)
-// bascule sur l'année visée, la pastille Cumul revient à l'agrégat.
+// Un seul curseur continu (non contrôlé : fluidité native) : tout à droite le
+// Cumul de la période, puis en glissant vers la gauche les années en ordre
+// décroissant. La pastille reflète la position (Cumul ou l'année).
 function BarreCumulAnnee({ annees, annee, onAnnee }: { annees: number[]; annee: number | null; onAnnee: (a: number | null) => void }) {
   if (annees.length < 2) return null;
-  const min = annees[0], max = annees[annees.length - 1];
-  const chip = (actif: boolean): React.CSSProperties => ({
-    fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
-    background: actif ? "#004f91" : "rgba(0,79,145,0.08)", color: actif ? "#fff" : "#004f91", fontFamily: "var(--font-google-sans)",
-  });
+  // Positions 0..n-1 = années croissantes, position n = Cumul (extrémité droite)
+  const n = annees.length;
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
-      <button onClick={() => onAnnee(null)} style={chip(annee === null)}>Cumul</button>
-      <input type="range" min={min} max={max} step="any" defaultValue={max}
-        onInput={e => onAnnee(Math.round(Number((e.target as HTMLInputElement).value)))}
-        aria-label="Explorer une année"
-        style={{ width: 170, accentColor: "#004f91", cursor: "pointer" }} />
-      {annee !== null && <span style={{ ...chip(true), cursor: "default" }}>{annee}</span>}
+      <input type="range" min={0} max={n} step="any" defaultValue={n}
+        onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); onAnnee(i >= n ? null : annees[i]); }}
+        aria-label="Cumul ou année"
+        style={{ width: 190, accentColor: "#004f91", cursor: "pointer" }} />
+      <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" }}>
+        {annee ?? "Cumul"}
+      </span>
     </span>
   );
 }
@@ -1206,7 +1185,7 @@ function TableauPartenairesRessources({ partenaires, ressources }: {
           <tr>
             <th style={{ textAlign: "left", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Pays</th>
             {ressources.map(r => (
-              <th key={r} style={{ textAlign: "right", verticalAlign: "bottom", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", lineHeight: 1.35 }}>{r}</th>
+              <th key={r} style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", whiteSpace: "nowrap" }}>{r}</th>
             ))}
             <th style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
           </tr>
