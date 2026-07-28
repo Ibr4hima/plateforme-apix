@@ -705,10 +705,8 @@ function CommercePanel() {
   // Vue Cumul / année des deux tableaux : année choisie + données dédiées
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
-  const [topsAnnee, setTopsAnnee] = useState<typeof tops>(null);
-  const [repartAnnee, setRepartAnnee] = useState<typeof repart>(null);
-  const [chargTopsAnnee, setChargTopsAnnee] = useState(false);
-  const [chargRepartAnnee, setChargRepartAnnee] = useState(false);
+  const [topsAnnee, setTopsAnnee] = useState<{ annee: number; data: typeof tops } | null>(null);
+  const [repartAnnee, setRepartAnnee] = useState<{ annee: number; data: typeof repart } | null>(null);
   const [showTable, setShowTable] = useState(false);
   const TAILLE = 50;
 
@@ -772,21 +770,21 @@ function CommercePanel() {
   const anneeRepartD = useDebounced(anneeRepart, 250);
   useEffect(() => {
     if (!selId || anneePoidsD === null) { setTopsAnnee(null); return; }
-    setChargTopsAnnee(true);
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneePoidsD) });
+    const annee = anneePoidsD;
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
-      .then(r => r.json()).then(setTopsAnnee).catch(() => setTopsAnnee(null))
-      .finally(() => setChargTopsAnnee(false));
+      .then(r => r.json()).then(d => setTopsAnnee({ annee, data: d }))
+      .catch(() => setTopsAnnee({ annee, data: null }));
   }, [vue, selId, anneePoidsD, ressSel, ressources.length]);
   useEffect(() => {
     if (!selId || anneeRepartD === null) { setRepartAnnee(null); return; }
-    setChargRepartAnnee(true);
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneeRepartD) });
+    const annee = anneeRepartD;
+    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
-      .then(r => r.json()).then(setRepartAnnee).catch(() => setRepartAnnee(null))
-      .finally(() => setChargRepartAnnee(false));
+      .then(r => r.json()).then(d => setRepartAnnee({ annee, data: d }))
+      .catch(() => setRepartAnnee({ annee, data: null }));
   }, [vue, selId, anneeRepartD, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
@@ -1072,8 +1070,14 @@ function CommercePanel() {
         {/* 4 & 5. Poids des ressources & Concentration — Cumul ou année au curseur */}
         {(() => {
           const expDir = vue === "exportateur";
+          // Données de l'année visée — undefined tant qu'elles ne sont pas
+          // arrivées POUR cette année (debounce et requête compris) → skeleton
+          const topsPourAnnee = topsAnnee && topsAnnee.annee === anneePoids ? topsAnnee.data : undefined;
+          const repartPourAnnee = repartAnnee && repartAnnee.annee === anneeRepart ? repartAnnee.data : undefined;
+          const chargTopsAnnee = anneePoids !== null && topsPourAnnee === undefined;
+          const chargRepartAnnee = anneeRepart !== null && repartPourAnnee === undefined;
           // Poids des ressources : top 8 + « Autres » (cumul ou année choisie)
-          const topsAff = anneePoids !== null ? topsAnnee : tops;
+          const topsAff = anneePoids !== null ? (topsPourAnnee ?? null) : tops;
           let donutData: { label: string; valeur: number }[] = [];
           if (topsAff && topsAff.ressources.length) {
             const top8 = topsAff.ressources.slice(0, 8);
@@ -1081,7 +1085,7 @@ function CommercePanel() {
             const autres = (topsAff.total || 0) - top8.reduce((s, r) => s + r.valeur, 0);
             if (autres > 0.0001 && topsAff.ressources.length > 8) donutData.push({ label: "Autres", valeur: autres });
           }
-          const repartAff = anneeRepart !== null ? repartAnnee : repart;
+          const repartAff = anneeRepart !== null ? (repartPourAnnee ?? null) : repart;
           const parts = repartAff?.partenaires || [];
           const resLabels = repartAff?.ressources || [];
           // Les cards restent tant que le cumul a des données (une année creuse affiche un état vide)
