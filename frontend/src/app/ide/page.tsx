@@ -427,9 +427,10 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
 // triées par valeur. Le curseur bascule entre le Cumul de la période (tout à
 // droite) et chaque année en glissant vers la gauche — sans requête, tout est
 // déjà chargé.
-function CarteTableauComparatif({ titre, series }: {
+function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }: {
   titre: string;
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
+  libelleLigne?: string;
 }) {
   const [annee, setAnnee] = useState<number | null>(null);
 
@@ -476,7 +477,7 @@ function CarteTableauComparatif({ titre, series }: {
 
       {/* En-tête */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const }}>Pays</span>
+        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const }}>{libelleLigne}</span>
         <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
         <span style={{ width: 56, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
         <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
@@ -1856,6 +1857,10 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               if (typeAnalyse === "secteur" && g.unite === "nombre")
                 return <CarteTableauAnnees key={`${g.id}-${selecIds[0]}`} titre={g.titre}
                   rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
+              // Analyse comparative : tableau par secteur (Cumul ⇆ année au curseur)
+              if (typeAnalyse === "comparative" && g.unite === "nombre")
+                return <CarteTableauComparatif key={`${g.id}-${selecIds.join(",")}`} titre={g.titre}
+                  series={g.series} libelleLigne="Secteur"/>;
               return (
               <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
