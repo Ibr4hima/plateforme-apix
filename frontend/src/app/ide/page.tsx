@@ -2131,6 +2131,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
   const [groupements, setGroupements] = useState<{code:string; nom_fr:string; categorie:string}[]>([]);
   const [grpSelec,    setGrpSelec]    = useState<string[]>([]);
+  // Raisonner par continents OU par régions (sélections séparées)
+  const [contMode,    setContMode]    = useState<"continent"|"region">("continent");
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
 
@@ -2361,35 +2363,35 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
             return (
               <>
-                {/* ── Continents & Régions ───────────────── */}
+                {/* ── Continents & Régions : on raisonne par l'un OU l'autre ── */}
                 {showContSection && <>
                   <SectionTitle label="Continents & Régions" nb={familleActive === "cont" ? grpSelec.length : 0}/>
-                  {continents.map(cont => {
-                    const regions  = regionsDe(cont.nom_fr);
-                    const visRegs  = regions.filter(matchGrp);
-                    const contMatch= matchGrp(cont);
-                    if (!contMatch && visRegs.length === 0) return null;
-                    const expanded = q ? true : (contExpanded[cont.code] ?? false);
-                    return (
-                      <div key={cont.code} style={{ marginBottom:2 }}>
-                        {/* Ligne continent */}
-                        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <button onClick={()=>setContExpanded(p=>({...p,[cont.code]:!expanded}))} aria-label={expanded ? "Replier" : "Déplier"}
-                            style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 2px", flexShrink:0, color:"#9aa5b4", display:"flex", alignItems:"center" }}>
-                            {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
-                          </button>
-                          {contMatch ? <div style={{ flex:1 }}><Item g={cont}/></div>
-                            : <span style={{ fontSize:12, fontWeight:600, color:"#4a5568", padding:"5px 4px", flex:1 }}>{cont.nom_fr}</span>}
-                        </div>
-                        {/* Régions du continent */}
-                        {expanded && visRegs.length > 0 && (
-                          <div style={{ paddingLeft:20, borderLeft:"2px solid #F2F0EF", marginLeft:8, marginBottom:4 }}>
-                            {visRegs.map(r => <Item key={r.code} g={r}/>)}
+                  <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+                    {([{v:"continent",l:"Continents"},{v:"region",l:"Régions"}] as const).map(o=>(
+                      <button key={o.v} onClick={()=>{ if(contMode!==o.v){ setContMode(o.v); if(familleActive==="cont") setGrpSelec([]); } }}
+                        style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${contMode===o.v?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:11.5, fontWeight:contMode===o.v?700:500, background:contMode===o.v?"rgba(0,79,145,0.08)":"#F8F7F6", color:contMode===o.v?"#004f91":"#4a5568", fontFamily:"var(--font-google-sans)" }}>
+                        {o.l}
+                      </button>
+                    ))}
+                  </div>
+                  {contMode === "continent"
+                    ? filtCont.map(c => <Item key={c.code} g={c}/>)
+                    : continents.map(cont => {
+                        const visRegs = regionsDe(cont.nom_fr).filter(matchGrp);
+                        if (!visRegs.length) return null;
+                        const expanded = q ? true : (contExpanded[cont.code] ?? false);
+                        return (
+                          <div key={cont.code} style={{ marginBottom:3 }}>
+                            {/* Bandeau continent dépliable (comme les groupes BDEF) */}
+                            <button onClick={()=>setContExpanded(prev=>({ ...prev, [cont.code]: !expanded }))}
+                              style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 9px", marginBottom:2 }}>
+                              <span style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{cont.nom_fr}</span>
+                              {expanded ? <ChevronDown size={12} style={{ color:"#004f91", flexShrink:0 }}/> : <ChevronRight size={12} style={{ color:"#004f91", flexShrink:0 }}/>}
+                            </button>
+                            {expanded && <div style={{ paddingLeft:6, marginBottom:2 }}>{visRegs.map(r => <Item key={r.code} g={r}/>)}</div>}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
                   <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
                 </>}
 
