@@ -285,7 +285,7 @@ function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: number 
 // variation dans la barre) sans toucher au tableau ; l'épinglage — depuis le
 // curseur ou au survol d'une ligne — fige des années en tête (triées) pour
 // les comparer, avec bilan dès 2 épingles. L'année record est signalée.
-function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: number; valeur: number | null }[] }) {
+function CarteTableauAnnees({ titre, rows, accent = "#004f91" }: { titre: string; rows: { annee: number; valeur: number | null }[]; accent?: string }) {
   const [epingles, setEpingles] = useState<number[]>([]);
   // Position flottante du curseur : le pouce glisse en continu, l'année
   // affichée est l'arrondi — le glissement reste parfaitement fluide.
@@ -338,18 +338,18 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
   const Ligne = ({ annee, epinglee }: { annee: number; epinglee: boolean }) => {
     const v = valMap.get(annee);
     return (
-      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? "rgba(0,79,145,0.06)" : "transparent", transition: "background 0.12s" }}>
+      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? accent + "0F" : "transparent", transition: "background 0.12s" }}>
         {/* Épingle : pleine sur les lignes figées, fantôme au survol des autres */}
         <button className={epinglee ? undefined : "pin-fantome"} onClick={() => togglePin(annee)}
           aria-label={epinglee ? `Désépingler ${annee}` : `Épingler ${annee}`} title={epinglee ? "Désépingler" : "Épingler cette année"}
-          style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epinglee ? "#004f91" : "#C5BFBB", flexShrink: 0 }}>
-          <Pin size={11} fill={epinglee ? "#004f91" : "none"} />
+          style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epinglee ? accent : "#C5BFBB", flexShrink: 0 }}>
+          <Pin size={11} fill={epinglee ? accent : "none"} />
         </button>
         <span style={{ width: 34, fontSize: 11, fontWeight: epinglee ? 800 : 600, color: "#1a1a2e", flexShrink: 0 }}>{annee}</span>
-        <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "#C5BFBB" : "#004f91", textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
+        <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "#C5BFBB" : accent, textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
         <span style={{ width: 58, textAlign: "right" as const, flexShrink: 0 }}><Delta delta={deltaDe(annee)} /></span>
         <div style={{ flex: 1, height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden" }}>
-          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: "#004f91", opacity: epinglee ? 1 : 0.55 }} />}
+          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: epinglee ? 1 : 0.55 }} />}
         </div>
         {annee === anneeRecord
           ? <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: "#ca631f", background: "rgba(202,99,31,0.10)", padding: "2px 6px", borderRadius: 999, flexShrink: 0 }}>RECORD</span>
@@ -373,12 +373,12 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
             <input type="range" min={anMin} max={anMax} step="any" defaultValue={anMax}
               onInput={e => setPosCurseur(Number((e.target as HTMLInputElement).value))}
               aria-label="Explorer une année"
-              style={{ flex: 1, accentColor: "#004f91", cursor: "pointer", minWidth: 0 }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
+              style={{ flex: 1, accentColor: accent, cursor: "pointer", minWidth: 0 }} />
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: accent, background: accent + "14", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
             <button onClick={() => togglePin(anCurseur)}
               title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
-                background: epingles.includes(anCurseur) ? "#004f91" : "rgba(0,79,145,0.08)", color: epingles.includes(anCurseur) ? "#fff" : "#004f91", fontFamily: "var(--font-google-sans)" }}>
+                background: epingles.includes(anCurseur) ? accent : accent + "14", color: epingles.includes(anCurseur) ? "#fff" : accent, fontFamily: "var(--font-google-sans)" }}>
               <Pin size={10} fill={epingles.includes(anCurseur) ? "#fff" : "none"} />
               {epingles.includes(anCurseur) ? "Épinglée" : "Épingler"}
             </button>
@@ -403,11 +403,11 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
 
           {/* Bilan de comparaison entre années épinglées */}
           {bilan && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
-              <span style={{ fontWeight: 800, color: "#004f91" }}>{bilan.de}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: accent + "0D", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
+              <span style={{ fontWeight: 800, color: accent }}>{bilan.de}</span>
               <span style={{ color: "#9aa5b4" }}>({fmtNombre(bilan.v0)})</span>
               <span style={{ color: "#9aa5b4" }}>→</span>
-              <span style={{ fontWeight: 800, color: "#004f91" }}>{bilan.vers}</span>
+              <span style={{ fontWeight: 800, color: accent }}>{bilan.vers}</span>
               <span style={{ color: "#9aa5b4" }}>({fmtNombre(bilan.v1)})</span>
               <span style={{ marginLeft: "auto", fontWeight: 800, color: bilan.diff > 0 ? "#188038" : bilan.diff < 0 ? "#dc2626" : "#9aa5b4" }}>
                 {bilan.diff > 0 ? "▲" : bilan.diff < 0 ? "▼" : "="} {bilan.diff > 0 ? "+" : ""}{fmtNombre(bilan.diff)}
@@ -1855,7 +1855,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               // Analyse sectorielle (sélection unique) : les « nombres » en
               // tableau explorable (curseur + épinglage), comme en vue Pays
               if (typeAnalyse === "secteur" && g.unite === "nombre")
-                return <CarteTableauAnnees key={`${g.id}-${selecIds[0]}`} titre={g.titre}
+                return <CarteTableauAnnees key={`${g.id}-${selecIds[0]}`} titre={g.titre} accent={accent}
                   rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
               // Analyse comparative : tableau par secteur (Cumul ⇆ année au curseur)
               if (typeAnalyse === "comparative" && g.unite === "nombre")
