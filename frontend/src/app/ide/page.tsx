@@ -287,7 +287,9 @@ function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: number 
 // les comparer, avec bilan dès 2 épingles. L'année record est signalée.
 function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: number; valeur: number | null }[] }) {
   const [epingles, setEpingles] = useState<number[]>([]);
-  const [curseur, setCurseur] = useState<number | null>(null);
+  // Position flottante du curseur : le pouce glisse en continu, l'année
+  // affichée est l'arrondi — le glissement reste parfaitement fluide.
+  const [posCurseur, setPosCurseur] = useState<number | null>(null);
 
   const valides = rows.filter(r => r.valeur !== null).sort((a, b) => a.annee - b.annee) as { annee: number; valeur: number }[];
   const valMap = new Map(valides.map(r => [r.annee, r.valeur]));
@@ -297,7 +299,7 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
   const anneeRecord = nonNulles.length ? nonNulles.reduce((m, r) => r.valeur > m.valeur ? r : m).annee : null;
   const anMin = valides.length ? valides[0].annee : 0;
   const anMax = valides.length ? valides[valides.length - 1].annee : 0;
-  const anCurseur = curseur ?? anMax;
+  const anCurseur = Math.round(posCurseur ?? anMax);
   const vCurseur = valMap.get(anCurseur);
 
   // Variation vs l'année précédente disposant d'une valeur
@@ -370,9 +372,8 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
         <>
           {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
-            <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, flexShrink: 0 }}>Explorer</span>
-            <input type="range" min={anMin} max={anMax} step={1} value={anCurseur}
-              onChange={e => setCurseur(Number(e.target.value))}
+            <input type="range" min={anMin} max={anMax} step="any" value={posCurseur ?? anMax}
+              onChange={e => setPosCurseur(Number(e.target.value))}
               aria-label="Explorer une année"
               style={{ flex: 1, accentColor: "#004f91", cursor: "pointer", minWidth: 0 }} />
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,79,145,0.08)", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>
