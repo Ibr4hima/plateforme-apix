@@ -21,7 +21,7 @@ export const STYLE_KPI_SWAP = `.kpi-swap{opacity:0;transform:rotate(0deg);transi
 // Bouton rond « remplacer » posé en haut à droite d'une card .kpi-card
 export function BtnSwapKpi({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
   return (
-    <button className="kpi-swap" data-open={ouvert}
+    <button className="kpi-swap" data-open={ouvert} data-picker-trigger
       aria-label="Remplacer cet indicateur" title="Remplacer cet indicateur"
       onClick={e => { e.stopPropagation(); onClick(); }}
       style={{ position: "absolute", top: 8, right: 8, width: 24, height: 24, borderRadius: 999, border: "none",
@@ -44,7 +44,15 @@ export default function PickerKpi({ items, alignDroite, onPick, onClose }: {
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    const clic = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    // Clic extérieur — en ignorant les déclencheurs (bouton « échanger », card
+    // vide) : React délègue ses événements sur document, comme ce listener, si
+    // bien que stopPropagation ne peut pas l'en empêcher ; sans cette garde le
+    // reclic sur le déclencheur fermerait ici puis rouvrirait au click.
+    const clic = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t?.closest?.("[data-picker-trigger]")) return;
+      if (ref.current && !ref.current.contains(t)) onClose();
+    };
     const touche = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("mousedown", clic);
     document.addEventListener("keydown", touche);

@@ -1753,7 +1753,7 @@ export default function StatistiquesPage() {
                           const slot = indicateursAffiches.length + i;
                           const pickerOuvert = pickerSlot === slot;
                           return (
-                            <div key={`empty-${i}`} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)}
+                            <div key={`empty-${i}`} data-picker-trigger onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)}
                               style={{ position: "relative", background: "#fff", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "#004f91" : "#E8E5E3"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = "#004f91"; }}
                               onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "#E8E5E3"; }}>

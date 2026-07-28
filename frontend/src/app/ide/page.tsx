@@ -15,7 +15,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import PickerKpi, { IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
+import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 
@@ -1034,14 +1034,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)"; }}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
-                  <button className="kpi-swap" data-open={pickerOuvert}
-                    aria-label="Remplacer cet indicateur" title="Remplacer cet indicateur"
-                    onClick={e=>{ e.stopPropagation(); setPickerSlot(pickerOuvert?-1:slot); }}
-                    style={{ position:"absolute", top:8, right:8, width:24, height:24, borderRadius:999, border:"none",
-                      background:pickerOuvert?"#004f91":"rgba(0,79,145,0.08)", color:pickerOuvert?"#fff":"#004f91",
-                      display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
-                    <IconeCached/>
-                  </button>
+                  <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
                     <div style={{ marginBottom:7, paddingRight:26 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
@@ -1069,7 +1062,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const slot = kpisCards.length + i;
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={`empty-${i}`} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
+                <div key={`empty-${i}`} data-picker-trigger onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
                   style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"#004f91":"#E8E5E3"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="#E8E5E3"; }}>
@@ -2855,14 +2848,7 @@ function OngletNational() {
                   onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgba(0,79,145,0.35)";}}
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)";}}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
-                  <button className="kpi-swap" data-open={pickerOuvert}
-                    aria-label="Remplacer cet indicateur" title="Remplacer cet indicateur"
-                    onClick={e=>{ e.stopPropagation(); setPickerSlot(pickerOuvert?-1:slot); }}
-                    style={{ position:"absolute", top:8, right:8, width:24, height:24, borderRadius:999, border:"none",
-                      background:pickerOuvert?"#004f91":"rgba(0,79,145,0.08)", color:pickerOuvert?"#fff":"#004f91",
-                      display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
-                    <IconeCached/>
-                  </button>
+                  <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
                   <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4, paddingRight:26 }}>{ind?.libelle??code}</p>
                   <p style={{ fontSize:"1.05rem", fontWeight:800, color:"#1a1a2e", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
                   {lastA&&<p style={{ fontSize:10, color:"#9aa5b4", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
@@ -2877,7 +2863,7 @@ function OngletNational() {
               const slot = kpisEpingles.length + i;
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={`empty-${i}`} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
+                <div key={`empty-${i}`} data-picker-trigger onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
                   style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"#004f91":"#E8E5E3"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="#E8E5E3"; }}>
