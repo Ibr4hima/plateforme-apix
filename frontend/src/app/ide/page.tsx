@@ -2198,7 +2198,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         </div>
         <div style={{ marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Vue Monde</h2>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
+            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>Monde</h2>
             <BadgePeriode>
               {modeAnnees==="specifiques"&&anneesSpec.length>0
                 ? anneesSpec.length===1?`${anneesSpec[0]}`:`${anneesSpec[0]} — ${anneesSpec[anneesSpec.length-1]}`
