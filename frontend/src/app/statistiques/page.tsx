@@ -12,6 +12,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
+import { drapeauEmoji } from "@/lib/drapeaux";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
@@ -700,12 +701,14 @@ function CommercePanel() {
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
-  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; total: number; valeurs: number[] }[] } | null>(null);
+  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[] } | null>(null);
   // Vue Cumul / année des deux tableaux : année choisie + données dédiées
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
   const [topsAnnee, setTopsAnnee] = useState<typeof tops>(null);
   const [repartAnnee, setRepartAnnee] = useState<typeof repart>(null);
+  const [chargTopsAnnee, setChargTopsAnnee] = useState(false);
+  const [chargRepartAnnee, setChargRepartAnnee] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const TAILLE = 50;
 
@@ -769,17 +772,21 @@ function CommercePanel() {
   const anneeRepartD = useDebounced(anneeRepart, 250);
   useEffect(() => {
     if (!selId || anneePoidsD === null) { setTopsAnnee(null); return; }
+    setChargTopsAnnee(true);
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneePoidsD) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
-      .then(r => r.json()).then(setTopsAnnee).catch(() => setTopsAnnee(null));
+      .then(r => r.json()).then(setTopsAnnee).catch(() => setTopsAnnee(null))
+      .finally(() => setChargTopsAnnee(false));
   }, [vue, selId, anneePoidsD, ressSel, ressources.length]);
   useEffect(() => {
     if (!selId || anneeRepartD === null) { setRepartAnnee(null); return; }
+    setChargRepartAnnee(true);
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(anneeRepartD) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
-      .then(r => r.json()).then(setRepartAnnee).catch(() => setRepartAnnee(null));
+      .then(r => r.json()).then(setRepartAnnee).catch(() => setRepartAnnee(null))
+      .finally(() => setChargRepartAnnee(false));
   }, [vue, selId, anneeRepartD, ressSel, ressources.length]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
@@ -1093,7 +1100,9 @@ function CommercePanel() {
                     <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
                     <BarreCumulAnnee annees={anneesTabs} annee={anneePoids} onAnnee={setAnneePoids} />
                   </div>
-                  {donutData.length > 0
+                  {anneePoids !== null && chargTopsAnnee
+                    ? <SkeletonRows n={Math.max(3, donutData.length || 6)} h={26} />
+                    : donutData.length > 0
                     ? <TableauPoidsRessources data={donutData} total={topsAff?.total || 0} />
                     : anneePoids !== null && <Vide annee={anneePoids} />}
                 </div>
@@ -1104,7 +1113,9 @@ function CommercePanel() {
                     <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
                     <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} />
                   </div>
-                  {parts.length > 0
+                  {anneeRepart !== null && chargRepartAnnee
+                    ? <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
+                    : parts.length > 0
                     ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} />
                     : anneeRepart !== null && <Vide annee={anneeRepart} />}
                 </div>
@@ -1154,12 +1165,13 @@ function TableauPoidsRessources({ data, total }: { data: { label: string; valeur
         <span style={{ width: 56, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right" }}>Part</span>
         <span style={{ width: "34%", flexShrink: 0 }} />
       </div>
-      {data.map(d => {
+      {data.map((d, i) => {
         const autres = d.label === "Autres";
+        const zebre = i % 2 === 1;
         return (
-          <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 8px", borderRadius: 8, transition: "background 0.12s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.03)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+          <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 8px", borderRadius: 8, background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
             <span title={d.label} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: autres ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.label}</span>
             <span style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: autres ? "#9aa5b4" : "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(d.valeur)}</span>
             <span style={{ width: 56, fontSize: 10.5, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{(d.valeur / somme * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>
@@ -1174,37 +1186,64 @@ function TableauPoidsRessources({ data, total }: { data: { label: string; valeur
 }
 
 // ── Tableau des flux par partenaire et ressource (Flux bilatéraux) ────────────
-// Matrice fixe pays × ressources avec colonne Total, « — » pour les cases vides.
+// Matrice fixe pays × ressources : rang (top 3 en bleu), drapeau, lignes
+// zébrées, plus grande valeur de chaque pays en vert, colonne Total en bleu.
+
+// Drapeau emoji (liste validée), image flagcdn sinon, globe pour les
+// partenaires sans pays (« Bunkers », zones spéciales…)
+function DrapeauPays({ iso, nom }: { iso?: string | null; nom: string }) {
+  if (iso) {
+    const emoji = drapeauEmoji(iso);
+    if (emoji) return <span title={nom} style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
+      style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
+  }
+  return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
+}
+
 function TableauPartenairesRessources({ partenaires, ressources }: {
-  partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
+  partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[]; ressources: string[];
 }) {
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 560 }}>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Pays</th>
+            <th style={{ textAlign: "left", padding: "8px 6px 8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", width: 34 }}>#</th>
+            <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Pays</th>
             {ressources.map(r => (
-              <th key={r} style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", whiteSpace: "nowrap" }}>{r}</th>
+              <th key={r} style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", whiteSpace: "nowrap" }}>{r}</th>
             ))}
-            <th style={{ textAlign: "right", padding: "6px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
+            <th style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
           </tr>
         </thead>
         <tbody>
-          {partenaires.map(p => {
+          {partenaires.map((p, i) => {
             // Ressource dominante du partenaire : sa valeur ressort en vert
             const vMax = Math.max(0, ...p.valeurs.map(v => v ?? 0));
+            const zebre = i % 2 === 1;
+            const podium = i < 3;
             return (
-            <tr key={p.nom}
-              onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(0,79,145,0.03)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}>
-              <td style={{ padding: "6px 10px", fontSize: 12, fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{p.nom}</td>
+            <tr key={p.nom} style={{ background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(0,79,145,0.05)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = zebre ? "#F8F9FB" : "transparent"; }}>
+              <td style={{ padding: "7px 6px 7px 10px", borderBottom: "1px solid #F2F0EF" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%",
+                  background: podium ? "#004f91" : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10.5, fontWeight: 800 }}>{i + 1}</span>
+              </td>
+              <td style={{ padding: "7px 10px", borderBottom: "1px solid #F2F0EF" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+                  <DrapeauPays iso={p.code_iso2} nom={p.nom} />
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "#1a1a2e", whiteSpace: "nowrap" }}>{p.nom}</span>
+                </span>
+              </td>
               {ressources.map((r, ri) => {
                 const v = p.valeurs[ri] ?? 0;
                 const dominante = v > 0 && v === vMax;
-                return <td key={r} style={{ padding: "6px 10px", fontSize: 11, fontWeight: dominante ? 800 : v > 0 ? 600 : 400, color: dominante ? "#188038" : v > 0 ? "#1a1a2e" : "#C5BFBB", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
+                return <td key={r} style={{ padding: "7px 10px", fontSize: 11.5, fontWeight: dominante ? 800 : v > 0 ? 600 : 400, color: dominante ? "#188038" : v > 0 ? "#1a1a2e" : "#C5BFBB", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF", fontVariantNumeric: "tabular-nums" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
               })}
-              <td style={{ padding: "6px 10px", fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF" }}>{fmtUSD(p.total)}</td>
+              <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 800, color: "#004f91", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(p.total)}</td>
             </tr>
             );
           })}

@@ -1286,14 +1286,17 @@ async def commerce_repartition(
         rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(res_order)))).all()
         libs = {code: lib for code, lib in rl}
     noms = {}
+    iso2 = {}
     if top_pids:
-        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr).where(RefPays.id.in_(top_pids)))).all()
-        noms = {rid: nom for rid, nom in rn}
+        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(top_pids)))).all()
+        noms = {rid: nom for rid, nom, _ in rn}
+        iso2 = {rid: c for rid, _, c in rn}
 
     ressources_labels = [libs.get(r) or r for r in res_order]
     partenaires = [
         {
             "nom": noms.get(pid) or "—",
+            "code_iso2": iso2.get(pid),
             "total": part_tot[pid],
             "valeurs": [cell.get((pid, res), 0.0) for res in res_order],
         }
