@@ -281,9 +281,10 @@ function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: number 
 
 // ── Card tableau des nombres de projets (greenfield / M&A, vue Pays) ──────────
 // Les 7 dernières années non nulles en tableau (année · nombre · Δ vs N-1 ·
-// barre), un curseur pour explorer n'importe quelle année de la période, et
-// l'épinglage : la ligne du curseur peut être épinglée (plusieurs fois) pour
-// comparer des années hors fenêtre — avec bilan quand ≥ 2 épingles.
+// barre). Le curseur « Explorer » montre en direct l'année visée (valeur et
+// variation dans la barre) sans toucher au tableau ; l'épinglage — depuis le
+// curseur ou au survol d'une ligne — fige des années en tête (triées) pour
+// les comparer, avec bilan dès 2 épingles. L'année record est signalée.
 function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: number; valeur: number | null }[] }) {
   const [epingles, setEpingles] = useState<number[]>([]);
   const [curseur, setCurseur] = useState<number | null>(null);
@@ -293,9 +294,11 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
   const nonNulles = valides.filter(r => r.valeur !== 0);
   const base7 = [...nonNulles.slice(-7)].reverse();
   const maxVal = Math.max(1, ...nonNulles.map(r => r.valeur));
+  const anneeRecord = nonNulles.length ? nonNulles.reduce((m, r) => r.valeur > m.valeur ? r : m).annee : null;
   const anMin = valides.length ? valides[0].annee : 0;
   const anMax = valides.length ? valides[valides.length - 1].annee : 0;
   const anCurseur = curseur ?? anMax;
+  const vCurseur = valMap.get(anCurseur);
 
   // Variation vs l'année précédente disposant d'une valeur
   const deltaDe = (annee: number): number | null => {
@@ -306,17 +309,15 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
     const prec = avant[avant.length - 1];
     return prec.valeur === 0 ? null : (v - prec.valeur) / Math.abs(prec.valeur) * 100;
   };
+  const deltaCurseur = deltaDe(anCurseur);
 
   const togglePin = (annee: number) =>
     setEpingles(prev => prev.includes(annee) ? prev.filter(a => a !== annee) : [...prev, annee]);
 
-  // Lignes : épinglées d'abord (ordre d'épinglage), puis celle du curseur,
-  // puis la fenêtre des 7 dernières — sans doublons
-  const lignes: { annee: number; type: "pin" | "curseur" | "base" }[] = [
-    ...epingles.map(a => ({ annee: a, type: "pin" as const })),
-    ...(curseur !== null && !epingles.includes(anCurseur) ? [{ annee: anCurseur, type: "curseur" as const }] : []),
-    ...base7.filter(r => !epingles.includes(r.annee) && !(curseur !== null && r.annee === anCurseur)).map(r => ({ annee: r.annee, type: "base" as const })),
-  ];
+  // Tableau : années épinglées en tête (triées, hors fenêtre comprises),
+  // puis la fenêtre des 7 dernières non nulles
+  const lignesPin = [...epingles].sort((a, b) => b - a);
+  const lignesBase = base7.filter(r => !epingles.includes(r.annee)).map(r => r.annee);
 
   // Bilan de comparaison : plus ancienne → plus récente des années épinglées valorisées
   const bilan = (() => {
@@ -324,52 +325,63 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
     if (avecVal.length < 2) return null;
     const de = avecVal[0], vers = avecVal[avecVal.length - 1];
     const v0 = valMap.get(de)!, v1 = valMap.get(vers)!;
-    return { de, vers, diff: v1 - v0, pct: v0 !== 0 ? (v1 - v0) / Math.abs(v0) * 100 : null };
+    return { de, vers, v0, v1, diff: v1 - v0, pct: v0 !== 0 ? (v1 - v0) / Math.abs(v0) * 100 : null };
   })();
 
-  const Ligne = ({ annee, type }: { annee: number; type: "pin" | "curseur" | "base" }) => {
+  const Delta = ({ delta, taille = 9.5 }: { delta: number | null; taille?: number }) => (
+    <span style={{ fontSize: taille, fontWeight: 700, whiteSpace: "nowrap" as const,
+      color: delta === null ? "#C5BFBB" : delta > 0 ? "#188038" : delta < 0 ? "#dc2626" : "#9aa5b4" }}>
+      {delta === null ? "—" : `${delta > 0 ? "▲" : delta < 0 ? "▼" : "="} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
+    </span>
+  );
+
+  const Ligne = ({ annee, epinglee }: { annee: number; epinglee: boolean }) => {
     const v = valMap.get(annee);
-    const delta = deltaDe(annee);
-    const fondDe = { pin: "rgba(0,79,145,0.06)", curseur: "#FAF7F0", base: "transparent" };
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: fondDe[type], border: type === "curseur" ? "1px dashed #E4D9C3" : "1px solid transparent" }}>
-        {/* Épingle : dépose (lignes épinglées) ou pose (ligne du curseur) */}
-        {type === "base"
-          ? <span style={{ width: 14, flexShrink: 0 }} />
-          : <button onClick={() => togglePin(annee)} aria-label={type === "pin" ? `Désépingler ${annee}` : `Épingler ${annee}`} title={type === "pin" ? "Désépingler" : "Épingler cette année"}
-              style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: type === "pin" ? "#004f91" : "#C5BFBB", flexShrink: 0 }}>
-              <Pin size={11} fill={type === "pin" ? "#004f91" : "none"} />
-            </button>}
-        <span style={{ width: 34, fontSize: 11, fontWeight: type === "base" ? 600 : 800, color: "#1a1a2e", flexShrink: 0 }}>{annee}</span>
+      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? "rgba(0,79,145,0.06)" : "transparent", transition: "background 0.12s" }}>
+        {/* Épingle : pleine sur les lignes figées, fantôme au survol des autres */}
+        <button className={epinglee ? undefined : "pin-fantome"} onClick={() => togglePin(annee)}
+          aria-label={epinglee ? `Désépingler ${annee}` : `Épingler ${annee}`} title={epinglee ? "Désépingler" : "Épingler cette année"}
+          style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epinglee ? "#004f91" : "#C5BFBB", flexShrink: 0 }}>
+          <Pin size={11} fill={epinglee ? "#004f91" : "none"} />
+        </button>
+        <span style={{ width: 34, fontSize: 11, fontWeight: epinglee ? 800 : 600, color: "#1a1a2e", flexShrink: 0 }}>{annee}</span>
         <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "#C5BFBB" : "#004f91", textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
-        <span style={{ width: 58, fontSize: 9.5, fontWeight: 700, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const,
-          color: delta === null ? "#C5BFBB" : delta > 0 ? "#188038" : delta < 0 ? "#dc2626" : "#9aa5b4" }}>
-          {delta === null ? "—" : `${delta > 0 ? "▲" : delta < 0 ? "▼" : "="} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
-        </span>
+        <span style={{ width: 58, textAlign: "right" as const, flexShrink: 0 }}><Delta delta={deltaDe(annee)} /></span>
         <div style={{ flex: 1, height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden" }}>
-          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: "#004f91", opacity: type === "base" ? 0.55 : 1 }} />}
+          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: "#004f91", opacity: epinglee ? 1 : 0.55 }} />}
         </div>
+        {annee === anneeRecord
+          ? <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: "#ca631f", background: "rgba(202,99,31,0.10)", padding: "2px 6px", borderRadius: 999, flexShrink: 0 }}>RECORD</span>
+          : <span style={{ width: 46, flexShrink: 0 }} />}
       </div>
     );
   };
 
   return (
     <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+      <style>{`.ligne-annee .pin-fantome{opacity:0;transition:opacity .12s}
+.ligne-annee:hover{background:rgba(0,79,145,0.03)}
+.ligne-annee:hover .pin-fantome{opacity:1}`}</style>
       <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
       {valides.length === 0 ? (
         <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
       ) : (
         <>
-          {/* Curseur d'exploration : n'importe quelle année de la période, épinglable */}
-          <div style={{ display: "flex", alignItems: "center", gap: 9, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
+          {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
             <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, flexShrink: 0 }}>Explorer</span>
             <input type="range" min={anMin} max={anMax} step={1} value={anCurseur}
               onChange={e => setCurseur(Number(e.target.value))}
               aria-label="Explorer une année"
               style={{ flex: 1, accentColor: "#004f91", cursor: "pointer", minWidth: 0 }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
-            <button onClick={() => { setCurseur(anCurseur); togglePin(anCurseur); }}
-              title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année"}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(0,79,145,0.08)", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91" }}>{anCurseur}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: vCurseur === undefined ? "#9aa5b4" : "#1a1a2e" }}>{vCurseur === undefined ? "—" : fmtNombre(vCurseur)}</span>
+              <Delta delta={deltaCurseur} taille={9} />
+            </span>
+            <button onClick={() => togglePin(anCurseur)}
+              title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
                 background: epingles.includes(anCurseur) ? "#004f91" : "rgba(0,79,145,0.08)", color: epingles.includes(anCurseur) ? "#fff" : "#004f91", fontFamily: "var(--font-google-sans)" }}>
               <Pin size={10} fill={epingles.includes(anCurseur) ? "#fff" : "none"} />
@@ -384,18 +396,25 @@ function CarteTableauAnnees({ titre, rows }: { titre: string; rows: { annee: num
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
             <span style={{ width: 58, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
             <span style={{ flex: 1 }} />
+            <span style={{ width: 46, flexShrink: 0 }} />
           </div>
 
-          {/* Lignes : épinglées · curseur · 7 dernières années non nulles */}
+          {/* Années épinglées (triées) puis fenêtre des 7 dernières non nulles */}
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
-            {lignes.map(l => <Ligne key={`${l.type}-${l.annee}`} annee={l.annee} type={l.type} />)}
+            {lignesPin.map(a => <Ligne key={`p${a}`} annee={a} epinglee />)}
+            {lignesPin.length > 0 && lignesBase.length > 0 && <div style={{ height: 1, background: "#F2F0EF", margin: "3px 8px" }} />}
+            {lignesBase.map(a => <Ligne key={a} annee={a} epinglee={false} />)}
           </div>
 
           {/* Bilan de comparaison entre années épinglées */}
           {bilan && (
-            <div style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5 }}>
-              <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{bilan.de} → {bilan.vers}</span>
-              <span style={{ fontWeight: 800, color: bilan.diff > 0 ? "#188038" : bilan.diff < 0 ? "#dc2626" : "#9aa5b4" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
+              <span style={{ fontWeight: 800, color: "#004f91" }}>{bilan.de}</span>
+              <span style={{ color: "#9aa5b4" }}>({fmtNombre(bilan.v0)})</span>
+              <span style={{ color: "#9aa5b4" }}>→</span>
+              <span style={{ fontWeight: 800, color: "#004f91" }}>{bilan.vers}</span>
+              <span style={{ color: "#9aa5b4" }}>({fmtNombre(bilan.v1)})</span>
+              <span style={{ marginLeft: "auto", fontWeight: 800, color: bilan.diff > 0 ? "#188038" : bilan.diff < 0 ? "#dc2626" : "#9aa5b4" }}>
                 {bilan.diff > 0 ? "▲" : bilan.diff < 0 ? "▼" : "="} {bilan.diff > 0 ? "+" : ""}{fmtNombre(bilan.diff)}
                 {bilan.pct !== null && ` (${bilan.pct > 0 ? "+" : ""}${bilan.pct.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %)`}
               </span>
