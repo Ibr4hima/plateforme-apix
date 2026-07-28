@@ -237,12 +237,6 @@ function PickerKpi({ kpis, dernAnnee, alignDroite, onPick, onClose }: {
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   const dispo = kpis.filter(k => !q || k.label.toLowerCase().includes(q.toLowerCase()));
-  // Groupes par catégorie, dans l'ordre d'apparition de la liste canonique
-  const groupes: [string, KpiResult[]][] = [];
-  dispo.forEach(k => {
-    const g = groupes.find(([c]) => c === k.categorie);
-    if (g) g[1].push(k); else groupes.push([k.categorie, [k]]);
-  });
 
   return (
     <div ref={ref} onClick={e => e.stopPropagation()}
@@ -253,25 +247,20 @@ function PickerKpi({ kpis, dernAnnee, alignDroite, onPick, onClose }: {
           style={{ width:"100%", boxSizing:"border-box" as const, background:"#FCFCFB", borderWidth:1, borderStyle:"solid", borderColor:"#E2E1DE", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)" }} />
       </div>
       <div style={{ maxHeight:262, overflowY:"auto" as const }}>
-        {groupes.map(([categorie, items]) => (
-          <div key={categorie}>
-            <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0, zIndex:1 }}>{categorie}</div>
-            {items.map(k => {
-              const { main, badge } = splitKpiLabel(k.label, dernAnnee);
-              return (
-                <button key={k.id} title={k.description} onClick={() => onPick(k.id)}
-                  style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s", fontFamily:"var(--font-google-sans)" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>
-                  {badge && <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}
-                  {/* Aperçu de la valeur : on voit ce qu'on obtient avant de remplacer */}
-                  <span style={{ fontSize:11.5, fontWeight:700, color:"#004f91", whiteSpace:"nowrap" as const, flexShrink:0 }}>{fmtKpi(k)}</span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+        {dispo.map(k => {
+          const { main, badge } = splitKpiLabel(k.label, dernAnnee);
+          return (
+            <button key={k.id} title={k.description} onClick={() => onPick(k.id)}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s", fontFamily:"var(--font-google-sans)" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{main}</span>
+              {badge && <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{badge}</span>}
+              {/* Aperçu de la valeur : on voit ce qu'on obtient avant de remplacer */}
+              <span style={{ fontSize:11.5, fontWeight:700, color:"#004f91", whiteSpace:"nowrap" as const, flexShrink:0 }}>{fmtKpi(k)}</span>
+            </button>
+          );
+        })}
         {dispo.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"14px 0" }}>Aucun indicateur trouvé</p>}
       </div>
     </div>
@@ -1153,7 +1142,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             </>}
           </div>}
 
-          {/* Graphes — multi-séries dès qu'un pays est ajouté à la comparaison */}
+          {/* Graphes — multi-séries dès qu'un pays est ajouté à la comparaison ;
+              floutés tant qu'un picker de remplacement de KPI est ouvert */}
+          <div style={{ filter: pickerSlot!==-1 ? "blur(4px)" : "none", opacity: pickerSlot!==-1 ? 0.6 : 1, pointerEvents: pickerSlot!==-1 ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
           {loading ? (
             <SkeletonChartGrid n={4} cols={2} height={230}/>
           ) : erreur ? (
@@ -1168,6 +1159,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               ))}
             </div>
           )}
+          </div>
           </div>
         </div>
       </div>
