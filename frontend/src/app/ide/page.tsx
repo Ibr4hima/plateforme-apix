@@ -101,7 +101,7 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse, aller
 }) {
   // VUE unifiée : Pays · Monde · Secteurs. Le « Type d'analyse » dédié a
   // disparu (la comparaison Pays se fait via le « + » de l'en-tête) ; seule la
-  // vue Secteurs garde sa bascule Analyse par secteur / comparative.
+  // vue Secteurs garde sa bascule Analyse sectorielle / comparative.
   const vueActive = vueP === "secteurs" ? "secteurs" : typeAnalyse; // "pays" | "monde" | "secteurs"
   const choisir = (v: "pays"|"monde"|"secteurs") => {
     if (v === "secteurs") { setVueP("secteurs"); return; }
@@ -128,7 +128,7 @@ function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse, aller
         <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid #F2F0EF" }}>
           <p style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
           <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
-            {[{ v: "secteur", l: "Analyse par secteur" }, { v: "comparative", l: "Analyse comparative" }].map(o => (
+            {[{ v: "secteur", l: "Analyse sectorielle" }, { v: "comparative", l: "Analyse comparative" }].map(o => (
               <button key={o.v} onClick={() => setTypeAnalyse(o.v)} style={btn(typeAnalyse === o.v)}>{o.l}</button>
             ))}
           </div>
@@ -1754,12 +1754,19 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           </div>
         ) : (
           <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-            {GRAPHES.map(g=>(
+            {GRAPHES.map(g=>{
+              // Analyse sectorielle (sélection unique) : les « nombres » en
+              // tableau explorable (curseur + épinglage), comme en vue Pays
+              if (typeAnalyse === "secteur" && g.unite === "nombre")
+                return <CarteTableauAnnees key={`${g.id}-${selecIds[0]}`} titre={g.titre}
+                  rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
+              return (
               <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                 <GrapheMultiPays series={g.series} height={SERIES.length===2?220:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
