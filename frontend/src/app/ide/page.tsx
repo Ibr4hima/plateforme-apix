@@ -2204,10 +2204,14 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const matchGrp = (g: {code:string; nom_fr:string}) => !q || g.nom_fr.toLowerCase().includes(q) || g.code.toLowerCase().includes(q);
   const continents = groupements.filter(g => g.categorie === 'continent');
   const groupes    = groupements.filter(g => g.categorie === 'groupe');
-  const revenus    = groupements.filter(g => g.categorie === 'revenu');
   const regionsDe  = (cont: string) => groupements.filter(g => g.categorie === cont);
+  // Famille d'un code : « cont » (continents & régions) ou « groupe » — les
+  // comparaisons restent homogènes, on ne mélange pas les deux familles.
+  const familleDe = (code: string) => (groupements.find(x => x.code === code)?.categorie === "groupe" ? "groupe" : "cont");
+  const familleActive = grpSelec.length ? familleDe(grpSelec[0]) : null;
   const toggle = (code: string) => {
     if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
+    else if (familleActive && familleDe(code) !== familleActive) setGrpSelec([code]);
     else if (grpSelec.length < 4) setGrpSelec(p => [...p, code]);
   };
   const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
@@ -2297,11 +2301,6 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           </div>
           <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
 
-          {/* compteur global */}
-          <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:10 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:grpSelec.length>=4?"#004f91":"#9aa5b4", background:grpSelec.length>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{grpSelec.length}/4</span>
-          </div>
-
           {/* ── Monde (agrégat mondial) — sélectionné quand rien d'autre ne l'est ── */}
           {(() => { const mondeSel = grpSelec.length === 0; return (
             <button onClick={()=>setGrpSelec([])}
@@ -2323,7 +2322,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             const Item = ({ g }: { g: {code:string; nom_fr:string}; }) => {
               const sel = grpSelec.includes(g.code);
               const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
-              const disabled = !sel && grpSelec.length >= 4;
+              const disabled = !sel && familleActive === familleDe(g.code) && grpSelec.length >= 4;
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)}
                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
@@ -2347,23 +2346,24 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               );
             };
 
-            const SectionTitle = ({ label }: { label: string }) => (
-              <div style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6, marginTop:2 }}>{label}</div>
+            const SectionTitle = ({ label, nb }: { label: string; nb: number }) => (
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6, marginTop:2 }}>
+                <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
+                <span style={{ fontSize:11, fontWeight:700, color:nb>=4?"#004f91":"#9aa5b4", background:nb>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{nb}/4</span>
+              </div>
             );
 
             const filtCont  = continents.filter(matchGrp);
             const filtGrp   = groupes.filter(matchGrp);
-            const filtRev   = revenus.filter(matchGrp);
 
             const showContSection = filtCont.length > 0 || continents.some(c => regionsDe(c.nom_fr).some(matchGrp));
             const showGrpSection  = filtGrp.length > 0;
-            const showRevSection  = filtRev.length > 0;
 
             return (
               <>
                 {/* ── Continents & Régions ───────────────── */}
                 {showContSection && <>
-                  <SectionTitle label="Continents & Régions"/>
+                  <SectionTitle label="Continents & Régions" nb={familleActive === "cont" ? grpSelec.length : 0}/>
                   {continents.map(cont => {
                     const regions  = regionsDe(cont.nom_fr);
                     const visRegs  = regions.filter(matchGrp);
@@ -2395,19 +2395,12 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
                 {/* ── Groupements ───────────────────────── */}
                 {showGrpSection && <>
-                  <SectionTitle label="Groupements"/>
+                  <SectionTitle label="Groupements" nb={familleActive === "groupe" ? grpSelec.length : 0}/>
                   {filtGrp.map(g => <Item key={g.code} g={g}/>)}
                   <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
                 </>}
 
-                {/* ── Niveau de revenu ──────────────────── */}
-                {showRevSection && <>
-                  <SectionTitle label="Niveau de revenu"/>
-                  {filtRev.map(g => <Item key={g.code} g={g}/>)}
-                  <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
-                </>}
-
-                {!showContSection && !showGrpSection && !showRevSection && q &&
+                {!showContSection && !showGrpSection && q &&
                   <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
               </>
             );
