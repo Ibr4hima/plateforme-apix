@@ -16,7 +16,6 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
-import { showD3Tooltip as montrerTooltip, hideD3Tooltip as cacherTooltip } from "@/components/charts/outilsTooltip";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 
@@ -255,107 +254,8 @@ function GrapheMultiPays(props: {
   series: { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] }[];
   height?: number; type?: "line" | "bar"; titre?: string;
   fmt?: (v: number | null) => string; showDots?: boolean; lineWidth?: number;
-  dualAxis?: boolean;
 }) {
   return <GrapheSignature {...props} fmt={props.fmt || fmtVal} />;
-}
-
-// ── Aire empilée entrants + sortants (vue Pays, flux & stocks) ────────────────
-// Mêmes conventions visuelles que le graphe signature : grille discrète, axes
-// épurés, dégradés par série, curseur avec tooltip entrant / sortant / total.
-function GrapheAireEmpilee({ rows, height = 145 }: {
-  rows: { annee: number; entrant: number; sortant: number }[];
-  height?: number;
-}) {
-  const pret = useD3Pret();
-  const ref = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const uid = useRef(`emp${Math.random().toString(36).slice(2, 8)}`).current;
-
-  const draw = useCallback(() => {
-    if (!pret || !ref.current) return;
-    const el = ref.current;
-    d3.select(el).selectAll("*").remove();
-    if (rows.length < 2) return;
-    const W = el.parentElement?.clientWidth || 700, H = height;
-    const M = { top: 12, right: 20, bottom: 34, left: 64 };
-    const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
-
-    const couches = [
-      { cle: "entrant" as const, nom: "Flux entrants", couleur: "#004f91" },
-      { cle: "sortant" as const, nom: "Flux sortants", couleur: "#ca631f" },
-    ];
-    const x = d3.scaleLinear().domain([rows[0].annee, rows[rows.length - 1].annee]).range([M.left, W - M.right]);
-    const maxTotal = d3.max(rows, r => Math.max(0, r.entrant) + Math.max(0, r.sortant)) || 1;
-    const y = d3.scaleLinear().domain([0, maxTotal * 1.08]).nice().range([H - M.bottom, M.top]);
-
-    svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
-      .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d))
-      .attr("stroke", "#EBEBEB").attr("stroke-width", 1);
-
-    // Empilement : sortants posés sur les entrants (valeurs négatives écrêtées)
-    const empile = d3.stack<{ annee: number; entrant: number; sortant: number }>()
-      .keys(["entrant", "sortant"]).value((r, k) => Math.max(0, r[k as "entrant" | "sortant"]))(rows);
-    const defs = svg.append("defs");
-    couches.forEach((c, ci) => {
-      const gid = `${uid}-${c.cle}`;
-      const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
-      grad.append("stop").attr("offset", "0%").attr("stop-color", c.couleur).attr("stop-opacity", 0.55);
-      grad.append("stop").attr("offset", "100%").attr("stop-color", c.couleur).attr("stop-opacity", 0.18);
-      const dAire = d3.area<d3.SeriesPoint<any>>()
-        .x(p => x(p.data.annee)).y0(p => y(p[0])).y1(p => y(p[1])).curve(d3.curveMonotoneX)(empile[ci]) || "";
-      svg.append("path").attr("fill", `url(#${gid})`).attr("d", dAire);
-      // Crête de la couche
-      const dLigne = d3.line<d3.SeriesPoint<any>>()
-        .x(p => x(p.data.annee)).y(p => y(p[1])).curve(d3.curveMonotoneX)(empile[ci]) || "";
-      svg.append("path").attr("fill", "none").attr("stroke", c.couleur).attr("stroke-width", 1.8)
-        .attr("stroke-linejoin", "round").attr("stroke-linecap", "round").attr("d", dLigne);
-    });
-
-    // Curseur aimanté année par année
-    const tooltip = d3.select("#d3-tooltip") as any;
-    const gCurseur = svg.append("g").style("display", "none");
-    gCurseur.append("line").attr("y1", M.top).attr("y2", H - M.bottom)
-      .attr("stroke", "rgba(26,26,46,0.30)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
-    svg.append("rect").attr("x", M.left).attr("y", M.top)
-      .attr("width", Math.max(0, W - M.left - M.right)).attr("height", Math.max(0, H - M.top - M.bottom))
-      .attr("fill", "transparent").style("cursor", "crosshair")
-      .on("mousemove", (e: any) => {
-        const [mx] = d3.pointer(e, el);
-        const r = rows.reduce((m, c) => Math.abs(x(c.annee) - mx) < Math.abs(x(m.annee) - mx) ? c : m);
-        gCurseur.style("display", null).select("line").attr("x1", x(r.annee)).attr("x2", x(r.annee));
-        const ligne = (couleur: string, nom: string, v: number) =>
-          `<span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:${couleur};margin-right:6px"></span>${nom} · <strong>${fmtVal(v)}</strong>`;
-        montrerTooltip(tooltip, e,
-          `<strong>${r.annee}</strong><br/>${ligne("#004f91", "Flux entrants", r.entrant)}<br/>${ligne("#ca631f", "Flux sortants", r.sortant)}<br/>Total · <strong>${fmtVal(Math.max(0, r.entrant) + Math.max(0, r.sortant))}</strong>`);
-      })
-      .on("mouseleave", () => { gCurseur.style("display", "none"); cacherTooltip(tooltip); });
-
-    svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
-      .call(d3.axisBottom(x).tickValues(rows.map(r => r.annee)).tickFormat(d3.format("d")).tickSizeOuter(0))
-      .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
-      .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-    svg.append("g").attr("transform", `translate(${M.left},0)`)
-      .call(d3.axisLeft(y).ticks(4).tickFormat((v: d3.NumberValue) => fmtAxe(+v)))
-      .call(g => g.select(".domain").remove())
-      .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
-  }, [pret, rows, height]);
-
-  useEffect(() => {
-    if (!wrapRef.current) return;
-    const ro = new ResizeObserver(() => draw());
-    ro.observe(wrapRef.current);
-    return () => ro.disconnect();
-  }, [draw]);
-  useEffect(() => { draw(); }, [draw]);
-
-  return (
-    <div ref={wrapRef} style={{ position: "relative" as const }}>
-      <svg ref={ref} role="img" aria-label="Aire empilée des flux entrants et sortants" style={{ width: "100%", height, display: "block" }} />
-    </div>
-  );
 }
 
 // ── Top 10 des années par flux entrants — barres classées ─────────────────────
@@ -845,28 +745,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   }));
 
   // Graphes d'analyse des flux (vue Pays, flux & stocks, hors comparatif) :
-  // flux nets, entrants vs sortants, aire empilée (7 dernières années),
-  // top 10 des années par flux entrants — calculés sur le pays de référence.
+  // flux nets et top 10 des années par flux entrants — pays de référence.
   const grapheExtras = (!stActif && !estComparatif) ? (() => {
     const fluxDe = (dir: string) => donneesRef
       .filter((d: any) => d.direction === dir && d.indicateur === "flux" && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee) as { annee: number; valeur: number }[];
     const rowsE = fluxDe("entrant"), rowsS = fluxDe("sortant");
     if (!rowsE.length) return null;
-    const parAnneeE = new Map(rowsE.map(r => [r.annee, r.valeur]));
     const parAnneeS = new Map(rowsS.map(r => [r.annee, r.valeur]));
     const net = rowsE.filter(r => parAnneeS.has(r.annee))
       .map(r => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
     const serieNet = [{ nom: "Flux nets", couleur: "#004f91", data: net }];
-    const seriesVs = [
-      { nom: "Flux entrants", couleur: "#004f91", data: rowsE.map(({ annee, valeur }) => ({ annee, valeur })) },
-      { nom: "Flux sortants", couleur: "#ca631f", data: rowsS.map(({ annee, valeur }) => ({ annee, valeur })) },
-    ];
-    const annees7 = [...new Set([...rowsE, ...rowsS].map(r => r.annee))].sort((a, b) => a - b).slice(-7);
-    const empile = annees7.map(a => ({ annee: a, entrant: parAnneeE.get(a) ?? 0, sortant: parAnneeS.get(a) ?? 0 }));
     const top10 = [...rowsE].sort((a, b) => b.valeur - a.valeur).slice(0, 10);
     const serieTop = [{ nom: "Flux entrants", couleur: "#004f91", data: top10 }];
-    return { serieNet, seriesVs, empile, top10, serieTop };
+    return { serieNet, top10, serieTop };
   })() : null;
 
   // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que
@@ -1244,16 +1136,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 <GrapheCard titre="Flux nets des IDE · entrants − sortants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={grapheExtras.serieNet} height={340}/>}>
                   <GrapheMultiPays series={grapheExtras.serieNet} height={145}/>
-                </GrapheCard>
-                {/* Entrants vs sortants sur le même graphe (échelle partagée) */}
-                <GrapheCard titre="Flux entrants vs flux sortants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.seriesVs} grapheId="fluxstock-vs" hideSousTitre
-                  fullChildren={<GrapheMultiPays series={grapheExtras.seriesVs} height={340} dualAxis={false} lineWidth={1.6}/>}>
-                  <GrapheMultiPays series={grapheExtras.seriesVs} height={145} showDots={false} lineWidth={1.4} dualAxis={false}/>
-                </GrapheCard>
-                {/* Aire empilée des flux — 7 dernières années */}
-                <GrapheCard titre="Aire empilée des flux · 7 dernières années" sous_titre="M$ USD · CNUCED" series={grapheExtras.seriesVs} grapheId="fluxstock-empile" hideSousTitre
-                  fullChildren={<GrapheAireEmpilee rows={grapheExtras.empile} height={340}/>}>
-                  <GrapheAireEmpilee rows={grapheExtras.empile} height={145}/>
                 </GrapheCard>
                 {/* Top 10 des années par flux entrants */}
                 <GrapheCard titre="Top 10 des années · flux entrants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
