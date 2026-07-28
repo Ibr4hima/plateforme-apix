@@ -1683,13 +1683,13 @@ export default function StatistiquesPage() {
                 const perLabel = modeAnnees === "specifiques" && anneesSpec.length > 0
                   ? (anneesSpec.length === 1 ? `${anneesSpec[0]}` : `${anneesSpec[0]} — ${anneesSpec[anneesSpec.length - 1]}`)
                   : `${anneeMin} — ${anneeMax}`;
-                // Graphes : indicateurs épinglés (hors superficie) + densité de
-                // population et les 4 flux de commerce extérieur, toujours présents
-                // dès qu'un pays sélectionné a des données (même hors KPIs épinglés).
+                // Graphes : jeu fixe, indépendant des KPIs épinglés — indicateurs
+                // par défaut (hors superficie) + densité de population et les 4
+                // flux de commerce extérieur dès qu'un pays sélectionné a des données.
                 const TRADE_CODES = ["importations_marchandises", "exportations_marchandises", "importations_services", "exportations_services"];
                 const GRAPHES_SUP = ["densite", ...TRADE_CODES];
                 const aDesDonnees = (code: string) => selection.some(id => anneesActives.some(a => valeur(id, code, a) !== null));
-                const baseCodes = indicateursAffiches.filter(i => i.code !== "superficie").map(i => i.code);
+                const baseCodes = KPI_DEFAUT.filter(c => c !== "superficie");
                 const codesGraphes = [...baseCodes, ...GRAPHES_SUP.filter(c => !baseCodes.includes(c) && aDesDonnees(c))];
                 const graphIndics = codesGraphes.map(c => indicateurs.find(i => i.code === c)).filter(Boolean) as Indicateur[];
                 return (
