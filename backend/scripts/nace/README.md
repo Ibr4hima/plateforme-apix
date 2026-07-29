@@ -62,6 +62,19 @@ Fautes du PDF 2020 corrigées : « Miatériels de transport » →
 pour soupe, potages, bouillons » → « Préparations pour soupes, potages,
 bouillons » (aligné sur 2019).
 
+## Édition 2021 — les imports reviennent au découpage 2019
+
+L'édition 2021 (années 2017–2021) garde la nomenclature export de 2020
+(mêmes valeurs 2017–2020, libellé « Préparations pour soupes, potages
+et bouillons » → normalisé sans le « et », comme les autres éditions),
+mais les **imports reviennent au découpage de l'édition 2019** (Huiles
+brutes de pétrole et Produits pétroliers finis séparés, Produits
+pharmaceutiques, Produits des industries parachimiques…) — avec des
+valeurs révisées (ex. Produits pétroliers finis 2017 : 523 767 contre
+288 835 dans l'édition 2019). Les lignes 2020 propres à l'édition 2020
+(Produits chimiques, Produits laitiers fruits et légumes, Papiers et
+carton, Sucres et produits sucrés, Boissons et tabacs) disparaissent.
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette
