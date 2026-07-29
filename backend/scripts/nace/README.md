@@ -85,6 +85,14 @@ d'origine, découpage exact) et plusieurs lignes sont révisées
 (Machines et appareils 2019 : 658 691 contre 604 417 en 2021).
 Fautes corrigées : « Maîs »/« Mais » → « Maïs ».
 
+## Édition 2023 — retour à la ligne « Produits céréaliers »
+
+L'édition 2023 (années 2019–2023) abandonne l'éclatement Riz/Blé/Maïs
+de 2022 et revient à la ligne unique « Produits céréaliers » (somme
+2022 = 684 327 = les 4 lignes de l'édition 2022, recollage exact).
+Exports inchangés (valeurs 2019–2022 identiques). Légères révisions
+côté imports (Produits pharmaceutiques, Autres produits).
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette
