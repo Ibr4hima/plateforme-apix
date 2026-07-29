@@ -308,7 +308,7 @@ function CommerceExterieurPanel() {
     </div>
   );
   if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
-  if (!data || !data.disponible) return <CommerceExterieurPanel />;
+  if (!data || !data.disponible) return <CommerceExterieurAttente />;
 
   const expTot = totalDe("export", an), impTot = totalDe("import", an);
   const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
