@@ -185,11 +185,11 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
 // ── Groupements du Sénégal (section IDE) ─────────────────────────────────────
 // Les 4 zones dont le Sénégal fait partie, résolues par nom/code dans la
 // liste renvoyée par /ide/monde/groupements.
-const ZONES_SEN: { cle: string; titre: string; trouve: (g: { code: string; nom_fr: string; categorie: string }) => boolean }[] = [
-  { cle: "afrique", titre: "Afrique", trouve: (g) => g.categorie === "continent" && g.nom_fr === "Afrique" },
-  { cle: "afrique_ouest", titre: "Afrique occidentale", trouve: (g) => g.categorie === "Afrique" && /occident|ouest/i.test(g.nom_fr) },
-  { cle: "cedeao", titre: "CEDEAO", trouve: (g) => g.code === "CEDEAO" },
-  { cle: "uemoa", titre: "UEMOA", trouve: (g) => g.code === "UEMOA" },
+const ZONES_SEN: { cle: string; titre: string; abrege: string; trouve: (g: { code: string; nom_fr: string; categorie: string }) => boolean }[] = [
+  { cle: "afrique", titre: "Afrique", abrege: "Afrique", trouve: (g) => g.categorie === "continent" && g.nom_fr === "Afrique" },
+  { cle: "afrique_ouest", titre: "Afrique occidentale", abrege: "Afrique occ.", trouve: (g) => g.categorie === "Afrique" && /occident|ouest/i.test(g.nom_fr) },
+  { cle: "cedeao", titre: "CEDEAO", abrege: "CEDEAO", trouve: (g) => g.code === "CEDEAO" },
+  { cle: "uemoa", titre: "UEMOA", abrege: "UEMOA", trouve: (g) => g.code === "UEMOA" },
 ];
 
 type LigneTopZone = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
@@ -281,30 +281,30 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
 // KPI « Sénégal dans une zone » : valeur des flux + rang dans le classement
 // de la zone, bascule Entrants ⇆ Sortants, variation du rang vs l'année
 // précédente (gagner des places = ▲ vert).
-function KpiSenegalZone({ zone, nomComplet, tag, dir, onDir, valeur, rang, rangPrec, anneePrec, chargement }: {
-  zone: string; nomComplet?: string; tag?: string; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
+function KpiSenegalZone({ abrege, nomComplet, tag, dir, onDir, valeur, rang, rangPrec, anneePrec, chargement }: {
+  abrege: string; nomComplet?: string; tag?: string; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
   valeur: number | null; rang: number | null; rangPrec: number | null; anneePrec: number | null; chargement: boolean;
 }) {
   const deltaRang = rang != null && rangPrec != null ? rangPrec - rang : null;
   const gain = deltaRang != null && deltaRang > 0, perte = deltaRang != null && deltaRang < 0;
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
-        <p title={nomComplet} style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>Sénégal · {zone}</p>
+      {/* La bascule EST le titre de la carte */}
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+        <div style={{ display: "inline-flex", background: "#EEF1F6", borderRadius: 999, padding: 2, gap: 2, flex: 1, minWidth: 0 }}>
+          {([{ v: "entrant", l: "Flux entrants" }, { v: "sortant", l: "Flux sortants" }] as const).map((o) => {
+            const actif = o.v === dir;
+            return (
+              <button key={o.v} onClick={() => onDir(o.v)} style={{
+                border: "none", cursor: "pointer", padding: "4px 10px", borderRadius: 999, flex: 1, minWidth: 0,
+                fontSize: 10, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                background: actif ? "#fff" : "transparent", color: actif ? BLEU : "#6b7684",
+                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
+              }}>{o.l}</button>
+            );
+          })}
+        </div>
         {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
-      </div>
-      <div style={{ display: "inline-flex", background: "#EEF1F6", borderRadius: 999, padding: 2, gap: 2, marginBottom: 11 }}>
-        {([{ v: "entrant", l: "Entrants" }, { v: "sortant", l: "Sortants" }] as const).map((o) => {
-          const actif = o.v === dir;
-          return (
-            <button key={o.v} onClick={() => onDir(o.v)} style={{
-              border: "none", cursor: "pointer", padding: "3px 10px", borderRadius: 999,
-              fontSize: 10, fontWeight: 700, whiteSpace: "nowrap",
-              background: actif ? "#fff" : "transparent", color: actif ? BLEU : "#6b7684",
-              boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
-            }}>{o.l}</button>
-          );
-        })}
       </div>
       {chargement ? (
         <>
@@ -316,8 +316,8 @@ function KpiSenegalZone({ zone, nomComplet, tag, dir, onDir, valeur, rang, rangP
           <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
             <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtMUSD(valeur)}</p>
             {rang != null && (
-              <span title="Rang du Sénégal dans le classement de la zone"
-                style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: BLEU, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{rang}ᵉ</span>
+              <span title={`Rang du Sénégal dans le classement ${nomComplet ?? abrege}`}
+                style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: BLEU, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0, fontVariantNumeric: "tabular-nums", overflow: "hidden", textOverflow: "ellipsis" }}>{rang}ᵉ · {abrege}</span>
             )}
           </div>
           <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -565,8 +565,8 @@ export default function TableauDeBordPage() {
   const [grpMonde, setGrpMonde] = useState<{ code: string; nom_fr: string; categorie: string }[]>([]);
   useEffect(() => { getJSON(`${API}/ide/monde/groupements`).then((d) => setGrpMonde(Array.isArray(d) ? d : [])); }, []);
   const zonesSen = useMemo(
-    () => ZONES_SEN.map((z) => { const g = grpMonde.find(z.trouve); return g ? { cle: z.cle, titre: z.titre, code: g.code, nomComplet: g.nom_fr } : null; })
-      .filter(Boolean) as { cle: string; titre: string; code: string; nomComplet: string }[],
+    () => ZONES_SEN.map((z) => { const g = grpMonde.find(z.trouve); return g ? { cle: z.cle, titre: z.titre, abrege: z.abrege, code: g.code, nomComplet: g.nom_fr } : null; })
+      .filter(Boolean) as { cle: string; titre: string; abrege: string; code: string; nomComplet: string }[],
     [grpMonde]);
   const [zoneTops, setZoneTops] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
   const [zonePrec, setZonePrec] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
@@ -641,14 +641,14 @@ export default function TableauDeBordPage() {
                  valeur des flux + rang dans la zone, bascule Entrants ⇆
                  Sortants, variation de rang vs n-1 ── */}
             <div className="tdb-kpis" style={{ marginTop: -48, position: "relative", zIndex: 2 }}>
-              {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
+              {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, abrege: z.abrege, code: "", nomComplet: z.titre }))).map((z) => {
                 const st = z.code ? zoneTops[z.code] : undefined;
                 const pv = z.code ? zonePrec[z.code] : undefined;
                 const dir = zoneKpiDir[z.code] ?? "entrant";
                 const sen = senDans(st?.tops?.[dir]);
                 const senPrec = senDans(pv?.tops?.[dir]);
                 return (
-                  <KpiSenegalZone key={z.cle} zone={z.titre} nomComplet={z.nomComplet}
+                  <KpiSenegalZone key={z.cle} abrege={z.abrege} nomComplet={z.nomComplet}
                     tag={ideAnnee != null ? String(ideAnnee) : undefined}
                     dir={dir} onDir={(d) => setZoneKpiDir((p) => ({ ...p, [z.code]: d }))}
                     valeur={sen?.valeur ?? null} rang={sen?.rang ?? null}
