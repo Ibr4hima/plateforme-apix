@@ -281,11 +281,11 @@ function BtnAjoutGroupement({ groupements, exclus, type, plein, changer, onPick,
               <div key={sec.label}>
                 <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{sec.label}</div>
                 {sec.items.map(g => (
-                  <button key={g.code} onClick={() => { onPick(g.code); setQ(""); if (changer) setOpen(false); else inputRef.current?.focus(); }}
+                  <button key={g.code} title={g.nom_fr} onClick={() => { onPick(g.code); setQ(""); if (changer) setOpen(false); else inputRef.current?.focus(); }}
                     style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500 }}>{g.nom_fr}</span>
+                    <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500 }}>{sec.label === "Groupements" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
                   </button>
                 ))}
               </div>
@@ -2442,7 +2442,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
               const disabled = !sel && familleActive === familleDe(g.code) && grpSelec.length >= 4;
               return (
-                <button key={g.code} onClick={()=>toggle(g.code)}
+                <button key={g.code} onClick={()=>toggle(g.code)} title={g.nom_fr}
                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
                   onMouseEnter={e=>{
                     if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";
@@ -2458,7 +2458,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
                   </div>
                   <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0, flex:1 }}>
-                    <span style={{ display:"inline-block", fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>{g.nom_fr}</span>
+                    <span style={{ display:"inline-block", fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>{(g as any).categorie === "groupe" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
                   </span>
                 </button>
               );
@@ -2551,7 +2551,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               /* Monde ou sélection unique : le titre EST le choix */
               <>
                 <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
-                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
+                <h2 title={grpAvecCouleur[0]?.label} style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>
+                  {grpSelec.length === 1 && groupements.find(g => g.code === grpSelec[0])?.categorie === "groupe"
+                    ? grpSelec[0].replace(/_/g, " ")
+                    : (grpAvecCouleur[0]?.label ?? "Monde")}
+                </h2>
               </>
             )}
             <BtnAjoutGroupement groupements={groupements} exclus={grpSelec}
@@ -2576,7 +2580,10 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <VueMondeGlobale key="monde" sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}/>
         ) : grpSelec.length===1 ? (
           <VueMondeGlobale key={grpSelec[0]} sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}
-            code={grpSelec[0]} zone={grpAvecCouleur[0]?.label ?? grpSelec[0]}/>
+            code={grpSelec[0]}
+            zone={(groupements.find(g => g.code === grpSelec[0])?.categorie === "groupe"
+              ? grpSelec[0].replace(/_/g, " ")
+              : grpAvecCouleur[0]?.label) ?? grpSelec[0]}/>
         ) : loading ? (
           <SkeletonChartGrid n={4} cols={2} height={230}/>
         ) : erreur ? (
