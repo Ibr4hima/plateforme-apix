@@ -150,6 +150,7 @@ async def get_monde_details(
 @router.get("/monde/global")
 async def get_monde_global(
     indicateur: str           = Query(default="flux"),
+    code:       Optional[str] = Query(None),    # groupement : restreint à ses pays membres
     annee_min:  Optional[int] = Query(None),
     annee_max:  Optional[int] = Query(None),
     annees:     Optional[str] = Query(None),    # "2003,2008" — année(s) précises
@@ -158,6 +159,12 @@ async def get_monde_global(
     from sqlalchemy import func as _f, or_
 
     conds = [IdeCnuced.indicateur == indicateur, IdeCnuced.valeur.is_not(None)]
+    if code:
+        grp_res = await db.execute(select(RefGroupement).where(RefGroupement.code == code))
+        grp = grp_res.scalar_one_or_none()
+        if not grp or not grp.pays_ids:
+            return {"series": {"entrant": [], "sortant": []}, "tops": {"entrant": [], "sortant": []}}
+        conds.append(IdeCnuced.ref_pays_id.in_(grp.pays_ids))
     if annees:
         liste = [int(a.strip()) for a in annees.split(",") if a.strip().isdigit()]
         if liste:

@@ -2066,17 +2066,41 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
   );
 }
 
-// Libellés de la vue mondiale par catégorie de données
-const MONDE_LIBELLES: Record<string, { ind: string; kpiE: string; kpiS: string; serieE: string; serieS: string; topE: string; topS: string; top1E: string; top1S: string }> = {
-  fluxstock:  { ind: "flux",              kpiE: "Flux entrants · monde",  kpiS: "Flux sortants · monde",  serieE: "Flux d'IDE entrants · total mondial",       serieS: "Flux d'IDE sortants · total mondial",        topE: "Top 10 des pays récepteurs d'IDE",      topS: "Top 10 des pays émetteurs d'IDE",       top1E: "1er pays récepteur", top1S: "1er pays émetteur" },
-  greenfield: { ind: "greenfield_valeur", kpiE: "Greenfield reçus · monde", kpiS: "Greenfield émis · monde", serieE: "Investissements greenfield reçus · monde", serieS: "Investissements greenfield émis · monde",   topE: "Top 10 des pays d'accueil · greenfield", topS: "Top 10 des pays émetteurs · greenfield", top1E: "1er pays d'accueil", top1S: "1er pays émetteur" },
-  fusion:     { ind: "ma_valeur",         kpiE: "Rachats d'entreprises · monde", kpiS: "Acquisitions · monde", serieE: "Valeur des rachats d'entreprises · monde", serieS: "Valeur des acquisitions à l'étranger · monde", topE: "Top 10 des pays cibles · M&A",          topS: "Top 10 des pays acquéreurs · M&A",      top1E: "1er pays cible",     top1S: "1er pays acquéreur" },
-};
+// Libellés de la vue mondiale (ou d'une zone) par catégorie de données
+function libellesMonde(sousType: string, zone: string | null) {
+  const z = zone ?? "monde";           // « monde » ou le nom de la zone (Afrique…)
+  const suf = ` · ${z}`;
+  const sufTop = zone ? ` · ${zone}` : "";
+  if (sousType === "greenfield") return {
+    ind: "greenfield_valeur",
+    kpiE: `Greenfield reçus${suf}`, kpiS: `Greenfield émis${suf}`,
+    serieE: `Investissements greenfield reçus${suf}`, serieS: `Investissements greenfield émis${suf}`,
+    topE: `Top 10 des pays d'accueil · greenfield${sufTop}`, topS: `Top 10 des pays émetteurs · greenfield${sufTop}`,
+    top1E: "1er pays d'accueil", top1S: "1er pays émetteur",
+  };
+  if (sousType === "fusion") return {
+    ind: "ma_valeur",
+    kpiE: `Rachats d'entreprises${suf}`, kpiS: `Acquisitions${suf}`,
+    serieE: `Valeur des rachats d'entreprises${suf}`, serieS: `Valeur des acquisitions à l'étranger${suf}`,
+    topE: `Top 10 des pays cibles · M&A${sufTop}`, topS: `Top 10 des pays acquéreurs · M&A${sufTop}`,
+    top1E: "1er pays cible", top1S: "1er pays acquéreur",
+  };
+  return {
+    ind: "flux",
+    kpiE: `Flux entrants${suf}`, kpiS: `Flux sortants${suf}`,
+    serieE: zone ? `Flux d'IDE entrants · ${zone}` : "Flux d'IDE entrants · total mondial",
+    serieS: zone ? `Flux d'IDE sortants · ${zone}` : "Flux d'IDE sortants · total mondial",
+    topE: `Top 10 des pays récepteurs d'IDE${sufTop}`, topS: `Top 10 des pays émetteurs d'IDE${sufTop}`,
+    top1E: "1er pays récepteur", top1S: "1er pays émetteur",
+  };
+}
 
-function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec }: {
+function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec, code = null, zone = null }: {
   sousType: string; modeAnnees: "plage" | "specifiques"; anneeMin: number; anneeMax: number; anneesSpec: number[];
+  /** Groupement (continent, région, organisation) : restreint l'agrégat à ses pays membres */
+  code?: string | null; zone?: string | null;
 }) {
-  const L = MONDE_LIBELLES[sousType] || MONDE_LIBELLES.fluxstock;
+  const L = libellesMonde(sousType, zone);
   type Global = { series: { entrant: { annee: number; valeur: number }[]; sortant: { annee: number; valeur: number }[] }; tops: { entrant: TopPays[]; sortant: TopPays[] } };
   const [donnees, setDonnees] = useState<Global | null>(null);
   const [loading, setLoading] = useState(true);
@@ -2092,10 +2116,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec 
 
   const paramsPeriode = useCallback(() => {
     const p = new URLSearchParams({ indicateur: L.ind });
+    if (code) p.set("code", code);
     if (modeAnnees === "specifiques" && anneesSpec.length > 0) p.set("annees", anneesSpec.join(","));
     else { p.set("annee_min", String(anneeMin)); p.set("annee_max", String(anneeMax)); }
     return p;
-  }, [L.ind, modeAnnees, anneeMin, anneeMax, anneesSpec]);
+  }, [L.ind, code, modeAnnees, anneeMin, anneeMax, anneesSpec]);
 
   useEffect(() => {
     setLoading(true); setErreur(false);
@@ -2110,17 +2135,17 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec 
   useEffect(() => {
     if (anneeTopED === null) { setTopAnneeE(null); return; }
     const annee = anneeTopED;
-    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}`)
+    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`)
       .then(r => r.json()).then(d => setTopAnneeE({ annee, rows: d?.tops?.entrant || [] }))
       .catch(() => setTopAnneeE({ annee, rows: [] }));
-  }, [anneeTopED, L.ind]);
+  }, [anneeTopED, L.ind, code]);
   useEffect(() => {
     if (anneeTopSD === null) { setTopAnneeS(null); return; }
     const annee = anneeTopSD;
-    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}`)
+    fetch(`${API}/ide/monde/global?indicateur=${L.ind}&annees=${annee}${code ? `&code=${code}` : ""}`)
       .then(r => r.json()).then(d => setTopAnneeS({ annee, rows: d?.tops?.sortant || [] }))
       .catch(() => setTopAnneeS({ annee, rows: [] }));
-  }, [anneeTopSD, L.ind]);
+  }, [anneeTopSD, L.ind, code]);
 
   if (loading) return <SkeletonChartGrid n={4} cols={2} height={230}/>;
   if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
@@ -2128,7 +2153,7 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec 
   const sS = donnees?.series?.sortant || [];
   if (!sE.length && !sS.length) return (
     <div style={{ textAlign: "center" as const, padding: "80px 24px", color: "#9aa5b4" }}>
-      <p style={{ fontSize: 14, lineHeight: 1.7 }}>Aucune donnée mondiale pour cette catégorie.</p>
+      <p style={{ fontSize: 14, lineHeight: 1.7 }}>Aucune donnée {zone ? `pour ${zone}` : "mondiale"} dans cette catégorie.</p>
     </div>
   );
 
@@ -2146,8 +2171,8 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec 
     { label: L.top1E, annee: null, val: topsE[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsE[0] ? `${fmtVal(topsE[0].valeur)} sur la période` : "" },
     { label: L.top1S, annee: null, val: topsS[0]?.pays || "—", delta: null, ref: null, texte: true, sous: topsS[0] ? `${fmtVal(topsS[0].valeur)} sur la période` : "" },
   ] as any[];
-  const seriesE = [{ nom: "Monde", couleur: "#004f91", data: sE }];
-  const seriesS = [{ nom: "Monde", couleur: "#ca631f", data: sS }];
+  const seriesE = [{ nom: zone ?? "Monde", couleur: "#004f91", data: sE }];
+  const seriesS = [{ nom: zone ?? "Monde", couleur: "#ca631f", data: sS }];
 
   return (
     <div className="charge-in">
@@ -2174,11 +2199,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec 
 
       {/* Totaux mondiaux */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-        <GrapheCard titre={L.serieE} sous_titre="M$ USD · CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}`} hideLegend hideSousTitre
+        <GrapheCard titre={L.serieE} sous_titre="M$ USD · CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesE} height={340}/>}>
           <GrapheMultiPays series={seriesE} height={160}/>
         </GrapheCard>
-        <GrapheCard titre={L.serieS} sous_titre="M$ USD · CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}`} hideLegend hideSousTitre
+        <GrapheCard titre={L.serieS} sous_titre="M$ USD · CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesS} height={340}/>}>
           <GrapheMultiPays series={seriesS} height={160}/>
         </GrapheCard>
@@ -2548,7 +2573,10 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
         <div style={{ filter: ajoutOpen ? "blur(4px)" : "none", opacity: ajoutOpen ? 0.6 : 1, pointerEvents: ajoutOpen ? "none" : "auto", transition: "filter 0.2s, opacity 0.2s" }}>
         {grpSelec.length===0 ? (
-          <VueMondeGlobale sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}/>
+          <VueMondeGlobale key="monde" sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}/>
+        ) : grpSelec.length===1 ? (
+          <VueMondeGlobale key={grpSelec[0]} sousType={sousType} modeAnnees={modeAnnees} anneeMin={anneeMinD} anneeMax={anneeMaxD} anneesSpec={anneesSpecD}
+            code={grpSelec[0]} zone={grpAvecCouleur[0]?.label ?? grpSelec[0]}/>
         ) : loading ? (
           <SkeletonChartGrid n={4} cols={2} height={230}/>
         ) : erreur ? (
