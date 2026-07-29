@@ -437,7 +437,6 @@ export default function TableauDeBordPage() {
   const [onglet, setOnglet] = useState<"viz" | "tables">("viz");
 
   // Données
-  const [stats, setStats] = useState<any>(null);
   const [ideFlux, setIdeFlux] = useState<any[]>([]);
   const [ideStock, setIdeStock] = useState<any[]>([]);
   const [ideFluxSort, setIdeFluxSort] = useState<any[]>([]);
@@ -459,7 +458,6 @@ export default function TableauDeBordPage() {
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
 
   useEffect(() => {
-    getJSON(`${API}/dashboard/stats`).then(setStats);
     getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=flux`).then((d) => setIdeFlux(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=stock`).then((d) => setIdeStock(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=flux`).then((d) => setIdeFluxSort(Array.isArray(d) ? d : []));
@@ -639,12 +637,25 @@ export default function TableauDeBordPage() {
 
         {onglet === "viz" ? (
           <>
-            {/* ── KPIs globaux (chevauchent le bandeau) ── */}
+            {/* ── KPIs du Sénégal dans ses groupements (chevauchent le bandeau) :
+                 valeur des flux + rang dans la zone, bascule Entrants ⇆
+                 Sortants, variation de rang vs n-1 ── */}
             <div className="tdb-kpis" style={{ marginTop: -48, position: "relative", zIndex: 2 }}>
-              <Kpi label="Entreprises" valeur={stats ? nf(stats.entreprises_total) : "—"} sousLabel="installées" />
-              <Kpi label="Accords en vigueur" valeur={stats ? nf(stats.accords_vigueur) : "—"} sousLabel={stats ? `sur ${nf(stats.accords_total)}` : ""} />
-              <Kpi label="Intentions d'investiss." valeur={stats ? fmtUSD(stats.intentions_usd) : "—"} sousLabel={stats ? `${nf(stats.intentions_total)} projets` : ""} />
-              <Kpi label="Zones d'investissement" valeur={stats ? nf(stats.zones_total) : "—"} sousLabel={stats ? `${nf(stats.poles_total)} pôles` : ""} />
+              {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
+                const st = z.code ? zoneTops[z.code] : undefined;
+                const pv = z.code ? zonePrec[z.code] : undefined;
+                const dir = zoneKpiDir[z.code] ?? "entrant";
+                const sen = senDans(st?.tops?.[dir]);
+                const senPrec = senDans(pv?.tops?.[dir]);
+                return (
+                  <KpiSenegalZone key={z.cle} zone={z.titre} nomComplet={z.nomComplet}
+                    tag={ideAnnee != null ? String(ideAnnee) : undefined}
+                    dir={dir} onDir={(d) => setZoneKpiDir((p) => ({ ...p, [z.code]: d }))}
+                    valeur={sen?.valeur ?? null} rang={sen?.rang ?? null}
+                    rangPrec={senPrec?.rang ?? null} anneePrec={pv?.annee ?? null}
+                    chargement={!st || st.annee !== ideAnnee} />
+                );
+              })}
             </div>
 
             {/* ── 1. IDE ── */}
@@ -658,26 +669,6 @@ export default function TableauDeBordPage() {
                 <Kpi label="Stock entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.last ? kStockEnt.prev?.annee : null} />
                 <Kpi label="Stock sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.last ? kStockSort.prev?.annee : null} />
               </div>
-              {/* Le Sénégal dans ses groupements : valeur des flux + rang et
-                  variation de rang vs n-1, bascule Entrants ⇆ Sortants */}
-              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
-                {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
-                  const st = z.code ? zoneTops[z.code] : undefined;
-                  const pv = z.code ? zonePrec[z.code] : undefined;
-                  const dir = zoneKpiDir[z.code] ?? "entrant";
-                  const sen = senDans(st?.tops?.[dir]);
-                  const senPrec = senDans(pv?.tops?.[dir]);
-                  return (
-                    <KpiSenegalZone key={z.cle} zone={z.titre} nomComplet={z.nomComplet}
-                      tag={ideAnnee != null ? String(ideAnnee) : undefined}
-                      dir={dir} onDir={(d) => setZoneKpiDir((p) => ({ ...p, [z.code]: d }))}
-                      valeur={sen?.valeur ?? null} rang={sen?.rang ?? null}
-                      rangPrec={senPrec?.rang ?? null} anneePrec={pv?.annee ?? null}
-                      chargement={!st || st.annee !== ideAnnee} />
-                  );
-                })}
-              </div>
-
               {/* Top 10 des pays dans les groupements dont fait partie le
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
