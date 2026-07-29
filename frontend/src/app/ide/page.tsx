@@ -15,7 +15,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
+import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
@@ -213,9 +213,11 @@ function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChange }: {
 // Même fonctionnement que l'ajout de pays : popover avec recherche, sections
 // groupées, reste ouvert pour enchaîner, fermeture automatique à 4. Seuls les
 // éléments compatibles avec la famille active sont proposés.
-function BtnAjoutGroupement({ groupements, exclus, famille, plein, onPick, onOpenChange }: {
+function BtnAjoutGroupement({ groupements, exclus, famille, plein, changer, onPick, onOpenChange }: {
   groupements: { code: string; nom_fr: string; categorie: string }[];
   exclus: string[]; famille: "cont" | "groupe" | null; plein: boolean;
+  /** Sur « Monde » : le bouton sert à CHANGER de vue (icône échanger), pas à ajouter */
+  changer?: boolean;
   onPick: (code: string) => void; onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -251,14 +253,15 @@ function BtnAjoutGroupement({ groupements, exclus, famille, plein, onPick, onOpe
   return (
     <div ref={ref} style={{ position:"relative", display:"inline-flex" }}>
       <button onClick={() => !plein && setOpen(o => !o)} disabled={plein}
-        aria-label="Comparer avec d'autres groupements" title={plein ? "4 sélections maximum" : "Comparer avec d'autres groupements"}
+        aria-label={changer ? "Changer de vue" : "Comparer avec d'autres groupements"}
+        title={plein ? "4 sélections maximum" : changer ? "Voir un continent, une région ou un groupement" : "Comparer avec d'autres groupements"}
         style={{ width:28, height:28, borderRadius:999, border:`1.5px dashed ${plein ? "#D8D4D0" : open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
           background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: plein ? "#C5BFBB" : "#004f91",
           cursor: plein ? "not-allowed" : "pointer",
           display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
         onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; } }}
         onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "#D8D4D0" : "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
-        <Plus size={14}/>
+        {changer ? <IconeCached size={13}/> : <Plus size={14}/>}
       </button>
       {open && (
         <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:60, width:300,
@@ -2521,7 +2524,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               </>
             )}
             <BtnAjoutGroupement groupements={groupements} exclus={grpSelec} famille={familleActive}
-              plein={grpSelec.length>=4}
+              plein={grpSelec.length>=4} changer={grpSelec.length===0}
               onPick={code=>setGrpSelec(p=>p.includes(code)||p.length>=4?p:[...p,code])}
               onOpenChange={setAjoutOpen}/>
             <BadgePeriode>
