@@ -2551,11 +2551,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               /* Monde ou sélection unique : le titre EST le choix */
               <>
                 <div style={{ width:10, height:10, borderRadius:"50%", background:"#004f91", flexShrink:0 }} />
-                <h2 title={grpAvecCouleur[0]?.label} style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>
-                  {grpSelec.length === 1 && groupements.find(g => g.code === grpSelec[0])?.categorie === "groupe"
-                    ? grpSelec[0].replace(/_/g, " ")
-                    : (grpAvecCouleur[0]?.label ?? "Monde")}
-                </h2>
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
               </>
             )}
             <BtnAjoutGroupement groupements={groupements} exclus={grpSelec}
