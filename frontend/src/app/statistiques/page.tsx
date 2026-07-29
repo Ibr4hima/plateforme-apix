@@ -264,6 +264,117 @@ function TableauProduitsNace({ titre, couleur, lignes, lignesPrec, mesure, onMes
   );
 }
 
+// Section « Produits regroupés » : nomenclature détaillée ANSD (30–56
+// postes par sens). Top 12 par défaut + « Voir tout », recherche par
+// libellé, bascule Valeur ⇆ Poids ; le rang affiché est le rang réel
+// dans le classement complet de l'année.
+function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec }: {
+  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[];
+}) {
+  const [mesure, setMesure] = useState<NaceMesure>("valeur");
+  const [q, setQ] = useState("");
+  const [tout, setTout] = useState(false);
+  const TOP = 12;
+  const val = (r: NaceLigne) => (mesure === "valeur" ? r.valeur : r.poids) ?? 0;
+  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
+  const nommes = lignes.filter(r => r.produit !== "Autres produits").sort((a, b) => val(b) - val(a));
+  const autres = lignes.find(r => r.produit === "Autres produits") ?? null;
+  const total = lignes.reduce((s, r) => s + Math.max(0, val(r)), 0);
+  const max = Math.max(1e-9, ...nommes.map(val));
+  const rangDe = new Map(nommes.map((r, i) => [r.produit, i + 1]));
+  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const filtres = q ? nommes.filter(r => norm(r.produit).includes(norm(q))) : nommes;
+  const visibles = q || tout ? filtres : filtres.slice(0, TOP);
+  const precDe = (produit: string) => lignesPrec.find(r => r.produit === produit) ?? null;
+  const Ligne = ({ r, epingle }: { r: NaceLigne; epingle?: boolean }) => {
+    const rang = epingle ? null : (rangDe.get(r.produit) ?? null);
+    const prec = precDe(r.produit);
+    const vPrec = prec ? (mesure === "valeur" ? prec.valeur : prec.poids) : null;
+    const delta = vPrec != null && vPrec !== 0 && val(r) != null ? ((val(r) - vPrec) / Math.abs(vPrec)) * 100 : null;
+    const podium = rang != null && rang <= 3;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8,
+        background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}>
+        <span style={{ width: 24, flexShrink: 0 }}>
+          {rang != null && (
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
+              background: podium ? couleur : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
+          )}
+        </span>
+        <span title={r.produit} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: epingle ? 600 : 650, color: epingle ? "#9aa5b4" : "#1a1a2e",
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: epingle ? "italic" : "normal" }}>{r.produit}</span>
+        <span className="ds-donnee" style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(val(r))}</span>
+        <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
+          {total > 0 ? `${(Math.max(0, val(r)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+        </span>
+        <span style={{ width: 60, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
+        <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+          {val(r) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, val(r) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10, alignSelf: "start" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h3>
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
+          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
+            const actif = o.v === mesure;
+            return (
+              <button key={o.v} onClick={() => setMesure(o.v)} style={{
+                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
+                background: actif ? "#fff" : "transparent", color: actif ? couleur : "#6b7684",
+                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
+            );
+          })}
+        </div>
+      </div>
+      {/* Recherche d'un produit dans la nomenclature */}
+      <div style={{ position: "relative" }}>
+        <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${nommes.length} produits…`}
+          style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+        {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+      </div>
+      {lignes.length === 0 ? (
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucune donnée.</p>
+      ) : filtres.length === 0 ? (
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucun produit ne correspond à « {q} ».</p>
+      ) : (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+            <span style={{ width: 24, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>Produit</span>
+            <span style={{ width: 84, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>{mesure === "valeur" ? "Valeur" : "Poids"}</span>
+            <span style={{ width: 38, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
+            <span style={{ width: 60, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>vs n-1</span>
+            <span style={{ width: "16%", flexShrink: 0 }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {visibles.map(r => <Ligne key={r.produit} r={r} />)}
+            {!q && filtres.length > TOP && (
+              <button onClick={() => setTout(t => !t)}
+                style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
+                {tout ? "Réduire au top 12" : `Voir les ${filtres.length - TOP} autres produits`}
+              </button>
+            )}
+            {autres && !q && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
+                  <span style={{ width: 24, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                  <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
+                </div>
+                <Ligne r={autres} epingle />
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function CommerceExterieurPanel() {
   const [data, setData] = useState<NaceData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -273,10 +384,14 @@ function CommerceExterieurPanel() {
   const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
   const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
 
+  // Nomenclature détaillée (produits regroupés) — section dédiée, non bloquante
+  const [reg, setReg] = useState<NaceData | null>(null);
   useEffect(() => {
     setLoading(true); setErreur(false);
     fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setData).catch(() => setErreur(true)).finally(() => setLoading(false));
+    fetch(`${API}/nace/produits-regroupes`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setReg).catch(() => setReg(null));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -397,6 +512,29 @@ function CommerceExterieurPanel() {
           lignes={lignesDe("import", an)} lignesPrec={lignesDe("import", an - 1)}
           mesure={mesureImp} onMesure={setMesureImp} />
       </div>
+
+      {/* Produits regroupés : nomenclature détaillée ANSD, section dédiée */}
+      {reg?.disponible && (() => {
+        const regDe = (sens: "export" | "import", a: number) => reg.donnees[sens].filter(r => r.annee === a);
+        const rE = regDe("export", an), rI = regDe("import", an);
+        if (!rE.length && !rI.length) return null;
+        return (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Produits regroupés</h3>
+              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+                Nomenclature détaillée ANSD — {rE.filter(r => r.produit !== "Autres produits").length} postes export · {rI.filter(r => r.produit !== "Autres produits").length} import
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
+              <TableauRegroupesNace titre={`Exportations par produit · ${an}`} couleur={NACE_BLEU}
+                lignes={rE} lignesPrec={regDe("export", an - 1)} />
+              <TableauRegroupesNace titre={`Importations par produit · ${an}`} couleur={NACE_ORANGE}
+                lignes={rI} lignesPrec={regDe("import", an - 1)} />
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
