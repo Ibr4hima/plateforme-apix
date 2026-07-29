@@ -26,12 +26,13 @@ FAMILLES = [
     ("principaux_produits", "totaux", 3, "produit"),
     ("produits_regroupes", "totaux_regroupes", 6, "produit"),
     ("groupes_utilisation", "totaux_groupes", 2, "groupe"),
+    ("chapitres", "totaux_chapitres", 12, "chapitre"),
 ]
 
 fichiers = [
     (fic, famille, suffixe_tot, tolerance, colonne)
     for famille, suffixe_tot, tolerance, colonne in FAMILLES
-    for fic in sorted(dossier.glob(f"edition_*_{famille}.csv"))
+    for fic in sorted(dossier.glob(f"edition_[0-9][0-9][0-9][0-9]_{famille}.csv"))
 ]
 for fic, famille, suffixe_tot, tolerance, colonne in fichiers:
     edition = fic.stem.split("_")[1]
@@ -79,7 +80,7 @@ for fic, famille, suffixe_tot, tolerance, colonne in fichiers:
             code_sortie = 1
     nb_exp = len({p for (p, s) in par_produit if s == "export"})
     nb_imp = len({p for (p, s) in par_produit if s == "import"})
-    libelle = "groupes" if colonne == "groupe" else "produits"
+    libelle = {"groupe": "groupes", "chapitre": "chapitres"}.get(colonne, "produits")
     print(f"  {nb_exp} {libelle} export · {nb_imp} {libelle} import — complétude OK" if code_sortie == 0 else "")
 
 print("\nRésultat global :", "CONFORME" if code_sortie == 0 else "ÉCARTS DÉTECTÉS")

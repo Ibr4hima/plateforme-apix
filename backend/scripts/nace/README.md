@@ -1,6 +1,6 @@
 # Extractions NACE — annexes des rapports annuels
 
-Trois familles extraites, mêmes règles et même vérification :
+Quatre familles extraites, mêmes règles et même vérification :
 - **principaux produits** (`edition_XXXX_principaux_produits.csv`,
   totaux dans `edition_XXXX_totaux.csv`) ;
 - **produits regroupés** (`edition_XXXX_produits_regroupes.csv`,
@@ -23,6 +23,19 @@ Trois familles extraites, mêmes règles et même vérification :
   valeurs sont bien 2015–2019 (son TOTAL 2019 = 4 229 294 = celui des
   autres tableaux). Les colonnes sont donc lues par position, et la
   contre-vérification par la balance confirme l'alignement.
+
+- **chapitres SH** (`edition_XXXX_chapitres.csv`, totaux dans
+  `edition_XXXX_totaux_chapitres.csv`, colonne `chapitre`) — jusqu'à
+  97 chapitres du Système Harmonisé par sens, exhaustifs eux aussi.
+  Extraction par `extraire_chapitres.py` ; les libellés (longs, en
+  capitales, séparés par des points-virgules) sont mis en casse normale,
+  les points-virgules deviennent des virgules et les accents sont
+  restitués mot à mot via `lexique_chapitres.json` (fautes du PDF
+  corrigées au passage : HUILLES → huiles, PARFURMERIE → parfumerie).
+  Pièges traités : libellés coupés sur deux lignes AVANT les valeurs
+  (l'inverse des groupes d'utilisation), en-têtes d'années qui sont
+  eux-mêmes des lignes de 5 nombres, et « - » (absence de flux) qui
+  aurait fait perdre une douzaine de lignes par tableau.
 
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années

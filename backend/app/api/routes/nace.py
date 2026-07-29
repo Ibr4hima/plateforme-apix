@@ -71,7 +71,7 @@ async def importer_nace(
 
     rapport: dict = {}
     for famille, modele, col in FAMILLES:
-        fichiers = sorted(DOSSIER_CSV.glob(f"edition_*_{famille}.csv"))
+        fichiers = sorted(DOSSIER_CSV.glob(f"edition_[0-9][0-9][0-9][0-9]_{famille}.csv"))
         total, editions = 0, []
         for fic in fichiers:
             lignes = [
