@@ -213,9 +213,12 @@ function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChange }: {
 // Même fonctionnement que l'ajout de pays : popover avec recherche, sections
 // groupées, reste ouvert pour enchaîner, fermeture automatique à 4. Seuls les
 // éléments compatibles avec la famille active sont proposés.
-function BtnAjoutGroupement({ groupements, exclus, famille, plein, changer, onPick, onOpenChange }: {
+function BtnAjoutGroupement({ groupements, exclus, type, plein, changer, onPick, onOpenChange }: {
   groupements: { code: string; nom_fr: string; categorie: string }[];
-  exclus: string[]; famille: "cont" | "groupe" | null; plein: boolean;
+  exclus: string[];
+  /** Type déjà sélectionné : seuls ses semblables sont proposés (null = tout) */
+  type: "continent" | "region" | "groupe" | null;
+  plein: boolean;
   /** Sur « Monde » : le bouton sert à CHANGER de vue (icône échanger), pas à ajouter */
   changer?: boolean;
   onPick: (code: string) => void; onOpenChange?: (open: boolean) => void;
@@ -235,17 +238,20 @@ function BtnAjoutGroupement({ groupements, exclus, famille, plein, changer, onPi
 
   const match = (g: { code: string; nom_fr: string }) => !exclus.includes(g.code) && (!q || g.nom_fr.toLowerCase().includes(q.toLowerCase()) || g.code.toLowerCase().includes(q.toLowerCase()));
   const continents = groupements.filter(g => g.categorie === "continent");
-  // Sections compatibles : continents & régions (par continent) et/ou groupements
+  // Sections du même type que la sélection : continents entre eux, régions
+  // entre elles, groupements entre eux (tout quand rien n'est sélectionné)
   const sections: { label: string; items: { code: string; nom_fr: string }[] }[] = [];
-  if (famille !== "groupe") {
+  if (type === null || type === "continent") {
     const cs = continents.filter(match);
     if (cs.length) sections.push({ label: "Continents", items: cs });
+  }
+  if (type === null || type === "region") {
     continents.forEach(cont => {
       const regs = groupements.filter(g => g.categorie === cont.nom_fr).filter(match);
       if (regs.length) sections.push({ label: cont.nom_fr, items: regs });
     });
   }
-  if (famille !== "cont") {
+  if (type === null || type === "groupe") {
     const gs = groupements.filter(g => g.categorie === "groupe").filter(match);
     if (gs.length) sections.push({ label: "Groupements", items: gs });
   }
@@ -275,7 +281,7 @@ function BtnAjoutGroupement({ groupements, exclus, famille, plein, changer, onPi
               <div key={sec.label}>
                 <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{sec.label}</div>
                 {sec.items.map(g => (
-                  <button key={g.code} onClick={() => { onPick(g.code); setQ(""); inputRef.current?.focus(); }}
+                  <button key={g.code} onClick={() => { onPick(g.code); setQ(""); if (changer) setOpen(false); else inputRef.current?.focus(); }}
                     style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
@@ -2523,7 +2529,12 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                 <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
               </>
             )}
-            <BtnAjoutGroupement groupements={groupements} exclus={grpSelec} famille={familleActive}
+            <BtnAjoutGroupement groupements={groupements} exclus={grpSelec}
+              type={(() => {
+                if (!grpSelec.length) return null;
+                const cat = groupements.find(x => x.code === grpSelec[0])?.categorie;
+                return cat === "continent" ? "continent" : cat === "groupe" ? "groupe" : "region";
+              })()}
               plein={grpSelec.length>=4} changer={grpSelec.length===0}
               onPick={code=>setGrpSelec(p=>p.includes(code)||p.length>=4?p:[...p,code])}
               onOpenChange={setAjoutOpen}/>
