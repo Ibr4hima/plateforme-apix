@@ -1,0 +1,131 @@
+produit,sens,annee,valeur,poids,edition
+Produits pétroliers,export,2015,133006,306382,2019
+Produits pétroliers,export,2016,99072,266210,2019
+Produits pétroliers,export,2017,124431,331320,2019
+Produits pétroliers,export,2018,131752,295151,2019
+Produits pétroliers,export,2019,148116,331714,2019
+Or non monétaire,export,2015,150517,8,2019
+Or non monétaire,export,2016,193347,10,2019
+Or non monétaire,export,2017,220144,12,2019
+Or non monétaire,export,2018,313375,15,2019
+Or non monétaire,export,2019,375734,16,2019
+Acide phosphorique,export,2015,94046,218673,2019
+Acide phosphorique,export,2016,115551,336624,2019
+Acide phosphorique,export,2017,95974,339469,2019
+Acide phosphorique,export,2018,157229,436780,2019
+Acide phosphorique,export,2019,195699,517984,2019
+Produits de la pêche,export,2015,202888,188692,2019
+Produits de la pêche,export,2016,217555,207421,2019
+Produits de la pêche,export,2017,236343,227667,2019
+Produits de la pêche,export,2018,274154,244881,2019
+Produits de la pêche,export,2019,330740,318485,2019
+Ciment,export,2015,104901,2348041,2019
+Ciment,export,2016,122799,2881676,2019
+Ciment,export,2017,117743,2770425,2019
+Ciment,export,2018,86503,2101426,2019
+Ciment,export,2019,77682,1850660,2019
+Produits arachidiers,export,2015,77120,140748,2019
+Produits arachidiers,export,2016,75547,155547,2019
+Produits arachidiers,export,2017,63936,121189,2019
+Produits arachidiers,export,2018,63475,146684,2019
+Produits arachidiers,export,2019,152953,390709,2019
+Cotons et tissus en coton,export,2015,9173,12710,2019
+Cotons et tissus en coton,export,2016,8643,11568,2019
+Cotons et tissus en coton,export,2017,6652,7935,2019
+Cotons et tissus en coton,export,2018,7328,7847,2019
+Cotons et tissus en coton,export,2019,7058,8045,2019
+Sel,export,2015,11531,342029,2019
+Sel,export,2016,10875,363117,2019
+Sel,export,2017,8676,286670,2019
+Sel,export,2018,8161,250806,2019
+Sel,export,2019,10206,402098,2019
+Phosphates,export,2015,34035,752353,2019
+Phosphates,export,2016,18587,472609,2019
+Phosphates,export,2017,18447,502421,2019
+Phosphates,export,2018,16187,500126,2019
+Phosphates,export,2019,22333,587216,2019
+Cuirs et peaux,export,2015,2458,3834,2019
+Cuirs et peaux,export,2016,1338,1,2019
+Cuirs et peaux,export,2017,3122,3,2019
+Cuirs et peaux,export,2018,3329,3,2019
+Cuirs et peaux,export,2019,4989,5,2019
+Engrais,export,2015,4003,4,2019
+Engrais,export,2016,4003,4,2019
+Engrais,export,2017,4003,4,2019
+Engrais,export,2018,4003,4,2019
+Engrais,export,2019,4003,4,2019
+Zirconium,export,2015,27354,45300,2019
+Zirconium,export,2016,30927,62101,2019
+Zirconium,export,2017,36415,72666,2019
+Zirconium,export,2018,57749,85994,2019
+Zirconium,export,2019,61251,88772,2019
+Titane,export,2015,27404,404323,2019
+Titane,export,2016,27537,387392,2019
+Titane,export,2017,45832,458580,2019
+Titane,export,2018,41907,411426,2019
+Titane,export,2019,54143,525972,2019
+"Préparations pour soupes, potages, bouillons",export,2015,63298,51785,2019
+"Préparations pour soupes, potages, bouillons",export,2016,62645,51366,2019
+"Préparations pour soupes, potages, bouillons",export,2017,72201,64498,2019
+"Préparations pour soupes, potages, bouillons",export,2018,71628,66750,2019
+"Préparations pour soupes, potages, bouillons",export,2019,76755,72003,2019
+Autres produits,export,2015,400894,813636,2019
+Autres produits,export,2016,382811,676742,2019
+Autres produits,export,2017,432479,870828,2019
+Autres produits,export,2018,433173,875352,2019
+Autres produits,export,2019,463429,905467,2019
+Machines et appareils,import,2015,479214,144144,2019
+Machines et appareils,import,2016,481240,139750,2019
+Machines et appareils,import,2017,566842,172183,2019
+Machines et appareils,import,2018,497191,160996,2019
+Machines et appareils,import,2019,656847,194305,2019
+Produits céréaliers,import,2015,311799,1786697,2019
+Produits céréaliers,import,2016,293643,1749493,2019
+Produits céréaliers,import,2017,335475,1933996,2019
+Produits céréaliers,import,2018,345474,1984532,2019
+Produits céréaliers,import,2019,357320,1995724,2019
+Matériels de transport et pièces détachées,import,2015,248531,112515,2019
+Matériels de transport et pièces détachées,import,2016,289996,120007,2019
+Matériels de transport et pièces détachées,import,2017,323355,142908,2019
+Matériels de transport et pièces détachées,import,2018,387986,171482,2019
+Matériels de transport et pièces détachées,import,2019,464309,198224,2019
+Huiles brutes de pétrole,import,2015,267396,989396,2019
+Huiles brutes de pétrole,import,2016,245912,1159472,2019
+Huiles brutes de pétrole,import,2017,302307,1199734,2019
+Huiles brutes de pétrole,import,2018,380015,1125394,2019
+Huiles brutes de pétrole,import,2019,236429,767522,2019
+Produits pétroliers finis,import,2015,329367,1042799,2019
+Produits pétroliers finis,import,2016,224209,953689,2019
+Produits pétroliers finis,import,2017,288835,995633,2019
+Produits pétroliers finis,import,2018,425414,1268603,2019
+Produits pétroliers finis,import,2019,497110,1499650,2019
+Métaux communs et ouvrages en métaux communs,import,2015,170861,374148,2019
+Métaux communs et ouvrages en métaux communs,import,2016,169992,418313,2019
+Métaux communs et ouvrages en métaux communs,import,2017,238781,489018,2019
+Métaux communs et ouvrages en métaux communs,import,2018,290753,557327,2019
+Métaux communs et ouvrages en métaux communs,import,2019,317271,571178,2019
+Matières plastiques et artificielles,import,2015,108488,118622,2019
+Matières plastiques et artificielles,import,2016,108621,137829,2019
+Matières plastiques et artificielles,import,2017,127065,151372,2019
+Matières plastiques et artificielles,import,2018,133884,156110,2019
+Matières plastiques et artificielles,import,2019,127736,166820,2019
+Produits pharmaceutiques,import,2015,104320,10265,2019
+Produits pharmaceutiques,import,2016,105218,10354,2019
+Produits pharmaceutiques,import,2017,124063,12436,2019
+Produits pharmaceutiques,import,2018,135865,12847,2019
+Produits pharmaceutiques,import,2019,156339,15030,2019
+Huiles et graisses,import,2015,71796,153826,2019
+Huiles et graisses,import,2016,87339,191242,2019
+Huiles et graisses,import,2017,102412,242321,2019
+Huiles et graisses,import,2018,76299,180335,2019
+Huiles et graisses,import,2019,100556,207152,2019
+Produits des industries parachimiques,import,2015,76344,50822,2019
+Produits des industries parachimiques,import,2016,83474,60635,2019
+Produits des industries parachimiques,import,2017,88387,62839,2019
+Produits des industries parachimiques,import,2018,90467,78104,2019
+Produits des industries parachimiques,import,2019,96778,82089,2019
+Autres produits,import,2015,864794,2655983,2019
+Autres produits,import,2016,887868,3329610,2019
+Autres produits,import,2017,1038973,3881717,2019
+Autres produits,import,2018,1152908,4654227,2019
+Autres produits,import,2019,1218600,4607532,2019
