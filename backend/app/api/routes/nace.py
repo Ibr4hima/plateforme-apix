@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
-from app.models.nace import NacePrincipalProduit, NaceProduitRegroupe
+from app.models.nace import NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation
 
 router = APIRouter(prefix="/nace", tags=["nace"])
 
@@ -46,16 +46,19 @@ ALIAS = {
 }
 
 
-# Familles extraites des annexes : motif de fichier CSV → modèle.
+# Familles extraites des annexes : motif de fichier CSV → modèle et nom de
+# la colonne portant la modalité (produit ou groupe d'utilisation).
 FAMILLES = [
-    ("principaux_produits", NacePrincipalProduit),
-    ("produits_regroupes", NaceProduitRegroupe),
+    ("principaux_produits", NacePrincipalProduit, "produit"),
+    ("produits_regroupes", NaceProduitRegroupe, "produit"),
+    ("groupes_utilisation", NaceGroupeUtilisation, "groupe"),
 ]
 
 
 # ── POST /nace/importer ───────────────────────────────────────────────────────
-# Charge (upsert) les CSV vérifiés du dépôt : principaux produits ET
-# produits regroupés, toutes éditions présentes dans backend/scripts/nace.
+# Charge (upsert) les CSV vérifiés du dépôt : principaux produits,
+# produits regroupés et groupes d'utilisation, toutes éditions présentes
+# dans backend/scripts/nace.
 @router.post("/importer")
 async def importer_nace(
     db: AsyncSession = Depends(get_db),
@@ -64,13 +67,13 @@ async def importer_nace(
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     rapport: dict = {}
-    for famille, modele in FAMILLES:
+    for famille, modele, col in FAMILLES:
         fichiers = sorted(DOSSIER_CSV.glob(f"edition_*_{famille}.csv"))
         total, editions = 0, []
         for fic in fichiers:
             lignes = [
                 {
-                    "produit": r["produit"],
+                    col: r[col],
                     "sens": r["sens"],
                     "annee": int(r["annee"]),
                     "valeur": r["valeur"] or None,
@@ -83,7 +86,7 @@ async def importer_nace(
                 continue
             stmt = pg_insert(modele).values(lignes)
             stmt = stmt.on_conflict_do_update(
-                index_elements=["produit", "sens", "annee", "edition"],
+                index_elements=[col, "sens", "annee", "edition"],
                 set_={"valeur": stmt.excluded.valeur, "poids": stmt.excluded.poids},
             )
             await db.execute(stmt)
@@ -97,7 +100,7 @@ async def importer_nace(
 # qui couvre l'année ; libellés ramenés à la nomenclature courante via
 # `alias` (les lignes fusionnées — Titane+Zirconium, Riz/Blé/Maïs… — sont
 # sommées).
-def _resoudre(rows, alias: dict) -> dict:
+def _resoudre(rows, alias: dict, col: str = "produit") -> dict:
     if not rows:
         return {"disponible": False, "annees": [], "editions": [], "donnees": {"export": [], "import": []}}
 
@@ -113,7 +116,8 @@ def _resoudre(rows, alias: dict) -> dict:
     for r in rows:
         if retenue[(r.sens, r.annee)] != r.edition:
             continue
-        produit = alias.get(r.sens, {}).get(r.produit, r.produit)
+        brut = getattr(r, col)
+        produit = alias.get(r.sens, {}).get(brut, brut)
         a = agreg[(r.sens, r.annee, produit)]
         if r.valeur is not None:
             a["valeur"] += float(r.valeur); a["v"] = True
@@ -123,7 +127,7 @@ def _resoudre(rows, alias: dict) -> dict:
     donnees: dict = {"export": [], "import": []}
     for (sens, annee, produit), a in sorted(agreg.items(), key=lambda x: (x[0][1], x[0][2])):
         donnees[sens].append({
-            "produit": produit, "annee": annee,
+            col: produit, "annee": annee,
             "valeur": a["valeur"] if a["v"] else None,
             "poids": a["poids"] if a["p"] else None,
             "edition": retenue[(sens, annee)],
@@ -151,3 +155,12 @@ async def principaux_produits(db: AsyncSession = Depends(get_db)):
 async def produits_regroupes(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(NaceProduitRegroupe))
     return _resoudre(res.scalars().all(), {})
+
+
+# ── GET /nace/groupes-utilisation ─────────────────────────────────────────────
+# 9 groupes exhaustifs par sens : leur somme est le total du commerce
+# extérieur (aucune ligne « Autres »). Libellés stables entre éditions.
+@router.get("/groupes-utilisation")
+async def groupes_utilisation(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NaceGroupeUtilisation))
+    return _resoudre(res.scalars().all(), {}, col="groupe")
