@@ -1,0 +1,961 @@
+chapitre,sens,annee,valeur,poids,edition
+Animaux vivants,export,2017,198,23,2021
+Animaux vivants,export,2018,97,20,2021
+Animaux vivants,export,2019,110,7,2021
+Animaux vivants,export,2020,146,9,2021
+Animaux vivants,export,2021,45,3,2021
+Viandes et abats comestibles,export,2017,748,852,2021
+Viandes et abats comestibles,export,2018,1404,1880,2021
+Viandes et abats comestibles,export,2019,1056,1375,2021
+Viandes et abats comestibles,export,2020,127,30,2021
+Viandes et abats comestibles,export,2021,132,29,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",export,2017,230280,225763,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",export,2018,262495,241382,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",export,2019,290663,306894,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",export,2020,248106,328575,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",export,2021,301232,307054,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",export,2017,3941,3719,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",export,2018,5216,4370,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",export,2019,3458,3519,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",export,2020,5675,3993,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",export,2021,5546,3969,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",export,2017,98,573,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",export,2018,33,132,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",export,2019,61,192,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",export,2020,120,225,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",export,2021,446,608,2021
+Plantes vivantes et produits de la floriculture,export,2017,281,174,2021
+Plantes vivantes et produits de la floriculture,export,2018,492,364,2021
+Plantes vivantes et produits de la floriculture,export,2019,408,216,2021
+Plantes vivantes et produits de la floriculture,export,2020,487,229,2021
+Plantes vivantes et produits de la floriculture,export,2021,523,287,2021
+"Légumes, plantes, racines et tubercules alimentaires",export,2017,39808,62361,2021
+"Légumes, plantes, racines et tubercules alimentaires",export,2018,40126,62930,2021
+"Légumes, plantes, racines et tubercules alimentaires",export,2019,41010,60428,2021
+"Légumes, plantes, racines et tubercules alimentaires",export,2020,51164,66004,2021
+"Légumes, plantes, racines et tubercules alimentaires",export,2021,60282,112228,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",export,2017,21721,45936,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",export,2018,38456,64784,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",export,2019,58871,114953,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",export,2020,42652,88026,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",export,2021,83801,141528,2021
+"Café, thé, maté et épices",export,2017,1064,1685,2021
+"Café, thé, maté et épices",export,2018,2387,3496,2021
+"Café, thé, maté et épices",export,2019,1189,1456,2021
+"Café, thé, maté et épices",export,2020,1334,1577,2021
+"Café, thé, maté et épices",export,2021,1114,1401,2021
+Céréales,export,2017,18804,85239,2021
+Céréales,export,2018,25810,118222,2021
+Céréales,export,2019,30918,135710,2021
+Céréales,export,2020,15205,64931,2021
+Céréales,export,2021,25692,104495,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",export,2017,3086,12202,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",export,2018,3891,15671,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",export,2019,3039,11386,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",export,2020,3375,12401,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",export,2021,8485,30864,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",export,2017,52647,108257,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",export,2018,46939,119084,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",export,2019,114488,330991,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",export,2020,116909,271663,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",export,2021,160889,347676,2021
+"Gommes, résines et autres sucs et extraits végétaux",export,2017,1540,3705,2021
+"Gommes, résines et autres sucs et extraits végétaux",export,2018,946,1734,2021
+"Gommes, résines et autres sucs et extraits végétaux",export,2019,714,2435,2021
+"Gommes, résines et autres sucs et extraits végétaux",export,2020,1463,4228,2021
+"Gommes, résines et autres sucs et extraits végétaux",export,2021,561,875,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,export,2017,32,62,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,export,2018,20,28,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,export,2019,24,32,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,export,2020,18,8,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,export,2021,22,15,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",export,2017,22664,31194,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",export,2018,34466,55625,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",export,2019,46831,72292,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",export,2020,9829,12292,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",export,2021,18096,17731,2021
+"Préparations de viandes, poissons, crustacés, mollusques",export,2017,6236,2010,2021
+"Préparations de viandes, poissons, crustacés, mollusques",export,2018,12066,3673,2021
+"Préparations de viandes, poissons, crustacés, mollusques",export,2019,40252,11727,2021
+"Préparations de viandes, poissons, crustacés, mollusques",export,2020,30062,10444,2021
+"Préparations de viandes, poissons, crustacés, mollusques",export,2021,11901,5108,2021
+Sucres et sucreries,export,2017,4668,6549,2021
+Sucres et sucreries,export,2018,7517,15101,2021
+Sucres et sucreries,export,2019,3928,5441,2021
+Sucres et sucreries,export,2020,3074,4731,2021
+Sucres et sucreries,export,2021,3314,3649,2021
+Cacao et ses préparations,export,2017,4456,4577,2021
+Cacao et ses préparations,export,2018,4646,4910,2021
+Cacao et ses préparations,export,2019,4595,4601,2021
+Cacao et ses préparations,export,2020,3815,3883,2021
+Cacao et ses préparations,export,2021,3310,3210,2021
+"Préparations à base de céréales et dérivés, pâtisseries",export,2017,33079,31320,2021
+"Préparations à base de céréales et dérivés, pâtisseries",export,2018,23212,29055,2021
+"Préparations à base de céréales et dérivés, pâtisseries",export,2019,20548,22326,2021
+"Préparations à base de céréales et dérivés, pâtisseries",export,2020,32230,34373,2021
+"Préparations à base de céréales et dérivés, pâtisseries",export,2021,26441,25820,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",export,2017,8080,15339,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",export,2018,5494,10555,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",export,2019,7111,12717,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",export,2020,6750,11532,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",export,2021,7989,14930,2021
+Préparations alimentaires diverses,export,2017,79587,71424,2021
+Préparations alimentaires diverses,export,2018,81157,77053,2021
+Préparations alimentaires diverses,export,2019,84765,80131,2021
+Préparations alimentaires diverses,export,2020,85393,79222,2021
+Préparations alimentaires diverses,export,2021,95262,90883,2021
+"Boissons, liquides alcooliques et vinaigres",export,2017,3155,7478,2021
+"Boissons, liquides alcooliques et vinaigres",export,2018,3028,8361,2021
+"Boissons, liquides alcooliques et vinaigres",export,2019,4925,11758,2021
+"Boissons, liquides alcooliques et vinaigres",export,2020,12670,27796,2021
+"Boissons, liquides alcooliques et vinaigres",export,2021,10085,23498,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",export,2017,2852,12442,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",export,2018,4523,16560,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",export,2019,4414,18260,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",export,2020,4373,16930,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",export,2021,4912,15351,2021
+Tabacs et succédanés de tabacs fabriqués,export,2017,62762,6683,2021
+Tabacs et succédanés de tabacs fabriqués,export,2018,53402,6332,2021
+Tabacs et succédanés de tabacs fabriqués,export,2019,43444,4984,2021
+Tabacs et succédanés de tabacs fabriqués,export,2020,36056,3746,2021
+Tabacs et succédanés de tabacs fabriqués,export,2021,46400,5132,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",export,2017,149458,3800764,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",export,2018,114782,3016296,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",export,2019,113494,3017873,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",export,2020,100201,2661267,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",export,2021,127410,3458657,2021
+"Minerais, scories et cendres",export,2017,84322,535030,2021
+"Minerais, scories et cendres",export,2018,99767,497710,2021
+"Minerais, scories et cendres",export,2019,115412,614799,2021
+"Minerais, scories et cendres",export,2020,116206,594538,2021
+"Minerais, scories et cendres",export,2021,150328,679787,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",export,2017,258685,926983,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",export,2018,317908,905273,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",export,2019,487101,1359772,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",export,2020,361527,1325920,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",export,2021,447902,1376590,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",export,2017,99026,354823,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",export,2018,160107,446431,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",export,2019,199508,538689,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",export,2020,155467,493872,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",export,2021,269869,489505,2021
+Produits chimiques organiques,export,2017,2720,2961,2021
+Produits chimiques organiques,export,2018,4037,3976,2021
+Produits chimiques organiques,export,2019,3900,3920,2021
+Produits chimiques organiques,export,2020,4444,4927,2021
+Produits chimiques organiques,export,2021,5092,4950,2021
+Produits pharmaceutiques,export,2017,5355,856,2021
+Produits pharmaceutiques,export,2018,6410,763,2021
+Produits pharmaceutiques,export,2019,4783,1030,2021
+Produits pharmaceutiques,export,2020,1832,179,2021
+Produits pharmaceutiques,export,2021,1145,203,2021
+Engrais,export,2017,18935,104965,2021
+Engrais,export,2018,26048,159769,2021
+Engrais,export,2019,29452,135510,2021
+Engrais,export,2020,21258,111358,2021
+Engrais,export,2021,33056,121970,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",export,2017,803,769,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",export,2018,809,639,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",export,2019,913,621,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",export,2020,538,525,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",export,2021,1314,967,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",export,2017,31032,19505,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",export,2018,40694,25455,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",export,2019,42477,26062,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",export,2020,44968,29138,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",export,2021,45789,28726,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",export,2017,9095,19213,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",export,2018,10013,19624,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",export,2019,13057,17481,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",export,2020,15792,24702,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",export,2021,14754,20439,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",export,2017,322,136,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",export,2018,294,95,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",export,2019,378,262,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",export,2020,409,128,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",export,2021,469,220,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",export,2017,486,136,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",export,2018,932,173,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",export,2019,617,91,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",export,2020,170,105,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",export,2021,37,10,2021
+Produits photographiques ou cinématographiques,export,2017,2,2,2021
+Produits photographiques ou cinématographiques,export,2018,0,,2021
+Produits photographiques ou cinématographiques,export,2019,0,1,2021
+Produits photographiques ou cinématographiques,export,2020,0,,2021
+Produits photographiques ou cinématographiques,export,2021,1,0,2021
+Produits divers des industries chimiques,export,2017,8392,4772,2021
+Produits divers des industries chimiques,export,2018,7728,6233,2021
+Produits divers des industries chimiques,export,2019,9229,7414,2021
+Produits divers des industries chimiques,export,2020,7380,4522,2021
+Produits divers des industries chimiques,export,2021,10718,7381,2021
+Matières plastiques et ouvrages en ces matières,export,2017,23694,33936,2021
+Matières plastiques et ouvrages en ces matières,export,2018,23467,40653,2021
+Matières plastiques et ouvrages en ces matières,export,2019,19401,23929,2021
+Matières plastiques et ouvrages en ces matières,export,2020,22032,32255,2021
+Matières plastiques et ouvrages en ces matières,export,2021,21545,27054,2021
+Caoutchouc et ouvrages en caoutchouc,export,2017,3336,1199,2021
+Caoutchouc et ouvrages en caoutchouc,export,2018,4101,1434,2021
+Caoutchouc et ouvrages en caoutchouc,export,2019,3425,1341,2021
+Caoutchouc et ouvrages en caoutchouc,export,2020,3876,1376,2021
+Caoutchouc et ouvrages en caoutchouc,export,2021,4045,2526,2021
+Peaux (autres que les pelleteries) et cuirs,export,2017,8166,6047,2021
+Peaux (autres que les pelleteries) et cuirs,export,2018,7681,6485,2021
+Peaux (autres que les pelleteries) et cuirs,export,2019,3929,5244,2021
+Peaux (autres que les pelleteries) et cuirs,export,2020,2660,2497,2021
+Peaux (autres que les pelleteries) et cuirs,export,2021,1964,1301,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",export,2017,113,12,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",export,2018,52,19,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",export,2019,43,6,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",export,2020,39,37,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",export,2021,103,96,2021
+"Pelleteries et fourrures, pelleteries factices",export,2017,0,,2021
+"Pelleteries et fourrures, pelleteries factices",export,2018,0,,2021
+"Pelleteries et fourrures, pelleteries factices",export,2019,1,1,2021
+"Pelleteries et fourrures, pelleteries factices",export,2020,0,,2021
+"Pelleteries et fourrures, pelleteries factices",export,2021,0,0,2021
+"Bois, charbon de bois et ouvrages en bois",export,2017,4402,33185,2021
+"Bois, charbon de bois et ouvrages en bois",export,2018,4416,34564,2021
+"Bois, charbon de bois et ouvrages en bois",export,2019,3330,37629,2021
+"Bois, charbon de bois et ouvrages en bois",export,2020,3590,45281,2021
+"Bois, charbon de bois et ouvrages en bois",export,2021,4918,40196,2021
+Liège et ouvrages en liège,export,2017,0,,2021
+Liège et ouvrages en liège,export,2018,0,,2021
+Liège et ouvrages en liège,export,2019,0,,2021
+Liège et ouvrages en liège,export,2020,0,,2021
+Liège et ouvrages en liège,export,2021,0,2,2021
+Ouvrages de sparterie ou de vannerie,export,2017,3018,1041,2021
+Ouvrages de sparterie ou de vannerie,export,2018,2250,923,2021
+Ouvrages de sparterie ou de vannerie,export,2019,2249,895,2021
+Ouvrages de sparterie ou de vannerie,export,2020,1821,905,2021
+Ouvrages de sparterie ou de vannerie,export,2021,2244,1321,2021
+Matières cellulosiques servant à la fabrication du papier,export,2017,35,321,2021
+Matières cellulosiques servant à la fabrication du papier,export,2018,41,418,2021
+Matières cellulosiques servant à la fabrication du papier,export,2019,118,152,2021
+Matières cellulosiques servant à la fabrication du papier,export,2020,18,196,2021
+Matières cellulosiques servant à la fabrication du papier,export,2021,33,357,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",export,2017,7280,9415,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",export,2018,7942,9227,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",export,2019,8477,9695,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",export,2020,10883,14074,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",export,2021,21202,31380,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",export,2017,600,158,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",export,2018,813,224,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",export,2019,1036,220,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",export,2020,517,122,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",export,2021,892,215,2021
+Soie,export,2017,1,1,2021
+Soie,export,2018,0,,2021
+Soie,export,2019,0,,2021
+Soie,export,2020,0,,2021
+Soie,export,2021,0,,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",export,2017,9,13,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",export,2018,0,,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",export,2019,0,,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",export,2020,0,,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",export,2021,0,,2021
+Coton,export,2017,6687,8000,2021
+Coton,export,2018,7328,7847,2021
+Coton,export,2019,7058,8045,2021
+Coton,export,2020,5826,6796,2021
+Coton,export,2021,9012,9155,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",export,2017,0,,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",export,2018,17,13,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",export,2019,41,30,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",export,2020,0,,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",export,2021,2,1,2021
+Filaments synthétiques ou artificiels,export,2017,743,433,2021
+Filaments synthétiques ou artificiels,export,2018,1000,292,2021
+Filaments synthétiques ou artificiels,export,2019,981,196,2021
+Filaments synthétiques ou artificiels,export,2020,1177,231,2021
+Filaments synthétiques ou artificiels,export,2021,1757,347,2021
+Fibres synthétiques ou artificielles discontinues,export,2017,20063,5178,2021
+Fibres synthétiques ou artificielles discontinues,export,2018,19421,5945,2021
+Fibres synthétiques ou artificielles discontinues,export,2019,15605,4493,2021
+Fibres synthétiques ou artificielles discontinues,export,2020,20482,5912,2021
+Fibres synthétiques ou artificielles discontinues,export,2021,22053,6659,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",export,2017,1132,291,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",export,2018,1681,354,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",export,2019,1705,395,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",export,2020,2130,516,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",export,2021,1481,429,2021
+Tapis et autres revêtements de sol en matières textiles,export,2017,17,9,2021
+Tapis et autres revêtements de sol en matières textiles,export,2018,15,9,2021
+Tapis et autres revêtements de sol en matières textiles,export,2019,10,15,2021
+Tapis et autres revêtements de sol en matières textiles,export,2020,37,61,2021
+Tapis et autres revêtements de sol en matières textiles,export,2021,31,78,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",export,2017,13,28,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",export,2018,0,0,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",export,2019,17,16,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",export,2020,14,3,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",export,2021,18,20,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",export,2017,4,1,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",export,2018,3,2,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",export,2019,0,,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",export,2020,0,1,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",export,2021,51,101,2021
+Étoffes de bonneterie,export,2017,0,,2021
+Étoffes de bonneterie,export,2018,0,,2021
+Étoffes de bonneterie,export,2019,2,0,2021
+Étoffes de bonneterie,export,2020,0,,2021
+Étoffes de bonneterie,export,2021,0,,2021
+"Vêtements et accessoires du vêtement, en bonneterie",export,2017,168,75,2021
+"Vêtements et accessoires du vêtement, en bonneterie",export,2018,98,61,2021
+"Vêtements et accessoires du vêtement, en bonneterie",export,2019,166,88,2021
+"Vêtements et accessoires du vêtement, en bonneterie",export,2020,378,198,2021
+"Vêtements et accessoires du vêtement, en bonneterie",export,2021,232,122,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",export,2017,512,104,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",export,2018,145,85,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",export,2019,210,156,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",export,2020,1430,182,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",export,2021,314,321,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",export,2017,1658,1203,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",export,2018,1857,1283,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",export,2019,2109,2213,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",export,2020,2130,1585,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",export,2021,2659,2498,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",export,2017,1602,2358,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",export,2018,2814,3681,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",export,2019,3367,3919,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",export,2020,5433,5609,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",export,2021,6157,5859,2021
+Coiffures et parties de coiffures,export,2017,94,6,2021
+Coiffures et parties de coiffures,export,2018,32,2,2021
+Coiffures et parties de coiffures,export,2019,3,0,2021
+Coiffures et parties de coiffures,export,2020,45,30,2021
+Coiffures et parties de coiffures,export,2021,75,6,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",export,2017,0,0,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",export,2018,1,3,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",export,2019,1,0,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",export,2020,2,0,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",export,2021,0,1,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",export,2017,30526,7196,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",export,2018,34089,8532,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",export,2019,21029,5156,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",export,2020,33466,9250,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",export,2021,37725,10149,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",export,2017,297,6557,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",export,2018,174,1680,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",export,2019,217,241,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",export,2020,153,212,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",export,2021,346,648,2021
+Produits céramiques,export,2017,116,127,2021
+Produits céramiques,export,2018,179,376,2021
+Produits céramiques,export,2019,237,2111,2021
+Produits céramiques,export,2020,7782,100834,2021
+Produits céramiques,export,2021,9319,103670,2021
+Verre et ouvrages en verre,export,2017,974,1445,2021
+Verre et ouvrages en verre,export,2018,1106,1969,2021
+Verre et ouvrages en verre,export,2019,1096,1892,2021
+Verre et ouvrages en verre,export,2020,1091,1848,2021
+Verre et ouvrages en verre,export,2021,1183,2087,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",export,2017,220443,35,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",export,2018,313699,17,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",export,2019,376235,19,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",export,2020,423077,59,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",export,2021,540534,29,2021
+"Fonte, fer et acier",export,2017,45164,153986,2021
+"Fonte, fer et acier",export,2018,53888,174197,2021
+"Fonte, fer et acier",export,2019,59796,166589,2021
+"Fonte, fer et acier",export,2020,62814,185658,2021
+"Fonte, fer et acier",export,2021,82161,215079,2021
+"Ouvrages en fonte, fer ou acier",export,2017,9444,16574,2021
+"Ouvrages en fonte, fer ou acier",export,2018,9799,17133,2021
+"Ouvrages en fonte, fer ou acier",export,2019,7892,13765,2021
+"Ouvrages en fonte, fer ou acier",export,2020,11157,16435,2021
+"Ouvrages en fonte, fer ou acier",export,2021,10278,16271,2021
+Cuivre et ouvrages en cuivre,export,2017,6062,2940,2021
+Cuivre et ouvrages en cuivre,export,2018,3820,2204,2021
+Cuivre et ouvrages en cuivre,export,2019,4336,2136,2021
+Cuivre et ouvrages en cuivre,export,2020,3839,1481,2021
+Cuivre et ouvrages en cuivre,export,2021,5874,41807,2021
+Nickel et ouvrages en nickel,export,2017,57,369,2021
+Nickel et ouvrages en nickel,export,2018,0,,2021
+Nickel et ouvrages en nickel,export,2019,2,0,2021
+Nickel et ouvrages en nickel,export,2020,0,0,2021
+Nickel et ouvrages en nickel,export,2021,23,9,2021
+Aluminium et ouvrages en aluminium,export,2017,2239,4810,2021
+Aluminium et ouvrages en aluminium,export,2018,1784,2502,2021
+Aluminium et ouvrages en aluminium,export,2019,1358,2074,2021
+Aluminium et ouvrages en aluminium,export,2020,970,1228,2021
+Aluminium et ouvrages en aluminium,export,2021,3191,9392,2021
+Plomb et ouvrages en plomb,export,2017,4518,3987,2021
+Plomb et ouvrages en plomb,export,2018,4177,3525,2021
+Plomb et ouvrages en plomb,export,2019,4661,4065,2021
+Plomb et ouvrages en plomb,export,2020,4211,4145,2021
+Plomb et ouvrages en plomb,export,2021,5877,4954,2021
+Zinc et ouvrages en zinc,export,2017,32,25,2021
+Zinc et ouvrages en zinc,export,2018,0,0,2021
+Zinc et ouvrages en zinc,export,2019,5,0,2021
+Zinc et ouvrages en zinc,export,2020,0,,2021
+Zinc et ouvrages en zinc,export,2021,12,6,2021
+Étain et ouvrages en étain,export,2017,240,760,2021
+Étain et ouvrages en étain,export,2018,90,935,2021
+Étain et ouvrages en étain,export,2019,0,,2021
+Étain et ouvrages en étain,export,2020,0,,2021
+Étain et ouvrages en étain,export,2021,97,970,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",export,2017,71,663,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",export,2018,157,2800,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",export,2019,55,644,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",export,2020,1343,19793,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",export,2021,502,8533,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",export,2017,4798,1657,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",export,2018,2909,1062,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",export,2019,671,688,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",export,2020,1383,419,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",export,2021,1226,329,2021
+Ouvrages divers en métaux communs,export,2017,160,200,2021
+Ouvrages divers en métaux communs,export,2018,241,266,2021
+Ouvrages divers en métaux communs,export,2019,201,300,2021
+Ouvrages divers en métaux communs,export,2020,169,218,2021
+Ouvrages divers en métaux communs,export,2021,668,352,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",export,2017,18158,6043,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",export,2018,16303,6599,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",export,2019,21336,5730,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",export,2020,23217,6669,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",export,2021,21860,6530,2021
+"Machines électriques, appareils d'émission-réception radio/tv",export,2017,22674,6990,2021
+"Machines électriques, appareils d'émission-réception radio/tv",export,2018,17409,4802,2021
+"Machines électriques, appareils d'émission-réception radio/tv",export,2019,12765,4415,2021
+"Machines électriques, appareils d'émission-réception radio/tv",export,2020,14078,5066,2021
+"Machines électriques, appareils d'émission-réception radio/tv",export,2021,30257,25067,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",export,2017,1933,513,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",export,2018,198,189,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",export,2019,982,557,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",export,2020,396,1388,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",export,2021,425,1095,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",export,2017,20290,3910,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",export,2018,9009,2747,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",export,2019,16078,5077,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",export,2020,14160,4954,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",export,2021,18630,5280,2021
+Navigation aérienne ou spatiale,export,2017,350,55,2021
+Navigation aérienne ou spatiale,export,2018,8796,37,2021
+Navigation aérienne ou spatiale,export,2019,1932,12,2021
+Navigation aérienne ou spatiale,export,2020,2073,24,2021
+Navigation aérienne ou spatiale,export,2021,1533,53,2021
+Navigation maritime ou fluviale,export,2017,1117,1090,2021
+Navigation maritime ou fluviale,export,2018,449,863,2021
+Navigation maritime ou fluviale,export,2019,9796,5084,2021
+Navigation maritime ou fluviale,export,2020,24630,12770,2021
+Navigation maritime ou fluviale,export,2021,12910,5584,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",export,2017,1110,47,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",export,2018,1163,362,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",export,2019,794,104,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",export,2020,755,139,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",export,2021,2802,214,2021
+Horlogerie,export,2017,752,40,2021
+Horlogerie,export,2018,5,1,2021
+Horlogerie,export,2019,219,8,2021
+Horlogerie,export,2020,28,1,2021
+Horlogerie,export,2021,186,8,2021
+"Instruments de musique, parties et accessoires de ces instruments",export,2017,67,65,2021
+"Instruments de musique, parties et accessoires de ces instruments",export,2018,98,131,2021
+"Instruments de musique, parties et accessoires de ces instruments",export,2019,34,23,2021
+"Instruments de musique, parties et accessoires de ces instruments",export,2020,20,8,2021
+"Instruments de musique, parties et accessoires de ces instruments",export,2021,27,23,2021
+"Armes, munitions et leurs parties et accessoires",export,2017,165,4,2021
+"Armes, munitions et leurs parties et accessoires",export,2018,803,68,2021
+"Armes, munitions et leurs parties et accessoires",export,2019,2,0,2021
+"Armes, munitions et leurs parties et accessoires",export,2020,186,19,2021
+"Armes, munitions et leurs parties et accessoires",export,2021,23,6,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",export,2017,2730,1052,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",export,2018,2084,783,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",export,2019,2997,876,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",export,2020,3561,1077,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",export,2021,4801,1640,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",export,2017,41,31,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",export,2018,29,5,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",export,2019,59,5,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",export,2020,52,15,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",export,2021,163,29,2021
+Ouvrages divers,export,2017,322,173,2021
+Ouvrages divers,export,2018,288,157,2021
+Ouvrages divers,export,2019,415,331,2021
+Ouvrages divers,export,2020,716,1051,2021
+Ouvrages divers,export,2021,1616,2470,2021
+"Objets d'art, de collection ou d'antiquité",export,2017,1692,313,2021
+"Objets d'art, de collection ou d'antiquité",export,2018,407,336,2021
+"Objets d'art, de collection ou d'antiquité",export,2019,1038,230,2021
+"Objets d'art, de collection ou d'antiquité",export,2020,274,178,2021
+"Objets d'art, de collection ou d'antiquité",export,2021,5399,253,2021
+Animaux vivants,import,2017,2607,740,2021
+Animaux vivants,import,2018,1051,74,2021
+Animaux vivants,import,2019,2633,708,2021
+Animaux vivants,import,2020,820,38,2021
+Animaux vivants,import,2021,2859,701,2021
+Viandes et abats comestibles,import,2017,7530,9605,2021
+Viandes et abats comestibles,import,2018,7712,10421,2021
+Viandes et abats comestibles,import,2019,8260,10666,2021
+Viandes et abats comestibles,import,2020,8209,10740,2021
+Viandes et abats comestibles,import,2021,12518,17929,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",import,2017,20595,30115,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",import,2018,46461,84117,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",import,2019,35259,69218,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",import,2020,32540,65182,2021
+"Poissons et crustacés, mollusques et autres invertébrés aquatiques",import,2021,34530,58430,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",import,2017,42960,25901,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",import,2018,45416,27564,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",import,2019,43730,26042,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",import,2020,48950,28973,2021
+"Lait, oeufs d'oiseaux, miel, produits comestibles d'animaux n.d.c.a.",import,2021,52009,32219,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",import,2017,249,234,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",import,2018,142,102,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",import,2019,70,38,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",import,2020,40,27,2021
+"Autres produits d'origine animale, non dénommés ni compris ailleurs",import,2021,79,5,2021
+Plantes vivantes et produits de la floriculture,import,2017,144,42,2021
+Plantes vivantes et produits de la floriculture,import,2018,353,668,2021
+Plantes vivantes et produits de la floriculture,import,2019,769,366,2021
+Plantes vivantes et produits de la floriculture,import,2020,460,73,2021
+Plantes vivantes et produits de la floriculture,import,2021,707,260,2021
+"Légumes, plantes, racines et tubercules alimentaires",import,2017,46850,313630,2021
+"Légumes, plantes, racines et tubercules alimentaires",import,2018,35463,213768,2021
+"Légumes, plantes, racines et tubercules alimentaires",import,2019,42202,254290,2021
+"Légumes, plantes, racines et tubercules alimentaires",import,2020,47066,297115,2021
+"Légumes, plantes, racines et tubercules alimentaires",import,2021,41359,255004,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",import,2017,16455,58996,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",import,2018,20226,67975,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",import,2019,24755,83056,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",import,2020,25658,84888,2021
+"Fruits comestibles, écorces d'agrumes ou de melons",import,2021,27716,89669,2021
+"Café, thé, maté et épices",import,2017,8631,22020,2021
+"Café, thé, maté et épices",import,2018,11636,24919,2021
+"Café, thé, maté et épices",import,2019,8734,17982,2021
+"Café, thé, maté et épices",import,2020,7833,19523,2021
+"Café, thé, maté et épices",import,2021,8711,19769,2021
+Céréales,import,2017,372344,2116009,2021
+Céréales,import,2018,400319,2274493,2021
+Céréales,import,2019,349597,1957217,2021
+Céréales,import,2020,398445,2144471,2021
+Céréales,import,2021,480202,2346331,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",import,2017,8864,32359,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",import,2018,12433,48123,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",import,2019,11640,49495,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",import,2020,13697,49636,2021
+"Produits de la minoterie, malt, amidons et fécules, inuline, gluten de froment",import,2021,13898,48096,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",import,2017,8141,8295,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",import,2018,13087,20095,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",import,2019,15189,32099,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",import,2020,11436,12080,2021
+"Oléagineux, graines, semences, plantes industrielles, médicinales, pailles",import,2021,13574,14502,2021
+"Gommes, résines et autres sucs et extraits végétaux",import,2017,210,246,2021
+"Gommes, résines et autres sucs et extraits végétaux",import,2018,295,285,2021
+"Gommes, résines et autres sucs et extraits végétaux",import,2019,319,271,2021
+"Gommes, résines et autres sucs et extraits végétaux",import,2020,90,91,2021
+"Gommes, résines et autres sucs et extraits végétaux",import,2021,311,213,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,import,2017,13,14,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,import,2018,105,327,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,import,2019,35,24,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,import,2020,1,1,2021
+Matières à tresser et autres produits d'origine végétale n.d.c.a.,import,2021,24,31,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",import,2017,103609,250756,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",import,2018,90774,202786,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",import,2019,97105,200553,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",import,2020,139746,268976,2021
+"Graisses, huiles, cires (animales et végétales), graisses alimentaires",import,2021,119585,218598,2021
+"Préparations de viandes, poissons, crustacés, mollusques",import,2017,2166,2076,2021
+"Préparations de viandes, poissons, crustacés, mollusques",import,2018,2321,1946,2021
+"Préparations de viandes, poissons, crustacés, mollusques",import,2019,2728,2438,2021
+"Préparations de viandes, poissons, crustacés, mollusques",import,2020,2885,2448,2021
+"Préparations de viandes, poissons, crustacés, mollusques",import,2021,2848,3459,2021
+Sucres et sucreries,import,2017,74266,244287,2021
+Sucres et sucreries,import,2018,33241,110471,2021
+Sucres et sucreries,import,2019,35523,113721,2021
+Sucres et sucreries,import,2020,61849,197846,2021
+Sucres et sucreries,import,2021,51717,139235,2021
+Cacao et ses préparations,import,2017,3700,9700,2021
+Cacao et ses préparations,import,2018,4188,11162,2021
+Cacao et ses préparations,import,2019,5192,11796,2021
+Cacao et ses préparations,import,2020,4126,4040,2021
+Cacao et ses préparations,import,2021,5690,6342,2021
+"Préparations à base de céréales et dérivés, pâtisseries",import,2017,92503,102661,2021
+"Préparations à base de céréales et dérivés, pâtisseries",import,2018,97615,126636,2021
+"Préparations à base de céréales et dérivés, pâtisseries",import,2019,131421,141363,2021
+"Préparations à base de céréales et dérivés, pâtisseries",import,2020,131044,106088,2021
+"Préparations à base de céréales et dérivés, pâtisseries",import,2021,131694,105770,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",import,2017,23570,47302,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",import,2018,21162,42482,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",import,2019,24137,45120,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",import,2020,26485,49198,2021
+"Préparations de légumes, de fruits ou d'autres parties de plantes",import,2021,24441,47056,2021
+Préparations alimentaires diverses,import,2017,35854,30012,2021
+Préparations alimentaires diverses,import,2018,34915,26317,2021
+Préparations alimentaires diverses,import,2019,39061,27973,2021
+Préparations alimentaires diverses,import,2020,45574,27961,2021
+Préparations alimentaires diverses,import,2021,45803,28202,2021
+"Boissons, liquides alcooliques et vinaigres",import,2017,22384,60365,2021
+"Boissons, liquides alcooliques et vinaigres",import,2018,20933,56148,2021
+"Boissons, liquides alcooliques et vinaigres",import,2019,26695,76571,2021
+"Boissons, liquides alcooliques et vinaigres",import,2020,28849,81661,2021
+"Boissons, liquides alcooliques et vinaigres",import,2021,34334,97610,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",import,2017,19524,87400,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",import,2018,22037,105521,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",import,2019,19647,88622,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",import,2020,29420,146437,2021
+"Résidus, déchets des industries alimentaires, aliments préparés pour animaux",import,2021,34984,152162,2021
+Tabacs et succédanés de tabacs fabriqués,import,2017,30993,5393,2021
+Tabacs et succédanés de tabacs fabriqués,import,2018,33702,6029,2021
+Tabacs et succédanés de tabacs fabriqués,import,2019,21682,4798,2021
+Tabacs et succédanés de tabacs fabriqués,import,2020,24654,4553,2021
+Tabacs et succédanés de tabacs fabriqués,import,2021,19321,4832,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",import,2017,43725,983714,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",import,2018,76388,1393779,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",import,2019,54929,1261498,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",import,2020,53683,1668828,2021
+"Sel, soufre, terres et pierres, plâtres, chaux et ciments",import,2021,125795,2363584,2021
+"Minerais, scories et cendres",import,2017,814,32720,2021
+"Minerais, scories et cendres",import,2018,1359,64922,2021
+"Minerais, scories et cendres",import,2019,1547,46023,2021
+"Minerais, scories et cendres",import,2020,1408,83454,2021
+"Minerais, scories et cendres",import,2021,3318,82581,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",import,2017,856133,3748555,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",import,2018,1254412,4552854,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",import,2019,1234318,4530547,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",import,2020,1040860,5055943,2021
+"Combustibles minéraux, huiles, cires minérales, matières bitumineuses",import,2021,1359052,5075869,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",import,2017,24425,109111,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",import,2018,24723,100646,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",import,2019,30747,117719,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",import,2020,31677,126354,2021
+"Produits chimiques inorganiques, composés de métaux ou radioactifs",import,2021,34108,120310,2021
+Produits chimiques organiques,import,2017,37391,41494,2021
+Produits chimiques organiques,import,2018,38410,42988,2021
+Produits chimiques organiques,import,2019,39919,45148,2021
+Produits chimiques organiques,import,2020,39987,47736,2021
+Produits chimiques organiques,import,2021,47723,50024,2021
+Produits pharmaceutiques,import,2017,123389,11849,2021
+Produits pharmaceutiques,import,2018,135523,12564,2021
+Produits pharmaceutiques,import,2019,155361,14486,2021
+Produits pharmaceutiques,import,2020,161728,14406,2021
+Produits pharmaceutiques,import,2021,188019,15962,2021
+Engrais,import,2017,21894,130942,2021
+Engrais,import,2018,21956,117652,2021
+Engrais,import,2019,33621,169996,2021
+Engrais,import,2020,33761,193279,2021
+Engrais,import,2021,23453,87480,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",import,2017,11698,14893,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",import,2018,14469,17631,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",import,2019,14405,25385,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",import,2020,13724,25942,2021
+"Extraits tannants ou tinctoriaux, tanins, colorants, vernis, mastics, encres",import,2021,21662,33964,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",import,2017,30213,30187,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",import,2018,30470,20449,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",import,2019,32953,22307,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",import,2020,30146,25962,2021
+"Huiles essentielles, résinoïdes, produits de parfumerie, cosmétiques",import,2021,36131,28599,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",import,2017,10747,20421,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",import,2018,14872,31186,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",import,2019,19606,38128,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",import,2020,14828,27882,2021
+"Savons, lubrifiants, cires artificielles, bougies, cires dentaires",import,2021,14610,21365,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",import,2017,4554,4498,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",import,2018,4794,4983,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",import,2019,4933,4968,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",import,2020,4881,5659,2021
+"Matières albuminoïdes, préparations à base d'amidons ou fécules, colles",import,2021,6891,8159,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",import,2017,2690,986,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",import,2018,2536,872,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",import,2019,3113,958,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",import,2020,2619,857,2021
+"Poudres, explosifs, articles de pyrotechnie, allumettes, matières inflammables",import,2021,3036,1181,2021
+Produits photographiques ou cinématographiques,import,2017,813,328,2021
+Produits photographiques ou cinématographiques,import,2018,951,322,2021
+Produits photographiques ou cinématographiques,import,2019,710,278,2021
+Produits photographiques ou cinématographiques,import,2020,1131,216,2021
+Produits photographiques ou cinématographiques,import,2021,928,263,2021
+Produits divers des industries chimiques,import,2017,38899,29767,2021
+Produits divers des industries chimiques,import,2018,35796,31524,2021
+Produits divers des industries chimiques,import,2019,38505,38265,2021
+Produits divers des industries chimiques,import,2020,47274,38383,2021
+Produits divers des industries chimiques,import,2021,55552,42864,2021
+Matières plastiques et ouvrages en ces matières,import,2017,112057,137993,2021
+Matières plastiques et ouvrages en ces matières,import,2018,126107,149423,2021
+Matières plastiques et ouvrages en ces matières,import,2019,131544,166591,2021
+Matières plastiques et ouvrages en ces matières,import,2020,133876,168733,2021
+Matières plastiques et ouvrages en ces matières,import,2021,176551,184438,2021
+Caoutchouc et ouvrages en caoutchouc,import,2017,28932,29146,2021
+Caoutchouc et ouvrages en caoutchouc,import,2018,28773,32072,2021
+Caoutchouc et ouvrages en caoutchouc,import,2019,34469,38971,2021
+Caoutchouc et ouvrages en caoutchouc,import,2020,39366,46024,2021
+Caoutchouc et ouvrages en caoutchouc,import,2021,37996,42237,2021
+Peaux (autres que les pelleteries) et cuirs,import,2017,188,696,2021
+Peaux (autres que les pelleteries) et cuirs,import,2018,293,673,2021
+Peaux (autres que les pelleteries) et cuirs,import,2019,214,711,2021
+Peaux (autres que les pelleteries) et cuirs,import,2020,229,845,2021
+Peaux (autres que les pelleteries) et cuirs,import,2021,83,318,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",import,2017,3520,7960,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",import,2018,3968,7791,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",import,2019,5131,10371,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",import,2020,4409,10400,2021
+"Ouvrages en cuir, articles de bourrellerie, sellerie, voyage ou en boyaux",import,2021,6157,17426,2021
+"Pelleteries et fourrures, pelleteries factices",import,2017,1,3,2021
+"Pelleteries et fourrures, pelleteries factices",import,2018,1,1,2021
+"Pelleteries et fourrures, pelleteries factices",import,2019,2,5,2021
+"Pelleteries et fourrures, pelleteries factices",import,2020,3,6,2021
+"Pelleteries et fourrures, pelleteries factices",import,2021,3,8,2021
+"Bois, charbon de bois et ouvrages en bois",import,2017,29416,113785,2021
+"Bois, charbon de bois et ouvrages en bois",import,2018,32722,118218,2021
+"Bois, charbon de bois et ouvrages en bois",import,2019,36870,141211,2021
+"Bois, charbon de bois et ouvrages en bois",import,2020,32356,127390,2021
+"Bois, charbon de bois et ouvrages en bois",import,2021,36794,141625,2021
+Liège et ouvrages en liège,import,2017,80,34,2021
+Liège et ouvrages en liège,import,2018,69,19,2021
+Liège et ouvrages en liège,import,2019,66,18,2021
+Liège et ouvrages en liège,import,2020,58,21,2021
+Liège et ouvrages en liège,import,2021,66,45,2021
+Ouvrages de sparterie ou de vannerie,import,2017,43,134,2021
+Ouvrages de sparterie ou de vannerie,import,2018,50,148,2021
+Ouvrages de sparterie ou de vannerie,import,2019,32,83,2021
+Ouvrages de sparterie ou de vannerie,import,2020,17,30,2021
+Ouvrages de sparterie ou de vannerie,import,2021,94,74,2021
+Matières cellulosiques servant à la fabrication du papier,import,2017,522,2474,2021
+Matières cellulosiques servant à la fabrication du papier,import,2018,549,2844,2021
+Matières cellulosiques servant à la fabrication du papier,import,2019,531,2629,2021
+Matières cellulosiques servant à la fabrication du papier,import,2020,1032,6925,2021
+Matières cellulosiques servant à la fabrication du papier,import,2021,1536,9697,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",import,2017,55144,91891,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",import,2018,55266,89349,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",import,2019,59819,99354,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",import,2020,63786,121988,2021
+"Papiers et cartons, ouvrages en pâte de cellulose, en papier ou carton",import,2021,71846,125356,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",import,2017,6450,2339,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",import,2018,6349,4101,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",import,2019,6692,3237,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",import,2020,4713,3787,2021
+"Produits d'édition, presse, arts graphiques, manuscrits, plans",import,2021,7330,5494,2021
+Soie,import,2017,116,403,2021
+Soie,import,2018,101,301,2021
+Soie,import,2019,117,341,2021
+Soie,import,2020,158,476,2021
+Soie,import,2021,259,1112,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",import,2017,95,256,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",import,2018,95,262,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",import,2019,214,407,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",import,2020,190,574,2021
+"Laine, poils fins ou grossiers, fils et tissus de crin",import,2021,176,730,2021
+Coton,import,2017,3136,8725,2021
+Coton,import,2018,5607,14417,2021
+Coton,import,2019,6550,14766,2021
+Coton,import,2020,5305,10892,2021
+Coton,import,2021,5980,11651,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",import,2017,397,1611,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",import,2018,296,862,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",import,2019,770,2197,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",import,2020,284,982,2021
+"Autres fibres textiles végétales, fils de papier, tissus de fils de papier",import,2021,733,2124,2021
+Filaments synthétiques ou artificiels,import,2017,8262,16268,2021
+Filaments synthétiques ou artificiels,import,2018,8217,13140,2021
+Filaments synthétiques ou artificiels,import,2019,10230,15806,2021
+Filaments synthétiques ou artificiels,import,2020,7468,10520,2021
+Filaments synthétiques ou artificiels,import,2021,7784,16852,2021
+Fibres synthétiques ou artificielles discontinues,import,2017,28056,13816,2021
+Fibres synthétiques ou artificielles discontinues,import,2018,28816,15342,2021
+Fibres synthétiques ou artificielles discontinues,import,2019,30096,15885,2021
+Fibres synthétiques ou artificielles discontinues,import,2020,26885,15135,2021
+Fibres synthétiques ou artificielles discontinues,import,2021,31999,19079,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",import,2017,6621,3727,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",import,2018,6477,4232,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",import,2019,6102,4473,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",import,2020,5972,4927,2021
+"Ouates, feutres, non tissés, fils spéciaux, ficelles, cordes, cordages, corderie",import,2021,9405,7657,2021
+Tapis et autres revêtements de sol en matières textiles,import,2017,1168,3660,2021
+Tapis et autres revêtements de sol en matières textiles,import,2018,1799,4915,2021
+Tapis et autres revêtements de sol en matières textiles,import,2019,1936,6606,2021
+Tapis et autres revêtements de sol en matières textiles,import,2020,1927,4614,2021
+Tapis et autres revêtements de sol en matières textiles,import,2021,1966,5866,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",import,2017,1246,3594,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",import,2018,2745,6096,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",import,2019,3026,6738,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",import,2020,2662,6135,2021
+"Tissus spéciaux, dentelles, tapisseries, passementeries, broderies",import,2021,2565,9069,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",import,2017,1028,2042,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",import,2018,1081,1221,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",import,2019,1281,1119,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",import,2020,1258,1491,2021
+"Tissus imprégnés, recouverts, stratifiés, articles techniques en textiles",import,2021,1631,1723,2021
+Étoffes de bonneterie,import,2017,80,145,2021
+Étoffes de bonneterie,import,2018,28,64,2021
+Étoffes de bonneterie,import,2019,82,175,2021
+Étoffes de bonneterie,import,2020,52,128,2021
+Étoffes de bonneterie,import,2021,71,186,2021
+"Vêtements et accessoires du vêtement, en bonneterie",import,2017,4367,5729,2021
+"Vêtements et accessoires du vêtement, en bonneterie",import,2018,4854,5600,2021
+"Vêtements et accessoires du vêtement, en bonneterie",import,2019,6100,6315,2021
+"Vêtements et accessoires du vêtement, en bonneterie",import,2020,6252,8843,2021
+"Vêtements et accessoires du vêtement, en bonneterie",import,2021,7142,11637,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",import,2017,7336,8791,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",import,2018,8092,9376,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",import,2019,11489,9522,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",import,2020,12834,9782,2021
+"Vêtements et accessoires du vêtement, autres qu'en bonneterie",import,2021,10603,15376,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",import,2017,26682,44810,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",import,2018,29497,48466,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",import,2019,31930,107693,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",import,2020,32320,53364,2021
+"Autres articles textiles confectionnés, assortiments, friperie et chiffons",import,2021,39442,69675,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",import,2017,6325,13700,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",import,2018,6414,11936,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",import,2019,9965,12535,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",import,2020,9076,14225,2021
+"Chaussures, guêtres et articles analogues, parties de ces objets",import,2021,10255,19195,2021
+Coiffures et parties de coiffures,import,2017,2247,455,2021
+Coiffures et parties de coiffures,import,2018,720,477,2021
+Coiffures et parties de coiffures,import,2019,1041,706,2021
+Coiffures et parties de coiffures,import,2020,1902,602,2021
+Coiffures et parties de coiffures,import,2021,1446,833,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",import,2017,103,200,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",import,2018,189,238,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",import,2019,64,117,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",import,2020,98,192,2021
+"Parapluies, parasols, cannes, fouets, cravaches et leurs parties",import,2021,148,304,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",import,2017,145,424,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",import,2018,247,540,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",import,2019,364,677,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",import,2020,220,551,2021
+"Plumes apprêtées, fleurs artificielles, ouvrages en cheveux",import,2021,296,879,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",import,2017,5113,24687,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",import,2018,16854,78948,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",import,2019,8263,33555,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",import,2020,6025,20906,2021
+"Ouvrages en pierres, plâtre, ciment, amiante, mica ou matières analogues",import,2021,7091,27364,2021
+Produits céramiques,import,2017,29931,229514,2021
+Produits céramiques,import,2018,37545,241050,2021
+Produits céramiques,import,2019,41228,280342,2021
+Produits céramiques,import,2020,36714,260354,2021
+Produits céramiques,import,2021,43842,302774,2021
+Verre et ouvrages en verre,import,2017,11960,38321,2021
+Verre et ouvrages en verre,import,2018,14980,43251,2021
+Verre et ouvrages en verre,import,2019,13495,47058,2021
+Verre et ouvrages en verre,import,2020,12032,44747,2021
+Verre et ouvrages en verre,import,2021,17103,58106,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",import,2017,1432,1103,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",import,2018,1724,2162,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",import,2019,2184,1754,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",import,2020,1449,1927,2021
+"Perles, pierres gemmes, métaux précieux, bijouterie fantaisie, monnaies",import,2021,1723,3491,2021
+"Fonte, fer et acier",import,2017,136470,432992,2021
+"Fonte, fer et acier",import,2018,182981,522064,2021
+"Fonte, fer et acier",import,2019,176510,542401,2021
+"Fonte, fer et acier",import,2020,159333,499222,2021
+"Fonte, fer et acier",import,2021,232829,639680,2021
+"Ouvrages en fonte, fer ou acier",import,2017,98719,100555,2021
+"Ouvrages en fonte, fer ou acier",import,2018,148950,183574,2021
+"Ouvrages en fonte, fer ou acier",import,2019,153027,174576,2021
+"Ouvrages en fonte, fer ou acier",import,2020,114664,121156,2021
+"Ouvrages en fonte, fer ou acier",import,2021,167593,132961,2021
+Cuivre et ouvrages en cuivre,import,2017,15125,4267,2021
+Cuivre et ouvrages en cuivre,import,2018,15469,4508,2021
+Cuivre et ouvrages en cuivre,import,2019,17875,5300,2021
+Cuivre et ouvrages en cuivre,import,2020,18183,5804,2021
+Cuivre et ouvrages en cuivre,import,2021,25298,6221,2021
+Nickel et ouvrages en nickel,import,2017,42,146,2021
+Nickel et ouvrages en nickel,import,2018,43,72,2021
+Nickel et ouvrages en nickel,import,2019,26,19,2021
+Nickel et ouvrages en nickel,import,2020,213,37,2021
+Nickel et ouvrages en nickel,import,2021,1822,125,2021
+Aluminium et ouvrages en aluminium,import,2017,31105,14717,2021
+Aluminium et ouvrages en aluminium,import,2018,27213,14490,2021
+Aluminium et ouvrages en aluminium,import,2019,47774,29620,2021
+Aluminium et ouvrages en aluminium,import,2020,30097,20768,2021
+Aluminium et ouvrages en aluminium,import,2021,36660,20794,2021
+Plomb et ouvrages en plomb,import,2017,767,293,2021
+Plomb et ouvrages en plomb,import,2018,60,67,2021
+Plomb et ouvrages en plomb,import,2019,66,29,2021
+Plomb et ouvrages en plomb,import,2020,272,183,2021
+Plomb et ouvrages en plomb,import,2021,33,91,2021
+Zinc et ouvrages en zinc,import,2017,344,1349,2021
+Zinc et ouvrages en zinc,import,2018,525,2239,2021
+Zinc et ouvrages en zinc,import,2019,1185,5632,2021
+Zinc et ouvrages en zinc,import,2020,848,5816,2021
+Zinc et ouvrages en zinc,import,2021,606,3625,2021
+Étain et ouvrages en étain,import,2017,5,11,2021
+Étain et ouvrages en étain,import,2018,12,8,2021
+Étain et ouvrages en étain,import,2019,13,16,2021
+Étain et ouvrages en étain,import,2020,11,18,2021
+Étain et ouvrages en étain,import,2021,34,7,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",import,2017,2,6,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",import,2018,17,8,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",import,2019,77,67,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",import,2020,96,84,2021
+"Autres métaux communs, cermets, ouvrages en ces matières",import,2021,99,84,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",import,2017,9296,6614,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",import,2018,6556,6343,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",import,2019,7177,6968,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",import,2020,7162,8213,2021
+"Outils, outillage, coutellerie, couverts en métaux communs et parties",import,2021,10374,10298,2021
+Ouvrages divers en métaux communs,import,2017,5587,7683,2021
+Ouvrages divers en métaux communs,import,2018,12417,8907,2021
+Ouvrages divers en métaux communs,import,2019,10279,9726,2021
+Ouvrages divers en métaux communs,import,2020,9721,11417,2021
+Ouvrages divers en métaux communs,import,2021,10280,13190,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",import,2017,377430,115012,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",import,2018,337909,112400,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",import,2019,429274,132308,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",import,2020,382531,129613,2021
+"Réacteurs nucléaires, chaudières, machines, appareils, engins mécaniques",import,2021,487119,153937,2021
+"Machines électriques, appareils d'émission-réception radio/tv",import,2017,302951,67043,2021
+"Machines électriques, appareils d'émission-réception radio/tv",import,2018,248355,56998,2021
+"Machines électriques, appareils d'émission-réception radio/tv",import,2019,318393,66778,2021
+"Machines électriques, appareils d'émission-réception radio/tv",import,2020,309046,74239,2021
+"Machines électriques, appareils d'émission-réception radio/tv",import,2021,312976,77137,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",import,2017,3309,2828,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",import,2018,10668,3584,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",import,2019,97398,6112,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",import,2020,24248,4345,2021
+"Véhicules et matériel pour voies ferrées, appareils de signalisation",import,2021,8485,4211,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",import,2017,274279,128974,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",import,2018,302200,149175,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",import,2019,290598,158248,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",import,2020,255446,147808,2021
+"Voitures automobiles et autres véhicules terrestres, parties, accessoires",import,2021,302070,180873,2021
+Navigation aérienne ou spatiale,import,2017,2893,51,2021
+Navigation aérienne ou spatiale,import,2018,1094,23,2021
+Navigation aérienne ou spatiale,import,2019,1204,10,2021
+Navigation aérienne ou spatiale,import,2020,2246,75,2021
+Navigation aérienne ou spatiale,import,2021,2656,63,2021
+Navigation maritime ou fluviale,import,2017,13438,2645,2021
+Navigation maritime ou fluviale,import,2018,60821,13575,2021
+Navigation maritime ou fluviale,import,2019,47937,20518,2021
+Navigation maritime ou fluviale,import,2020,29017,11818,2021
+Navigation maritime ou fluviale,import,2021,15426,2627,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",import,2017,45557,4047,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",import,2018,33180,4213,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",import,2019,39362,5770,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",import,2020,64017,6274,2021
+"Appareils d'optique, de précision, médico-chirurgicaux, parties, accessoires",import,2021,80713,7304,2021
+Horlogerie,import,2017,453,283,2021
+Horlogerie,import,2018,637,199,2021
+Horlogerie,import,2019,735,301,2021
+Horlogerie,import,2020,314,226,2021
+Horlogerie,import,2021,272,400,2021
+"Instruments de musique, parties et accessoires de ces instruments",import,2017,408,90,2021
+"Instruments de musique, parties et accessoires de ces instruments",import,2018,124,39,2021
+"Instruments de musique, parties et accessoires de ces instruments",import,2019,27,57,2021
+"Instruments de musique, parties et accessoires de ces instruments",import,2020,28,53,2021
+"Instruments de musique, parties et accessoires de ces instruments",import,2021,17,33,2021
+"Armes, munitions et leurs parties et accessoires",import,2017,9479,593,2021
+"Armes, munitions et leurs parties et accessoires",import,2018,1591,108,2021
+"Armes, munitions et leurs parties et accessoires",import,2019,6660,1659,2021
+"Armes, munitions et leurs parties et accessoires",import,2020,13829,384,2021
+"Armes, munitions et leurs parties et accessoires",import,2021,5789,314,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",import,2017,36271,44065,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",import,2018,40475,45968,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",import,2019,39630,44036,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",import,2020,38921,40869,2021
+"Meubles y.c. médicaux, appareils d'éclairage, constructions préfabriquées",import,2021,43667,53302,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",import,2017,2623,4316,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",import,2018,3927,3945,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",import,2019,3723,4191,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",import,2020,4054,4961,2021
+"Jouets, jeux, articles de divertissements ou sports, parties, accessoires",import,2021,4277,6749,2021
+Ouvrages divers,import,2017,8326,13978,2021
+Ouvrages divers,import,2018,9920,17069,2021
+Ouvrages divers,import,2019,11605,18291,2021
+Ouvrages divers,import,2020,11540,20815,2021
+Ouvrages divers,import,2021,9617,19610,2021
+"Objets d'art, de collection ou d'antiquité",import,2017,79,100,2021
+"Objets d'art, de collection ou d'antiquité",import,2018,88,97,2021
+"Objets d'art, de collection ou d'antiquité",import,2019,430,133,2021
+"Objets d'art, de collection ou d'antiquité",import,2020,64,98,2021
+"Objets d'art, de collection ou d'antiquité",import,2021,472,284,2021

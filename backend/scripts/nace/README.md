@@ -37,6 +37,23 @@ Quatre familles extraites, mêmes règles et même vérification :
   eux-mêmes des lignes de 5 nombres, et « - » (absence de flux) qui
   aurait fait perdre une douzaine de lignes par tableau.
 
+  L'édition 2021 a nécessité un second extracteur,
+  `extraire_tableau_bbox.py`, qui repart des coordonnées des mots
+  (`pdftotext -bbox-layout`) : dans ce PDF, `-layout` éclate les cellules
+  d'une même ligne sur plusieurs lignes de texte et coupe un nombre en
+  deux au sein de sa cellule (« 3 800 764 » rendu « 3 800 » puis « 764 »
+  dessous), ce qui faisait perdre les deux chapitres les plus lourds à
+  l'export. Les cellules y sont reconstituées par regroupement horizontal
+  (2,2 pt entre les tranches d'un nombre, 7,4 pt entre deux cellules)
+  puis fusion des fragments qui se chevauchent en x. Les éditions 2019 et
+  2020, correctement rendues par `-layout`, restent extraites ainsi.
+
+  Anomalie du rapport 2021 : le TOTAL imprimé du tableau 39
+  (exportations en poids) vaut 225 404 t pour 2017 alors que la somme de
+  ses 96 chapitres donne 6 835 153 t — valeur confirmée par les trois
+  autres familles NACE. L'extracteur détecte un total aberrant (> 5 %),
+  le signale et retient la somme des chapitres.
+
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
 2020–2024) ajoute la ligne export « Huiles brutes de pétrole »
