@@ -143,6 +143,264 @@ function CommerceExterieurAttente() {
   );
 }
 
+// ── Panneau Commerce extérieur (NACE) ────────────────────────────────────────
+// Alimenté par les principaux produits des annexes NACE (API /nace) :
+// chaque année est résolue côté backend avec l'édition la plus récente
+// qui la couvre, libellés ramenés à la nomenclature courante.
+type NaceLigne = { produit: string; annee: number; valeur: number | null; poids: number | null; edition: number };
+type NaceData = { disponible: boolean; annees: number[]; editions: number[]; donnees: { export: NaceLigne[]; import: NaceLigne[] } };
+type NaceMesure = "valeur" | "poids";
+
+const NACE_BLEU = "#004f91";    // exportations
+const NACE_ORANGE = "#ca631f";  // importations
+
+// Montants NACE en millions de FCFA
+function fmtMFCFA(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  if (Math.abs(v) >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md FCFA`;
+  return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} M FCFA`;
+}
+// Poids NACE en tonnes
+function fmtTonnes(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Mt`;
+  if (Math.abs(v) >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} kt`;
+  return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} t`;
+}
+function VariationNace({ v }: { v: number | null }) {
+  if (v == null || !isFinite(v)) return <span style={{ fontSize: 10.5, color: "#C5BFBB" }}>—</span>;
+  const pos = v > 0, neg = v < 0;
+  return (
+    <span style={{ fontSize: 11, fontWeight: 800, color: pos ? "#188038" : neg ? "#dc2626" : "#9aa5b4", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+      {pos ? "▲" : neg ? "▼" : "="}&nbsp;{Math.abs(v).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+    </span>
+  );
+}
+
+// Classement des principaux produits d'un sens pour l'année choisie :
+// rang · produit · valeur (ou poids) · part · Δ vs n-1 · barre, bascule
+// Valeur ⇆ Poids en titre, « Autres produits » épinglé en bas.
+function TableauProduitsNace({ titre, couleur, lignes, lignesPrec, mesure, onMesure }: {
+  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[];
+  mesure: NaceMesure; onMesure: (m: NaceMesure) => void;
+}) {
+  const val = (r: NaceLigne) => (mesure === "valeur" ? r.valeur : r.poids) ?? 0;
+  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
+  const nommes = lignes.filter(r => r.produit !== "Autres produits").sort((a, b) => val(b) - val(a));
+  const autres = lignes.find(r => r.produit === "Autres produits") ?? null;
+  const total = lignes.reduce((s, r) => s + Math.max(0, val(r)), 0);
+  const max = Math.max(1e-9, ...nommes.map(val));
+  const precDe = (produit: string) => lignesPrec.find(r => r.produit === produit) ?? null;
+  const Ligne = ({ r, rang, epingle }: { r: NaceLigne; rang: number | null; epingle?: boolean }) => {
+    const prec = precDe(r.produit);
+    const vPrec = prec ? (mesure === "valeur" ? prec.valeur : prec.poids) : null;
+    const delta = vPrec != null && vPrec !== 0 && val(r) != null ? ((val(r) - vPrec) / Math.abs(vPrec)) * 100 : null;
+    const podium = rang != null && rang <= 3;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
+        background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}>
+        <span style={{ width: 22, flexShrink: 0 }}>
+          {rang != null && (
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
+              background: podium ? couleur : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
+          )}
+        </span>
+        <span title={r.produit} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: epingle ? 600 : 700, color: epingle ? "#9aa5b4" : "#1a1a2e",
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: epingle ? "italic" : "normal" }}>{r.produit}</span>
+        <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(val(r))}</span>
+        <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
+          {total > 0 ? `${(Math.max(0, val(r)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
+        </span>
+        <span style={{ width: 64, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
+        <div style={{ width: "20%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+          {val(r) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, val(r) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
+        </div>
+      </div>
+    );
+  };
+  return (
+    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h3>
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
+          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
+            const actif = o.v === mesure;
+            return (
+              <button key={o.v} onClick={() => onMesure(o.v)} style={{
+                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
+                background: actif ? "#fff" : "transparent", color: actif ? couleur : "#6b7684",
+                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
+            );
+          })}
+        </div>
+      </div>
+      {lignes.length === 0 ? (
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucune donnée.</p>
+      ) : (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>Produit</span>
+            <span style={{ width: 88, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>{mesure === "valeur" ? "Valeur" : "Poids"}</span>
+            <span style={{ width: 40, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
+            <span style={{ width: 64, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>vs n-1</span>
+            <span style={{ width: "20%", flexShrink: 0 }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {nommes.map((r, i) => <Ligne key={r.produit} r={r} rang={i + 1} />)}
+            {autres && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
+                  <span style={{ width: 22, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                  <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
+                </div>
+                <Ligne r={autres} rang={null} epingle />
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CommerceExterieurPanel() {
+  const [data, setData] = useState<NaceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erreur, setErreur] = useState(false);
+  const [tick, setTick] = useState(0);
+  const [anneeSel, setAnneeSel] = useState<number | null>(null);
+  const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
+  const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
+
+  useEffect(() => {
+    setLoading(true); setErreur(false);
+    fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setData).catch(() => setErreur(true)).finally(() => setLoading(false));
+  }, [tick]);
+
+  const annees = data?.annees ?? [];
+  const an = anneeSel ?? annees[annees.length - 1] ?? 0;
+  const lignesDe = useCallback((sens: "export" | "import", a: number) =>
+    (data?.donnees[sens] ?? []).filter(r => r.annee === a), [data]);
+
+  // Totaux annuels (somme des lignes = TOTAL du rapport à l'arrondi près)
+  const totalDe = useCallback((sens: "export" | "import", a: number) => {
+    const ls = lignesDe(sens, a);
+    return ls.length ? ls.reduce((s, r) => s + (r.valeur ?? 0), 0) : null;
+  }, [lignesDe]);
+
+  const series = useMemo(() => {
+    const sE = annees.map(a => ({ annee: a, valeur: totalDe("export", a) }));
+    const sI = annees.map(a => ({ annee: a, valeur: totalDe("import", a) }));
+    const sB = annees.map(a => {
+      const e = totalDe("export", a), i = totalDe("import", a);
+      return { annee: a, valeur: e != null && i != null ? e - i : null };
+    });
+    return { sE, sI, sB };
+  }, [annees, totalDe]);
+
+  if (loading) return (
+    <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
+      <SkeletonKPIs n={4} />
+      <SkeletonChartGrid n={1} cols={1} height={280} />
+      <SkeletonRows n={8} h={32} />
+    </div>
+  );
+  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  if (!data || !data.disponible) return <CommerceExterieurPanel />;
+
+  const expTot = totalDe("export", an), impTot = totalDe("import", an);
+  const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
+  const varDe = (v: number | null, prec: number | null) =>
+    v != null && prec != null && prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
+  const balance = expTot != null && impTot != null ? expTot - impTot : null;
+  const balancePrec = expPrec != null && impPrec != null ? expPrec - impPrec : null;
+  const taux = expTot != null && impTot != null && impTot !== 0 ? (expTot / impTot) * 100 : null;
+  const tauxPrec = expPrec != null && impPrec != null && impPrec !== 0 ? (expPrec / impPrec) * 100 : null;
+  const editionAn = lignesDe("export", an)[0]?.edition ?? lignesDe("import", an)[0]?.edition ?? null;
+  const kpis = [
+    { label: "Exportations", tag: "FAB", valeur: fmtMFCFA(expTot), variation: varDe(expTot, expPrec), rouge: false },
+    { label: "Importations", tag: "CAF", valeur: fmtMFCFA(impTot), variation: varDe(impTot, impPrec), rouge: false },
+    { label: "Balance commerciale", tag: "FAB − CAF", valeur: fmtMFCFA(balance), variation: null, rouge: (balance ?? 0) < 0,
+      sous: balancePrec != null ? `${fmtMFCFA(balancePrec)} en ${an - 1}` : null },
+    { label: "Taux de couverture", tag: null, valeur: taux != null ? `${taux.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", variation: null, rouge: false,
+      sous: tauxPrec != null ? `${tauxPrec.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${an - 1}` : null },
+  ];
+
+  return (
+    <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
+      {/* En-tête : titre + années disponibles + édition NACE source de l'année */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
+        <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
+        <div role="tablist" aria-label="Année"
+          style={{ display: "inline-flex", background: "#fff", border: "1px solid #ECEAE7", borderRadius: 999, padding: 3, gap: 3, boxShadow: "var(--ombre-1)", flexWrap: "wrap" }}>
+          {annees.map(a => {
+            const actif = a === an;
+            return (
+              <button key={a} role="tab" aria-selected={actif} onClick={() => setAnneeSel(a)}
+                style={{ padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12.5, fontWeight: 700, whiteSpace: "nowrap",
+                  background: actif ? "#004f91" : "transparent", color: actif ? "#fff" : "#4a5568",
+                  boxShadow: actif ? "0 2px 8px rgba(0,79,145,0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
+                  transition: "background 0.18s, box-shadow 0.18s, color 0.18s", fontFamily: "var(--font-google-sans)" }}
+                onMouseEnter={e => { if (!actif) e.currentTarget.style.background = "#F6F5F3"; }}
+                onMouseLeave={e => { if (!actif) e.currentTarget.style.background = "transparent"; }}>
+                {a}
+              </button>
+            );
+          })}
+        </div>
+        {editionAn != null && (
+          <span title="Rapport NACE dont proviennent les données de l'année affichée (édition la plus récente qui la couvre)"
+            style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#9aa5b4", background: "#F2F0EF", padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
+            Source&nbsp;: NACE {editionAn} · ANSD
+          </span>
+        )}
+      </div>
+
+      {/* KPIs de l'année */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 18 }}>
+        {kpis.map(k => (
+          <div key={k.label} className="ds-carte" style={{ padding: "14px 16px", minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+              <p style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4, margin: 0 }}>{k.label}</p>
+              {k.tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#9aa5b4", background: "#F2F0EF", padding: "1px 6px", borderRadius: 4, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{k.tag}</span>}
+              <span style={{ fontSize: 8.5, fontWeight: 700, color: "#9aa5b4", background: "#F2F0EF", padding: "1px 6px", borderRadius: 4, whiteSpace: "nowrap" }}>{an}</span>
+            </div>
+            <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "#dc2626" : "#1a1a2e", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
+            <div style={{ marginTop: 6, minHeight: 14, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              {k.variation != null && <><VariationNace v={k.variation} /><span style={{ fontSize: 10, color: "#9aa5b4" }}>par rapport à {an - 1}</span></>}
+              {"sous" in k && k.sous && <span style={{ fontSize: 10, color: "#9aa5b4" }}>{k.sous}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Évolution des échanges sur toute la période couverte */}
+      <div className="ds-carte" style={{ padding: "18px 20px", marginBottom: 18 }}>
+        <p style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>
+          Évolution des échanges — {annees[0]} à {annees[annees.length - 1]}
+        </p>
+        <GrapheSignature height={270} type="line" dualAxis={false} fmt={(v) => fmtMFCFA(v)} series={[
+          { nom: "Exportations", couleur: NACE_BLEU, data: series.sE },
+          { nom: "Importations", couleur: NACE_ORANGE, data: series.sI },
+          { nom: "Balance", couleur: "#dc2626", data: series.sB, dash: "6,4" },
+        ]} />
+      </div>
+
+      {/* Principaux produits de l'année : classements export / import */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
+        <TableauProduitsNace titre={`Principaux produits exportés · ${an}`} couleur={NACE_BLEU}
+          lignes={lignesDe("export", an)} lignesPrec={lignesDe("export", an - 1)}
+          mesure={mesureExp} onMesure={setMesureExp} />
+        <TableauProduitsNace titre={`Principaux produits importés · ${an}`} couleur={NACE_ORANGE}
+          lignes={lignesDe("import", an)} lignesPrec={lignesDe("import", an - 1)}
+          mesure={mesureImp} onMesure={setMesureImp} />
+      </div>
+    </div>
+  );
+}
+
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
 type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; continent: string | null; region_geo: string | null };
 // ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
@@ -1311,7 +1569,7 @@ export default function StatistiquesPage() {
       </BarreTitre>
 
       {mode === "exterieur" ? (
-        <CommerceExterieurAttente />
+        <CommerceExterieurPanel />
       ) : mode === "commerce" ? (
         <CommercePanel />
       ) : (
