@@ -36,20 +36,59 @@ CANON = {cle(k): v for k, v in {
 
 txt = open(FIC, encoding="utf-8").read()
 
+# Découpage linéaire des colonnes (2 espaces ou plus). Un motif « nombres »
+# à quantificateurs imbriqués provoquerait un backtracking catastrophique
+# sur les lignes qui ne correspondent pas.
+def colonnes(l: str) -> list[str]:
+    return [t.strip() for t in re.split(r"\s{2,}", l.strip()) if t.strip()]
+
+def est_nombre(t: str) -> bool:
+    return bool(re.fullmatch(r"-?[\d ]+", t)) and any(c.isdigit() for c in t)
+
+def nombres_seuls(l: str) -> list[str] | None:
+    """5 valeurs et rien d'autre (ligne de nombres d'un libellé coupé)."""
+    c = colonnes(l)
+    return c if len(c) == 5 and all(est_nombre(t) for t in c) else None
+
+def libelle_seul(l: str) -> str | None:
+    """Un libellé et rien d'autre (début ou fin d'un libellé coupé)."""
+    c = colonnes(l)
+    return c[0] if len(c) == 1 and re.fullmatch(r"[A-ZÉÈ][A-Za-zÉÈÀÔÎéè '\-\,\.]*", c[0]) else None
+
+def prenormaliser(sec: str) -> str:
+    """Recolle les libellés que le PDF coupe sur plusieurs lignes : les
+    valeurs s'intercalent alors entre le début et la fin du libellé
+    (« MATIERES PREMIERES ANIMALES ET » / nombres / « VEGETALES »)."""
+    lignes = [l.rstrip() for l in sec.split("\n")]
+    out, i = [], 0
+    while i < len(lignes):
+        lab = libelle_seul(lignes[i])
+        nums = nombres_seuls(lignes[i + 1]) if lab and i + 1 < len(lignes) else None
+        if lab and nums:
+            suite = libelle_seul(lignes[i + 2]) if i + 2 < len(lignes) else None
+            if suite and cle(f"{lab} {suite}") in CANON:
+                out.append(f"{lab} {suite}   " + "   ".join(nums))
+                i += 3
+                continue
+            out.append(f"{lab}   " + "   ".join(nums))
+            i += 2
+            continue
+        out.append(lignes[i])
+        i += 1
+    return "\n".join(out)
+
 def parse(debut: str, fin: str | None):
     sec = txt.split(debut)[1]
     if fin:
         sec = sec.split(fin)[0]
+    sec = prenormaliser(sec)
     lignes, total = {}, None
     for l in sec.split("\n"):
-        m = re.match(r"^([A-ZÉÈ][A-Za-zÉÈÀÔÎéè '\-\,\.]+?)\s{2,}((?:-?[\d\s]+)(?:\s{2,}-?[\d\s]+){4})\s*$", l.strip())
-        if not m:
+        c = colonnes(l)
+        if len(c) != 6 or est_nombre(c[0]) or not all(est_nombre(t) for t in c[1:]):
             continue
-        toks = [t.strip() for t in re.split(r"\s{2,}", m.group(2).strip())]
-        if len(toks) != 5:
-            continue
-        vals = [int(t.replace(" ", "")) for t in toks]
-        k = cle(m.group(1))
+        vals = [int(t.replace(" ", "")) for t in c[1:]]
+        k = cle(c[0])
         if k == "TOTAL":
             total = vals
         elif k in CANON:
