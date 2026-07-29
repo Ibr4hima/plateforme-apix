@@ -1,0 +1,121 @@
+produit,sens,annee,valeur,poids,edition
+Produits halieutiques,export,2020,277933,338956,2024
+Produits halieutiques,export,2021,312981,312116,2024
+Produits halieutiques,export,2022,423370,299704,2024
+Produits halieutiques,export,2023,345278,273982,2024
+Produits halieutiques,export,2024,340509,251347,2024
+Produits arachidiers,export,2020,120483,275036,2024
+Produits arachidiers,export,2021,168571,348816,2024
+Produits arachidiers,export,2022,100838,191919,2024
+Produits arachidiers,export,2023,70223,121239,2024
+Produits arachidiers,export,2024,72275,127883,2024
+Huile brute de pétrole,export,2020,4003,46272,2024
+Huile brute de pétrole,export,2021,11017,73045,2024
+Huile brute de pétrole,export,2022,1545,6928,2024
+Huile brute de pétrole,export,2023,15959,63690,2024
+Huile brute de pétrole,export,2024,464555,1427941,2024
+Autres produits pétroliers,export,2020,357524,1279648,2024
+Autres produits pétroliers,export,2021,436885,1303545,2024
+Autres produits pétroliers,export,2022,648822,1072595,2024
+Autres produits pétroliers,export,2023,676438,1192516,2024
+Autres produits pétroliers,export,2024,791942,1412012,2024
+Acide phosphorique,export,2020,151646,483194,2024
+Acide phosphorique,export,2021,265348,478435,2024
+Acide phosphorique,export,2022,471868,558409,2024
+Acide phosphorique,export,2023,264686,492886,2024
+Acide phosphorique,export,2024,264417,499185,2024
+Ciment hydraulique,export,2020,73746,1818422,2024
+Ciment hydraulique,export,2021,86231,2123572,2024
+Ciment hydraulique,export,2022,75747,1631621,2024
+Ciment hydraulique,export,2023,106480,2149919,2024
+Ciment hydraulique,export,2024,108838,2282279,2024
+Phosphates,export,2020,11493,306641,2024
+Phosphates,export,2021,22050,553448,2024
+Phosphates,export,2022,47732,486545,2024
+Phosphates,export,2023,49886,569208,2024
+Phosphates,export,2024,55433,717942,2024
+Engrais minéraux,export,2020,21263,111361,2024
+Engrais minéraux,export,2021,33057,121978,2024
+Engrais minéraux,export,2022,9318,30411,2024
+Engrais minéraux,export,2023,37787,130511,2024
+Engrais minéraux,export,2024,28830,67768,2024
+Cotons et tissus en coton,export,2020,5826,6796,2024
+Cotons et tissus en coton,export,2021,9005,9160,2024
+Cotons et tissus en coton,export,2022,12551,8931,2024
+Cotons et tissus en coton,export,2023,8428,5991,2024
+Cotons et tissus en coton,export,2024,6640,5643,2024
+Or industriel,export,2020,422698,15,2024
+Or industriel,export,2021,539778,19,2024
+Or industriel,export,2022,580607,18,2024
+Or industriel,export,2023,530410,17,2024
+Or industriel,export,2024,588502,16,2024
+Titane et zircon,export,2020,116197,594453,2024
+Titane et zircon,export,2021,150304,679377,2024
+Titane et zircon,export,2022,203428,597351,2024
+Titane et zircon,export,2023,146605,476881,2024
+Titane et zircon,export,2024,175572,668430,2024
+"Préparations pour soupes, potages, bouillons",export,2020,76238,70235,2024
+"Préparations pour soupes, potages, bouillons",export,2021,84285,79593,2024
+"Préparations pour soupes, potages, bouillons",export,2022,102989,81083,2024
+"Préparations pour soupes, potages, bouillons",export,2023,90341,66034,2024
+"Préparations pour soupes, potages, bouillons",export,2024,93465,67475,2024
+Autres produits,export,2020,622296,1459808,2024
+Autres produits,export,2021,765289,1955225,2024
+Autres produits,export,2022,884545,2004454,2024
+Autres produits,export,2023,881410,1885743,2024
+Autres produits,export,2024,918081,2071985,2024
+Machines et appareils,import,2020,612244,199477,2024
+Machines et appareils,import,2021,711094,225348,2024
+Machines et appareils,import,2022,798112,250832,2024
+Machines et appareils,import,2023,901542,271551,2024
+Machines et appareils,import,2024,988879,290984,2024
+Produits céréaliers,import,2020,399249,2147132,2024
+Produits céréaliers,import,2021,481496,2351067,2024
+Produits céréaliers,import,2022,678508,2751376,2024
+Produits céréaliers,import,2023,575031,2645906,2024
+Produits céréaliers,import,2024,567378,2819203,2024
+Matériels de transport et pièces détachées,import,2020,339223,176396,2024
+Matériels de transport et pièces détachées,import,2021,365986,201917,2024
+Matériels de transport et pièces détachées,import,2022,607177,225797,2024
+Matériels de transport et pièces détachées,import,2023,777391,233706,2024
+Matériels de transport et pièces détachées,import,2024,721298,288187,2024
+Huiles brutes de pétrole,import,2020,253816,1025398,2024
+Huiles brutes de pétrole,import,2021,284625,1023899,2024
+Huiles brutes de pétrole,import,2022,278083,503909,2024
+Huiles brutes de pétrole,import,2023,577392,1318187,2024
+Huiles brutes de pétrole,import,2024,492592,1175330,2024
+Produits pétroliers finis,import,2020,748531,3121621,2024
+Produits pétroliers finis,import,2021,1015057,3093734,2024
+Produits pétroliers finis,import,2022,1992371,3646106,2024
+Produits pétroliers finis,import,2023,1421971,3055384,2024
+Produits pétroliers finis,import,2024,1592822,3745115,2024
+Métaux communs et ouvrages en métaux communs,import,2020,302307,608560,2024
+Métaux communs et ouvrages en métaux communs,import,2021,409217,753500,2024
+Métaux communs et ouvrages en métaux communs,import,2022,528335,742897,2024
+Métaux communs et ouvrages en métaux communs,import,2023,468583,716412,2024
+Métaux communs et ouvrages en métaux communs,import,2024,389324,565689,2024
+Matières plastiques et artificielles,import,2020,130694,165856,2024
+Matières plastiques et artificielles,import,2021,172806,181462,2024
+Matières plastiques et artificielles,import,2022,219638,201813,2024
+Matières plastiques et artificielles,import,2023,188466,218107,2024
+Matières plastiques et artificielles,import,2024,194037,236823,2024
+Produits pharmaceutiques,import,2020,162508,15291,2024
+Produits pharmaceutiques,import,2021,188643,16895,2024
+Produits pharmaceutiques,import,2022,195521,18106,2024
+Produits pharmaceutiques,import,2023,202972,18735,2024
+Produits pharmaceutiques,import,2024,218599,19073,2024
+Huiles et graisses,import,2020,142635,276112,2024
+Huiles et graisses,import,2021,123804,225294,2024
+Huiles et graisses,import,2022,127037,202602,2024
+Huiles et graisses,import,2023,119602,201001,2024
+Huiles et graisses,import,2024,107056,240288,2024
+Produits des industries parachimiques,import,2020,90073,77975,2024
+Produits des industries parachimiques,import,2021,103771,80570,2024
+Produits des industries parachimiques,import,2022,115875,90272,2024
+Produits des industries parachimiques,import,2023,119861,80727,2024
+Produits des industries parachimiques,import,2024,122952,97010,2024
+Autres produits,import,2020,1313133,5174938,2024
+Autres produits,import,2021,1521993,5911264,2024
+Autres produits,import,2022,2008708,5863564,2024
+Autres produits,import,2023,1854992,6410657,2024
+Autres produits,import,2024,1766456,6061330,2024

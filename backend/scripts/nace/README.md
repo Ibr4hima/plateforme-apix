@@ -93,6 +93,17 @@ de 2022 et revient à la ligne unique « Produits céréaliers » (somme
 Exports inchangés (valeurs 2019–2022 identiques). Légères révisions
 côté imports (Produits pharmaceutiques, Autres produits).
 
+## Édition 2024 — l'huile brute de pétrole entre dans le panier export
+
+L'édition 2024 (années 2020–2024) crée la ligne export **« Huile brute
+de pétrole »** (premières exportations de Sangomar : 464 555 MFCFA /
+1 427 941 t en 2024) et renomme « Produits pétroliers » en **« Autres
+produits pétroliers »** (mêmes valeurs). Le rétropolage 2020–2023 de
+l'huile brute est extrait d'« Autres produits » (2020 : 622 296 =
+626 299 − 4 003, recollage exact en valeur comme en poids). Légères
+révisions des imports (Machines et appareils 2020 : 612 244 contre
+604 249 en 2023).
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette
