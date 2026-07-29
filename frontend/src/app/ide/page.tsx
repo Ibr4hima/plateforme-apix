@@ -2348,10 +2348,12 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   // comparaisons restent homogènes, on ne mélange pas les deux familles.
   const familleDe = (code: string) => (groupements.find(x => x.code === code)?.categorie === "groupe" ? "groupe" : "cont");
   const familleActive = grpSelec.length ? familleDe(grpSelec[0]) : null;
+  // Barre latérale = sélection individuelle uniquement (la comparaison passe
+  // par le bouton « + » du titre) : un clic remplace la sélection courante,
+  // recliquer sur l'unique sélection revient à « Monde ».
   const toggle = (code: string) => {
-    if (grpSelec.includes(code)) setGrpSelec(p => p.filter(c => c !== code));
-    else if (familleActive && familleDe(code) !== familleActive) setGrpSelec([code]);
-    else if (grpSelec.length < 4) setGrpSelec(p => [...p, code]);
+    if (grpSelec.length === 1 && grpSelec[0] === code) setGrpSelec([]);
+    else setGrpSelec([code]);
   };
   const hasFilter = grpSelec.length>0||(modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax));
   const nbFiltres = (grpSelec.length>0?1:0)+((modeAnnees==="specifiques"&&anneesSpec.length>0)||(modeAnnees==="plage"&&(anneeMin!==borneMin||anneeMax!==borneMax))?1:0);
@@ -2461,12 +2463,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             const Item = ({ g }: { g: {code:string; nom_fr:string}; }) => {
               const sel = grpSelec.includes(g.code);
               const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
-              const disabled = !sel && familleActive === familleDe(g.code) && grpSelec.length >= 4;
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)} title={g.nom_fr}
-                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:disabled?"not-allowed":"pointer", background:"transparent", textAlign:"left" as const, width:"100%", opacity:disabled?0.4:1, marginBottom:1 }}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%", marginBottom:1 }}
                   onMouseEnter={e=>{
-                    if(!disabled&&!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";
+                    if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";
                     const box=e.currentTarget.querySelector("[data-marquee]") as HTMLElement|null; const sp=box?.firstElementChild as HTMLElement|null;
                     if(box&&sp){ const d=sp.scrollWidth-box.clientWidth; if(d>0){ sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`; sp.style.transform=`translateX(-${d}px)`; } }
                   }}
@@ -2485,10 +2486,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               );
             };
 
-            const SectionTitle = ({ label, nb }: { label: string; nb: number }) => (
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6, marginTop:2 }}>
+            const SectionTitle = ({ label }: { label: string }) => (
+              <div style={{ display:"flex", alignItems:"center", marginBottom:6, marginTop:2 }}>
                 <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
-                <span style={{ fontSize:11, fontWeight:700, color:nb>=4?"#004f91":"#9aa5b4", background:nb>=4?"rgba(0,79,145,0.08)":"#F2F0EF", padding:"2px 8px", borderRadius:999 }}>{nb}/4</span>
               </div>
             );
 
@@ -2502,7 +2502,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               <>
                 {/* ── Continents & Régions : on raisonne par l'un OU l'autre ── */}
                 {showContSection && <>
-                  <SectionTitle label="Continents & Régions" nb={familleActive === "cont" ? grpSelec.length : 0}/>
+                  <SectionTitle label="Continents & Régions"/>
                   <div style={{ display:"flex", gap:6, marginBottom:8 }}>
                     {([{v:"continent",l:"Continents"},{v:"region",l:"Régions"}] as const).map(o=>(
                       <button key={o.v} onClick={()=>{ if(contMode!==o.v){ setContMode(o.v); if(familleActive==="cont") setGrpSelec([]); } }}
@@ -2534,7 +2534,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
                 {/* ── Groupements ───────────────────────── */}
                 {showGrpSection && <>
-                  <SectionTitle label="Groupements" nb={familleActive === "groupe" ? grpSelec.length : 0}/>
+                  <SectionTitle label="Groupements"/>
                   {filtGrp.map(g => <Item key={g.code} g={g}/>)}
                   <div style={{ height:1, background:"#F2F0EF", margin:"12px 0" }}/>
                 </>}
