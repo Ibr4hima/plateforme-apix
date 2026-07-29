@@ -11,6 +11,14 @@ Deux familles extraites, mêmes règles et même vérification :
   textiles, MAIS → Maïs…). Un « - » du PDF (absence de flux) devient un
   champ vide (NULL), distinct d'un 0.
 
+Produits regroupés — notes par édition : nomenclature stable sur les
+six éditions (30 postes export, 56 import) ; l'édition 2024 (années
+2020–2024) ajoute la ligne export « Huiles brutes de pétrole »
+(Sangomar : 464 555 MFCFA / 1 427 941 t en 2024, rétropolage extrait
+d'« Autres produits », recollage exact : 538 325 = 542 328 − 4 003),
+soit 31 postes export — sans renommer « Produits pétroliers »,
+contrairement aux principaux produits.
+
 La tolérance d'arrondi du vérificateur est de ±3 pour les principaux
 produits (~15 lignes sommées) et ±6 pour les produits regroupés
 (56 lignes) : chaque ligne du PDF étant arrondie, la dérive cumulée
