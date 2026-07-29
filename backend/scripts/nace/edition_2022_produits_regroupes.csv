@@ -1,0 +1,431 @@
+produit,sens,annee,valeur,poids,edition
+Animaux vivants,export,2018,97,20,2022
+Animaux vivants,export,2019,110,7,2022
+Animaux vivants,export,2020,146,9,2022
+Animaux vivants,export,2021,45,3,2022
+Animaux vivants,export,2022,25,1,2022
+Poisson frais de mer,export,2018,169030,213992,2022
+Poisson frais de mer,export,2019,194145,274445,2022
+Poisson frais de mer,export,2020,193606,309381,2022
+Poisson frais de mer,export,2021,192498,280058,2022
+Poisson frais de mer,export,2022,211364,260177,2022
+"Crustacés, mollusques et coquillages",export,2018,91706,24683,2022
+"Crustacés, mollusques et coquillages",export,2019,93966,27847,2022
+"Crustacés, mollusques et coquillages",export,2020,52324,16862,2022
+"Crustacés, mollusques et coquillages",export,2021,106966,25253,2022
+"Crustacés, mollusques et coquillages",export,2022,163614,24125,2022
+Légumes frais,export,2018,25190,35167,2022
+Légumes frais,export,2019,25086,30485,2022
+Légumes frais,export,2020,35635,39662,2022
+Légumes frais,export,2021,41470,46506,2022
+Légumes frais,export,2022,35222,38670,2022
+Farine de froment,export,2018,3543,15163,2022
+Farine de froment,export,2019,2622,11009,2022
+Farine de froment,export,2020,2962,11912,2022
+Farine de froment,export,2021,7719,29249,2022
+Farine de froment,export,2022,4661,14003,2022
+Arachides non grillées,export,2018,39538,109807,2022
+Arachides non grillées,export,2019,111511,326909,2022
+Arachides non grillées,export,2020,113684,266548,2022
+Arachides non grillées,export,2021,154789,336002,2022
+Arachides non grillées,export,2022,84789,177917,2022
+Gomme arabique,export,2018,763,1606,2022
+Gomme arabique,export,2019,714,2435,2022
+Gomme arabique,export,2020,1463,4228,2022
+Gomme arabique,export,2021,561,875,2022
+Gomme arabique,export,2022,12724,4038,2022
+Huile brute d'arachide,export,2018,23830,36341,2022
+Huile brute d'arachide,export,2019,41317,62846,2022
+Huile brute d'arachide,export,2020,6791,8455,2022
+Huile brute d'arachide,export,2021,13732,12629,2022
+Huile brute d'arachide,export,2022,15913,13615,2022
+Huile raffinée d'arachide,export,2018,,,2022
+Huile raffinée d'arachide,export,2019,7,8,2022
+Huile raffinée d'arachide,export,2020,,,2022
+Huile raffinée d'arachide,export,2021,38,35,2022
+Huile raffinée d'arachide,export,2022,114,87,2022
+Conserves de poisson,export,2018,11744,3588,2022
+Conserves de poisson,export,2019,40183,11705,2022
+Conserves de poisson,export,2020,29827,10381,2022
+Conserves de poisson,export,2021,11749,5062,2022
+Conserves de poisson,export,2022,46682,13880,2022
+Produits sucrés,export,2018,7567,15145,2022
+Produits sucrés,export,2019,4001,5492,2022
+Produits sucrés,export,2020,3153,4810,2022
+Produits sucrés,export,2021,3451,3776,2022
+Produits sucrés,export,2022,3270,2822,2022
+Tourteaux d'arachide,export,2018,107,535,2022
+Tourteaux d'arachide,export,2019,119,946,2022
+Tourteaux d'arachide,export,2020,8,34,2022
+Tourteaux d'arachide,export,2021,13,150,2022
+Tourteaux d'arachide,export,2022,23,300,2022
+Cigarettes,export,2018,21331,1703,2022
+Cigarettes,export,2019,18582,1462,2022
+Cigarettes,export,2020,22613,1658,2022
+Cigarettes,export,2021,30646,2379,2022
+Cigarettes,export,2022,20968,1788,2022
+Sel brut,export,2018,8168,250810,2022
+Sel brut,export,2019,10206,402098,2022
+Sel brut,export,2020,9786,319869,2022
+Sel brut,export,2021,10269,318954,2022
+Sel brut,export,2022,13378,398337,2022
+Phosphates,export,2018,16187,500126,2022
+Phosphates,export,2019,22333,587216,2022
+Phosphates,export,2020,11493,306641,2022
+Phosphates,export,2021,22050,553448,2022
+Phosphates,export,2022,47732,486545,2022
+Ciment hydraulique,export,2018,86503,2101426,2022
+Ciment hydraulique,export,2019,77682,1850660,2022
+Ciment hydraulique,export,2020,73746,1818422,2022
+Ciment hydraulique,export,2021,86231,2123572,2022
+Ciment hydraulique,export,2022,75747,1631621,2022
+Produits pétroliers,export,2018,303945,816910,2022
+Produits pétroliers,export,2019,477716,1292189,2022
+Produits pétroliers,export,2020,357524,1279648,2022
+Produits pétroliers,export,2021,436885,1303545,2022
+Produits pétroliers,export,2022,648822,1072595,2022
+Engrais minéraux et chimiques,export,2018,26049,159771,2022
+Engrais minéraux et chimiques,export,2019,29476,135562,2022
+Engrais minéraux et chimiques,export,2020,21263,111361,2022
+Engrais minéraux et chimiques,export,2021,33057,121978,2022
+Engrais minéraux et chimiques,export,2022,9318,30411,2022
+Cuirs et peaux,export,2018,7681,6485,2022
+Cuirs et peaux,export,2019,3922,5238,2022
+Cuirs et peaux,export,2020,2660,2497,2022
+Cuirs et peaux,export,2021,1964,1301,2022
+Cuirs et peaux,export,2022,1572,1364,2022
+Coton en masse,export,2018,7026,7755,2022
+Coton en masse,export,2019,7031,8027,2022
+Coton en masse,export,2020,5783,6715,2022
+Coton en masse,export,2021,8966,9140,2022
+Coton en masse,export,2022,12528,8920,2022
+Tissus en coton,export,2018,302,92,2022
+Tissus en coton,export,2019,27,18,2022
+Tissus en coton,export,2020,42,81,2022
+Tissus en coton,export,2021,39,20,2022
+Tissus en coton,export,2022,23,10,2022
+Chaussures,export,2018,2814,3681,2022
+Chaussures,export,2019,3367,3918,2022
+Chaussures,export,2020,5433,5609,2022
+Chaussures,export,2021,6157,5859,2022
+Chaussures,export,2022,7203,6017,2022
+"Récipients en tôle, fer et acier",export,2018,70,52,2022
+"Récipients en tôle, fer et acier",export,2019,17,11,2022
+"Récipients en tôle, fer et acier",export,2020,120,67,2022
+"Récipients en tôle, fer et acier",export,2021,99,62,2022
+"Récipients en tôle, fer et acier",export,2022,703,296,2022
+Acide phosphorique,export,2018,157229,436780,2022
+Acide phosphorique,export,2019,195699,517984,2022
+Acide phosphorique,export,2020,151646,483194,2022
+Acide phosphorique,export,2021,265348,478435,2022
+Acide phosphorique,export,2022,471868,558409,2022
+"Poissons séchés, salés ou en saumure",export,2018,1759,2707,2022
+"Poissons séchés, salés ou en saumure",export,2019,2552,4601,2022
+"Poissons séchés, salés ou en saumure",export,2020,2176,2332,2022
+"Poissons séchés, salés ou en saumure",export,2021,1768,1743,2022
+"Poissons séchés, salés ou en saumure",export,2022,1710,1522,2022
+Or non monétaire,export,2018,313375,15,2022
+Or non monétaire,export,2019,375734,16,2022
+Or non monétaire,export,2020,422698,15,2022
+Or non monétaire,export,2021,539778,19,2022
+Or non monétaire,export,2022,580607,18,2022
+Zirconium,export,2018,57749,85994,2022
+Zirconium,export,2019,61251,88772,2022
+Zirconium,export,2020,53995,85044,2022
+Zirconium,export,2021,62464,91558,2022
+Zirconium,export,2022,87623,89085,2022
+Titane,export,2018,41907,411426,2022
+Titane,export,2019,54143,525972,2022
+Titane,export,2020,62202,509409,2022
+Titane,export,2021,87840,587818,2022
+Titane,export,2022,115805,508265,2022
+"Préparations pour soupes, potages, bouillons",export,2018,71730,66881,2022
+"Préparations pour soupes, potages, bouillons",export,2019,76755,72003,2022
+"Préparations pour soupes, potages, bouillons",export,2020,76238,70235,2022
+"Préparations pour soupes, potages, bouillons",export,2021,84285,79593,2022
+"Préparations pour soupes, potages, bouillons",export,2022,102989,81083,2022
+Autres produits,export,2018,518737,982900,2022
+Autres produits,export,2019,516392,1008287,2022
+Autres produits,export,2020,542328,1115758,2022
+Autres produits,export,2021,673924,1619307,2022
+Autres produits,export,2022,786365,1544045,2022
+Produits laitiers,import,2018,45416,27564,2022
+Produits laitiers,import,2019,43730,26042,2022
+Produits laitiers,import,2020,48950,28973,2022
+Produits laitiers,import,2021,52009,32219,2022
+Produits laitiers,import,2022,63190,34475,2022
+Fruits et légumes comestibles,import,2018,53023,273585,2022
+Fruits et légumes comestibles,import,2019,64480,330577,2022
+Fruits et légumes comestibles,import,2020,69557,372216,2022
+Fruits et légumes comestibles,import,2021,66508,336976,2022
+Fruits et légumes comestibles,import,2022,65573,347591,2022
+Café,import,2018,2987,8279,2022
+Café,import,2019,2193,5031,2022
+Café,import,2020,2680,7437,2022
+Café,import,2021,2902,7632,2022
+Café,import,2022,2076,3538,2022
+Thé,import,2018,6124,11118,2022
+Thé,import,2019,3818,7051,2022
+Thé,import,2020,2831,5849,2022
+Thé,import,2021,3655,6605,2022
+Thé,import,2022,7351,8214,2022
+Froment et méteil,import,2018,87925,608520,2022
+Froment et méteil,import,2019,108244,706642,2022
+Froment et méteil,import,2020,110388,693996,2022
+Froment et méteil,import,2021,149256,753807,2022
+Froment et méteil,import,2022,237738,860149,2022
+Maïs,import,2018,46004,381081,2022
+Maïs,import,2019,42462,358081,2022
+Maïs,import,2020,41978,323439,2022
+Maïs,import,2021,68534,398517,2022
+Maïs,import,2022,92318,400129,2022
+Riz,import,2018,270177,1285826,2022
+Riz,import,2019,201063,893020,2022
+Riz,import,2020,246176,1127023,2022
+Riz,import,2021,262426,1194004,2022
+Riz,import,2022,346789,1487336,2022
+Mil et sorgho,import,2018,3630,10159,2022
+Mil et sorgho,import,2019,3459,11425,2022
+Mil et sorgho,import,2020,3527,11263,2022
+Mil et sorgho,import,2021,4692,14327,2022
+Mil et sorgho,import,2022,7469,20832,2022
+Autres céréales,import,2018,12,54,2022
+Autres céréales,import,2019,13,22,2022
+Autres céréales,import,2020,39,49,2022
+Autres céréales,import,2021,11,13,2022
+Autres céréales,import,2022,12,7,2022
+Huiles et graisses animales et végétales,import,2018,92564,207565,2022
+Huiles et graisses animales et végétales,import,2019,99097,206694,2022
+Huiles et graisses animales et végétales,import,2020,142635,276112,2022
+Huiles et graisses animales et végétales,import,2021,123804,225294,2022
+Huiles et graisses animales et végétales,import,2022,127037,202602,2022
+Conserves de viande et de poisson,import,2018,2321,1946,2022
+Conserves de viande et de poisson,import,2019,2728,2438,2022
+Conserves de viande et de poisson,import,2020,2885,2448,2022
+Conserves de viande et de poisson,import,2021,2848,3459,2022
+Conserves de viande et de poisson,import,2022,3698,4686,2022
+Sucres bruts et raffinés,import,2018,26018,95469,2022
+Sucres bruts et raffinés,import,2019,26748,97603,2022
+Sucres bruts et raffinés,import,2020,52085,180252,2022
+Sucres bruts et raffinés,import,2021,42646,125395,2022
+Sucres bruts et raffinés,import,2022,65978,192414,2022
+Autres produits sucrés,import,2018,7556,15411,2022
+Autres produits sucrés,import,2019,9182,16648,2022
+Autres produits sucrés,import,2020,10105,18098,2022
+Autres produits sucrés,import,2021,9451,14361,2022
+Autres produits sucrés,import,2022,13158,14203,2022
+Conserves de fruits et légumes,import,2018,18512,44028,2022
+Conserves de fruits et légumes,import,2019,22659,45974,2022
+Conserves de fruits et légumes,import,2020,25773,47999,2022
+Conserves de fruits et légumes,import,2021,22575,43626,2022
+Conserves de fruits et légumes,import,2022,28027,48914,2022
+Vins et vermouths,import,2018,2144,1258,2022
+Vins et vermouths,import,2019,2150,1536,2022
+Vins et vermouths,import,2020,1550,1426,2022
+Vins et vermouths,import,2021,2247,1741,2022
+Vins et vermouths,import,2022,2778,2279,2022
+Autres boissons,import,2018,20573,48157,2022
+Autres boissons,import,2019,27022,67448,2022
+Autres boissons,import,2020,30036,72080,2022
+Autres boissons,import,2021,33758,86169,2022
+Autres boissons,import,2022,29788,74364,2022
+Tabac brut et fabriqué,import,2018,32323,5514,2022
+Tabac brut et fabriqué,import,2019,20103,4327,2022
+Tabac brut et fabriqué,import,2020,22174,3880,2022
+Tabac brut et fabriqué,import,2021,16513,4027,2022
+Tabac brut et fabriqué,import,2022,11988,2517,2022
+Huiles brutes de pétrole,import,2018,378633,1120937,2022
+Huiles brutes de pétrole,import,2019,236429,767522,2022
+Huiles brutes de pétrole,import,2020,253816,1025398,2022
+Huiles brutes de pétrole,import,2021,284625,1023899,2022
+Huiles brutes de pétrole,import,2022,278083,503909,2022
+Autres produits pétroliers,import,2018,819804,2382455,2022
+Autres produits pétroliers,import,2019,957506,2866871,2022
+Autres produits pétroliers,import,2020,753548,3124671,2022
+Autres produits pétroliers,import,2021,1023104,3096895,2022
+Autres produits pétroliers,import,2022,1999600,3648696,2022
+Produits chimiques organiques et inorganiques,import,2018,66522,149642,2022
+Produits chimiques organiques et inorganiques,import,2019,74352,170835,2022
+Produits chimiques organiques et inorganiques,import,2020,75997,187430,2022
+Produits chimiques organiques et inorganiques,import,2021,85760,179950,2022
+Produits chimiques organiques et inorganiques,import,2022,133495,223339,2022
+Produits pharmaceutiques,import,2018,135901,12881,2022
+Produits pharmaceutiques,import,2019,156588,15514,2022
+Produits pharmaceutiques,import,2020,162767,15535,2022
+Produits pharmaceutiques,import,2021,189008,17177,2022
+Produits pharmaceutiques,import,2022,195756,18235,2022
+Engrais,import,2018,22116,117726,2022
+Engrais,import,2019,33735,170287,2022
+Engrais,import,2020,33918,193543,2022
+Engrais,import,2021,23739,87785,2022
+Engrais,import,2022,89066,159332,2022
+"Teinture, vernis et peinture",import,2018,10339,13566,2022
+"Teinture, vernis et peinture",import,2019,10295,21816,2022
+"Teinture, vernis et peinture",import,2020,9754,22615,2022
+"Teinture, vernis et peinture",import,2021,16195,29694,2022
+"Teinture, vernis et peinture",import,2022,12573,24943,2022
+Parfumerie,import,2018,10338,15763,2022
+Parfumerie,import,2019,9959,16188,2022
+Parfumerie,import,2020,9541,18189,2022
+Parfumerie,import,2021,11207,20065,2022
+Parfumerie,import,2022,12540,21670,2022
+Produits des industries parachimiques,import,2018,79717,73108,2022
+Produits des industries parachimiques,import,2019,88996,83081,2022
+Produits des industries parachimiques,import,2020,90297,77393,2022
+Produits des industries parachimiques,import,2021,103961,80799,2022
+Produits des industries parachimiques,import,2022,115921,90437,2022
+Matières plastiques artificielles,import,2018,135974,157110,2022
+Matières plastiques artificielles,import,2019,130500,170068,2022
+Matières plastiques artificielles,import,2020,131516,166618,2022
+Matières plastiques artificielles,import,2021,173074,181258,2022
+Matières plastiques artificielles,import,2022,219988,201653,2022
+Pneus et chambres à air,import,2018,15574,22352,2022
+Pneus et chambres à air,import,2019,18573,22165,2022
+Pneus et chambres à air,import,2020,23423,26167,2022
+Pneus et chambres à air,import,2021,21370,27724,2022
+Pneus et chambres à air,import,2022,26715,29255,2022
+Bois et ouvrages,import,2018,27612,105099,2022
+Bois et ouvrages,import,2019,31305,125240,2022
+Bois et ouvrages,import,2020,26600,110439,2022
+Bois et ouvrages,import,2021,29551,119920,2022
+Bois et ouvrages,import,2022,57758,234378,2022
+"Papiers, cartons et applications",import,2018,62672,98502,2022
+"Papiers, cartons et applications",import,2019,68364,109090,2022
+"Papiers, cartons et applications",import,2020,71048,137430,2022
+"Papiers, cartons et applications",import,2021,82542,146892,2022
+"Papiers, cartons et applications",import,2022,104467,151486,2022
+Filés et fils textiles,import,2018,5392,6542,2022
+Filés et fils textiles,import,2019,5816,6770,2022
+Filés et fils textiles,import,2020,4787,4740,2022
+Filés et fils textiles,import,2021,5925,6273,2022
+Filés et fils textiles,import,2022,7576,7427,2022
+Tissus artificiels et synthétiques,import,2018,7255,17338,2022
+Tissus artificiels et synthétiques,import,2019,9308,19540,2022
+Tissus artificiels et synthétiques,import,2020,7112,15862,2022
+Tissus artificiels et synthétiques,import,2021,8097,24242,2022
+Tissus artificiels et synthétiques,import,2022,7469,28964,2022
+Tissus de coton non imprimés,import,2018,3257,6914,2022
+Tissus de coton non imprimés,import,2019,3623,6731,2022
+Tissus de coton non imprimés,import,2020,3378,5414,2022
+Tissus de coton non imprimés,import,2021,4391,5980,2022
+Tissus de coton non imprimés,import,2022,3439,6127,2022
+Tissus de coton imprimés,import,2018,1613,5354,2022
+Tissus de coton imprimés,import,2019,2292,6153,2022
+Tissus de coton imprimés,import,2020,1491,4032,2022
+Tissus de coton imprimés,import,2021,1064,3502,2022
+Tissus de coton imprimés,import,2022,1118,3636,2022
+Autres tissus,import,2018,8110,12169,2022
+Autres tissus,import,2019,6967,13773,2022
+Autres tissus,import,2020,11474,13876,2022
+Autres tissus,import,2021,11158,19469,2022
+Autres tissus,import,2022,15787,20927,2022
+Articles en tissus,import,2018,31111,56779,2022
+Articles en tissus,import,2019,42359,60511,2022
+Articles en tissus,import,2020,40142,67419,2022
+Articles en tissus,import,2021,46128,91297,2022
+Articles en tissus,import,2022,42676,91229,2022
+Sacs d'emballage,import,2018,9461,6502,2022
+Sacs d'emballage,import,2019,7992,63709,2022
+Sacs d'emballage,import,2020,7733,4658,2022
+Sacs d'emballage,import,2021,8418,5023,2022
+Sacs d'emballage,import,2022,9365,4917,2022
+Chaussures,import,2018,6634,12612,2022
+Chaussures,import,2019,9419,13099,2022
+Chaussures,import,2020,9148,15177,2022
+Chaussures,import,2021,10659,21382,2022
+Chaussures,import,2022,11112,22522,2022
+"Pierre, céramique et verre",import,2018,71252,364513,2022
+"Pierre, céramique et verre",import,2019,65264,362465,2022
+"Pierre, céramique et verre",import,2020,56292,327472,2022
+"Pierre, céramique et verre",import,2021,70555,390356,2022
+"Pierre, céramique et verre",import,2022,81406,438040,2022
+Métaux communs,import,2018,207959,533831,2022
+Métaux communs,import,2019,219494,569414,2022
+Métaux communs,import,2020,189890,520052,2022
+Métaux communs,import,2021,279285,660210,2022
+Métaux communs,import,2022,295933,584660,2022
+"Tubes, tuyaux et accessoires",import,2018,66184,106413,2022
+"Tubes, tuyaux et accessoires",import,2019,66018,115744,2022
+"Tubes, tuyaux et accessoires",import,2020,32989,50505,2022
+"Tubes, tuyaux et accessoires",import,2021,66058,57462,2022
+"Tubes, tuyaux et accessoires",import,2022,148498,83186,2022
+Articles de ménage et d'hygiène en métal,import,2018,3720,5421,2022
+Articles de ménage et d'hygiène en métal,import,2019,9170,7521,2022
+Articles de ménage et d'hygiène en métal,import,2020,8453,6981,2022
+Articles de ménage et d'hygiène en métal,import,2021,5858,8303,2022
+Articles de ménage et d'hygiène en métal,import,2022,4063,6171,2022
+Autres ouvrages en métaux communs,import,2018,96731,81469,2022
+Autres ouvrages en métaux communs,import,2019,100563,64213,2022
+Autres ouvrages en métaux communs,import,2020,91807,75665,2022
+Autres ouvrages en métaux communs,import,2021,112893,77882,2022
+Autres ouvrages en métaux communs,import,2022,212757,139643,2022
+Outillage et quincaillerie,import,2018,12038,9258,2022
+Outillage et quincaillerie,import,2019,9463,9271,2022
+Outillage et quincaillerie,import,2020,9021,11598,2022
+Outillage et quincaillerie,import,2021,10217,13512,2022
+Outillage et quincaillerie,import,2022,13066,16282,2022
+Meubles et divers en métal,import,2018,9583,6487,2022
+Meubles et divers en métal,import,2019,10334,5800,2022
+Meubles et divers en métal,import,2020,11646,5532,2022
+Meubles et divers en métal,import,2021,10566,6824,2022
+Meubles et divers en métal,import,2022,14541,6719,2022
+Moteurs et machines à moteurs,import,2018,30924,15219,2022
+Moteurs et machines à moteurs,import,2019,54274,19160,2022
+Moteurs et machines à moteurs,import,2020,58695,20971,2022
+Moteurs et machines à moteurs,import,2021,47115,23306,2022
+Moteurs et machines à moteurs,import,2022,40667,25078,2022
+Machines et appareils pour l'agriculture,import,2018,26798,5664,2022
+Machines et appareils pour l'agriculture,import,2019,21135,5182,2022
+Machines et appareils pour l'agriculture,import,2020,10459,4161,2022
+Machines et appareils pour l'agriculture,import,2021,12250,5296,2022
+Machines et appareils pour l'agriculture,import,2022,11199,4703,2022
+Machines et appareils pour industries alimentaires,import,2018,11910,2887,2022
+Machines et appareils pour industries alimentaires,import,2019,12047,2868,2022
+Machines et appareils pour industries alimentaires,import,2020,11289,2399,2022
+Machines et appareils pour industries alimentaires,import,2021,10600,2542,2022
+Machines et appareils pour industries alimentaires,import,2022,16054,3616,2022
+Machines et appareils pour autres industries,import,2018,121409,39046,2022
+Machines et appareils pour autres industries,import,2019,143200,46580,2022
+Machines et appareils pour autres industries,import,2020,119061,41292,2022
+Machines et appareils pour autres industries,import,2021,162991,47671,2022
+Machines et appareils pour autres industries,import,2022,219835,58566,2022
+Autres machines et appareils,import,2018,312288,99258,2022
+Autres machines et appareils,import,2019,428035,118951,2022
+Autres machines et appareils,import,2020,404745,128306,2022
+Autres machines et appareils,import,2021,448089,139060,2022
+Autres machines et appareils,import,2022,500320,155737,2022
+Automobiles et cars,import,2018,133805,46881,2022
+Automobiles et cars,import,2019,124921,50366,2022
+Automobiles et cars,import,2020,107484,50261,2022
+Automobiles et cars,import,2021,142547,65082,2022
+Automobiles et cars,import,2022,118533,47577,2022
+Camions et camionnettes,import,2018,72098,29656,2022
+Camions et camionnettes,import,2019,65038,30028,2022
+Camions et camionnettes,import,2020,49830,23782,2022
+Camions et camionnettes,import,2021,69052,28901,2022
+Camions et camionnettes,import,2022,91262,31106,2022
+Pièces détachées automobiles,import,2018,19814,20742,2022
+Pièces détachées automobiles,import,2019,23422,24021,2022
+Pièces détachées automobiles,import,2020,19496,22211,2022
+Pièces détachées automobiles,import,2021,27115,27845,2022
+Pièces détachées automobiles,import,2022,24729,30771,2022
+Autres véhicules terrestres,import,2018,106039,62064,2022
+Autres véhicules terrestres,import,2019,198583,71839,2022
+Autres véhicules terrestres,import,2020,127934,68891,2022
+Autres véhicules terrestres,import,2021,125628,82650,2022
+Autres véhicules terrestres,import,2022,126059,78201,2022
+Autres matériels de transport,import,2018,67359,14184,2022
+Autres matériels de transport,import,2019,56170,21060,2022
+Autres matériels de transport,import,2020,37395,12484,2022
+Autres matériels de transport,import,2021,25016,3454,2022
+Autres matériels de transport,import,2022,251840,39963,2022
+"Optique, horlogerie et matériel scientifique",import,2018,38609,4985,2022
+"Optique, horlogerie et matériel scientifique",import,2019,48528,7767,2022
+"Optique, horlogerie et matériel scientifique",import,2020,68698,7285,2022
+"Optique, horlogerie et matériel scientifique",import,2021,87408,8670,2022
+"Optique, horlogerie et matériel scientifique",import,2022,79205,8648,2022
+Autres produits,import,2018,524133,3045147,2022
+Autres produits,import,2019,534746,2753097,2022
+Autres produits,import,2020,538369,3199761,2022
+Autres produits,import,2021,661440,3978524,2022
+Autres produits,import,2022,849923,3541276,2022
