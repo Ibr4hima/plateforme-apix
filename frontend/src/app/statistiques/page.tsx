@@ -375,6 +375,136 @@ function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec }: {
   );
 }
 
+// Section « Groupes d'utilisation » : 9 groupes exhaustifs (leur somme
+// EST le total du commerce extérieur). Deux barres empilées 100 %
+// (répartition des exportations et des importations de l'année) puis un
+// tableau croisé par groupe — export, import et balance (qui montre d'où
+// vient le déficit commercial).
+type NaceLigneGU = { groupe: string; annee: number; valeur: number | null; poids: number | null; edition: number };
+type NaceDataGU = { disponible: boolean; annees: number[]; editions: number[]; donnees: { export: NaceLigneGU[]; import: NaceLigneGU[] } };
+
+const PALETTE_GU = ["#004f91", "#ca631f", "#188038", "#7b3ff2", "#0e7490", "#b45309", "#be185d", "#4d7c0f", "#64748b"];
+
+function SectionGroupesUtilisation({ exp, imp }: { exp: NaceLigneGU[]; imp: NaceLigneGU[] }) {
+  const [mesure, setMesure] = useState<NaceMesure>("valeur");
+  const val = (r?: NaceLigneGU) => (r ? (mesure === "valeur" ? r.valeur : r.poids) ?? 0 : 0);
+  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
+  // Ordre commun aux deux barres et au tableau : export décroissant
+  const groupes = exp.slice().sort((a, b) => val(b) - val(a)).map(r => r.groupe);
+  const expDe = (g: string) => exp.find(r => r.groupe === g);
+  const impDe = (g: string) => imp.find(r => r.groupe === g);
+  const totE = groupes.reduce((s, g) => s + Math.max(0, val(expDe(g))), 0);
+  const totI = groupes.reduce((s, g) => s + Math.max(0, val(impDe(g))), 0);
+  const maxBar = Math.max(1e-9, ...groupes.flatMap(g => [val(expDe(g)), val(impDe(g))]));
+  const couleurDe = new Map(groupes.map((g, i) => [g, PALETTE_GU[i % PALETTE_GU.length]]));
+  const pct = (v: number, tot: number) => (tot > 0 ? (v / tot) * 100 : 0);
+  const fmtPct = (v: number) => `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
+
+  // Barre empilée 100 % d'un sens : chaque segment = la part du groupe
+  const BarreEmpilee = ({ libelle, tot, de }: { libelle: string; tot: number; de: (g: string) => NaceLigneGU | undefined }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <span style={{ width: 96, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase", flexShrink: 0, textAlign: "right" }}>{libelle}</span>
+      <div style={{ flex: 1, display: "flex", height: 20, borderRadius: 7, overflow: "hidden", background: "#F2F0EF" }}>
+        {groupes.map(g => {
+          const p = pct(Math.max(0, val(de(g))), tot);
+          if (p <= 0) return null;
+          return (
+            <div key={g} title={`${g} · ${fmtV(val(de(g)))} · ${fmtPct(p)}`}
+              style={{ width: `${p}%`, background: couleurDe.get(g), boxShadow: "inset -1px 0 0 rgba(255,255,255,0.55)", minWidth: p > 0.4 ? 2 : 0 }} />
+          );
+        })}
+      </div>
+      <span className="ds-donnee" style={{ width: 92, fontSize: 11.5, fontWeight: 800, color: "#1a1a2e", flexShrink: 0, textAlign: "right", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(tot)}</span>
+    </div>
+  );
+
+  const EN_TETE: React.CSSProperties = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" };
+  return (
+    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0 }}>Répartition et balance par groupe</h3>
+        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
+          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
+            const actif = o.v === mesure;
+            return (
+              <button key={o.v} onClick={() => setMesure(o.v)} style={{
+                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
+                background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#6b7684",
+                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Répartition 100 % des deux sens */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "2px 0 4px" }}>
+        <BarreEmpilee libelle="Exportations" tot={totE} de={expDe} />
+        <BarreEmpilee libelle="Importations" tot={totI} de={impDe} />
+      </div>
+
+      {/* Tableau croisé : export · import · balance par groupe */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+        <span style={{ ...EN_TETE, flex: 1 }}>Groupe</span>
+        <span style={{ ...EN_TETE, width: 86, textAlign: "right", flexShrink: 0 }}>Export</span>
+        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
+        <span style={{ width: "11%", flexShrink: 0 }} />
+        <span style={{ ...EN_TETE, width: 86, textAlign: "right", flexShrink: 0 }}>Import</span>
+        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
+        <span style={{ width: "11%", flexShrink: 0 }} />
+        <span style={{ ...EN_TETE, width: 96, textAlign: "right", flexShrink: 0 }}>Balance</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {groupes.map((g, i) => {
+          const vE = val(expDe(g)), vI = val(impDe(g));
+          const bal = vE - vI;
+          const balPos = bal > 0, balNeg = bal < 0;
+          return (
+            <div key={g} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: i % 2 === 1 ? "#F8F9FB" : "transparent" }}>
+              <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 9, height: 9, borderRadius: "50%", background: couleurDe.get(g), flexShrink: 0 }} />
+                <span title={g} style={{ fontSize: 12, fontWeight: 650, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g}</span>
+              </span>
+              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(vE)}</span>
+              <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{totE > 0 ? fmtPct(pct(Math.max(0, vE), totE)) : "—"}</span>
+              <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                {vE > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, vE / maxBar * 100))}%`, borderRadius: 99, background: "#004f91", opacity: 0.75 }} />}
+              </div>
+              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#ca631f", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(vI)}</span>
+              <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{totI > 0 ? fmtPct(pct(Math.max(0, vI), totI)) : "—"}</span>
+              <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                {vI > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, vI / maxBar * 100))}%`, borderRadius: 99, background: "#ca631f", opacity: 0.75 }} />}
+              </div>
+              <span className="ds-donnee" style={{ width: 96, fontSize: 11.5, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
+                color: balPos ? "#188038" : balNeg ? "#dc2626" : "#9aa5b4" }}>
+                {balPos ? "+" : balNeg ? "−" : ""}{fmtV(Math.abs(bal))}
+              </span>
+            </div>
+          );
+        })}
+        {/* Ligne de synthèse : balance totale */}
+        {(() => {
+          const bal = totE - totI;
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderTop: "1px solid #F2F0EF", marginTop: 4 }}>
+              <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>Ensemble</span>
+              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(totE)}</span>
+              <span style={{ width: 38, flexShrink: 0 }} />
+              <span style={{ width: "11%", flexShrink: 0 }} />
+              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#ca631f", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(totI)}</span>
+              <span style={{ width: 38, flexShrink: 0 }} />
+              <span style={{ width: "11%", flexShrink: 0 }} />
+              <span className="ds-donnee" style={{ width: 96, fontSize: 11.5, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
+                color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#9aa5b4" }}>
+                {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
+              </span>
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
 function CommerceExterieurPanel() {
   const [data, setData] = useState<NaceData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -384,14 +514,17 @@ function CommerceExterieurPanel() {
   const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
   const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
 
-  // Nomenclature détaillée (produits regroupés) — section dédiée, non bloquante
+  // Sections dédiées, non bloquantes : produits regroupés + groupes d'utilisation
   const [reg, setReg] = useState<NaceData | null>(null);
+  const [gu, setGu] = useState<NaceDataGU | null>(null);
   useEffect(() => {
     setLoading(true); setErreur(false);
     fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setData).catch(() => setErreur(true)).finally(() => setLoading(false));
     fetch(`${API}/nace/produits-regroupes`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setReg).catch(() => setReg(null));
+    fetch(`${API}/nace/groupes-utilisation`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setGu).catch(() => setGu(null));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -532,6 +665,24 @@ function CommerceExterieurPanel() {
               <TableauRegroupesNace titre={`Importations par produit · ${an}`} couleur={NACE_ORANGE}
                 lignes={rI} lignesPrec={regDe("import", an - 1)} />
             </div>
+          </>
+        );
+      })()}
+
+      {/* Groupes d'utilisation : répartition exhaustive + balance par groupe */}
+      {gu?.disponible && (() => {
+        const guDe = (sens: "export" | "import", a: number) => gu.donnees[sens].filter(r => r.annee === a);
+        const gE = guDe("export", an), gI = guDe("import", an);
+        if (!gE.length && !gI.length) return null;
+        return (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Groupes d&apos;utilisation · {an}</h3>
+              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+                9 groupes exhaustifs — leur somme est le total du commerce extérieur
+              </span>
+            </div>
+            <SectionGroupesUtilisation exp={gE} imp={gI} />
           </>
         );
       })()}
