@@ -9,7 +9,9 @@ Trois nomenclatures, même structure :
   une trentaine de postes à l'export, une cinquantaine à l'import ;
 - « groupes d'utilisation » (tableaux 16–19) : 9 groupes exhaustifs
   (alimentation, énergie, matières premières, demi-produits, produits
-  finis par destination, or industriel).
+  finis par destination, or industriel) ;
+- « chapitres » (tableaux 38–41) : nomenclature la plus fine, jusqu'à
+  97 chapitres du Système Harmonisé par sens, également exhaustive.
 
 Dans les trois cas : une ligne = une modalité × un sens × une année ×
 une édition, avec la valeur (millions FCFA) et le poids net (tonnes).
@@ -58,3 +60,16 @@ class NaceGroupeUtilisation(Base):
     valeur  = Column(Numeric)                   # millions FCFA (T16/T18)
     poids   = Column(Numeric)                   # tonnes (T17/T19)
     edition = Column(Integer, nullable=False)   # année du rapport NACE source
+
+
+class NaceChapitre(Base):
+    __tablename__ = "nace_chapitres"
+    __table_args__ = (UniqueConstraint("chapitre", "sens", "annee", "edition"),)
+
+    id       = Column(Integer, primary_key=True)
+    chapitre = Column(Text, nullable=False)      # libellé normalisé (le PDF est en capitales)
+    sens     = Column(Text, nullable=False)      # 'export' | 'import'
+    annee    = Column(Integer, nullable=False)
+    valeur   = Column(Numeric)                   # millions FCFA (T38/T40)
+    poids    = Column(Numeric)                   # tonnes (T39/T41)
+    edition  = Column(Integer, nullable=False)   # année du rapport NACE source

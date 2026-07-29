@@ -18,7 +18,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
-from app.models.nace import NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation
+from app.models.nace import (
+    NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation, NaceChapitre,
+)
 
 router = APIRouter(prefix="/nace", tags=["nace"])
 
@@ -47,18 +49,19 @@ ALIAS = {
 
 
 # Familles extraites des annexes : motif de fichier CSV → modèle et nom de
-# la colonne portant la modalité (produit ou groupe d'utilisation).
+# la colonne portant la modalité (produit, groupe ou chapitre).
 FAMILLES = [
     ("principaux_produits", NacePrincipalProduit, "produit"),
     ("produits_regroupes", NaceProduitRegroupe, "produit"),
     ("groupes_utilisation", NaceGroupeUtilisation, "groupe"),
+    ("chapitres", NaceChapitre, "chapitre"),
 ]
 
 
 # ── POST /nace/importer ───────────────────────────────────────────────────────
-# Charge (upsert) les CSV vérifiés du dépôt : principaux produits,
-# produits regroupés et groupes d'utilisation, toutes éditions présentes
-# dans backend/scripts/nace.
+# Charge (upsert) les CSV vérifiés du dépôt : les quatre familles
+# (principaux produits, produits regroupés, groupes d'utilisation,
+# chapitres SH), toutes éditions présentes dans backend/scripts/nace.
 @router.post("/importer")
 async def importer_nace(
     db: AsyncSession = Depends(get_db),
@@ -164,3 +167,12 @@ async def produits_regroupes(db: AsyncSession = Depends(get_db)):
 async def groupes_utilisation(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(NaceGroupeUtilisation))
     return _resoudre(res.scalars().all(), {}, col="groupe")
+
+
+# ── GET /nace/chapitres ───────────────────────────────────────────────────────
+# Nomenclature du Système Harmonisé (jusqu'à 97 chapitres par sens),
+# exhaustive elle aussi. Libellés stables entre éditions.
+@router.get("/chapitres")
+async def chapitres(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NaceChapitre))
+    return _resoudre(res.scalars().all(), {}, col="chapitre")
