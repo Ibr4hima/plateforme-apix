@@ -1,4 +1,17 @@
-# Extractions NACE — principaux produits (tableaux 8–11)
+# Extractions NACE — annexes des rapports annuels
+
+Deux familles extraites, mêmes règles et même vérification :
+- **principaux produits** (`edition_XXXX_principaux_produits.csv`,
+  totaux dans `edition_XXXX_totaux.csv`) ;
+- **produits regroupés** (`edition_XXXX_produits_regroupes.csv`,
+  totaux dans `edition_XXXX_totaux_regroupes.csv`) — nomenclature ANSD
+  plus fine (30 postes export, 56 import en 2019), libellés du PDF en
+  capitales normalisés en casse normale avec accents restitués et
+  fautes corrigées (RAFFINNES → raffinés, HYGYENE → hygiène, TEXTIL →
+  textiles, MAIS → Maïs…). Un « - » du PDF (absence de flux) devient un
+  champ vide (NULL), distinct d'un 0.
+
+# Principaux produits (tableaux 8–11)
 
 Données extraites des annexes des Notes d'Analyse du Commerce Extérieur
 (NACE, ANSD) : principaux produits exportés/importés en **valeur**

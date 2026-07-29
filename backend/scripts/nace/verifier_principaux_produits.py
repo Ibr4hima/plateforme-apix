@@ -18,16 +18,27 @@ from pathlib import Path
 dossier = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent
 code_sortie = 0
 
-for fic in sorted(dossier.glob("edition_*_principaux_produits.csv")):
+# (fichier de données, fichier des lignes TOTAL, nombre d'années attendu)
+FAMILLES = [
+    ("principaux_produits", "totaux"),
+    ("produits_regroupes", "totaux_regroupes"),
+]
+
+fichiers = [
+    (fic, famille, suffixe_tot)
+    for famille, suffixe_tot in FAMILLES
+    for fic in sorted(dossier.glob(f"edition_*_{famille}.csv"))
+]
+for fic, famille, suffixe_tot in fichiers:
     edition = fic.stem.split("_")[1]
-    fic_tot = dossier / f"edition_{edition}_totaux.csv"
+    fic_tot = dossier / f"edition_{edition}_{suffixe_tot}.csv"
     lignes = list(csv.DictReader(open(fic, encoding="utf-8")))
     totaux = {}
     if fic_tot.exists():
         for r in csv.DictReader(open(fic_tot, encoding="utf-8")):
             totaux[(r["sens"], r["mesure"], int(r["annee"]))] = int(r["total"])
 
-    print(f"── Édition {edition} : {len(lignes)} lignes ─────────────────────")
+    print(f"── Édition {edition} · {famille} : {len(lignes)} lignes ─────────────────────")
 
     # 1. Sommes vs TOTAL du PDF
     sommes: dict = defaultdict(int)
