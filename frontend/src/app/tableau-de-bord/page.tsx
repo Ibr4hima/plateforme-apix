@@ -278,6 +278,66 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
   );
 }
 
+// KPI « Sénégal dans une zone » : valeur des flux + rang dans le classement
+// de la zone, bascule Entrants ⇆ Sortants, variation du rang vs l'année
+// précédente (gagner des places = ▲ vert).
+function KpiSenegalZone({ zone, nomComplet, tag, dir, onDir, valeur, rang, rangPrec, anneePrec, chargement }: {
+  zone: string; nomComplet?: string; tag?: string; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
+  valeur: number | null; rang: number | null; rangPrec: number | null; anneePrec: number | null; chargement: boolean;
+}) {
+  const deltaRang = rang != null && rangPrec != null ? rangPrec - rang : null;
+  const gain = deltaRang != null && deltaRang > 0, perte = deltaRang != null && deltaRang < 0;
+  return (
+    <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+        <p title={nomComplet} style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>Sénégal · {zone}</p>
+        {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
+      </div>
+      <div style={{ display: "inline-flex", background: "#EEF1F6", borderRadius: 999, padding: 2, gap: 2, marginBottom: 11 }}>
+        {([{ v: "entrant", l: "Entrants" }, { v: "sortant", l: "Sortants" }] as const).map((o) => {
+          const actif = o.v === dir;
+          return (
+            <button key={o.v} onClick={() => onDir(o.v)} style={{
+              border: "none", cursor: "pointer", padding: "3px 10px", borderRadius: 999,
+              fontSize: 10, fontWeight: 700, whiteSpace: "nowrap",
+              background: actif ? "#fff" : "transparent", color: actif ? BLEU : "#6b7684",
+              boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
+            }}>{o.l}</button>
+          );
+        })}
+      </div>
+      {chargement ? (
+        <>
+          <div style={{ height: 26, width: "60%", borderRadius: 7, background: "rgba(15,40,80,0.08)", marginBottom: 10 }} />
+          <div style={{ height: 13, width: "80%", borderRadius: 6, background: "rgba(15,40,80,0.05)" }} />
+        </>
+      ) : (
+        <>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+            <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtMUSD(valeur)}</p>
+            {rang != null && (
+              <span title="Rang du Sénégal dans le classement de la zone"
+                style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: BLEU, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{rang}ᵉ</span>
+            )}
+          </div>
+          <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            {deltaRang != null ? (
+              <>
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: gain ? "#188038" : perte ? "#dc2626" : "#9aa5b4", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                  {gain ? "▲" : perte ? "▼" : "="}&nbsp;{deltaRang === 0 ? "rang stable" : `${Math.abs(deltaRang)} place${Math.abs(deltaRang) > 1 ? "s" : ""}`}
+                </span>
+                {anneePrec != null && <span style={{ fontSize: 10.5, color: "#9aa5b4", whiteSpace: "nowrap" }}>par rapport à {anneePrec}</span>}
+              </>
+            ) : (
+              <span style={{ fontSize: 10.5, color: "#9aa5b4" }}>{valeur != null ? "rang précédent indisponible" : ""}</span>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Matrice de valeurs partenaire × ressource (intensité = valeur)
 function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v), colPartenaire = "Partenaire" }: { ressources: string[]; partenaires: { nom: string; valeurs: number[] }[]; fmt?: (v: number) => string; colPartenaire?: string }) {
   if (!partenaires.length || !ressources.length) return <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
@@ -511,14 +571,21 @@ export default function TableauDeBordPage() {
       .filter(Boolean) as { cle: string; titre: string; code: string; nomComplet: string }[],
     [grpMonde]);
   const [zoneTops, setZoneTops] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
+  const [zonePrec, setZonePrec] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
   const [zoneDir, setZoneDir] = useState<Record<string, "entrant" | "sortant">>({});
+  // Direction des KPIs « Sénégal · zone » (indépendante de celle des tableaux)
+  const [zoneKpiDir, setZoneKpiDir] = useState<Record<string, "entrant" | "sortant">>({});
   useEffect(() => {
     if (ideAnnee == null) return;
     zonesSen.forEach((z) => {
       getJSON(`${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(z.code)}&annees=${ideAnnee}`)
         .then((d) => { if (d?.tops) setZoneTops((p) => ({ ...p, [z.code]: { annee: ideAnnee, tops: d.tops } })); });
+      // Année précédente : sert à la variation de rang du Sénégal dans les KPIs
+      getJSON(`${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(z.code)}&annees=${ideAnnee - 1}`)
+        .then((d) => { if (d?.tops) setZonePrec((p) => ({ ...p, [z.code]: { annee: ideAnnee - 1, tops: d.tops } })); });
     });
   }, [zonesSen, ideAnnee]);
+  const senDans = (tops?: LigneTopZone[]) => tops?.find((r) => r.pays === "Sénégal" || r.pays === "Senegal") ?? null;
 
   // Valeur d'une série à l'année choisie + valeur disponible précédente (Δ %)
   const pointAnnee = (rows: { annee: number; valeur: number | null }[], annee: number | null) => {
@@ -591,6 +658,26 @@ export default function TableauDeBordPage() {
                 <Kpi label="Stock entrant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockEnt.last?.valeur)} delta={kStockEnt.delta} refAnnee={kStockEnt.last ? kStockEnt.prev?.annee : null} />
                 <Kpi label="Stock sortant" tag={ideAnnee != null ? String(ideAnnee) : undefined} valeur={fmtMUSD(kStockSort.last?.valeur)} delta={kStockSort.delta} refAnnee={kStockSort.last ? kStockSort.prev?.annee : null} />
               </div>
+              {/* Le Sénégal dans ses groupements : valeur des flux + rang et
+                  variation de rang vs n-1, bascule Entrants ⇆ Sortants */}
+              <div className="tdb-kpis" style={{ marginBottom: 16 }}>
+                {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
+                  const st = z.code ? zoneTops[z.code] : undefined;
+                  const pv = z.code ? zonePrec[z.code] : undefined;
+                  const dir = zoneKpiDir[z.code] ?? "entrant";
+                  const sen = senDans(st?.tops?.[dir]);
+                  const senPrec = senDans(pv?.tops?.[dir]);
+                  return (
+                    <KpiSenegalZone key={z.cle} zone={z.titre} nomComplet={z.nomComplet}
+                      tag={ideAnnee != null ? String(ideAnnee) : undefined}
+                      dir={dir} onDir={(d) => setZoneKpiDir((p) => ({ ...p, [z.code]: d }))}
+                      valeur={sen?.valeur ?? null} rang={sen?.rang ?? null}
+                      rangPrec={senPrec?.rang ?? null} anneePrec={pv?.annee ?? null}
+                      chargement={!st || st.annee !== ideAnnee} />
+                  );
+                })}
+              </div>
+
               {/* Top 10 des pays dans les groupements dont fait partie le
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
