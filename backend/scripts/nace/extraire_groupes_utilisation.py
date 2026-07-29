@@ -77,42 +77,66 @@ def prenormaliser(sec: str) -> str:
         i += 1
     return "\n".join(out)
 
-def parse(debut: str, fin: str | None):
-    sec = txt.split(debut)[1]
+def tableaux(debut: str, fin: str | None) -> list[tuple[dict, list]]:
+    """Tous les tableaux complets (9 groupes + TOTAL) d'une section.
+
+    Une section peut en contenir plusieurs : pdftotext restitue parfois le
+    titre d'un tableau APRÈS ses données (édition 2022), si bien que le
+    tableau suivant se retrouve rattaché à la section précédente.
+    « ^ » comme début = le tableau commence en haut de l'extrait (son titre
+    est resté sur la page précédente du rapport).
+    """
+    sec = txt if debut == "^" else txt.split(debut)[1]
     if fin:
         sec = sec.split(fin)[0]
-    sec = prenormaliser(sec)
-    lignes, total = {}, None
-    for l in sec.split("\n"):
+    trouves: list[tuple[dict, list]] = []
+    lignes: dict = {}
+    for l in prenormaliser(sec).split("\n"):
         c = colonnes(l)
         if len(c) != 6 or est_nombre(c[0]) or not all(est_nombre(t) for t in c[1:]):
             continue
         vals = [int(t.replace(" ", "")) for t in c[1:]]
         k = cle(c[0])
         if k == "TOTAL":
-            total = vals
+            if len(lignes) == 9:            # tableau complet : on le clôt
+                somme = [sum(v[i] for v in lignes.values()) for i in range(5)]
+                for i, a in enumerate(ANNEES):
+                    assert abs(somme[i] - vals[i]) <= 2, \
+                        f"{debut} #{len(trouves)+1} {a} : somme {somme[i]} ≠ total {vals[i]}"
+                trouves.append((lignes, vals))
+            lignes = {}
         elif k in CANON:
             lignes[CANON[k]] = vals
-    assert len(lignes) == 9, f"{debut} : {len(lignes)} groupes au lieu de 9 — {sorted(lignes)}"
-    assert total, f"{debut} : TOTAL introuvable"
-    somme = [sum(v[i] for v in lignes.values()) for i in range(5)]
-    for i, a in enumerate(ANNEES):
-        assert abs(somme[i] - total[i]) <= 2, f"{debut} {a} : somme {somme[i]} ≠ total {total[i]}"
-    return lignes, total
+    return trouves
+
+def parse(debut: str, fin: str | None, rang: int = 0, obligatoire: bool = True):
+    tabs = tableaux(debut, fin)
+    if len(tabs) <= rang:
+        assert not obligatoire, f"{debut} : tableau #{rang+1} introuvable ({len(tabs)} trouvé(s))"
+        return None, None
+    return tabs[rang]
 
 expv, totev = parse(T_EXPV, T_EXPP)
 expp, totep = parse(T_EXPP, T_IMPV)
 impv, totiv = parse(T_IMPV, T_IMPP)
 impp, totip = parse(T_IMPP, T_BAL)
 
-# Contre-vérification indépendante : export − import = balance du PDF
+# Contre-vérification indépendante : export − import = balance du PDF.
+# Le tableau n'est pas toujours présent dans l'extrait ; quand son titre
+# est restitué après ses données, il apparaît en 2e position de la section
+# des importations en poids.
 if T_BAL:
-    bal, _ = parse(T_BAL, None)
-    for g in bal:
-        for i, a in enumerate(ANNEES):
-            calc = expv[g][i] - impv[g][i]
-            assert abs(calc - bal[g][i]) <= 2, f"balance {g} {a} : {calc} ≠ {bal[g][i]}"
-    print(f"  contre-vérification balance (T{T_BAL[-3:].strip(': ')}) : OK sur 9 groupes × 5 ans")
+    bal, _ = parse(T_BAL, None, obligatoire=False)
+    if bal is None:
+        bal, _ = parse(T_IMPP, T_BAL, rang=1, obligatoire=False)
+    if bal is None:
+        print("  tableau balance absent de l'extrait — contrôle par les totaux seuls")
+    else:
+        for g in bal:
+            for i, a in enumerate(ANNEES):
+                calc = expv[g][i] - impv[g][i]
+                assert abs(calc - bal[g][i]) <= 2, f"balance {g} {a} : {calc} ≠ {bal[g][i]}"
+        print("  contre-vérification balance : OK sur 9 groupes × 5 ans")
 
 DEST = "/home/user/plateforme-apix/backend/scripts/nace"
 with open(f"{DEST}/edition_{EDITION}_groupes_utilisation.csv", "w", newline="", encoding="utf-8") as f:
