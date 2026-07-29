@@ -11,6 +11,13 @@ Deux familles extraites, mêmes règles et même vérification :
   textiles, MAIS → Maïs…). Un « - » du PDF (absence de flux) devient un
   champ vide (NULL), distinct d'un 0.
 
+La tolérance d'arrondi du vérificateur est de ±3 pour les principaux
+produits (~15 lignes sommées) et ±6 pour les produits regroupés
+(56 lignes) : chaque ligne du PDF étant arrondie, la dérive cumulée
+croît avec le nombre de lignes (constaté : +5 sur import poids 2017 de
+l'édition 2020, transcription revérifiée exacte par re-parse
+indépendant — c'est le TOTAL du PDF qui dévie).
+
 # Principaux produits (tableaux 8–11)
 
 Données extraites des annexes des Notes d'Analyse du Commerce Extérieur

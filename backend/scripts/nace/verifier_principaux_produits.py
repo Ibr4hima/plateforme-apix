@@ -18,18 +18,21 @@ from pathlib import Path
 dossier = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent
 code_sortie = 0
 
-# (fichier de données, fichier des lignes TOTAL, nombre d'années attendu)
+# (fichier de données, fichier des lignes TOTAL, tolérance d'arrondi) — la
+# tolérance croît avec le nombre de lignes sommées : chaque ligne du PDF est
+# arrondie (±0,5), la dérive cumulée est donc plus grande sur les tableaux
+# fins (56 postes) que sur les principaux produits (~15 postes).
 FAMILLES = [
-    ("principaux_produits", "totaux"),
-    ("produits_regroupes", "totaux_regroupes"),
+    ("principaux_produits", "totaux", 3),
+    ("produits_regroupes", "totaux_regroupes", 6),
 ]
 
 fichiers = [
-    (fic, famille, suffixe_tot)
-    for famille, suffixe_tot in FAMILLES
+    (fic, famille, suffixe_tot, tolerance)
+    for famille, suffixe_tot, tolerance in FAMILLES
     for fic in sorted(dossier.glob(f"edition_*_{famille}.csv"))
 ]
-for fic, famille, suffixe_tot in fichiers:
+for fic, famille, suffixe_tot, tolerance in fichiers:
     edition = fic.stem.split("_")[1]
     fic_tot = dossier / f"edition_{edition}_{suffixe_tot}.csv"
     lignes = list(csv.DictReader(open(fic, encoding="utf-8")))
@@ -50,13 +53,12 @@ for fic, famille, suffixe_tot in fichiers:
             sommes[(r["sens"], "poids", annee)] += int(r["poids"])
     # Tolérance d'arrondi : le PDF somme des valeurs non arrondies puis
     # arrondit chaque ligne — des écarts de quelques unités sont normaux.
-    TOLERANCE = 3
     for cle, attendu in sorted(totaux.items()):
         obtenu = sommes.get(cle, 0)
         ecart = obtenu - attendu
         if ecart == 0:
             statut = "OK"
-        elif abs(ecart) <= TOLERANCE:
+        elif abs(ecart) <= tolerance:
             statut = f"OK (arrondi {ecart:+d})"
         else:
             statut = f"ÉCART {ecart:+d}"

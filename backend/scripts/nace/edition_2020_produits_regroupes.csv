@@ -1,0 +1,431 @@
+produit,sens,annee,valeur,poids,edition
+Animaux vivants,export,2016,203,34,2020
+Animaux vivants,export,2017,198,23,2020
+Animaux vivants,export,2018,97,20,2020
+Animaux vivants,export,2019,110,7,2020
+Animaux vivants,export,2020,146,9,2020
+Poisson frais de mer,export,2016,161833,186494,2020
+Poisson frais de mer,export,2017,168559,206208,2020
+Poisson frais de mer,export,2018,169030,213992,2020
+Poisson frais de mer,export,2019,194145,274445,2020
+Poisson frais de mer,export,2020,193606,309381,2020
+"Crustacés, mollusques et coquillages",export,2016,49917,16416,2020
+"Crustacés, mollusques et coquillages",export,2017,59740,17826,2020
+"Crustacés, mollusques et coquillages",export,2018,91706,24683,2020
+"Crustacés, mollusques et coquillages",export,2019,93966,27847,2020
+"Crustacés, mollusques et coquillages",export,2020,52324,16862,2020
+Légumes frais,export,2016,19161,29308,2020
+Légumes frais,export,2017,22256,27861,2020
+Légumes frais,export,2018,25190,35167,2020
+Légumes frais,export,2019,25086,30485,2020
+Légumes frais,export,2020,35635,39662,2020
+Farine de froment,export,2016,2817,10668,2020
+Farine de froment,export,2017,2838,11864,2020
+Farine de froment,export,2018,3543,15163,2020
+Farine de froment,export,2019,2622,11009,2020
+Farine de froment,export,2020,2962,11912,2020
+Arachides non grillées,export,2016,59967,133798,2020
+Arachides non grillées,export,2017,46925,99721,2020
+Arachides non grillées,export,2018,39538,109807,2020
+Arachides non grillées,export,2019,111511,326909,2020
+Arachides non grillées,export,2020,113684,266548,2020
+Gomme arabique,export,2016,1322,3794,2020
+Gomme arabique,export,2017,1475,3704,2020
+Gomme arabique,export,2018,763,1606,2020
+Gomme arabique,export,2019,714,2435,2020
+Gomme arabique,export,2020,1463,4228,2020
+Huile brute d'arachide,export,2016,14246,18285,2020
+Huile brute d'arachide,export,2017,16575,19181,2020
+Huile brute d'arachide,export,2018,23830,36341,2020
+Huile brute d'arachide,export,2019,41317,62846,2020
+Huile brute d'arachide,export,2020,6791,8455,2020
+Huile raffinée d'arachide,export,2016,969,1258,2020
+Huile raffinée d'arachide,export,2017,32,44,2020
+Huile raffinée d'arachide,export,2018,,,2020
+Huile raffinée d'arachide,export,2019,7,8,2020
+Huile raffinée d'arachide,export,2020,,,2020
+Conserves de poisson,export,2016,3336,1580,2020
+Conserves de poisson,export,2017,6085,1963,2020
+Conserves de poisson,export,2018,11744,3588,2020
+Conserves de poisson,export,2019,40183,11705,2020
+Conserves de poisson,export,2020,29827,10381,2020
+Produits sucrés,export,2016,2430,2934,2020
+Produits sucrés,export,2017,4740,6602,2020
+Produits sucrés,export,2018,7567,15145,2020
+Produits sucrés,export,2019,4001,5492,2020
+Produits sucrés,export,2020,3153,4810,2020
+Tourteaux d'arachide,export,2016,364,2206,2020
+Tourteaux d'arachide,export,2017,404,2243,2020
+Tourteaux d'arachide,export,2018,107,535,2020
+Tourteaux d'arachide,export,2019,119,946,2020
+Tourteaux d'arachide,export,2020,8,34,2020
+Cigarettes,export,2016,35613,2695,2020
+Cigarettes,export,2017,28240,2251,2020
+Cigarettes,export,2018,21331,1703,2020
+Cigarettes,export,2019,18582,1462,2020
+Cigarettes,export,2020,22613,1658,2020
+Sel brut,export,2016,10875,363117,2020
+Sel brut,export,2017,8676,286670,2020
+Sel brut,export,2018,8168,250810,2020
+Sel brut,export,2019,10206,402098,2020
+Sel brut,export,2020,9786,319869,2020
+Phosphates,export,2016,18587,472609,2020
+Phosphates,export,2017,18447,502421,2020
+Phosphates,export,2018,16187,500126,2020
+Phosphates,export,2019,22333,587216,2020
+Phosphates,export,2020,11493,306641,2020
+Ciment hydraulique,export,2016,122799,2881676,2020
+Ciment hydraulique,export,2017,117743,2770425,2020
+Ciment hydraulique,export,2018,86503,2101426,2020
+Ciment hydraulique,export,2019,77682,1850660,2020
+Ciment hydraulique,export,2020,73746,1818422,2020
+Produits pétroliers,export,2016,161325,554100,2020
+Produits pétroliers,export,2017,242935,795247,2020
+Produits pétroliers,export,2018,303945,816910,2020
+Produits pétroliers,export,2019,477716,1292189,2020
+Produits pétroliers,export,2020,357524,1279648,2020
+Engrais minéraux et chimiques,export,2016,10223,93244,2020
+Engrais minéraux et chimiques,export,2017,18961,105073,2020
+Engrais minéraux et chimiques,export,2018,26049,159771,2020
+Engrais minéraux et chimiques,export,2019,29476,135562,2020
+Engrais minéraux et chimiques,export,2020,21263,111361,2020
+Cuirs et peaux,export,2016,7227,6981,2020
+Cuirs et peaux,export,2017,8166,6047,2020
+Cuirs et peaux,export,2018,7681,6485,2020
+Cuirs et peaux,export,2019,3922,5238,2020
+Cuirs et peaux,export,2020,2660,2497,2020
+Coton en masse,export,2016,8599,11556,2020
+Coton en masse,export,2017,6524,7883,2020
+Coton en masse,export,2018,7026,7755,2020
+Coton en masse,export,2019,7031,8027,2020
+Coton en masse,export,2020,5783,6715,2020
+Tissus en coton,export,2016,45,12,2020
+Tissus en coton,export,2017,128,52,2020
+Tissus en coton,export,2018,302,92,2020
+Tissus en coton,export,2019,27,18,2020
+Tissus en coton,export,2020,42,81,2020
+Chaussures,export,2016,1426,1660,2020
+Chaussures,export,2017,1607,2371,2020
+Chaussures,export,2018,2814,3681,2020
+Chaussures,export,2019,3367,3918,2020
+Chaussures,export,2020,5433,5609,2020
+"Récipients en tôle, fer et acier",export,2016,250,143,2020
+"Récipients en tôle, fer et acier",export,2017,269,153,2020
+"Récipients en tôle, fer et acier",export,2018,70,52,2020
+"Récipients en tôle, fer et acier",export,2019,17,11,2020
+"Récipients en tôle, fer et acier",export,2020,120,67,2020
+Acide phosphorique,export,2016,115551,336624,2020
+Acide phosphorique,export,2017,95974,339469,2020
+Acide phosphorique,export,2018,157229,436780,2020
+Acide phosphorique,export,2019,195699,517984,2020
+Acide phosphorique,export,2020,151646,483194,2020
+"Poissons séchés, salés ou en saumure",export,2016,2823,3537,2020
+"Poissons séchés, salés ou en saumure",export,2017,1981,1728,2020
+"Poissons séchés, salés ou en saumure",export,2018,1759,2707,2020
+"Poissons séchés, salés ou en saumure",export,2019,2552,4601,2020
+"Poissons séchés, salés ou en saumure",export,2020,2176,2332,2020
+Or non monétaire,export,2016,193347,10,2020
+Or non monétaire,export,2017,220144,12,2020
+Or non monétaire,export,2018,313375,15,2020
+Or non monétaire,export,2019,375734,16,2020
+Or non monétaire,export,2020,422698,15,2020
+Zirconium,export,2016,30927,62101,2020
+Zirconium,export,2017,36415,72666,2020
+Zirconium,export,2018,57749,85994,2020
+Zirconium,export,2019,61251,88772,2020
+Zirconium,export,2020,53995,85044,2020
+Titane,export,2016,27537,387392,2020
+Titane,export,2017,45832,458580,2020
+Titane,export,2018,41907,411426,2020
+Titane,export,2019,54143,525972,2020
+Titane,export,2020,62202,509409,2020
+"Préparations pour soupes, potages, bouillons",export,2016,62657,51378,2020
+"Préparations pour soupes, potages, bouillons",export,2017,72296,64618,2020
+"Préparations pour soupes, potages, bouillons",export,2018,71730,66881,2020
+"Préparations pour soupes, potages, bouillons",export,2019,76755,72003,2020
+"Préparations pour soupes, potages, bouillons",export,2020,76238,70235,2020
+Autres produits,export,2016,424912,777307,2020
+Autres produits,export,2017,496146,1022247,2020
+Autres produits,export,2018,518737,982900,2020
+Autres produits,export,2019,516392,1008287,2020
+Autres produits,export,2020,542328,1115758,2020
+Produits laitiers,import,2016,44129,31325,2020
+Produits laitiers,import,2017,42960,25901,2020
+Produits laitiers,import,2018,45416,27564,2020
+Produits laitiers,import,2019,43730,26042,2020
+Produits laitiers,import,2020,48950,28973,2020
+Fruits et légumes comestibles,import,2016,39290,322110,2020
+Fruits et légumes comestibles,import,2017,60556,362819,2020
+Fruits et légumes comestibles,import,2018,53023,273585,2020
+Fruits et légumes comestibles,import,2019,64480,330577,2020
+Fruits et légumes comestibles,import,2020,69557,372216,2020
+Café,import,2016,1696,9115,2020
+Café,import,2017,1902,9062,2020
+Café,import,2018,2987,8279,2020
+Café,import,2019,2193,5031,2020
+Café,import,2020,2680,7437,2020
+Thé,import,2016,4651,7683,2020
+Thé,import,2017,4402,7234,2020
+Thé,import,2018,6124,11118,2020
+Thé,import,2019,3818,7051,2020
+Thé,import,2020,2831,5849,2020
+Froment et méteil,import,2016,78241,592159,2020
+Froment et méteil,import,2017,88994,646074,2020
+Froment et méteil,import,2018,87925,608520,2020
+Froment et méteil,import,2019,108244,706642,2020
+Froment et méteil,import,2020,110388,693996,2020
+Maïs,import,2016,25756,212788,2020
+Maïs,import,2017,34222,289342,2020
+Maïs,import,2018,46004,381081,2020
+Maïs,import,2019,42462,358081,2020
+Maïs,import,2020,41978,323439,2020
+Riz,import,2016,193712,974448,2020
+Riz,import,2017,251964,1181326,2020
+Riz,import,2018,270177,1285826,2020
+Riz,import,2019,201063,893020,2020
+Riz,import,2020,246176,1127023,2020
+Mil et sorgho,import,2016,4112,10365,2020
+Mil et sorgho,import,2017,3875,9762,2020
+Mil et sorgho,import,2018,3630,10159,2020
+Mil et sorgho,import,2019,3459,11425,2020
+Mil et sorgho,import,2020,3527,11263,2020
+Autres céréales,import,2016,13,68,2020
+Autres céréales,import,2017,18,52,2020
+Autres céréales,import,2018,12,54,2020
+Autres céréales,import,2019,13,22,2020
+Autres céréales,import,2020,39,49,2020
+Huiles et graisses animales et végétales,import,2016,86944,186971,2020
+Huiles et graisses animales et végétales,import,2017,106823,257267,2020
+Huiles et graisses animales et végétales,import,2018,92564,207565,2020
+Huiles et graisses animales et végétales,import,2019,99097,206694,2020
+Huiles et graisses animales et végétales,import,2020,142635,276112,2020
+Conserves de viande et de poisson,import,2016,2773,2251,2020
+Conserves de viande et de poisson,import,2017,2166,2076,2020
+Conserves de viande et de poisson,import,2018,2321,1946,2020
+Conserves de viande et de poisson,import,2019,2728,2438,2020
+Conserves de viande et de poisson,import,2020,2885,2448,2020
+Sucres bruts et raffinés,import,2016,45360,125988,2020
+Sucres bruts et raffinés,import,2017,66625,227479,2020
+Sucres bruts et raffinés,import,2018,26018,95469,2020
+Sucres bruts et raffinés,import,2019,26748,97603,2020
+Sucres bruts et raffinés,import,2020,52085,180252,2020
+Autres produits sucrés,import,2016,7177,15280,2020
+Autres produits sucrés,import,2017,7987,17269,2020
+Autres produits sucrés,import,2018,7556,15411,2020
+Autres produits sucrés,import,2019,9182,16648,2020
+Autres produits sucrés,import,2020,10105,18098,2020
+Conserves de fruits et légumes,import,2016,20281,42496,2020
+Conserves de fruits et légumes,import,2017,21536,49114,2020
+Conserves de fruits et légumes,import,2018,18512,44028,2020
+Conserves de fruits et légumes,import,2019,22659,45974,2020
+Conserves de fruits et légumes,import,2020,25773,47999,2020
+Vins et vermouths,import,2016,2065,2267,2020
+Vins et vermouths,import,2017,2082,1245,2020
+Vins et vermouths,import,2018,2144,1258,2020
+Vins et vermouths,import,2019,2150,1536,2020
+Vins et vermouths,import,2020,1550,1426,2020
+Autres boissons,import,2016,16861,39961,2020
+Autres boissons,import,2017,20254,51956,2020
+Autres boissons,import,2018,20573,48157,2020
+Autres boissons,import,2019,27022,67448,2020
+Autres boissons,import,2020,30036,72080,2020
+Tabac brut et fabriqué,import,2016,22398,4930,2020
+Tabac brut et fabriqué,import,2017,29789,4919,2020
+Tabac brut et fabriqué,import,2018,32323,5514,2020
+Tabac brut et fabriqué,import,2019,20103,4327,2020
+Tabac brut et fabriqué,import,2020,22174,3880,2020
+Huiles brutes de pétrole,import,2016,245615,1158137,2020
+Huiles brutes de pétrole,import,2017,301965,1198397,2020
+Huiles brutes de pétrole,import,2018,378633,1120937,2020
+Huiles brutes de pétrole,import,2019,236429,767522,2020
+Huiles brutes de pétrole,import,2020,253816,1025398,2020
+Autres produits pétroliers,import,2016,368136,1584962,2020
+Autres produits pétroliers,import,2017,523767,1807321,2020
+Autres produits pétroliers,import,2018,819804,2382455,2020
+Autres produits pétroliers,import,2019,957506,2866871,2020
+Autres produits pétroliers,import,2020,753548,3124671,2020
+Produits chimiques organiques et inorganiques,import,2016,54742,127303,2020
+Produits chimiques organiques et inorganiques,import,2017,64718,154897,2020
+Produits chimiques organiques et inorganiques,import,2018,66522,149642,2020
+Produits chimiques organiques et inorganiques,import,2019,74352,170835,2020
+Produits chimiques organiques et inorganiques,import,2020,75997,187430,2020
+Produits pharmaceutiques,import,2016,105373,10413,2020
+Produits pharmaceutiques,import,2017,124283,12642,2020
+Produits pharmaceutiques,import,2018,135901,12881,2020
+Produits pharmaceutiques,import,2019,156588,15514,2020
+Produits pharmaceutiques,import,2020,162767,15535,2020
+Engrais,import,2016,25172,121417,2020
+Engrais,import,2017,22044,130984,2020
+Engrais,import,2018,22116,117726,2020
+Engrais,import,2019,33735,170287,2020
+Engrais,import,2020,33918,193543,2020
+"Teinture, vernis et peinture",import,2016,6337,9133,2020
+"Teinture, vernis et peinture",import,2017,7758,11849,2020
+"Teinture, vernis et peinture",import,2018,10339,13566,2020
+"Teinture, vernis et peinture",import,2019,10295,21816,2020
+"Teinture, vernis et peinture",import,2020,9754,22615,2020
+Parfumerie,import,2016,9442,11297,2020
+Parfumerie,import,2017,9926,25169,2020
+Parfumerie,import,2018,10338,15763,2020
+Parfumerie,import,2019,9959,16188,2020
+Parfumerie,import,2020,9541,18189,2020
+Produits des industries parachimiques,import,2016,72653,55729,2020
+Produits des industries parachimiques,import,2017,75716,57612,2020
+Produits des industries parachimiques,import,2018,79717,73108,2020
+Produits des industries parachimiques,import,2019,88996,83081,2020
+Produits des industries parachimiques,import,2020,90297,77393,2020
+Matières plastiques artificielles,import,2016,108353,137360,2020
+Matières plastiques artificielles,import,2017,126182,149050,2020
+Matières plastiques artificielles,import,2018,135974,157110,2020
+Matières plastiques artificielles,import,2019,130500,170068,2020
+Matières plastiques artificielles,import,2020,131516,166618,2020
+Pneus et chambres à air,import,2016,12392,17530,2020
+Pneus et chambres à air,import,2017,13794,20242,2020
+Pneus et chambres à air,import,2018,15574,22352,2020
+Pneus et chambres à air,import,2019,18573,22165,2020
+Pneus et chambres à air,import,2020,23423,26167,2020
+Bois et ouvrages,import,2016,22675,86764,2020
+Bois et ouvrages,import,2017,24258,100713,2020
+Bois et ouvrages,import,2018,27612,105099,2020
+Bois et ouvrages,import,2019,31305,125240,2020
+Bois et ouvrages,import,2020,26600,110439,2020
+"Papiers, cartons et applications",import,2016,58713,94069,2020
+"Papiers, cartons et applications",import,2017,62501,99029,2020
+"Papiers, cartons et applications",import,2018,62672,98502,2020
+"Papiers, cartons et applications",import,2019,68364,109090,2020
+"Papiers, cartons et applications",import,2020,71048,137430,2020
+Filés et fils textiles,import,2016,3909,4118,2020
+Filés et fils textiles,import,2017,4974,5789,2020
+Filés et fils textiles,import,2018,5392,6542,2020
+Filés et fils textiles,import,2019,5816,6770,2020
+Filés et fils textiles,import,2020,4787,4740,2020
+Tissus artificiels et synthétiques,import,2016,8197,19457,2020
+Tissus artificiels et synthétiques,import,2017,7306,20176,2020
+Tissus artificiels et synthétiques,import,2018,7255,17338,2020
+Tissus artificiels et synthétiques,import,2019,9308,19540,2020
+Tissus artificiels et synthétiques,import,2020,7112,15862,2020
+Tissus de coton non imprimés,import,2016,1950,3040,2020
+Tissus de coton non imprimés,import,2017,1700,3419,2020
+Tissus de coton non imprimés,import,2018,3257,6914,2020
+Tissus de coton non imprimés,import,2019,3623,6731,2020
+Tissus de coton non imprimés,import,2020,3378,5414,2020
+Tissus de coton imprimés,import,2016,1623,4911,2020
+Tissus de coton imprimés,import,2017,874,3488,2020
+Tissus de coton imprimés,import,2018,1613,5354,2020
+Tissus de coton imprimés,import,2019,2292,6153,2020
+Tissus de coton imprimés,import,2020,1491,4032,2020
+Autres tissus,import,2016,6864,9111,2020
+Autres tissus,import,2017,5358,10753,2020
+Autres tissus,import,2018,8110,12169,2020
+Autres tissus,import,2019,6967,13773,2020
+Autres tissus,import,2020,11474,13876,2020
+Articles en tissus,import,2016,24251,41841,2020
+Articles en tissus,import,2017,26693,50825,2020
+Articles en tissus,import,2018,31111,56779,2020
+Articles en tissus,import,2019,42359,60511,2020
+Articles en tissus,import,2020,40142,67419,2020
+Sacs d'emballage,import,2016,7156,4819,2020
+Sacs d'emballage,import,2017,10201,7130,2020
+Sacs d'emballage,import,2018,9461,6502,2020
+Sacs d'emballage,import,2019,7992,63709,2020
+Sacs d'emballage,import,2020,7733,4658,2020
+Chaussures,import,2016,6561,10119,2020
+Chaussures,import,2017,6500,14235,2020
+Chaussures,import,2018,6634,12612,2020
+Chaussures,import,2019,9419,13099,2020
+Chaussures,import,2020,9148,15177,2020
+"Pierre, céramique et verre",import,2016,40443,248267,2020
+"Pierre, céramique et verre",import,2017,50167,295081,2020
+"Pierre, céramique et verre",import,2018,71252,364513,2020
+"Pierre, céramique et verre",import,2019,65264,362465,2020
+"Pierre, céramique et verre",import,2020,56292,327472,2020
+Métaux communs,import,2016,118233,404123,2020
+Métaux communs,import,2017,159907,442753,2020
+Métaux communs,import,2018,207959,533831,2020
+Métaux communs,import,2019,219494,569414,2020
+Métaux communs,import,2020,189890,520052,2020
+"Tubes, tuyaux et accessoires",import,2016,29351,30514,2020
+"Tubes, tuyaux et accessoires",import,2017,38640,47354,2020
+"Tubes, tuyaux et accessoires",import,2018,66184,106413,2020
+"Tubes, tuyaux et accessoires",import,2019,66018,115744,2020
+"Tubes, tuyaux et accessoires",import,2020,32989,50505,2020
+Articles de ménage et d'hygiène en métal,import,2016,3308,4429,2020
+Articles de ménage et d'hygiène en métal,import,2017,9140,5929,2020
+Articles de ménage et d'hygiène en métal,import,2018,3720,5421,2020
+Articles de ménage et d'hygiène en métal,import,2019,9170,7521,2020
+Articles de ménage et d'hygiène en métal,import,2020,8453,6981,2020
+Autres ouvrages en métaux communs,import,2016,54322,46726,2020
+Autres ouvrages en métaux communs,import,2017,73723,57293,2020
+Autres ouvrages en métaux communs,import,2018,96731,81469,2020
+Autres ouvrages en métaux communs,import,2019,100563,64213,2020
+Autres ouvrages en métaux communs,import,2020,91807,75665,2020
+Outillage et quincaillerie,import,2016,11677,7892,2020
+Outillage et quincaillerie,import,2017,10147,9242,2020
+Outillage et quincaillerie,import,2018,12038,9258,2020
+Outillage et quincaillerie,import,2019,9463,9271,2020
+Outillage et quincaillerie,import,2020,9021,11598,2020
+Meubles et divers en métal,import,2016,5584,4168,2020
+Meubles et divers en métal,import,2017,6759,4727,2020
+Meubles et divers en métal,import,2018,9583,6487,2020
+Meubles et divers en métal,import,2019,10334,5800,2020
+Meubles et divers en métal,import,2020,11646,5532,2020
+Moteurs et machines à moteurs,import,2016,45701,14041,2020
+Moteurs et machines à moteurs,import,2017,32005,13064,2020
+Moteurs et machines à moteurs,import,2018,30924,15219,2020
+Moteurs et machines à moteurs,import,2019,54274,19160,2020
+Moteurs et machines à moteurs,import,2020,58695,20971,2020
+Machines et appareils pour l'agriculture,import,2016,26763,6693,2020
+Machines et appareils pour l'agriculture,import,2017,11230,4686,2020
+Machines et appareils pour l'agriculture,import,2018,26798,5664,2020
+Machines et appareils pour l'agriculture,import,2019,21135,5182,2020
+Machines et appareils pour l'agriculture,import,2020,10459,4161,2020
+Machines et appareils pour industries alimentaires,import,2016,14682,3987,2020
+Machines et appareils pour industries alimentaires,import,2017,16215,3996,2020
+Machines et appareils pour industries alimentaires,import,2018,11910,2887,2020
+Machines et appareils pour industries alimentaires,import,2019,12047,2868,2020
+Machines et appareils pour industries alimentaires,import,2020,11289,2399,2020
+Machines et appareils pour autres industries,import,2016,119006,34139,2020
+Machines et appareils pour autres industries,import,2017,145112,40886,2020
+Machines et appareils pour autres industries,import,2018,121409,39046,2020
+Machines et appareils pour autres industries,import,2019,143200,46580,2020
+Machines et appareils pour autres industries,import,2020,119061,41292,2020
+Autres machines et appareils,import,2016,281976,82141,2020
+Autres machines et appareils,import,2017,367973,109111,2020
+Autres machines et appareils,import,2018,312288,99258,2020
+Autres machines et appareils,import,2019,428035,118951,2020
+Autres machines et appareils,import,2020,404745,128306,2020
+Automobiles et cars,import,2016,151009,41324,2020
+Automobiles et cars,import,2017,121009,40172,2020
+Automobiles et cars,import,2018,133805,46881,2020
+Automobiles et cars,import,2019,124921,50366,2020
+Automobiles et cars,import,2020,107484,50261,2020
+Camions et camionnettes,import,2016,59359,23555,2020
+Camions et camionnettes,import,2017,67491,26229,2020
+Camions et camionnettes,import,2018,72098,29656,2020
+Camions et camionnettes,import,2019,65038,30028,2020
+Camions et camionnettes,import,2020,49830,23782,2020
+Pièces détachées automobiles,import,2016,21159,13986,2020
+Pièces détachées automobiles,import,2017,16479,17334,2020
+Pièces détachées automobiles,import,2018,19814,20742,2020
+Pièces détachées automobiles,import,2019,23422,24021,2020
+Pièces détachées automobiles,import,2020,19496,22211,2020
+Autres véhicules terrestres,import,2016,58588,41861,2020
+Autres véhicules terrestres,import,2017,102407,56611,2020
+Autres véhicules terrestres,import,2018,106039,62064,2020
+Autres véhicules terrestres,import,2019,198583,71839,2020
+Autres véhicules terrestres,import,2020,127934,68891,2020
+Autres matériels de transport,import,2016,16580,1657,2020
+Autres matériels de transport,import,2017,21351,3066,2020
+Autres matériels de transport,import,2018,67359,14184,2020
+Autres matériels de transport,import,2019,56170,21060,2020
+Autres matériels de transport,import,2020,37395,12484,2020
+"Optique, horlogerie et matériel scientifique",import,2016,37963,4797,2020
+"Optique, horlogerie et matériel scientifique",import,2017,51850,5267,2020
+"Optique, horlogerie et matériel scientifique",import,2018,38609,4985,2020
+"Optique, horlogerie et matériel scientifique",import,2019,48528,7767,2020
+"Optique, horlogerie et matériel scientifique",import,2020,68698,7285,2020
+Autres produits,import,2016,377238,1918695,2020
+Autres produits,import,2017,440428,2169304,2020
+Autres produits,import,2018,524133,3045147,2020
+Autres produits,import,2019,534746,2753097,2020
+Autres produits,import,2020,538369,3199761,2020
