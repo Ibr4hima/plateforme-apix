@@ -1,6 +1,6 @@
 # Extractions NACE — annexes des rapports annuels
 
-Deux familles extraites, mêmes règles et même vérification :
+Trois familles extraites, mêmes règles et même vérification :
 - **principaux produits** (`edition_XXXX_principaux_produits.csv`,
   totaux dans `edition_XXXX_totaux.csv`) ;
 - **produits regroupés** (`edition_XXXX_produits_regroupes.csv`,
@@ -9,7 +9,20 @@ Deux familles extraites, mêmes règles et même vérification :
   capitales normalisés en casse normale avec accents restitués et
   fautes corrigées (RAFFINNES → raffinés, HYGYENE → hygiène, TEXTIL →
   textiles, MAIS → Maïs…). Un « - » du PDF (absence de flux) devient un
-  champ vide (NULL), distinct d'un 0.
+  champ vide (NULL), distinct d'un 0 ;
+- **groupes d'utilisation** (`edition_XXXX_groupes_utilisation.csv`,
+  totaux dans `edition_XXXX_totaux_groupes.csv`, colonne `groupe`) —
+  9 groupes **exhaustifs** par sens : il n'y a pas de ligne « Autres »,
+  la somme des groupes EST le total du commerce extérieur. Extraction
+  par parsing (`gen_gu.py`) avec deux contrôles : somme = TOTAL du PDF,
+  et **export − import = tableau balance du PDF**, ligne à ligne
+  (contre-vérification indépendante de la lecture des deux tableaux).
+
+  Attention : dans l'édition 2019, le tableau 18 (importations en
+  valeur) porte des en-têtes erronés « 2014–2018 » alors que les
+  valeurs sont bien 2015–2019 (son TOTAL 2019 = 4 229 294 = celui des
+  autres tableaux). Les colonnes sont donc lues par position, et la
+  contre-vérification par la balance confirme l'alignement.
 
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années

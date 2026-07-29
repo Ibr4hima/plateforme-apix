@@ -23,16 +23,17 @@ code_sortie = 0
 # arrondie (±0,5), la dérive cumulée est donc plus grande sur les tableaux
 # fins (56 postes) que sur les principaux produits (~15 postes).
 FAMILLES = [
-    ("principaux_produits", "totaux", 3),
-    ("produits_regroupes", "totaux_regroupes", 6),
+    ("principaux_produits", "totaux", 3, "produit"),
+    ("produits_regroupes", "totaux_regroupes", 6, "produit"),
+    ("groupes_utilisation", "totaux_groupes", 2, "groupe"),
 ]
 
 fichiers = [
-    (fic, famille, suffixe_tot, tolerance)
-    for famille, suffixe_tot, tolerance in FAMILLES
+    (fic, famille, suffixe_tot, tolerance, colonne)
+    for famille, suffixe_tot, tolerance, colonne in FAMILLES
     for fic in sorted(dossier.glob(f"edition_*_{famille}.csv"))
 ]
-for fic, famille, suffixe_tot, tolerance in fichiers:
+for fic, famille, suffixe_tot, tolerance, colonne in fichiers:
     edition = fic.stem.split("_")[1]
     fic_tot = dossier / f"edition_{edition}_{suffixe_tot}.csv"
     lignes = list(csv.DictReader(open(fic, encoding="utf-8")))
@@ -68,7 +69,7 @@ for fic, famille, suffixe_tot, tolerance in fichiers:
     # 2. Complétude : 5 années par (produit, sens), pas de doublon
     par_produit: dict = defaultdict(list)
     for r in lignes:
-        par_produit[(r["produit"], r["sens"])].append(int(r["annee"]))
+        par_produit[(r[colonne], r["sens"])].append(int(r["annee"]))
     for (produit, sens), annees in sorted(par_produit.items()):
         if len(annees) != len(set(annees)):
             print(f"  DOUBLON : {produit} ({sens}) — années {sorted(annees)}")
@@ -78,7 +79,8 @@ for fic, famille, suffixe_tot, tolerance in fichiers:
             code_sortie = 1
     nb_exp = len({p for (p, s) in par_produit if s == "export"})
     nb_imp = len({p for (p, s) in par_produit if s == "import"})
-    print(f"  {nb_exp} produits export · {nb_imp} produits import — complétude OK" if code_sortie == 0 else "")
+    libelle = "groupes" if colonne == "groupe" else "produits"
+    print(f"  {nb_exp} {libelle} export · {nb_imp} {libelle} import — complétude OK" if code_sortie == 0 else "")
 
 print("\nRésultat global :", "CONFORME" if code_sortie == 0 else "ÉCARTS DÉTECTÉS")
 sys.exit(code_sortie)

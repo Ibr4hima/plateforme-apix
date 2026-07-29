@@ -1,0 +1,91 @@
+groupe,sens,annee,valeur,poids,edition
+"Alimentation, boissons et tabacs",export,2015,447036,429029,2019
+"Alimentation, boissons et tabacs",export,2016,446596,446817,2019
+"Alimentation, boissons et tabacs",export,2017,493806,494266,2019
+"Alimentation, boissons et tabacs",export,2018,530738,537874,2019
+"Alimentation, boissons et tabacs",export,2019,601674,668419,2019
+Énergie et lubrifiants,export,2015,133191,306502,2019
+Énergie et lubrifiants,export,2016,99403,266847,2019
+Énergie et lubrifiants,export,2017,124607,331540,2019
+Énergie et lubrifiants,export,2018,131850,295240,2019
+Énergie et lubrifiants,export,2019,148211,331786,2019
+Matières premières animales et végétales,export,2015,107459,187799,2019
+Matières premières animales et végétales,export,2016,90533,181585,2019
+Matières premières animales et végétales,export,2017,80005,143868,2019
+Matières premières animales et végétales,export,2018,81571,170570,2019
+Matières premières animales et végétales,export,2019,167923,414788,2019
+Matières premières minérales,export,2015,113528,1905447,2019
+Matières premières minérales,export,2016,96481,1453129,2019
+Matières premières minérales,export,2017,123675,1592894,2019
+Matières premières minérales,export,2018,133993,1434079,2019
+Matières premières minérales,export,2019,162845,1794549,2019
+Autres demi-produits,export,2015,298141,2739216,2019
+Autres demi-produits,export,2016,342678,3430989,2019
+Autres demi-produits,export,2017,335094,3411662,2019
+Autres demi-produits,export,2018,371416,2891675,2019
+Autres demi-produits,export,2019,405415,2707077,2019
+Produits finis destinés à l'agriculture,export,2015,139,42,2019
+Produits finis destinés à l'agriculture,export,2016,95,30,2019
+Produits finis destinés à l'agriculture,export,2017,205,109,2019
+Produits finis destinés à l'agriculture,export,2018,76,2201,2019
+Produits finis destinés à l'agriculture,export,2019,14,16,2019
+Produits finis destinés à l'industrie,export,2015,27741,8508,2019
+Produits finis destinés à l'industrie,export,2016,26800,27288,2019
+Produits finis destinés à l'industrie,export,2017,32412,11833,2019
+Produits finis destinés à l'industrie,export,2018,25866,7999,2019
+Produits finis destinés à l'industrie,export,2019,32094,13287,2019
+Produits finis destinés à la consommation,export,2015,64877,51967,2019
+Produits finis destinés à la consommation,export,2016,75305,65694,2019
+Produits finis destinés à la consommation,export,2017,76450,67502,2019
+Produits finis destinés à la consommation,export,2018,81070,83593,2019
+Produits finis destinés à la consommation,export,2019,91180,69212,2019
+Or industriel,export,2015,150517,8,2019
+Or industriel,export,2016,193347,10,2019
+Or industriel,export,2017,220144,12,2019
+Or industriel,export,2018,313375,15,2019
+Or industriel,export,2019,375734,16,2019
+"Alimentation, boissons et tabacs",import,2015,685104,2637630,2019
+"Alimentation, boissons et tabacs",import,2016,726421,2771294,2019
+"Alimentation, boissons et tabacs",import,2017,847036,3172696,2019
+"Alimentation, boissons et tabacs",import,2018,832741,3065288,2019
+"Alimentation, boissons et tabacs",import,2019,871929,3107078,2019
+Énergie et lubrifiants,import,2015,623024,2619735,2019
+Énergie et lubrifiants,import,2016,494334,2755981,2019
+Énergie et lubrifiants,import,2017,623110,2939637,2019
+Énergie et lubrifiants,import,2018,861721,3442590,2019
+Énergie et lubrifiants,import,2019,775486,3165161,2019
+Matières premières animales et végétales,import,2015,51929,94903,2019
+Matières premières animales et végétales,import,2016,34788,63022,2019
+Matières premières animales et végétales,import,2017,38182,78916,2019
+Matières premières animales et végétales,import,2018,45329,91994,2019
+Matières premières animales et végétales,import,2019,53269,118233,2019
+Matières premières minérales,import,2015,39452,401573,2019
+Matières premières minérales,import,2016,37496,664428,2019
+Matières premières minérales,import,2017,39323,678947,2019
+Matières premières minérales,import,2018,66339,929636,2019
+Matières premières minérales,import,2019,56981,766478,2019
+Autres demi-produits,import,2015,667093,1216438,2019
+Autres demi-produits,import,2016,660264,1483898,2019
+Autres demi-produits,import,2017,767134,1773153,2019
+Autres demi-produits,import,2018,842873,2109994,2019
+Autres demi-produits,import,2019,950637,2318208,2019
+Produits finis destinés à l'agriculture,import,2015,16040,5498,2019
+Produits finis destinés à l'agriculture,import,2016,19508,5460,2019
+Produits finis destinés à l'agriculture,import,2017,10216,4299,2019
+Produits finis destinés à l'agriculture,import,2018,25673,5388,2019
+Produits finis destinés à l'agriculture,import,2019,20600,5526,2019
+Produits finis destinés à l'industrie,import,2015,554627,160386,2019
+Produits finis destinés à l'industrie,import,2016,569512,185017,2019
+Produits finis destinés à l'industrie,import,2017,717746,234095,2019
+Produits finis destinés à l'industrie,import,2018,712039,267900,2019
+Produits finis destinés à l'industrie,import,2019,888808,280306,2019
+Produits finis destinés à la consommation,import,2015,395161,303052,2019
+Produits finis destinés à la consommation,import,2016,434560,341293,2019
+Produits finis destinés à la consommation,import,2017,493069,402414,2019
+Produits finis destinés à la consommation,import,2018,528759,437165,2019
+Produits finis destinés à la consommation,import,2019,610715,544235,2019
+Or industriel,import,2015,482,0,2019
+Or industriel,import,2016,630,0,2019
+Or industriel,import,2017,678,0,2019
+Or industriel,import,2018,782,0,2019
+Or industriel,import,2019,870,0,2019
