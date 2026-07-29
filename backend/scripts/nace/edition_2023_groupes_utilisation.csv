@@ -1,0 +1,91 @@
+groupe,sens,annee,valeur,poids,edition
+"Alimentation, boissons et tabacs",export,2019,647194,811401,2023
+"Alimentation, boissons et tabacs",export,2020,584165,760095,2023
+"Alimentation, boissons et tabacs",export,2021,697972,890008,2023
+"Alimentation, boissons et tabacs",export,2022,851722,887204,2023
+"Alimentation, boissons et tabacs",export,2023,780622,858499,2023
+Énergie et lubrifiants,export,2019,487197,1359843,2023
+Énergie et lubrifiants,export,2020,361592,1325988,2023
+Énergie et lubrifiants,export,2021,447966,1376651,2023
+Énergie et lubrifiants,export,2022,650468,1079559,2023
+Énergie et lubrifiants,export,2023,692543,1256269,2023
+Matières premières animales et végétales,export,2019,168506,415785,2023
+Matières premières animales et végétales,export,2020,135030,296560,2023
+Matières premières animales et végétales,export,2021,188585,377392,2023
+Matières premières animales et végétales,export,2022,137507,222971,2023
+Matières premières animales et végétales,export,2023,89436,146677,2023
+Matières premières minérales,export,2019,172142,1798102,2023
+Matières premières minérales,export,2020,168196,1455444,2023
+Matières premières minérales,export,2021,223429,2056774,2023
+Matières premières minérales,export,2022,316163,2003890,2023
+Matières premières minérales,export,2023,265917,1915554,2023
+Autres demi-produits,export,2019,435925,2780534,2023
+Autres demi-produits,export,2020,396160,2832469,2023
+Autres demi-produits,export,2021,572428,3192892,2023
+Autres demi-produits,export,2022,806928,2665415,2023
+Autres demi-produits,export,2023,648568,3138146,2023
+Produits finis destinés à l'agriculture,export,2019,106,34,2023
+Produits finis destinés à l'agriculture,export,2020,239,64,2023
+Produits finis destinés à l'agriculture,export,2021,163,56,2023
+Produits finis destinés à l'agriculture,export,2022,222,99,2023
+Produits finis destinés à l'agriculture,export,2023,254,56,2023
+Produits finis destinés à l'industrie,export,2019,45427,16358,2023
+Produits finis destinés à l'industrie,export,2020,57755,25568,2023
+Produits finis destinés à l'industrie,export,2021,60019,18481,2023
+Produits finis destinés à l'industrie,export,2022,54318,12990,2023
+Produits finis destinés à l'industrie,export,2023,58448,15790,2023
+Produits finis destinés à la consommation,export,2019,114434,76095,2023
+Produits finis destinés à la consommation,export,2020,135510,94633,2023
+Produits finis destinés à la consommation,export,2021,154463,126055,2023
+Produits finis destinés à la consommation,export,2022,165424,97822,2023
+Produits finis destinés à la consommation,export,2023,157734,97608,2023
+Or industriel,export,2019,375734,16,2023
+Or industriel,export,2020,422698,15,2023
+Or industriel,export,2021,539778,19,2023
+Or industriel,export,2022,580607,18,2023
+Or industriel,export,2023,530410,17,2023
+"Alimentation, boissons et tabacs",import,2019,907959,3131654,2023
+"Alimentation, boissons et tabacs",import,2020,1039849,3499697,2023
+"Alimentation, boissons et tabacs",import,2021,1098833,3565834,2023
+"Alimentation, boissons et tabacs",import,2022,1371668,4050731,2023
+"Alimentation, boissons et tabacs",import,2023,1282275,4151577,2023
+Énergie et lubrifiants,import,2019,1235707,4532305,2023
+Énergie et lubrifiants,import,2020,1041847,5056944,2023
+Énergie et lubrifiants,import,2021,1358956,5076918,2023
+Énergie et lubrifiants,import,2022,2389906,5039603,2023
+Énergie et lubrifiants,import,2023,2140360,5888338,2023
+Matières premières animales et végétales,import,2019,54862,121723,2023
+Matières premières animales et végétales,import,2020,67690,150304,2023
+Matières premières animales et végétales,import,2021,81893,173170,2023
+Matières premières animales et végétales,import,2022,108883,254400,2023
+Matières premières animales et végétales,import,2023,93909,302578,2023
+Matières premières minérales,import,2019,70282,770324,2023
+Matières premières minérales,import,2020,58631,831941,2023
+Matières premières minérales,import,2021,110055,979093,2023
+Matières premières minérales,import,2022,186649,910592,2023
+Matières premières minérales,import,2023,94450,1073333,2023
+Autres demi-produits,import,2019,966121,2399849,2023
+Autres demi-produits,import,2020,873962,2669701,2023
+Autres demi-produits,import,2021,1168732,3364208,2023
+Autres demi-produits,import,2022,1543340,3226693,2023
+Autres demi-produits,import,2023,1379389,2673074,2023
+Produits finis destinés à l'agriculture,import,2019,20496,5512,2023
+Produits finis destinés à l'agriculture,import,2020,12625,5065,2023
+Produits finis destinés à l'agriculture,import,2021,14619,6723,2023
+Produits finis destinés à l'agriculture,import,2022,12283,5756,2023
+Produits finis destinés à l'agriculture,import,2023,16154,7657,2023
+Produits finis destinés à l'industrie,import,2019,890871,279311,2023
+Produits finis destinés à l'industrie,import,2020,771772,259551,2023
+Produits finis destinés à l'industrie,import,2021,854435,293568,2023
+Produits finis destinés à l'industrie,import,2022,1192982,368362,2023
+Produits finis destinés à l'industrie,import,2023,1374060,378126,2023
+Produits finis destinés à la consommation,import,2019,626763,554192,2023
+Produits finis destinés à la consommation,import,2020,627801,515555,2023
+Produits finis destinés à la consommation,import,2021,690971,605435,2023
+Produits finis destinés à la consommation,import,2022,743526,641138,2023
+Produits finis destinés à la consommation,import,2023,825934,695688,2023
+Or industriel,import,2019,870,0,2023
+Or industriel,import,2020,234,0,2023
+Or industriel,import,2021,1,0,2023
+Or industriel,import,2022,128,0,2023
+Or industriel,import,2023,1274,0,2023
