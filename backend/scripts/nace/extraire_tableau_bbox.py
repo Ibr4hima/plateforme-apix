@@ -137,5 +137,8 @@ def lignes_page(page) -> list[str]:
 if __name__ == "__main__":
     brut = subprocess.run(["pdftotext", "-bbox-layout", sys.argv[1], "-"],
                           capture_output=True, text=True, check=True).stdout
+    # Certains PDF contiennent des caractères de contrôle que pdftotext
+    # recopie tels quels dans le XML, le rendant illisible.
+    brut = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", brut)
     for page in ElementTree.fromstring(brut).iter(NS + "page"):
         print("\n".join(lignes_page(page)))
