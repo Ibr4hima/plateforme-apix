@@ -75,6 +75,16 @@ valeurs révisées (ex. Produits pétroliers finis 2017 : 523 767 contre
 (Produits chimiques, Produits laitiers fruits et légumes, Papiers et
 carton, Sucres et produits sucrés, Boissons et tabacs) disparaissent.
 
+## Édition 2022 — céréales éclatées, numérotation décalée
+
+L'édition 2022 (années 2018–2022) numérote les tableaux 6–9 (et non
+plus 8–11). Exports inchangés (nomenclature 2020/2021, valeurs
+2018–2021 identiques). Imports : « Produits céréaliers » est éclaté en
+**Riz / Blé / Maïs / Autres céréales** (somme 2018 = 407 748 = ligne
+d'origine, découpage exact) et plusieurs lignes sont révisées
+(Machines et appareils 2019 : 658 691 contre 604 417 en 2021).
+Fautes corrigées : « Maîs »/« Mais » → « Maïs ».
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette
