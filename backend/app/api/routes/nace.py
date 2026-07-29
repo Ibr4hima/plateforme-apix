@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
-from app.models.nace import NacePrincipalProduit
+from app.models.nace import NacePrincipalProduit, NaceProduitRegroupe
 
 router = APIRouter(prefix="/nace", tags=["nace"])
 
@@ -46,8 +46,16 @@ ALIAS = {
 }
 
 
+# Familles extraites des annexes : motif de fichier CSV → modèle.
+FAMILLES = [
+    ("principaux_produits", NacePrincipalProduit),
+    ("produits_regroupes", NaceProduitRegroupe),
+]
+
+
 # ── POST /nace/importer ───────────────────────────────────────────────────────
-# Charge (upsert) les CSV vérifiés du dépôt dans nace_principaux_produits.
+# Charge (upsert) les CSV vérifiés du dépôt : principaux produits ET
+# produits regroupés, toutes éditions présentes dans backend/scripts/nace.
 @router.post("/importer")
 async def importer_nace(
     db: AsyncSession = Depends(get_db),
@@ -55,41 +63,41 @@ async def importer_nace(
 ):
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-    fichiers = sorted(DOSSIER_CSV.glob("edition_*_principaux_produits.csv"))
-    total, editions = 0, []
-    for fic in fichiers:
-        lignes = [
-            {
-                "produit": r["produit"],
-                "sens": r["sens"],
-                "annee": int(r["annee"]),
-                "valeur": r["valeur"] or None,
-                "poids": r["poids"] or None,
-                "edition": int(r["edition"]),
-            }
-            for r in csv.DictReader(open(fic, encoding="utf-8"))
-        ]
-        if not lignes:
-            continue
-        stmt = pg_insert(NacePrincipalProduit).values(lignes)
-        stmt = stmt.on_conflict_do_update(
-            index_elements=["produit", "sens", "annee", "edition"],
-            set_={"valeur": stmt.excluded.valeur, "poids": stmt.excluded.poids},
-        )
-        await db.execute(stmt)
-        total += len(lignes)
-        editions.append(lignes[0]["edition"])
-    return {"fichiers": len(fichiers), "lignes": total, "editions": editions}
+    rapport: dict = {}
+    for famille, modele in FAMILLES:
+        fichiers = sorted(DOSSIER_CSV.glob(f"edition_*_{famille}.csv"))
+        total, editions = 0, []
+        for fic in fichiers:
+            lignes = [
+                {
+                    "produit": r["produit"],
+                    "sens": r["sens"],
+                    "annee": int(r["annee"]),
+                    "valeur": r["valeur"] or None,
+                    "poids": r["poids"] or None,
+                    "edition": int(r["edition"]),
+                }
+                for r in csv.DictReader(open(fic, encoding="utf-8"))
+            ]
+            if not lignes:
+                continue
+            stmt = pg_insert(modele).values(lignes)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["produit", "sens", "annee", "edition"],
+                set_={"valeur": stmt.excluded.valeur, "poids": stmt.excluded.poids},
+            )
+            await db.execute(stmt)
+            total += len(lignes)
+            editions.append(lignes[0]["edition"])
+        rapport[famille] = {"fichiers": len(fichiers), "lignes": total, "editions": editions}
+    return rapport
 
 
-# ── GET /nace/principaux-produits ─────────────────────────────────────────────
-# Données résolues : pour chaque (sens, année), l'édition la plus récente
-# qui couvre l'année, libellés ramenés à la nomenclature courante (les
-# lignes fusionnées — Titane+Zirconium, Riz/Blé/Maïs… — sont sommées).
-@router.get("/principaux-produits")
-async def principaux_produits(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NacePrincipalProduit))
-    rows = res.scalars().all()
+# Résolution commune : pour chaque (sens, année), l'édition la plus récente
+# qui couvre l'année ; libellés ramenés à la nomenclature courante via
+# `alias` (les lignes fusionnées — Titane+Zirconium, Riz/Blé/Maïs… — sont
+# sommées).
+def _resoudre(rows, alias: dict) -> dict:
     if not rows:
         return {"disponible": False, "annees": [], "editions": [], "donnees": {"export": [], "import": []}}
 
@@ -105,7 +113,7 @@ async def principaux_produits(db: AsyncSession = Depends(get_db)):
     for r in rows:
         if retenue[(r.sens, r.annee)] != r.edition:
             continue
-        produit = ALIAS.get(r.sens, {}).get(r.produit, r.produit)
+        produit = alias.get(r.sens, {}).get(r.produit, r.produit)
         a = agreg[(r.sens, r.annee, produit)]
         if r.valeur is not None:
             a["valeur"] += float(r.valeur); a["v"] = True
@@ -127,3 +135,19 @@ async def principaux_produits(db: AsyncSession = Depends(get_db)):
         "editions": sorted({r.edition for r in rows}),
         "donnees": donnees,
     }
+
+
+# ── GET /nace/principaux-produits ─────────────────────────────────────────────
+@router.get("/principaux-produits")
+async def principaux_produits(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NacePrincipalProduit))
+    return _resoudre(res.scalars().all(), ALIAS)
+
+
+# ── GET /nace/produits-regroupes ──────────────────────────────────────────────
+# Nomenclature fine (30–31 postes export, 56 import) — libellés stables
+# d'une édition à l'autre (normalisés à l'extraction), aucun alias requis.
+@router.get("/produits-regroupes")
+async def produits_regroupes(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NaceProduitRegroupe))
+    return _resoudre(res.scalars().all(), {})
