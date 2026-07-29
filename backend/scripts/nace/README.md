@@ -33,6 +33,35 @@ tableaux valeur/poids pour que la jointure tienne :
 | Matériels de Transports et Pièces détachées | Matériels de transport et pièces détachées |
 | Produits des industries para chimiques | Produits des industries parachimiques |
 
+## Édition 2020 — nomenclature remaniée et fortes révisions
+
+L'édition 2020 (années 2016–2020) change la nomenclature des principaux
+produits et révise lourdement 2016–2019 (régularisations des produits
+pétroliers annoncées dans l'avant-propos 2019) : total exports 2019 =
+2 446 666 MFCFA contre 1 985 091 dans l'édition 2019 (+23 %). C'est la
+raison d'être de la colonne `edition` — chaque édition est stockée
+telle quelle, la lecture retient la plus récente.
+
+Renommages/regroupements observés (cohérence vérifiée) :
+- « Or non monétaire » → **Or industriel** (mêmes valeurs 2016–2019) ;
+- « Titane » + « Zirconium » → **Titane et zircon** (somme exacte) ;
+- « Produits de la pêche » → **Produits halieutiques** ;
+- « Ciment » → **Ciment hydraulique** ;
+- « Engrais » → **Engrais minéraux** (série différente, revue) ;
+- imports : « Huiles brutes de pétrole » + « Produits pétroliers finis »
+  fusionnés (et élargis) dans **Produits pétroliers** ; nouvelles lignes
+  Produits chimiques, Produits laitiers fruits et légumes, Papiers et
+  carton, Sucres et produits sucrés, Boissons et tabacs ; « Métaux
+  communs et ouvrages… » → **Métaux et ouvrages en métaux** ;
+  « Matières plastiques et artificielles » → **Matières plastiques
+  artificielles**.
+- « Sel » et « Cuirs et peaux » quittent le panier export.
+
+Fautes du PDF 2020 corrigées : « Miatériels de transport » →
+« Matériels de transport et pièces détachées » (T11) ; « Préparation
+pour soupe, potages, bouillons » → « Préparations pour soupes, potages,
+bouillons » (aligné sur 2019).
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette
