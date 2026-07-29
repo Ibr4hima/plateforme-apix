@@ -1993,7 +1993,7 @@ function DrapeauMonde({ iso, nom }: { iso?: string | null; nom: string }) {
   return <span title={nom} style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
 }
 
-type TopPays = { pays: string; code_iso2?: string | null; valeur: number };
+type TopPays = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
 
 // Tableau Top 10 des pays : rang · drapeau · pays · valeur · part · barre,
 // avec curseur Cumul (à droite) ⇆ années (vers la gauche, décroissantes)
@@ -2002,8 +2002,12 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
   onAnnee: (a: number | null) => void; chargement: boolean;
 }) {
   const n = annees.length;
-  const total = rows.reduce((t, r) => t + Math.max(0, r.valeur), 0);
-  const max = Math.max(1e-9, ...rows.map(r => r.valeur));
+  // Part et barres calculées sur le top 10 seul (le Sénégal ajouté à la
+  // suite ne fausse pas les proportions)
+  const enTop = rows.filter((r, i) => (r.rang ?? i + 1) <= 10);
+  const total = enTop.reduce((t, r) => t + Math.max(0, r.valeur), 0);
+  const max = Math.max(1e-9, ...enTop.map(r => r.valeur));
+  const estSen = (r: TopPays) => r.pays === "Sénégal" || r.pays === "Senegal";
   return (
     <div style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(16,26,46,0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
@@ -2035,28 +2039,45 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
           </div>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
             {rows.map((r, i) => {
+              const rang = r.rang ?? i + 1;
               const zebre = i % 2 === 1;
-              const podium = i < 3;
+              const podium = rang <= 3;
+              const sen = estSen(r);
+              const horsTop = rang > 10;
+              const fondSen = "linear-gradient(90deg, rgba(0,79,145,0.10), rgba(0,79,145,0.02))";
               return (
-                <div key={r.pays} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
-                  <span style={{ width: 22, flexShrink: 0 }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%",
-                      background: podium ? "#004f91" : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{i + 1}</span>
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <DrapeauMonde iso={r.code_iso2} nom={r.pays} />
-                    <span title={r.pays} style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
-                  </span>
-                  <span style={{ width: 74, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.valeur)}</span>
-                  <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right" as const, flexShrink: 0 }}>
-                    {total > 0 ? `${(Math.max(0, r.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
-                  </span>
-                  <div style={{ width: "26%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                    {r.valeur > 0 && <div style={{ height: "100%", width: `${Math.max(2, r.valeur / max * 100)}%`, borderRadius: 99, background: "#004f91", opacity: podium ? 0.9 : 0.55 }} />}
+                <Fragment key={r.pays}>
+                  {/* Filet « … » avant le Sénégal ajouté hors top 10 */}
+                  {horsTop && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
+                      <span style={{ width: 22, textAlign: "center" as const, color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                      <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
+                    </div>
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
+                    background: sen ? fondSen : zebre ? "#F8F9FB" : "transparent",
+                    border: sen ? "1px solid rgba(0,79,145,0.30)" : "1px solid transparent",
+                    boxShadow: sen ? "0 1px 6px rgba(0,79,145,0.10)" : "none", transition: "background 0.12s" }}
+                    onMouseEnter={e => { if (!sen) e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
+                    onMouseLeave={e => { if (!sen) e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
+                    <span style={{ width: 22, flexShrink: 0 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
+                        background: sen ? "#004f91" : podium ? "#004f91" : "#EFEDEA", color: sen || podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <DrapeauMonde iso={r.code_iso2} nom={r.pays} />
+                      <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 700, color: sen ? "#004f91" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
+                      {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", background: "rgba(0,79,145,0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{rang}ᵉ DU CLASSEMENT</span>}
+                    </span>
+                    <span style={{ width: 74, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.valeur)}</span>
+                    <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right" as const, flexShrink: 0 }}>
+                      {total > 0 ? `${(Math.max(0, r.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
+                    </span>
+                    <div style={{ width: "26%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                      {r.valeur > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, r.valeur / max * 100))}%`, borderRadius: 99, background: "#004f91", opacity: sen ? 1 : podium ? 0.9 : 0.55 }} />}
+                    </div>
                   </div>
-                </div>
+                </Fragment>
               );
             })}
           </div>

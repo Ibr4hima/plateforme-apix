@@ -194,7 +194,16 @@ async def get_monde_global(
         if direction in tops:
             tops[direction].append({"pays": pays, "valeur": float(somme or 0)})
     for direction in tops:
-        tops[direction] = sorted(tops[direction], key=lambda x: x["valeur"], reverse=True)[:10]
+        classement = sorted(tops[direction], key=lambda x: x["valeur"], reverse=True)
+        for i, t in enumerate(classement):
+            t["rang"] = i + 1
+        retenu = classement[:10]
+        # Le Sénégal est toujours mis en avant : hors top 10, il est ajouté
+        # à la suite avec son rang réel dans le classement
+        sen = next((t for t in classement if t["pays"] in ("Sénégal", "Senegal")), None)
+        if sen and sen["rang"] > 10:
+            retenu = retenu + [sen]
+        tops[direction] = retenu
 
     # Drapeaux : code ISO2 par nom (nom_fr ou nom_cnuced)
     noms = list({t["pays"] for d in tops.values() for t in d})
