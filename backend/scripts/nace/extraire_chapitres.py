@@ -61,46 +61,80 @@ def joli(brut: str) -> str:
 
 txt = open(FIC, encoding="utf-8").read()
 
+# Nomenclature de référence : les 96 chapitres SH, identiques d'une édition
+# à l'autre. Elle sert d'arbitre quand un libellé est coupé en deux, car la
+# suite se place tantôt avant, tantôt après la ligne des valeurs — parfois
+# au sein d'un même rapport.
+REFERENCE: set[str] = set()
+_ref = Path("/home/user/plateforme-apix/backend/scripts/nace/edition_2019_chapitres.csv")
+if _ref.exists():
+    REFERENCE = {r["chapitre"] for r in csv.DictReader(_ref.open(encoding="utf-8"))}
+
 def parse(debut: str, fin: str | None):
+    """Lit une section et renvoie {clé: (libellé brut, valeurs)} + TOTAL.
+
+    Les libellés longs sont coupés sur deux lignes, la suite se plaçant
+    tantôt avant, tantôt après la ligne des valeurs — parfois dans un même
+    rapport. On collecte donc séparément les fragments et les lignes
+    porteuses de valeurs, puis on teste les combinaisons possibles contre
+    la nomenclature de référence (96 chapitres SH, stable entre éditions).
+    """
     sec = txt.split(debut)[1]
     if fin:
         sec = sec.split(fin)[0]
-    buf, rows, total = [], {}, None
+
+    items = []          # ("frag", libellé) | ("row", libellé, valeurs)
     for l in sec.split("\n"):
         c = colonnes(l)
-        if len(c) == 6 and not est_valeur(c[0]) and all(est_valeur(t) for t in c[1:]):
-            if est_entete_annees(c[1:]):       # ligne d'en-tête « CHAPITRES 2017 … »
-                buf = []
+        if not c:
+            continue
+        if all(est_valeur(t) for t in c):
+            if len(c) == 5 and not est_entete_annees(c):
+                items.append(("row", "", [nombre(t) for t in c]))
+            continue
+        vals = [t for t in c[1:] if est_valeur(t)]
+        if len(c) >= 2 and len(vals) == len(c) - 1 == 5:
+            if est_entete_annees(vals):
                 continue
-            vals = [nombre(t) for t in c[1:]]
-            # Certaines éditions placent la fin d'un libellé coupé sur la
-            # ligne des valeurs : on la recolle au début mis de côté, sans
-            # quoi deux chapitres partageant la même fin (« …, PARTIES,
-            # ACCESSOIRES ») s'écraseraient l'un l'autre.
-            brut = " ".join(buf + [c[0]]) if buf else c[0]
-            if normaliser_espaces(brut) == "TOTAL":
-                total = vals
-            else:
-                rows[normaliser_espaces(brut)] = (brut, vals)
-            buf = []
-        elif len(c) == 5 and all(est_valeur(t) for t in c):
-            if est_entete_annees(c):
-                buf = []
-                continue
-            if buf:
-                brut = " ".join(buf)
-                rows[normaliser_espaces(brut)] = (brut, [nombre(t) for t in c])
-            buf = []
-        elif len(c) == 1 and not est_valeur(c[0]) and re.match(r"^[A-ZÉÈ]", c[0]) \
+            items.append(("row", c[0], [nombre(t) for t in vals]))
+        elif len(c) == 1 and re.match(r"^[A-ZÉÈ]", c[0]) \
                 and "Source" not in c[0] and "Tableau" not in c[0]:
-            buf.append(c[0])
-        elif c:
-            buf = []
+            items.append(("frag", c[0]))
+
+    def connu(lib: str) -> bool:
+        return not REFERENCE or joli(lib) in REFERENCE
+
+    rows, total, utilises = {}, None, set()
+    for i, it in enumerate(items):
+        if it[0] != "row":
+            continue
+        propre = it[1]
+        avant = items[i - 1][1] if i and items[i - 1][0] == "frag" and i - 1 not in utilises else None
+        apres = items[i + 1][1] if i + 1 < len(items) and items[i + 1][0] == "frag" else None
+        essais = [(propre, None)]
+        if avant:
+            essais.insert(0, (f"{avant} {propre}".strip(), i - 1))
+        if apres:
+            essais.append((f"{propre} {apres}".strip(), i + 1))
+        if avant and apres:
+            essais.append((f"{avant} {propre} {apres}".strip(), i - 1))
+        libelle, idx = next(((lib, j) for lib, j in essais if lib and connu(lib)), (None, None))
+        if libelle is None:
+            libelle, idx = essais[0]
+        if idx is not None:
+            utilises.add(idx)
+            if idx == i + 1 and avant:      # « avant » restait disponible
+                utilises.add(i - 1)
+        if normaliser_espaces(libelle) == "TOTAL":
+            total = it[2]
+        elif libelle:
+            rows[normaliser_espaces(libelle)] = (libelle, it[2])
+
     assert total, f"{debut} : TOTAL introuvable"
     somme = [sum((v[1][i] or 0) for v in rows.values()) for i in range(5)]
-    # Un TOTAL imprimé aberrant (> 5 % d'écart) est une erreur du rapport,
-    # pas de l'extraction : on retient la somme des chapitres et on le
-    # signale. Cas connu : T39 de l'édition 2021 (cf. README).
+    # Un TOTAL imprimé aberrant (> 5 %) est une erreur du rapport, pas de
+    # l'extraction : on retient la somme et on le signale (cas connu : T39
+    # de l'édition 2021, cf. README).
     if any(abs(somme[i] - total[i]) > max(12, 0.05 * total[i]) for i in range(5)):
         print(f"  ⚠ {debut} : TOTAL imprimé aberrant {total} — remplacé par la somme des chapitres {somme}")
         total = somme

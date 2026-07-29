@@ -54,6 +54,15 @@ Quatre familles extraites, mêmes règles et même vérification :
   autres familles NACE. L'extracteur détecte un total aberrant (> 5 %),
   le signale et retient la somme des chapitres.
 
+  À partir de l'édition 2021, l'appariement des libellés coupés est
+  arbitré par la nomenclature elle-même : les fragments et les lignes
+  porteuses de valeurs sont collectés séparément, puis toutes les
+  combinaisons (fragment + libellé, libellé + fragment, les deux) sont
+  testées contre les 96 chapitres de référence. C'est indispensable car
+  la suite d'un libellé se place tantôt avant, tantôt après ses valeurs —
+  parfois dans un même rapport (édition 2022 : avant en tableau 36,
+  après en tableau 35).
+
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
 2020–2024) ajoute la ligne export « Huiles brutes de pétrole »

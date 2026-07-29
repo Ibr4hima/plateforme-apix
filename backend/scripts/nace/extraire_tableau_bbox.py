@@ -49,6 +49,13 @@ def bandes(mots, tol=3.0):
 def est_valeur(t: str) -> bool:
     return t == "-" or bool(re.fullmatch(r"[\d ]+", t))
 
+def est_entete(vals: list[str]) -> bool:
+    """Ligne d'en-tête : cinq millésimes consécutifs. Elle serait sinon
+    absorbée comme fragment de cellule par la ligne la plus proche."""
+    n = [int(v.replace(" ", "")) for v in vals if re.fullmatch(r"[\d ]+", v)]
+    return len(n) == 5 == len(vals) and all(1990 <= v <= 2100 for v in n) \
+        and all(b - a == 1 for a, b in zip(n, n[1:]))
+
 def lignes_page(page) -> list[str]:
     mots = list(mots_de(page))
     if not mots:
@@ -68,30 +75,36 @@ def lignes_page(page) -> list[str]:
         libelle = " ".join(m[3] for m in b[:coupe + 1])
         vals = b[coupe + 1:]
         y = sum(m[0] for m in b) / len(b)
+        if est_entete([m[3] for m in vals]):
+            continue
         classees.append(("V" if coupe < 0 else "LV" if vals else "L", y, libelle, vals))
 
-    lignes, orphelins, hors_tableau, attente = [], [], [], []
+    #    Les fragments de libellé (L) sont émis tels quels, sur leur propre
+    #    ligne : c'est le générateur qui les recollera, en s'appuyant sur la
+    #    nomenclature de référence — la suite d'un libellé coupé se place
+    #    tantôt avant, tantôt après ses valeurs, parfois dans un même
+    #    rapport, et seul le vocabulaire attendu permet de trancher.
+    lignes, hors_tableau = [], []
     for genre, y, libelle, vals in classees:
-        if genre == "L" and re.search(r"Tableau|Source", libelle):
+        if genre == "L":
             hors_tableau.append((y, libelle))
-        elif genre == "L":
-            attente.append(libelle)
         elif genre == "LV":
-            lignes.append({"y": y, "libelle": " ".join(attente + [libelle]), "vals": list(vals)})
-            attente = []
-        elif attente:                      # libellé(s) en attente + valeurs = une ligne
-            lignes.append({"y": y, "libelle": " ".join(attente), "vals": list(vals)})
-            attente = []
-        else:
-            orphelins += vals              # fragment d'une cellule coupée en deux
+            lignes.append({"y": y, "libelle": libelle, "vals": list(vals)})
     if not lignes:
         return [l for _, l in sorted(hors_tableau)]
 
-    # 2. Les fragments de cellule rejoignent la ligne la plus proche
-    for m in orphelins:
-        cible = min(lignes, key=lambda l: abs(l["y"] - m[0]))
-        if abs(cible["y"] - m[0]) <= DY_LIGNE:
-            cible["vals"].append(m)
+    # 2. Bandes de valeurs seules : soit un fragment de cellule coupée en
+    #    deux (tout près d'une ligne existante), soit les valeurs d'un
+    #    libellé resté seul plus haut (nettement en dessous) — auquel cas
+    #    on émet une ligne sans libellé, que le générateur appariera.
+    for genre, y, _, vals in classees:
+        if genre != "V":
+            continue
+        cible = min(lignes, key=lambda l: abs(l["y"] - y))
+        if abs(cible["y"] - y) <= DY_LIGNE:
+            cible["vals"] += vals
+        else:
+            lignes.append({"y": y, "libelle": "", "vals": list(vals)})
 
     sortie = []
     for l in lignes:
@@ -117,7 +130,8 @@ def lignes_page(page) -> list[str]:
             else:
                 fusion.append(c)
         valeurs = [" ".join(t for _, _, t in sorted(c["frags"])) for c in fusion]
-        sortie.append((l["y"], l["libelle"] + ("   " + "   ".join(valeurs) if valeurs else "")))
+        texte = (l["libelle"] + "   " if l["libelle"] else "") + "   ".join(valeurs)
+        sortie.append((l["y"], texte if valeurs else l["libelle"]))
     return [t for _, t in sorted(sortie + hors_tableau)]
 
 if __name__ == "__main__":
