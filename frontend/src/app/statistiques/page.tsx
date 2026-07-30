@@ -375,24 +375,30 @@ function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec, unite = "pro
   );
 }
 
-// Section « Groupes d'utilisation » : 9 groupes exhaustifs (leur somme
-// EST le total du commerce extérieur). Deux barres empilées 100 %
-// (répartition des exportations et des importations de l'année) puis un
-// tableau croisé par groupe — export, import et balance (qui montre d'où
-// vient le déficit commercial).
-type NaceLigneGU = { groupe: string; annee: number; valeur: number | null; poids: number | null; edition: number };
-type NaceDataGU = { disponible: boolean; annees: number[]; editions: number[]; donnees: { export: NaceLigneGU[]; import: NaceLigneGU[] } };
+// Section de répartition exhaustive (groupes d'utilisation, continents) :
+// les modalités couvrent tout le commerce extérieur, leur somme EST le
+// total. Deux barres empilées 100 % (répartition des exportations et des
+// importations de l'année) puis un tableau croisé — export, import et
+// balance, qui montre d'où vient le déficit commercial.
+type NaceModalite = { nom: string; valeur: number | null; poids: number | null };
+type NaceLigneCle = { annee: number; valeur: number | null; poids: number | null; edition: number };
+type NaceDataGU = { disponible: boolean; annees: number[]; editions: number[];
+  donnees: { export: (NaceLigneCle & { groupe: string })[]; import: (NaceLigneCle & { groupe: string })[] } };
+type NaceDataCont = { disponible: boolean; annees: number[]; editions: number[];
+  donnees: { export: (NaceLigneCle & { continent: string })[]; import: (NaceLigneCle & { continent: string })[] } };
 
 const PALETTE_GU = ["#004f91", "#ca631f", "#188038", "#7b3ff2", "#0e7490", "#b45309", "#be185d", "#4d7c0f", "#64748b"];
 
-function SectionGroupesUtilisation({ exp, imp }: { exp: NaceLigneGU[]; imp: NaceLigneGU[] }) {
+function SectionRepartition({ titre, colonne, exp, imp }: {
+  titre: string; colonne: string; exp: NaceModalite[]; imp: NaceModalite[];
+}) {
   const [mesure, setMesure] = useState<NaceMesure>("valeur");
-  const val = (r?: NaceLigneGU) => (r ? (mesure === "valeur" ? r.valeur : r.poids) ?? 0 : 0);
+  const val = (r?: NaceModalite) => (r ? (mesure === "valeur" ? r.valeur : r.poids) ?? 0 : 0);
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   // Ordre commun aux deux barres et au tableau : export décroissant
-  const groupes = exp.slice().sort((a, b) => val(b) - val(a)).map(r => r.groupe);
-  const expDe = (g: string) => exp.find(r => r.groupe === g);
-  const impDe = (g: string) => imp.find(r => r.groupe === g);
+  const groupes = exp.slice().sort((a, b) => val(b) - val(a)).map(r => r.nom);
+  const expDe = (g: string) => exp.find(r => r.nom === g);
+  const impDe = (g: string) => imp.find(r => r.nom === g);
   const totE = groupes.reduce((s, g) => s + Math.max(0, val(expDe(g))), 0);
   const totI = groupes.reduce((s, g) => s + Math.max(0, val(impDe(g))), 0);
   const maxBar = Math.max(1e-9, ...groupes.flatMap(g => [val(expDe(g)), val(impDe(g))]));
@@ -401,7 +407,7 @@ function SectionGroupesUtilisation({ exp, imp }: { exp: NaceLigneGU[]; imp: Nace
   const fmtPct = (v: number) => `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
 
   // Barre empilée 100 % d'un sens : chaque segment = la part du groupe
-  const BarreEmpilee = ({ libelle, tot, de }: { libelle: string; tot: number; de: (g: string) => NaceLigneGU | undefined }) => (
+  const BarreEmpilee = ({ libelle, tot, de }: { libelle: string; tot: number; de: (g: string) => NaceModalite | undefined }) => (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
       <span style={{ width: 96, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase", flexShrink: 0, textAlign: "right" }}>{libelle}</span>
       <div style={{ flex: 1, display: "flex", height: 20, borderRadius: 7, overflow: "hidden", background: "#F2F0EF" }}>
@@ -422,7 +428,7 @@ function SectionGroupesUtilisation({ exp, imp }: { exp: NaceLigneGU[]; imp: Nace
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0 }}>Répartition et balance par groupe</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0 }}>{titre}</h3>
         <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
           {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
             const actif = o.v === mesure;
@@ -444,7 +450,7 @@ function SectionGroupesUtilisation({ exp, imp }: { exp: NaceLigneGU[]; imp: Nace
 
       {/* Tableau croisé : export · import · balance par groupe */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <span style={{ ...EN_TETE, flex: 1 }}>Groupe</span>
+        <span style={{ ...EN_TETE, flex: 1 }}>{colonne}</span>
         <span style={{ ...EN_TETE, width: 86, textAlign: "right", flexShrink: 0 }}>Export</span>
         <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
         <span style={{ width: "11%", flexShrink: 0 }} />
@@ -518,6 +524,7 @@ function CommerceExterieurPanel() {
   // d'utilisation et chapitres SH (repliés par défaut, 96 postes par sens)
   const [reg, setReg] = useState<NaceData | null>(null);
   const [gu, setGu] = useState<NaceDataGU | null>(null);
+  const [cont, setCont] = useState<NaceDataCont | null>(null);
   const [chap, setChap] = useState<{ disponible: boolean; donnees: { export: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[]; import: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[] } } | null>(null);
   const [chapOuvert, setChapOuvert] = useState(false);
   useEffect(() => {
@@ -530,6 +537,8 @@ function CommerceExterieurPanel() {
       .then(setGu).catch(() => setGu(null));
     fetch(`${API}/nace/chapitres`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setChap).catch(() => setChap(null));
+    fetch(`${API}/nace/continents`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setCont).catch(() => setCont(null));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -687,7 +696,31 @@ function CommerceExterieurPanel() {
                 9 groupes exhaustifs — leur somme est le total du commerce extérieur
               </span>
             </div>
-            <SectionGroupesUtilisation exp={gE} imp={gI} />
+            <SectionRepartition titre="Répartition et balance par groupe" colonne="Groupe"
+              exp={gE.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))}
+              imp={gI.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))} />
+          </>
+        );
+      })()}
+
+      {/* Continents : orientation géographique des échanges (6 modalités
+          exhaustives, « Divers » incluse) */}
+      {cont?.disponible && (() => {
+        const coDe = (sens: "export" | "import", a: number) =>
+          cont.donnees[sens].filter(r => r.annee === a)
+            .map(r => ({ nom: r.continent, valeur: r.valeur, poids: r.poids }));
+        const kE = coDe("export", an), kI = coDe("import", an);
+        if (!kE.length && !kI.length) return null;
+        return (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Continents · {an}</h3>
+              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+                Orientation géographique des échanges — {kE.length} zones exhaustives, « Divers » incluse
+              </span>
+            </div>
+            <SectionRepartition titre="Répartition et balance par continent" colonne="Continent"
+              exp={kE} imp={kI} />
           </>
         );
       })()}
