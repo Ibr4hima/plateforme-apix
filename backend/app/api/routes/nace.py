@@ -20,6 +20,7 @@ from app.core.auth import require_admin
 from app.core.database import get_db
 from app.models.nace import (
     NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation, NaceChapitre,
+    NaceContinent,
 )
 
 router = APIRouter(prefix="/nace", tags=["nace"])
@@ -49,19 +50,21 @@ ALIAS = {
 
 
 # Familles extraites des annexes : motif de fichier CSV → modèle et nom de
-# la colonne portant la modalité (produit, groupe ou chapitre).
+# la colonne portant la modalité (produit, groupe, chapitre ou continent).
 FAMILLES = [
     ("principaux_produits", NacePrincipalProduit, "produit"),
     ("produits_regroupes", NaceProduitRegroupe, "produit"),
     ("groupes_utilisation", NaceGroupeUtilisation, "groupe"),
     ("chapitres", NaceChapitre, "chapitre"),
+    ("continents", NaceContinent, "continent"),
 ]
 
 
 # ── POST /nace/importer ───────────────────────────────────────────────────────
-# Charge (upsert) les CSV vérifiés du dépôt : les quatre familles
+# Charge (upsert) les CSV vérifiés du dépôt : les cinq familles
 # (principaux produits, produits regroupés, groupes d'utilisation,
-# chapitres SH), toutes éditions présentes dans backend/scripts/nace.
+# chapitres SH, continents), toutes éditions présentes dans
+# backend/scripts/nace.
 @router.post("/importer")
 async def importer_nace(
     db: AsyncSession = Depends(get_db),
@@ -176,3 +179,15 @@ async def groupes_utilisation(db: AsyncSession = Depends(get_db)):
 async def chapitres(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(NaceChapitre))
     return _resoudre(res.scalars().all(), {}, col="chapitre")
+
+
+# ── GET /nace/continents ──────────────────────────────────────────────────────
+# Europe, Afrique, Amérique, Asie, Océanie et Divers — exhaustifs (leur
+# somme est le total du commerce extérieur). Les découpages qui varient
+# d'une édition à l'autre (Australie séparée de l'Océanie, par exemple)
+# sont déjà ramenés au libellé canonique à l'extraction ; la résolution
+# somme les lignes qui le partagent.
+@router.get("/continents")
+async def continents(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NaceContinent))
+    return _resoudre(res.scalars().all(), {}, col="continent")
