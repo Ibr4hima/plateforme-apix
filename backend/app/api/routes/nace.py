@@ -79,6 +79,21 @@ REGIONS_ORDRE = [
     "Océanie", "Divers",
 ]
 
+# Rattachement des 12 régions aux 6 continents de la famille nace_continents,
+# ce qui permet à la lecture de naviguer d'une granularité à l'autre
+# (continent → région → pays). « Divers » — le groupe résiduel du rapport,
+# nommé « NCA » côté import — est un continent à lui seul dans cette
+# nomenclature de l'ANSD. Même table que scripts/nace/verifier_pays.py, qui
+# s'en sert pour le contrôle inter-familles.
+REGION_CONTINENT = {
+    "Union européenne": "Europe", "Autres pays d'Europe": "Europe",
+    "Afrique centrale": "Afrique", "Afrique du Nord": "Afrique",
+    "Afrique occidentale": "Afrique", "Afrique orientale et du Sud": "Afrique",
+    "Amérique du Nord": "Amérique", "Amérique centrale et du Sud": "Amérique",
+    "Asie occidentale": "Asie", "Autres pays d'Asie": "Asie",
+    "Océanie": "Océanie", "Divers": "Divers",
+}
+
 # Partenaires hors référentiel, regroupés à la lecture sous ce libellé —
 # au sein de LEUR région, ce qui préserve l'égalité entre la somme des
 # pays et le sous-total imprimé de la région.
@@ -309,6 +324,7 @@ async def regions(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(NaceRegion))
     reponse = _resoudre(res.scalars().all(), {}, col="region")
     reponse["ordre"] = REGIONS_ORDRE
+    reponse["continents"] = REGION_CONTINENT
     return reponse
 
 
@@ -370,5 +386,6 @@ async def pays(db: AsyncSession = Depends(get_db)):
         "annees": sorted({annee for (_, annee) in retenue}),
         "editions": sorted({r.edition for r, _, _ in lignes}),
         "ordre": REGIONS_ORDRE,
+        "continents": REGION_CONTINENT,
         "donnees": donnees,
     }
