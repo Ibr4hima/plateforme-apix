@@ -10,7 +10,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, FileText, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -877,10 +877,18 @@ function CommerceExterieurPanel() {
 
   return (
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
-      {/* En-tête : titre + curseur d'année, qui pilote toutes les sections */}
+      {/* En-tête : titre, curseur des KPIs, et accès au rapport d'analyse —
+          même source, mais mis en forme pour être lu et imprimé d'un bloc. */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 20 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
         <CurseurAnneeNace min={annees[0]} max={dernier} value={an} onChange={setAnKpi} />
+        <a href={`/statistiques/rapport-commerce?annee=${an}`}
+          title="Rapport d'analyse complet de l'année affichée, prêt à imprimer"
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 16px",
+            borderRadius: 999, border: "1px solid rgba(0,79,145,0.22)", background: "rgba(0,79,145,0.06)",
+            color: "#004f91", textDecoration: "none", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+          <FileText size={14} /> Rapport d&apos;analyse
+        </a>
       </div>
 
       {/* KPIs de l'année */}

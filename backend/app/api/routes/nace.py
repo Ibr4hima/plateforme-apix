@@ -558,6 +558,9 @@ async def rapport(annee: int | None = None, db: AsyncSession = Depends(get_db)):
             if s == sens and a == an - 1 and nom in agg:
                 agg[nom]["precedent"] += v["valeur"]
         base = total(sens, an) if continent is None else sum(x["valeur"] for x in agg.values())
+        # Un partenaire sans échange sur l'année n'est pas un partenaire : sans
+        # ce filtre, l'Océanie alignait trois lignes à « 0 Md · 0 % ».
+        agg = {k: v for k, v in agg.items() if v["valeur"] > 0}
         for x in agg.values():
             x["part"] = (x["valeur"] / base * 100) if base else None
             p = x.pop("precedent")

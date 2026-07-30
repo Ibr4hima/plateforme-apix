@@ -168,7 +168,15 @@ export function FichePaysPickerGlobal() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [monte, setMonte] = useState(false);
   useEffect(() => { setMonte(true); }, []);
-  useEffect(() => { fetch(`${API}/statistiques/pays`).then(r => r.json()).then(setPays).catch(() => {}); }, []);
+  // Le type de la réponse est vérifié : ce composant vit dans le layout
+  // racine, si bien qu'un corps JSON valide mais non conforme — l'objet
+  // { detail } d'une erreur FastAPI, par exemple — ferait tomber toute
+  // l'application sur le pays.find qui suit, là où le catch ne voit rien.
+  useEffect(() => {
+    fetch(`${API}/statistiques/pays`).then(r => r.json())
+      .then(d => setPays(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
   // Recherche globale ⌘K : ouvre directement la fiche Sénégal × pays choisi
   useEffect(() => {
