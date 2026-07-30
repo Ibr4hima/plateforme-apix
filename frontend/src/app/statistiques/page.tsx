@@ -198,6 +198,7 @@ type LigneClassement = {
   v: number | null; p: number | null;              // sens affiché
   vAutre: number | null; pAutre: number | null;    // sens opposé, pour la balance
   vPrec: number | null; pPrec: number | null;      // année n-1, pour la variation
+  anV?: number | null; anP?: number | null;        // année de l'extremum, en Min/Max
   libelles?: number;                               // > 1 : ligne agrégée
   ouvrable?: boolean;                              // descend d'un niveau au clic
 };
@@ -208,23 +209,85 @@ type LigneClassement = {
 const sommeNace = (a: number | null | undefined, b: number | null | undefined) =>
   a == null && b == null ? null : (a ?? 0) + (b ?? 0);
 
-// Indexe une famille par modalité pour une année donnée, en sommant les
-// doublons éventuels (deux libellés du rapport visant la même modalité).
+// ── Période d'analyse ────────────────────────────────────────────────────────
+// Chaque section se lit soit sur une année, soit sur un intervalle résumé par
+// un calcul. Les deux modes tiennent dans un seul objet, pour qu'une section
+// n'ait qu'un état de période et une seule commande.
+type Calcul = "annee" | "somme" | "moyenne" | "min" | "max";
+type Periode = { debut: number; fin: number; calcul: Calcul };
+const CALCULS: { v: Calcul; l: string }[] = [
+  { v: "annee", l: "Année" }, { v: "somme", l: "Somme" },
+  { v: "moyenne", l: "Moyenne" }, { v: "min", l: "Min" }, { v: "max", l: "Max" },
+];
+// Deux propriétés commandent l'affichage, et elles ne se recouvrent pas :
+//  - `estIntervalle` : la lecture porte sur plusieurs années, donc la variation
+//    « vs n-1 » n'a plus de terme de comparaison ;
+//  - `estExtremum`   : la valeur affichée est celle d'UNE année choisie dans
+//    l'intervalle. Part, cumul et balance deviennent alors trompeurs — la somme
+//    des minima n'est le minimum de rien, et le minimum des exportations et
+//    celui des importations peuvent tomber sur deux années différentes, si bien
+//    que leur différence ne serait pas une balance. On les masque, et on montre
+//    à la place l'année de l'extremum.
+const estIntervalle = (p: Periode) => p.calcul !== "annee";
+const estExtremum = (p: Periode) => p.calcul === "min" || p.calcul === "max";
+const anneeSeule = (a: number): Periode => ({ debut: a, fin: a, calcul: "annee" });
+
+// Résume une série annuelle selon le calcul de la période. Renvoie aussi
+// l'année retenue pour un extremum, seule information qui ne se lit pas dans
+// la valeur elle-même.
+//
+// La moyenne divise par le nombre d'années COUVERTES par l'intervalle, et non
+// par le nombre d'années où la modalité a échangé : le rapport imprime « - »
+// pour une absence d'échange, ce qui est un zéro réel et non une donnée
+// manquante. Un partenaire présent deux années sur dix a bien une moyenne
+// annuelle faible sur la décennie.
+//
+// Le minimum et le maximum, eux, ne portent que sur les années renseignées :
+// un « minimum de 0 » sur une année sans échange ne dirait rien, et l'année
+// affichée à côté serait arbitraire.
+function reduirePeriode(serie: Map<number, number | null>, per: Periode, nbAnnees: number,
+): { v: number | null; an: number | null } {
+  if (!estIntervalle(per)) return { v: serie.get(per.fin) ?? null, an: null };
+  let total: number | null = null, ext: number | null = null, anExt: number | null = null;
+  for (const [annee, v] of serie) {
+    if (v == null || annee < per.debut || annee > per.fin) continue;
+    total = (total ?? 0) + v;
+    if (ext == null || (per.calcul === "min" ? v < ext : v > ext)) { ext = v; anExt = annee; }
+  }
+  if (per.calcul === "min" || per.calcul === "max") return { v: ext, an: anExt };
+  if (total == null) return { v: null, an: null };
+  return { v: per.calcul === "moyenne" && nbAnnees > 0 ? total / nbAnnees : total, an: null };
+}
+
+// Indexe une famille par modalité sur la période, en sommant d'abord les
+// doublons de chaque année (deux libellés du rapport visant la même modalité)
+// avant d'appliquer le calcul.
+type AgrNace = { v: number | null; p: number | null; anV: number | null; anP: number | null };
 function indexerNace<T extends { annee: number; valeur: number | null; poids: number | null }>(
-  lignes: T[], cle: (r: T) => string, annee: number,
-): Map<string, { v: number | null; p: number | null }> {
-  const m = new Map<string, { v: number | null; p: number | null }>();
+  lignes: T[], cle: (r: T) => string, per: Periode,
+): Map<string, AgrNace> {
+  const series = new Map<string, { v: Map<number, number | null>; p: Map<number, number | null> }>();
+  const annees = new Set<number>();
   for (const r of lignes) {
-    if (r.annee !== annee) continue;
-    const k = cle(r), a = m.get(k);
-    m.set(k, { v: sommeNace(a?.v, r.valeur), p: sommeNace(a?.p, r.poids) });
+    if (r.annee < per.debut || r.annee > per.fin) continue;
+    annees.add(r.annee);
+    const k = cle(r);
+    let s = series.get(k);
+    if (!s) { s = { v: new Map(), p: new Map() }; series.set(k, s); }
+    s.v.set(r.annee, sommeNace(s.v.get(r.annee), r.valeur));
+    s.p.set(r.annee, sommeNace(s.p.get(r.annee), r.poids));
+  }
+  const m = new Map<string, AgrNace>();
+  for (const [k, s] of series) {
+    const v = reduirePeriode(s.v, per, annees.size), p = reduirePeriode(s.p, per, annees.size);
+    m.set(k, { v: v.v, p: p.v, anV: v.an, anP: p.an });
   }
   return m;
 }
 
 function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drapeaux, top,
   entete, nomPortee, totalLibelle, onOuvrir, montrerParent, libelleParent, balance = true,
-  granularite, uniteBascule }: {
+  granularite, uniteBascule, periode, totalPeriode }: {
   lignes: LigneClassement[];
   // Libellé de la ligne fourre-tout à épingler hors classement, s'il y en a
   // une : « Autres pays » pour les zones, « Autres produits » pour les
@@ -250,6 +313,11 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // section : ce sont des réglages de lecture du tableau, pas de la section,
   // qui ne garde que le sens des échanges et l'année.
   granularite?: React.ReactNode; uniteBascule?: React.ReactNode;
+  periode: Periode;
+  // Total de la portée en Min/Max : il ne peut pas se déduire des lignes, la
+  // somme des minima n'étant pas le minimum de la somme. L'appelant le calcule
+  // donc de la même façon que les lignes, mais sur la portée entière.
+  totalPeriode?: { v: number | null; p: number | null; anV: number | null; anP: number | null };
 }) {
   const [q, setQ] = useState("");
   const [tout, setTout] = useState(false);
@@ -262,12 +330,23 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   const mv = (l: LigneClassement) => (mesure === "valeur" ? l.v : l.p) ?? 0;
+  const anDe = (l: LigneClassement) => (mesure === "valeur" ? l.anV : l.anP) ?? null;
+  // Un extremum est la valeur d'une année : part, cumul et balance en
+  // deviendraient faux (cf. `estExtremum`), la variation n'a plus de terme de
+  // comparaison dès qu'on lit plusieurs années.
+  const extremum = estExtremum(periode);
+  const parts = !extremum;
+  const variation = !estIntervalle(periode);
+  const colBalance = balance && !extremum;
 
   const rangees = lignes.filter(l => l.nom !== agregeSous).sort((x, y) => mv(y) - mv(x));
   const agregee = agregeSous ? lignes.find(l => l.nom === agregeSous) ?? null : null;
   // Le total est celui de la portée affichée, pour que « Part » et « Cumul »
   // restent interprétables après une descente ou un changement de famille.
-  const total = lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
+  const totalMes = totalPeriode ? (mesure === "valeur" ? totalPeriode.v : totalPeriode.p) : null;
+  const total = extremum && totalMes != null ? totalMes
+    : lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
+  const anTotal = totalPeriode ? (mesure === "valeur" ? totalPeriode.anV : totalPeriode.anP) : null;
   const max = Math.max(1e-9, ...rangees.map(mv));
 
   // La balance commerciale est TOUJOURS exportations − importations, quel que
@@ -329,14 +408,21 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
           {ouvrable && <ChevronRight size={12} style={{ color: "#C5BFBB", flexShrink: 0 }} />}
         </span>
         <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
-        <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: epingle ? "#9aa5b4" : "#4a5568", textAlign: "right", flexShrink: 0 }}>
-          {total > 0 ? `${(Math.max(0, mv(l)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
-        </span>
-        <span style={{ width: 40, fontSize: 10, fontWeight: 650, color: "#C5BFBB", textAlign: "right", flexShrink: 0 }}>
-          {rang != null && total > 0 ? `${((cumulDe.get(l.cle) ?? 0) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}
-        </span>
-        <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
-        {balance && (
+        {extremum && (
+          <span className="ds-donnee" style={{ width: 46, fontSize: 10.5, fontWeight: 700, color: epingle ? "#C5BFBB" : "#4a5568", textAlign: "right", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+            {anDe(l) ?? "—"}
+          </span>
+        )}
+        {parts && <>
+          <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: epingle ? "#9aa5b4" : "#4a5568", textAlign: "right", flexShrink: 0 }}>
+            {total > 0 ? `${(Math.max(0, mv(l)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+          </span>
+          <span style={{ width: 40, fontSize: 10, fontWeight: 650, color: "#C5BFBB", textAlign: "right", flexShrink: 0 }}>
+            {rang != null && total > 0 ? `${((cumulDe.get(l.cle) ?? 0) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}
+          </span>
+        </>}
+        {variation && <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>}
+        {colBalance && (
           <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
             color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
             {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
@@ -379,10 +465,16 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
         {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
         <span style={{ ...EN_TETE, flex: 1 }}>{colonne}</span>
         <span style={{ ...EN_TETE, width: 88, textAlign: "right", flexShrink: 0 }}>{sens === "export" ? "Export" : "Import"}</span>
-        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
-        <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
-        <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>
-        {balance && (
+        {extremum && (
+          <span title={`Année où ${periode.calcul === "min" ? "le minimum" : "le maximum"} est atteint, entre ${periode.debut} et ${periode.fin}`}
+            style={{ ...EN_TETE, width: 46, textAlign: "right", flexShrink: 0 }}>Année</span>
+        )}
+        {parts && <>
+          <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
+          <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
+        </>}
+        {variation && <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>}
+        {colBalance && (
           <span title="Exportations − importations, quel que soit le sens affiché"
             style={{ ...EN_TETE, width: 92, textAlign: "right", flexShrink: 0 }}>Balance</span>
         )}
@@ -415,8 +507,14 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
             {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
             <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>{totalLibelle}</span>
             <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
-            <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /><span style={{ width: 58, flexShrink: 0 }} />
-            {balance && (() => {
+            {extremum && (
+              <span className="ds-donnee" style={{ width: 46, fontSize: 10.5, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+                {anTotal ?? "—"}
+              </span>
+            )}
+            {parts && <><span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /></>}
+            {variation && <span style={{ width: 58, flexShrink: 0 }} />}
+            {colBalance && (() => {
               const bal = lignes.reduce((s, l) => s + balanceDe(l), 0);
               return (
                 <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
@@ -475,6 +573,73 @@ function CurseurAnneeNace({ min, max, value, onChange, largeur = 210 }: {
         onChange={e => onChange(Number(e.target.value))}
         className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
       <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>{value}</span>
+    </div>
+  );
+}
+
+// Curseur de période : une poignée en lecture annuelle, deux dès qu'un calcul
+// est choisi. Le même contrôle sert les deux modes pour que la bascule de
+// calcul ne fasse pas apparaître un second réglage à côté du premier.
+//
+// Les deux poignées sont deux `input[type=range]` superposés : la piste ne
+// reçoit pas le pointeur, seules les poignées le captent, faute de quoi celle
+// du dessus intercepterait tous les clics de l'autre. La poignée de début est
+// au-dessus, parce que c'est elle qu'on saisit pour ouvrir un intervalle depuis
+// la dernière année, là où les deux se superposent.
+function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
+  min: number; max: number; periode: Periode; onChange: (p: Periode) => void; largeur?: number;
+}) {
+  if (!(max > min)) return null;
+  const plage = estIntervalle(periode);
+  const debut = Math.max(min, Math.min(periode.debut, periode.fin));
+  const fin = Math.min(max, Math.max(periode.debut, periode.fin));
+  const pos = (a: number) => ((a - min) / (max - min)) * 100;
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
+      <style>{`
+        .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
+          background: rgba(0,79,145,0.18); outline: none; cursor: pointer; }
+        .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
+          border-radius: 50%; background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
+        .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
+          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(0,79,145,0.18); }
+        .nace-plage { position: relative; height: 16px; }
+        .nace-plage .nace-piste { position: absolute; top: 6px; left: 0; right: 0; height: 4px;
+          border-radius: 999px; background: rgba(0,79,145,0.18); }
+        .nace-plage .nace-remplie { position: absolute; top: 6px; height: 4px; border-radius: 999px; background: #004f91; opacity: 0.55; }
+        .nace-plage input { position: absolute; top: 0; left: 0; width: 100%; height: 16px; margin: 0;
+          -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+        .nace-plage input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto;
+          width: 15px; height: 15px; border-radius: 50%; background: #004f91; border: 2.5px solid #fff;
+          box-shadow: var(--ombre-1); cursor: grab; }
+        .nace-plage input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
+        .nace-plage input::-moz-range-thumb { pointer-events: auto; width: 15px; height: 15px; border-radius: 50%;
+          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        .nace-plage input::-moz-range-track { height: 4px; background: transparent; }
+      `}</style>
+      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{min}</span>
+      {plage ? (
+        <div className="nace-plage" style={{ width: largeur }}>
+          <div className="nace-piste" />
+          <div className="nace-remplie" style={{ left: `${pos(debut)}%`, width: `${Math.max(0, pos(fin) - pos(debut))}%` }} />
+          {/* Les poignées ne se croisent pas : chacune borne l'autre. */}
+          <input type="range" min={min} max={max} step={1} value={fin} style={{ zIndex: 1 }}
+            onChange={e => onChange({ ...periode, fin: Math.max(debut, Number(e.target.value)) })}
+            aria-label="Dernière année de l'intervalle" />
+          <input type="range" min={min} max={max} step={1} value={debut} style={{ zIndex: 2 }}
+            onChange={e => onChange({ ...periode, debut: Math.min(fin, Number(e.target.value)) })}
+            aria-label="Première année de l'intervalle" />
+        </div>
+      ) : (
+        <input type="range" min={min} max={max} step={1} value={fin}
+          onChange={e => onChange({ ...periode, debut: Number(e.target.value), fin: Number(e.target.value) })}
+          className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
+      )}
+      <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>
+        {plage && fin > debut ? `${debut}–${fin}` : fin}
+      </span>
     </div>
   );
 }
@@ -576,8 +741,8 @@ function indexerZone<T extends { annee: number; valeur: number | null; poids: nu
 // sur le même état.
 type ZonePortee = { niveau: ZoneNiveau; cont: string | null; reg: string | null };
 
-function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure, setMesure }: {
-  an: number; cont: NaceDataCont | null; reg: NaceDataReg | null; pys: NaceDataPays | null;
+function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, mesure, setMesure }: {
+  periode: Periode; cont: NaceDataCont | null; reg: NaceDataReg | null; pys: NaceDataPays | null;
   portee: ZonePortee; setPortee: (p: ZonePortee) => void;
   sens: ZoneSens; mesure: NaceMesure; setMesure: (m: NaceMesure) => void;
 }) {
@@ -587,40 +752,47 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
   const badgeSens = sens === "export" ? badge_bleu : badge_orange;
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
 
-  const lignes: LigneClassement[] = useMemo(() => {
+  const { lignes, totalPeriode } = useMemo(() => {
+    const vide = { lignes: [] as LigneClassement[], totalPeriode: undefined };
     // Un triplet d'index par niveau : sens affiché, sens opposé (balance) et
-    // année précédente (variation).
+    // année précédente (variation), cette dernière n'ayant de terme de
+    // comparaison qu'en lecture d'une seule année.
     const trois = <T extends NaceLigneCle>(src: { export: T[]; import: T[] }, k: (r: T) => string,
                                            garde: (r: T) => boolean = () => true) => ({
-      a: indexerNace(src[sens].filter(garde), k, an),
-      b: indexerNace(src[autre].filter(garde), k, an),
-      pr: indexerNace(src[sens].filter(garde), k, an - 1),
+      a: indexerNace(src[sens].filter(garde), k, periode),
+      b: indexerNace(src[autre].filter(garde), k, periode),
+      pr: estIntervalle(periode) ? new Map<string, AgrNace>()
+        : indexerNace(src[sens].filter(garde), k, anneeSeule(periode.fin - 1)),
+      // Total de la portée agrégé comme les lignes : en Min/Max, leur somme
+      // ne le donnerait pas.
+      t: indexerNace(src[sens].filter(garde), () => "∑", periode).get("∑"),
     });
     const monter = (cles: string[], i: ReturnType<typeof trois>,
                     extra: (nom: string) => Partial<LigneClassement>) =>
       cles.map(nom => ({
         cle: nom, nom,
         v: i.a.get(nom)?.v ?? null, p: i.a.get(nom)?.p ?? null,
+        anV: i.a.get(nom)?.anV ?? null, anP: i.a.get(nom)?.anP ?? null,
         vAutre: i.b.get(nom)?.v ?? null, pAutre: i.b.get(nom)?.p ?? null,
         vPrec: i.pr.get(nom)?.v ?? null, pPrec: i.pr.get(nom)?.p ?? null,
         ...extra(nom),
       }));
 
     if (niveau === "continent") {
-      if (!cont?.disponible) return [];
+      if (!cont?.disponible) return vide;
       const i = trois(cont.donnees, r => r.continent);
       // « Divers » n'a pas de région : le clic n'y mènerait à rien.
-      return monter([...i.a.keys()], i, nom => ({
+      return { totalPeriode: i.t, lignes: monter([...i.a.keys()], i, nom => ({
         ouvrable: Object.values(ratt).includes(nom) && nom !== "Divers",
-      }));
+      })) };
     }
     if (niveau === "region") {
-      if (!reg?.disponible) return [];
+      if (!reg?.disponible) return vide;
       const i = trois(reg.donnees, r => r.region);
       const cles = [...i.a.keys()].filter(n => !zoomCont || ratt[n] === zoomCont);
-      return monter(cles, i, nom => ({ parent: ratt[nom] ?? null, ouvrable: true }));
+      return { totalPeriode: i.t, lignes: monter(cles, i, nom => ({ parent: ratt[nom] ?? null, ouvrable: true })) };
     }
-    if (!pys?.disponible) return [];
+    if (!pys?.disponible) return vide;
     // Au niveau pays, toutes les lignes « Autres pays » de la portée sont
     // fondues en une seule : ce n'est pas un pays, il n'a donc pas de rang.
     const k = (r: NacePaysLigne) => (r.pays === AUTRES_PAYS ? AUTRES_PAYS : `${r.region}·${r.pays}`);
@@ -628,23 +800,28 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
       (!zoomReg || r.region === zoomReg) && (!zoomCont || ratt[r.region] === zoomCont);
     const i = trois(pys.donnees, k, garde);
     // Métadonnées (nom affiché, drapeau, région) et nombre de libellés fondus.
+    // Le décompte est celui d'une année, pas de la période : sommer sur dix ans
+    // multiplierait par dix le nombre de territoires regroupés sous « Autres
+    // pays ». On retient l'année la plus fournie de l'intervalle.
     const meta = new Map<string, NacePaysLigne>();
-    const fondus = new Map<string, number>();
+    const fondus = new Map<string, Map<number, number>>();
     for (const r of pys.donnees[sens]) {
-      if (r.annee !== an || !garde(r)) continue;
+      if (r.annee < periode.debut || r.annee > periode.fin || !garde(r)) continue;
       const key = k(r);
       if (!meta.has(key)) meta.set(key, r);
-      fondus.set(key, (fondus.get(key) ?? 0) + r.libelles);
+      let parAn = fondus.get(key);
+      if (!parAn) { parAn = new Map(); fondus.set(key, parAn); }
+      parAn.set(r.annee, (parAn.get(r.annee) ?? 0) + r.libelles);
     }
-    return monter([...i.a.keys()], i, key => {
+    return { totalPeriode: i.t, lignes: monter([...i.a.keys()], i, key => {
       const m = meta.get(key);
       return {
         nom: m?.pays ?? key, iso2: m?.code_iso2 ?? null,
         parent: key === AUTRES_PAYS ? null : m?.region ?? null,
-        libelles: fondus.get(key) ?? 1,
+        libelles: Math.max(1, ...(fondus.get(key)?.values() ?? [])),
       };
-    });
-  }, [niveau, sens, autre, an, cont, reg, pys, ratt, zoomCont, zoomReg]);
+    }) };
+  }, [niveau, sens, autre, periode, cont, reg, pys, ratt, zoomCont, zoomReg]);
 
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
   // Fil d'Ariane. « Océanie » et « Divers » nomment à la fois un continent et
@@ -662,6 +839,7 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
   return (
     <TableauClassementNace
       lignes={lignes} agregeSous={AUTRES_PAYS} sens={sens} mesure={mesure}
+      periode={periode} totalPeriode={totalPeriode}
       colonne={niveau === "pays" ? "Partenaire" : niveau === "region" ? "Région" : "Continent"}
       drapeaux={niveau === "pays"} top={niveau === "pays" ? 15 : 20}
       nomPortee={nomPortee} totalLibelle={nomPortee === "Monde" ? "Ensemble" : nomPortee}
@@ -679,7 +857,7 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
           })} />
       }
       uniteBascule={
-        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
           valeur={mesure} onChange={setMesure} accent={couleur} />
       }
       onOuvrir={l => niveau === "continent"
@@ -714,41 +892,60 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
 // Ces blocs complètent le tableau navigable de la zone géographique : celui-ci
 // répond à « comment se répartit tel niveau », ceux-ci à « qui sont les
 // premiers partenaires », mondialement puis dans chaque continent.
-type Partenaire = { nom: string; iso2: string | null; region: string; valeur: number; part: number | null };
+type Partenaire = { nom: string; iso2: string | null; region: string; valeur: number;
+                    part: number | null; annee: number | null };
 
 // `garder` restreint la portée — un continent, un groupement économique, ou
 // rien pour le monde entier. La part se rapporte alors à cette portée et non
 // au total mondial : c'est la lecture utile quand on regarde une zone.
-function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number, top: number,
-                            garder?: (r: NacePaysLigne) => boolean,
-): { lignes: Partenaire[]; total: number } {
-  if (!pys?.disponible) return { lignes: [], total: 0 };
-  const agg = new Map<string, Partenaire>();
+function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, per: Periode, top: number,
+                            mesure: NaceMesure = "valeur", garder?: (r: NacePaysLigne) => boolean,
+): { lignes: Partenaire[]; total: number; anTotal: number | null } {
+  const mes = (r: NacePaysLigne) => (mesure === "valeur" ? r.valeur : r.poids);
+  if (!pys?.disponible) return { lignes: [], total: 0, anTotal: null };
+  // Série annuelle par partenaire, puis réduction selon le calcul : sur un
+  // intervalle, le minimum d'un partenaire est celui de ses valeurs annuelles,
+  // pas celui d'une somme déjà écrasée.
+  const series = new Map<string, { meta: NacePaysLigne; an: Map<number, number | null> }>();
   // Le dénominateur inclut « Autres pays », que le classement exclut : la part
   // est celle du total de la portée, comme dans le tableau ci-dessus. La
   // rapporter aux seuls partenaires nommés la gonflerait — le Mali passerait
   // de 20,5 à 21,9 % des exportations, et les deux blocs se contrediraient.
-  let total = 0;
+  const serieTotal = new Map<number, number | null>();
+  const annees = new Set<number>();
   for (const r of pys.donnees[sens]) {
-    if (r.annee !== an) continue;
+    if (r.annee < per.debut || r.annee > per.fin) continue;
     if (garder && !garder(r)) continue;
-    total += r.valeur ?? 0;
+    annees.add(r.annee);
+    serieTotal.set(r.annee, sommeNace(serieTotal.get(r.annee), mes(r)));
     if (r.pays === AUTRES_PAYS) continue;
-    const e = agg.get(r.pays) ?? { nom: r.pays, iso2: r.code_iso2, region: r.region, valeur: 0, part: null };
-    e.valeur += r.valeur ?? 0;
-    agg.set(r.pays, e);
+    let s = series.get(r.pays);
+    if (!s) { s = { meta: r, an: new Map() }; series.set(r.pays, s); }
+    s.an.set(r.annee, sommeNace(s.an.get(r.annee), mes(r)));
   }
-  // Un partenaire sans échange sur l'année n'en est pas un : sans ce filtre,
+  const t = reduirePeriode(serieTotal, per, annees.size);
+  const total = t.v ?? 0;
+  // Un partenaire sans échange sur la période n'en est pas un : sans ce filtre,
   // l'Océanie alignerait des lignes à zéro.
-  const lignes = [...agg.values()].filter(l => l.valeur > 0)
-    .sort((a, b) => b.valeur - a.valeur).slice(0, top)
-    .map(l => ({ ...l, part: total ? l.valeur / total * 100 : null }));
-  return { lignes, total };
+  const lignes = [...series.values()]
+    .map(s => ({ s, r: reduirePeriode(s.an, per, annees.size) }))
+    .filter(x => (x.r.v ?? 0) > 0)
+    .sort((a, b) => (b.r.v ?? 0) - (a.r.v ?? 0)).slice(0, top)
+    .map(({ s, r }) => ({
+      nom: s.meta.pays, iso2: s.meta.code_iso2, region: s.meta.region,
+      valeur: r.v ?? 0, annee: r.an,
+      // En Min/Max la part serait celle d'un total qui n'est pas la somme des
+      // lignes affichées — les extrema ne tombent pas tous la même année.
+      part: estExtremum(per) || !total ? null : (r.v ?? 0) / total * 100,
+    }));
+  return { lignes, total, anTotal: t.an };
 }
 
-function TopPartenaires({ titre, lignes, total, couleur, montrerRegion }: {
-  titre: string; lignes: Partenaire[]; total: number; couleur: string; montrerRegion?: boolean;
+function TopPartenaires({ titre, lignes, total, anTotal, couleur, montrerRegion, extremum, mesure = "valeur" }: {
+  titre: string; lignes: Partenaire[]; total: number; anTotal?: number | null;
+  couleur: string; montrerRegion?: boolean; extremum?: boolean; mesure?: NaceMesure;
 }) {
+  const fmt = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   // Le maximum est celui de la colonne : les barres comparent les partenaires
   // entre eux dans un sens donné, pas les deux sens l'un contre l'autre.
   const max = Math.max(1, ...lignes.map(l => l.valeur));
@@ -756,9 +953,13 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion }: {
     <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, margin: "0 8px 2px" }}>
         <span style={{ fontSize: 9, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em", textTransform: "uppercase" }}>{titre}</span>
-        {/* Total de la portée : c'est le dénominateur des parts affichées. */}
+        {/* Total de la portée : c'est le dénominateur des parts affichées. En
+            Min/Max il est calculé sur la portée entière, année par année — la
+            somme des extrema des lignes ne serait l'extremum de rien. */}
         <span className="ds-donnee" style={{ fontSize: 11, fontWeight: 800, color: couleur, whiteSpace: "nowrap",
-          fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(total)}</span>
+          fontVariantNumeric: "tabular-nums" }}>
+          {fmt(total)}{extremum && anTotal != null && <span style={{ color: "#9aa5b4", fontWeight: 700 }}> · {anTotal}</span>}
+        </span>
       </div>
       {lignes.length === 0
         ? <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "14px 0" }}>Aucun échange.</p>
@@ -779,9 +980,12 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion }: {
               )}
             </span>
             <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right",
-              flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(l.valeur)}</span>
-            <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
-              {l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+              flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmt(l.valeur)}</span>
+            <span className={extremum ? "ds-donnee" : undefined}
+              style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0,
+                fontVariantNumeric: extremum ? "tabular-nums" : undefined }}>
+              {extremum ? (l.annee ?? "—")
+                : l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
             </span>
             <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
               <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99,
@@ -801,28 +1005,18 @@ const CONTINENTS_ORDRE = ["Afrique", "Europe", "Asie", "Amérique", "Océanie"];
 const AVEC_CONTINENT = (c: string) => `avec l'${c}`;
 
 // ── Groupements économiques ──────────────────────────────────────────────────
-// Appartenance décrite par code ISO 3166-1 alpha-2, et non par nom : les noms
-// de ref_pays ont déjà bougé (le référentiel initial disait « Cap-Vert », une
-// migration ultérieure « Cabo Verde »), et un nom qui dérive ferait
-// silencieusement disparaître un membre du classement. Les codes, eux, sont
-// stables.
+// La composition vient du référentiel (ref_groupements / ref_pays_groupements),
+// que l'administration tient déjà et qu'emploient les autres modules : une
+// adhésion corrigée là-bas se répercute ici sans toucher au code.
 //
-// Le Sénégal figure dans les deux listes — c'est la composition réelle des
-// unions — mais il ne peut pas apparaître au classement : le pays déclarant
-// n'a pas de ligne dans ses propres échanges extérieurs.
+// Les membres sont désignés par code ISO 3166-1 alpha-2 et non par nom : les
+// noms de ref_pays ont déjà bougé (« Cap-Vert » à l'origine, « Cabo Verde »
+// depuis), et un nom qui dérive ferait disparaître un membre du classement
+// sans rien signaler.
 //
-// Composition retenue : les quinze États membres de la CEDEAO sur toute la
-// période couverte par les rapports (2015-2024). Le Burkina Faso, le Mali et
-// le Niger l'ont quittée le 29 janvier 2025, soit après la dernière année
-// publiée : les exclure fausserait la lecture de chacune des années affichées.
-const GROUPEMENTS: { code: string; nom: string; membres: string[] }[] = [
-  { code: "CEDEAO", nom: "la CEDEAO",
-    membres: ["BJ", "BF", "CV", "CI", "GM", "GH", "GN", "GW", "LR", "ML", "NE", "NG", "SN", "SL", "TG"] },
-  { code: "UEMOA", nom: "l'UEMOA",
-    membres: ["BJ", "BF", "CI", "GW", "ML", "NE", "SN", "TG"] },
-];
-const MEMBRES_GROUPEMENT: Record<string, Set<string>> =
-  Object.fromEntries(GROUPEMENTS.map(g => [g.code, new Set(g.membres)]));
+// Le Sénégal appartient aux deux unions, mais il ne peut pas apparaître au
+// classement : le pays déclarant n'a pas de ligne dans ses propres échanges.
+type Groupement = { code: string; nom_fr: string; membres: string[] };
 
 // ── Nomenclatures de produits (tableaux 8–19 et 38–41) ───────────────────────
 // Quatre lectures du même commerce, de la plus synthétique à la plus fine.
@@ -841,9 +1035,9 @@ const FAMILLES_PRODUITS: { v: NaceFamille; l: string }[] = [
 ];
 const AUTRES_PRODUITS = "Autres produits";
 
-function ProduitsNace({ an, famille, setFamille, sens, mesure, setMesure,
+function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
   principaux, gu, regroupes, chapitres }: {
-  an: number; famille: NaceFamille; setFamille: (f: NaceFamille) => void;
+  periode: Periode; famille: NaceFamille; setFamille: (f: NaceFamille) => void;
   sens: ZoneSens; mesure: NaceMesure; setMesure: (m: NaceMesure) => void;
   principaux: NaceData | null; gu: NaceDataGU | null;
   regroupes: NaceData | null; chapitres: NaceDataChap | null;
@@ -851,26 +1045,36 @@ function ProduitsNace({ an, famille, setFamille, sens, mesure, setMesure,
   const autre: ZoneSens = sens === "export" ? "import" : "export";
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
 
-  const lignes: LigneClassement[] = useMemo(() => {
+  const { lignes, totalPeriode } = useMemo(() => {
+    const vide = { lignes: [] as LigneClassement[], totalPeriode: undefined };
     const source = famille === "principaux" ? principaux
       : famille === "regroupes" ? regroupes
       : famille === "groupes" ? gu : chapitres;
-    if (!source?.disponible) return [];
+    if (!source?.disponible) return vide;
     // Chaque famille nomme sa modalité différemment ; on l'extrait par clé.
     const k = (r: Record<string, unknown>) =>
       String(r[famille === "groupes" ? "groupe" : famille === "chapitres" ? "chapitre" : "produit"]);
     const d = source.donnees as unknown as Record<ZoneSens, Record<string, unknown>[]>;
     const dd = d as unknown as Record<ZoneSens, (NaceLigneCle & Record<string, unknown>)[]>;
-    const a = indexerNace(dd[sens], k, an);
-    const b = indexerNace(dd[autre], k, an);
-    const pr = indexerNace(dd[sens], k, an - 1);
-    return [...a.keys()].map(nom => ({
-      cle: nom, nom,
-      v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
-      vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
-      vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
-    }));
-  }, [famille, sens, autre, an, principaux, gu, regroupes, chapitres]);
+    const a = indexerNace(dd[sens], k, periode);
+    const b = indexerNace(dd[autre], k, periode);
+    // La variation annuelle n'a de terme de comparaison qu'en lecture d'une
+    // seule année : sur un intervalle, la colonne est masquée.
+    const pr = estIntervalle(periode) ? new Map<string, AgrNace>()
+      : indexerNace(dd[sens], k, anneeSeule(periode.fin - 1));
+    return {
+      lignes: [...a.keys()].map(nom => ({
+        cle: nom, nom,
+        v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
+        anV: a.get(nom)?.anV ?? null, anP: a.get(nom)?.anP ?? null,
+        vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
+        vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
+      })),
+      // Total de la portée calculé comme les lignes, mais sur la nomenclature
+      // entière : en Min/Max, la somme des lignes ne le donnerait pas.
+      totalPeriode: indexerNace(dd[sens], () => "∑", periode).get("∑"),
+    };
+  }, [famille, sens, autre, periode, principaux, gu, regroupes, chapitres]);
 
   const nom = FAMILLES_PRODUITS.find(f => f.v === famille)?.l ?? "Produits";
   return (
@@ -885,10 +1089,11 @@ function ProduitsNace({ an, famille, setFamille, sens, mesure, setMesure,
       // les deux sens, donc seules elles ont une balance par ligne.
       balance={famille === "groupes" || famille === "chapitres"}
       top={famille === "chapitres" ? 15 : 20}
+      periode={periode} totalPeriode={totalPeriode}
       nomPortee={nom} totalLibelle="Ensemble"
       granularite={<SegmentNace options={FAMILLES_PRODUITS} valeur={famille} onChange={setFamille} accent={couleur} />}
       uniteBascule={
-        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
           valeur={mesure} onChange={setMesure} accent={couleur} />
       }
     />
@@ -900,20 +1105,24 @@ function CommerceExterieurPanel() {
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState(false);
   const [tick, setTick] = useState(0);
-  // Une année par section, et non une seule pour tout l'onglet : on veut
+  // Une période par section, et non une seule pour tout l'onglet : on veut
   // pouvoir tenir un millésime sur les produits pendant qu'on en parcourt un
-  // autre sur les zones. `null` = dernière année disponible.
+  // autre sur les zones. `null` = dernière année disponible, que l'on ne
+  // connaît qu'une fois les données chargées.
   const [anKpi, setAnKpi] = useState<number | null>(null);
-  const [anProd, setAnProd] = useState<number | null>(null);
-  const [anZone, setAnZone] = useState<number | null>(null);
-  const [anCont, setAnCont] = useState<number | null>(null);
+  const [perProd, setPerProd] = useState<Periode | null>(null);
+  const [perZone, setPerZone] = useState<Periode | null>(null);
+  const [perCont, setPerCont] = useState<Periode | null>(null);
   // Continent affiché en section 03 ; l'Afrique par défaut, premier partenaire
   // du Sénégal à l'export comme à l'import.
   const [contSel, setContSel] = useState("Afrique");
-  const [anGrp, setAnGrp] = useState<number | null>(null);
-  // Groupement affiché en section 04 ; la CEDEAO par défaut, la plus large des
-  // deux — l'UEMOA en est un sous-ensemble.
-  const [grpSel, setGrpSel] = useState(GROUPEMENTS[0].code);
+  const [contMesure, setContMesure] = useState<NaceMesure>("valeur");
+  const [perGrp, setPerGrp] = useState<Periode | null>(null);
+  const [grpMesure, setGrpMesure] = useState<NaceMesure>("valeur");
+  // Groupement affiché en section 04. `null` = le premier de la liste, la
+  // section n'ayant pas à présumer de ce que contient le référentiel.
+  const [grpSel, setGrpSel] = useState<string | null>(null);
+  const [groupements, setGroupements] = useState<Groupement[]>([]);
   // Bascules de la section Produits : nomenclature, sens, unité.
   const [prodFamille, setProdFamille] = useState<NaceFamille>("principaux");
   const [prodSens, setProdSens] = useState<ZoneSens>("export");
@@ -953,6 +1162,8 @@ function CommerceExterieurPanel() {
     setPysEnCours(true);
     fetch(`${API}/nace/pays`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setPys).catch(() => setPys(null)).finally(() => setPysEnCours(false));
+    fetch(`${API}/nace/groupements`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => setGroupements(Array.isArray(d) ? d : [])).catch(() => setGroupements([]));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -1003,13 +1214,13 @@ function CommerceExterieurPanel() {
     const pe = premier("export"), pi = premier("import");
     if (pe) m.push(`Le premier poste d'exportation est « ${pe.produit.toLowerCase()} », ${pct(exp ? (pe.valeur ?? 0) / exp * 100 : null)} des ventes à l'étranger.`);
     if (pi) m.push(`Le premier poste d'importation est « ${pi.produit.toLowerCase()} », ${pct(imp ? (pi.valeur ?? 0) / imp * 100 : null)} des achats.`);
-    const ce = classerPartenaires(pys, "export", an, 1).lignes[0];
-    const ci = classerPartenaires(pys, "import", an, 1).lignes[0];
+    const ce = classerPartenaires(pys, "export", anneeSeule(an), 1).lignes[0];
+    const ci = classerPartenaires(pys, "import", anneeSeule(an), 1).lignes[0];
     // Tournures sans article : il dépendrait du nom du pays.
     if (ce) m.push(`Premier client du Sénégal : ${ce.nom}, ${pct(ce.part)} des exportations.`);
     if (ci) m.push(`Premier fournisseur : ${ci.nom}, ${pct(ci.part)} des importations.`);
     // Concentration : combien de clients absorbent la moitié des ventes.
-    const tous = classerPartenaires(pys, "export", an, 999).lignes;
+    const tous = classerPartenaires(pys, "export", anneeSeule(an), 999).lignes;
     let c = 0, n = 0;
     for (const x of tous) { c += x.part ?? 0; n++; if (c >= 50) break; }
     if (c >= 50) m.push(`Les exportations sont concentrées : ${n} client${n > 1 ? "s" : ""} en absorbe${n > 1 ? "nt" : ""} la moitié.`);
@@ -1028,10 +1239,24 @@ function CommerceExterieurPanel() {
 
   const expTot = totalDe("export", an), impTot = totalDe("import", an);
   const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
-  // Curseur de section : mêmes bornes que celui des KPIs, état indépendant.
-  const curseur = (valeur: number | null, poser: (a: number) => void) => (
-    <CurseurAnneeNace min={annees[0]} max={dernier} value={valeur ?? dernier} onChange={poser} largeur={150} />
-  );
+  // Période d'une section : par défaut la dernière année seule, comme avant.
+  const per = (p: Periode | null): Periode => p ?? anneeSeule(dernier);
+  // Commandes de période d'une section : le calcul, puis le curseur. Choisir un
+  // calcul ouvre l'intervalle sur toute la période couverte — c'est le point de
+  // départ naturel d'une analyse pluriannuelle, que le curseur resserre ensuite.
+  // Revenir à « Par année » retient la dernière année de l'intervalle.
+  const commandePeriode = (p: Periode | null, poser: (q: Periode) => void) => {
+    const v = per(p);
+    return (
+      <>
+        <SegmentNace options={CALCULS} valeur={v.calcul} onChange={c => poser(
+          c === "annee" ? anneeSeule(v.fin)
+            : estIntervalle(v) ? { ...v, calcul: c }
+            : { debut: annees[0], fin: dernier, calcul: c })} />
+        <CurseurPeriodeNace min={annees[0]} max={dernier} periode={v} onChange={poser} largeur={150} />
+      </>
+    );
+  };
   const varDe = (v: number | null, prec: number | null) =>
     v != null && prec != null && prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
   const balance = expTot != null && impTot != null ? expTot - impTot : null;
@@ -1108,7 +1333,7 @@ function CommerceExterieurPanel() {
           quatre lectures indépendantes de l'ANSD — d'où une simple bascule,
           là où les zones géographiques se descendent au clic. */}
       {(() => {
-        const a = anProd ?? dernier;
+        const p = per(perProd);
         const accent = prodSens === "export" ? NACE_BLEU : NACE_ORANGE;
         return (
           <>
@@ -1116,10 +1341,10 @@ function CommerceExterieurPanel() {
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
                   valeur={prodSens} onChange={setProdSens} accent={accent} />
-                {curseur(anProd, setAnProd)}
+                {commandePeriode(perProd, setPerProd)}
               </div>
             } />
-            <ProduitsNace an={a} famille={prodFamille} setFamille={setProdFamille}
+            <ProduitsNace periode={p} famille={prodFamille} setFamille={setProdFamille}
               sens={prodSens} mesure={prodMesure} setMesure={setProdMesure}
               principaux={data} gu={gu} regroupes={reg} chapitres={chap} />
           </>
@@ -1130,7 +1355,7 @@ function CommerceExterieurPanel() {
           (6 continents ⊃ 12 régions ⊃ ~190 pays). Bascules et curseur vivent
           dans l'en-tête ; la descente au clic agit sur la même portée. */}
       {(cont?.disponible || reg2?.disponible || pys?.disponible) && (() => {
-        const a = anZone ?? dernier;
+        const p = per(perZone);
         const accent = zoneSens === "export" ? NACE_BLEU : NACE_ORANGE;
         return (
           <>
@@ -1138,10 +1363,10 @@ function CommerceExterieurPanel() {
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
                   valeur={zoneSens} onChange={setZoneSens} accent={accent} />
-                {curseur(anZone, setAnZone)}
+                {commandePeriode(perZone, setPerZone)}
               </div>
             } />
-            <ZoneGeographique an={a} cont={cont} reg={reg2} pys={pys}
+            <ZoneGeographique periode={p} cont={cont} reg={reg2} pys={pys}
               portee={zonePortee} setPortee={setZonePortee}
               sens={zoneSens} mesure={zoneMesure} setMesure={setZoneMesure} />
 
@@ -1160,36 +1385,46 @@ function CommerceExterieurPanel() {
         </>
       )}
       {pys?.disponible && (() => {
-        const a = anCont ?? dernier;
+        const p = per(perCont);
+        const ext = estExtremum(p);
         const ratt = reg2?.continents ?? pys.continents ?? {};
-        const presents = CONTINENTS_ORDRE.filter(c =>
-          pys.donnees.export.some(r => r.annee === a && ratt[r.region] === c));
+        const presents = CONTINENTS_ORDRE.filter(c => pys.donnees.export.some(
+          r => r.annee >= p.debut && r.annee <= p.fin && ratt[r.region] === c));
         if (!presents.length) return null;
         // Un continent peut disparaître d'une année à l'autre : on retombe
         // alors sur le premier disponible plutôt que d'afficher une carte vide.
         const c = presents.includes(contSel) ? contSel : presents[0];
         const dansC = (r: NacePaysLigne) => ratt[r.region] === c;
-        const clients = classerPartenaires(pys, "export", a, 10, dansC);
-        const fourn = classerPartenaires(pys, "import", a, 10, dansC);
+        const clients = classerPartenaires(pys, "export", p, 10, contMesure, dansC);
+        const fourn = classerPartenaires(pys, "import", p, 10, contMesure, dansC);
         return (
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={presents.map(x => ({ v: x, l: x }))} valeur={c} onChange={setContSel} />
-                {curseur(anCont, setAnCont)}
+                {commandePeriode(perCont, setPerCont)}
               </div>
             } />
             <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-              <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0 }}>
-                Parts calculées sur l&apos;ensemble des échanges {AVEC_CONTINENT(c)}
-              </p>
+              {/* Unité à droite de la note, comme la barre d'outils des
+                  tableaux met Valeur/Volume à droite : même grammaire. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0, flex: 1, minWidth: 200 }}>
+                  {ext ? `${p.calcul === "min" ? "Minimum" : "Maximum"} annuel des échanges ${AVEC_CONTINENT(c)}, et l'année où il est atteint`
+                    : `Parts calculées sur l'ensemble des échanges ${AVEC_CONTINENT(c)}`}
+                </p>
+                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
+                  valeur={contMesure} onChange={setContMesure} />
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Le rattachement régional est montré ici : dans un continent
                     donné il distingue les sous-ensembles — en Europe, la Suisse
                     et le Royaume-Uni relèvent des « autres pays », l'Espagne et
                     l'Italie de l'Union européenne. */}
-                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} couleur={NACE_BLEU} montrerRegion />
-                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} couleur={NACE_ORANGE} montrerRegion />
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} anTotal={clients.anTotal}
+                  couleur={NACE_BLEU} montrerRegion extremum={ext} mesure={contMesure} />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} anTotal={fourn.anTotal}
+                  couleur={NACE_ORANGE} montrerRegion extremum={ext} mesure={contMesure} />
               </div>
             </div>
           </>
@@ -1206,35 +1441,45 @@ function CommerceExterieurPanel() {
           <div className="ds-carte" style={{ padding: "18px 20px" }}><SkeletonRows n={8} h={30} /></div>
         </>
       )}
-      {pys?.disponible && (() => {
-        const a = anGrp ?? dernier;
-        const g = GROUPEMENTS.find(x => x.code === grpSel) ?? GROUPEMENTS[0];
+      {pys?.disponible && groupements.length > 0 && (() => {
+        const p = per(perGrp);
+        const ext = estExtremum(p);
+        const g = groupements.find(x => x.code === grpSel) ?? groupements[0];
+        const membres = new Set(g.membres);
         // Le rapprochement au référentiel porte le code ISO : un partenaire
         // resté hors référentiel (code nul) ne peut appartenir à aucun
         // groupement, et « Autres pays » est déjà écarté du classement.
-        const membre = (r: NacePaysLigne) =>
-          r.code_iso2 != null && MEMBRES_GROUPEMENT[g.code].has(r.code_iso2);
-        const clients = classerPartenaires(pys, "export", a, 15, membre);
-        const fourn = classerPartenaires(pys, "import", a, 15, membre);
+        const membre = (r: NacePaysLigne) => r.code_iso2 != null && membres.has(r.code_iso2);
+        const clients = classerPartenaires(pys, "export", p, 20, grpMesure, membre);
+        const fourn = classerPartenaires(pys, "import", p, 20, grpMesure, membre);
         if (!clients.lignes.length && !fourn.lignes.length) return null;
         return (
           <>
             <EnTeteSectionNace n={4} titre="Partenaires par groupement économique" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <SegmentNace options={GROUPEMENTS.map(x => ({ v: x.code, l: x.code }))} valeur={g.code} onChange={setGrpSel} />
-                {curseur(anGrp, setAnGrp)}
+                <SegmentNace options={groupements.map(x => ({ v: x.code, l: x.code }))} valeur={g.code} onChange={setGrpSel} />
+                {commandePeriode(perGrp, setPerGrp)}
               </div>
             } />
             <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-              <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0 }}>
-                Parts calculées sur l&apos;ensemble des échanges avec {g.nom}
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                {/* Le nom développé plutôt qu'un article accordé au sigle : il
+                    dit ce que recouvre la bascule, et il vient du référentiel. */}
+                <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0, flex: 1, minWidth: 200 }}>
+                  {ext ? `${p.calcul === "min" ? "Minimum" : "Maximum"} annuel des échanges avec les pays membres, et l'année où il est atteint · ${g.nom_fr}`
+                    : `Parts calculées sur l'ensemble des échanges avec les pays membres · ${g.nom_fr}`}
+                </p>
+                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
+                  valeur={grpMesure} onChange={setGrpMesure} />
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Pas de rattachement régional ici : tous les membres de la
                     CEDEAO comme de l'UEMOA relèvent de l'Afrique occidentale,
                     la colonne répéterait la même mention à chaque ligne. */}
-                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} couleur={NACE_BLEU} />
-                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} couleur={NACE_ORANGE} />
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} anTotal={clients.anTotal}
+                  couleur={NACE_BLEU} extremum={ext} mesure={grpMesure} />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} anTotal={fourn.anTotal}
+                  couleur={NACE_ORANGE} extremum={ext} mesure={grpMesure} />
               </div>
             </div>
           </>

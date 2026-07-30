@@ -23,7 +23,7 @@ from app.models.nace import (
     NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation, NaceChapitre,
     NaceContinent, NaceRegion, NacePays,
 )
-from app.models.shared import RefPays
+from app.models.shared import RefPays, RefGroupement, RefPaysGroupement
 from app.utils.pays_matching import correspondre_pays, normaliser_nom
 
 router = APIRouter(prefix="/nace", tags=["nace"])
@@ -338,6 +338,40 @@ async def regions(db: AsyncSession = Depends(get_db)):
     reponse["ordre"] = REGIONS_ORDRE
     reponse["continents"] = REGION_CONTINENT
     return reponse
+
+
+# ── GET /nace/groupements ─────────────────────────────────────────────────────
+# Groupements économiques proposés en lecture du commerce extérieur, avec la
+# liste de leurs membres. La composition n'est pas écrite ici : elle vient de
+# ref_groupements / ref_pays_groupements, le référentiel que l'administration
+# tient déjà et qu'emploient les autres modules. Une adhésion corrigée là-bas
+# se répercute donc ici sans toucher au code.
+#
+# Un groupement absent du référentiel, ou sans membre, n'est pas renvoyé :
+# l'interface n'offre que les bascules qui donneront un classement.
+GROUPEMENTS_NACE = ["CEDEAO", "UEMOA"]
+
+
+@router.get("/groupements")
+async def groupements(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        select(RefGroupement.code, RefGroupement.nom_fr, RefPays.code_iso2)
+        .join(RefPaysGroupement, RefPaysGroupement.groupement_id == RefGroupement.id)
+        .join(RefPays, RefPays.id == RefPaysGroupement.pays_id)
+        .where(RefGroupement.code.in_(GROUPEMENTS_NACE))
+    )
+    membres: dict = defaultdict(list)
+    noms: dict = {}
+    for code, nom_fr, iso2 in res.all():
+        noms[code] = nom_fr
+        # Le rapprochement des lignes NACE se fait sur le code ISO : un membre
+        # qui n'en porte pas dans le référentiel ne pourrait pas être retrouvé.
+        if iso2:
+            membres[code].append(iso2)
+    return [
+        {"code": c, "nom_fr": noms[c], "membres": sorted(membres[c])}
+        for c in GROUPEMENTS_NACE if membres.get(c)
+    ]
 
 
 # ── GET /nace/pays ────────────────────────────────────────────────────────────
