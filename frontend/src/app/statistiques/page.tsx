@@ -647,11 +647,17 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
   }, [niveau, sens, autre, an, cont, reg, pys, ratt, zoomCont, zoomReg]);
 
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
+  // Fil d'Ariane. « Océanie » et « Divers » nomment à la fois un continent et
+  // une région : descendre dans la région produirait deux crans identiques —
+  // « Monde › Divers › Divers » — donc un affichage redondant et des clés React
+  // en double. Les crans consécutifs de même libellé sont fondus ; le niveau
+  // intermédiaire est de toute façon dégénéré, ce continent n'ayant qu'une
+  // seule région, et la bascule de granularité reste disponible pour y revenir.
   const crans: { l: string; p: ZonePortee }[] = [
-    { l: "Monde", p: { niveau: "continent", cont: null, reg: null } },
+    { l: "Monde", p: { niveau: "continent" as ZoneNiveau, cont: null, reg: null } },
     ...(zoomCont ? [{ l: zoomCont, p: { niveau: "region" as ZoneNiveau, cont: zoomCont, reg: null } }] : []),
     ...(zoomReg ? [{ l: zoomReg, p: { niveau: "pays" as ZoneNiveau, cont: zoomCont, reg: zoomReg } }] : []),
-  ];
+  ].filter((c, i, a) => i === 0 || c.l !== a[i - 1].l);
 
   return (
     <TableauClassementNace
@@ -686,7 +692,7 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
           {crans.map((c, i, arr) => {
             const dernier = i === arr.length - 1;
             return (
-              <span key={c.l} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span key={`${i}·${c.l}`} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 {i > 0 && <ChevronRight size={12} style={{ color: "#C5BFBB" }} />}
                 <button onClick={() => setPortee(c.p)} disabled={dernier}
                   style={dernier
