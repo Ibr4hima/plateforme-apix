@@ -106,6 +106,14 @@ Cinq familles extraites, mêmes règles et même vérification :
   colonnes. Elle corrige enfin le total du poids exporté 2021
   (8 038 328 t au lieu des 8 040 349 t imprimés en 2021 et 2022).
 
+  Anomalie du rapport 2024 : le tableau 25 (importations en valeur) porte
+  des en-têtes décalés d'un an (« 2 019 » à « 2 023 » alors que ses
+  valeurs sont 2020–2024). Sa ligne TOTAL le prouve — 7 161 394 MFCFA en
+  dernière colonne, soit le total 2024 des trois autres familles — et le
+  recoupement des six continents pour 2023 avec l'édition 2023 concorde à
+  l'unité. L'extracteur détecte l'incohérence, relit les colonnes par
+  position et le signale.
+
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
 2020–2024) ajoute la ligne export « Huiles brutes de pétrole »

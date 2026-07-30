@@ -90,8 +90,16 @@ def parse(debut: str, fin: str | None):
         sec = sec.split(fin)[0]
     entete = annees_entete(sec)
     manquantes = [a for a in ANNEES if a not in entete] if entete else []
-    assert not manquantes, f"{debut} : années absentes de l'en-tête {entete} — {manquantes}"
-    garder = [entete.index(a) for a in ANNEES] if entete else list(range(5))
+    if manquantes:
+        # En-tête erroné (cas connu : tableau 25 de l'édition 2024, décalé
+        # d'un an — ses valeurs concordent avec les autres familles). On
+        # relit alors les colonnes par position et on le signale.
+        assert len(entete) == 5, \
+            f"{debut} : en-tête {entete} incompatible avec {ANNEES} et non repositionnable"
+        print(f"  ⚠ {debut} : en-tête erroné {entete} — colonnes lues par position comme {ANNEES}")
+        entete, garder = list(ANNEES), list(range(5))
+    else:
+        garder = [entete.index(a) for a in ANNEES] if entete else list(range(5))
     lignes: dict = {}
     total = None
     for l in sec.split("\n"):
