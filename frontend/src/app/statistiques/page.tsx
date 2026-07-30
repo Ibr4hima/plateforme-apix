@@ -10,7 +10,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronRight, FileSpreadsheet, FileText, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -710,6 +710,79 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
   );
 }
 
+// ── Partenaires : classements de pays, dérivés de la même famille ────────────
+// Ces blocs complètent le tableau navigable de la zone géographique : celui-ci
+// répond à « comment se répartit tel niveau », ceux-ci à « qui sont les
+// premiers partenaires », mondialement puis dans chaque continent.
+type Partenaire = { nom: string; iso2: string | null; region: string; valeur: number; part: number | null };
+
+// `continent` restreint la portée ; la part se rapporte alors à ce continent,
+// non au total mondial — c'est la lecture utile quand on regarde une zone.
+function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number,
+                            ratt: Record<string, string>, continent: string | null, top: number): Partenaire[] {
+  if (!pys?.disponible) return [];
+  const agg = new Map<string, Partenaire>();
+  // Le dénominateur inclut « Autres pays », que le classement exclut : la part
+  // est celle du total de la portée, comme dans le tableau ci-dessus. La
+  // rapporter aux seuls partenaires nommés la gonflerait — le Mali passerait
+  // de 20,5 à 21,9 % des exportations, et les deux blocs se contrediraient.
+  let total = 0;
+  for (const r of pys.donnees[sens]) {
+    if (r.annee !== an) continue;
+    if (continent && ratt[r.region] !== continent) continue;
+    total += r.valeur ?? 0;
+    if (r.pays === AUTRES_PAYS) continue;
+    const e = agg.get(r.pays) ?? { nom: r.pays, iso2: r.code_iso2, region: r.region, valeur: 0, part: null };
+    e.valeur += r.valeur ?? 0;
+    agg.set(r.pays, e);
+  }
+  // Un partenaire sans échange sur l'année n'en est pas un : sans ce filtre,
+  // l'Océanie alignerait des lignes à zéro.
+  return [...agg.values()].filter(l => l.valeur > 0)
+    .sort((a, b) => b.valeur - a.valeur).slice(0, top)
+    .map(l => ({ ...l, part: total ? l.valeur / total * 100 : null }));
+}
+
+function TopPartenaires({ titre, lignes, couleur, montrerRegion }: {
+  titre: string; lignes: Partenaire[]; couleur: string; montrerRegion?: boolean;
+}) {
+  const max = Math.max(1, ...lignes.map(l => l.valeur));
+  return (
+    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 8, alignSelf: "start" }}>
+      <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0 }}>{titre}</h3>
+      {lignes.length === 0
+        ? <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "14px 0" }}>Aucun échange.</p>
+        : lignes.map((l, i) => (
+          <div key={l.nom} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0,
+            padding: "4px 8px", borderRadius: 8, background: i % 2 === 1 ? "#F8F9FB" : "transparent" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20,
+              borderRadius: 999, background: i < 3 ? couleur : "#EFEDEA", color: i < 3 ? "#fff" : "#9aa5b4",
+              fontSize: 10, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
+            <DrapeauPays iso={l.iso2} nom={l.nom} />
+            <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "baseline", gap: 7 }}>
+              <span title={l.nom} style={{ fontSize: 12.5, fontWeight: 650, color: "#1a1a2e",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.nom}</span>
+              {montrerRegion && (
+                <span title={l.region} style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", whiteSpace: "nowrap", flexShrink: 0 }}>
+                  {REGION_COURT[l.region] ?? l.region}
+                </span>
+              )}
+            </span>
+            <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right",
+              flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(l.valeur)}</span>
+            <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
+              {l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+            </span>
+            <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99,
+                background: couleur, opacity: i < 3 ? 0.9 : 0.55 }} />
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}
+
 // ── Nomenclatures de produits (tableaux 8–19 et 38–41) ───────────────────────
 // Quatre lectures du même commerce, de la plus synthétique à la plus fine.
 // Elles ne s'emboîtent PAS : ce sont quatre nomenclatures indépendantes de
@@ -850,6 +923,46 @@ function CommerceExterieurPanel() {
     return { sE, sI, sB };
   }, [annees, totalDe]);
 
+  // « À retenir » : faits saillants de l'année des KPIs, tous déduits des
+  // données. Aucun texte en dur ne peut donc démentir les chiffres affichés
+  // juste au-dessus, et la liste suit le curseur.
+  const aRetenir = useMemo(() => {
+    const somme = (l: { valeur: number | null }[]) => l.reduce((t, r) => t + (r.valeur ?? 0), 0);
+    const exp = somme(data?.donnees.export.filter(r => r.annee === an) ?? []);
+    const imp = somme(data?.donnees.import.filter(r => r.annee === an) ?? []);
+    if (!exp && !imp) return [];
+    const expP = somme(data?.donnees.export.filter(r => r.annee === an - 1) ?? []);
+    const impP = somme(data?.donnees.import.filter(r => r.annee === an - 1) ?? []);
+    const pct = (v: number | null) => v == null ? "—" : `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
+    const m: string[] = [];
+    if (expP && impP) {
+      const dE = (exp - expP) / Math.abs(expP) * 100, dI = (imp - impP) / Math.abs(impP) * 100;
+      m.push(`Les exportations ${dE >= 0 ? "progressent" : "reculent"} de ${pct(Math.abs(dE))} et les importations ${dI >= 0 ? "progressent" : "reculent"} de ${pct(Math.abs(dI))} par rapport à ${an - 1}.`);
+      const soldeP = expP - impP;
+      m.push(`Le déficit commercial ${Math.abs(exp - imp) > Math.abs(soldeP) ? "se creuse" : "se réduit"} : ${fmtMFCFA(exp - imp)} contre ${fmtMFCFA(soldeP)} en ${an - 1}, soit un taux de couverture de ${pct(imp ? exp / imp * 100 : null)}.`);
+    }
+    // Premier poste de chaque sens, « Autres produits » écarté : ce fourre-tout
+    // domine le classement alors que ce n'est pas un produit.
+    const premier = (sens: "export" | "import") => (data?.donnees[sens] ?? [])
+      .filter(r => r.annee === an && r.produit !== "Autres produits")
+      .sort((a, b) => (b.valeur ?? 0) - (a.valeur ?? 0))[0];
+    const pe = premier("export"), pi = premier("import");
+    if (pe) m.push(`Le premier poste d'exportation est « ${pe.produit.toLowerCase()} », ${pct(exp ? (pe.valeur ?? 0) / exp * 100 : null)} des ventes à l'étranger.`);
+    if (pi) m.push(`Le premier poste d'importation est « ${pi.produit.toLowerCase()} », ${pct(imp ? (pi.valeur ?? 0) / imp * 100 : null)} des achats.`);
+    const ratt = reg2?.continents ?? pys?.continents ?? {};
+    const ce = classerPartenaires(pys, "export", an, ratt, null, 1)[0];
+    const ci = classerPartenaires(pys, "import", an, ratt, null, 1)[0];
+    // Tournures sans article : il dépendrait du nom du pays.
+    if (ce) m.push(`Premier client du Sénégal : ${ce.nom}, ${pct(ce.part)} des exportations.`);
+    if (ci) m.push(`Premier fournisseur : ${ci.nom}, ${pct(ci.part)} des importations.`);
+    // Concentration : combien de clients absorbent la moitié des ventes.
+    const tous = classerPartenaires(pys, "export", an, ratt, null, 999);
+    let c = 0, n = 0;
+    for (const x of tous) { c += x.part ?? 0; n++; if (c >= 50) break; }
+    if (c >= 50) m.push(`Les exportations sont concentrées : ${n} client${n > 1 ? "s" : ""} en absorbe${n > 1 ? "nt" : ""} la moitié.`);
+    return m.slice(0, 6);
+  }, [data, pys, reg2, an]);
+
   if (loading) return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
       <SkeletonKPIs n={4} />
@@ -883,18 +996,10 @@ function CommerceExterieurPanel() {
 
   return (
     <div className="charge-in" style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 40px 80px" }}>
-      {/* En-tête : titre, curseur des KPIs, et accès au rapport d'analyse —
-          même source, mais mis en forme pour être lu et imprimé d'un bloc. */}
+      {/* En-tête : titre + curseur des KPIs */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 20 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
         <CurseurAnneeNace min={annees[0]} max={dernier} value={an} onChange={setAnKpi} />
-        <a href={`/statistiques/rapport-commerce?annee=${an}`}
-          title="Rapport d'analyse complet de l'année affichée, prêt à imprimer"
-          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 16px",
-            borderRadius: 999, border: "1px solid rgba(0,79,145,0.22)", background: "rgba(0,79,145,0.06)",
-            color: "#004f91", textDecoration: "none", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
-          <FileText size={14} /> Rapport d&apos;analyse
-        </a>
       </div>
 
       {/* KPIs de l'année */}
@@ -914,6 +1019,24 @@ function CommerceExterieurPanel() {
           </div>
         ))}
       </div>
+
+      {/* À retenir : ce que l'année dit, en quelques phrases */}
+      {aRetenir.length > 0 && (
+        <div className="ds-carte" style={{ padding: "18px 22px", marginBottom: 18,
+          background: "linear-gradient(180deg, rgba(0,79,145,0.05), rgba(0,79,145,0.02))",
+          border: "1px solid rgba(0,79,145,0.14)" }}>
+          <p style={{ fontSize: 10.5, fontWeight: 800, color: "#004f91", letterSpacing: "0.12em",
+            textTransform: "uppercase", margin: "0 0 12px" }}>À retenir</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(330px, 1fr))", gap: "9px 28px" }}>
+            {aRetenir.map((t, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ width: 6, height: 6, borderRadius: 999, background: "#004f91", marginTop: 6.5, flexShrink: 0 }} />
+                <p style={{ fontSize: 12.5, color: "#2c3646", margin: 0, lineHeight: 1.55, fontWeight: 500 }}>{t}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Évolution des échanges sur toute la période couverte */}
       <div className="ds-carte" style={{ padding: "18px 20px", marginBottom: 18 }}>
@@ -968,6 +1091,71 @@ function CommerceExterieurPanel() {
             <ZoneGeographique an={a} cont={cont} reg={reg2} pys={pys}
               portee={zonePortee} setPortee={setZonePortee}
               sens={zoneSens} mesure={zoneMesure} setMesure={setZoneMesure} />
+
+            {/* Classements de partenaires : le tableau ci-dessus répond à
+                « comment se répartit tel niveau », ceux-ci à « qui sont les
+                premiers partenaires ». Ils suivent le curseur de la section
+                mais pas ses bascules de niveau, qui n'ont pas de sens ici. */}
+            {(() => {
+              const ratt = reg2?.continents ?? pys?.continents ?? {};
+              const cl = classerPartenaires(pys, "export", a, ratt, null, 10);
+              const fo = classerPartenaires(pys, "import", a, ratt, null, 10);
+              if (!cl.length && !fo.length) return null;
+              // « Divers » n'est pas un continent : provisions de bord, or
+              // monétaire et origines non déterminées n'ont pas de partenaires.
+              const continents = (cont?.donnees.export ?? [])
+                .filter(r => r.annee === a && r.continent !== "Divers")
+                .sort((x, y) => (y.valeur ?? 0) - (x.valeur ?? 0))
+                .map(r => r.continent);
+              return (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14, marginTop: 14 }}>
+                    <TopPartenaires titre={`Premiers clients du Sénégal · ${a}`} lignes={cl} couleur={NACE_BLEU} montrerRegion />
+                    <TopPartenaires titre={`Premiers fournisseurs du Sénégal · ${a}`} lignes={fo} couleur={NACE_ORANGE} montrerRegion />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "22px 0 12px", flexWrap: "wrap" }}>
+                    <h3 style={{ fontWeight: 800, fontSize: "0.95rem", color: "#1a1a2e", margin: 0 }}>Partenaires par continent</h3>
+                    <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+                      parts calculées sur le continent, non sur le total mondial
+                    </span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
+                    {continents.map(c => (
+                      <div key={c} className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, alignSelf: "start" }}>
+                        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0 }}>{c}</h3>
+                        {([{ l: "Clients", sens: "export" as ZoneSens, coul: NACE_BLEU },
+                           { l: "Fournisseurs", sens: "import" as ZoneSens, coul: NACE_ORANGE }]).map(bloc => {
+                          const lignes = classerPartenaires(pys, bloc.sens, a, ratt, c, 5);
+                          return (
+                            <div key={bloc.l}>
+                              <p style={{ fontSize: 8.5, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em",
+                                textTransform: "uppercase", margin: "0 0 6px" }}>{bloc.l}</p>
+                              {lignes.length === 0
+                                ? <p style={{ fontSize: 11.5, color: "#9aa5b4", margin: 0 }}>Aucun échange.</p>
+                                : lignes.map((x, i) => (
+                                  <div key={x.nom} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "3px 0" }}>
+                                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 19, height: 19,
+                                      borderRadius: 999, background: i < 3 ? bloc.coul : "#EFEDEA", color: i < 3 ? "#fff" : "#9aa5b4",
+                                      fontSize: 9.5, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
+                                    <DrapeauPays iso={x.iso2} nom={x.nom} />
+                                    <span title={x.nom} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 650, color: "#1a1a2e",
+                                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.nom}</span>
+                                    <span className="ds-donnee" style={{ fontSize: 11, fontWeight: 800, color: bloc.coul, whiteSpace: "nowrap",
+                                      fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(x.valeur)}</span>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#4a5568", width: 42, textAlign: "right", flexShrink: 0 }}>
+                                      {x.part != null ? `${x.part.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
+                                    </span>
+                                  </div>
+                                ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </>
         );
       })()}
