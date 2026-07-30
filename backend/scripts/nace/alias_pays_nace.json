@@ -10,7 +10,13 @@
     "                     des pays et le sous-total imprimé de la région.",
     "Un libellé qui n'est dans aucun des deux volets et que le rapprochement",
     "n'atteint pas est signalé comme orphelin non arbitré par",
-    "verifier_rapprochement_pays.py : il faut le trancher ici."
+    "verifier_rapprochement_pays.py : il faut le trancher ici.",
+    "",
+    "Troisième issue possible pour un orphelin : compléter ref_pays lui-même,",
+    "quand le partenaire pèse assez pour mériter d'être nommé. Ces cas sont",
+    "retirés de hors_referentiel — sinon l'import, qui teste ce volet AVANT le",
+    "rapprochement, continuerait de les ignorer — et tracés dans",
+    "_notes_referentiel avec la migration qui les a ajoutés."
   ],
   "alias": {
     "CITE DU VATICAN": "Saint-Siège (Vatican)",
@@ -63,8 +69,6 @@
     "ILES CALQUES": "îles Turques-et-Caïques, territoire britannique d'outre-mer",
     "ILES VIERGES DES USA": "territoire non incorporé des États-Unis",
     "CURUCAO": "Curaçao, pays constitutif du Royaume des Pays-Bas",
-    "HONG-KONG": "région administrative spéciale chinoise, absente de ref_pays",
-    "MACAO": "région administrative spéciale chinoise, absente de ref_pays",
     "ILES NIOUE, ILES TOKELOU": "Niue et Tokelau, territoires associés à la Nouvelle-Zélande",
     "ARUBA": "pays constitutif du Royaume des Pays-Bas",
     "CEUTA ET MELILLA": "villes autonomes espagnoles en Afrique du Nord ; l'Espagne a sa propre ligne",
@@ -74,5 +78,9 @@
     "ILES PACIFIQUES US": "îles mineures éloignées des États-Unis",
     "DIVERS": "pseudo-partenaire du rapport : provisions de bord, or monétaire et non dénommé ailleurs — pas un pays",
     "NCA": "« non classé ailleurs » : même pseudo-partenaire que DIVERS, nom utilisé par les tableaux d'import"
+  },
+  "_notes_referentiel": {
+    "HONG-KONG": "Ajouté à ref_pays [HK] par la migration 129 : partenaire de 19,2 Md FCFA en 2019, il représentait à lui seul 90 % du commerce de pays réels qui finissait anonyme dans « Autres pays ». Rattaché depuis par simple rapprochement exact.",
+    "MACAO": "Ajouté à ref_pays [MO] par la migration 129, avec Hong Kong. Poids modeste (263 M FCFA) mais même statut de région administrative spéciale : les traiter différemment aurait été incohérent."
   }
 }
