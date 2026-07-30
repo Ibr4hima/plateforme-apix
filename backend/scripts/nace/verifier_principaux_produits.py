@@ -27,6 +27,7 @@ FAMILLES = [
     ("produits_regroupes", "totaux_regroupes", 6, "produit"),
     ("groupes_utilisation", "totaux_groupes", 2, "groupe"),
     ("chapitres", "totaux_chapitres", 12, "chapitre"),
+    ("continents", "totaux_continents", 3, "continent"),
 ]
 
 fichiers = [
@@ -80,7 +81,8 @@ for fic, famille, suffixe_tot, tolerance, colonne in fichiers:
             code_sortie = 1
     nb_exp = len({p for (p, s) in par_produit if s == "export"})
     nb_imp = len({p for (p, s) in par_produit if s == "import"})
-    libelle = {"groupe": "groupes", "chapitre": "chapitres"}.get(colonne, "produits")
+    libelle = {"groupe": "groupes", "chapitre": "chapitres",
+               "continent": "continents"}.get(colonne, "produits")
     print(f"  {nb_exp} {libelle} export · {nb_imp} {libelle} import — complétude OK" if code_sortie == 0 else "")
 
 print("\nRésultat global :", "CONFORME" if code_sortie == 0 else "ÉCARTS DÉTECTÉS")

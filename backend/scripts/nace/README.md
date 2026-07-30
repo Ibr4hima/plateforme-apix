@@ -1,6 +1,6 @@
 # Extractions NACE — annexes des rapports annuels
 
-Quatre familles extraites, mêmes règles et même vérification :
+Cinq familles extraites, mêmes règles et même vérification :
 - **principaux produits** (`edition_XXXX_principaux_produits.csv`,
   totaux dans `edition_XXXX_totaux.csv`) ;
 - **produits regroupés** (`edition_XXXX_produits_regroupes.csv`,
@@ -62,6 +62,19 @@ Quatre familles extraites, mêmes règles et même vérification :
   la suite d'un libellé se place tantôt avant, tantôt après ses valeurs —
   parfois dans un même rapport (édition 2022 : avant en tableau 36,
   après en tableau 35).
+
+- **continents** (`edition_XXXX_continents.csv`, totaux dans
+  `edition_XXXX_totaux_continents.csv`, colonne `continent`) — six
+  modalités exhaustives : **Europe, Afrique, Amérique, Asie, Océanie,
+  Divers**. Les libellés du rapport (« CONTINENT EUROPEEN »…) sont
+  ramenés à ces formes courtes par `extraire_continents.py`, qui refuse
+  tout libellé inconnu plutôt que de l'ignorer silencieusement.
+
+  Le découpage varie selon les éditions : 2019 publie un « CONTINENT
+  AUSTRALIEN ET OCEANIQUE » unique, d'autres peuvent séparer l'Australie
+  de l'Océanie. Toutes ces variantes sont ramenées à **Océanie** et
+  sommées à l'extraction, si bien que la série reste comparable de 2015 à
+  2024 quel que soit le découpage du rapport source.
 
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
