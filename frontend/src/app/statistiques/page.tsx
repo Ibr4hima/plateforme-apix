@@ -223,7 +223,8 @@ function indexerNace<T extends { annee: number; valeur: number | null; poids: nu
 }
 
 function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drapeaux, top,
-  entete, nomPortee, totalLibelle, onOuvrir, montrerParent, libelleParent, balance = true }: {
+  entete, nomPortee, totalLibelle, onOuvrir, montrerParent, libelleParent, balance = true,
+  granularite, uniteBascule }: {
   lignes: LigneClassement[];
   // Libellé de la ligne fourre-tout à épingler hors classement, s'il y en a
   // une : « Autres pays » pour les zones, « Autres produits » pour les
@@ -244,9 +245,18 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   totalLibelle: string;              // libellé de la ligne de somme
   onOuvrir?: (l: LigneClassement) => void;
   montrerParent?: boolean; libelleParent?: (p: string) => string;
+  // Bascules portées par le tableau lui-même — granularité (nomenclature ou
+  // niveau géographique) et unité de mesure — plutôt que par l'en-tête de
+  // section : ce sont des réglages de lecture du tableau, pas de la section,
+  // qui ne garde que le sens des échanges et l'année.
+  granularite?: React.ReactNode; uniteBascule?: React.ReactNode;
 }) {
   const [q, setQ] = useState("");
   const [tout, setTout] = useState(false);
+  // La prise de focus sur la recherche déplie la liste entière : on cherche
+  // aussi bien dans les lignes déjà visibles que dans celles au-delà du top,
+  // et la saisie ne fait que resserrer.
+  const [focus, setFocus] = useState(false);
   useEffect(() => { setQ(""); setTout(false); }, [nomPortee, colonne, sens, mesure, lignes.length]);
 
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
@@ -271,7 +281,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   };
   const norm = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   const filtres = q ? rangees.filter(l => norm(l.nom).includes(norm(q)) || norm(l.parent ?? "").includes(norm(q))) : rangees;
-  const visibles = q || tout ? filtres : filtres.slice(0, top);
+  const visibles = q || tout || focus ? filtres : filtres.slice(0, top);
 
   // Rang et cumul se lisent sur la liste rangée complète, pas sur la portion
   // visible : une recherche ne doit pas renuméroter les lignes ni fausser le
@@ -342,15 +352,25 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   if (!lignes.length) return null;
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-      {entete}
+      {/* Barre d'outils du tableau : granularité et fil d'Ariane à gauche,
+          unité de mesure à droite */}
+      {(granularite || entete || uniteBascule) && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {granularite}
+          {entete}
+          {uniteBascule && <span style={{ marginLeft: "auto" }}>{uniteBascule}</span>}
+        </div>
+      )}
 
       {/* Recherche : utile dès que la portée dépasse la vingtaine de lignes */}
       {rangees.length > 20 && (
         <div style={{ position: "relative" }}>
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${rangees.length} · ${nomPortee}…`}
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher…"
+            onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
             style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-          {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+          {q && <button onMouseDown={e => e.preventDefault()} onClick={() => setQ("")} aria-label="Effacer la recherche"
+            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
         </div>
       )}
 
@@ -374,7 +394,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {visibles.map(l => <Ligne key={l.cle} l={l} rang={rangDe.get(l.cle) ?? null} />)}
-          {!q && filtres.length > top && (
+          {!q && !focus && filtres.length > top && (
             <button onClick={() => setTout(t => !t)}
               style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
               {tout ? `Réduire au top ${top}` : `Voir les ${filtres.length - top} autres`}
@@ -556,14 +576,16 @@ function indexerZone<T extends { annee: number; valeur: number | null; poids: nu
 // sur le même état.
 type ZonePortee = { niveau: ZoneNiveau; cont: string | null; reg: string | null };
 
-function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure }: {
+function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure, setMesure }: {
   an: number; cont: NaceDataCont | null; reg: NaceDataReg | null; pys: NaceDataPays | null;
-  portee: ZonePortee; setPortee: (p: ZonePortee) => void; sens: ZoneSens; mesure: NaceMesure;
+  portee: ZonePortee; setPortee: (p: ZonePortee) => void;
+  sens: ZoneSens; mesure: NaceMesure; setMesure: (m: NaceMesure) => void;
 }) {
   const { niveau, cont: zoomCont, reg: zoomReg } = portee;
   const autre: ZoneSens = sens === "export" ? "import" : "export";
   const ratt = reg?.continents ?? pys?.continents ?? {};
   const badgeSens = sens === "export" ? badge_bleu : badge_orange;
+  const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
 
   const lignes: LigneClassement[] = useMemo(() => {
     // Un triplet d'index par niveau : sens affiché, sens opposé (balance) et
@@ -641,6 +663,19 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure 
       // parents : une fois descendu dans une région, il serait constant.
       montrerParent={!zoomReg && !(niveau === "region" && !!zoomCont)}
       libelleParent={p => REGION_COURT[p] ?? p}
+      granularite={
+        <SegmentNace options={NIVEAUX} valeur={niveau} accent={couleur}
+          onChange={n => setPortee({
+            niveau: n,
+            // Remonter d'un niveau relâche la portée correspondante.
+            cont: n === "continent" ? null : zoomCont,
+            reg: n === "pays" ? zoomReg : null,
+          })} />
+      }
+      uniteBascule={
+        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+          valeur={mesure} onChange={setMesure} accent={couleur} />
+      }
       onOuvrir={l => niveau === "continent"
         ? setPortee({ niveau: "region", cont: l.nom, reg: null })
         : setPortee({ niveau: "pays", cont: l.parent ?? zoomCont, reg: l.nom })}
@@ -686,12 +721,15 @@ const FAMILLES_PRODUITS: { v: NaceFamille; l: string }[] = [
 ];
 const AUTRES_PRODUITS = "Autres produits";
 
-function ProduitsNace({ an, famille, sens, mesure, principaux, gu, regroupes, chapitres }: {
-  an: number; famille: NaceFamille; sens: ZoneSens; mesure: NaceMesure;
+function ProduitsNace({ an, famille, setFamille, sens, mesure, setMesure,
+  principaux, gu, regroupes, chapitres }: {
+  an: number; famille: NaceFamille; setFamille: (f: NaceFamille) => void;
+  sens: ZoneSens; mesure: NaceMesure; setMesure: (m: NaceMesure) => void;
   principaux: NaceData | null; gu: NaceDataGU | null;
   regroupes: NaceData | null; chapitres: NaceDataChap | null;
 }) {
   const autre: ZoneSens = sens === "export" ? "import" : "export";
+  const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
 
   const lignes: LigneClassement[] = useMemo(() => {
     const source = famille === "principaux" ? principaux
@@ -728,6 +766,11 @@ function ProduitsNace({ an, famille, sens, mesure, principaux, gu, regroupes, ch
       balance={famille === "groupes" || famille === "chapitres"}
       top={famille === "chapitres" ? 15 : 20}
       nomPortee={nom} totalLibelle="Ensemble"
+      granularite={<SegmentNace options={FAMILLES_PRODUITS} valeur={famille} onChange={setFamille} accent={couleur} />}
+      uniteBascule={
+        <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+          valeur={mesure} onChange={setMesure} accent={couleur} />
+      }
     />
   );
 }
@@ -881,15 +924,13 @@ function CommerceExterieurPanel() {
           <>
             <EnTeteSectionNace n={1} titre="Produits" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <SegmentNace options={FAMILLES_PRODUITS} valeur={prodFamille} onChange={setProdFamille} accent={accent} />
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
                   valeur={prodSens} onChange={setProdSens} accent={accent} />
-                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
-                  valeur={prodMesure} onChange={setProdMesure} accent={accent} />
                 {curseur(anProd, setAnProd)}
               </div>
             } />
-            <ProduitsNace an={a} famille={prodFamille} sens={prodSens} mesure={prodMesure}
+            <ProduitsNace an={a} famille={prodFamille} setFamille={setProdFamille}
+              sens={prodSens} mesure={prodMesure} setMesure={setProdMesure}
               principaux={data} gu={gu} regroupes={reg} chapitres={chap} />
           </>
         );
@@ -905,22 +946,14 @@ function CommerceExterieurPanel() {
           <>
             <EnTeteSectionNace n={2} titre="Zone géographique" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <SegmentNace options={NIVEAUX} valeur={zonePortee.niveau} accent={accent}
-                  onChange={n => setZonePortee({
-                    niveau: n,
-                    // Remonter d'un niveau relâche la portée correspondante.
-                    cont: n === "continent" ? null : zonePortee.cont,
-                    reg: n === "pays" ? zonePortee.reg : null,
-                  })} />
                 <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
                   valeur={zoneSens} onChange={setZoneSens} accent={accent} />
-                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
-                  valeur={zoneMesure} onChange={setZoneMesure} accent={accent} />
                 {curseur(anZone, setAnZone)}
               </div>
             } />
             <ZoneGeographique an={a} cont={cont} reg={reg2} pys={pys}
-              portee={zonePortee} setPortee={setZonePortee} sens={zoneSens} mesure={zoneMesure} />
+              portee={zonePortee} setPortee={setZonePortee}
+              sens={zoneSens} mesure={zoneMesure} setMesure={setZoneMesure} />
           </>
         );
       })()}
