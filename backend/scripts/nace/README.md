@@ -92,6 +92,13 @@ Cinq familles extraites, mêmes règles et même vérification :
   tableau à l'autre au sein du même rapport (« CONTINENT OCEANIQUE » /
   « CONTINENT AUSTRALIEN ET OCEANIQUE ») — tous ramenés à Océanie.
 
+  Comme pour les autres familles, l'édition 2020 révise fortement les
+  années antérieures : les exportations 2019 vers l'Afrique passent de
+  638 125 à 1 053 940 MFCFA et celles vers l'Europe de 676 461 à
+  705 048 (régularisations pétrolières). Au-delà, les valeurs sont
+  stables d'une édition à l'autre — celles de 2020 et de 2021 sont
+  reprises à l'identique par les éditions suivantes.
+
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
 2020–2024) ajoute la ligne export « Huiles brutes de pétrole »
