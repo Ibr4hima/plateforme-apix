@@ -128,6 +128,15 @@ def charger_libelles(cur, chemin: Path | None) -> tuple[list[str], str]:
     return [l.strip() for l in fic.read_text(encoding="utf-8").splitlines() if l.strip()], fic.name
 
 
+def charger_arbitrage() -> tuple[dict[str, str], dict[str, str]]:
+    """(alias, hors_referentiel) de alias_pays_nace.json — les clés `_…` sont
+    de la documentation et sont ignorées."""
+    if not FICHIER_ALIAS.exists():
+        return {}, {}
+    doc = json.loads(FICHIER_ALIAS.read_text(encoding="utf-8"))
+    return doc.get("alias", {}), doc.get("hors_referentiel", {})
+
+
 def pilote():
     """psycopg2 ou psycopg (v3), selon ce qui est installé — None si aucun."""
     for nom in ("psycopg2", "psycopg"):
@@ -164,7 +173,7 @@ def analyser_arguments() -> tuple[Path | None, Path | None]:
 
 def principal() -> int:
     chemin_ref, chemin_libelles = analyser_arguments()
-    alias = json.loads(FICHIER_ALIAS.read_text(encoding="utf-8")) if FICHIER_ALIAS.exists() else {}
+    alias, hors_ref = charger_arbitrage()
 
     if chemin_ref:
         # Mode hors ligne : le référentiel vient de l'export psql, et les
@@ -186,8 +195,9 @@ def principal() -> int:
     print(f"Référentiel : {len({v[0] for v in index.values()})} pays actifs "
           f"({len(index)} graphies avec les alias CNUCED)")
     print(f"Libellés NACE : {len(libelles)} — source : {origine}")
-    if alias:
-        print(f"Alias NACE déjà définis : {len(alias)}")
+    if alias or hors_ref:
+        print(f"Arbitrage {FICHIER_ALIAS.name} : {len(alias)} alias · "
+              f"{len(hors_ref)} hors référentiel")
     print()
 
     noms_ref = list(index)
@@ -196,7 +206,12 @@ def principal() -> int:
     rattaches: dict[str, tuple[int, str, str]] = {}
     approches: list[tuple[str, str, str]] = []
     orphelins: list[str] = []
+    arbitres: list[str] = []                    # « Autres pays » assumés
+    alias_morts: list[str] = []                 # alias visant un nom absent de ref_pays
     for lib in libelles:
+        if lib in hors_ref:                     # arbitré : pas un oubli
+            arbitres.append(lib)
+            continue
         vise = alias.get(lib, lib)              # alias explicite prioritaire
         trouve = index.get(normaliser_nom(vise))
         exact = trouve is not None
@@ -207,11 +222,24 @@ def principal() -> int:
             rattaches[lib] = trouve
             if not exact and lib not in alias:
                 approches.append((lib, trouve[1], trouve[2]))
+        elif lib in alias:
+            # L'alias pointe un nom qui n'existe pas (ou plus) dans ref_pays :
+            # c'est une erreur de saisie ou un renommage du référentiel.
+            alias_morts.append(f"{lib} → « {alias[lib]} »")
         else:
             orphelins.append(lib)
 
-    print(f"── RÉSULTAT : {len(rattaches)} rattachés · {len(orphelins)} orphelins "
-          f"({len(rattaches) / max(1, len(libelles)) * 100:.0f} %) ──\n")
+    print(f"── RÉSULTAT : {len(rattaches)} rattachés · {len(arbitres)} hors référentiel "
+          f"assumés · {len(orphelins)} orphelins non arbitrés ──")
+    print(f"   couverture du référentiel : "
+          f"{len(rattaches) / max(1, len(libelles)) * 100:.0f} % des libellés\n")
+
+    if alias_morts:
+        s = "S" if len(alias_morts) > 1 else ""
+        print(f"── {len(alias_morts)} ALIAS CASSÉ{s} : la cible est absente de ref_pays ──")
+        for m in alias_morts:
+            print(f"   {m}")
+        print()
 
     if approches:
         # Rattachements obtenus par réduction des formes d'État ou par
@@ -242,7 +270,7 @@ def principal() -> int:
           "    partenaire dont la graphie NACE n'aurait pas été reconnue)")
     for nom in manquants:
         print(f"   {nom}")
-    return 0 if not orphelins else 1
+    return 1 if (orphelins or alias_morts) else 0
 
 
 if __name__ == "__main__":

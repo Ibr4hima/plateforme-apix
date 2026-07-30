@@ -1,0 +1,67 @@
+{
+  "_lisez_moi": [
+    "Arbitrage des libellés pays de la NACE que le rapprochement automatique",
+    "n'atteint pas. Deux volets, tous deux délibérés :",
+    "  alias            : libellé NACE -> nom_fr exact de ref_pays.",
+    "  hors_referentiel : partenaire absent de ref_pays, avec le motif.",
+    "                     Ces lignes sont conservées en base (ref_pays_id NULL)",
+    "                     et regroupées à la lecture sous « Autres pays » de",
+    "                     leur région, ce qui préserve l'égalité entre la somme",
+    "                     des pays et le sous-total imprimé de la région.",
+    "Un libellé qui n'est dans aucun des deux volets et que le rapprochement",
+    "n'atteint pas est signalé comme orphelin non arbitré par",
+    "verifier_rapprochement_pays.py : il faut le trancher ici."
+  ],
+
+  "alias": {
+    "CITE DU VATICAN": "Saint-Siège (Vatican)",
+    "REPUBLIQUE D'AZERBADJAN": "Azerbaïdjan",
+    "REPUBLIQUE DE KAZAKSTAN": "Kazakhstan",
+    "CENTRE AFRIQUE": "République centrafricaine",
+    "SAINT THOMAS ILE DU PRINCE": "Sao Tomé-et-Principe",
+    "CONGO DEMOCRATIQUE": "RD Congo",
+    "ILES DU CAP VERT": "Cabo Verde",
+    "GUINEE REPUBLIQUE": "Guinée",
+    "ILES MAURICE": "Maurice",
+    "COMORES ILE": "Comores",
+    "SWAZILAND": "Eswatini",
+    "ILES BRAHAMAS": "Bahamas",
+    "ST VINCENT-ILES GRENADINES": "Saint-Vincent-et-les-Grenadines",
+    "NOUVELLE GUINEE ET PAPOUASIE": "Papouasie-Nouvelle-Guinée",
+    "UNION BIRMANE": "Myanmar",
+    "YEMEN DEMOCRATIQUE": "Yémen",
+    "SAINT DOMINGUE": "République dominicaine",
+    "BELGIQUE-LUXEMBOURG": "Belgique"
+  },
+
+  "_notes_alias": {
+    "CONGO DEMOCRATIQUE": "RDC [CD], et non « Congo » [CG] que le rapprochement flou propose en premier : les deux pays existent dans ref_pays et le tableau a une ligne CONGO distincte.",
+    "SWAZILAND": "Renommé Eswatini en 2018 ; les éditions NACE gardent l'ancien nom.",
+    "UNION BIRMANE": "Ancien nom de la Birmanie, aujourd'hui Myanmar dans ref_pays.",
+    "YEMEN DEMOCRATIQUE": "Yémen du Sud, fondu dans le Yémen unifié en 1990. Le tableau garde les deux lignes ; les rattacher au même pays les additionne, ce qui est le résultat voulu.",
+    "SAINT DOMINGUE": "République dominicaine, et non Haïti : « Haïti » n'est PAS dans la liste des pays de ref_pays sans libellé NACE, donc le tableau a déjà sa ligne HAITI — le doublon historique est levé par élimination.",
+    "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, encore utilisée comme partenaire unique par l'ANSD. Ni « Belgique » ni « Luxembourg » n'ont de ligne propre dans le tableau : rattacher à la Belgique (de très loin prépondérante) est le seul moyen qu'elle existe dans les données. À revoir si une édition sépare les deux."
+  },
+
+  "hors_referentiel": {
+    "EX-YOUGOSLAVIE": "État dissous, sans successeur unique dans ref_pays",
+    "TRIESTE": "ville italienne (ancien territoire libre) ; l'Italie a sa propre ligne",
+    "HELGOLAND": "île allemande hors territoire douanier ; l'Allemagne a sa propre ligne",
+    "ILES CANARIES": "région ultrapériphérique espagnole ; l'Espagne a sa propre ligne, la fusion fausserait sa valeur",
+    "ILE STE HELENE": "territoire britannique d'outre-mer",
+    "REUNION": "département français d'outre-mer ; la France a sa propre ligne",
+    "GUADELOUPE": "département français d'outre-mer ; la France a sa propre ligne",
+    "MARTINIQUE": "département français d'outre-mer ; la France a sa propre ligne",
+    "GUYANE FRANCAISE": "département français d'outre-mer — à ne pas confondre avec le Guyana, qui a sa propre ligne",
+    "SAINT PIERRE ET MIQUELON": "collectivité française d'outre-mer",
+    "NOUVELLE CALEDONIE": "collectivité française du Pacifique",
+    "GROENLAND": "pays autonome du Royaume de Danemark, hors Union européenne",
+    "ILES BERMUDES": "territoire britannique d'outre-mer",
+    "ILES CALQUES": "îles Turques-et-Caïques, territoire britannique d'outre-mer",
+    "ILES VIERGES DES USA": "territoire non incorporé des États-Unis",
+    "CURUCAO": "Curaçao, pays constitutif du Royaume des Pays-Bas",
+    "HONG-KONG": "région administrative spéciale chinoise, absente de ref_pays",
+    "MACAO": "région administrative spéciale chinoise, absente de ref_pays",
+    "ILES NIOUE, ILES TOKELOU": "Niue et Tokelau, territoires associés à la Nouvelle-Zélande"
+  }
+}
