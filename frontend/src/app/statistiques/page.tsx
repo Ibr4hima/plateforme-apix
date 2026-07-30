@@ -746,10 +746,13 @@ function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number
 function TopPartenaires({ titre, lignes, couleur, montrerRegion }: {
   titre: string; lignes: Partenaire[]; couleur: string; montrerRegion?: boolean;
 }) {
+  // Le maximum est celui de la colonne : les barres comparent les partenaires
+  // entre eux dans un sens donné, pas les deux sens l'un contre l'autre.
   const max = Math.max(1, ...lignes.map(l => l.valeur));
   return (
-    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 8, alignSelf: "start" }}>
-      <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0 }}>{titre}</h3>
+    <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+      <p style={{ fontSize: 9, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em",
+        textTransform: "uppercase", margin: "0 0 2px" }}>{titre}</p>
       {lignes.length === 0
         ? <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "14px 0" }}>Aucun échange.</p>
         : lignes.map((l, i) => (
@@ -782,6 +785,13 @@ function TopPartenaires({ titre, lignes, couleur, montrerRegion }: {
     </div>
   );
 }
+
+// Ordre fixe des continents pour la bascule : les classer par volume les
+// ferait sauter d'une année à l'autre. « Divers » n'en est pas un — provisions
+// de bord, or monétaire et origines non déterminées n'ont pas de partenaires.
+const CONTINENTS_ORDRE = ["Afrique", "Europe", "Asie", "Amérique", "Océanie"];
+// Les cinq sont féminins et commencent par une voyelle : « avec l'Afrique ».
+const AVEC_CONTINENT = (c: string) => `avec l'${c}`;
 
 // ── Nomenclatures de produits (tableaux 8–19 et 38–41) ───────────────────────
 // Quatre lectures du même commerce, de la plus synthétique à la plus fine.
@@ -865,6 +875,10 @@ function CommerceExterieurPanel() {
   const [anKpi, setAnKpi] = useState<number | null>(null);
   const [anProd, setAnProd] = useState<number | null>(null);
   const [anZone, setAnZone] = useState<number | null>(null);
+  const [anCont, setAnCont] = useState<number | null>(null);
+  // Continent affiché en section 03 ; l'Afrique par défaut, premier partenaire
+  // du Sénégal à l'export comme à l'import.
+  const [contSel, setContSel] = useState("Afrique");
   // Bascules de la section Produits : nomenclature, sens, unité.
   const [prodFamille, setProdFamille] = useState<NaceFamille>("principaux");
   const [prodSens, setProdSens] = useState<ZoneSens>("export");
@@ -1092,74 +1106,46 @@ function CommerceExterieurPanel() {
               portee={zonePortee} setPortee={setZonePortee}
               sens={zoneSens} mesure={zoneMesure} setMesure={setZoneMesure} />
 
-            {/* Classements de partenaires : le tableau ci-dessus répond à
-                « comment se répartit tel niveau », ceux-ci à « qui sont les
-                premiers partenaires ». Ils suivent le curseur de la section
-                mais pas ses bascules de niveau, qui n'ont pas de sens ici. */}
-            {(() => {
-              const ratt = reg2?.continents ?? pys?.continents ?? {};
-              const cl = classerPartenaires(pys, "export", a, ratt, null, 10);
-              const fo = classerPartenaires(pys, "import", a, ratt, null, 10);
-              if (!cl.length && !fo.length) return null;
-              // « Divers » n'est pas un continent : provisions de bord, or
-              // monétaire et origines non déterminées n'ont pas de partenaires.
-              const continents = (cont?.donnees.export ?? [])
-                .filter(r => r.annee === a && r.continent !== "Divers")
-                .sort((x, y) => (y.valeur ?? 0) - (x.valeur ?? 0))
-                .map(r => r.continent);
-              return (
-                <>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14, marginTop: 14 }}>
-                    <TopPartenaires titre={`Premiers clients du Sénégal · ${a}`} lignes={cl} couleur={NACE_BLEU} montrerRegion />
-                    <TopPartenaires titre={`Premiers fournisseurs du Sénégal · ${a}`} lignes={fo} couleur={NACE_ORANGE} montrerRegion />
-                  </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "22px 0 12px", flexWrap: "wrap" }}>
-                    <h3 style={{ fontWeight: 800, fontSize: "0.95rem", color: "#1a1a2e", margin: 0 }}>Partenaires par continent</h3>
-                    <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
-                      parts calculées sur le continent, non sur le total mondial
-                    </span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-                    {continents.map(c => (
-                      <div key={c} className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12, alignSelf: "start" }}>
-                        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0 }}>{c}</h3>
-                        {([{ l: "Clients", sens: "export" as ZoneSens, coul: NACE_BLEU },
-                           { l: "Fournisseurs", sens: "import" as ZoneSens, coul: NACE_ORANGE }]).map(bloc => {
-                          const lignes = classerPartenaires(pys, bloc.sens, a, ratt, c, 5);
-                          return (
-                            <div key={bloc.l}>
-                              <p style={{ fontSize: 8.5, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em",
-                                textTransform: "uppercase", margin: "0 0 6px" }}>{bloc.l}</p>
-                              {lignes.length === 0
-                                ? <p style={{ fontSize: 11.5, color: "#9aa5b4", margin: 0 }}>Aucun échange.</p>
-                                : lignes.map((x, i) => (
-                                  <div key={x.nom} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "3px 0" }}>
-                                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 19, height: 19,
-                                      borderRadius: 999, background: i < 3 ? bloc.coul : "#EFEDEA", color: i < 3 ? "#fff" : "#9aa5b4",
-                                      fontSize: 9.5, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
-                                    <DrapeauPays iso={x.iso2} nom={x.nom} />
-                                    <span title={x.nom} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 650, color: "#1a1a2e",
-                                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{x.nom}</span>
-                                    <span className="ds-donnee" style={{ fontSize: 11, fontWeight: 800, color: bloc.coul, whiteSpace: "nowrap",
-                                      fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(x.valeur)}</span>
-                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#4a5568", width: 42, textAlign: "right", flexShrink: 0 }}>
-                                      {x.part != null ? `${x.part.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
-                                    </span>
-                                  </div>
-                                ))}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </>
-              );
-            })()}
           </>
         );
       })()}
 
+
+      {/* 03 · Partenaires par continent : un continent à la fois, sur toute la
+          largeur — les cinq côte à côte tronquaient les noms et n'aidaient à
+          comparer personne, chaque continent ayant ses propres partenaires. */}
+      {pys?.disponible && (() => {
+        const a = anCont ?? dernier;
+        const ratt = reg2?.continents ?? pys.continents ?? {};
+        const presents = CONTINENTS_ORDRE.filter(c =>
+          pys.donnees.export.some(r => r.annee === a && ratt[r.region] === c));
+        if (!presents.length) return null;
+        // Un continent peut disparaître d'une année à l'autre : on retombe
+        // alors sur le premier disponible plutôt que d'afficher une carte vide.
+        const c = presents.includes(contSel) ? contSel : presents[0];
+        const clients = classerPartenaires(pys, "export", a, ratt, c, 10);
+        const fournisseurs = classerPartenaires(pys, "import", a, ratt, c, 10);
+        return (
+          <>
+            <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <SegmentNace options={presents.map(x => ({ v: x, l: x }))} valeur={c} onChange={setContSel} />
+                {curseur(anCont, setAnCont)}
+              </div>
+            } />
+            <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0 }}>
+                Parts calculées sur l&apos;ensemble des échanges {AVEC_CONTINENT(c)}, non sur le total mondial —
+                {" "}{clients.length} client{clients.length > 1 ? "s" : ""} et {fournisseurs.length} fournisseur{fournisseurs.length > 1 ? "s" : ""} affichés
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
+                <TopPartenaires titre="Clients" lignes={clients} couleur={NACE_BLEU} />
+                <TopPartenaires titre="Fournisseurs" lignes={fournisseurs} couleur={NACE_ORANGE} />
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
