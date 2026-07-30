@@ -85,6 +85,11 @@ REGIONS_ORDRE = [
 AUTRES_PAYS = "Autres pays"
 FICHIER_ARBITRAGE = DOSSIER_CSV / "alias_pays_nace.json"
 
+# Lignes synthétiques produites par l'extraction : elles portent le résidu
+# d'une région que le rapport ne ventile pas (cf. scripts/nace/extraire_pays.py).
+# Reconnues à leur préfixe, elles n'ont pas à être énumérées dans l'arbitrage.
+PREFIXE_NON_VENTILE = "NON VENTILE —"
+
 
 def _arbitrage_pays() -> tuple[dict, set]:
     """(alias vers ref_pays, libellés assumés hors référentiel).
@@ -168,7 +173,7 @@ async def importer_nace(
         for r in csv.DictReader(open(fic, encoding="utf-8")):
             libelle = r["pays"]
             pid = None
-            if libelle in hors_ref:
+            if libelle in hors_ref or libelle.startswith(PREFIXE_NON_VENTILE):
                 assumes += 1
             else:
                 pid = correspondre_pays(alias_pays.get(libelle, libelle), index)

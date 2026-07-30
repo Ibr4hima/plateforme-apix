@@ -16,7 +16,9 @@
     "quand le partenaire pèse assez pour mériter d'être nommé. Ces cas sont",
     "retirés de hors_referentiel — sinon l'import, qui teste ce volet AVANT le",
     "rapprochement, continuerait de les ignorer — et tracés dans",
-    "_notes_referentiel avec la migration qui les a ajoutés."
+    "_notes_referentiel avec la migration qui les a ajoutés.",
+    "",
+    "Les lignes dont le libellé commence par « NON VENTILE — » sont synthétiques : elles portent le résidu d'une région que le rapport ne ventile pas (cf. extraire_pays.py). L'import les reconnaît à ce préfixe et les laisse hors référentiel sans qu'il faille les énumérer ici."
   ],
   "alias": {
     "CITE DU VATICAN": "Saint-Siège (Vatican)",
@@ -48,7 +50,7 @@
     "UNION BIRMANE": "Ancien nom de la Birmanie, aujourd'hui Myanmar dans ref_pays.",
     "YEMEN DEMOCRATIQUE": "Yémen du Sud, fondu dans le Yémen unifié en 1990. Le tableau garde les deux lignes ; les rattacher au même pays les additionne, ce qui est le résultat voulu.",
     "SAINT DOMINGUE": "République dominicaine, et non Haïti : « Haïti » n'est PAS dans la liste des pays de ref_pays sans libellé NACE, donc le tableau a déjà sa ligne HAITI — le doublon historique est levé par élimination.",
-    "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, encore utilisée comme partenaire unique par l'ANSD. Ni « Belgique » ni « Luxembourg » n'ont de ligne propre dans le tableau : rattacher à la Belgique (de très loin prépondérante) est le seul moyen qu'elle existe dans les données. À revoir si une édition sépare les deux.",
+    "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, employée comme partenaire unique jusqu'à l'édition 2022. L'édition 2023 sépare enfin les deux lignes, et elle tranche la question rétroactivement : elle imprime BELGIQUE 28 287 pour 2019 — exactement ce que l'édition 2022 imprimait pour BELGIQUE-LUXEMBOURG — et LUXEMBOURG à « - » sur toutes les années. Le montant de l'UEBL était donc entièrement belge, ce qui valide cet alias. Il ne sert plus que pour les années 2015 à 2018, qu'aucune édition récente ne couvre ; à partir de 2019 la lecture retient l'édition 2023 et ses deux lignes distinctes.",
     "HONDURAS BRITANIQUE": "Nom colonial du Belize (indépendant en 1981). Le tableau porte par ailleurs une ligne HONDURAS distincte, qui est bien le Honduras.",
     "TIMOR PORTUGAIS": "Nom colonial du Timor oriental, aujourd'hui Timor-Leste dans ref_pays.",
     "TRINIDAD ET TOBAGO": "Graphie anglaise ; ref_pays retient la forme française Trinité-et-Tobago.",
@@ -83,7 +85,11 @@
     "PROVISIONS DE BORD E": "provisions de bord étrangères (le « PBE » du titre du groupe Divers) — avitaillement de navires et d'aéronefs, pas un pays",
     "PROVISIONS DE BORD F": "provisions de bord françaises (« PBF ») — même nature",
     "DIVERS NON DETERMINES AILLEURS": "le « nda » du titre : échanges dont l'origine ou la destination n'est pas déterminée",
-    "ORIGINES MELANGEES (PP)": "marchandises d'origines mélangées — pas un partenaire géographique"
+    "ORIGINES MELANGEES (PP)": "marchandises d'origines mélangées — pas un partenaire géographique",
+    "ILES FALKLAND (MALVINAS)": "territoire britannique d'outre-mer — variante de graphie de l'édition 2022",
+    "ILES FALKLAND (ILES MALVINAS)": "idem, variante de l'édition 2023",
+    "DIVERS (PBE,PBF,OM,nda..; etc)": "même pseudo-partenaire que DIVERS, avec le suffixe « ; etc » de l'édition 2023",
+    "POLYNESIE FRANCAISE": "collectivité française du Pacifique"
   },
   "_notes_referentiel": {
     "HONG-KONG": "Ajouté à ref_pays [HK] par la migration 129 : partenaire de 19,2 Md FCFA en 2019, il représentait à lui seul 90 % du commerce de pays réels qui finissait anonyme dans « Autres pays ». Rattaché depuis par simple rapprochement exact.",

@@ -1,0 +1,121 @@
+region,sens,annee,valeur,poids,edition
+Union européenne,export,2018,302789,577800,2022
+Union européenne,export,2019,324218,641105,2022
+Union européenne,export,2020,264641,459827,2022
+Union européenne,export,2021,367932,662985,2022
+Union européenne,export,2022,400303,681283,2022
+Autres pays d'Europe,export,2018,314943,210862,2022
+Autres pays d'Europe,export,2019,380830,269172,2022
+Autres pays d'Europe,export,2020,319254,372050,2022
+Autres pays d'Europe,export,2021,463969,521648,2022
+Autres pays d'Europe,export,2022,491108,343889,2022
+Afrique centrale,export,2018,68168,50495,2022
+Afrique centrale,export,2019,62537,50972,2022
+Afrique centrale,export,2020,49637,51747,2022
+Afrique centrale,export,2021,56135,47090,2022
+Afrique centrale,export,2022,47261,46736,2022
+Afrique du Nord,export,2018,7183,6058,2022
+Afrique du Nord,export,2019,10498,9556,2022
+Afrique du Nord,export,2020,9119,8828,2022
+Afrique du Nord,export,2021,10175,9607,2022
+Afrique du Nord,export,2022,19691,19828,2022
+Afrique occidentale,export,2018,788263,3846983,2022
+Afrique occidentale,export,2019,965223,4271724,2022
+Afrique occidentale,export,2020,903808,4211467,2022
+Afrique occidentale,export,2021,1078579,4768169,2022
+Afrique occidentale,export,2022,1330147,4137996,2022
+Afrique orientale et du Sud,export,2018,5070,88598,2022
+Afrique orientale et du Sud,export,2019,15683,233763,2022
+Afrique orientale et du Sud,export,2020,8194,96925,2022
+Afrique orientale et du Sud,export,2021,7232,64160,2022
+Afrique orientale et du Sud,export,2022,7353,4187,2022
+Amérique du Nord,export,2018,63920,104306,2022
+Amérique du Nord,export,2019,78490,157020,2022
+Amérique du Nord,export,2020,68507,63799,2022
+Amérique du Nord,export,2021,70741,145656,2022
+Amérique du Nord,export,2022,104844,108531,2022
+Amérique centrale et du Sud,export,2018,11905,34121,2022
+Amérique centrale et du Sud,export,2019,11490,24133,2022
+Amérique centrale et du Sud,export,2020,19979,108928,2022
+Amérique centrale et du Sud,export,2021,43412,103182,2022
+Amérique centrale et du Sud,export,2022,19592,59390,2022
+Asie occidentale,export,2018,49882,240332,2022
+Asie occidentale,export,2019,45353,214827,2022
+Asie occidentale,export,2020,31867,118734,2022
+Asie occidentale,export,2021,43590,186163,2022
+Asie occidentale,export,2022,68506,189552,2022
+Autres pays d'Asie,export,2018,285933,764720,2022
+Autres pays d'Asie,export,2019,437062,1103030,2022
+Autres pays d'Asie,export,2020,374800,1021582,2022
+Autres pays d'Asie,export,2021,533860,1244653,2022
+Autres pays d'Asie,export,2022,798096,1170568,2022
+Océanie,export,2018,5547,50713,2022
+Océanie,export,2019,3193,1821,2022
+Océanie,export,2020,124100,798,2022
+Océanie,export,2021,122347,2292,2022
+Océanie,export,2022,142974,3196,2022
+Divers,export,2018,112076,316572,2022
+Divers,export,2019,112090,281047,2022
+Divers,export,2020,87441,276153,2022
+Divers,export,2021,86830,282723,2022
+Divers,export,2022,133485,204812,2022
+Union européenne,import,2018,1713003,3284247,2022
+Union européenne,import,2019,2107992,3742952,2022
+Union européenne,import,2020,1880823,3908994,2022
+Union européenne,import,2021,1900474,3415681,2022
+Union européenne,import,2022,2681789,3725749,2022
+Autres pays d'Europe,import,2018,497878,2323783,2022
+Autres pays d'Europe,import,2019,554871,2454494,2022
+Autres pays d'Europe,import,2020,524616,2573956,2022
+Autres pays d'Europe,import,2021,735352,2753802,2022
+Autres pays d'Europe,import,2022,894796,1894627,2022
+Afrique centrale,import,2018,15097,59732,2022
+Afrique centrale,import,2019,23070,84176,2022
+Afrique centrale,import,2020,14442,64474,2022
+Afrique centrale,import,2021,19387,78207,2022
+Afrique centrale,import,2022,20019,81676,2022
+Afrique du Nord,import,2018,110727,296376,2022
+Afrique du Nord,import,2019,132852,391055,2022
+Afrique du Nord,import,2020,143974,734261,2022
+Afrique du Nord,import,2021,183143,992899,2022
+Afrique du Nord,import,2022,212397,1368756,2022
+Afrique occidentale,import,2018,509285,1470633,2022
+Afrique occidentale,import,2019,381933,1122832,2022
+Afrique occidentale,import,2020,430168,1446166,2022
+Afrique occidentale,import,2021,430165,1341406,2022
+Afrique occidentale,import,2022,488753,918256,2022
+Afrique orientale et du Sud,import,2018,85086,812822,2022
+Afrique orientale et du Sud,import,2019,70678,622323,2022
+Afrique orientale et du Sud,import,2020,59109,417091,2022
+Afrique orientale et du Sud,import,2021,90018,462787,2022
+Afrique orientale et du Sud,import,2022,174692,806501,2022
+Amérique du Nord,import,2018,129901,328340,2022
+Amérique du Nord,import,2019,114807,165293,2022
+Amérique du Nord,import,2020,140866,267805,2022
+Amérique du Nord,import,2021,178182,267779,2022
+Amérique du Nord,import,2022,227203,299816,2022
+Amérique centrale et du Sud,import,2018,146398,753285,2022
+Amérique centrale et du Sud,import,2019,168117,822839,2022
+Amérique centrale et du Sud,import,2020,187933,861592,2022
+Amérique centrale et du Sud,import,2021,221397,871067,2022
+Amérique centrale et du Sud,import,2022,333430,1065816,2022
+Asie occidentale,import,2018,105051,163363,2022
+Asie occidentale,import,2019,129014,280959,2022
+Asie occidentale,import,2020,172651,704704,2022
+Asie occidentale,import,2021,293117,1196933,2022
+Asie occidentale,import,2022,498735,1256556,2022
+Autres pays d'Asie,import,2018,1155672,2399607,2022
+Autres pays d'Asie,import,2019,1066064,2029876,2022
+Autres pays d'Asie,import,2020,911061,1965667,2022
+Autres pays d'Asie,import,2021,1288429,2599814,2022
+Autres pays d'Asie,import,2022,1941608,2925157,2022
+Océanie,import,2018,12140,5770,2022
+Océanie,import,2019,9139,3689,2022
+Océanie,import,2020,19220,3701,2022
+Océanie,import,2021,17486,12557,2022
+Océanie,import,2022,18718,8365,2022
+Divers,import,2018,7761,14050,2022
+Divers,import,2019,15394,74379,2022
+Divers,import,2020,9552,40345,2022
+Divers,import,2021,21346,72019,2022
+Divers,import,2022,57222,146000,2022

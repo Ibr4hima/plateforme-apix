@@ -311,10 +311,82 @@ prouve rien si les deux viennent de la même ligne mal lue :
 4. **Σ régions d'un continent = famille `nace_continents`** — deux
    extractions distinctes confrontées (tolérance 3).
 
-Mesures sur les éditions 2019 à 2021 : écart maximum de **1 unité** sur le
-contrôle inter-familles, **3** sur les TOTAL, **5** sur un sous-total de
-région. Ce sont des arrondis — le rapport arrondit chaque sous-total
+Mesures sur les éditions 2019 à 2023 : écart maximum de **5** sur un
+sous-total de région, **3** sur les TOTAL et **4** sur le contrôle
+inter-familles — ce dernier ne dépassant 1 que sur l'édition 2023, dont les
+sous-totaux fautifs demandent une correction en cascade appuyée sur trois
+sources arrondies indépendamment. Ce sont des arrondis — le rapport arrondit chaque sous-total
 indépendamment de son détail. Toute erreur réelle se compte en milliers.
+
+### Éditions 2022 et 2023 — sous-totaux fautifs, et comment les trancher
+
+La numérotation glisse : les tableaux pays sont les **31 à 34**, non plus les
+34 à 37. Quatre difficultés nouvelles, dont trois silencieuses.
+
+**Libellé de région coupé en deux lignes.** Le tableau 33 de 2022 imprime
+« LES PAYS MEMBRES DE LA COMMUNAUTE » seul, puis « EUROPEENE » avec les
+valeurs. Sans recollage, la région disparaît et un pays fantôme
+« EUROPEENE » la remplace. Le recollage n'est retenu que s'il produit une
+région déclarée, si bien qu'un pied de page ne peut pas contaminer le
+libellé suivant.
+
+**Nombre de colonnes variable dans une même édition.** Le tableau 34 de 2022
+porte six millésimes (2017–2022) là où les trois autres en portent cinq. La
+lecture de l'en-tête le gère déjà, mais il faut noter que le millésime est
+parfois imprimé « 2 022 », avec une espace.
+
+**Préfixe des régions supprimé en 2023.** « LES PAYS DE L'AFRIQUE
+CENTRALE » devient « AFRIQUE CENTRALE ». Le garde-fou qui exigeait le
+préfixe « LES » ne protège donc plus : c'est l'assertion sur le nombre de
+régions et le contrôle des sous-totaux qui prennent le relais.
+
+**Pieds de page à police cassée.** L'édition 2023 rend ses pieds de page en
+caractères illisibles — `!"#$%&'()(*+,$%&-%."//$01$%$2#$03$-0%…` — suivis du
+numéro de page. Cette ligne passait pour un partenaire portant une valeur :
+le numéro 59 gonflait l'Afrique orientale et du Sud de 59 unités, et le
+libellé revenant à chaque page déclenchait un faux doublon. Un libellé doit
+désormais porter au moins deux lettres.
+
+### Arbitrage des sous-totaux incohérents
+
+Les éditions 2022 et 2023 impriment des sous-totaux de région qui ne
+s'accordent pas avec leur propre détail. Le **signe** de l'écart tranche, et
+il tranche logiquement — un sous-total ne peut pas être inférieur à la somme
+des lignes qu'il totalise :
+
+| Situation | Lecture | Cas observé |
+|---|---|---|
+| Σ pays **>** sous-total | le sous-total est faux, le détail fait foi | éd. 2022, T33, Amérique centrale et du Sud 2021 : 220 474 imprimé contre 221 397 sommés — et l'édition 2021 imprimait 221 396 |
+| Σ pays **<** sous-total | le rapport ne ventile pas tout | éd. 2022, T34, Océanie 2022 : 8 365 contre 8 341 — l'édition 2023 réimprime les deux mêmes chiffres, ce n'est donc pas une coquille |
+
+Le résidu non ventilé est versé à une ligne synthétique
+« NON VENTILE — <région> », qui rejoint « Autres pays » de sa région à la
+lecture : rien n'est perdu, rien n'est inventé, et les deux invariants
+tiennent. L'import reconnaît ces lignes à leur préfixe.
+
+Reste un écart que le détail ne peut pas arbitrer, faute d'en avoir : celui
+d'une région imprimée sans ventilation. Après correction des autres
+sous-totaux, s'il subsiste un écart avec la ligne TOTAL et qu'une seule
+région est dans ce cas, elle le porte nécessairement. C'est « Divers » dans
+l'édition 2023, sous-évalué de 9 000 à 26 364 à l'export — le TOTAL y est
+resté celui de l'édition 2022 — et sur-évalué de 451 à 2 474 à l'import, où
+le rapport lui a transféré ce qu'il retirait à « Autres pays d'Europe ».
+
+**La famille continents confirme la correction dans les deux sens, au chiffre
+près** : avant correction, elle affiche pour l'import un écart de
+−451/−522/−2 474/−979 sur Europe et exactement +451/+522/+2 474/+979 sur
+Divers. Ce miroir est la preuve du transfert, et il vient d'une extraction
+indépendante.
+
+### Belgique et Luxembourg séparés à partir de 2023
+
+Jusqu'à l'édition 2022, le rapport n'a qu'une ligne
+« BELGIQUE-LUXEMBOURG », héritée de l'union économique belgo-luxembourgeoise.
+L'édition 2023 les sépare — et tranche la question rétroactivement : elle
+imprime BELGIQUE 28 287 pour 2019, exactement ce que l'édition 2022 donnait à
+l'UEBL, et LUXEMBOURG à « - » sur toutes les années. Le montant était donc
+entièrement belge, ce qui valide l'alias BELGIQUE-LUXEMBOURG → Belgique. Cet
+alias ne sert plus que pour 2015–2018, qu'aucune édition récente ne couvre.
 
 ## Corrections apportées aux données (édition 2019)
 

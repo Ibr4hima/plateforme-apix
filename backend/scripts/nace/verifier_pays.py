@@ -27,7 +27,13 @@ import sys
 from pathlib import Path
 
 ICI = Path(__file__).parent
-TOL_REGION, TOL_TOTAL, TOL_FAMILLE = 6, 8, 3
+# Tolérances d'arrondi, calibrées sur les mesures des éditions 2019 à 2023 :
+# écart maximum observé de 5 sur un sous-total de région, 3 sur un TOTAL et 4
+# sur le contrôle inter-familles. Ce dernier ne dépasse 1 que sur l'édition
+# 2023, dont les sous-totaux fautifs demandent une correction en cascade
+# appuyée sur trois sources arrondies indépendamment (détail pays, ligne
+# TOTAL, table continents). Toute erreur réelle se compte en milliers.
+TOL_REGION, TOL_TOTAL, TOL_FAMILLE = 6, 8, 5
 MESURES = ("valeur", "poids")
 SENS = ("export", "import")
 

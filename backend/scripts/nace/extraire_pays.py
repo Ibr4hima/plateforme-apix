@@ -40,6 +40,11 @@ ANNEES = [AN_MIN + i for i in range(5)]
 # écart résiduel de 5 unités au pire sur une région et de 2 sur le TOTAL.
 # Toute erreur réelle (ligne perdue, colonne décalée) se compte en milliers.
 TOL_REGION, TOL_TOTAL = 6, 8
+# Préfixe des lignes synthétiques portant le résidu d'une région que le
+# rapport ne ventile pas (cf. contrôle 1). Le libellé est complété par le nom
+# de la région, ce qui le rend unique par tableau ; l'import les reconnaît à
+# ce préfixe et les laisse hors référentiel.
+NON_VENTILE = "NON VENTILE —"
 DEST = "/home/user/plateforme-apix/backend/scripts/nace"
 
 
@@ -83,12 +88,27 @@ CANON = {cle(k): v for k, v in {
     "LES AUTRES PAYS D'ASIE": "Autres pays d'Asie",
     "LES PAYS DU CONTINENT AUSTRALIEN": "Océanie",
     "LES PAYS DE L'OCEANIE": "Océanie",
+    # L'édition 2023 laisse tomber le préfixe « LES PAYS DE ».
+    "UNION EUROPEENNE": "Union européenne",
+    "AUTRES PAYS DE L'EUROPE": "Autres pays d'Europe",
+    "AFRIQUE CENTRALE": "Afrique centrale",
+    "AFRIQUE DU NORD": "Afrique du Nord",
+    "AFRIQUE OCCIDENTALE": "Afrique occidentale",
+    "AFRIQUE DE L'OUEST": "Afrique occidentale",
+    "AFRIQUE ORIENTALE ET DU SUD": "Afrique orientale et du Sud",
+    "AMERIQUE DU NORD": "Amérique du Nord",
+    "AMERIQUE CENTRALE ET DU SUD": "Amérique centrale et du Sud",
+    "ASIE OCCIDENTALE": "Asie occidentale",
+    "AUTRES PAYS D'ASIE": "Autres pays d'Asie",
+    "CONTINENT AUSTRALIEN": "Océanie",
+    "OCEANIE": "Océanie",
     # 13e groupe, sans détail pays : le « Divers » de la famille continents
     # (PBE = provisions de bord étrangères, PBF = françaises, OM = or
     # monétaire, nda = non dénommé ailleurs). Le suffixe varie en ponctuation.
     "DIVERS": "Divers",
     "DIVERS (PBE,PBF,OM,NDA..)": "Divers",
     "DIVERS (PBE, PBF, OM, NDA..)": "Divers",
+    "DIVERS (PBE,PBF,OM,NDA..; ETC)": "Divers",
     # Les tableaux d'import nomment ce même groupe « NCA » (non classé
     # ailleurs) : identité vérifiée au chiffre près contre nace_continents
     # (2019 : 4 922 / 4 342 / 5 696 / 5 147 / 15 001 MFCFA).
@@ -119,6 +139,18 @@ def colonnes(l: str) -> list[str]:
 
 def est_valeur(t: str) -> bool:
     return t == "-" or (bool(re.fullmatch(r"-?[\d ]+", t)) and any(c.isdigit() for c in t))
+
+
+def est_libelle(t: str) -> bool:
+    """Un libellé de partenaire ou de région porte au moins deux lettres.
+
+    Garde-fou contre les pieds de page de l'édition 2023, dont la police est
+    cassée au rendu : « !"#$%&'()(*+,$%&… » suivi du numéro de page passait
+    pour un partenaire portant une valeur — le numéro 59 gonflait ainsi
+    l'Afrique orientale et du Sud de 59 unités, et le libellé revenant à
+    chaque page provoquait un doublon.
+    """
+    return bool(re.search(r"[A-Z]{2}", cle(t)))
 
 
 def nombre(t: str):
@@ -153,7 +185,7 @@ def repere_colonnes(sec: str, attendu: int) -> list[int]:
     for l in sec.split("\n"):
         m = morceaux(l)
         c = [t for t, _ in m]
-        if len(c) != attendu or est_valeur(c[0]) or not all(est_valeur(t) for t in c[1:]):
+        if len(c) != attendu or not est_libelle(c[0]) or not all(est_valeur(t) for t in c[1:]):
             continue
         if est_entete_annees(c[1:]):
             continue
@@ -205,10 +237,18 @@ def parse(debut: str, fin: str | None):
     pays: dict[str, tuple[str, list]] = {}
     total = None
     courante = None
+    prefixe = None
     for l, bornes in lignes_pagees:
         m = morceaux(l)
         c = [t for t, _ in m]
-        if len(c) < 2 or est_valeur(c[0]) or not all(est_valeur(t) for t in c[1:]):
+        if len(c) == 1 and est_libelle(c[0]):
+            # Libellé de région peut-être coupé en deux lignes : le tableau 33
+            # de l'édition 2022 imprime « LES PAYS MEMBRES DE LA COMMUNAUTE »
+            # seul, puis « EUROPEENE » avec les valeurs. Sans recollage, la
+            # région disparaît et un pays fantôme « EUROPEENE » apparaît.
+            prefixe = c[0]
+            continue
+        if len(c) < 2 or not est_libelle(c[0]) or not all(est_valeur(t) for t in c[1:]):
             continue
         if est_entete_annees(c[1:]):            # en-tête répété en tête de page
             continue
@@ -233,7 +273,14 @@ def parse(debut: str, fin: str | None):
         else:
             continue
         vals = [nombre(brut[i]) for i in garder]
-        libelle, k = c[0], cle(c[0])
+        libelle = c[0]
+        # Le recollage n'est retenu que s'il produit une région connue : une
+        # ligne de pied de page (« Source : ANSD/DSECN… ») ne peut donc pas
+        # contaminer le libellé qui la suit.
+        if prefixe and cle(f"{prefixe} {libelle}") in CANON:
+            libelle = f"{prefixe} {libelle}"
+        prefixe = None
+        k = cle(libelle)
         if k == "TOTAL":
             total = vals
         elif k in CANON:
@@ -265,23 +312,81 @@ def parse(debut: str, fin: str | None):
 
     # Région imprimée sans détail pays : sa ligne est à la fois le sous-total
     # et son unique partenaire, on l'inscrit donc aussi côté pays pour garder
-    # Σ pays = TOTAL. C'est le cas de « DIVERS » dans les éditions 2019 et
-    # 2020 — mais PAS en 2021, où le rapport détaille enfin ce groupe
+    # Σ pays = TOTAL. C'est le cas de « DIVERS » dans les éditions 2019, 2020
+    # et 2023 — mais PAS en 2021 et 2022, où le rapport détaille ce groupe
     # (provisions de bord E et F, divers non déterminés ailleurs, origines
-    # mélangées). Injecter sans condition y double-compterait la région.
-    avec_detail = {r for r, _ in pays.values()}
-    for nom, sous_total in regions.items():
-        if nom not in avec_detail:
-            pays[libelles_regions[nom]] = (nom, sous_total)
+    # mélangées). Injecter sans condition l'y double-compterait.
+    sans_detail = [n for n in regions if n not in {r for r, _ in pays.values()}]
+    for nom in sans_detail:
+        pays[libelles_regions[nom]] = (nom, list(regions[nom]))
 
     # Contrôle 1 : la somme des pays d'une région = son sous-total imprimé.
+    #
+    # Quand les deux divergent, le SIGNE de l'écart tranche, et il tranche
+    # logiquement : un sous-total ne peut pas être inférieur à la somme des
+    # lignes qu'il totalise.
+    #
+    #  - Σ pays > sous-total  → le sous-total imprimé est faux, le détail fait
+    #    foi. Édition 2022, tableau 33, Amérique centrale et du Sud 2021 :
+    #    220 474 imprimé contre 221 397 sommés, et l'édition 2021 imprimait
+    #    221 396 pour cette même année. Édition 2023, « Autres pays d'Europe » :
+    #    le rapport a révisé ses sous-totaux sans revoir son détail, et la
+    #    famille continents donne raison au détail.
+    #  - Σ pays < sous-total  → le rapport ne ventile pas tout. Édition 2022,
+    #    tableau 34, Océanie 2022 : 8 365 imprimé contre 8 341 sommés, et
+    #    l'édition 2023 réimprime les deux mêmes chiffres — ce n'est donc pas
+    #    une coquille. Ces 24 t existent sans partenaire nommé ; elles sont
+    #    versées à une ligne « non ventilé » propre à la région, qui rejoint
+    #    « Autres pays » à la lecture. Rien n'est perdu ni inventé.
+    residus: dict[str, list] = {}
     for nom, sous_total in regions.items():
+        if nom in sans_detail:
+            continue                            # rien à confronter
         membres = [v for r, v in pays.values() if r == nom]
         somme = [sum((v[i] or 0) for v in membres) for i in range(5)]
-        ecarts = [i for i in range(5) if abs(somme[i] - (sous_total[i] or 0)) > TOL_REGION]
-        if ecarts:
-            detail = ", ".join(f"{ANNEES[i]} : {sous_total[i]} ≠ {somme[i]}" for i in ecarts)
-            print(f"  ⚠ {debut} · {nom} : sous-total imprimé ≠ Σ pays ({detail})")
+        for i in range(5):
+            ecart = somme[i] - (sous_total[i] or 0)
+            if abs(ecart) <= TOL_REGION:
+                continue
+            if ecart > 0:
+                print(f"  ⚠ {debut} · {nom} · {ANNEES[i]} : sous-total imprimé "
+                      f"{sous_total[i]} inférieur à Σ pays {somme[i]} — "
+                      f"impossible, Σ pays retenu")
+                sous_total[i] = somme[i]
+            else:
+                print(f"  ⚠ {debut} · {nom} · {ANNEES[i]} : {-ecart} non ventilé "
+                      f"(sous-total {sous_total[i]}, Σ pays {somme[i]}) — versé "
+                      f"en « non ventilé »")
+                residus.setdefault(nom, [0] * 5)[i] = -ecart
+    for nom, res in residus.items():
+        pays[f"{NON_VENTILE} {nom}"] = (nom, res)
+
+    # Réconciliation par le TOTAL. Après correction des sous-totaux, un écart
+    # résiduel avec la ligne TOTAL ne peut venir que d'une région dont le
+    # sous-total est faux SANS détail pour le contredire. S'il n'y en a qu'une,
+    # elle porte nécessairement l'écart et on l'y verse.
+    #
+    # C'est le cas de « Divers » dans l'édition 2023 : ses sous-totaux sont
+    # sous-évalués de 9 000 à 26 364 à l'export (le TOTAL, lui, est resté
+    # celui de l'édition 2022) et sur-évalués de 451 à 2 474 à l'import, où le
+    # rapport lui a transféré ce qu'il a retiré à « Autres pays d'Europe ».
+    # La famille continents confirme la correction dans les deux sens, au
+    # chiffre près.
+    for i in range(5):
+        ecart = total[i] - sum((v[i] or 0) for v in regions.values())
+        if abs(ecart) <= TOL_TOTAL:
+            continue
+        if len(sans_detail) == 1:
+            nom = sans_detail[0]
+            print(f"  ⚠ {debut} · {ANNEES[i]} : TOTAL écarté de {ecart} des "
+                  f"sous-totaux — reporté sur « {nom} », seule région sans "
+                  f"détail pour la contredire")
+            regions[nom][i] = (regions[nom][i] or 0) + ecart
+            pays[libelles_regions[nom]][1][i] = regions[nom][i]
+        else:
+            print(f"  ⚠ {debut} · {ANNEES[i]} : TOTAL écarté de {ecart} des "
+                  f"sous-totaux, et {len(sans_detail)} régions sans détail — "
+                  f"non réconcilié")
 
     # Contrôle 2 : la somme des régions = la ligne TOTAL du tableau.
     somme = [sum((v[i] or 0) for v in regions.values()) for i in range(5)]
@@ -301,6 +406,10 @@ impp_r, impp_p, totip = parse(TABLES[3], BORNE_FIN)
 # Les tableaux valeur et poids d'un même sens doivent lister les mêmes
 # partenaires : un écart trahit une ligne perdue au rendu du PDF.
 for sens, a, b in (("export", expv_p, expp_p), ("import", impv_p, impp_p)):
+    # Les lignes de résidu ne naissent que dans le tableau où le rapport ne
+    # ventile pas tout : leur asymétrie entre valeur et poids est normale.
+    a = {k for k in a if not k.startswith(NON_VENTILE)}
+    b = {k for k in b if not k.startswith(NON_VENTILE)}
     if set(a) != set(b):
         for cote, ecart in (("valeur seule", set(a) - set(b)), ("poids seul", set(b) - set(a))):
             if ecart:
