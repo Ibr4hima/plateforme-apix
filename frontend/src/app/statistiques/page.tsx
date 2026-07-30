@@ -268,8 +268,8 @@ function TableauProduitsNace({ titre, couleur, lignes, lignesPrec, mesure, onMes
 // postes par sens). Top 12 par défaut + « Voir tout », recherche par
 // libellé, bascule Valeur ⇆ Poids ; le rang affiché est le rang réel
 // dans le classement complet de l'année.
-function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec }: {
-  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[];
+function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec, unite = "produits" }: {
+  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[]; unite?: string;
 }) {
   const [mesure, setMesure] = useState<NaceMesure>("valeur");
   const [q, setQ] = useState("");
@@ -333,14 +333,14 @@ function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec }: {
       {/* Recherche d'un produit dans la nomenclature */}
       <div style={{ position: "relative" }}>
         <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${nommes.length} produits…`}
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${nommes.length} ${unite}…`}
           style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
         {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
       </div>
       {lignes.length === 0 ? (
         <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucune donnée.</p>
       ) : filtres.length === 0 ? (
-        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucun produit ne correspond à « {q} ».</p>
+        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucun résultat pour « {q} ».</p>
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
@@ -356,7 +356,7 @@ function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec }: {
             {!q && filtres.length > TOP && (
               <button onClick={() => setTout(t => !t)}
                 style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
-                {tout ? "Réduire au top 12" : `Voir les ${filtres.length - TOP} autres produits`}
+                {tout ? "Réduire au top 12" : `Voir les ${filtres.length - TOP} autres ${unite}`}
               </button>
             )}
             {autres && !q && (
@@ -514,9 +514,12 @@ function CommerceExterieurPanel() {
   const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
   const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
 
-  // Sections dédiées, non bloquantes : produits regroupés + groupes d'utilisation
+  // Sections dédiées, non bloquantes : produits regroupés, groupes
+  // d'utilisation et chapitres SH (repliés par défaut, 96 postes par sens)
   const [reg, setReg] = useState<NaceData | null>(null);
   const [gu, setGu] = useState<NaceDataGU | null>(null);
+  const [chap, setChap] = useState<{ disponible: boolean; donnees: { export: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[]; import: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[] } } | null>(null);
+  const [chapOuvert, setChapOuvert] = useState(false);
   useEffect(() => {
     setLoading(true); setErreur(false);
     fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -525,6 +528,8 @@ function CommerceExterieurPanel() {
       .then(setReg).catch(() => setReg(null));
     fetch(`${API}/nace/groupes-utilisation`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setGu).catch(() => setGu(null));
+    fetch(`${API}/nace/chapitres`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(setChap).catch(() => setChap(null));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -683,6 +688,37 @@ function CommerceExterieurPanel() {
               </span>
             </div>
             <SectionGroupesUtilisation exp={gE} imp={gI} />
+          </>
+        );
+      })()}
+
+      {/* Chapitres SH : nomenclature douanière la plus fine, repliée par défaut */}
+      {chap?.disponible && (() => {
+        const chDe = (sens: "export" | "import", a: number): NaceLigne[] =>
+          chap.donnees[sens].filter(r => r.annee === a)
+            .map(r => ({ produit: r.chapitre, annee: r.annee, valeur: r.valeur, poids: r.poids, edition: r.edition }));
+        const cE = chDe("export", an), cI = chDe("import", an);
+        if (!cE.length && !cI.length) return null;
+        return (
+          <>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
+              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Chapitres du Système Harmonisé · {an}</h3>
+              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
+                Nomenclature douanière la plus fine — {cE.length} chapitres export · {cI.length} import
+              </span>
+              <button onClick={() => setChapOuvert(o => !o)}
+                style={{ marginLeft: "auto", padding: "5px 16px", borderRadius: 999, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "#004f91", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                {chapOuvert ? "Masquer les chapitres" : "Afficher les chapitres"}
+              </button>
+            </div>
+            {chapOuvert && (
+              <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
+                <TableauRegroupesNace titre={`Exportations par chapitre · ${an}`} couleur={NACE_BLEU}
+                  lignes={cE} lignesPrec={chDe("export", an - 1)} unite="chapitres" />
+                <TableauRegroupesNace titre={`Importations par chapitre · ${an}`} couleur={NACE_ORANGE}
+                  lignes={cI} lignesPrec={chDe("import", an - 1)} unite="chapitres" />
+              </div>
+            )}
           </>
         );
       })()}
