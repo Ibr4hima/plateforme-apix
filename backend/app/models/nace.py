@@ -15,7 +15,7 @@ Six nomenclatures, même structure :
 - « continents » (tableaux 26–29) : Europe, Afrique, Amérique, Asie,
   Océanie et Divers — exhaustifs eux aussi ;
 - « régions » et « pays » (tableaux 34–37) : les deux granularités d'un
-  même tableau hiérarchique — 13 régions portant leur sous-total, et le
+  même tableau hiérarchique — 12 régions portant leur sous-total, et le
   détail des ~200 pays partenaires rattachés à ref_pays quand ils y
   figurent (cf. la migration 128 pour la règle « Autres pays »).
 

@@ -63,16 +63,20 @@ FAMILLES = [
     ("regions", NaceRegion, "region"),
 ]
 
-# Les 13 régions dans l'ordre du rapport (Europe → Océanie, « Divers » en
+# Les 12 régions dans l'ordre du rapport (Europe → Océanie, « Divers » en
 # fin) : l'ordre alphabétique n'a pas de sens pour une nomenclature
-# géographique, la lecture le restitue donc explicitement.
+# géographique, la lecture le restitue donc explicitement. Les libellés sont
+# ceux que scripts/nace/extraire_pays.py rend stables d'une édition à
+# l'autre, le rapport renommant ses régions au fil des ans (« Communauté »
+# puis « Union » européenne, « Afrique de l'Ouest » puis « occidentale ») et
+# ayant fusionné « Continent australien » dans « Océanie » après 2019.
 REGIONS_ORDRE = [
-    "Communauté européenne", "Autres pays d'Europe",
-    "Afrique centrale", "Afrique du Nord", "Afrique de l'Ouest",
+    "Union européenne", "Autres pays d'Europe",
+    "Afrique centrale", "Afrique du Nord", "Afrique occidentale",
     "Afrique orientale et du Sud",
     "Amérique du Nord", "Amérique centrale et du Sud",
     "Asie occidentale", "Autres pays d'Asie",
-    "Continent australien", "Océanie", "Divers",
+    "Océanie", "Divers",
 ]
 
 # Partenaires hors référentiel, regroupés à la lecture sous ce libellé —
@@ -293,7 +297,7 @@ async def continents(db: AsyncSession = Depends(get_db)):
 
 
 # ── GET /nace/regions ─────────────────────────────────────────────────────────
-# Les 13 sous-totaux régionaux tels qu'imprimés (tableaux 34–37). Ils sont
+# Les 12 sous-totaux régionaux tels qu'imprimés (tableaux 34–37). Ils sont
 # exhaustifs : leur somme est le total du commerce extérieur.
 @router.get("/regions")
 async def regions(db: AsyncSession = Depends(get_db)):

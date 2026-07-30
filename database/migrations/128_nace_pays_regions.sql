@@ -3,12 +3,12 @@
 -- partenaire en valeur (millions FCFA) et poids net (tonnes) — tableaux 34
 -- à 37 des annexes de l'édition 2019 (numérotation variable).
 --
--- Ces tableaux sont hiérarchiques : ~200 pays groupés sous 13 régions
+-- Ces tableaux sont hiérarchiques : ~200 pays groupés sous 12 régions
 -- (« LES PAYS MEMBRES DE LA COMMUNAUTE EUROPEENE », « LES PAYS DE
 -- L'AFRIQUE DE L'OUEST »…), chaque région portant son sous-total imprimé.
 -- Une seule extraction alimente donc deux tables, une par granularité :
 --
---   nace_regions : les 13 sous-totaux, tels qu'imprimés (autorité) ;
+--   nace_regions : les 12 sous-totaux, tels qu'imprimés (autorité) ;
 --   nace_pays    : le détail pays, avec sa région de rattachement.
 --
 -- Rattachement au référentiel : `ref_pays_id` est résolu à l'import par
