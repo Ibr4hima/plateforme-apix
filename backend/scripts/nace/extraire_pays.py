@@ -45,6 +45,16 @@ TOL_REGION, TOL_TOTAL = 6, 8
 # de la région, ce qui le rend unique par tableau ; l'import les reconnaît à
 # ce préfixe et les laisse hors référentiel.
 NON_VENTILE = "NON VENTILE —"
+
+# Variantes de graphie d'un même partenaire À L'INTÉRIEUR d'une édition,
+# ramenées à la forme que le reste de l'édition emploie. Le tableau 32 de
+# l'édition 2024 écrit « CHINE » quand ses trois autres tableaux écrivent
+# « REPUBLIQUE POPULAIRE DE CHINE » : sans harmonisation, la Chine occupe
+# deux lignes à l'export — l'une portant la valeur, l'autre le poids. La
+# lecture les recolle (l'agrégation se fait sur ref_pays_id), mais cela
+# ferait sonner pour rien le contrôle d'appariement valeur/poids, qui est
+# précisément l'alarme des lignes perdues.
+SYNONYMES = {"CHINE": "REPUBLIQUE POPULAIRE DE CHINE"}
 DEST = "/home/user/plateforme-apix/backend/scripts/nace"
 
 
@@ -142,15 +152,26 @@ def est_valeur(t: str) -> bool:
 
 
 def est_libelle(t: str) -> bool:
-    """Un libellé de partenaire ou de région porte au moins deux lettres.
+    """Un libellé de partenaire ou de région : deux lettres au moins, et
+    majoritairement en capitales.
 
-    Garde-fou contre les pieds de page de l'édition 2023, dont la police est
-    cassée au rendu : « !"#$%&'()(*+,$%&… » suivi du numéro de page passait
-    pour un partenaire portant une valeur — le numéro 59 gonflait ainsi
-    l'Afrique orientale et du Sud de 59 unités, et le libellé revenant à
-    chaque page provoquait un doublon.
+    Garde-fou contre les pieds de page, qui suivis du numéro de page passent
+    sinon pour un partenaire portant une valeur. Deux formes rencontrées :
+    l'édition 2023 les rend avec une police cassée
+    (« !"#$%&'()(*+,$%&… » — son numéro 59 gonflait l'Afrique orientale et du
+    Sud de 59 unités), l'édition 2024 les rend lisiblement (« Note d'analyse
+    du commerce exterieur - Edition 2024 »). Dans les deux cas le libellé
+    revient à chaque page, ce qui provoque en outre un faux doublon.
+
+    Le critère de casse est le discriminant : les tableaux écrivent leurs
+    libellés en capitales, les pieds de page en casse mixte. La majorité
+    suffit — et il la faut, le groupe « DIVERS (PBE,PBF,OM,nda..; etc) »
+    portant un « nda » en minuscules.
     """
-    return bool(re.search(r"[A-Z]{2}", cle(t)))
+    lettres = [c for c in unicodedata.normalize("NFD", t) if c.isalpha()]
+    if len(lettres) < 2:
+        return False
+    return sum(c.isupper() for c in lettres) >= sum(c.islower() for c in lettres)
 
 
 def nombre(t: str):
@@ -280,6 +301,7 @@ def parse(debut: str, fin: str | None):
         if prefixe and cle(f"{prefixe} {libelle}") in CANON:
             libelle = f"{prefixe} {libelle}"
         prefixe = None
+        libelle = SYNONYMES.get(libelle, libelle)
         k = cle(libelle)
         if k == "TOTAL":
             total = vals

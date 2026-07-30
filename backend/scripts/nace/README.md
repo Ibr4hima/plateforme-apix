@@ -235,7 +235,7 @@ l'huile brute est extrait d'« Autres produits » (2020 : 622 296 =
 révisions des imports (Machines et appareils 2020 : 612 244 contre
 604 249 en 2023).
 
-## Famille pays / régions (tableaux 34–37)
+## Famille pays / régions (tableaux 34–37, puis 31–34 dès 2022)
 
 Seule famille **hiérarchique** : une ligne de région porte son sous-total,
 suivie du détail de ses pays. Une lecture unique alimente donc les deux
@@ -311,11 +311,20 @@ prouve rien si les deux viennent de la même ligne mal lue :
 4. **Σ régions d'un continent = famille `nace_continents`** — deux
    extractions distinctes confrontées (tolérance 3).
 
-Mesures sur les éditions 2019 à 2023 : écart maximum de **5** sur un
-sous-total de région, **3** sur les TOTAL et **4** sur le contrôle
-inter-familles — ce dernier ne dépassant 1 que sur l'édition 2023, dont les
-sous-totaux fautifs demandent une correction en cascade appuyée sur trois
-sources arrondies indépendamment. Ce sont des arrondis — le rapport arrondit chaque sous-total
+Mesures sur les six éditions : écart maximum de **5** sur un sous-total de
+région, **3** sur les TOTAL et **4** sur le contrôle inter-familles. Ce
+dernier ne dépasse 1 que sur les éditions 2023 et 2024, dont les sous-totaux
+fautifs demandent une correction en cascade appuyée sur trois sources
+arrondies indépendamment (détail pays, ligne TOTAL, table continents).
+
+| Édition | Lignes pays | Σ pays → sous-total | Σ régions → TOTAL | régions → continents |
+|---|---|---|---|---|
+| 2019 | 1 835 | 5 | 2 | 1 |
+| 2020 | 1 840 | 5 | 2 | 1 |
+| 2021 | 1 850 | 5 | 3 | 1 |
+| 2022 | 1 860 | 5 | 3 | 1 |
+| 2023 | 1 815 | 3 | 1 | 4 |
+| 2024 | 1 800 | 4 | 2 | 3 | Ce sont des arrondis — le rapport arrondit chaque sous-total
 indépendamment de son détail. Toute erreur réelle se compte en milliers.
 
 ### Éditions 2022 et 2023 — sous-totaux fautifs, et comment les trancher
@@ -387,6 +396,34 @@ imprime BELGIQUE 28 287 pour 2019, exactement ce que l'édition 2022 donnait à
 l'UEBL, et LUXEMBOURG à « - » sur toutes les années. Le montant était donc
 entièrement belge, ce qui valide l'alias BELGIQUE-LUXEMBOURG → Belgique. Cet
 alias ne sert plus que pour 2015–2018, qu'aucune édition récente ne couvre.
+
+### Édition 2024 — mêmes défauts que 2023, et la Chine à deux graphies
+
+L'édition 2024 reprend la nomenclature sans préfixe de 2023 et reproduit
+exactement les mêmes sous-totaux fautifs sur « Autres pays d'Europe » et
+« Divers », aux mêmes montants pour les années communes — ce qui confirme au
+passage que ces défauts sont bien recopiés d'une édition à l'autre et non
+introduits par la lecture. L'arbitrage par le signe les traite sans
+intervention nouvelle.
+
+Deux points propres à cette édition :
+
+**Pied de page lisible.** Là où 2023 rendait ses pieds de page en police
+cassée, 2024 les imprime en clair — « Note d'analyse du commerce exterieur -
+Edition 2024 » suivi du numéro de page — et le filtre « au moins deux
+lettres » ne suffisait plus. Le discriminant retenu est la casse : les
+tableaux écrivent leurs libellés en capitales, les pieds de page en casse
+mixte. La *majorité* de capitales suffit, et il la faut : le groupe
+« DIVERS (PBE,PBF,OM,nda..; etc) » porte un « nda » en minuscules.
+
+**La Chine change de graphie entre deux tableaux du même sens.** Le tableau
+32 écrit « CHINE » quand les trois autres écrivent « REPUBLIQUE POPULAIRE DE
+CHINE ». Les deux se rattachent bien à la Chine et la lecture les recollerait
+(l'agrégation porte sur `ref_pays_id`), mais cela laisserait la Chine sur deux
+lignes à l'export — l'une avec la valeur, l'autre avec le poids — et ferait
+sonner pour rien le contrôle d'appariement valeur/poids, qui est précisément
+l'alarme des lignes perdues. Une table `SYNONYMES` ramène donc la variante à
+la forme employée par le reste de l'édition.
 
 ## Corrections apportées aux données (édition 2019)
 
