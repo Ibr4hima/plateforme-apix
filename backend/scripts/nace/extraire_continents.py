@@ -3,6 +3,10 @@
 
 Usage : extraire_continents.py <fichier.txt> <edition> <annee_min>
                                <T_expval> <T_exppds> <T_impval> <T_imppds>
+                               [<borne_fin>]
+
+`borne_fin` délimite le dernier tableau quand l'extrait contient la suite
+du rapport (sans quoi la section déborde sur le tableau suivant).
 
 Le fichier texte vient de `pdftotext -layout` ou, si le rendu est trop
 irrégulier, de `extraire_tableau_bbox.py`.
@@ -23,6 +27,7 @@ import unicodedata
 
 FIC, EDITION, AN_MIN = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 TABLES = sys.argv[4:8]
+BORNE_FIN = sys.argv[8] if len(sys.argv) > 8 else None
 ANNEES = [AN_MIN + i for i in range(5)]
 
 def cle(s: str) -> str:
@@ -85,14 +90,21 @@ def parse(debut: str, fin: str | None):
     assert len(lignes) == 6, f"{debut} : {len(lignes)} continents au lieu de 6 — {sorted(lignes)}"
     assert total, f"{debut} : TOTAL introuvable"
     somme = [sum((v[i] or 0) for v in lignes.values()) for i in range(5)]
-    for i, a in enumerate(ANNEES):
-        assert abs(somme[i] - total[i]) <= 3, f"{debut} {a} : somme {somme[i]} ≠ total {total[i]}"
+    # Les continents étant exhaustifs, leur somme EST le total : un TOTAL
+    # imprimé qui s'en écarte est une erreur du rapport (cas connu :
+    # tableau 27 de l'édition 2021, cf. README). On le signale et on
+    # retient la somme.
+    ecarts = [i for i in range(5) if abs(somme[i] - total[i]) > 3]
+    if ecarts:
+        detail = ", ".join(f"{ANNEES[i]} : {total[i]} ≠ {somme[i]}" for i in ecarts)
+        print(f"  ⚠ {debut} : TOTAL imprimé incohérent ({detail}) — somme des continents retenue")
+        total = somme
     return lignes, total
 
 expv, totev = parse(TABLES[0], TABLES[1])
 expp, totep = parse(TABLES[1], TABLES[2])
 impv, totiv = parse(TABLES[2], TABLES[3])
-impp, totip = parse(TABLES[3], None)
+impp, totip = parse(TABLES[3], BORNE_FIN)
 
 DEST = "/home/user/plateforme-apix/backend/scripts/nace"
 with open(f"{DEST}/edition_{EDITION}_continents.csv", "w", newline="", encoding="utf-8") as f:

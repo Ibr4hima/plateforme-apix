@@ -76,6 +76,13 @@ Cinq familles extraites, mêmes règles et même vérification :
   sommées à l'extraction, si bien que la série reste comparable de 2015 à
   2024 quel que soit le découpage du rapport source.
 
+  Anomalie du rapport 2021 : le TOTAL imprimé du tableau 27
+  (exportations en poids) annonce 8 040 349 t pour 2021 alors que la
+  somme de ses six continents donne 8 038 327 t. Les quatre autres
+  familles convergent vers 8 038 328–8 038 331 t : c'est bien le total
+  imprimé qui dévie (de 2 022 exactement). Les continents étant
+  exhaustifs, l'extracteur signale l'écart et retient leur somme.
+
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années
 2020–2024) ajoute la ligne export « Huiles brutes de pétrole »
