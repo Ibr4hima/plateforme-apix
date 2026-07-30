@@ -11,6 +11,7 @@ import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
@@ -557,6 +558,46 @@ function CurseurAnneeNace({ min, max, value, onChange }: {
   );
 }
 
+// Bascule segmentée compacte, teintée du sens affiché (bleu à l'export,
+// orange à l'import) pour que les commandes s'accordent aux valeurs.
+function SegmentNace<T extends string>({ options, valeur, onChange, accent }: {
+  options: { v: T; l: string }[]; valeur: T; onChange: (v: T) => void; accent?: string;
+}) {
+  return (
+    <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
+      {options.map(o => {
+        const actif = o.v === valeur;
+        return (
+          <button key={o.v} onClick={() => onChange(o.v)} style={{
+            border: "none", cursor: "pointer", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
+            background: actif ? "#fff" : "transparent", color: actif ? (accent ?? "#004f91") : "#6b7684",
+            boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+// En-tête de section reprenant celui du tableau de bord : numéro, titre, les
+// commandes de la section sur la même ligne, puis un filet qui court jusqu'au
+// bord. Chaque section porte ses propres commandes — dont son curseur d'année
+// — pour qu'on puisse comparer deux millésimes d'une section à l'autre.
+function EnTeteSectionNace({ n, titre, commandes }: {
+  n: number; titre: string; commandes?: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "30px 0 14px" }}>
+      <span style={{ width: 30, height: 30, borderRadius: 9, background: "rgba(0,79,145,0.09)", color: "#004f91",
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+        {String(n).padStart(2, "0")}
+      </span>
+      <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#1a1a2e", letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h3>
+      {commandes}
+      <div style={{ flex: 1, height: 1, background: "rgba(16,26,46,0.12)" }} />
+    </div>
+  );
+}
+
 type ZoneNiveau = "continent" | "region" | "pays";
 type ZoneSens = "export" | "import";
 type ZoneLigne = {
@@ -608,30 +649,28 @@ function indexerZone<T extends { annee: number; valeur: number | null; poids: nu
   return m;
 }
 
-function ZoneGeographique({ an, cont, reg, pys }: {
+// La portée courante — niveau et zooms — vit chez le parent, parce que la
+// bascule de niveau est remontée dans l'en-tête de section, et que descendre
+// au clic dans une ligne doit changer le niveau : les deux commandes agissent
+// sur le même état.
+type ZonePortee = { niveau: ZoneNiveau; cont: string | null; reg: string | null };
+
+function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure }: {
   an: number; cont: NaceDataCont | null; reg: NaceDataReg | null; pys: NaceDataPays | null;
+  portee: ZonePortee; setPortee: (p: ZonePortee) => void; sens: ZoneSens; mesure: NaceMesure;
 }) {
-  const [niveau, setNiveau] = useState<ZoneNiveau>("continent");
-  const [sens, setSens] = useState<ZoneSens>("export");
-  const [mesure, setMesure] = useState<NaceMesure>("valeur");
-  // Fil d'Ariane : le continent puis la région dans lesquels on est descendu.
-  const [zoomCont, setZoomCont] = useState<string | null>(null);
-  const [zoomReg, setZoomReg] = useState<string | null>(null);
+  const { niveau, cont: zoomCont, reg: zoomReg } = portee;
   const [q, setQ] = useState("");
   const [tout, setTout] = useState(false);
+  useEffect(() => { setQ(""); setTout(false); }, [portee, sens, mesure, an]);
 
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
+  // Le fil d'Ariane suit le sens affiché, comme les valeurs de la colonne.
+  const badgeSens = sens === "export" ? badge_bleu : badge_orange;
   const autre: ZoneSens = sens === "export" ? "import" : "export";
   const ratt = reg?.continents ?? pys?.continents ?? {};
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   const mv = (l: { v: number | null; p: number | null }) => (mesure === "valeur" ? l.v : l.p) ?? 0;
-
-  // Descendre d'un niveau conserve la portée ; remonter la relâche.
-  const allerA = (n: ZoneNiveau) => {
-    setNiveau(n); setQ(""); setTout(false);
-    if (n === "continent") { setZoomCont(null); setZoomReg(null); }
-    if (n === "region") setZoomReg(null);
-  };
 
   const lignes: ZoneLigne[] = useMemo(() => {
     const cles = <T,>(m: Map<string, T>) => m;
@@ -714,34 +753,8 @@ function ZoneGeographique({ an, cont, reg, pys }: {
   const TOP = niveau === "pays" ? 15 : 20;
   const visibles = q || tout ? filtres : filtres.slice(0, TOP);
 
-  // Concentration : combien de partenaires font la moitié des échanges.
-  const moitie = (() => {
-    let c = 0;
-    for (let i = 0; i < rangees.length; i++) {
-      c += Math.max(0, mv(rangees[i]));
-      if (total > 0 && c >= total / 2) return i + 1;
-    }
-    return null;
-  })();
-
-  const portee = zoomReg ?? zoomCont ?? "Monde";
+  const nomPortee = zoomReg ?? zoomCont ?? "Monde";
   const EN_TETE: React.CSSProperties = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" };
-  const Segment = <T extends string>({ options, valeur, onChange, accent }: {
-    options: { v: T; l: string }[]; valeur: T; onChange: (v: T) => void; accent?: string;
-  }) => (
-    <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
-      {options.map(o => {
-        const actif = o.v === valeur;
-        return (
-          <button key={o.v} onClick={() => onChange(o.v)} style={{
-            border: "none", cursor: "pointer", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
-            background: actif ? "#fff" : "transparent", color: actif ? (accent ?? "#004f91") : "#6b7684",
-            boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
-        );
-      })}
-    </div>
-  );
-
   // Rang et cumul se lisent sur la liste rangée complète, pas sur la portion
   // visible : une recherche ne doit pas renuméroter les lignes ni fausser le
   // cumul. Une seule passe, indexée par clé.
@@ -756,11 +769,9 @@ function ZoneGeographique({ an, cont, reg, pys }: {
     const podium = rang != null && rang <= 3;
     const epingle = rang == null;
     return (
-      <div onClick={l.ouvrable ? () => {
-        setQ(""); setTout(false);
-        if (niveau === "continent") { setZoomCont(l.nom); setNiveau("region"); }
-        else { setZoomReg(l.nom); setZoomCont(l.parent ?? zoomCont); setNiveau("pays"); }
-      } : undefined}
+      <div onClick={l.ouvrable ? () => (niveau === "continent"
+        ? setPortee({ niveau: "region", cont: l.nom, reg: null })
+        : setPortee({ niveau: "pays", cont: l.parent ?? zoomCont, reg: l.nom })) : undefined}
         role={l.ouvrable ? "button" : undefined} tabIndex={l.ouvrable ? 0 : undefined}
         title={l.ouvrable ? `Voir le détail de « ${l.nom} »` : undefined}
         style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
@@ -811,46 +822,26 @@ function ZoneGeographique({ an, cont, reg, pys }: {
   if (!lignes.length) return null;
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* Bascules : granularité, sens des échanges, unité de mesure */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <Segment options={NIVEAUX} valeur={niveau} onChange={allerA} accent={couleur} />
-        <Segment options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
-          valeur={sens} onChange={setSens} accent={couleur} />
-        <Segment options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
-          valeur={mesure} onChange={setMesure} accent={couleur} />
-        <span style={{ marginLeft: "auto", fontSize: 11, color: "#9aa5b4", fontWeight: 600, whiteSpace: "nowrap" }}>
-          {moitie != null && `${moitie} ${moitie > 1 ? "partenaires font" : "partenaire fait"} la moitié du total`}
-        </span>
-      </div>
-
-      {/* Fil d'Ariane : portée courante, chaque cran ramène en arrière */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", minHeight: 22 }}>
-        {([{ l: "Monde", actif: !zoomCont, aller: () => allerA("continent") },
-           ...(zoomCont ? [{ l: zoomCont, actif: !zoomReg, aller: () => { setZoomReg(null); setNiveau("region"); setQ(""); setTout(false); } }] : []),
-           ...(zoomReg ? [{ l: zoomReg, actif: true, aller: () => {} }] : [])]
-        ).map((c, i, arr) => (
-          <span key={c.l} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            {i > 0 && <ChevronRight size={12} style={{ color: "#C5BFBB" }} />}
-            <button onClick={c.aller} disabled={i === arr.length - 1}
-              style={{ border: "none", background: c.actif ? "rgba(0,79,145,0.08)" : "transparent", padding: "3px 10px", borderRadius: 999,
-                fontSize: 11.5, fontWeight: c.actif ? 800 : 700, color: c.actif ? "#004f91" : "#6b7684",
-                cursor: i === arr.length - 1 ? "default" : "pointer", fontFamily: "var(--font-google-sans)" }}>{c.l}</button>
-          </span>
-        ))}
-        <span style={{ fontSize: 11, color: "#C5BFBB", fontWeight: 600, marginLeft: 4 }}>
-          {rangees.length} {niveau === "pays" ? "partenaires" : niveau === "region" ? "régions" : "continents"}
-          {agregee && ` · « ${AUTRES_PAYS} » regroupe ${agregee.libelles} territoires hors référentiel`}
-        </span>
-      </div>
-
-      {/* Composition de la portée : une barre 100 % du sens affiché */}
-      <div style={{ display: "flex", height: 18, borderRadius: 7, overflow: "hidden", background: "#F2F0EF" }}>
-        {[...rangees, ...(agregee ? [agregee] : [])].map((l, i) => {
-          const pc = total > 0 ? Math.max(0, mv(l)) / total * 100 : 0;
-          if (pc <= 0) return null;
-          return <div key={l.cle} title={`${l.nom} · ${fmtV(mv(l))} · ${pc.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`}
-            style={{ width: `${pc}%`, background: couleur, opacity: Math.max(0.22, 1 - i * 0.055),
-              boxShadow: "inset -1px 0 0 rgba(255,255,255,0.5)", minWidth: pc > 0.4 ? 2 : 0 }} />;
+      {/* Fil d'Ariane : la portée courante, en badge teinté du sens affiché.
+          Chaque cran antérieur ramène à son niveau. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        {([{ l: "Monde", p: { niveau: "continent", cont: null, reg: null } as ZonePortee },
+           ...(zoomCont ? [{ l: zoomCont, p: { niveau: "region", cont: zoomCont, reg: null } as ZonePortee }] : []),
+           ...(zoomReg ? [{ l: zoomReg, p: { niveau: "pays", cont: zoomCont, reg: zoomReg } as ZonePortee }] : [])]
+        ).map((c, i, arr) => {
+          const dernier = i === arr.length - 1;
+          return (
+            <span key={c.l} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              {i > 0 && <ChevronRight size={12} style={{ color: "#C5BFBB" }} />}
+              <button onClick={() => setPortee(c.p)} disabled={dernier}
+                style={dernier
+                  ? { ...badgeSens, fontWeight: 700, cursor: "default", fontFamily: "var(--font-google-sans)" }
+                  : { border: "none", background: "transparent", padding: "4px 11px", borderRadius: 999,
+                      fontSize: 11, fontWeight: 600, color: "#6b7684", cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+                {c.l}
+              </button>
+            </span>
+          );
         })}
       </div>
 
@@ -858,7 +849,7 @@ function ZoneGeographique({ an, cont, reg, pys }: {
       {rangees.length > 20 && (
         <div style={{ position: "relative" }}>
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${rangees.length} partenaires de « ${portee} »…`}
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${rangees.length} partenaires de « ${nomPortee} »…`}
             style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
           {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
         </div>
@@ -904,7 +895,7 @@ function ZoneGeographique({ an, cont, reg, pys }: {
             <span style={{ width: 24, flexShrink: 0 }} />
             {niveau === "pays" && <span style={{ width: 20, flexShrink: 0 }} />}
             <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>
-              {portee === "Monde" ? "Ensemble" : portee}
+              {nomPortee === "Monde" ? "Ensemble" : nomPortee}
             </span>
             <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
             <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /><span style={{ width: 58, flexShrink: 0 }} />
@@ -930,9 +921,22 @@ function CommerceExterieurPanel() {
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState(false);
   const [tick, setTick] = useState(0);
-  const [anneeSel, setAnneeSel] = useState<number | null>(null);
+  // Une année par section, et non une seule pour tout l'onglet : on veut
+  // pouvoir tenir un millésime sur les produits pendant qu'on en parcourt un
+  // autre sur les zones. `null` = dernière année disponible.
+  const [anKpi, setAnKpi] = useState<number | null>(null);
+  const [anProd, setAnProd] = useState<number | null>(null);
+  const [anRegr, setAnRegr] = useState<number | null>(null);
+  const [anGu, setAnGu] = useState<number | null>(null);
+  const [anZone, setAnZone] = useState<number | null>(null);
+  const [anChap, setAnChap] = useState<number | null>(null);
   const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
   const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
+  // Portée et bascules de la zone géographique : remontées ici car leurs
+  // commandes vivent dans l'en-tête de section.
+  const [zonePortee, setZonePortee] = useState<ZonePortee>({ niveau: "continent", cont: null, reg: null });
+  const [zoneSens, setZoneSens] = useState<ZoneSens>("export");
+  const [zoneMesure, setZoneMesure] = useState<NaceMesure>("valeur");
 
   // Sections dédiées, non bloquantes : produits regroupés, groupes
   // d'utilisation et chapitres SH (repliés par défaut, 96 postes par sens)
@@ -962,7 +966,8 @@ function CommerceExterieurPanel() {
   }, [tick]);
 
   const annees = data?.annees ?? [];
-  const an = anneeSel ?? annees[annees.length - 1] ?? 0;
+  const dernier = annees[annees.length - 1] ?? 0;
+  const an = anKpi ?? dernier;
   const lignesDe = useCallback((sens: "export" | "import", a: number) =>
     (data?.donnees[sens] ?? []).filter(r => r.annee === a), [data]);
 
@@ -994,6 +999,10 @@ function CommerceExterieurPanel() {
 
   const expTot = totalDe("export", an), impTot = totalDe("import", an);
   const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
+  // Curseur de section : mêmes bornes que celui des KPIs, état indépendant.
+  const curseur = (valeur: number | null, poser: (a: number) => void) => (
+    <CurseurAnneeNace min={annees[0]} max={dernier} value={valeur ?? dernier} onChange={poser} />
+  );
   const varDe = (v: number | null, prec: number | null) =>
     v != null && prec != null && prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
   const balance = expTot != null && impTot != null ? expTot - impTot : null;
@@ -1014,7 +1023,7 @@ function CommerceExterieurPanel() {
       {/* En-tête : titre + curseur d'année, qui pilote toutes les sections */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 20 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        <CurseurAnneeNace min={annees[0]} max={annees[annees.length - 1]} value={an} onChange={setAnneeSel} />
+        <CurseurAnneeNace min={annees[0]} max={dernier} value={an} onChange={setAnKpi} />
       </div>
 
       {/* KPIs de l'année */}
@@ -1047,34 +1056,36 @@ function CommerceExterieurPanel() {
         ]} />
       </div>
 
-      {/* Principaux produits de l'année : classements export / import */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-        <TableauProduitsNace titre={`Principaux produits exportés · ${an}`} couleur={NACE_BLEU}
-          lignes={lignesDe("export", an)} lignesPrec={lignesDe("export", an - 1)}
-          mesure={mesureExp} onMesure={setMesureExp} />
-        <TableauProduitsNace titre={`Principaux produits importés · ${an}`} couleur={NACE_ORANGE}
-          lignes={lignesDe("import", an)} lignesPrec={lignesDe("import", an - 1)}
-          mesure={mesureImp} onMesure={setMesureImp} />
-      </div>
+      {/* Chaque section porte son propre curseur : les millésimes sont
+          indépendants d'une section à l'autre. */}
+      {(() => { const a = anProd ?? dernier; return (
+        <>
+          <EnTeteSectionNace n={1} titre="Principaux produits" commandes={curseur(anProd, setAnProd)} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
+            <TableauProduitsNace titre={`Principaux produits exportés · ${a}`} couleur={NACE_BLEU}
+              lignes={lignesDe("export", a)} lignesPrec={lignesDe("export", a - 1)}
+              mesure={mesureExp} onMesure={setMesureExp} />
+            <TableauProduitsNace titre={`Principaux produits importés · ${a}`} couleur={NACE_ORANGE}
+              lignes={lignesDe("import", a)} lignesPrec={lignesDe("import", a - 1)}
+              mesure={mesureImp} onMesure={setMesureImp} />
+          </div>
+        </>
+      ); })()}
 
-      {/* Produits regroupés : nomenclature détaillée ANSD, section dédiée */}
+      {/* Produits regroupés : nomenclature détaillée ANSD */}
       {reg?.disponible && (() => {
-        const regDe = (sens: "export" | "import", a: number) => reg.donnees[sens].filter(r => r.annee === a);
-        const rE = regDe("export", an), rI = regDe("import", an);
+        const a = anRegr ?? dernier;
+        const regDe = (sens: "export" | "import", x: number) => reg.donnees[sens].filter(r => r.annee === x);
+        const rE = regDe("export", a), rI = regDe("import", a);
         if (!rE.length && !rI.length) return null;
         return (
           <>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
-              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Produits regroupés</h3>
-              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
-                Nomenclature détaillée ANSD — {rE.filter(r => r.produit !== "Autres produits").length} postes export · {rI.filter(r => r.produit !== "Autres produits").length} import
-              </span>
-            </div>
+            <EnTeteSectionNace n={2} titre="Produits regroupés" commandes={curseur(anRegr, setAnRegr)} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-              <TableauRegroupesNace titre={`Exportations par produit · ${an}`} couleur={NACE_BLEU}
-                lignes={rE} lignesPrec={regDe("export", an - 1)} />
-              <TableauRegroupesNace titre={`Importations par produit · ${an}`} couleur={NACE_ORANGE}
-                lignes={rI} lignesPrec={regDe("import", an - 1)} />
+              <TableauRegroupesNace titre={`Exportations par produit · ${a}`} couleur={NACE_BLEU}
+                lignes={rE} lignesPrec={regDe("export", a - 1)} />
+              <TableauRegroupesNace titre={`Importations par produit · ${a}`} couleur={NACE_ORANGE}
+                lignes={rI} lignesPrec={regDe("import", a - 1)} />
             </div>
           </>
         );
@@ -1082,18 +1093,14 @@ function CommerceExterieurPanel() {
 
       {/* Groupes d'utilisation : répartition exhaustive + balance par groupe */}
       {gu?.disponible && (() => {
-        const guDe = (sens: "export" | "import", a: number) => gu.donnees[sens].filter(r => r.annee === a);
-        const gE = guDe("export", an), gI = guDe("import", an);
+        const a = anGu ?? dernier;
+        const guDe = (sens: "export" | "import", x: number) => gu.donnees[sens].filter(r => r.annee === x);
+        const gE = guDe("export", a), gI = guDe("import", a);
         if (!gE.length && !gI.length) return null;
         return (
           <>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
-              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Groupes d&apos;utilisation · {an}</h3>
-              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
-                9 groupes exhaustifs — leur somme est le total du commerce extérieur
-              </span>
-            </div>
-            <SectionRepartition titre="Répartition et balance par groupe" colonne="Groupe"
+            <EnTeteSectionNace n={3} titre="Groupes d'utilisation" commandes={curseur(anGu, setAnGu)} />
+            <SectionRepartition titre={`Répartition et balance par groupe · ${a}`} colonne="Groupe"
               exp={gE.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))}
               imp={gI.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))} />
           </>
@@ -1101,45 +1108,60 @@ function CommerceExterieurPanel() {
       })()}
 
       {/* Zone géographique : les trois granularités emboîtées du rapport
-          (6 continents ⊃ 12 régions ⊃ ~190 pays), avec bascule de niveau,
-          de sens et d'unité, et descente au clic. */}
-      {(cont?.disponible || reg2?.disponible || pys?.disponible) && (
-        <>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
-            <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Zone géographique · {an}</h3>
-            <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
-              Du continent au pays partenaire — cliquez une ligne pour descendre d&apos;un niveau
-            </span>
-          </div>
-          <ZoneGeographique an={an} cont={cont} reg={reg2} pys={pys} />
-        </>
-      )}
+          (6 continents ⊃ 12 régions ⊃ ~190 pays). Bascules et curseur vivent
+          dans l'en-tête ; la descente au clic agit sur la même portée. */}
+      {(cont?.disponible || reg2?.disponible || pys?.disponible) && (() => {
+        const a = anZone ?? dernier;
+        const accent = zoneSens === "export" ? NACE_BLEU : NACE_ORANGE;
+        return (
+          <>
+            <EnTeteSectionNace n={4} titre="Zone géographique" commandes={
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <SegmentNace options={NIVEAUX} valeur={zonePortee.niveau} accent={accent}
+                  onChange={n => setZonePortee({
+                    niveau: n,
+                    // Remonter d'un niveau relâche la portée correspondante.
+                    cont: n === "continent" ? null : zonePortee.cont,
+                    reg: n === "pays" ? zonePortee.reg : null,
+                  })} />
+                <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
+                  valeur={zoneSens} onChange={setZoneSens} accent={accent} />
+                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+                  valeur={zoneMesure} onChange={setZoneMesure} accent={accent} />
+                {curseur(anZone, setAnZone)}
+              </div>
+            } />
+            <ZoneGeographique an={a} cont={cont} reg={reg2} pys={pys}
+              portee={zonePortee} setPortee={setZonePortee} sens={zoneSens} mesure={zoneMesure} />
+          </>
+        );
+      })()}
 
       {/* Chapitres SH : nomenclature douanière la plus fine, repliée par défaut */}
       {chap?.disponible && (() => {
-        const chDe = (sens: "export" | "import", a: number): NaceLigne[] =>
-          chap.donnees[sens].filter(r => r.annee === a)
+        const a = anChap ?? dernier;
+        const chDe = (sens: "export" | "import", x: number): NaceLigne[] =>
+          chap.donnees[sens].filter(r => r.annee === x)
             .map(r => ({ produit: r.chapitre, annee: r.annee, valeur: r.valeur, poids: r.poids, edition: r.edition }));
-        const cE = chDe("export", an), cI = chDe("import", an);
+        const cE = chDe("export", a), cI = chDe("import", a);
         if (!cE.length && !cI.length) return null;
         return (
           <>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "28px 0 12px", flexWrap: "wrap" }}>
-              <h3 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Chapitres du Système Harmonisé · {an}</h3>
-              <span style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600 }}>
-                Nomenclature douanière la plus fine — {cE.length} chapitres export · {cI.length} import
-              </span>
-              <button onClick={() => setChapOuvert(o => !o)}
-                style={{ marginLeft: "auto", padding: "5px 16px", borderRadius: 999, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "#004f91", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
-                {chapOuvert ? "Masquer les chapitres" : "Afficher les chapitres"}
-              </button>
-            </div>
+            <EnTeteSectionNace n={5} titre="Chapitres du Système Harmonisé" commandes={
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                {curseur(anChap, setAnChap)}
+                <button onClick={() => setChapOuvert(o => !o)}
+                  style={{ padding: "5px 16px", borderRadius: 999, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "#004f91", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                  {chapOuvert ? "Masquer" : "Afficher"}
+                </button>
+              </div>
+            } />
             {chapOuvert && (
               <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-                <TableauRegroupesNace titre={`Exportations par chapitre · ${an}`} couleur={NACE_BLEU}
-                  lignes={cE} lignesPrec={chDe("export", an - 1)} unite="chapitres" />
-                <TableauRegroupesNace titre={`Importations par chapitre · ${an}`} couleur={NACE_ORANGE}
-                  lignes={cI} lignesPrec={chDe("import", an - 1)} unite="chapitres" />
+                <TableauRegroupesNace titre={`Exportations par chapitre · ${a}`} couleur={NACE_BLEU}
+                  lignes={cE} lignesPrec={chDe("export", a - 1)} unite="chapitres" />
+                <TableauRegroupesNace titre={`Importations par chapitre · ${a}`} couleur={NACE_ORANGE}
+                  lignes={cI} lignesPrec={chDe("import", a - 1)} unite="chapitres" />
               </div>
             )}
           </>
