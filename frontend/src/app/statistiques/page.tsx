@@ -716,10 +716,11 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure,
 // premiers partenaires », mondialement puis dans chaque continent.
 type Partenaire = { nom: string; iso2: string | null; region: string; valeur: number; part: number | null };
 
-// `continent` restreint la portée ; la part se rapporte alors à ce continent,
-// non au total mondial — c'est la lecture utile quand on regarde une zone.
-function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number,
-                            ratt: Record<string, string>, continent: string | null, top: number,
+// `garder` restreint la portée — un continent, un groupement économique, ou
+// rien pour le monde entier. La part se rapporte alors à cette portée et non
+// au total mondial : c'est la lecture utile quand on regarde une zone.
+function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number, top: number,
+                            garder?: (r: NacePaysLigne) => boolean,
 ): { lignes: Partenaire[]; total: number } {
   if (!pys?.disponible) return { lignes: [], total: 0 };
   const agg = new Map<string, Partenaire>();
@@ -730,7 +731,7 @@ function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number
   let total = 0;
   for (const r of pys.donnees[sens]) {
     if (r.annee !== an) continue;
-    if (continent && ratt[r.region] !== continent) continue;
+    if (garder && !garder(r)) continue;
     total += r.valeur ?? 0;
     if (r.pays === AUTRES_PAYS) continue;
     const e = agg.get(r.pays) ?? { nom: r.pays, iso2: r.code_iso2, region: r.region, valeur: 0, part: null };
@@ -798,6 +799,30 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion }: {
 const CONTINENTS_ORDRE = ["Afrique", "Europe", "Asie", "Amérique", "Océanie"];
 // Les cinq sont féminins et commencent par une voyelle : « avec l'Afrique ».
 const AVEC_CONTINENT = (c: string) => `avec l'${c}`;
+
+// ── Groupements économiques ──────────────────────────────────────────────────
+// Appartenance décrite par code ISO 3166-1 alpha-2, et non par nom : les noms
+// de ref_pays ont déjà bougé (le référentiel initial disait « Cap-Vert », une
+// migration ultérieure « Cabo Verde »), et un nom qui dérive ferait
+// silencieusement disparaître un membre du classement. Les codes, eux, sont
+// stables.
+//
+// Le Sénégal figure dans les deux listes — c'est la composition réelle des
+// unions — mais il ne peut pas apparaître au classement : le pays déclarant
+// n'a pas de ligne dans ses propres échanges extérieurs.
+//
+// Composition retenue : les quinze États membres de la CEDEAO sur toute la
+// période couverte par les rapports (2015-2024). Le Burkina Faso, le Mali et
+// le Niger l'ont quittée le 29 janvier 2025, soit après la dernière année
+// publiée : les exclure fausserait la lecture de chacune des années affichées.
+const GROUPEMENTS: { code: string; nom: string; membres: string[] }[] = [
+  { code: "CEDEAO", nom: "la CEDEAO",
+    membres: ["BJ", "BF", "CV", "CI", "GM", "GH", "GN", "GW", "LR", "ML", "NE", "NG", "SN", "SL", "TG"] },
+  { code: "UEMOA", nom: "l'UEMOA",
+    membres: ["BJ", "BF", "CI", "GW", "ML", "NE", "SN", "TG"] },
+];
+const MEMBRES_GROUPEMENT: Record<string, Set<string>> =
+  Object.fromEntries(GROUPEMENTS.map(g => [g.code, new Set(g.membres)]));
 
 // ── Nomenclatures de produits (tableaux 8–19 et 38–41) ───────────────────────
 // Quatre lectures du même commerce, de la plus synthétique à la plus fine.
@@ -885,6 +910,10 @@ function CommerceExterieurPanel() {
   // Continent affiché en section 03 ; l'Afrique par défaut, premier partenaire
   // du Sénégal à l'export comme à l'import.
   const [contSel, setContSel] = useState("Afrique");
+  const [anGrp, setAnGrp] = useState<number | null>(null);
+  // Groupement affiché en section 04 ; la CEDEAO par défaut, la plus large des
+  // deux — l'UEMOA en est un sous-ensemble.
+  const [grpSel, setGrpSel] = useState(GROUPEMENTS[0].code);
   // Bascules de la section Produits : nomenclature, sens, unité.
   const [prodFamille, setProdFamille] = useState<NaceFamille>("principaux");
   const [prodSens, setProdSens] = useState<ZoneSens>("export");
@@ -974,19 +1003,18 @@ function CommerceExterieurPanel() {
     const pe = premier("export"), pi = premier("import");
     if (pe) m.push(`Le premier poste d'exportation est « ${pe.produit.toLowerCase()} », ${pct(exp ? (pe.valeur ?? 0) / exp * 100 : null)} des ventes à l'étranger.`);
     if (pi) m.push(`Le premier poste d'importation est « ${pi.produit.toLowerCase()} », ${pct(imp ? (pi.valeur ?? 0) / imp * 100 : null)} des achats.`);
-    const ratt = reg2?.continents ?? pys?.continents ?? {};
-    const ce = classerPartenaires(pys, "export", an, ratt, null, 1).lignes[0];
-    const ci = classerPartenaires(pys, "import", an, ratt, null, 1).lignes[0];
+    const ce = classerPartenaires(pys, "export", an, 1).lignes[0];
+    const ci = classerPartenaires(pys, "import", an, 1).lignes[0];
     // Tournures sans article : il dépendrait du nom du pays.
     if (ce) m.push(`Premier client du Sénégal : ${ce.nom}, ${pct(ce.part)} des exportations.`);
     if (ci) m.push(`Premier fournisseur : ${ci.nom}, ${pct(ci.part)} des importations.`);
     // Concentration : combien de clients absorbent la moitié des ventes.
-    const tous = classerPartenaires(pys, "export", an, ratt, null, 999).lignes;
+    const tous = classerPartenaires(pys, "export", an, 999).lignes;
     let c = 0, n = 0;
     for (const x of tous) { c += x.part ?? 0; n++; if (c >= 50) break; }
     if (c >= 50) m.push(`Les exportations sont concentrées : ${n} client${n > 1 ? "s" : ""} en absorbe${n > 1 ? "nt" : ""} la moitié.`);
     return m.slice(0, 6);
-  }, [data, pys, reg2, an]);
+  }, [data, pys, an]);
 
   if (loading) return (
     <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
@@ -1140,8 +1168,9 @@ function CommerceExterieurPanel() {
         // Un continent peut disparaître d'une année à l'autre : on retombe
         // alors sur le premier disponible plutôt que d'afficher une carte vide.
         const c = presents.includes(contSel) ? contSel : presents[0];
-        const clients = classerPartenaires(pys, "export", a, ratt, c, 10);
-        const fourn = classerPartenaires(pys, "import", a, ratt, c, 10);
+        const dansC = (r: NacePaysLigne) => ratt[r.region] === c;
+        const clients = classerPartenaires(pys, "export", a, 10, dansC);
+        const fourn = classerPartenaires(pys, "import", a, 10, dansC);
         return (
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
@@ -1161,6 +1190,51 @@ function CommerceExterieurPanel() {
                     l'Italie de l'Union européenne. */}
                 <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} couleur={NACE_BLEU} montrerRegion />
                 <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} couleur={NACE_ORANGE} montrerRegion />
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* 04 · Partenaires par groupement économique : même lecture que la
+          section 03, la portée étant cette fois une union régionale et non un
+          continent. Le classement se limite aux membres, si bien que les parts
+          se rapportent au seul commerce intra-groupement. */}
+      {pysEnCours && !pys && (
+        <>
+          <EnTeteSectionNace n={4} titre="Partenaires par groupement économique" />
+          <div className="ds-carte" style={{ padding: "18px 20px" }}><SkeletonRows n={8} h={30} /></div>
+        </>
+      )}
+      {pys?.disponible && (() => {
+        const a = anGrp ?? dernier;
+        const g = GROUPEMENTS.find(x => x.code === grpSel) ?? GROUPEMENTS[0];
+        // Le rapprochement au référentiel porte le code ISO : un partenaire
+        // resté hors référentiel (code nul) ne peut appartenir à aucun
+        // groupement, et « Autres pays » est déjà écarté du classement.
+        const membre = (r: NacePaysLigne) =>
+          r.code_iso2 != null && MEMBRES_GROUPEMENT[g.code].has(r.code_iso2);
+        const clients = classerPartenaires(pys, "export", a, 15, membre);
+        const fourn = classerPartenaires(pys, "import", a, 15, membre);
+        if (!clients.lignes.length && !fourn.lignes.length) return null;
+        return (
+          <>
+            <EnTeteSectionNace n={4} titre="Partenaires par groupement économique" commandes={
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <SegmentNace options={GROUPEMENTS.map(x => ({ v: x.code, l: x.code }))} valeur={g.code} onChange={setGrpSel} />
+                {curseur(anGrp, setAnGrp)}
+              </div>
+            } />
+            <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0 }}>
+                Parts calculées sur l&apos;ensemble des échanges avec {g.nom}
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
+                {/* Pas de rattachement régional ici : tous les membres de la
+                    CEDEAO comme de l'UEMOA relèvent de l'Afrique occidentale,
+                    la colonne répéterait la même mention à chaque ligne. */}
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} couleur={NACE_BLEU} />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} couleur={NACE_ORANGE} />
               </div>
             </div>
           </>
