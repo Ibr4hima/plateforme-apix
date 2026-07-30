@@ -71,6 +71,15 @@ $COMPOSE exec -T -u root backend sh -c '
   su appuser -s /bin/sh -c "touch /app/uploads/modalites_application/_wt && echo WRITE_OK && rm -f /app/uploads/modalites_application/_wt" 2>&1 || echo WRITE_FAIL
 ' || echo "  ⚠ exec backend impossible (conteneur pas prêt ?)"
 
+# Les CSV NACE vérifiés sont versionnés dans le dépôt et embarqués dans l'image
+# backend : on rejoue l'import à chaque déploiement pour que la base suive les
+# fichiers. L'opération est un upsert idempotent, donc sans effet de bord.
+# Un échec n'interrompt pas le déploiement : le site reste en ligne avec les
+# données précédentes, et le message ci-dessous le signale dans les logs.
+echo "▸ Import des données NACE (commerce extérieur)…"
+$COMPOSE exec -T backend python scripts/nace/importer.py \
+  || echo "  ⚠ import NACE en échec — les données du commerce extérieur n'ont pas été mises à jour."
+
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
 

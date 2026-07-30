@@ -133,16 +133,15 @@ async def _index_ref_pays(db: AsyncSession) -> dict:
     return index
 
 
-# ── POST /nace/importer ───────────────────────────────────────────────────────
-# Charge (upsert) les CSV vérifiés du dépôt : les cinq familles
-# (principaux produits, produits regroupés, groupes d'utilisation,
-# chapitres SH, continents), toutes éditions présentes dans
-# backend/scripts/nace.
-@router.post("/importer")
-async def importer_nace(
-    db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_admin),
-):
+# ── Import des CSV vérifiés du dépôt ──────────────────────────────────────────
+# Charge (upsert) les sept familles extraites des annexes de la NACE, toutes
+# éditions présentes dans backend/scripts/nace. Idempotent : rejouable sans
+# effet de bord, ce qui permet de l'appeler à chaque déploiement pour que les
+# données suivent les CSV versionnés.
+#
+# Le corps est isolé de la route car le déploiement l'appelle aussi, depuis
+# scripts/nace/importer.py — sans passer par HTTP, donc sans authentification.
+async def importer_csv(db: AsyncSession) -> dict:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     rapport: dict = {}
@@ -180,6 +179,9 @@ async def importer_nace(
     # introduit un partenaire à trancher dans alias_pays_nace.json.
     alias_pays, hors_ref = _arbitrage_pays()
     index = await _index_ref_pays(db)
+    # Les ~11 000 lignes pays ne portent que ~200 libellés distincts : sans
+    # mémoïsation, le rapprochement flou serait relancé pour chacune.
+    resolu: dict[str, int | None] = {}
     fichiers = sorted(DOSSIER_CSV.glob("edition_[0-9][0-9][0-9][0-9]_pays.csv"))
     total, editions, rattaches, assumes = 0, [], 0, 0
     non_arbitres: set = set()
@@ -191,7 +193,9 @@ async def importer_nace(
             if libelle in hors_ref or libelle.startswith(PREFIXE_NON_VENTILE):
                 assumes += 1
             else:
-                pid = correspondre_pays(alias_pays.get(libelle, libelle), index)
+                if libelle not in resolu:
+                    resolu[libelle] = correspondre_pays(alias_pays.get(libelle, libelle), index)
+                pid = resolu[libelle]
                 if pid is None:
                     non_arbitres.add(libelle)
                 else:
@@ -223,6 +227,14 @@ async def importer_nace(
         "non_arbitres": sorted(non_arbitres),
     }
     return rapport
+
+
+@router.post("/importer")
+async def importer_nace(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_admin),
+):
+    return await importer_csv(db)
 
 
 # Résolution commune : pour chaque (sens, année), l'édition la plus récente
