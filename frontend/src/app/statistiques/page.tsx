@@ -178,336 +178,237 @@ function VariationNace({ v }: { v: number | null }) {
   );
 }
 
-// Classement des principaux produits d'un sens pour l'année choisie :
-// rang · produit · valeur (ou poids) · part · Δ vs n-1 · barre, bascule
-// Valeur ⇆ Poids en titre, « Autres produits » épinglé en bas.
-function TableauProduitsNace({ titre, couleur, lignes, lignesPrec, mesure, onMesure }: {
-  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[];
-  mesure: NaceMesure; onMesure: (m: NaceMesure) => void;
-}) {
-  const val = (r: NaceLigne) => (mesure === "valeur" ? r.valeur : r.poids) ?? 0;
-  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
-  const nommes = lignes.filter(r => r.produit !== "Autres produits").sort((a, b) => val(b) - val(a));
-  const autres = lignes.find(r => r.produit === "Autres produits") ?? null;
-  const total = lignes.reduce((s, r) => s + Math.max(0, val(r)), 0);
-  const max = Math.max(1e-9, ...nommes.map(val));
-  const precDe = (produit: string) => lignesPrec.find(r => r.produit === produit) ?? null;
-  const Ligne = ({ r, rang, epingle }: { r: NaceLigne; rang: number | null; epingle?: boolean }) => {
-    const prec = precDe(r.produit);
-    const vPrec = prec ? (mesure === "valeur" ? prec.valeur : prec.poids) : null;
-    const delta = vPrec != null && vPrec !== 0 && val(r) != null ? ((val(r) - vPrec) / Math.abs(vPrec)) * 100 : null;
-    const podium = rang != null && rang <= 3;
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
-        background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}>
-        <span style={{ width: 22, flexShrink: 0 }}>
-          {rang != null && (
-            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
-              background: podium ? couleur : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
-          )}
-        </span>
-        <span title={r.produit} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: epingle ? 600 : 700, color: epingle ? "#9aa5b4" : "#1a1a2e",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: epingle ? "italic" : "normal" }}>{r.produit}</span>
-        <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(val(r))}</span>
-        <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
-          {total > 0 ? `${(Math.max(0, val(r)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
-        </span>
-        <span style={{ width: 64, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
-        <div style={{ width: "20%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-          {val(r) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, val(r) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
-        </div>
-      </div>
-    );
-  };
-  return (
-    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h3>
-        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
-          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
-            const actif = o.v === mesure;
-            return (
-              <button key={o.v} onClick={() => onMesure(o.v)} style={{
-                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
-                background: actif ? "#fff" : "transparent", color: actif ? couleur : "#6b7684",
-                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
-            );
-          })}
-        </div>
-      </div>
-      {lignes.length === 0 ? (
-        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucune donnée.</p>
-      ) : (
-        <>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>Produit</span>
-            <span style={{ width: 88, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>{mesure === "valeur" ? "Valeur" : "Poids"}</span>
-            <span style={{ width: 40, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
-            <span style={{ width: 64, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>vs n-1</span>
-            <span style={{ width: "20%", flexShrink: 0 }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {nommes.map((r, i) => <Ligne key={r.produit} r={r} rang={i + 1} />)}
-            {autres && (
-              <>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                  <span style={{ width: 22, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                  <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
-                </div>
-                <Ligne r={autres} rang={null} epingle />
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
+// Familles de l'annexe partageant la même forme : une modalité × un sens ×
+// une année, avec valeur (millions FCFA) et poids net (tonnes).
+type NaceLigneCle = { annee: number; valeur: number | null; poids: number | null; edition: number };
+type NaceDataGU = { disponible: boolean; annees: number[]; editions: number[];
+  donnees: { export: (NaceLigneCle & { groupe: string })[]; import: (NaceLigneCle & { groupe: string })[] } };
+type NaceDataCont = { disponible: boolean; annees: number[]; editions: number[];
+  donnees: { export: (NaceLigneCle & { continent: string })[]; import: (NaceLigneCle & { continent: string })[] } };
+type NaceDataChap = { disponible: boolean; annees: number[]; editions: number[];
+  donnees: { export: (NaceLigneCle & { chapitre: string })[]; import: (NaceLigneCle & { chapitre: string })[] } };
+
+// ── Tableau de classement, partagé par les deux volets d'analyse ──────────────
+// Produits et zones géographiques se lisent de la même façon : un classement
+// du sens affiché, avec part, part cumulée, variation annuelle et balance. Le
+// rendu est donc mis en commun, pour que les deux sections ne puissent pas
+// divulguer entre elles.
+type LigneClassement = {
+  cle: string; nom: string; iso2?: string | null; parent?: string | null;
+  v: number | null; p: number | null;              // sens affiché
+  vAutre: number | null; pAutre: number | null;    // sens opposé, pour la balance
+  vPrec: number | null; pPrec: number | null;      // année n-1, pour la variation
+  libelles?: number;                               // > 1 : ligne agrégée
+  ouvrable?: boolean;                              // descend d'un niveau au clic
+};
+
+// Somme tolérante aux trous : le rapport imprime « - » pour une absence
+// d'échange, que l'API rend en null. null + null reste null (donnée absente),
+// null + valeur vaut la valeur.
+const sommeNace = (a: number | null | undefined, b: number | null | undefined) =>
+  a == null && b == null ? null : (a ?? 0) + (b ?? 0);
+
+// Indexe une famille par modalité pour une année donnée, en sommant les
+// doublons éventuels (deux libellés du rapport visant la même modalité).
+function indexerNace<T extends { annee: number; valeur: number | null; poids: number | null }>(
+  lignes: T[], cle: (r: T) => string, annee: number,
+): Map<string, { v: number | null; p: number | null }> {
+  const m = new Map<string, { v: number | null; p: number | null }>();
+  for (const r of lignes) {
+    if (r.annee !== annee) continue;
+    const k = cle(r), a = m.get(k);
+    m.set(k, { v: sommeNace(a?.v, r.valeur), p: sommeNace(a?.p, r.poids) });
+  }
+  return m;
 }
 
-// Section « Produits regroupés » : nomenclature détaillée ANSD (30–56
-// postes par sens). Top 12 par défaut + « Voir tout », recherche par
-// libellé, bascule Valeur ⇆ Poids ; le rang affiché est le rang réel
-// dans le classement complet de l'année.
-function TableauRegroupesNace({ titre, couleur, lignes, lignesPrec, unite = "produits" }: {
-  titre: string; couleur: string; lignes: NaceLigne[]; lignesPrec: NaceLigne[]; unite?: string;
+function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drapeaux, top,
+  entete, nomPortee, totalLibelle, onOuvrir, montrerParent, libelleParent, balance = true }: {
+  lignes: LigneClassement[];
+  // Libellé de la ligne fourre-tout à épingler hors classement, s'il y en a
+  // une : « Autres pays » pour les zones, « Autres produits » pour les
+  // nomenclatures. Ce n'est pas une modalité, elle n'a donc pas de rang.
+  agregeSous?: string;
+  sens: ZoneSens; mesure: NaceMesure; colonne: string;
+  drapeaux?: boolean; top: number;
+  // La balance n'a de sens que si la nomenclature liste les MÊMES modalités
+  // dans les deux sens. C'est le cas des zones géographiques, des groupes
+  // d'utilisation et des chapitres SH, mais pas des paniers de produits que
+  // l'ANSD compose séparément par direction (1 libellé commun sur 13 export /
+  // 11 import pour les principaux produits, 3 sur 31/56 pour les regroupés) :
+  // l'y afficher reviendrait à prétendre qu'un produit importé n'est pas
+  // exporté du tout, alors qu'il porte simplement un autre nom à l'export.
+  balance?: boolean;
+  entete?: React.ReactNode;          // fil d'Ariane, ou rien
+  nomPortee: string;                 // ce sur quoi porte le classement
+  totalLibelle: string;              // libellé de la ligne de somme
+  onOuvrir?: (l: LigneClassement) => void;
+  montrerParent?: boolean; libelleParent?: (p: string) => string;
 }) {
-  const [mesure, setMesure] = useState<NaceMesure>("valeur");
   const [q, setQ] = useState("");
   const [tout, setTout] = useState(false);
-  const TOP = 12;
-  const val = (r: NaceLigne) => (mesure === "valeur" ? r.valeur : r.poids) ?? 0;
+  useEffect(() => { setQ(""); setTout(false); }, [nomPortee, colonne, sens, mesure, lignes.length]);
+
+  const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
-  const nommes = lignes.filter(r => r.produit !== "Autres produits").sort((a, b) => val(b) - val(a));
-  const autres = lignes.find(r => r.produit === "Autres produits") ?? null;
-  const total = lignes.reduce((s, r) => s + Math.max(0, val(r)), 0);
-  const max = Math.max(1e-9, ...nommes.map(val));
-  const rangDe = new Map(nommes.map((r, i) => [r.produit, i + 1]));
-  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  const filtres = q ? nommes.filter(r => norm(r.produit).includes(norm(q))) : nommes;
-  const visibles = q || tout ? filtres : filtres.slice(0, TOP);
-  const precDe = (produit: string) => lignesPrec.find(r => r.produit === produit) ?? null;
-  const Ligne = ({ r, epingle }: { r: NaceLigne; epingle?: boolean }) => {
-    const rang = epingle ? null : (rangDe.get(r.produit) ?? null);
-    const prec = precDe(r.produit);
-    const vPrec = prec ? (mesure === "valeur" ? prec.valeur : prec.poids) : null;
-    const delta = vPrec != null && vPrec !== 0 && val(r) != null ? ((val(r) - vPrec) / Math.abs(vPrec)) * 100 : null;
+  const mv = (l: LigneClassement) => (mesure === "valeur" ? l.v : l.p) ?? 0;
+
+  const rangees = lignes.filter(l => l.nom !== agregeSous).sort((x, y) => mv(y) - mv(x));
+  const agregee = agregeSous ? lignes.find(l => l.nom === agregeSous) ?? null : null;
+  // Le total est celui de la portée affichée, pour que « Part » et « Cumul »
+  // restent interprétables après une descente ou un changement de famille.
+  const total = lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
+  const max = Math.max(1e-9, ...rangees.map(mv));
+
+  // La balance commerciale est TOUJOURS exportations − importations, quel que
+  // soit le sens affiché : la définir par rapport à la colonne visible ferait
+  // passer le Nigeria de −308 Md à +308 Md au simple basculement de la vue,
+  // alors que le déficit sénégalais avec lui ne bouge pas. C'est aussi la
+  // convention du KPI « Balance commerciale (FAB − CAF) » de l'en-tête.
+  const balanceDe = (l: LigneClassement) => {
+    const affiche = mv(l), oppose = (mesure === "valeur" ? l.vAutre : l.pAutre) ?? 0;
+    return sens === "export" ? affiche - oppose : oppose - affiche;
+  };
+  const norm = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const filtres = q ? rangees.filter(l => norm(l.nom).includes(norm(q)) || norm(l.parent ?? "").includes(norm(q))) : rangees;
+  const visibles = q || tout ? filtres : filtres.slice(0, top);
+
+  // Rang et cumul se lisent sur la liste rangée complète, pas sur la portion
+  // visible : une recherche ne doit pas renuméroter les lignes ni fausser le
+  // cumul. Une seule passe, indexée par clé.
+  const rangDe = new Map<string, number>();
+  const cumulDe = new Map<string, number>();
+  { let c = 0; rangees.forEach((l, i) => { c += Math.max(0, mv(l)); rangDe.set(l.cle, i + 1); cumulDe.set(l.cle, c); }); }
+
+  const EN_TETE: React.CSSProperties = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" };
+  const Ligne = ({ l, rang }: { l: LigneClassement; rang: number | null }) => {
+    const vPrec = mesure === "valeur" ? l.vPrec : l.pPrec;
+    const delta = vPrec != null && vPrec !== 0 ? ((mv(l) - vPrec) / Math.abs(vPrec)) * 100 : null;
+    const bal = balanceDe(l);
     const podium = rang != null && rang <= 3;
+    const epingle = rang == null;
+    const ouvrable = !!(l.ouvrable && onOuvrir);
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8,
-        background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}>
+      <div onClick={ouvrable ? () => onOuvrir!(l) : undefined}
+        role={ouvrable ? "button" : undefined} tabIndex={ouvrable ? 0 : undefined}
+        title={ouvrable ? `Voir le détail de « ${l.nom} »` : undefined}
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
+          cursor: ouvrable ? "pointer" : "default", transition: "background .12s",
+          background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}
+        onMouseEnter={e => { if (ouvrable) e.currentTarget.style.background = "#F0F4F9"; }}
+        onMouseLeave={e => { if (ouvrable) e.currentTarget.style.background = rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent"; }}>
         <span style={{ width: 24, flexShrink: 0 }}>
           {rang != null && (
             <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
               background: podium ? couleur : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
           )}
         </span>
-        <span title={r.produit} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: epingle ? 600 : 650, color: epingle ? "#9aa5b4" : "#1a1a2e",
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontStyle: epingle ? "italic" : "normal" }}>{r.produit}</span>
-        <span className="ds-donnee" style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(val(r))}</span>
-        <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
-          {total > 0 ? `${(Math.max(0, val(r)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+        {drapeaux && (epingle
+          ? <span style={{ width: 20, flexShrink: 0, textAlign: "center", fontSize: 13, lineHeight: 1 }}>🌐</span>
+          : <DrapeauPays iso={l.iso2} nom={l.nom} />)}
+        <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "baseline", gap: 7 }}>
+          <span title={l.nom} style={{ fontSize: 12.5, fontWeight: epingle ? 600 : 650, fontStyle: epingle ? "italic" : "normal",
+            color: epingle ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.nom}</span>
+          {epingle && l.libelles != null && l.libelles > 1 &&
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", flexShrink: 0 }}>({l.libelles})</span>}
+          {!epingle && montrerParent && l.parent && (
+            <span title={l.parent} style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", whiteSpace: "nowrap", flexShrink: 0 }}>
+              {libelleParent ? libelleParent(l.parent) : l.parent}
+            </span>
+          )}
+          {ouvrable && <ChevronRight size={12} style={{ color: "#C5BFBB", flexShrink: 0 }} />}
         </span>
-        <span style={{ width: 60, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
-        <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-          {val(r) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, val(r) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
+        <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
+        <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: epingle ? "#9aa5b4" : "#4a5568", textAlign: "right", flexShrink: 0 }}>
+          {total > 0 ? `${(Math.max(0, mv(l)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+        </span>
+        <span style={{ width: 40, fontSize: 10, fontWeight: 650, color: "#C5BFBB", textAlign: "right", flexShrink: 0 }}>
+          {rang != null && total > 0 ? `${((cumulDe.get(l.cle) ?? 0) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}
+        </span>
+        <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
+        {balance && (
+          <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
+            color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
+            {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
+          </span>
+        )}
+        <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+          {mv(l) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, mv(l) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
         </div>
       </div>
     );
   };
+
+  if (!lignes.length) return null;
   return (
-    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10, alignSelf: "start" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titre}</h3>
-        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
-          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
-            const actif = o.v === mesure;
-            return (
-              <button key={o.v} onClick={() => setMesure(o.v)} style={{
-                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
-                background: actif ? "#fff" : "transparent", color: actif ? couleur : "#6b7684",
-                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
-            );
-          })}
+    <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+      {entete}
+
+      {/* Recherche : utile dès que la portée dépasse la vingtaine de lignes */}
+      {rangees.length > 20 && (
+        <div style={{ position: "relative" }}>
+          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${rangees.length} · ${nomPortee}…`}
+            style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+          {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
         </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+        <span style={{ ...EN_TETE, width: 24, flexShrink: 0 }}>#</span>
+        {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
+        <span style={{ ...EN_TETE, flex: 1 }}>{colonne}</span>
+        <span style={{ ...EN_TETE, width: 88, textAlign: "right", flexShrink: 0 }}>{sens === "export" ? "Export" : "Import"}</span>
+        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
+        <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
+        <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>
+        {balance && (
+          <span title="Exportations − importations, quel que soit le sens affiché"
+            style={{ ...EN_TETE, width: 92, textAlign: "right", flexShrink: 0 }}>Balance</span>
+        )}
+        <span style={{ width: "11%", flexShrink: 0 }} />
       </div>
-      {/* Recherche d'un produit dans la nomenclature */}
-      <div style={{ position: "relative" }}>
-        <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-        <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${nommes.length} ${unite}…`}
-          style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-        {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
-      </div>
-      {lignes.length === 0 ? (
-        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucune donnée.</p>
-      ) : filtres.length === 0 ? (
+
+      {filtres.length === 0 ? (
         <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucun résultat pour « {q} ».</p>
       ) : (
-        <>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 24, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>Produit</span>
-            <span style={{ width: 84, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>{mesure === "valeur" ? "Valeur" : "Poids"}</span>
-            <span style={{ width: 38, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
-            <span style={{ width: 60, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>vs n-1</span>
-            <span style={{ width: "16%", flexShrink: 0 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {visibles.map(l => <Ligne key={l.cle} l={l} rang={rangDe.get(l.cle) ?? null} />)}
+          {!q && filtres.length > top && (
+            <button onClick={() => setTout(t => !t)}
+              style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
+              {tout ? `Réduire au top ${top}` : `Voir les ${filtres.length - top} autres`}
+            </button>
+          )}
+          {agregee && !q && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
+                <span style={{ width: 24, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
+              </div>
+              <Ligne l={agregee} rang={null} />
+            </>
+          )}
+          {/* Somme de la portée : elle égale le total imprimé par l'ANSD */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderTop: "1px solid #F2F0EF", marginTop: 4 }}>
+            <span style={{ width: 24, flexShrink: 0 }} />
+            {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
+            <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>{totalLibelle}</span>
+            <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
+            <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /><span style={{ width: 58, flexShrink: 0 }} />
+            {balance && (() => {
+              const bal = lignes.reduce((s, l) => s + balanceDe(l), 0);
+              return (
+                <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
+                  color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
+                  {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
+                </span>
+              );
+            })()}
+            <span style={{ width: "11%", flexShrink: 0 }} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {visibles.map(r => <Ligne key={r.produit} r={r} />)}
-            {!q && filtres.length > TOP && (
-              <button onClick={() => setTout(t => !t)}
-                style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
-                {tout ? "Réduire au top 12" : `Voir les ${filtres.length - TOP} autres ${unite}`}
-              </button>
-            )}
-            {autres && !q && (
-              <>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                  <span style={{ width: 24, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                  <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
-                </div>
-                <Ligne r={autres} epingle />
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Section de répartition exhaustive (groupes d'utilisation, continents) :
-// les modalités couvrent tout le commerce extérieur, leur somme EST le
-// total. Deux barres empilées 100 % (répartition des exportations et des
-// importations de l'année) puis un tableau croisé — export, import et
-// balance, qui montre d'où vient le déficit commercial.
-type NaceModalite = { nom: string; valeur: number | null; poids: number | null };
-type NaceLigneCle = { annee: number; valeur: number | null; poids: number | null; edition: number };
-type NaceDataGU = { disponible: boolean; annees: number[]; editions: number[];
-  donnees: { export: (NaceLigneCle & { groupe: string })[]; import: (NaceLigneCle & { groupe: string })[] } };
-type NaceDataCont = { disponible: boolean; annees: number[]; editions: number[];
-  donnees: { export: (NaceLigneCle & { continent: string })[]; import: (NaceLigneCle & { continent: string })[] } };
-
-const PALETTE_GU = ["#004f91", "#ca631f", "#188038", "#7b3ff2", "#0e7490", "#b45309", "#be185d", "#4d7c0f", "#64748b"];
-
-function SectionRepartition({ titre, colonne, exp, imp }: {
-  titre: string; colonne: string; exp: NaceModalite[]; imp: NaceModalite[];
-}) {
-  const [mesure, setMesure] = useState<NaceMesure>("valeur");
-  const val = (r?: NaceModalite) => (r ? (mesure === "valeur" ? r.valeur : r.poids) ?? 0 : 0);
-  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
-  // Ordre commun aux deux barres et au tableau : export décroissant
-  const groupes = exp.slice().sort((a, b) => val(b) - val(a)).map(r => r.nom);
-  const expDe = (g: string) => exp.find(r => r.nom === g);
-  const impDe = (g: string) => imp.find(r => r.nom === g);
-  const totE = groupes.reduce((s, g) => s + Math.max(0, val(expDe(g))), 0);
-  const totI = groupes.reduce((s, g) => s + Math.max(0, val(impDe(g))), 0);
-  const maxBar = Math.max(1e-9, ...groupes.flatMap(g => [val(expDe(g)), val(impDe(g))]));
-  const couleurDe = new Map(groupes.map((g, i) => [g, PALETTE_GU[i % PALETTE_GU.length]]));
-  const pct = (v: number, tot: number) => (tot > 0 ? (v / tot) * 100 : 0);
-  const fmtPct = (v: number) => `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
-
-  // Barre empilée 100 % d'un sens : chaque segment = la part du groupe
-  const BarreEmpilee = ({ libelle, tot, de }: { libelle: string; tot: number; de: (g: string) => NaceModalite | undefined }) => (
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <span style={{ width: 96, fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase", flexShrink: 0, textAlign: "right" }}>{libelle}</span>
-      <div style={{ flex: 1, display: "flex", height: 20, borderRadius: 7, overflow: "hidden", background: "#F2F0EF" }}>
-        {groupes.map(g => {
-          const p = pct(Math.max(0, val(de(g))), tot);
-          if (p <= 0) return null;
-          return (
-            <div key={g} title={`${g} · ${fmtV(val(de(g)))} · ${fmtPct(p)}`}
-              style={{ width: `${p}%`, background: couleurDe.get(g), boxShadow: "inset -1px 0 0 rgba(255,255,255,0.55)", minWidth: p > 0.4 ? 2 : 0 }} />
-          );
-        })}
-      </div>
-      <span className="ds-donnee" style={{ width: 92, fontSize: 11.5, fontWeight: 800, color: "#1a1a2e", flexShrink: 0, textAlign: "right", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(tot)}</span>
-    </div>
-  );
-
-  const EN_TETE: React.CSSProperties = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" };
-  return (
-    <div className="ds-carte" style={{ padding: "18px 20px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0 }}>{titre}</h3>
-        <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
-          {([{ v: "valeur", l: "Valeur" }, { v: "poids", l: "Poids" }] as const).map(o => {
-            const actif = o.v === mesure;
-            return (
-              <button key={o.v} onClick={() => setMesure(o.v)} style={{
-                border: "none", cursor: "pointer", padding: "3px 12px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
-                background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#6b7684",
-                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
-            );
-          })}
         </div>
-      </div>
-
-      {/* Répartition 100 % des deux sens */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "2px 0 4px" }}>
-        <BarreEmpilee libelle="Exportations" tot={totE} de={expDe} />
-        <BarreEmpilee libelle="Importations" tot={totI} de={impDe} />
-      </div>
-
-      {/* Tableau croisé : export · import · balance par groupe */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <span style={{ ...EN_TETE, flex: 1 }}>{colonne}</span>
-        <span style={{ ...EN_TETE, width: 86, textAlign: "right", flexShrink: 0 }}>Export</span>
-        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
-        <span style={{ width: "11%", flexShrink: 0 }} />
-        <span style={{ ...EN_TETE, width: 86, textAlign: "right", flexShrink: 0 }}>Import</span>
-        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
-        <span style={{ width: "11%", flexShrink: 0 }} />
-        <span style={{ ...EN_TETE, width: 96, textAlign: "right", flexShrink: 0 }}>Balance</span>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {groupes.map((g, i) => {
-          const vE = val(expDe(g)), vI = val(impDe(g));
-          const bal = vE - vI;
-          const balPos = bal > 0, balNeg = bal < 0;
-          return (
-            <div key={g} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: i % 2 === 1 ? "#F8F9FB" : "transparent" }}>
-              <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 9, height: 9, borderRadius: "50%", background: couleurDe.get(g), flexShrink: 0 }} />
-                <span title={g} style={{ fontSize: 12, fontWeight: 650, color: "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g}</span>
-              </span>
-              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(vE)}</span>
-              <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{totE > 0 ? fmtPct(pct(Math.max(0, vE), totE)) : "—"}</span>
-              <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                {vE > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, vE / maxBar * 100))}%`, borderRadius: 99, background: "#004f91", opacity: 0.75 }} />}
-              </div>
-              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#ca631f", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(vI)}</span>
-              <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{totI > 0 ? fmtPct(pct(Math.max(0, vI), totI)) : "—"}</span>
-              <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                {vI > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, vI / maxBar * 100))}%`, borderRadius: 99, background: "#ca631f", opacity: 0.75 }} />}
-              </div>
-              <span className="ds-donnee" style={{ width: 96, fontSize: 11.5, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
-                color: balPos ? "#188038" : balNeg ? "#dc2626" : "#9aa5b4" }}>
-                {balPos ? "+" : balNeg ? "−" : ""}{fmtV(Math.abs(bal))}
-              </span>
-            </div>
-          );
-        })}
-        {/* Ligne de synthèse : balance totale */}
-        {(() => {
-          const bal = totE - totI;
-          return (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderTop: "1px solid #F2F0EF", marginTop: 4 }}>
-              <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>Ensemble</span>
-              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(totE)}</span>
-              <span style={{ width: 38, flexShrink: 0 }} />
-              <span style={{ width: "11%", flexShrink: 0 }} />
-              <span className="ds-donnee" style={{ width: 86, fontSize: 11.5, fontWeight: 800, color: "#ca631f", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(totI)}</span>
-              <span style={{ width: 38, flexShrink: 0 }} />
-              <span style={{ width: "11%", flexShrink: 0 }} />
-              <span className="ds-donnee" style={{ width: 96, fontSize: 11.5, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
-                color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#9aa5b4" }}>
-                {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
-              </span>
-            </div>
-          );
-        })()}
-      </div>
+      )}
     </div>
   );
 }
@@ -533,8 +434,8 @@ type NaceDataReg = { disponible: boolean; annees: number[]; editions: number[]; 
 // Curseur d'année : même geste et même rendu que ceux du tableau de bord, où
 // il pilote les KPIs d'une section. Ici il pilote TOUT l'onglet — KPIs, courbe
 // d'évolution, produits, zones géographiques et chapitres suivent l'année.
-function CurseurAnneeNace({ min, max, value, onChange }: {
-  min: number; max: number; value: number; onChange: (a: number) => void;
+function CurseurAnneeNace({ min, max, value, onChange, largeur = 210 }: {
+  min: number; max: number; value: number; onChange: (a: number) => void; largeur?: number;
 }) {
   if (!(max > min)) return null;
   return (
@@ -552,7 +453,7 @@ function CurseurAnneeNace({ min, max, value, onChange }: {
       <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{min}</span>
       <input type="range" min={min} max={max} step={1} value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="nace-curseur" aria-label="Année affichée" style={{ width: 210 }} />
+        className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
       <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>{value}</span>
     </div>
   );
@@ -660,48 +561,42 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure 
   portee: ZonePortee; setPortee: (p: ZonePortee) => void; sens: ZoneSens; mesure: NaceMesure;
 }) {
   const { niveau, cont: zoomCont, reg: zoomReg } = portee;
-  const [q, setQ] = useState("");
-  const [tout, setTout] = useState(false);
-  useEffect(() => { setQ(""); setTout(false); }, [portee, sens, mesure, an]);
-
-  const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
-  // Le fil d'Ariane suit le sens affiché, comme les valeurs de la colonne.
-  const badgeSens = sens === "export" ? badge_bleu : badge_orange;
   const autre: ZoneSens = sens === "export" ? "import" : "export";
   const ratt = reg?.continents ?? pys?.continents ?? {};
-  const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
-  const mv = (l: { v: number | null; p: number | null }) => (mesure === "valeur" ? l.v : l.p) ?? 0;
+  const badgeSens = sens === "export" ? badge_bleu : badge_orange;
 
-  const lignes: ZoneLigne[] = useMemo(() => {
-    const cles = <T,>(m: Map<string, T>) => m;
+  const lignes: LigneClassement[] = useMemo(() => {
+    // Un triplet d'index par niveau : sens affiché, sens opposé (balance) et
+    // année précédente (variation).
+    const trois = <T extends NaceLigneCle>(src: { export: T[]; import: T[] }, k: (r: T) => string,
+                                           garde: (r: T) => boolean = () => true) => ({
+      a: indexerNace(src[sens].filter(garde), k, an),
+      b: indexerNace(src[autre].filter(garde), k, an),
+      pr: indexerNace(src[sens].filter(garde), k, an - 1),
+    });
+    const monter = (cles: string[], i: ReturnType<typeof trois>,
+                    extra: (nom: string) => Partial<LigneClassement>) =>
+      cles.map(nom => ({
+        cle: nom, nom,
+        v: i.a.get(nom)?.v ?? null, p: i.a.get(nom)?.p ?? null,
+        vAutre: i.b.get(nom)?.v ?? null, pAutre: i.b.get(nom)?.p ?? null,
+        vPrec: i.pr.get(nom)?.v ?? null, pPrec: i.pr.get(nom)?.p ?? null,
+        ...extra(nom),
+      }));
+
     if (niveau === "continent") {
       if (!cont?.disponible) return [];
-      const k = (r: { continent: string }) => r.continent;
-      const a = indexerZone(cont.donnees[sens], k, an), b = indexerZone(cont.donnees[autre], k, an);
-      const pr = indexerZone(cont.donnees[sens], k, an - 1);
-      return [...cles(a).keys()].map(nom => ({
-        cle: nom, nom, iso2: null, parent: null,
-        v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
-        vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
-        vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
-        libelles: 1,
-        // « Divers » n'a pas de région : le clic n'y mènerait à rien.
+      const i = trois(cont.donnees, r => r.continent);
+      // « Divers » n'a pas de région : le clic n'y mènerait à rien.
+      return monter([...i.a.keys()], i, nom => ({
         ouvrable: Object.values(ratt).includes(nom) && nom !== "Divers",
       }));
     }
     if (niveau === "region") {
       if (!reg?.disponible) return [];
-      const k = (r: { region: string }) => r.region;
-      const garde = (n: string) => !zoomCont || ratt[n] === zoomCont;
-      const a = indexerZone(reg.donnees[sens], k, an), b = indexerZone(reg.donnees[autre], k, an);
-      const pr = indexerZone(reg.donnees[sens], k, an - 1);
-      return [...a.keys()].filter(garde).map(nom => ({
-        cle: nom, nom, iso2: null, parent: ratt[nom] ?? null,
-        v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
-        vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
-        vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
-        libelles: 1, ouvrable: true,
-      }));
+      const i = trois(reg.donnees, r => r.region);
+      const cles = [...i.a.keys()].filter(n => !zoomCont || ratt[n] === zoomCont);
+      return monter(cles, i, nom => ({ parent: ratt[nom] ?? null, ouvrable: true }));
     }
     if (!pys?.disponible) return [];
     // Au niveau pays, toutes les lignes « Autres pays » de la portée sont
@@ -709,210 +604,131 @@ function ZoneGeographique({ an, cont, reg, pys, portee, setPortee, sens, mesure 
     const k = (r: NacePaysLigne) => (r.pays === AUTRES_PAYS ? AUTRES_PAYS : `${r.region}·${r.pays}`);
     const garde = (r: NacePaysLigne) =>
       (!zoomReg || r.region === zoomReg) && (!zoomCont || ratt[r.region] === zoomCont);
-    const dans = (l: NacePaysLigne[]) => l.filter(garde);
-    const a = indexerZone(dans(pys.donnees[sens]), k, an), b = indexerZone(dans(pys.donnees[autre]), k, an);
-    const pr = indexerZone(dans(pys.donnees[sens]), k, an - 1);
+    const i = trois(pys.donnees, k, garde);
+    // Métadonnées (nom affiché, drapeau, région) et nombre de libellés fondus.
     const meta = new Map<string, NacePaysLigne>();
-    const cumulLibelles = new Map<string, number>();
-    for (const r of dans(pys.donnees[sens])) {
-      if (r.annee !== an) continue;
+    const fondus = new Map<string, number>();
+    for (const r of pys.donnees[sens]) {
+      if (r.annee !== an || !garde(r)) continue;
       const key = k(r);
       if (!meta.has(key)) meta.set(key, r);
-      cumulLibelles.set(key, (cumulLibelles.get(key) ?? 0) + r.libelles);
+      fondus.set(key, (fondus.get(key) ?? 0) + r.libelles);
     }
-    return [...a.keys()].map(key => {
+    return monter([...i.a.keys()], i, key => {
       const m = meta.get(key);
       return {
-        cle: key, nom: m?.pays ?? key, iso2: m?.code_iso2 ?? null,
+        nom: m?.pays ?? key, iso2: m?.code_iso2 ?? null,
         parent: key === AUTRES_PAYS ? null : m?.region ?? null,
-        v: a.get(key)?.v ?? null, p: a.get(key)?.p ?? null,
-        vAutre: b.get(key)?.v ?? null, pAutre: b.get(key)?.p ?? null,
-        vPrec: pr.get(key)?.v ?? null, pPrec: pr.get(key)?.p ?? null,
-        libelles: cumulLibelles.get(key) ?? 1, ouvrable: false,
+        libelles: fondus.get(key) ?? 1,
       };
     });
   }, [niveau, sens, autre, an, cont, reg, pys, ratt, zoomCont, zoomReg]);
 
-  // Le total est celui de la portée affichée, pour que « Part » et « Cumul »
-  // restent interprétables une fois descendu dans un continent ou une région.
-  const rangees = lignes.filter(l => l.nom !== AUTRES_PAYS).sort((x, y) => mv(y) - mv(x));
-  const agregee = lignes.find(l => l.nom === AUTRES_PAYS) ?? null;
-  const total = lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
-  const max = Math.max(1e-9, ...rangees.map(mv));
-  // La balance commerciale est TOUJOURS exportations − importations, quel que
-  // soit le sens affiché : la définir par rapport à la colonne visible ferait
-  // passer le Nigeria de −308 Md à +308 Md au simple basculement de la vue,
-  // alors que le déficit sénégalais avec lui ne bouge pas. C'est aussi la
-  // convention du KPI « Balance commerciale (FAB − CAF) » de l'en-tête.
-  const balanceDe = (l: ZoneLigne) => {
-    const affiche = mv(l), oppose = (mesure === "valeur" ? l.vAutre : l.pAutre) ?? 0;
-    return sens === "export" ? affiche - oppose : oppose - affiche;
-  };
-  const norm = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  const filtres = q ? rangees.filter(l => norm(l.nom).includes(norm(q)) || norm(l.parent ?? "").includes(norm(q))) : rangees;
-  const TOP = niveau === "pays" ? 15 : 20;
-  const visibles = q || tout ? filtres : filtres.slice(0, TOP);
-
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
-  const EN_TETE: React.CSSProperties = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" };
-  // Rang et cumul se lisent sur la liste rangée complète, pas sur la portion
-  // visible : une recherche ne doit pas renuméroter les lignes ni fausser le
-  // cumul. Une seule passe, indexée par clé.
-  const rangDe = new Map<string, number>();
-  const cumulDe = new Map<string, number>();
-  { let c = 0; rangees.forEach((l, i) => { c += Math.max(0, mv(l)); rangDe.set(l.cle, i + 1); cumulDe.set(l.cle, c); }); }
+  const crans: { l: string; p: ZonePortee }[] = [
+    { l: "Monde", p: { niveau: "continent", cont: null, reg: null } },
+    ...(zoomCont ? [{ l: zoomCont, p: { niveau: "region" as ZoneNiveau, cont: zoomCont, reg: null } }] : []),
+    ...(zoomReg ? [{ l: zoomReg, p: { niveau: "pays" as ZoneNiveau, cont: zoomCont, reg: zoomReg } }] : []),
+  ];
 
-  const Ligne = ({ l, rang }: { l: ZoneLigne; rang: number | null }) => {
-    const vPrec = mesure === "valeur" ? l.vPrec : l.pPrec;
-    const delta = vPrec != null && vPrec !== 0 ? ((mv(l) - vPrec) / Math.abs(vPrec)) * 100 : null;
-    const bal = balanceDe(l);
-    const podium = rang != null && rang <= 3;
-    const epingle = rang == null;
-    return (
-      <div onClick={l.ouvrable ? () => (niveau === "continent"
-        ? setPortee({ niveau: "region", cont: l.nom, reg: null })
-        : setPortee({ niveau: "pays", cont: l.parent ?? zoomCont, reg: l.nom })) : undefined}
-        role={l.ouvrable ? "button" : undefined} tabIndex={l.ouvrable ? 0 : undefined}
-        title={l.ouvrable ? `Voir le détail de « ${l.nom} »` : undefined}
-        style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
-          cursor: l.ouvrable ? "pointer" : "default", transition: "background .12s",
-          background: epingle ? "#F5F4F2" : rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent" }}
-        onMouseEnter={e => { if (l.ouvrable) e.currentTarget.style.background = "#F0F4F9"; }}
-        onMouseLeave={e => { if (l.ouvrable) e.currentTarget.style.background = rang != null && rang % 2 === 0 ? "#F8F9FB" : "transparent"; }}>
-        <span style={{ width: 24, flexShrink: 0 }}>
-          {rang != null && (
-            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
-              background: podium ? couleur : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
-          )}
-        </span>
-        {niveau === "pays" && (epingle
-          ? <span style={{ width: 20, flexShrink: 0, textAlign: "center", fontSize: 13, lineHeight: 1 }}>🌐</span>
-          : <DrapeauPays iso={l.iso2} nom={l.nom} />)}
-        <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "baseline", gap: 7 }}>
-          <span title={l.nom} style={{ fontSize: 12.5, fontWeight: epingle ? 600 : 650, fontStyle: epingle ? "italic" : "normal",
-            color: epingle ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.nom}</span>
-          {epingle && <span style={{ fontSize: 10, fontWeight: 700, color: "#9aa5b4", flexShrink: 0 }}>({l.libelles})</span>}
-          {/* Rattachement parent, utile seulement quand la portée le mélange */}
-          {!epingle && l.parent && !zoomReg && !(niveau === "region" && zoomCont) && (
-            <span title={l.parent} style={{ fontSize: 9.5, fontWeight: 700, color: "#9aa5b4", whiteSpace: "nowrap", flexShrink: 0 }}>
-              {REGION_COURT[l.parent] ?? l.parent}
-            </span>
-          )}
-          {l.ouvrable && <ChevronRight size={12} style={{ color: "#C5BFBB", flexShrink: 0 }} />}
-        </span>
-        <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
-        <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: epingle ? "#9aa5b4" : "#4a5568", textAlign: "right", flexShrink: 0 }}>
-          {total > 0 ? `${(Math.max(0, mv(l)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
-        </span>
-        <span style={{ width: 40, fontSize: 10, fontWeight: 650, color: "#C5BFBB", textAlign: "right", flexShrink: 0 }}>
-          {rang != null && total > 0 ? `${((cumulDe.get(l.cle) ?? 0) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}
-        </span>
-        <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
-        <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
-          color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
-          {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
-        </span>
-        <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-          {mv(l) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, mv(l) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
-        </div>
-      </div>
-    );
-  };
-
-  if (!lignes.length) return null;
   return (
-    <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* Fil d'Ariane : la portée courante, en badge teinté du sens affiché.
-          Chaque cran antérieur ramène à son niveau. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        {([{ l: "Monde", p: { niveau: "continent", cont: null, reg: null } as ZonePortee },
-           ...(zoomCont ? [{ l: zoomCont, p: { niveau: "region", cont: zoomCont, reg: null } as ZonePortee }] : []),
-           ...(zoomReg ? [{ l: zoomReg, p: { niveau: "pays", cont: zoomCont, reg: zoomReg } as ZonePortee }] : [])]
-        ).map((c, i, arr) => {
-          const dernier = i === arr.length - 1;
-          return (
-            <span key={c.l} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              {i > 0 && <ChevronRight size={12} style={{ color: "#C5BFBB" }} />}
-              <button onClick={() => setPortee(c.p)} disabled={dernier}
-                style={dernier
-                  ? { ...badgeSens, fontWeight: 700, cursor: "default", fontFamily: "var(--font-google-sans)" }
-                  : { border: "none", background: "transparent", padding: "4px 11px", borderRadius: 999,
-                      fontSize: 11, fontWeight: 600, color: "#6b7684", cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
-                {c.l}
-              </button>
-            </span>
-          );
-        })}
-      </div>
-
-      {/* Recherche : utile dès que la portée dépasse la vingtaine de lignes */}
-      {rangees.length > 20 && (
-        <div style={{ position: "relative" }}>
-          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder={`Rechercher parmi ${rangees.length} partenaires de « ${nomPortee} »…`}
-            style={{ width: "100%", paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-          {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+    <TableauClassementNace
+      lignes={lignes} agregeSous={AUTRES_PAYS} sens={sens} mesure={mesure}
+      colonne={niveau === "pays" ? "Partenaire" : niveau === "region" ? "Région" : "Continent"}
+      drapeaux={niveau === "pays"} top={niveau === "pays" ? 15 : 20}
+      nomPortee={nomPortee} totalLibelle={nomPortee === "Monde" ? "Ensemble" : nomPortee}
+      // Le rattachement n'a d'intérêt que si la portée mélange plusieurs
+      // parents : une fois descendu dans une région, il serait constant.
+      montrerParent={!zoomReg && !(niveau === "region" && !!zoomCont)}
+      libelleParent={p => REGION_COURT[p] ?? p}
+      onOuvrir={l => niveau === "continent"
+        ? setPortee({ niveau: "region", cont: l.nom, reg: null })
+        : setPortee({ niveau: "pays", cont: l.parent ?? zoomCont, reg: l.nom })}
+      entete={
+        /* Fil d'Ariane : la portée courante, en badge teinté du sens affiché.
+           Chaque cran antérieur ramène à son niveau. */
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          {crans.map((c, i, arr) => {
+            const dernier = i === arr.length - 1;
+            return (
+              <span key={c.l} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {i > 0 && <ChevronRight size={12} style={{ color: "#C5BFBB" }} />}
+                <button onClick={() => setPortee(c.p)} disabled={dernier}
+                  style={dernier
+                    ? { ...badgeSens, fontWeight: 700, cursor: "default", fontFamily: "var(--font-google-sans)" }
+                    : { border: "none", background: "transparent", padding: "4px 11px", borderRadius: 999,
+                        fontSize: 11, fontWeight: 600, color: "#6b7684", cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+                  {c.l}
+                </button>
+              </span>
+            );
+          })}
         </div>
-      )}
+      }
+    />
+  );
+}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <span style={{ ...EN_TETE, width: 24, flexShrink: 0 }}>#</span>
-        {niveau === "pays" && <span style={{ width: 20, flexShrink: 0 }} />}
-        <span style={{ ...EN_TETE, flex: 1 }}>
-          {niveau === "pays" ? "Partenaire" : niveau === "region" ? "Région" : "Continent"}
-        </span>
-        <span style={{ ...EN_TETE, width: 88, textAlign: "right", flexShrink: 0 }}>{sens === "export" ? "Export" : "Import"}</span>
-        <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
-        <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
-        <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>
-        <span title="Exportations − importations, quel que soit le sens affiché"
-          style={{ ...EN_TETE, width: 92, textAlign: "right", flexShrink: 0 }}>Balance</span>
-        <span style={{ width: "11%", flexShrink: 0 }} />
-      </div>
+// ── Nomenclatures de produits (tableaux 8–19 et 38–41) ───────────────────────
+// Quatre lectures du même commerce, de la plus synthétique à la plus fine.
+// Elles ne s'emboîtent PAS : ce sont quatre nomenclatures indépendantes de
+// l'ANSD, pas les niveaux d'une hiérarchie — d'où une bascule sans fil
+// d'Ariane, là où les zones géographiques se descendent.
+type NaceFamille = "principaux" | "groupes" | "regroupes" | "chapitres";
+// Libellés abrégés : le titre de section porte déjà « Produits », et la barre
+// de commandes doit tenir sur une seule ligne avec les deux autres bascules et
+// le curseur.
+const FAMILLES_PRODUITS: { v: NaceFamille; l: string }[] = [
+  { v: "principaux", l: "Principaux" },
+  { v: "groupes", l: "Groupes d'utilisation" },
+  { v: "regroupes", l: "Regroupés" },
+  { v: "chapitres", l: "Chapitres SH" },
+];
+const AUTRES_PRODUITS = "Autres produits";
 
-      {filtres.length === 0 ? (
-        <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "18px 0" }}>Aucun résultat pour « {q} ».</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {visibles.map(l => <Ligne key={l.cle} l={l} rang={rangDe.get(l.cle) ?? null} />)}
-          {!q && filtres.length > TOP && (
-            <button onClick={() => setTout(t => !t)}
-              style={{ margin: "4px 0 2px", padding: "7px 0", borderRadius: 8, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: couleur, fontFamily: "var(--font-google-sans)" }}>
-              {tout ? `Réduire au top ${TOP}` : `Voir les ${filtres.length - TOP} autres`}
-            </button>
-          )}
-          {agregee && !q && (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                <span style={{ width: 24, textAlign: "center", color: "#C5BFBB", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
-                <span style={{ flex: 1, height: 1, background: "#F2F0EF" }} />
-              </div>
-              <Ligne l={agregee} rang={null} />
-            </>
-          )}
-          {/* Somme de la portée : elle égale le sous-total imprimé par l'ANSD */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderTop: "1px solid #F2F0EF", marginTop: 4 }}>
-            <span style={{ width: 24, flexShrink: 0 }} />
-            {niveau === "pays" && <span style={{ width: 20, flexShrink: 0 }} />}
-            <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>
-              {nomPortee === "Monde" ? "Ensemble" : nomPortee}
-            </span>
-            <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
-            <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /><span style={{ width: 58, flexShrink: 0 }} />
-            {(() => {
-              const bal = lignes.reduce((s, l) => s + balanceDe(l), 0);
-              return (
-                <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
-                  color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
-                  {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
-                </span>
-              );
-            })()}
-            <span style={{ width: "11%", flexShrink: 0 }} />
-          </div>
-        </div>
-      )}
-    </div>
+function ProduitsNace({ an, famille, sens, mesure, principaux, gu, regroupes, chapitres }: {
+  an: number; famille: NaceFamille; sens: ZoneSens; mesure: NaceMesure;
+  principaux: NaceData | null; gu: NaceDataGU | null;
+  regroupes: NaceData | null; chapitres: NaceDataChap | null;
+}) {
+  const autre: ZoneSens = sens === "export" ? "import" : "export";
+
+  const lignes: LigneClassement[] = useMemo(() => {
+    const source = famille === "principaux" ? principaux
+      : famille === "regroupes" ? regroupes
+      : famille === "groupes" ? gu : chapitres;
+    if (!source?.disponible) return [];
+    // Chaque famille nomme sa modalité différemment ; on l'extrait par clé.
+    const k = (r: Record<string, unknown>) =>
+      String(r[famille === "groupes" ? "groupe" : famille === "chapitres" ? "chapitre" : "produit"]);
+    const d = source.donnees as unknown as Record<ZoneSens, Record<string, unknown>[]>;
+    const dd = d as unknown as Record<ZoneSens, (NaceLigneCle & Record<string, unknown>)[]>;
+    const a = indexerNace(dd[sens], k, an);
+    const b = indexerNace(dd[autre], k, an);
+    const pr = indexerNace(dd[sens], k, an - 1);
+    return [...a.keys()].map(nom => ({
+      cle: nom, nom,
+      v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
+      vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
+      vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
+    }));
+  }, [famille, sens, autre, an, principaux, gu, regroupes, chapitres]);
+
+  const nom = FAMILLES_PRODUITS.find(f => f.v === famille)?.l ?? "Produits";
+  return (
+    <TableauClassementNace
+      lignes={lignes}
+      // « Autres produits » ne clôt que les deux nomenclatures non
+      // exhaustives ; groupes d'utilisation et chapitres SH couvrent tout.
+      agregeSous={famille === "principaux" || famille === "regroupes" ? AUTRES_PRODUITS : undefined}
+      sens={sens} mesure={mesure}
+      colonne={famille === "groupes" ? "Groupe" : famille === "chapitres" ? "Chapitre" : "Produit"}
+      // Seules les nomenclatures exhaustives listent les mêmes modalités dans
+      // les deux sens, donc seules elles ont une balance par ligne.
+      balance={famille === "groupes" || famille === "chapitres"}
+      top={famille === "chapitres" ? 15 : 20}
+      nomPortee={nom} totalLibelle="Ensemble"
+    />
   );
 }
 
@@ -926,12 +742,11 @@ function CommerceExterieurPanel() {
   // autre sur les zones. `null` = dernière année disponible.
   const [anKpi, setAnKpi] = useState<number | null>(null);
   const [anProd, setAnProd] = useState<number | null>(null);
-  const [anRegr, setAnRegr] = useState<number | null>(null);
-  const [anGu, setAnGu] = useState<number | null>(null);
   const [anZone, setAnZone] = useState<number | null>(null);
-  const [anChap, setAnChap] = useState<number | null>(null);
-  const [mesureExp, setMesureExp] = useState<NaceMesure>("valeur");
-  const [mesureImp, setMesureImp] = useState<NaceMesure>("valeur");
+  // Bascules de la section Produits : nomenclature, sens, unité.
+  const [prodFamille, setProdFamille] = useState<NaceFamille>("principaux");
+  const [prodSens, setProdSens] = useState<ZoneSens>("export");
+  const [prodMesure, setProdMesure] = useState<NaceMesure>("valeur");
   // Portée et bascules de la zone géographique : remontées ici car leurs
   // commandes vivent dans l'en-tête de section.
   const [zonePortee, setZonePortee] = useState<ZonePortee>({ niveau: "continent", cont: null, reg: null });
@@ -945,8 +760,7 @@ function CommerceExterieurPanel() {
   const [cont, setCont] = useState<NaceDataCont | null>(null);
   const [reg2, setReg2] = useState<NaceDataReg | null>(null);
   const [pys, setPys] = useState<NaceDataPays | null>(null);
-  const [chap, setChap] = useState<{ disponible: boolean; donnees: { export: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[]; import: { chapitre: string; annee: number; valeur: number | null; poids: number | null; edition: number }[] } } | null>(null);
-  const [chapOuvert, setChapOuvert] = useState(false);
+  const [chap, setChap] = useState<NaceDataChap | null>(null);
   useEffect(() => {
     setLoading(true); setErreur(false);
     fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -1001,7 +815,7 @@ function CommerceExterieurPanel() {
   const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
   // Curseur de section : mêmes bornes que celui des KPIs, état indépendant.
   const curseur = (valeur: number | null, poser: (a: number) => void) => (
-    <CurseurAnneeNace min={annees[0]} max={dernier} value={valeur ?? dernier} onChange={poser} />
+    <CurseurAnneeNace min={annees[0]} max={dernier} value={valeur ?? dernier} onChange={poser} largeur={150} />
   );
   const varDe = (v: number | null, prec: number | null) =>
     v != null && prec != null && prec !== 0 ? ((v - prec) / Math.abs(prec)) * 100 : null;
@@ -1056,53 +870,27 @@ function CommerceExterieurPanel() {
         ]} />
       </div>
 
-      {/* Chaque section porte son propre curseur : les millésimes sont
-          indépendants d'une section à l'autre. */}
-      {(() => { const a = anProd ?? dernier; return (
-        <>
-          <EnTeteSectionNace n={1} titre="Principaux produits" commandes={curseur(anProd, setAnProd)} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-            <TableauProduitsNace titre={`Principaux produits exportés · ${a}`} couleur={NACE_BLEU}
-              lignes={lignesDe("export", a)} lignesPrec={lignesDe("export", a - 1)}
-              mesure={mesureExp} onMesure={setMesureExp} />
-            <TableauProduitsNace titre={`Principaux produits importés · ${a}`} couleur={NACE_ORANGE}
-              lignes={lignesDe("import", a)} lignesPrec={lignesDe("import", a - 1)}
-              mesure={mesureImp} onMesure={setMesureImp} />
-          </div>
-        </>
-      ); })()}
-
-      {/* Produits regroupés : nomenclature détaillée ANSD */}
-      {reg?.disponible && (() => {
-        const a = anRegr ?? dernier;
-        const regDe = (sens: "export" | "import", x: number) => reg.donnees[sens].filter(r => r.annee === x);
-        const rE = regDe("export", a), rI = regDe("import", a);
-        if (!rE.length && !rI.length) return null;
+      {/* Produits : quatre nomenclatures du même commerce, de la plus
+          synthétique à la plus fine. Elles ne s'emboîtent pas — ce sont
+          quatre lectures indépendantes de l'ANSD — d'où une simple bascule,
+          là où les zones géographiques se descendent au clic. */}
+      {(() => {
+        const a = anProd ?? dernier;
+        const accent = prodSens === "export" ? NACE_BLEU : NACE_ORANGE;
         return (
           <>
-            <EnTeteSectionNace n={2} titre="Produits regroupés" commandes={curseur(anRegr, setAnRegr)} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-              <TableauRegroupesNace titre={`Exportations par produit · ${a}`} couleur={NACE_BLEU}
-                lignes={rE} lignesPrec={regDe("export", a - 1)} />
-              <TableauRegroupesNace titre={`Importations par produit · ${a}`} couleur={NACE_ORANGE}
-                lignes={rI} lignesPrec={regDe("import", a - 1)} />
-            </div>
-          </>
-        );
-      })()}
-
-      {/* Groupes d'utilisation : répartition exhaustive + balance par groupe */}
-      {gu?.disponible && (() => {
-        const a = anGu ?? dernier;
-        const guDe = (sens: "export" | "import", x: number) => gu.donnees[sens].filter(r => r.annee === x);
-        const gE = guDe("export", a), gI = guDe("import", a);
-        if (!gE.length && !gI.length) return null;
-        return (
-          <>
-            <EnTeteSectionNace n={3} titre="Groupes d'utilisation" commandes={curseur(anGu, setAnGu)} />
-            <SectionRepartition titre={`Répartition et balance par groupe · ${a}`} colonne="Groupe"
-              exp={gE.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))}
-              imp={gI.map(r => ({ nom: r.groupe, valeur: r.valeur, poids: r.poids }))} />
+            <EnTeteSectionNace n={1} titre="Produits" commandes={
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <SegmentNace options={FAMILLES_PRODUITS} valeur={prodFamille} onChange={setProdFamille} accent={accent} />
+                <SegmentNace options={[{ v: "export" as ZoneSens, l: "Exportations" }, { v: "import" as ZoneSens, l: "Importations" }]}
+                  valeur={prodSens} onChange={setProdSens} accent={accent} />
+                <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Poids" }]}
+                  valeur={prodMesure} onChange={setProdMesure} accent={accent} />
+                {curseur(anProd, setAnProd)}
+              </div>
+            } />
+            <ProduitsNace an={a} famille={prodFamille} sens={prodSens} mesure={prodMesure}
+              principaux={data} gu={gu} regroupes={reg} chapitres={chap} />
           </>
         );
       })()}
@@ -1115,7 +903,7 @@ function CommerceExterieurPanel() {
         const accent = zoneSens === "export" ? NACE_BLEU : NACE_ORANGE;
         return (
           <>
-            <EnTeteSectionNace n={4} titre="Zone géographique" commandes={
+            <EnTeteSectionNace n={2} titre="Zone géographique" commandes={
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <SegmentNace options={NIVEAUX} valeur={zonePortee.niveau} accent={accent}
                   onChange={n => setZonePortee({
@@ -1137,36 +925,6 @@ function CommerceExterieurPanel() {
         );
       })()}
 
-      {/* Chapitres SH : nomenclature douanière la plus fine, repliée par défaut */}
-      {chap?.disponible && (() => {
-        const a = anChap ?? dernier;
-        const chDe = (sens: "export" | "import", x: number): NaceLigne[] =>
-          chap.donnees[sens].filter(r => r.annee === x)
-            .map(r => ({ produit: r.chapitre, annee: r.annee, valeur: r.valeur, poids: r.poids, edition: r.edition }));
-        const cE = chDe("export", a), cI = chDe("import", a);
-        if (!cE.length && !cI.length) return null;
-        return (
-          <>
-            <EnTeteSectionNace n={5} titre="Chapitres du Système Harmonisé" commandes={
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                {curseur(anChap, setAnChap)}
-                <button onClick={() => setChapOuvert(o => !o)}
-                  style={{ padding: "5px 16px", borderRadius: 999, border: "1px dashed #D8D4D0", background: "transparent", cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: "#004f91", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
-                  {chapOuvert ? "Masquer" : "Afficher"}
-                </button>
-              </div>
-            } />
-            {chapOuvert && (
-              <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-                <TableauRegroupesNace titre={`Exportations par chapitre · ${a}`} couleur={NACE_BLEU}
-                  lignes={cE} lignesPrec={chDe("export", a - 1)} unite="chapitres" />
-                <TableauRegroupesNace titre={`Importations par chapitre · ${a}`} couleur={NACE_ORANGE}
-                  lignes={cI} lignesPrec={chDe("import", a - 1)} unite="chapitres" />
-              </div>
-            )}
-          </>
-        );
-      })()}
     </div>
   );
 }
