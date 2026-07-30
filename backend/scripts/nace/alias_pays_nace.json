@@ -12,7 +12,6 @@
     "n'atteint pas est signalé comme orphelin non arbitré par",
     "verifier_rapprochement_pays.py : il faut le trancher ici."
   ],
-
   "alias": {
     "CITE DU VATICAN": "Saint-Siège (Vatican)",
     "REPUBLIQUE D'AZERBADJAN": "Azerbaïdjan",
@@ -31,18 +30,22 @@
     "UNION BIRMANE": "Myanmar",
     "YEMEN DEMOCRATIQUE": "Yémen",
     "SAINT DOMINGUE": "République dominicaine",
-    "BELGIQUE-LUXEMBOURG": "Belgique"
+    "BELGIQUE-LUXEMBOURG": "Belgique",
+    "HONDURAS BRITANIQUE": "Belize",
+    "TIMOR PORTUGAIS": "Timor-Leste",
+    "TRINIDAD ET TOBAGO": "Trinité-et-Tobago"
   },
-
   "_notes_alias": {
     "CONGO DEMOCRATIQUE": "RDC [CD], et non « Congo » [CG] que le rapprochement flou propose en premier : les deux pays existent dans ref_pays et le tableau a une ligne CONGO distincte.",
     "SWAZILAND": "Renommé Eswatini en 2018 ; les éditions NACE gardent l'ancien nom.",
     "UNION BIRMANE": "Ancien nom de la Birmanie, aujourd'hui Myanmar dans ref_pays.",
     "YEMEN DEMOCRATIQUE": "Yémen du Sud, fondu dans le Yémen unifié en 1990. Le tableau garde les deux lignes ; les rattacher au même pays les additionne, ce qui est le résultat voulu.",
     "SAINT DOMINGUE": "République dominicaine, et non Haïti : « Haïti » n'est PAS dans la liste des pays de ref_pays sans libellé NACE, donc le tableau a déjà sa ligne HAITI — le doublon historique est levé par élimination.",
-    "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, encore utilisée comme partenaire unique par l'ANSD. Ni « Belgique » ni « Luxembourg » n'ont de ligne propre dans le tableau : rattacher à la Belgique (de très loin prépondérante) est le seul moyen qu'elle existe dans les données. À revoir si une édition sépare les deux."
+    "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, encore utilisée comme partenaire unique par l'ANSD. Ni « Belgique » ni « Luxembourg » n'ont de ligne propre dans le tableau : rattacher à la Belgique (de très loin prépondérante) est le seul moyen qu'elle existe dans les données. À revoir si une édition sépare les deux.",
+    "HONDURAS BRITANIQUE": "Nom colonial du Belize (indépendant en 1981). Le tableau porte par ailleurs une ligne HONDURAS distincte, qui est bien le Honduras.",
+    "TIMOR PORTUGAIS": "Nom colonial du Timor oriental, aujourd'hui Timor-Leste dans ref_pays.",
+    "TRINIDAD ET TOBAGO": "Graphie anglaise ; ref_pays retient la forme française Trinité-et-Tobago."
   },
-
   "hors_referentiel": {
     "EX-YOUGOSLAVIE": "État dissous, sans successeur unique dans ref_pays",
     "TRIESTE": "ville italienne (ancien territoire libre) ; l'Italie a sa propre ligne",
@@ -62,6 +65,14 @@
     "CURUCAO": "Curaçao, pays constitutif du Royaume des Pays-Bas",
     "HONG-KONG": "région administrative spéciale chinoise, absente de ref_pays",
     "MACAO": "région administrative spéciale chinoise, absente de ref_pays",
-    "ILES NIOUE, ILES TOKELOU": "Niue et Tokelau, territoires associés à la Nouvelle-Zélande"
+    "ILES NIOUE, ILES TOKELOU": "Niue et Tokelau, territoires associés à la Nouvelle-Zélande",
+    "ARUBA": "pays constitutif du Royaume des Pays-Bas",
+    "CEUTA ET MELILLA": "villes autonomes espagnoles en Afrique du Nord ; l'Espagne a sa propre ligne",
+    "GIBRALTAR": "territoire britannique d'outre-mer",
+    "ILES FALKLAND": "territoire britannique d'outre-mer",
+    "ILES COOK": "État associé à la Nouvelle-Zélande, absent de ref_pays",
+    "ILES PACIFIQUES US": "îles mineures éloignées des États-Unis",
+    "DIVERS": "pseudo-partenaire du rapport : provisions de bord, or monétaire et non dénommé ailleurs — pas un pays",
+    "NCA": "« non classé ailleurs » : même pseudo-partenaire que DIVERS, nom utilisé par les tableaux d'import"
   }
 }

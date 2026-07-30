@@ -1,0 +1,1836 @@
+pays,region,sens,annee,valeur,poids,edition
+ALLEMAGNE,Communauté européenne,export,2015,3484,4704,2019
+ALLEMAGNE,Communauté européenne,export,2016,4506,13914,2019
+ALLEMAGNE,Communauté européenne,export,2017,2739,3358,2019
+ALLEMAGNE,Communauté européenne,export,2018,3149,3472,2019
+ALLEMAGNE,Communauté européenne,export,2019,3354,3005,2019
+AUTRICHE,Communauté européenne,export,2015,174,44,2019
+AUTRICHE,Communauté européenne,export,2016,203,52,2019
+AUTRICHE,Communauté européenne,export,2017,226,66,2019
+AUTRICHE,Communauté européenne,export,2018,109,22,2019
+AUTRICHE,Communauté européenne,export,2019,134,38,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,export,2015,6265,4099,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,export,2016,8093,3599,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,export,2017,5666,23193,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,export,2018,13708,63462,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,export,2019,23076,67550,2019
+BULGARIE,Communauté européenne,export,2015,1306,647,2019
+BULGARIE,Communauté européenne,export,2016,451,426,2019
+BULGARIE,Communauté européenne,export,2017,392,811,2019
+BULGARIE,Communauté européenne,export,2018,399,4674,2019
+BULGARIE,Communauté européenne,export,2019,235,85,2019
+CHYPRE,Communauté européenne,export,2015,425,65,2019
+CHYPRE,Communauté européenne,export,2016,622,88,2019
+CHYPRE,Communauté européenne,export,2017,590,76,2019
+CHYPRE,Communauté européenne,export,2018,744,101,2019
+CHYPRE,Communauté européenne,export,2019,661,89,2019
+CROATIE,Communauté européenne,export,2015,,,2019
+CROATIE,Communauté européenne,export,2016,8,1,2019
+CROATIE,Communauté européenne,export,2017,,,2019
+CROATIE,Communauté européenne,export,2018,,,2019
+CROATIE,Communauté européenne,export,2019,29,21,2019
+DANEMARK,Communauté européenne,export,2015,1437,1825,2019
+DANEMARK,Communauté européenne,export,2016,969,1332,2019
+DANEMARK,Communauté européenne,export,2017,807,1072,2019
+DANEMARK,Communauté européenne,export,2018,402,497,2019
+DANEMARK,Communauté européenne,export,2019,213,171,2019
+ESPAGNE,Communauté européenne,export,2015,41657,153721,2019
+ESPAGNE,Communauté européenne,export,2016,51460,113743,2019
+ESPAGNE,Communauté européenne,export,2017,60377,94004,2019
+ESPAGNE,Communauté européenne,export,2018,74446,73087,2019
+ESPAGNE,Communauté européenne,export,2019,87064,117880,2019
+FINLANDE,Communauté européenne,export,2015,8,1,2019
+FINLANDE,Communauté européenne,export,2016,9,1,2019
+FINLANDE,Communauté européenne,export,2017,19,1,2019
+FINLANDE,Communauté européenne,export,2018,12,14,2019
+FINLANDE,Communauté européenne,export,2019,2844,33005,2019
+FRANCE,Communauté européenne,export,2015,53740,156671,2019
+FRANCE,Communauté européenne,export,2016,41561,61347,2019
+FRANCE,Communauté européenne,export,2017,43160,38322,2019
+FRANCE,Communauté européenne,export,2018,45328,39620,2019
+FRANCE,Communauté européenne,export,2019,47442,32454,2019
+GRECE,Communauté européenne,export,2015,5162,1111,2019
+GRECE,Communauté européenne,export,2016,4465,1011,2019
+GRECE,Communauté européenne,export,2017,3662,568,2019
+GRECE,Communauté européenne,export,2018,3101,434,2019
+GRECE,Communauté européenne,export,2019,4598,738,2019
+HONGRIE,Communauté européenne,export,2015,3,0,2019
+HONGRIE,Communauté européenne,export,2016,576,0,2019
+HONGRIE,Communauté européenne,export,2017,3,7,2019
+HONGRIE,Communauté européenne,export,2018,39,4,2019
+HONGRIE,Communauté européenne,export,2019,89,110,2019
+IRLANDE,Communauté européenne,export,2015,252,230,2019
+IRLANDE,Communauté européenne,export,2016,1268,85,2019
+IRLANDE,Communauté européenne,export,2017,1,5,2019
+IRLANDE,Communauté européenne,export,2018,8,24,2019
+IRLANDE,Communauté européenne,export,2019,20,200,2019
+ITALIE,Communauté européenne,export,2015,43216,44428,2019
+ITALIE,Communauté européenne,export,2016,35525,20234,2019
+ITALIE,Communauté européenne,export,2017,42321,26289,2019
+ITALIE,Communauté européenne,export,2018,57563,38587,2019
+ITALIE,Communauté européenne,export,2019,57896,38824,2019
+MALTE,Communauté européenne,export,2015,323,108,2019
+MALTE,Communauté européenne,export,2016,398,72,2019
+MALTE,Communauté européenne,export,2017,354,63,2019
+MALTE,Communauté européenne,export,2018,347,61,2019
+MALTE,Communauté européenne,export,2019,230,41,2019
+PAYS BAS,Communauté européenne,export,2015,21695,79999,2019
+PAYS BAS,Communauté européenne,export,2016,17454,36781,2019
+PAYS BAS,Communauté européenne,export,2017,25196,35325,2019
+PAYS BAS,Communauté européenne,export,2018,26939,37334,2019
+PAYS BAS,Communauté européenne,export,2019,25183,32389,2019
+POLOGNE,Communauté européenne,export,2015,13058,283204,2019
+POLOGNE,Communauté européenne,export,2016,8384,201750,2019
+POLOGNE,Communauté européenne,export,2017,2824,73690,2019
+POLOGNE,Communauté européenne,export,2018,1732,41957,2019
+POLOGNE,Communauté européenne,export,2019,5585,81669,2019
+PORTUGAL,Communauté européenne,export,2015,4842,10275,2019
+PORTUGAL,Communauté européenne,export,2016,8837,6874,2019
+PORTUGAL,Communauté européenne,export,2017,6694,2315,2019
+PORTUGAL,Communauté européenne,export,2018,5567,2641,2019
+PORTUGAL,Communauté européenne,export,2019,5438,3690,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,export,2015,,,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,export,2016,,,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,export,2017,,,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,export,2018,23,52,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,export,2019,3,2,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,export,2015,143,224,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,export,2016,55,57,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,export,2017,2,2,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,export,2018,46,168,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,export,2019,,,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,export,2015,,,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,export,2016,6,20,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,export,2017,,,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,export,2018,8,4,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,export,2019,,,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2015,1,2,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2016,1,0,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2017,257,402,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2018,1,0,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2019,,,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,export,2015,3,0,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,export,2016,,,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,export,2017,1,1,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,export,2018,,,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,export,2019,4,1,2019
+ROUMANIE,Communauté européenne,export,2015,81,0,2019
+ROUMANIE,Communauté européenne,export,2016,25,3,2019
+ROUMANIE,Communauté européenne,export,2017,,,2019
+ROUMANIE,Communauté européenne,export,2018,6,4,2019
+ROUMANIE,Communauté européenne,export,2019,16,2,2019
+ROYAUME UNI,Communauté européenne,export,2015,19631,150939,2019
+ROYAUME UNI,Communauté européenne,export,2016,25158,86063,2019
+ROYAUME UNI,Communauté européenne,export,2017,30405,107495,2019
+ROYAUME UNI,Communauté européenne,export,2018,25645,75686,2019
+ROYAUME UNI,Communauté européenne,export,2019,31733,98201,2019
+SLOVENIE,Communauté européenne,export,2015,4,1,2019
+SLOVENIE,Communauté européenne,export,2016,8,4,2019
+SLOVENIE,Communauté européenne,export,2017,1,2,2019
+SLOVENIE,Communauté européenne,export,2018,189,152,2019
+SLOVENIE,Communauté européenne,export,2019,23,25,2019
+SUEDE,Communauté européenne,export,2015,672,120,2019
+SUEDE,Communauté européenne,export,2016,662,174,2019
+SUEDE,Communauté européenne,export,2017,1686,2118,2019
+SUEDE,Communauté européenne,export,2018,1453,17231,2019
+SUEDE,Communauté européenne,export,2019,3387,36348,2019
+ALBANIE,Autres pays d'Europe,export,2015,1882,2162,2019
+ALBANIE,Autres pays d'Europe,export,2016,110,66,2019
+ALBANIE,Autres pays d'Europe,export,2017,58,39,2019
+ALBANIE,Autres pays d'Europe,export,2018,158,148,2019
+ALBANIE,Autres pays d'Europe,export,2019,190,166,2019
+ANDORRE,Autres pays d'Europe,export,2015,1,0,2019
+ANDORRE,Autres pays d'Europe,export,2016,49,7,2019
+ANDORRE,Autres pays d'Europe,export,2017,,,2019
+ANDORRE,Autres pays d'Europe,export,2018,,,2019
+ANDORRE,Autres pays d'Europe,export,2019,,,2019
+ARMENIE,Autres pays d'Europe,export,2015,15,6,2019
+ARMENIE,Autres pays d'Europe,export,2016,3,1,2019
+ARMENIE,Autres pays d'Europe,export,2017,2,11,2019
+ARMENIE,Autres pays d'Europe,export,2018,0,0,2019
+ARMENIE,Autres pays d'Europe,export,2019,0,1,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2015,1,0,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2016,3,0,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2017,,,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2018,4,2,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2019,,,2019
+CITE DU VATICAN,Autres pays d'Europe,export,2015,,,2019
+CITE DU VATICAN,Autres pays d'Europe,export,2016,18,38,2019
+CITE DU VATICAN,Autres pays d'Europe,export,2017,,,2019
+CITE DU VATICAN,Autres pays d'Europe,export,2018,,,2019
+CITE DU VATICAN,Autres pays d'Europe,export,2019,,,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,export,2015,23,38,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,export,2016,181,49,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,export,2017,,,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,export,2018,,,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,export,2019,,,2019
+HELGOLAND,Autres pays d'Europe,export,2015,11,4,2019
+HELGOLAND,Autres pays d'Europe,export,2016,129,70,2019
+HELGOLAND,Autres pays d'Europe,export,2017,162,49,2019
+HELGOLAND,Autres pays d'Europe,export,2018,196,49,2019
+HELGOLAND,Autres pays d'Europe,export,2019,18,25,2019
+ISLANDE,Autres pays d'Europe,export,2015,999,167,2019
+ISLANDE,Autres pays d'Europe,export,2016,679,107,2019
+ISLANDE,Autres pays d'Europe,export,2017,128,18,2019
+ISLANDE,Autres pays d'Europe,export,2018,323,51,2019
+ISLANDE,Autres pays d'Europe,export,2019,67,9,2019
+MONTENEGRO,Autres pays d'Europe,export,2015,2,5,2019
+MONTENEGRO,Autres pays d'Europe,export,2016,280,175,2019
+MONTENEGRO,Autres pays d'Europe,export,2017,1,0,2019
+MONTENEGRO,Autres pays d'Europe,export,2018,5580,23097,2019
+MONTENEGRO,Autres pays d'Europe,export,2019,869,979,2019
+NORVEGE,Autres pays d'Europe,export,2015,4187,55273,2019
+NORVEGE,Autres pays d'Europe,export,2016,8151,163690,2019
+NORVEGE,Autres pays d'Europe,export,2017,23388,259454,2019
+NORVEGE,Autres pays d'Europe,export,2018,2396,30028,2019
+NORVEGE,Autres pays d'Europe,export,2019,11821,137104,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2015,,,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2016,42,8,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2017,16,4,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2018,15,1,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2019,2,1,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2015,745,1287,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2016,132,331,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2017,304,570,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2018,2203,17556,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2019,512,2258,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2015,,,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2016,,,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2017,,,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2018,12,2,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2019,,,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2015,213,250,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2016,117,98,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2017,65,48,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2018,57,34,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2019,167,245,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2015,,,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2016,14,1,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2017,1,0,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2018,,,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2019,,,2019
+RUSSIE,Autres pays d'Europe,export,2015,50,109,2019
+RUSSIE,Autres pays d'Europe,export,2016,102,31,2019
+RUSSIE,Autres pays d'Europe,export,2017,29,121,2019
+RUSSIE,Autres pays d'Europe,export,2018,46,108,2019
+RUSSIE,Autres pays d'Europe,export,2019,70,323,2019
+SUISSE,Autres pays d'Europe,export,2015,133163,74316,2019
+SUISSE,Autres pays d'Europe,export,2016,157696,11647,2019
+SUISSE,Autres pays d'Europe,export,2017,176388,45986,2019
+SUISSE,Autres pays d'Europe,export,2018,301515,134534,2019
+SUISSE,Autres pays d'Europe,export,2019,359241,99059,2019
+TRIESTE,Autres pays d'Europe,export,2015,0,0,2019
+TRIESTE,Autres pays d'Europe,export,2016,,,2019
+TRIESTE,Autres pays d'Europe,export,2017,2,0,2019
+TRIESTE,Autres pays d'Europe,export,2018,1,1,2019
+TRIESTE,Autres pays d'Europe,export,2019,11,7,2019
+TURQUIE,Autres pays d'Europe,export,2015,2422,3337,2019
+TURQUIE,Autres pays d'Europe,export,2016,2650,3526,2019
+TURQUIE,Autres pays d'Europe,export,2017,987,1327,2019
+TURQUIE,Autres pays d'Europe,export,2018,2387,5180,2019
+TURQUIE,Autres pays d'Europe,export,2019,4236,5080,2019
+BURUNDI,Afrique centrale,export,2015,25,12,2019
+BURUNDI,Afrique centrale,export,2016,30,13,2019
+BURUNDI,Afrique centrale,export,2017,31,19,2019
+BURUNDI,Afrique centrale,export,2018,35,25,2019
+BURUNDI,Afrique centrale,export,2019,78,74,2019
+CAMEROUN,Afrique centrale,export,2015,24737,22752,2019
+CAMEROUN,Afrique centrale,export,2016,15393,22379,2019
+CAMEROUN,Afrique centrale,export,2017,11465,18909,2019
+CAMEROUN,Afrique centrale,export,2018,16020,26350,2019
+CAMEROUN,Afrique centrale,export,2019,17428,27873,2019
+CENTRE AFRIQUE,Afrique centrale,export,2015,4635,2013,2019
+CENTRE AFRIQUE,Afrique centrale,export,2016,5541,1842,2019
+CENTRE AFRIQUE,Afrique centrale,export,2017,4953,1838,2019
+CENTRE AFRIQUE,Afrique centrale,export,2018,4899,1435,2019
+CENTRE AFRIQUE,Afrique centrale,export,2019,3931,1123,2019
+CONGO,Afrique centrale,export,2015,22511,8048,2019
+CONGO,Afrique centrale,export,2016,25570,13264,2019
+CONGO,Afrique centrale,export,2017,26454,12721,2019
+CONGO,Afrique centrale,export,2018,21594,11069,2019
+CONGO,Afrique centrale,export,2019,22441,10751,2019
+CONGO DEMOCRATIQUE,Afrique centrale,export,2015,515,324,2019
+CONGO DEMOCRATIQUE,Afrique centrale,export,2016,857,624,2019
+CONGO DEMOCRATIQUE,Afrique centrale,export,2017,1189,920,2019
+CONGO DEMOCRATIQUE,Afrique centrale,export,2018,3635,1301,2019
+CONGO DEMOCRATIQUE,Afrique centrale,export,2019,1443,1354,2019
+GABON,Afrique centrale,export,2015,8092,3043,2019
+GABON,Afrique centrale,export,2016,6284,3077,2019
+GABON,Afrique centrale,export,2017,2399,2122,2019
+GABON,Afrique centrale,export,2018,3457,5337,2019
+GABON,Afrique centrale,export,2019,5946,6056,2019
+GUINEE EQUATORIALE,Afrique centrale,export,2015,6968,3915,2019
+GUINEE EQUATORIALE,Afrique centrale,export,2016,2750,748,2019
+GUINEE EQUATORIALE,Afrique centrale,export,2017,865,714,2019
+GUINEE EQUATORIALE,Afrique centrale,export,2018,2679,1049,2019
+GUINEE EQUATORIALE,Afrique centrale,export,2019,2699,901,2019
+RWANDA,Afrique centrale,export,2015,5,1,2019
+RWANDA,Afrique centrale,export,2016,32,4,2019
+RWANDA,Afrique centrale,export,2017,2,0,2019
+RWANDA,Afrique centrale,export,2018,9,3,2019
+RWANDA,Afrique centrale,export,2019,2,0,2019
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2015,1,0,2019
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2016,,,2019
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2017,2,0,2019
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2018,2,1,2019
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2019,,,2019
+TCHAD,Afrique centrale,export,2015,16177,2794,2019
+TCHAD,Afrique centrale,export,2016,13706,2543,2019
+TCHAD,Afrique centrale,export,2017,14215,3454,2019
+TCHAD,Afrique centrale,export,2018,14734,3591,2019
+TCHAD,Afrique centrale,export,2019,8177,2725,2019
+ALGERIE,Afrique du Nord,export,2015,212,229,2019
+ALGERIE,Afrique du Nord,export,2016,373,406,2019
+ALGERIE,Afrique du Nord,export,2017,302,269,2019
+ALGERIE,Afrique du Nord,export,2018,246,220,2019
+ALGERIE,Afrique du Nord,export,2019,151,94,2019
+EGYPTE,Afrique du Nord,export,2015,560,835,2019
+EGYPTE,Afrique du Nord,export,2016,318,473,2019
+EGYPTE,Afrique du Nord,export,2017,244,260,2019
+EGYPTE,Afrique du Nord,export,2018,260,348,2019
+EGYPTE,Afrique du Nord,export,2019,253,788,2019
+ILES CANARIES,Afrique du Nord,export,2015,4,0,2019
+ILES CANARIES,Afrique du Nord,export,2016,,,2019
+ILES CANARIES,Afrique du Nord,export,2017,,,2019
+ILES CANARIES,Afrique du Nord,export,2018,10,27,2019
+ILES CANARIES,Afrique du Nord,export,2019,,,2019
+LIBYE,Afrique du Nord,export,2015,178,193,2019
+LIBYE,Afrique du Nord,export,2016,17,11,2019
+LIBYE,Afrique du Nord,export,2017,282,122,2019
+LIBYE,Afrique du Nord,export,2018,4,4,2019
+LIBYE,Afrique du Nord,export,2019,36,60,2019
+MAROC,Afrique du Nord,export,2015,2777,3214,2019
+MAROC,Afrique du Nord,export,2016,4429,4756,2019
+MAROC,Afrique du Nord,export,2017,2511,2727,2019
+MAROC,Afrique du Nord,export,2018,4838,4203,2019
+MAROC,Afrique du Nord,export,2019,6948,4752,2019
+SOUDAN,Afrique du Nord,export,2015,509,236,2019
+SOUDAN,Afrique du Nord,export,2016,383,12185,2019
+SOUDAN,Afrique du Nord,export,2017,523,364,2019
+SOUDAN,Afrique du Nord,export,2018,1045,384,2019
+SOUDAN,Afrique du Nord,export,2019,436,371,2019
+TUNISIE,Afrique du Nord,export,2015,855,203,2019
+TUNISIE,Afrique du Nord,export,2016,977,1267,2019
+TUNISIE,Afrique du Nord,export,2017,1083,1100,2019
+TUNISIE,Afrique du Nord,export,2018,519,644,2019
+TUNISIE,Afrique du Nord,export,2019,2349,3442,2019
+BENIN,Afrique de l'Ouest,export,2015,11688,47327,2019
+BENIN,Afrique de l'Ouest,export,2016,10774,40329,2019
+BENIN,Afrique de l'Ouest,export,2017,9048,35207,2019
+BENIN,Afrique de l'Ouest,export,2018,9977,25325,2019
+BENIN,Afrique de l'Ouest,export,2019,11813,33679,2019
+BURKINA FASO,Afrique de l'Ouest,export,2015,25602,105042,2019
+BURKINA FASO,Afrique de l'Ouest,export,2016,30196,118784,2019
+BURKINA FASO,Afrique de l'Ouest,export,2017,33155,79300,2019
+BURKINA FASO,Afrique de l'Ouest,export,2018,37058,79615,2019
+BURKINA FASO,Afrique de l'Ouest,export,2019,36279,84937,2019
+COTE D'IVOIRE,Afrique de l'Ouest,export,2015,71692,260022,2019
+COTE D'IVOIRE,Afrique de l'Ouest,export,2016,78420,233791,2019
+COTE D'IVOIRE,Afrique de l'Ouest,export,2017,80362,231556,2019
+COTE D'IVOIRE,Afrique de l'Ouest,export,2018,71539,211992,2019
+COTE D'IVOIRE,Afrique de l'Ouest,export,2019,91054,286891,2019
+GAMBIE,Afrique de l'Ouest,export,2015,39412,384914,2019
+GAMBIE,Afrique de l'Ouest,export,2016,44663,663133,2019
+GAMBIE,Afrique de l'Ouest,export,2017,55144,568889,2019
+GAMBIE,Afrique de l'Ouest,export,2018,40208,360746,2019
+GAMBIE,Afrique de l'Ouest,export,2019,38890,392006,2019
+GHANA,Afrique de l'Ouest,export,2015,5548,7826,2019
+GHANA,Afrique de l'Ouest,export,2016,9215,13487,2019
+GHANA,Afrique de l'Ouest,export,2017,9208,11582,2019
+GHANA,Afrique de l'Ouest,export,2018,13127,15177,2019
+GHANA,Afrique de l'Ouest,export,2019,5500,9691,2019
+GUINEE BISSAU,Afrique de l'Ouest,export,2015,22578,88826,2019
+GUINEE BISSAU,Afrique de l'Ouest,export,2016,22495,81574,2019
+GUINEE BISSAU,Afrique de l'Ouest,export,2017,23340,92540,2019
+GUINEE BISSAU,Afrique de l'Ouest,export,2018,19416,70332,2019
+GUINEE BISSAU,Afrique de l'Ouest,export,2019,21708,53171,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2015,46911,59413,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2016,39883,52076,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2017,47481,72057,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2018,52337,79467,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2019,61399,98426,2019
+ILES DU CAP VERT,Afrique de l'Ouest,export,2015,1116,371,2019
+ILES DU CAP VERT,Afrique de l'Ouest,export,2016,1663,2525,2019
+ILES DU CAP VERT,Afrique de l'Ouest,export,2017,2172,1044,2019
+ILES DU CAP VERT,Afrique de l'Ouest,export,2018,2087,3242,2019
+ILES DU CAP VERT,Afrique de l'Ouest,export,2019,1436,762,2019
+LIBERIA,Afrique de l'Ouest,export,2015,4038,3169,2019
+LIBERIA,Afrique de l'Ouest,export,2016,4101,3875,2019
+LIBERIA,Afrique de l'Ouest,export,2017,3894,3301,2019
+LIBERIA,Afrique de l'Ouest,export,2018,4102,4321,2019
+LIBERIA,Afrique de l'Ouest,export,2019,1599,2002,2019
+MALI,Afrique de l'Ouest,export,2015,172668,2051219,2019
+MALI,Afrique de l'Ouest,export,2016,184194,2318247,2019
+MALI,Afrique de l'Ouest,export,2017,209786,2419618,2019
+MALI,Afrique de l'Ouest,export,2018,190997,2155974,2019
+MALI,Afrique de l'Ouest,export,2019,204980,1973771,2019
+MAURITANIE,Afrique de l'Ouest,export,2015,24346,66035,2019
+MAURITANIE,Afrique de l'Ouest,export,2016,39847,301447,2019
+MAURITANIE,Afrique de l'Ouest,export,2017,39256,252264,2019
+MAURITANIE,Afrique de l'Ouest,export,2018,34327,42232,2019
+MAURITANIE,Afrique de l'Ouest,export,2019,32617,51536,2019
+NIGER,Afrique de l'Ouest,export,2015,10687,15213,2019
+NIGER,Afrique de l'Ouest,export,2016,12902,23339,2019
+NIGER,Afrique de l'Ouest,export,2017,9624,12556,2019
+NIGER,Afrique de l'Ouest,export,2018,15616,86246,2019
+NIGER,Afrique de l'Ouest,export,2019,8745,104299,2019
+NIGERIA,Afrique de l'Ouest,export,2015,5900,6232,2019
+NIGERIA,Afrique de l'Ouest,export,2016,5649,8065,2019
+NIGERIA,Afrique de l'Ouest,export,2017,12211,11287,2019
+NIGERIA,Afrique de l'Ouest,export,2018,16402,12330,2019
+NIGERIA,Afrique de l'Ouest,export,2019,14770,17239,2019
+SIERRA LEONE,Afrique de l'Ouest,export,2015,11644,71501,2019
+SIERRA LEONE,Afrique de l'Ouest,export,2016,8476,22191,2019
+SIERRA LEONE,Afrique de l'Ouest,export,2017,5850,10378,2019
+SIERRA LEONE,Afrique de l'Ouest,export,2018,6175,11870,2019
+SIERRA LEONE,Afrique de l'Ouest,export,2019,6767,15243,2019
+TOGO,Afrique de l'Ouest,export,2015,17218,19186,2019
+TOGO,Afrique de l'Ouest,export,2016,12613,15075,2019
+TOGO,Afrique de l'Ouest,export,2017,12518,14650,2019
+TOGO,Afrique de l'Ouest,export,2018,11528,13089,2019
+TOGO,Afrique de l'Ouest,export,2019,13408,15994,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2015,11771,190120,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2016,985,1233,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2017,2628,1132,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2018,237,299,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2019,710,967,2019
+ANGOLA,Afrique orientale et du Sud,export,2015,232,368,2019
+ANGOLA,Afrique orientale et du Sud,export,2016,2591,389,2019
+ANGOLA,Afrique orientale et du Sud,export,2017,454,411,2019
+ANGOLA,Afrique orientale et du Sud,export,2018,199,267,2019
+ANGOLA,Afrique orientale et du Sud,export,2019,432,548,2019
+BOTSWANA,Afrique orientale et du Sud,export,2015,14,9,2019
+BOTSWANA,Afrique orientale et du Sud,export,2016,13,92,2019
+BOTSWANA,Afrique orientale et du Sud,export,2017,13,15,2019
+BOTSWANA,Afrique orientale et du Sud,export,2018,4,6,2019
+BOTSWANA,Afrique orientale et du Sud,export,2019,5,2,2019
+COMORES ILE,Afrique orientale et du Sud,export,2015,330,601,2019
+COMORES ILE,Afrique orientale et du Sud,export,2016,10,0,2019
+COMORES ILE,Afrique orientale et du Sud,export,2017,0,0,2019
+COMORES ILE,Afrique orientale et du Sud,export,2018,19,27,2019
+COMORES ILE,Afrique orientale et du Sud,export,2019,14,2,2019
+DJIBOUTI,Afrique orientale et du Sud,export,2015,1,0,2019
+DJIBOUTI,Afrique orientale et du Sud,export,2016,3,1,2019
+DJIBOUTI,Afrique orientale et du Sud,export,2017,9,1,2019
+DJIBOUTI,Afrique orientale et du Sud,export,2018,26,5,2019
+DJIBOUTI,Afrique orientale et du Sud,export,2019,4,0,2019
+ETHIOPIE,Afrique orientale et du Sud,export,2015,26,1,2019
+ETHIOPIE,Afrique orientale et du Sud,export,2016,2,0,2019
+ETHIOPIE,Afrique orientale et du Sud,export,2017,47,37,2019
+ETHIOPIE,Afrique orientale et du Sud,export,2018,6,2,2019
+ETHIOPIE,Afrique orientale et du Sud,export,2019,822,967,2019
+ILE STE HELENE,Afrique orientale et du Sud,export,2015,,,2019
+ILE STE HELENE,Afrique orientale et du Sud,export,2016,,,2019
+ILE STE HELENE,Afrique orientale et du Sud,export,2017,,,2019
+ILE STE HELENE,Afrique orientale et du Sud,export,2018,0,0,2019
+ILE STE HELENE,Afrique orientale et du Sud,export,2019,94,53,2019
+ILES MAURICE,Afrique orientale et du Sud,export,2015,15,23,2019
+ILES MAURICE,Afrique orientale et du Sud,export,2016,1,0,2019
+ILES MAURICE,Afrique orientale et du Sud,export,2017,104,33,2019
+ILES MAURICE,Afrique orientale et du Sud,export,2018,4,1,2019
+ILES MAURICE,Afrique orientale et du Sud,export,2019,86,29,2019
+KENYA,Afrique orientale et du Sud,export,2015,437,217,2019
+KENYA,Afrique orientale et du Sud,export,2016,26,10,2019
+KENYA,Afrique orientale et du Sud,export,2017,80,26,2019
+KENYA,Afrique orientale et du Sud,export,2018,166,50,2019
+KENYA,Afrique orientale et du Sud,export,2019,836,3027,2019
+MADAGASCAR,Afrique orientale et du Sud,export,2015,46,13,2019
+MADAGASCAR,Afrique orientale et du Sud,export,2016,19,1,2019
+MADAGASCAR,Afrique orientale et du Sud,export,2017,29,4,2019
+MADAGASCAR,Afrique orientale et du Sud,export,2018,53,9,2019
+MADAGASCAR,Afrique orientale et du Sud,export,2019,39,26,2019
+MALAWI,Afrique orientale et du Sud,export,2015,,,2019
+MALAWI,Afrique orientale et du Sud,export,2016,6,2,2019
+MALAWI,Afrique orientale et du Sud,export,2017,,,2019
+MALAWI,Afrique orientale et du Sud,export,2018,,,2019
+MALAWI,Afrique orientale et du Sud,export,2019,360,5,2019
+MOZAMBIQUE,Afrique orientale et du Sud,export,2015,163,73,2019
+MOZAMBIQUE,Afrique orientale et du Sud,export,2016,390,196,2019
+MOZAMBIQUE,Afrique orientale et du Sud,export,2017,35,12,2019
+MOZAMBIQUE,Afrique orientale et du Sud,export,2018,74,49,2019
+MOZAMBIQUE,Afrique orientale et du Sud,export,2019,265,499,2019
+NAMIBIE,Afrique orientale et du Sud,export,2015,7,12,2019
+NAMIBIE,Afrique orientale et du Sud,export,2016,45,14,2019
+NAMIBIE,Afrique orientale et du Sud,export,2017,233,88,2019
+NAMIBIE,Afrique orientale et du Sud,export,2018,12,27,2019
+NAMIBIE,Afrique orientale et du Sud,export,2019,100,32,2019
+OUGANDA,Afrique orientale et du Sud,export,2015,111,66,2019
+OUGANDA,Afrique orientale et du Sud,export,2016,44,26,2019
+OUGANDA,Afrique orientale et du Sud,export,2017,105,26,2019
+OUGANDA,Afrique orientale et du Sud,export,2018,219,137,2019
+OUGANDA,Afrique orientale et du Sud,export,2019,476,305,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2015,,,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2016,0,0,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2017,,,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2018,,,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2019,77,2,2019
+REUNION,Afrique orientale et du Sud,export,2015,2,0,2019
+REUNION,Afrique orientale et du Sud,export,2016,,,2019
+REUNION,Afrique orientale et du Sud,export,2017,51,0,2019
+REUNION,Afrique orientale et du Sud,export,2018,0,0,2019
+REUNION,Afrique orientale et du Sud,export,2019,,,2019
+SEYCHELLES,Afrique orientale et du Sud,export,2015,55,196,2019
+SEYCHELLES,Afrique orientale et du Sud,export,2016,0,0,2019
+SEYCHELLES,Afrique orientale et du Sud,export,2017,,,2019
+SEYCHELLES,Afrique orientale et du Sud,export,2018,,,2019
+SEYCHELLES,Afrique orientale et du Sud,export,2019,2,96,2019
+SWAZILAND,Afrique orientale et du Sud,export,2015,,,2019
+SWAZILAND,Afrique orientale et du Sud,export,2016,,,2019
+SWAZILAND,Afrique orientale et du Sud,export,2017,1632,37101,2019
+SWAZILAND,Afrique orientale et du Sud,export,2018,2952,87020,2019
+SWAZILAND,Afrique orientale et du Sud,export,2019,8947,225802,2019
+TANZANIE,Afrique orientale et du Sud,export,2015,281,249,2019
+TANZANIE,Afrique orientale et du Sud,export,2016,1768,226,2019
+TANZANIE,Afrique orientale et du Sud,export,2017,410,354,2019
+TANZANIE,Afrique orientale et du Sud,export,2018,289,248,2019
+TANZANIE,Afrique orientale et du Sud,export,2019,518,384,2019
+ZAMBIE,Afrique orientale et du Sud,export,2015,125,66,2019
+ZAMBIE,Afrique orientale et du Sud,export,2016,119,52,2019
+ZAMBIE,Afrique orientale et du Sud,export,2017,604,217,2019
+ZAMBIE,Afrique orientale et du Sud,export,2018,627,235,2019
+ZAMBIE,Afrique orientale et du Sud,export,2019,981,491,2019
+ZIMBABWE,Afrique orientale et du Sud,export,2015,0,0,2019
+ZIMBABWE,Afrique orientale et du Sud,export,2016,0,0,2019
+ZIMBABWE,Afrique orientale et du Sud,export,2017,0,0,2019
+ZIMBABWE,Afrique orientale et du Sud,export,2018,0,0,2019
+ZIMBABWE,Afrique orientale et du Sud,export,2019,73,25,2019
+CANADA,Amérique du Nord,export,2015,2296,42550,2019
+CANADA,Amérique du Nord,export,2016,745,794,2019
+CANADA,Amérique du Nord,export,2017,763,1001,2019
+CANADA,Amérique du Nord,export,2018,841,1397,2019
+CANADA,Amérique du Nord,export,2019,972,2076,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2015,17360,91448,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2016,15163,65501,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2017,20986,100726,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2018,29447,93698,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2019,63372,151264,2019
+GROENLAND,Amérique du Nord,export,2015,,,2019
+GROENLAND,Amérique du Nord,export,2016,,,2019
+GROENLAND,Amérique du Nord,export,2017,6,3,2019
+GROENLAND,Amérique du Nord,export,2018,145,42,2019
+GROENLAND,Amérique du Nord,export,2019,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2015,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2016,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2017,1,9,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2018,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2019,,,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2015,437,124,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2016,85,22,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2017,404,466,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2018,11,2,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2019,53,19,2019
+ARGENTINE,Amérique centrale et du Sud,export,2015,,,2019
+ARGENTINE,Amérique centrale et du Sud,export,2016,72,173,2019
+ARGENTINE,Amérique centrale et du Sud,export,2017,5749,26681,2019
+ARGENTINE,Amérique centrale et du Sud,export,2018,0,0,2019
+ARGENTINE,Amérique centrale et du Sud,export,2019,,,2019
+BOLIVIE,Amérique centrale et du Sud,export,2015,,,2019
+BOLIVIE,Amérique centrale et du Sud,export,2016,4,0,2019
+BOLIVIE,Amérique centrale et du Sud,export,2017,,,2019
+BOLIVIE,Amérique centrale et du Sud,export,2018,,,2019
+BOLIVIE,Amérique centrale et du Sud,export,2019,,,2019
+BRESIL,Amérique centrale et du Sud,export,2015,2468,3808,2019
+BRESIL,Amérique centrale et du Sud,export,2016,3082,6412,2019
+BRESIL,Amérique centrale et du Sud,export,2017,1571,2799,2019
+BRESIL,Amérique centrale et du Sud,export,2018,1729,1998,2019
+BRESIL,Amérique centrale et du Sud,export,2019,435,504,2019
+CHILI,Amérique centrale et du Sud,export,2015,,,2019
+CHILI,Amérique centrale et du Sud,export,2016,74,126,2019
+CHILI,Amérique centrale et du Sud,export,2017,771,670,2019
+CHILI,Amérique centrale et du Sud,export,2018,63,174,2019
+CHILI,Amérique centrale et du Sud,export,2019,3885,5670,2019
+COLOMBIE,Amérique centrale et du Sud,export,2015,34,58,2019
+COLOMBIE,Amérique centrale et du Sud,export,2016,161,117,2019
+COLOMBIE,Amérique centrale et du Sud,export,2017,236,87,2019
+COLOMBIE,Amérique centrale et du Sud,export,2018,2019,2539,2019
+COLOMBIE,Amérique centrale et du Sud,export,2019,687,929,2019
+COSTA RICA,Amérique centrale et du Sud,export,2015,190,217,2019
+COSTA RICA,Amérique centrale et du Sud,export,2016,12,2,2019
+COSTA RICA,Amérique centrale et du Sud,export,2017,1,14,2019
+COSTA RICA,Amérique centrale et du Sud,export,2018,471,878,2019
+COSTA RICA,Amérique centrale et du Sud,export,2019,577,930,2019
+CUBA,Amérique centrale et du Sud,export,2015,,,2019
+CUBA,Amérique centrale et du Sud,export,2016,,,2019
+CUBA,Amérique centrale et du Sud,export,2017,,,2019
+CUBA,Amérique centrale et du Sud,export,2018,,,2019
+CUBA,Amérique centrale et du Sud,export,2019,1,0,2019
+CURUCAO,Amérique centrale et du Sud,export,2015,,,2019
+CURUCAO,Amérique centrale et du Sud,export,2016,,,2019
+CURUCAO,Amérique centrale et du Sud,export,2017,,,2019
+CURUCAO,Amérique centrale et du Sud,export,2018,0,0,2019
+CURUCAO,Amérique centrale et du Sud,export,2019,1,1,2019
+EQUATEUR,Amérique centrale et du Sud,export,2015,,,2019
+EQUATEUR,Amérique centrale et du Sud,export,2016,151,26,2019
+EQUATEUR,Amérique centrale et du Sud,export,2017,1250,926,2019
+EQUATEUR,Amérique centrale et du Sud,export,2018,146,204,2019
+EQUATEUR,Amérique centrale et du Sud,export,2019,717,961,2019
+GUADELOUPE,Amérique centrale et du Sud,export,2015,175,12,2019
+GUADELOUPE,Amérique centrale et du Sud,export,2016,4,2,2019
+GUADELOUPE,Amérique centrale et du Sud,export,2017,8,7,2019
+GUADELOUPE,Amérique centrale et du Sud,export,2018,22,17,2019
+GUADELOUPE,Amérique centrale et du Sud,export,2019,18,16,2019
+GUATEMALA,Amérique centrale et du Sud,export,2015,0,0,2019
+GUATEMALA,Amérique centrale et du Sud,export,2016,21,1,2019
+GUATEMALA,Amérique centrale et du Sud,export,2017,,,2019
+GUATEMALA,Amérique centrale et du Sud,export,2018,79,96,2019
+GUATEMALA,Amérique centrale et du Sud,export,2019,333,341,2019
+GUYANA,Amérique centrale et du Sud,export,2015,,,2019
+GUYANA,Amérique centrale et du Sud,export,2016,,,2019
+GUYANA,Amérique centrale et du Sud,export,2017,0,0,2019
+GUYANA,Amérique centrale et du Sud,export,2018,,,2019
+GUYANA,Amérique centrale et du Sud,export,2019,2,0,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2015,0,0,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2016,,,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2017,,,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2018,5,1,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2019,5,1,2019
+HAITI,Amérique centrale et du Sud,export,2015,85,54,2019
+HAITI,Amérique centrale et du Sud,export,2016,122,70,2019
+HAITI,Amérique centrale et du Sud,export,2017,,,2019
+HAITI,Amérique centrale et du Sud,export,2018,165,91,2019
+HAITI,Amérique centrale et du Sud,export,2019,81,54,2019
+ILES BERMUDES,Amérique centrale et du Sud,export,2015,,,2019
+ILES BERMUDES,Amérique centrale et du Sud,export,2016,1,0,2019
+ILES BERMUDES,Amérique centrale et du Sud,export,2017,,,2019
+ILES BERMUDES,Amérique centrale et du Sud,export,2018,15,12,2019
+ILES BERMUDES,Amérique centrale et du Sud,export,2019,1,1,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2015,,,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2016,,,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2017,8,25,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2018,,,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2019,,,2019
+ILES CALQUES,Amérique centrale et du Sud,export,2015,57,5,2019
+ILES CALQUES,Amérique centrale et du Sud,export,2016,17,6,2019
+ILES CALQUES,Amérique centrale et du Sud,export,2017,1,0,2019
+ILES CALQUES,Amérique centrale et du Sud,export,2018,,,2019
+ILES CALQUES,Amérique centrale et du Sud,export,2019,0,0,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2015,,,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2016,334,631,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2017,5,20,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2018,101,111,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2019,78,60,2019
+MARTINIQUE,Amérique centrale et du Sud,export,2015,28,43,2019
+MARTINIQUE,Amérique centrale et du Sud,export,2016,3,4,2019
+MARTINIQUE,Amérique centrale et du Sud,export,2017,4,2,2019
+MARTINIQUE,Amérique centrale et du Sud,export,2018,3,1,2019
+MARTINIQUE,Amérique centrale et du Sud,export,2019,13,10,2019
+MEXIQUE,Amérique centrale et du Sud,export,2015,1056,1384,2019
+MEXIQUE,Amérique centrale et du Sud,export,2016,4747,31562,2019
+MEXIQUE,Amérique centrale et du Sud,export,2017,8922,83982,2019
+MEXIQUE,Amérique centrale et du Sud,export,2018,6567,27474,2019
+MEXIQUE,Amérique centrale et du Sud,export,2019,3024,12799,2019
+NICARAGUA,Amérique centrale et du Sud,export,2015,602,489,2019
+NICARAGUA,Amérique centrale et du Sud,export,2016,167,3,2019
+NICARAGUA,Amérique centrale et du Sud,export,2017,2,1,2019
+NICARAGUA,Amérique centrale et du Sud,export,2018,36,53,2019
+NICARAGUA,Amérique centrale et du Sud,export,2019,51,18,2019
+PANAMA,Amérique centrale et du Sud,export,2015,,,2019
+PANAMA,Amérique centrale et du Sud,export,2016,1,0,2019
+PANAMA,Amérique centrale et du Sud,export,2017,187,7462,2019
+PANAMA,Amérique centrale et du Sud,export,2018,,,2019
+PANAMA,Amérique centrale et du Sud,export,2019,,,2019
+PEROU,Amérique centrale et du Sud,export,2015,,,2019
+PEROU,Amérique centrale et du Sud,export,2016,,,2019
+PEROU,Amérique centrale et du Sud,export,2017,,,2019
+PEROU,Amérique centrale et du Sud,export,2018,253,362,2019
+PEROU,Amérique centrale et du Sud,export,2019,891,1426,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2015,6,21,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2016,,,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2017,,,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2018,,,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2019,38,20,2019
+SALVADOR,Amérique centrale et du Sud,export,2015,,,2019
+SALVADOR,Amérique centrale et du Sud,export,2016,,,2019
+SALVADOR,Amérique centrale et du Sud,export,2017,127,1516,2019
+SALVADOR,Amérique centrale et du Sud,export,2018,,,2019
+SALVADOR,Amérique centrale et du Sud,export,2019,,,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2015,5,2,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2016,4,3,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2017,1,0,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2018,,,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2019,2,0,2019
+SURINAM,Amérique centrale et du Sud,export,2015,460,11500,2019
+SURINAM,Amérique centrale et du Sud,export,2016,,,2019
+SURINAM,Amérique centrale et du Sud,export,2017,,,2019
+SURINAM,Amérique centrale et du Sud,export,2018,6,2,2019
+SURINAM,Amérique centrale et du Sud,export,2019,107,64,2019
+URUGUAY,Amérique centrale et du Sud,export,2015,,,2019
+URUGUAY,Amérique centrale et du Sud,export,2016,0,42,2019
+URUGUAY,Amérique centrale et du Sud,export,2017,5,12,2019
+URUGUAY,Amérique centrale et du Sud,export,2018,1,2,2019
+URUGUAY,Amérique centrale et du Sud,export,2019,6,4,2019
+VENEZUELA,Amérique centrale et du Sud,export,2015,,,2019
+VENEZUELA,Amérique centrale et du Sud,export,2016,,,2019
+VENEZUELA,Amérique centrale et du Sud,export,2017,76,102,2019
+VENEZUELA,Amérique centrale et du Sud,export,2018,25,25,2019
+VENEZUELA,Amérique centrale et du Sud,export,2019,191,223,2019
+ARABIE SEOUDITE,Asie occidentale,export,2015,230,179,2019
+ARABIE SEOUDITE,Asie occidentale,export,2016,79,63,2019
+ARABIE SEOUDITE,Asie occidentale,export,2017,67,68,2019
+ARABIE SEOUDITE,Asie occidentale,export,2018,497,790,2019
+ARABIE SEOUDITE,Asie occidentale,export,2019,279,369,2019
+BAHREIN,Asie occidentale,export,2015,,,2019
+BAHREIN,Asie occidentale,export,2016,,,2019
+BAHREIN,Asie occidentale,export,2017,0,0,2019
+BAHREIN,Asie occidentale,export,2018,,,2019
+BAHREIN,Asie occidentale,export,2019,,,2019
+EMIRATS ARABES UNIS,Asie occidentale,export,2015,55020,52355,2019
+EMIRATS ARABES UNIS,Asie occidentale,export,2016,39862,4865,2019
+EMIRATS ARABES UNIS,Asie occidentale,export,2017,77117,70944,2019
+EMIRATS ARABES UNIS,Asie occidentale,export,2018,35774,25662,2019
+EMIRATS ARABES UNIS,Asie occidentale,export,2019,33846,6173,2019
+IRAK,Asie occidentale,export,2015,,,2019
+IRAK,Asie occidentale,export,2016,0,0,2019
+IRAK,Asie occidentale,export,2017,1,0,2019
+IRAK,Asie occidentale,export,2018,9,0,2019
+IRAK,Asie occidentale,export,2019,136,546,2019
+IRAN,Asie occidentale,export,2015,312,326,2019
+IRAN,Asie occidentale,export,2016,1234,1310,2019
+IRAN,Asie occidentale,export,2017,508,415,2019
+IRAN,Asie occidentale,export,2018,1648,1401,2019
+IRAN,Asie occidentale,export,2019,,,2019
+ISRAEL,Asie occidentale,export,2015,1236,223,2019
+ISRAEL,Asie occidentale,export,2016,1994,340,2019
+ISRAEL,Asie occidentale,export,2017,1587,253,2019
+ISRAEL,Asie occidentale,export,2018,1871,261,2019
+ISRAEL,Asie occidentale,export,2019,1300,172,2019
+JORDANIE,Asie occidentale,export,2015,116,25,2019
+JORDANIE,Asie occidentale,export,2016,68,13,2019
+JORDANIE,Asie occidentale,export,2017,43,11,2019
+JORDANIE,Asie occidentale,export,2018,31,61,2019
+JORDANIE,Asie occidentale,export,2019,0,1,2019
+KOWEIT,Asie occidentale,export,2015,6,0,2019
+KOWEIT,Asie occidentale,export,2016,2,1,2019
+KOWEIT,Asie occidentale,export,2017,553,1,2019
+KOWEIT,Asie occidentale,export,2018,13,0,2019
+KOWEIT,Asie occidentale,export,2019,3,0,2019
+LIBAN,Asie occidentale,export,2015,11576,190869,2019
+LIBAN,Asie occidentale,export,2016,8240,143437,2019
+LIBAN,Asie occidentale,export,2017,9856,191722,2019
+LIBAN,Asie occidentale,export,2018,8154,211373,2019
+LIBAN,Asie occidentale,export,2019,9276,207117,2019
+OMAN,Asie occidentale,export,2015,23,48,2019
+OMAN,Asie occidentale,export,2016,,,2019
+OMAN,Asie occidentale,export,2017,4,0,2019
+OMAN,Asie occidentale,export,2018,6,0,2019
+OMAN,Asie occidentale,export,2019,,,2019
+QATAR,Asie occidentale,export,2015,6,0,2019
+QATAR,Asie occidentale,export,2016,0,0,2019
+QATAR,Asie occidentale,export,2017,24,17,2019
+QATAR,Asie occidentale,export,2018,0,0,2019
+QATAR,Asie occidentale,export,2019,0,0,2019
+SYRIE,Asie occidentale,export,2015,,,2019
+SYRIE,Asie occidentale,export,2016,8,1,2019
+SYRIE,Asie occidentale,export,2017,,,2019
+SYRIE,Asie occidentale,export,2018,151,256,2019
+SYRIE,Asie occidentale,export,2019,11,240,2019
+YEMEN,Asie occidentale,export,2015,2,1,2019
+YEMEN,Asie occidentale,export,2016,,,2019
+YEMEN,Asie occidentale,export,2017,,,2019
+YEMEN,Asie occidentale,export,2018,,,2019
+YEMEN,Asie occidentale,export,2019,,,2019
+YEMEN DEMOCRATIQUE,Asie occidentale,export,2015,,,2019
+YEMEN DEMOCRATIQUE,Asie occidentale,export,2016,,,2019
+YEMEN DEMOCRATIQUE,Asie occidentale,export,2017,,,2019
+YEMEN DEMOCRATIQUE,Asie occidentale,export,2018,13,36,2019
+YEMEN DEMOCRATIQUE,Asie occidentale,export,2019,,,2019
+AFGANISTAN,Autres pays d'Asie,export,2015,17,32,2019
+AFGANISTAN,Autres pays d'Asie,export,2016,23,56,2019
+AFGANISTAN,Autres pays d'Asie,export,2017,4,1,2019
+AFGANISTAN,Autres pays d'Asie,export,2018,2,0,2019
+AFGANISTAN,Autres pays d'Asie,export,2019,31,63,2019
+BENGLADESH,Autres pays d'Asie,export,2015,5921,7754,2019
+BENGLADESH,Autres pays d'Asie,export,2016,6572,7633,2019
+BENGLADESH,Autres pays d'Asie,export,2017,5485,7378,2019
+BENGLADESH,Autres pays d'Asie,export,2018,5578,6937,2019
+BENGLADESH,Autres pays d'Asie,export,2019,4077,4175,2019
+BHOUTAN,Autres pays d'Asie,export,2015,,,2019
+BHOUTAN,Autres pays d'Asie,export,2016,,,2019
+BHOUTAN,Autres pays d'Asie,export,2017,,,2019
+BHOUTAN,Autres pays d'Asie,export,2018,,,2019
+BHOUTAN,Autres pays d'Asie,export,2019,1,1,2019
+BRUNEI,Autres pays d'Asie,export,2015,347,7341,2019
+BRUNEI,Autres pays d'Asie,export,2016,255,204,2019
+BRUNEI,Autres pays d'Asie,export,2017,603,766,2019
+BRUNEI,Autres pays d'Asie,export,2018,1831,1459,2019
+BRUNEI,Autres pays d'Asie,export,2019,1494,2229,2019
+CAMBODGE,Autres pays d'Asie,export,2015,,,2019
+CAMBODGE,Autres pays d'Asie,export,2016,11,4,2019
+CAMBODGE,Autres pays d'Asie,export,2017,1,0,2019
+CAMBODGE,Autres pays d'Asie,export,2018,,,2019
+CAMBODGE,Autres pays d'Asie,export,2019,,,2019
+COREE DU NORD,Autres pays d'Asie,export,2015,4628,2355,2019
+COREE DU NORD,Autres pays d'Asie,export,2016,286,117,2019
+COREE DU NORD,Autres pays d'Asie,export,2017,1454,571,2019
+COREE DU NORD,Autres pays d'Asie,export,2018,852,482,2019
+COREE DU NORD,Autres pays d'Asie,export,2019,600,469,2019
+COREE DU SUD,Autres pays d'Asie,export,2015,19827,12270,2019
+COREE DU SUD,Autres pays d'Asie,export,2016,29747,18115,2019
+COREE DU SUD,Autres pays d'Asie,export,2017,23929,13426,2019
+COREE DU SUD,Autres pays d'Asie,export,2018,14796,8126,2019
+COREE DU SUD,Autres pays d'Asie,export,2019,23144,25434,2019
+HONG-KONG,Autres pays d'Asie,export,2015,2618,1275,2019
+HONG-KONG,Autres pays d'Asie,export,2016,1947,967,2019
+HONG-KONG,Autres pays d'Asie,export,2017,2804,1525,2019
+HONG-KONG,Autres pays d'Asie,export,2018,1594,508,2019
+HONG-KONG,Autres pays d'Asie,export,2019,1249,1278,2019
+INDE,Autres pays d'Asie,export,2015,81807,213995,2019
+INDE,Autres pays d'Asie,export,2016,121774,350072,2019
+INDE,Autres pays d'Asie,export,2017,86710,363056,2019
+INDE,Autres pays d'Asie,export,2018,168182,508746,2019
+INDE,Autres pays d'Asie,export,2019,211737,546917,2019
+INDONESIE,Autres pays d'Asie,export,2015,559,602,2019
+INDONESIE,Autres pays d'Asie,export,2016,515,820,2019
+INDONESIE,Autres pays d'Asie,export,2017,759,2377,2019
+INDONESIE,Autres pays d'Asie,export,2018,791,1102,2019
+INDONESIE,Autres pays d'Asie,export,2019,7,24,2019
+JAPON,Autres pays d'Asie,export,2015,3954,3785,2019
+JAPON,Autres pays d'Asie,export,2016,4194,15975,2019
+JAPON,Autres pays d'Asie,export,2017,3215,3280,2019
+JAPON,Autres pays d'Asie,export,2018,6840,4149,2019
+JAPON,Autres pays d'Asie,export,2019,9563,17155,2019
+LAOS,Autres pays d'Asie,export,2015,,,2019
+LAOS,Autres pays d'Asie,export,2016,,,2019
+LAOS,Autres pays d'Asie,export,2017,0,0,2019
+LAOS,Autres pays d'Asie,export,2018,,,2019
+LAOS,Autres pays d'Asie,export,2019,2,1,2019
+MACAO,Autres pays d'Asie,export,2015,56,26,2019
+MACAO,Autres pays d'Asie,export,2016,0,0,2019
+MACAO,Autres pays d'Asie,export,2017,,,2019
+MACAO,Autres pays d'Asie,export,2018,,,2019
+MACAO,Autres pays d'Asie,export,2019,5,1,2019
+MALAISIE,Autres pays d'Asie,export,2015,1599,23913,2019
+MALAISIE,Autres pays d'Asie,export,2016,188,572,2019
+MALAISIE,Autres pays d'Asie,export,2017,1132,27935,2019
+MALAISIE,Autres pays d'Asie,export,2018,1252,15764,2019
+MALAISIE,Autres pays d'Asie,export,2019,2447,4167,2019
+MALDIVES,Autres pays d'Asie,export,2015,,,2019
+MALDIVES,Autres pays d'Asie,export,2016,1,0,2019
+MALDIVES,Autres pays d'Asie,export,2017,4,0,2019
+MALDIVES,Autres pays d'Asie,export,2018,1,0,2019
+MALDIVES,Autres pays d'Asie,export,2019,2,0,2019
+MONGOLIE,Autres pays d'Asie,export,2015,2,1,2019
+MONGOLIE,Autres pays d'Asie,export,2016,,,2019
+MONGOLIE,Autres pays d'Asie,export,2017,0,0,2019
+MONGOLIE,Autres pays d'Asie,export,2018,20,1,2019
+MONGOLIE,Autres pays d'Asie,export,2019,31,800,2019
+NEPAL,Autres pays d'Asie,export,2015,,,2019
+NEPAL,Autres pays d'Asie,export,2016,,,2019
+NEPAL,Autres pays d'Asie,export,2017,1,0,2019
+NEPAL,Autres pays d'Asie,export,2018,,,2019
+NEPAL,Autres pays d'Asie,export,2019,12,13,2019
+PAKISTAN,Autres pays d'Asie,export,2015,609,994,2019
+PAKISTAN,Autres pays d'Asie,export,2016,400,600,2019
+PAKISTAN,Autres pays d'Asie,export,2017,26,16,2019
+PAKISTAN,Autres pays d'Asie,export,2018,5,23,2019
+PAKISTAN,Autres pays d'Asie,export,2019,75,325,2019
+PHILIPPINE,Autres pays d'Asie,export,2015,,,2019
+PHILIPPINE,Autres pays d'Asie,export,2016,,,2019
+PHILIPPINE,Autres pays d'Asie,export,2017,,,2019
+PHILIPPINE,Autres pays d'Asie,export,2018,36,81,2019
+PHILIPPINE,Autres pays d'Asie,export,2019,,,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2015,69830,201233,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2016,74178,264814,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2017,76139,231141,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2018,62176,170672,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2019,161143,456648,2019
+SINGAPOUR,Autres pays d'Asie,export,2015,23,48,2019
+SINGAPOUR,Autres pays d'Asie,export,2016,798,1251,2019
+SINGAPOUR,Autres pays d'Asie,export,2017,664,6770,2019
+SINGAPOUR,Autres pays d'Asie,export,2018,5667,26010,2019
+SINGAPOUR,Autres pays d'Asie,export,2019,4361,9600,2019
+TAIWAN,Autres pays d'Asie,export,2015,1471,1162,2019
+TAIWAN,Autres pays d'Asie,export,2016,1381,2053,2019
+TAIWAN,Autres pays d'Asie,export,2017,900,837,2019
+TAIWAN,Autres pays d'Asie,export,2018,1364,923,2019
+TAIWAN,Autres pays d'Asie,export,2019,998,677,2019
+THAILANDE,Autres pays d'Asie,export,2015,472,250,2019
+THAILANDE,Autres pays d'Asie,export,2016,1251,1353,2019
+THAILANDE,Autres pays d'Asie,export,2017,3279,3151,2019
+THAILANDE,Autres pays d'Asie,export,2018,2931,3480,2019
+THAILANDE,Autres pays d'Asie,export,2019,801,948,2019
+UNION BIRMANE,Autres pays d'Asie,export,2015,,,2019
+UNION BIRMANE,Autres pays d'Asie,export,2016,,,2019
+UNION BIRMANE,Autres pays d'Asie,export,2017,49,25,2019
+UNION BIRMANE,Autres pays d'Asie,export,2018,,,2019
+UNION BIRMANE,Autres pays d'Asie,export,2019,76,119,2019
+VIETNAM,Autres pays d'Asie,export,2015,18296,36664,2019
+VIETNAM,Autres pays d'Asie,export,2016,22971,49467,2019
+VIETNAM,Autres pays d'Asie,export,2017,3468,4503,2019
+VIETNAM,Autres pays d'Asie,export,2018,9180,12913,2019
+VIETNAM,Autres pays d'Asie,export,2019,14203,29653,2019
+AUSTRALIE,Continent australien,export,2015,79,103,2019
+AUSTRALIE,Continent australien,export,2016,230,362,2019
+AUSTRALIE,Continent australien,export,2017,326,450,2019
+AUSTRALIE,Continent australien,export,2018,787,901,2019
+AUSTRALIE,Continent australien,export,2019,1579,1517,2019
+NAURU,Continent australien,export,2015,1,1,2019
+NAURU,Continent australien,export,2016,,,2019
+NAURU,Continent australien,export,2017,2,0,2019
+NAURU,Continent australien,export,2018,4132,49591,2019
+NAURU,Continent australien,export,2019,,,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2015,35,6,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2016,30,63,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2017,2,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2018,6,1,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2019,199,81,2019
+NOUVELLE ZELANDE,Continent australien,export,2015,6,38,2019
+NOUVELLE ZELANDE,Continent australien,export,2016,24,94,2019
+NOUVELLE ZELANDE,Continent australien,export,2017,249,23,2019
+NOUVELLE ZELANDE,Continent australien,export,2018,622,221,2019
+NOUVELLE ZELANDE,Continent australien,export,2019,1414,223,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,export,2015,10,5,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,export,2016,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,export,2017,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,export,2018,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,export,2019,,,2019
+NOUVELLE CALEDONIE,Océanie,export,2015,,,2019
+NOUVELLE CALEDONIE,Océanie,export,2016,,,2019
+NOUVELLE CALEDONIE,Océanie,export,2017,,,2019
+NOUVELLE CALEDONIE,Océanie,export,2018,,,2019
+NOUVELLE CALEDONIE,Océanie,export,2019,1,0,2019
+DIVERS,Divers,export,2015,101951,263435,2019
+DIVERS,Divers,export,2016,59167,211024,2019
+DIVERS,Divers,export,2017,89433,278475,2019
+DIVERS,Divers,export,2018,111369,315729,2019
+DIVERS,Divers,export,2019,110862,279557,2019
+ALLEMAGNE,Communauté européenne,import,2015,82072,121798,2019
+ALLEMAGNE,Communauté européenne,import,2016,63816,79483,2019
+ALLEMAGNE,Communauté européenne,import,2017,101154,151910,2019
+ALLEMAGNE,Communauté européenne,import,2018,80164,132822,2019
+ALLEMAGNE,Communauté européenne,import,2019,79573,66731,2019
+AUTRICHE,Communauté européenne,import,2015,3846,2780,2019
+AUTRICHE,Communauté européenne,import,2016,3112,3252,2019
+AUTRICHE,Communauté européenne,import,2017,9256,1969,2019
+AUTRICHE,Communauté européenne,import,2018,3505,1875,2019
+AUTRICHE,Communauté européenne,import,2019,4922,2932,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,import,2015,89226,133737,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,import,2016,83076,102317,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,import,2017,114663,174842,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,import,2018,167529,300697,2019
+BELGIQUE-LUXEMBOURG,Communauté européenne,import,2019,212464,497006,2019
+BULGARIE,Communauté européenne,import,2015,3131,2689,2019
+BULGARIE,Communauté européenne,import,2016,2555,2086,2019
+BULGARIE,Communauté européenne,import,2017,3954,2276,2019
+BULGARIE,Communauté européenne,import,2018,5632,7472,2019
+BULGARIE,Communauté européenne,import,2019,3076,1094,2019
+CHYPRE,Communauté européenne,import,2015,68,11,2019
+CHYPRE,Communauté européenne,import,2016,26,27,2019
+CHYPRE,Communauté européenne,import,2017,61,44,2019
+CHYPRE,Communauté européenne,import,2018,7,20,2019
+CHYPRE,Communauté européenne,import,2019,,,2019
+CROATIE,Communauté européenne,import,2015,16,9,2019
+CROATIE,Communauté européenne,import,2016,127,44,2019
+CROATIE,Communauté européenne,import,2017,30,116,2019
+CROATIE,Communauté européenne,import,2018,,,2019
+CROATIE,Communauté européenne,import,2019,597,1846,2019
+DANEMARK,Communauté européenne,import,2015,4925,1525,2019
+DANEMARK,Communauté européenne,import,2016,4388,1103,2019
+DANEMARK,Communauté européenne,import,2017,5487,2466,2019
+DANEMARK,Communauté européenne,import,2018,14518,5259,2019
+DANEMARK,Communauté européenne,import,2019,90066,22753,2019
+ESPAGNE,Communauté européenne,import,2015,136572,367742,2019
+ESPAGNE,Communauté européenne,import,2016,153141,475105,2019
+ESPAGNE,Communauté européenne,import,2017,148864,485515,2019
+ESPAGNE,Communauté européenne,import,2018,133165,496132,2019
+ESPAGNE,Communauté européenne,import,2019,140111,440162,2019
+FINLANDE,Communauté européenne,import,2015,32586,13547,2019
+FINLANDE,Communauté européenne,import,2016,19685,7828,2019
+FINLANDE,Communauté européenne,import,2017,14699,3720,2019
+FINLANDE,Communauté européenne,import,2018,11678,2108,2019
+FINLANDE,Communauté européenne,import,2019,12058,7751,2019
+FRANCE,Communauté européenne,import,2015,549230,715099,2019
+FRANCE,Communauté européenne,import,2016,500214,581088,2019
+FRANCE,Communauté européenne,import,2017,576812,491835,2019
+FRANCE,Communauté européenne,import,2018,574690,432060,2019
+FRANCE,Communauté européenne,import,2019,794892,638869,2019
+GRECE,Communauté européenne,import,2015,3537,10829,2019
+GRECE,Communauté européenne,import,2016,5160,19965,2019
+GRECE,Communauté européenne,import,2017,2331,7418,2019
+GRECE,Communauté européenne,import,2018,5443,54386,2019
+GRECE,Communauté européenne,import,2019,7125,19816,2019
+HONGRIE,Communauté européenne,import,2015,4690,1782,2019
+HONGRIE,Communauté européenne,import,2016,6034,1803,2019
+HONGRIE,Communauté européenne,import,2017,8235,2303,2019
+HONGRIE,Communauté européenne,import,2018,6638,2436,2019
+HONGRIE,Communauté européenne,import,2019,4453,1236,2019
+IRLANDE,Communauté européenne,import,2015,7816,5999,2019
+IRLANDE,Communauté européenne,import,2016,9850,7413,2019
+IRLANDE,Communauté européenne,import,2017,8116,5987,2019
+IRLANDE,Communauté européenne,import,2018,12817,12037,2019
+IRLANDE,Communauté européenne,import,2019,15889,13208,2019
+ITALIE,Communauté européenne,import,2015,71310,93888,2019
+ITALIE,Communauté européenne,import,2016,75542,147561,2019
+ITALIE,Communauté européenne,import,2017,86349,143671,2019
+ITALIE,Communauté européenne,import,2018,105734,185423,2019
+ITALIE,Communauté européenne,import,2019,80195,132784,2019
+MALTE,Communauté européenne,import,2015,1191,787,2019
+MALTE,Communauté européenne,import,2016,1268,544,2019
+MALTE,Communauté européenne,import,2017,1095,645,2019
+MALTE,Communauté européenne,import,2018,829,355,2019
+MALTE,Communauté européenne,import,2019,3373,42839,2019
+PAYS BAS,Communauté européenne,import,2015,136113,600325,2019
+PAYS BAS,Communauté européenne,import,2016,121188,729089,2019
+PAYS BAS,Communauté européenne,import,2017,161304,714587,2019
+PAYS BAS,Communauté européenne,import,2018,195551,634893,2019
+PAYS BAS,Communauté européenne,import,2019,211677,744914,2019
+POLOGNE,Communauté européenne,import,2015,19453,59862,2019
+POLOGNE,Communauté européenne,import,2016,30093,53408,2019
+POLOGNE,Communauté européenne,import,2017,29269,40760,2019
+POLOGNE,Communauté européenne,import,2018,32958,37302,2019
+POLOGNE,Communauté européenne,import,2019,47029,35153,2019
+PORTUGAL,Communauté européenne,import,2015,29289,43627,2019
+PORTUGAL,Communauté européenne,import,2016,22173,82140,2019
+PORTUGAL,Communauté européenne,import,2017,24466,67665,2019
+PORTUGAL,Communauté européenne,import,2018,24429,77861,2019
+PORTUGAL,Communauté européenne,import,2019,21102,41927,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,import,2015,20,8,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,import,2016,2034,6543,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,import,2017,2578,7655,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,import,2018,7976,39812,2019
+REPUBLIQUE D'ESTONIE,Communauté européenne,import,2019,97,153,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,import,2015,101,207,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,import,2016,29,160,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,import,2017,6,25,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,import,2018,4,25,2019
+REPUBLIQUE DE LETTONIE,Communauté européenne,import,2019,150,302,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,import,2015,173,141,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,import,2016,3635,21625,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,import,2017,699,2706,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,import,2018,1010,3508,2019
+REPUBLIQUE DE LITUANIE,Communauté européenne,import,2019,1476,1586,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2015,435,198,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2016,1051,1279,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2017,1859,1226,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2018,1408,440,2019
+REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2019,3008,2326,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,import,2015,3198,3912,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,import,2016,2787,10403,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,import,2017,3041,6444,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,import,2018,2183,3322,2019
+REPUBLIQUE TCHEQUE,Communauté européenne,import,2019,2255,2998,2019
+ROUMANIE,Communauté européenne,import,2015,2067,1902,2019
+ROUMANIE,Communauté européenne,import,2016,2879,2884,2019
+ROUMANIE,Communauté européenne,import,2017,4555,3736,2019
+ROUMANIE,Communauté européenne,import,2018,7305,37732,2019
+ROUMANIE,Communauté européenne,import,2019,5051,5183,2019
+ROYAUME UNI,Communauté européenne,import,2015,52977,29850,2019
+ROYAUME UNI,Communauté européenne,import,2016,29287,17302,2019
+ROYAUME UNI,Communauté européenne,import,2017,36144,44974,2019
+ROYAUME UNI,Communauté européenne,import,2018,34643,49314,2019
+ROYAUME UNI,Communauté européenne,import,2019,52478,90985,2019
+SLOVENIE,Communauté européenne,import,2015,37,6,2019
+SLOVENIE,Communauté européenne,import,2016,22,89,2019
+SLOVENIE,Communauté européenne,import,2017,78,292,2019
+SLOVENIE,Communauté européenne,import,2018,1327,491,2019
+SLOVENIE,Communauté européenne,import,2019,611,477,2019
+SUEDE,Communauté européenne,import,2015,14491,15838,2019
+SUEDE,Communauté européenne,import,2016,12641,18494,2019
+SUEDE,Communauté européenne,import,2017,13384,15216,2019
+SUEDE,Communauté européenne,import,2018,12504,14299,2019
+SUEDE,Communauté européenne,import,2019,15164,16470,2019
+ALBANIE,Autres pays d'Europe,import,2015,5073,8715,2019
+ALBANIE,Autres pays d'Europe,import,2016,3515,3258,2019
+ALBANIE,Autres pays d'Europe,import,2017,3482,2863,2019
+ALBANIE,Autres pays d'Europe,import,2018,3160,2708,2019
+ALBANIE,Autres pays d'Europe,import,2019,3101,3396,2019
+ANDORRE,Autres pays d'Europe,import,2015,,,2019
+ANDORRE,Autres pays d'Europe,import,2016,23,2,2019
+ANDORRE,Autres pays d'Europe,import,2017,,,2019
+ANDORRE,Autres pays d'Europe,import,2018,21,90,2019
+ANDORRE,Autres pays d'Europe,import,2019,28,60,2019
+ARMENIE,Autres pays d'Europe,import,2015,,,2019
+ARMENIE,Autres pays d'Europe,import,2016,1456,4668,2019
+ARMENIE,Autres pays d'Europe,import,2017,33,11,2019
+ARMENIE,Autres pays d'Europe,import,2018,29,18,2019
+ARMENIE,Autres pays d'Europe,import,2019,123,81,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2015,187,55,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2016,26,45,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2017,91,250,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2018,37,140,2019
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2019,5,18,2019
+CEUTA ET MELILLA,Autres pays d'Europe,import,2015,181,109,2019
+CEUTA ET MELILLA,Autres pays d'Europe,import,2016,,,2019
+CEUTA ET MELILLA,Autres pays d'Europe,import,2017,,,2019
+CEUTA ET MELILLA,Autres pays d'Europe,import,2018,,,2019
+CEUTA ET MELILLA,Autres pays d'Europe,import,2019,,,2019
+CITE DU VATICAN,Autres pays d'Europe,import,2015,,,2019
+CITE DU VATICAN,Autres pays d'Europe,import,2016,1,1,2019
+CITE DU VATICAN,Autres pays d'Europe,import,2017,,,2019
+CITE DU VATICAN,Autres pays d'Europe,import,2018,,,2019
+CITE DU VATICAN,Autres pays d'Europe,import,2019,,,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2015,288,1003,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2016,28,97,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2017,0,0,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2018,11,29,2019
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2019,242,547,2019
+GIBRALTAR,Autres pays d'Europe,import,2015,1,0,2019
+GIBRALTAR,Autres pays d'Europe,import,2016,174,52,2019
+GIBRALTAR,Autres pays d'Europe,import,2017,94,10,2019
+GIBRALTAR,Autres pays d'Europe,import,2018,,,2019
+GIBRALTAR,Autres pays d'Europe,import,2019,55,233,2019
+HELGOLAND,Autres pays d'Europe,import,2015,188,58,2019
+HELGOLAND,Autres pays d'Europe,import,2016,196,105,2019
+HELGOLAND,Autres pays d'Europe,import,2017,213,353,2019
+HELGOLAND,Autres pays d'Europe,import,2018,786,2735,2019
+HELGOLAND,Autres pays d'Europe,import,2019,407,197,2019
+ISLANDE,Autres pays d'Europe,import,2015,810,112,2019
+ISLANDE,Autres pays d'Europe,import,2016,225,345,2019
+ISLANDE,Autres pays d'Europe,import,2017,564,235,2019
+ISLANDE,Autres pays d'Europe,import,2018,2213,627,2019
+ISLANDE,Autres pays d'Europe,import,2019,2339,469,2019
+MONTENEGRO,Autres pays d'Europe,import,2015,42,21,2019
+MONTENEGRO,Autres pays d'Europe,import,2016,943,79,2019
+MONTENEGRO,Autres pays d'Europe,import,2017,25,1,2019
+MONTENEGRO,Autres pays d'Europe,import,2018,491,350,2019
+MONTENEGRO,Autres pays d'Europe,import,2019,34,73,2019
+NORVEGE,Autres pays d'Europe,import,2015,317,37,2019
+NORVEGE,Autres pays d'Europe,import,2016,665,666,2019
+NORVEGE,Autres pays d'Europe,import,2017,1790,5365,2019
+NORVEGE,Autres pays d'Europe,import,2018,1966,5248,2019
+NORVEGE,Autres pays d'Europe,import,2019,2314,6424,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2015,2087,42092,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2016,150,80,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2017,38,120,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2018,630,99,2019
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2019,526,132,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2015,36237,128121,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2016,36683,159587,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2017,51087,236621,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2018,92718,373803,2019
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2019,76314,269453,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2015,51,41,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2016,58,126,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2017,3124,16188,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2018,2606,8963,2019
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2019,7522,33883,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2015,119,44,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2016,699,195,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2017,1580,377,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2018,2581,27235,2019
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2019,137,170,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2015,5895,48740,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2016,2388,33000,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2017,1853,32277,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2018,,,2019
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2019,7003,101702,2019
+RUSSIE,Autres pays d'Europe,import,2015,66018,356951,2019
+RUSSIE,Autres pays d'Europe,import,2016,41792,285951,2019
+RUSSIE,Autres pays d'Europe,import,2017,71508,479278,2019
+RUSSIE,Autres pays d'Europe,import,2018,106844,856700,2019
+RUSSIE,Autres pays d'Europe,import,2019,139228,921161,2019
+SUISSE,Autres pays d'Europe,import,2015,19421,14602,2019
+SUISSE,Autres pays d'Europe,import,2016,20014,64572,2019
+SUISSE,Autres pays d'Europe,import,2017,20564,52456,2019
+SUISSE,Autres pays d'Europe,import,2018,18434,23697,2019
+SUISSE,Autres pays d'Europe,import,2019,49548,66822,2019
+TRIESTE,Autres pays d'Europe,import,2015,9,176,2019
+TRIESTE,Autres pays d'Europe,import,2016,21,97,2019
+TRIESTE,Autres pays d'Europe,import,2017,141,489,2019
+TRIESTE,Autres pays d'Europe,import,2018,42,98,2019
+TRIESTE,Autres pays d'Europe,import,2019,25,78,2019
+TURQUIE,Autres pays d'Europe,import,2015,78978,204864,2019
+TURQUIE,Autres pays d'Europe,import,2016,74497,356324,2019
+TURQUIE,Autres pays d'Europe,import,2017,125494,453956,2019
+TURQUIE,Autres pays d'Europe,import,2018,192509,819544,2019
+TURQUIE,Autres pays d'Europe,import,2019,159888,753962,2019
+BURUNDI,Afrique centrale,import,2015,4,0,2019
+BURUNDI,Afrique centrale,import,2016,16,3,2019
+BURUNDI,Afrique centrale,import,2017,,,2019
+BURUNDI,Afrique centrale,import,2018,,,2019
+BURUNDI,Afrique centrale,import,2019,,,2019
+CAMEROUN,Afrique centrale,import,2015,7229,25207,2019
+CAMEROUN,Afrique centrale,import,2016,8291,32698,2019
+CAMEROUN,Afrique centrale,import,2017,8924,35662,2019
+CAMEROUN,Afrique centrale,import,2018,11538,48058,2019
+CAMEROUN,Afrique centrale,import,2019,17267,63537,2019
+CENTRE AFRIQUE,Afrique centrale,import,2015,3,21,2019
+CENTRE AFRIQUE,Afrique centrale,import,2016,3,0,2019
+CENTRE AFRIQUE,Afrique centrale,import,2017,0,1,2019
+CENTRE AFRIQUE,Afrique centrale,import,2018,0,0,2019
+CENTRE AFRIQUE,Afrique centrale,import,2019,8,1,2019
+CONGO,Afrique centrale,import,2015,393,3059,2019
+CONGO,Afrique centrale,import,2016,2530,4674,2019
+CONGO,Afrique centrale,import,2017,1017,754,2019
+CONGO,Afrique centrale,import,2018,1117,4967,2019
+CONGO,Afrique centrale,import,2019,433,542,2019
+CONGO DEMOCRATIQUE,Afrique centrale,import,2015,11,3,2019
+CONGO DEMOCRATIQUE,Afrique centrale,import,2016,101,141,2019
+CONGO DEMOCRATIQUE,Afrique centrale,import,2017,787,5738,2019
+CONGO DEMOCRATIQUE,Afrique centrale,import,2018,91,198,2019
+CONGO DEMOCRATIQUE,Afrique centrale,import,2019,572,5634,2019
+GABON,Afrique centrale,import,2015,184,244,2019
+GABON,Afrique centrale,import,2016,1940,938,2019
+GABON,Afrique centrale,import,2017,1193,1117,2019
+GABON,Afrique centrale,import,2018,176,487,2019
+GABON,Afrique centrale,import,2019,396,2155,2019
+GUINEE EQUATORIALE,Afrique centrale,import,2015,1264,3591,2019
+GUINEE EQUATORIALE,Afrique centrale,import,2016,3350,11843,2019
+GUINEE EQUATORIALE,Afrique centrale,import,2017,4880,11632,2019
+GUINEE EQUATORIALE,Afrique centrale,import,2018,323,982,2019
+GUINEE EQUATORIALE,Afrique centrale,import,2019,2386,8327,2019
+RWANDA,Afrique centrale,import,2015,,,2019
+RWANDA,Afrique centrale,import,2016,,,2019
+RWANDA,Afrique centrale,import,2017,,,2019
+RWANDA,Afrique centrale,import,2018,,,2019
+RWANDA,Afrique centrale,import,2019,413,213,2019
+TCHAD,Afrique centrale,import,2015,,,2019
+TCHAD,Afrique centrale,import,2016,,,2019
+TCHAD,Afrique centrale,import,2017,,,2019
+TCHAD,Afrique centrale,import,2018,,,2019
+TCHAD,Afrique centrale,import,2019,1,2,2019
+ALGERIE,Afrique du Nord,import,2015,2651,9229,2019
+ALGERIE,Afrique du Nord,import,2016,14118,42681,2019
+ALGERIE,Afrique du Nord,import,2017,4794,17473,2019
+ALGERIE,Afrique du Nord,import,2018,4558,50129,2019
+ALGERIE,Afrique du Nord,import,2019,3677,90282,2019
+EGYPTE,Afrique du Nord,import,2015,11033,18433,2019
+EGYPTE,Afrique du Nord,import,2016,16190,23211,2019
+EGYPTE,Afrique du Nord,import,2017,12316,28472,2019
+EGYPTE,Afrique du Nord,import,2018,11309,29210,2019
+EGYPTE,Afrique du Nord,import,2019,17882,42363,2019
+ILES CANARIES,Afrique du Nord,import,2015,232,182,2019
+ILES CANARIES,Afrique du Nord,import,2016,24,19,2019
+ILES CANARIES,Afrique du Nord,import,2017,1,0,2019
+ILES CANARIES,Afrique du Nord,import,2018,,,2019
+ILES CANARIES,Afrique du Nord,import,2019,0,0,2019
+LIBYE,Afrique du Nord,import,2015,0,0,2019
+LIBYE,Afrique du Nord,import,2016,925,16868,2019
+LIBYE,Afrique du Nord,import,2017,1892,15844,2019
+LIBYE,Afrique du Nord,import,2018,2396,15364,2019
+LIBYE,Afrique du Nord,import,2019,20,10,2019
+MAROC,Afrique du Nord,import,2015,43160,48375,2019
+MAROC,Afrique du Nord,import,2016,51482,67488,2019
+MAROC,Afrique du Nord,import,2017,56900,95027,2019
+MAROC,Afrique du Nord,import,2018,63832,105439,2019
+MAROC,Afrique du Nord,import,2019,69958,143443,2019
+SOUDAN,Afrique du Nord,import,2015,251,418,2019
+SOUDAN,Afrique du Nord,import,2016,13,19,2019
+SOUDAN,Afrique du Nord,import,2017,168,149,2019
+SOUDAN,Afrique du Nord,import,2018,246,240,2019
+SOUDAN,Afrique du Nord,import,2019,6230,2069,2019
+TUNISIE,Afrique du Nord,import,2015,21734,68519,2019
+TUNISIE,Afrique du Nord,import,2016,24467,81062,2019
+TUNISIE,Afrique du Nord,import,2017,29979,178161,2019
+TUNISIE,Afrique du Nord,import,2018,25079,92490,2019
+TUNISIE,Afrique du Nord,import,2019,27073,96244,2019
+BENIN,Afrique de l'Ouest,import,2015,782,1804,2019
+BENIN,Afrique de l'Ouest,import,2016,236,711,2019
+BENIN,Afrique de l'Ouest,import,2017,337,1683,2019
+BENIN,Afrique de l'Ouest,import,2018,480,1712,2019
+BENIN,Afrique de l'Ouest,import,2019,459,905,2019
+BURKINA FASO,Afrique de l'Ouest,import,2015,28,1,2019
+BURKINA FASO,Afrique de l'Ouest,import,2016,524,140,2019
+BURKINA FASO,Afrique de l'Ouest,import,2017,137,59,2019
+BURKINA FASO,Afrique de l'Ouest,import,2018,8,3,2019
+BURKINA FASO,Afrique de l'Ouest,import,2019,226,1029,2019
+COTE D'IVOIRE,Afrique de l'Ouest,import,2015,61550,142854,2019
+COTE D'IVOIRE,Afrique de l'Ouest,import,2016,61021,132662,2019
+COTE D'IVOIRE,Afrique de l'Ouest,import,2017,73359,122340,2019
+COTE D'IVOIRE,Afrique de l'Ouest,import,2018,49632,125620,2019
+COTE D'IVOIRE,Afrique de l'Ouest,import,2019,54942,140539,2019
+GAMBIE,Afrique de l'Ouest,import,2015,623,2088,2019
+GAMBIE,Afrique de l'Ouest,import,2016,138,2851,2019
+GAMBIE,Afrique de l'Ouest,import,2017,1109,2930,2019
+GAMBIE,Afrique de l'Ouest,import,2018,2725,5337,2019
+GAMBIE,Afrique de l'Ouest,import,2019,2478,3620,2019
+GHANA,Afrique de l'Ouest,import,2015,17849,29867,2019
+GHANA,Afrique de l'Ouest,import,2016,32587,58732,2019
+GHANA,Afrique de l'Ouest,import,2017,39484,74005,2019
+GHANA,Afrique de l'Ouest,import,2018,23284,49507,2019
+GHANA,Afrique de l'Ouest,import,2019,43617,85182,2019
+GUINEE BISSAU,Afrique de l'Ouest,import,2015,48,93,2019
+GUINEE BISSAU,Afrique de l'Ouest,import,2016,10,80,2019
+GUINEE BISSAU,Afrique de l'Ouest,import,2017,,,2019
+GUINEE BISSAU,Afrique de l'Ouest,import,2018,29,33,2019
+GUINEE BISSAU,Afrique de l'Ouest,import,2019,214,165,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2015,1645,4691,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2016,1957,10397,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2017,2402,12864,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2018,4342,11446,2019
+GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2019,1122,2443,2019
+ILES DU CAP VERT,Afrique de l'Ouest,import,2015,156,153,2019
+ILES DU CAP VERT,Afrique de l'Ouest,import,2016,47,55,2019
+ILES DU CAP VERT,Afrique de l'Ouest,import,2017,5,12,2019
+ILES DU CAP VERT,Afrique de l'Ouest,import,2018,6,19,2019
+ILES DU CAP VERT,Afrique de l'Ouest,import,2019,42,73,2019
+LIBERIA,Afrique de l'Ouest,import,2015,86,573,2019
+LIBERIA,Afrique de l'Ouest,import,2016,1244,4322,2019
+LIBERIA,Afrique de l'Ouest,import,2017,,,2019
+LIBERIA,Afrique de l'Ouest,import,2018,10,33,2019
+LIBERIA,Afrique de l'Ouest,import,2019,8,22,2019
+MALI,Afrique de l'Ouest,import,2015,976,8515,2019
+MALI,Afrique de l'Ouest,import,2016,3919,7816,2019
+MALI,Afrique de l'Ouest,import,2017,4122,9875,2019
+MALI,Afrique de l'Ouest,import,2018,879,2649,2019
+MALI,Afrique de l'Ouest,import,2019,1538,1621,2019
+MAURITANIE,Afrique de l'Ouest,import,2015,3064,4268,2019
+MAURITANIE,Afrique de l'Ouest,import,2016,5226,62608,2019
+MAURITANIE,Afrique de l'Ouest,import,2017,3662,44440,2019
+MAURITANIE,Afrique de l'Ouest,import,2018,6763,15824,2019
+MAURITANIE,Afrique de l'Ouest,import,2019,3258,5804,2019
+NIGER,Afrique de l'Ouest,import,2015,30,25,2019
+NIGER,Afrique de l'Ouest,import,2016,17,42,2019
+NIGER,Afrique de l'Ouest,import,2017,84,153,2019
+NIGER,Afrique de l'Ouest,import,2018,338,246,2019
+NIGER,Afrique de l'Ouest,import,2019,801,456,2019
+NIGERIA,Afrique de l'Ouest,import,2015,268656,991215,2019
+NIGERIA,Afrique de l'Ouest,import,2016,249289,1167652,2019
+NIGERIA,Afrique de l'Ouest,import,2017,308194,1217568,2019
+NIGERIA,Afrique de l'Ouest,import,2018,391699,1156023,2019
+NIGERIA,Afrique de l'Ouest,import,2019,244789,805280,2019
+SIERRA LEONE,Afrique de l'Ouest,import,2015,433,537,2019
+SIERRA LEONE,Afrique de l'Ouest,import,2016,698,2689,2019
+SIERRA LEONE,Afrique de l'Ouest,import,2017,1897,5033,2019
+SIERRA LEONE,Afrique de l'Ouest,import,2018,4718,11602,2019
+SIERRA LEONE,Afrique de l'Ouest,import,2019,5788,14648,2019
+TOGO,Afrique de l'Ouest,import,2015,3901,8083,2019
+TOGO,Afrique de l'Ouest,import,2016,3158,7238,2019
+TOGO,Afrique de l'Ouest,import,2017,7339,14829,2019
+TOGO,Afrique de l'Ouest,import,2018,21456,86262,2019
+TOGO,Afrique de l'Ouest,import,2019,18799,51645,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2015,54772,603700,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2016,51517,544471,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2017,59631,559785,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2018,64000,610268,2019
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2019,58882,468525,2019
+ANGOLA,Afrique orientale et du Sud,import,2015,10264,2257,2019
+ANGOLA,Afrique orientale et du Sud,import,2016,849,293,2019
+ANGOLA,Afrique orientale et du Sud,import,2017,83,19,2019
+ANGOLA,Afrique orientale et du Sud,import,2018,1536,8436,2019
+ANGOLA,Afrique orientale et du Sud,import,2019,178,250,2019
+DJIBOUTI,Afrique orientale et du Sud,import,2015,3,1,2019
+DJIBOUTI,Afrique orientale et du Sud,import,2016,,,2019
+DJIBOUTI,Afrique orientale et du Sud,import,2017,10,47,2019
+DJIBOUTI,Afrique orientale et du Sud,import,2018,134,257,2019
+DJIBOUTI,Afrique orientale et du Sud,import,2019,9,3,2019
+ETHIOPIE,Afrique orientale et du Sud,import,2015,143,59,2019
+ETHIOPIE,Afrique orientale et du Sud,import,2016,4,1,2019
+ETHIOPIE,Afrique orientale et du Sud,import,2017,12,11,2019
+ETHIOPIE,Afrique orientale et du Sud,import,2018,11,20,2019
+ETHIOPIE,Afrique orientale et du Sud,import,2019,56,11,2019
+ILE STE HELENE,Afrique orientale et du Sud,import,2015,14,0,2019
+ILE STE HELENE,Afrique orientale et du Sud,import,2016,58,13,2019
+ILE STE HELENE,Afrique orientale et du Sud,import,2017,3,10,2019
+ILE STE HELENE,Afrique orientale et du Sud,import,2018,73,84,2019
+ILE STE HELENE,Afrique orientale et du Sud,import,2019,293,26,2019
+ILES MAURICE,Afrique orientale et du Sud,import,2015,1392,166,2019
+ILES MAURICE,Afrique orientale et du Sud,import,2016,2067,224,2019
+ILES MAURICE,Afrique orientale et du Sud,import,2017,1654,229,2019
+ILES MAURICE,Afrique orientale et du Sud,import,2018,1156,219,2019
+ILES MAURICE,Afrique orientale et du Sud,import,2019,520,98,2019
+KENYA,Afrique orientale et du Sud,import,2015,242,183,2019
+KENYA,Afrique orientale et du Sud,import,2016,244,202,2019
+KENYA,Afrique orientale et du Sud,import,2017,256,310,2019
+KENYA,Afrique orientale et du Sud,import,2018,173,282,2019
+KENYA,Afrique orientale et du Sud,import,2019,789,449,2019
+MADAGASCAR,Afrique orientale et du Sud,import,2015,7,2,2019
+MADAGASCAR,Afrique orientale et du Sud,import,2016,19,7,2019
+MADAGASCAR,Afrique orientale et du Sud,import,2017,7,1,2019
+MADAGASCAR,Afrique orientale et du Sud,import,2018,96,4,2019
+MADAGASCAR,Afrique orientale et du Sud,import,2019,63,1,2019
+MALAWI,Afrique orientale et du Sud,import,2015,31,27,2019
+MALAWI,Afrique orientale et du Sud,import,2016,172,158,2019
+MALAWI,Afrique orientale et du Sud,import,2017,47,63,2019
+MALAWI,Afrique orientale et du Sud,import,2018,167,218,2019
+MALAWI,Afrique orientale et du Sud,import,2019,243,556,2019
+MOZAMBIQUE,Afrique orientale et du Sud,import,2015,371,1690,2019
+MOZAMBIQUE,Afrique orientale et du Sud,import,2016,559,1847,2019
+MOZAMBIQUE,Afrique orientale et du Sud,import,2017,460,419,2019
+MOZAMBIQUE,Afrique orientale et du Sud,import,2018,10358,182403,2019
+MOZAMBIQUE,Afrique orientale et du Sud,import,2019,8185,155251,2019
+NAMIBIE,Afrique orientale et du Sud,import,2015,4,4,2019
+NAMIBIE,Afrique orientale et du Sud,import,2016,1,0,2019
+NAMIBIE,Afrique orientale et du Sud,import,2017,187,935,2019
+NAMIBIE,Afrique orientale et du Sud,import,2018,3,15,2019
+NAMIBIE,Afrique orientale et du Sud,import,2019,12,28,2019
+OUGANDA,Afrique orientale et du Sud,import,2015,26,4,2019
+OUGANDA,Afrique orientale et du Sud,import,2016,5,5,2019
+OUGANDA,Afrique orientale et du Sud,import,2017,20,48,2019
+OUGANDA,Afrique orientale et du Sud,import,2018,27,78,2019
+OUGANDA,Afrique orientale et du Sud,import,2019,302,182,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2015,,,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2016,,,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2017,4,25,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2018,130,247,2019
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2019,793,1004,2019
+REUNION,Afrique orientale et du Sud,import,2015,205,997,2019
+REUNION,Afrique orientale et du Sud,import,2016,1,0,2019
+REUNION,Afrique orientale et du Sud,import,2017,5,1,2019
+REUNION,Afrique orientale et du Sud,import,2018,52,81,2019
+REUNION,Afrique orientale et du Sud,import,2019,4,17,2019
+SEYCHELLES,Afrique orientale et du Sud,import,2015,127,40,2019
+SEYCHELLES,Afrique orientale et du Sud,import,2016,56,4,2019
+SEYCHELLES,Afrique orientale et du Sud,import,2017,28,17,2019
+SEYCHELLES,Afrique orientale et du Sud,import,2018,61,111,2019
+SEYCHELLES,Afrique orientale et du Sud,import,2019,13,1,2019
+SWAZILAND,Afrique orientale et du Sud,import,2015,152,22,2019
+SWAZILAND,Afrique orientale et du Sud,import,2016,1259,78,2019
+SWAZILAND,Afrique orientale et du Sud,import,2017,1,0,2019
+SWAZILAND,Afrique orientale et du Sud,import,2018,315,357,2019
+SWAZILAND,Afrique orientale et du Sud,import,2019,439,69,2019
+TANZANIE,Afrique orientale et du Sud,import,2015,138,231,2019
+TANZANIE,Afrique orientale et du Sud,import,2016,487,183,2019
+TANZANIE,Afrique orientale et du Sud,import,2017,356,127,2019
+TANZANIE,Afrique orientale et du Sud,import,2018,552,245,2019
+TANZANIE,Afrique orientale et du Sud,import,2019,62,49,2019
+ZAMBIE,Afrique orientale et du Sud,import,2015,6,0,2019
+ZAMBIE,Afrique orientale et du Sud,import,2016,63,19,2019
+ZAMBIE,Afrique orientale et du Sud,import,2017,30,1,2019
+ZAMBIE,Afrique orientale et du Sud,import,2018,1,0,2019
+ZAMBIE,Afrique orientale et du Sud,import,2019,19,0,2019
+ZIMBABWE,Afrique orientale et du Sud,import,2015,0,0,2019
+ZIMBABWE,Afrique orientale et du Sud,import,2016,5,1,2019
+ZIMBABWE,Afrique orientale et du Sud,import,2017,14,1,2019
+ZIMBABWE,Afrique orientale et du Sud,import,2018,4,1,2019
+ZIMBABWE,Afrique orientale et du Sud,import,2019,,,2019
+CANADA,Amérique du Nord,import,2015,13210,34609,2019
+CANADA,Amérique du Nord,import,2016,10954,26222,2019
+CANADA,Amérique du Nord,import,2017,14789,30659,2019
+CANADA,Amérique du Nord,import,2018,17739,40481,2019
+CANADA,Amérique du Nord,import,2019,20938,42028,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2015,71444,59603,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2016,67073,119724,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2017,82349,193080,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2018,104967,274470,2019
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2019,88110,106813,2019
+GROENLAND,Amérique du Nord,import,2015,,,2019
+GROENLAND,Amérique du Nord,import,2016,3,8,2019
+GROENLAND,Amérique du Nord,import,2017,,,2019
+GROENLAND,Amérique du Nord,import,2018,37,150,2019
+GROENLAND,Amérique du Nord,import,2019,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2015,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2016,5,23,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2017,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2018,,,2019
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2019,,,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2015,7106,33281,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2016,4555,22824,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2017,1816,9117,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2018,101,562,2019
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2019,3240,15464,2019
+ARGENTINE,Amérique centrale et du Sud,import,2015,31479,196539,2019
+ARGENTINE,Amérique centrale et du Sud,import,2016,28940,179574,2019
+ARGENTINE,Amérique centrale et du Sud,import,2017,57523,397717,2019
+ARGENTINE,Amérique centrale et du Sud,import,2018,65640,466492,2019
+ARGENTINE,Amérique centrale et du Sud,import,2019,54345,382419,2019
+ARUBA,Amérique centrale et du Sud,import,2015,,,2019
+ARUBA,Amérique centrale et du Sud,import,2016,183,709,2019
+ARUBA,Amérique centrale et du Sud,import,2017,,,2019
+ARUBA,Amérique centrale et du Sud,import,2018,,,2019
+ARUBA,Amérique centrale et du Sud,import,2019,,,2019
+BOLIVIE,Amérique centrale et du Sud,import,2015,,,2019
+BOLIVIE,Amérique centrale et du Sud,import,2016,1285,5990,2019
+BOLIVIE,Amérique centrale et du Sud,import,2017,,,2019
+BOLIVIE,Amérique centrale et du Sud,import,2018,,,2019
+BOLIVIE,Amérique centrale et du Sud,import,2019,,,2019
+BRESIL,Amérique centrale et du Sud,import,2015,50573,134515,2019
+BRESIL,Amérique centrale et du Sud,import,2016,69232,169118,2019
+BRESIL,Amérique centrale et du Sud,import,2017,72410,241804,2019
+BRESIL,Amérique centrale et du Sud,import,2018,66771,238772,2019
+BRESIL,Amérique centrale et du Sud,import,2019,72072,211974,2019
+CHILI,Amérique centrale et du Sud,import,2015,313,326,2019
+CHILI,Amérique centrale et du Sud,import,2016,252,159,2019
+CHILI,Amérique centrale et du Sud,import,2017,408,1505,2019
+CHILI,Amérique centrale et du Sud,import,2018,184,244,2019
+CHILI,Amérique centrale et du Sud,import,2019,548,983,2019
+COLOMBIE,Amérique centrale et du Sud,import,2015,730,160,2019
+COLOMBIE,Amérique centrale et du Sud,import,2016,472,155,2019
+COLOMBIE,Amérique centrale et du Sud,import,2017,2058,381,2019
+COLOMBIE,Amérique centrale et du Sud,import,2018,1315,228,2019
+COLOMBIE,Amérique centrale et du Sud,import,2019,1395,302,2019
+COSTA RICA,Amérique centrale et du Sud,import,2015,190,91,2019
+COSTA RICA,Amérique centrale et du Sud,import,2016,388,437,2019
+COSTA RICA,Amérique centrale et du Sud,import,2017,243,192,2019
+COSTA RICA,Amérique centrale et du Sud,import,2018,563,820,2019
+COSTA RICA,Amérique centrale et du Sud,import,2019,984,1356,2019
+CUBA,Amérique centrale et du Sud,import,2015,354,807,2019
+CUBA,Amérique centrale et du Sud,import,2016,4,4,2019
+CUBA,Amérique centrale et du Sud,import,2017,3,17,2019
+CUBA,Amérique centrale et du Sud,import,2018,639,3228,2019
+CUBA,Amérique centrale et du Sud,import,2019,1040,5400,2019
+CURUCAO,Amérique centrale et du Sud,import,2015,,,2019
+CURUCAO,Amérique centrale et du Sud,import,2016,69,155,2019
+CURUCAO,Amérique centrale et du Sud,import,2017,,,2019
+CURUCAO,Amérique centrale et du Sud,import,2018,,,2019
+CURUCAO,Amérique centrale et du Sud,import,2019,,,2019
+EQUATEUR,Amérique centrale et du Sud,import,2015,11,5,2019
+EQUATEUR,Amérique centrale et du Sud,import,2016,45,13,2019
+EQUATEUR,Amérique centrale et du Sud,import,2017,292,17,2019
+EQUATEUR,Amérique centrale et du Sud,import,2018,14,12,2019
+EQUATEUR,Amérique centrale et du Sud,import,2019,184,1070,2019
+GUADELOUPE,Amérique centrale et du Sud,import,2015,560,9,2019
+GUADELOUPE,Amérique centrale et du Sud,import,2016,7,0,2019
+GUADELOUPE,Amérique centrale et du Sud,import,2017,65,2,2019
+GUADELOUPE,Amérique centrale et du Sud,import,2018,1,0,2019
+GUADELOUPE,Amérique centrale et du Sud,import,2019,,,2019
+GUATEMALA,Amérique centrale et du Sud,import,2015,,,2019
+GUATEMALA,Amérique centrale et du Sud,import,2016,9537,26168,2019
+GUATEMALA,Amérique centrale et du Sud,import,2017,11178,35182,2019
+GUATEMALA,Amérique centrale et du Sud,import,2018,575,2342,2019
+GUATEMALA,Amérique centrale et du Sud,import,2019,1847,5037,2019
+GUYANA,Amérique centrale et du Sud,import,2015,,,2019
+GUYANA,Amérique centrale et du Sud,import,2016,,,2019
+GUYANA,Amérique centrale et du Sud,import,2017,2,28,2019
+GUYANA,Amérique centrale et du Sud,import,2018,19,1,2019
+GUYANA,Amérique centrale et du Sud,import,2019,,,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2015,17,90,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2016,,,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2017,8,45,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2018,,,2019
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2019,,,2019
+HAITI,Amérique centrale et du Sud,import,2015,39,15,2019
+HAITI,Amérique centrale et du Sud,import,2016,117,49,2019
+HAITI,Amérique centrale et du Sud,import,2017,,,2019
+HAITI,Amérique centrale et du Sud,import,2018,,,2019
+HAITI,Amérique centrale et du Sud,import,2019,19,44,2019
+HONDURAS,Amérique centrale et du Sud,import,2015,144,3,2019
+HONDURAS,Amérique centrale et du Sud,import,2016,6,4,2019
+HONDURAS,Amérique centrale et du Sud,import,2017,68,36,2019
+HONDURAS,Amérique centrale et du Sud,import,2018,13,14,2019
+HONDURAS,Amérique centrale et du Sud,import,2019,8,18,2019
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2015,848,796,2019
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2016,240,229,2019
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2017,7,14,2019
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2018,98,215,2019
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2019,263,152,2019
+ILES BERMUDES,Amérique centrale et du Sud,import,2015,,,2019
+ILES BERMUDES,Amérique centrale et du Sud,import,2016,,,2019
+ILES BERMUDES,Amérique centrale et du Sud,import,2017,,,2019
+ILES BERMUDES,Amérique centrale et du Sud,import,2018,0,0,2019
+ILES BERMUDES,Amérique centrale et du Sud,import,2019,,,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2015,15,8,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2016,,,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2017,55,553,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2018,24,126,2019
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2019,139,180,2019
+ILES CALQUES,Amérique centrale et du Sud,import,2015,19,67,2019
+ILES CALQUES,Amérique centrale et du Sud,import,2016,100,612,2019
+ILES CALQUES,Amérique centrale et du Sud,import,2017,11,9,2019
+ILES CALQUES,Amérique centrale et du Sud,import,2018,12,21,2019
+ILES CALQUES,Amérique centrale et du Sud,import,2019,41,44,2019
+ILES FALKLAND,Amérique centrale et du Sud,import,2015,,,2019
+ILES FALKLAND,Amérique centrale et du Sud,import,2016,1,1,2019
+ILES FALKLAND,Amérique centrale et du Sud,import,2017,,,2019
+ILES FALKLAND,Amérique centrale et du Sud,import,2018,,,2019
+ILES FALKLAND,Amérique centrale et du Sud,import,2019,15,77,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2015,1173,6140,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2016,13,8,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2017,1554,7245,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2018,103,260,2019
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2019,692,1766,2019
+JAMAIQUE,Amérique centrale et du Sud,import,2015,5,0,2019
+JAMAIQUE,Amérique centrale et du Sud,import,2016,,,2019
+JAMAIQUE,Amérique centrale et du Sud,import,2017,,,2019
+JAMAIQUE,Amérique centrale et du Sud,import,2018,,,2019
+JAMAIQUE,Amérique centrale et du Sud,import,2019,,,2019
+MARTINIQUE,Amérique centrale et du Sud,import,2015,,,2019
+MARTINIQUE,Amérique centrale et du Sud,import,2016,,,2019
+MARTINIQUE,Amérique centrale et du Sud,import,2017,1,0,2019
+MARTINIQUE,Amérique centrale et du Sud,import,2018,,,2019
+MARTINIQUE,Amérique centrale et du Sud,import,2019,,,2019
+MEXIQUE,Amérique centrale et du Sud,import,2015,563,246,2019
+MEXIQUE,Amérique centrale et du Sud,import,2016,1311,1281,2019
+MEXIQUE,Amérique centrale et du Sud,import,2017,1838,3125,2019
+MEXIQUE,Amérique centrale et du Sud,import,2018,1352,493,2019
+MEXIQUE,Amérique centrale et du Sud,import,2019,2738,770,2019
+NICARAGUA,Amérique centrale et du Sud,import,2015,8,13,2019
+NICARAGUA,Amérique centrale et du Sud,import,2016,1,0,2019
+NICARAGUA,Amérique centrale et du Sud,import,2017,7996,21656,2019
+NICARAGUA,Amérique centrale et du Sud,import,2018,5,1,2019
+NICARAGUA,Amérique centrale et du Sud,import,2019,1,0,2019
+PANAMA,Amérique centrale et du Sud,import,2015,90,7,2019
+PANAMA,Amérique centrale et du Sud,import,2016,393,251,2019
+PANAMA,Amérique centrale et du Sud,import,2017,187,408,2019
+PANAMA,Amérique centrale et du Sud,import,2018,40,73,2019
+PANAMA,Amérique centrale et du Sud,import,2019,95,330,2019
+PARAGUAY,Amérique centrale et du Sud,import,2015,4225,30617,2019
+PARAGUAY,Amérique centrale et du Sud,import,2016,2082,13711,2019
+PARAGUAY,Amérique centrale et du Sud,import,2017,4388,39590,2019
+PARAGUAY,Amérique centrale et du Sud,import,2018,1496,13955,2019
+PARAGUAY,Amérique centrale et du Sud,import,2019,2073,11199,2019
+PEROU,Amérique centrale et du Sud,import,2015,851,595,2019
+PEROU,Amérique centrale et du Sud,import,2016,368,226,2019
+PEROU,Amérique centrale et du Sud,import,2017,202,36,2019
+PEROU,Amérique centrale et du Sud,import,2018,260,75,2019
+PEROU,Amérique centrale et du Sud,import,2019,319,588,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2015,182,160,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2016,231,169,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2017,565,632,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2018,144,48,2019
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2019,3481,1431,2019
+SALVADOR,Amérique centrale et du Sud,import,2015,32,0,2019
+SALVADOR,Amérique centrale et du Sud,import,2016,5,0,2019
+SALVADOR,Amérique centrale et du Sud,import,2017,,,2019
+SALVADOR,Amérique centrale et du Sud,import,2018,2,2,2019
+SALVADOR,Amérique centrale et du Sud,import,2019,3,2,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2015,,,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2016,25,107,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2017,47,127,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2018,,,2019
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2019,,,2019
+SURINAM,Amérique centrale et du Sud,import,2015,,,2019
+SURINAM,Amérique centrale et du Sud,import,2016,306,27,2019
+SURINAM,Amérique centrale et du Sud,import,2017,147,32,2019
+SURINAM,Amérique centrale et du Sud,import,2018,89,120,2019
+SURINAM,Amérique centrale et du Sud,import,2019,43,19,2019
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2015,2501,7908,2019
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2016,2714,9430,2019
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2017,3889,9080,2019
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2018,1149,2975,2019
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2019,1753,4600,2019
+URUGUAY,Amérique centrale et du Sud,import,2015,226,430,2019
+URUGUAY,Amérique centrale et du Sud,import,2016,1229,4973,2019
+URUGUAY,Amérique centrale et du Sud,import,2017,4403,19960,2019
+URUGUAY,Amérique centrale et du Sud,import,2018,4078,16557,2019
+URUGUAY,Amérique centrale et du Sud,import,2019,12203,128029,2019
+VENEZUELA,Amérique centrale et du Sud,import,2015,75,19,2019
+VENEZUELA,Amérique centrale et du Sud,import,2016,1353,39819,2019
+VENEZUELA,Amérique centrale et du Sud,import,2017,2727,43163,2019
+VENEZUELA,Amérique centrale et du Sud,import,2018,13,14,2019
+VENEZUELA,Amérique centrale et du Sud,import,2019,306,49,2019
+ARABIE SEOUDITE,Asie occidentale,import,2015,19856,51630,2019
+ARABIE SEOUDITE,Asie occidentale,import,2016,13768,56553,2019
+ARABIE SEOUDITE,Asie occidentale,import,2017,15999,46689,2019
+ARABIE SEOUDITE,Asie occidentale,import,2018,17246,22580,2019
+ARABIE SEOUDITE,Asie occidentale,import,2019,14292,19901,2019
+BAHREIN,Asie occidentale,import,2015,178,263,2019
+BAHREIN,Asie occidentale,import,2016,246,146,2019
+BAHREIN,Asie occidentale,import,2017,569,493,2019
+BAHREIN,Asie occidentale,import,2018,980,663,2019
+BAHREIN,Asie occidentale,import,2019,3283,2470,2019
+EMIRATS ARABES UNIS,Asie occidentale,import,2015,58074,64454,2019
+EMIRATS ARABES UNIS,Asie occidentale,import,2016,74106,300700,2019
+EMIRATS ARABES UNIS,Asie occidentale,import,2017,69784,314287,2019
+EMIRATS ARABES UNIS,Asie occidentale,import,2018,63862,115105,2019
+EMIRATS ARABES UNIS,Asie occidentale,import,2019,85957,221889,2019
+IRAK,Asie occidentale,import,2015,32,15,2019
+IRAK,Asie occidentale,import,2016,10,26,2019
+IRAK,Asie occidentale,import,2017,,,2019
+IRAK,Asie occidentale,import,2018,,,2019
+IRAK,Asie occidentale,import,2019,32,90,2019
+IRAN,Asie occidentale,import,2015,11497,10053,2019
+IRAN,Asie occidentale,import,2016,16151,17671,2019
+IRAN,Asie occidentale,import,2017,18531,20595,2019
+IRAN,Asie occidentale,import,2018,7222,7412,2019
+IRAN,Asie occidentale,import,2019,7294,10545,2019
+ISRAEL,Asie occidentale,import,2015,6380,2437,2019
+ISRAEL,Asie occidentale,import,2016,3702,860,2019
+ISRAEL,Asie occidentale,import,2017,3464,962,2019
+ISRAEL,Asie occidentale,import,2018,976,323,2019
+ISRAEL,Asie occidentale,import,2019,1178,354,2019
+JORDANIE,Asie occidentale,import,2015,243,245,2019
+JORDANIE,Asie occidentale,import,2016,543,779,2019
+JORDANIE,Asie occidentale,import,2017,381,443,2019
+JORDANIE,Asie occidentale,import,2018,130,117,2019
+JORDANIE,Asie occidentale,import,2019,279,373,2019
+KOWEIT,Asie occidentale,import,2015,3623,27914,2019
+KOWEIT,Asie occidentale,import,2016,458,588,2019
+KOWEIT,Asie occidentale,import,2017,923,1388,2019
+KOWEIT,Asie occidentale,import,2018,835,1572,2019
+KOWEIT,Asie occidentale,import,2019,1041,2299,2019
+LIBAN,Asie occidentale,import,2015,10578,1871,2019
+LIBAN,Asie occidentale,import,2016,2796,2598,2019
+LIBAN,Asie occidentale,import,2017,5768,3595,2019
+LIBAN,Asie occidentale,import,2018,5338,2605,2019
+LIBAN,Asie occidentale,import,2019,3134,2590,2019
+OMAN,Asie occidentale,import,2015,316,360,2019
+OMAN,Asie occidentale,import,2016,220,500,2019
+OMAN,Asie occidentale,import,2017,482,1263,2019
+OMAN,Asie occidentale,import,2018,963,2605,2019
+OMAN,Asie occidentale,import,2019,1747,3252,2019
+QATAR,Asie occidentale,import,2015,5647,35053,2019
+QATAR,Asie occidentale,import,2016,2584,3378,2019
+QATAR,Asie occidentale,import,2017,2321,3017,2019
+QATAR,Asie occidentale,import,2018,3013,4048,2019
+QATAR,Asie occidentale,import,2019,4643,7119,2019
+SYRIE,Asie occidentale,import,2015,18,10,2019
+SYRIE,Asie occidentale,import,2016,,,2019
+SYRIE,Asie occidentale,import,2017,15,42,2019
+SYRIE,Asie occidentale,import,2018,53,24,2019
+SYRIE,Asie occidentale,import,2019,13,36,2019
+YEMEN,Asie occidentale,import,2015,3,1,2019
+YEMEN,Asie occidentale,import,2016,,,2019
+YEMEN,Asie occidentale,import,2017,,,2019
+YEMEN,Asie occidentale,import,2018,,,2019
+YEMEN,Asie occidentale,import,2019,,,2019
+AFGANISTAN,Autres pays d'Asie,import,2015,169,609,2019
+AFGANISTAN,Autres pays d'Asie,import,2016,484,1487,2019
+AFGANISTAN,Autres pays d'Asie,import,2017,257,77,2019
+AFGANISTAN,Autres pays d'Asie,import,2018,120,51,2019
+AFGANISTAN,Autres pays d'Asie,import,2019,355,192,2019
+BENGLADESH,Autres pays d'Asie,import,2015,19,3,2019
+BENGLADESH,Autres pays d'Asie,import,2016,68,17,2019
+BENGLADESH,Autres pays d'Asie,import,2017,21,24,2019
+BENGLADESH,Autres pays d'Asie,import,2018,19,82,2019
+BENGLADESH,Autres pays d'Asie,import,2019,98,123,2019
+BHOUTAN,Autres pays d'Asie,import,2015,,,2019
+BHOUTAN,Autres pays d'Asie,import,2016,,,2019
+BHOUTAN,Autres pays d'Asie,import,2017,,,2019
+BHOUTAN,Autres pays d'Asie,import,2018,,,2019
+BHOUTAN,Autres pays d'Asie,import,2019,2,2,2019
+BRUNEI,Autres pays d'Asie,import,2015,,,2019
+BRUNEI,Autres pays d'Asie,import,2016,27,51,2019
+BRUNEI,Autres pays d'Asie,import,2017,24,34,2019
+BRUNEI,Autres pays d'Asie,import,2018,17,4,2019
+BRUNEI,Autres pays d'Asie,import,2019,64,27,2019
+CAMBODGE,Autres pays d'Asie,import,2015,61,55,2019
+CAMBODGE,Autres pays d'Asie,import,2016,65,107,2019
+CAMBODGE,Autres pays d'Asie,import,2017,402,728,2019
+CAMBODGE,Autres pays d'Asie,import,2018,84,26,2019
+CAMBODGE,Autres pays d'Asie,import,2019,401,597,2019
+COREE DU NORD,Autres pays d'Asie,import,2015,133,425,2019
+COREE DU NORD,Autres pays d'Asie,import,2016,235,182,2019
+COREE DU NORD,Autres pays d'Asie,import,2017,102,154,2019
+COREE DU NORD,Autres pays d'Asie,import,2018,261,183,2019
+COREE DU NORD,Autres pays d'Asie,import,2019,325,218,2019
+COREE DU SUD,Autres pays d'Asie,import,2015,35620,41780,2019
+COREE DU SUD,Autres pays d'Asie,import,2016,20279,21657,2019
+COREE DU SUD,Autres pays d'Asie,import,2017,27724,20146,2019
+COREE DU SUD,Autres pays d'Asie,import,2018,32264,23294,2019
+COREE DU SUD,Autres pays d'Asie,import,2019,26551,20675,2019
+HONG-KONG,Autres pays d'Asie,import,2015,7221,1342,2019
+HONG-KONG,Autres pays d'Asie,import,2016,4514,1422,2019
+HONG-KONG,Autres pays d'Asie,import,2017,11188,3299,2019
+HONG-KONG,Autres pays d'Asie,import,2018,13442,7440,2019
+HONG-KONG,Autres pays d'Asie,import,2019,17937,8067,2019
+INDE,Autres pays d'Asie,import,2015,174483,723741,2019
+INDE,Autres pays d'Asie,import,2016,242710,717439,2019
+INDE,Autres pays d'Asie,import,2017,252344,632907,2019
+INDE,Autres pays d'Asie,import,2018,215268,589394,2019
+INDE,Autres pays d'Asie,import,2019,185580,541913,2019
+INDONESIE,Autres pays d'Asie,import,2015,13531,32816,2019
+INDONESIE,Autres pays d'Asie,import,2016,12700,24047,2019
+INDONESIE,Autres pays d'Asie,import,2017,11793,27515,2019
+INDONESIE,Autres pays d'Asie,import,2018,10060,20588,2019
+INDONESIE,Autres pays d'Asie,import,2019,15703,34001,2019
+JAPON,Autres pays d'Asie,import,2015,55805,14064,2019
+JAPON,Autres pays d'Asie,import,2016,50039,12898,2019
+JAPON,Autres pays d'Asie,import,2017,49082,12129,2019
+JAPON,Autres pays d'Asie,import,2018,55912,21637,2019
+JAPON,Autres pays d'Asie,import,2019,67362,25132,2019
+LAOS,Autres pays d'Asie,import,2015,,,2019
+LAOS,Autres pays d'Asie,import,2016,,,2019
+LAOS,Autres pays d'Asie,import,2017,8,3,2019
+LAOS,Autres pays d'Asie,import,2018,1,0,2019
+LAOS,Autres pays d'Asie,import,2019,,,2019
+MACAO,Autres pays d'Asie,import,2015,1,0,2019
+MACAO,Autres pays d'Asie,import,2016,5,0,2019
+MACAO,Autres pays d'Asie,import,2017,3,0,2019
+MACAO,Autres pays d'Asie,import,2018,33,82,2019
+MACAO,Autres pays d'Asie,import,2019,258,287,2019
+MALAISIE,Autres pays d'Asie,import,2015,14666,28784,2019
+MALAISIE,Autres pays d'Asie,import,2016,20169,29492,2019
+MALAISIE,Autres pays d'Asie,import,2017,28314,72899,2019
+MALAISIE,Autres pays d'Asie,import,2018,27414,72929,2019
+MALAISIE,Autres pays d'Asie,import,2019,34064,66362,2019
+MONGOLIE,Autres pays d'Asie,import,2015,2,2,2019
+MONGOLIE,Autres pays d'Asie,import,2016,,,2019
+MONGOLIE,Autres pays d'Asie,import,2017,274,176,2019
+MONGOLIE,Autres pays d'Asie,import,2018,,,2019
+MONGOLIE,Autres pays d'Asie,import,2019,1,2,2019
+NEPAL,Autres pays d'Asie,import,2015,1,0,2019
+NEPAL,Autres pays d'Asie,import,2016,,,2019
+NEPAL,Autres pays d'Asie,import,2017,,,2019
+NEPAL,Autres pays d'Asie,import,2018,2,3,2019
+NEPAL,Autres pays d'Asie,import,2019,1,0,2019
+PAKISTAN,Autres pays d'Asie,import,2015,17307,67670,2019
+PAKISTAN,Autres pays d'Asie,import,2016,10962,51841,2019
+PAKISTAN,Autres pays d'Asie,import,2017,4945,19882,2019
+PAKISTAN,Autres pays d'Asie,import,2018,19095,86205,2019
+PAKISTAN,Autres pays d'Asie,import,2019,27422,122851,2019
+PHILIPPINE,Autres pays d'Asie,import,2015,289,23,2019
+PHILIPPINE,Autres pays d'Asie,import,2016,118,10,2019
+PHILIPPINE,Autres pays d'Asie,import,2017,572,57,2019
+PHILIPPINE,Autres pays d'Asie,import,2018,311,69,2019
+PHILIPPINE,Autres pays d'Asie,import,2019,169,14,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2015,308719,478282,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2016,321939,563319,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2017,367392,608802,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2018,486147,717807,2019
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2019,499388,773260,2019
+SINGAPOUR,Autres pays d'Asie,import,2015,31797,84448,2019
+SINGAPOUR,Autres pays d'Asie,import,2016,16592,55436,2019
+SINGAPOUR,Autres pays d'Asie,import,2017,10144,27089,2019
+SINGAPOUR,Autres pays d'Asie,import,2018,17567,43468,2019
+SINGAPOUR,Autres pays d'Asie,import,2019,11689,27420,2019
+SRI-LANKA,Autres pays d'Asie,import,2015,18,5,2019
+SRI-LANKA,Autres pays d'Asie,import,2016,58,50,2019
+SRI-LANKA,Autres pays d'Asie,import,2017,25,24,2019
+SRI-LANKA,Autres pays d'Asie,import,2018,79,179,2019
+SRI-LANKA,Autres pays d'Asie,import,2019,59,146,2019
+TAIWAN,Autres pays d'Asie,import,2015,3318,3289,2019
+TAIWAN,Autres pays d'Asie,import,2016,1662,1474,2019
+TAIWAN,Autres pays d'Asie,import,2017,2095,1144,2019
+TAIWAN,Autres pays d'Asie,import,2018,7136,1682,2019
+TAIWAN,Autres pays d'Asie,import,2019,2418,1577,2019
+THAILANDE,Autres pays d'Asie,import,2015,60552,221160,2019
+THAILANDE,Autres pays d'Asie,import,2016,55061,196601,2019
+THAILANDE,Autres pays d'Asie,import,2017,73696,258633,2019
+THAILANDE,Autres pays d'Asie,import,2018,65769,241364,2019
+THAILANDE,Autres pays d'Asie,import,2019,58134,177299,2019
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2015,,,2019
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2016,7,40,2019
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2017,8,16,2019
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2018,16,9,2019
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2019,75,159,2019
+UNION BIRMANE,Autres pays d'Asie,import,2015,,,2019
+UNION BIRMANE,Autres pays d'Asie,import,2016,,,2019
+UNION BIRMANE,Autres pays d'Asie,import,2017,1086,5514,2019
+UNION BIRMANE,Autres pays d'Asie,import,2018,999,4995,2019
+UNION BIRMANE,Autres pays d'Asie,import,2019,1759,8323,2019
+VIETNAM,Autres pays d'Asie,import,2015,3605,5204,2019
+VIETNAM,Autres pays d'Asie,import,2016,2505,4248,2019
+VIETNAM,Autres pays d'Asie,import,2017,2523,5078,2019
+VIETNAM,Autres pays d'Asie,import,2018,5449,13685,2019
+VIETNAM,Autres pays d'Asie,import,2019,12098,40638,2019
+AUSTRALIE,Continent australien,import,2015,6221,1073,2019
+AUSTRALIE,Continent australien,import,2016,5019,1398,2019
+AUSTRALIE,Continent australien,import,2017,26170,6446,2019
+AUSTRALIE,Continent australien,import,2018,5811,1729,2019
+AUSTRALIE,Continent australien,import,2019,5963,1459,2019
+NAURU,Continent australien,import,2015,1,0,2019
+NAURU,Continent australien,import,2016,83,52,2019
+NAURU,Continent australien,import,2017,61,34,2019
+NAURU,Continent australien,import,2018,0,0,2019
+NAURU,Continent australien,import,2019,4,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2015,0,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2016,113,236,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2017,13,38,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2018,112,238,2019
+NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2019,35,31,2019
+NOUVELLE ZELANDE,Continent australien,import,2015,10652,6334,2019
+NOUVELLE ZELANDE,Continent australien,import,2016,9417,6685,2019
+NOUVELLE ZELANDE,Continent australien,import,2017,3104,1749,2019
+NOUVELLE ZELANDE,Continent australien,import,2018,5050,3137,2019
+NOUVELLE ZELANDE,Continent australien,import,2019,1540,1209,2019
+ILES COOK,Océanie,import,2015,1,0,2019
+ILES COOK,Océanie,import,2016,,,2019
+ILES COOK,Océanie,import,2017,,,2019
+ILES COOK,Océanie,import,2018,,,2019
+ILES COOK,Océanie,import,2019,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,import,2015,8,2,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,import,2016,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,import,2017,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,import,2018,,,2019
+"ILES NIOUE, ILES TOKELOU",Océanie,import,2019,,,2019
+ILES PACIFIQUES US,Océanie,import,2015,,,2019
+ILES PACIFIQUES US,Océanie,import,2016,,,2019
+ILES PACIFIQUES US,Océanie,import,2017,,,2019
+ILES PACIFIQUES US,Océanie,import,2018,,,2019
+ILES PACIFIQUES US,Océanie,import,2019,52,206,2019
+NOUVELLE CALEDONIE,Océanie,import,2015,18,9,2019
+NOUVELLE CALEDONIE,Océanie,import,2016,,,2019
+NOUVELLE CALEDONIE,Océanie,import,2017,,,2019
+NOUVELLE CALEDONIE,Océanie,import,2018,,,2019
+NOUVELLE CALEDONIE,Océanie,import,2019,,,2019
+TONGA,Océanie,import,2015,0,0,2019
+TONGA,Océanie,import,2016,,,2019
+TONGA,Océanie,import,2017,,,2019
+TONGA,Océanie,import,2018,,,2019
+TONGA,Océanie,import,2019,9,8,2019
+NCA,Divers,import,2015,4922,11462,2019
+NCA,Divers,import,2016,4342,4798,2019
+NCA,Divers,import,2017,5696,12650,2019
+NCA,Divers,import,2018,5147,8500,2019
+NCA,Divers,import,2019,15001,74830,2019
