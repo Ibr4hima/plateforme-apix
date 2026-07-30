@@ -6,7 +6,6 @@ import re
 import tempfile
 import unicodedata
 from datetime import date
-from difflib import get_close_matches
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -16,6 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import require_admin
 from app.core.database import get_db
 from app.services.bmce_extraction import BRUTS, Bulletin
+from app.utils.pays_matching import (
+    FORMES_ETAT, LIAISONS, correspondre_pays, normaliser_nom,
+)
 
 router = APIRouter(prefix="/bmce", tags=["commerce-exterieur"])
 
@@ -40,47 +42,10 @@ def _date_de(mois: str) -> date:
     return date(2000 + int(annee), MOIS_FR[nom], 1)
 
 
-def _normaliser_nom(nom: str) -> str:
-    """« Côte d'Ivoire » → « COTE D IVOIRE » : sans accents ni ponctuation,
-    pour rapprocher les libellés ANSD (majuscules, graphies variables) du
-    référentiel ref_pays."""
-    t = unicodedata.normalize("NFD", nom)
-    t = "".join(c for c in t if unicodedata.category(c) != "Mn")
-    return re.sub(r"[^A-Z0-9]+", " ", t.upper()).strip()
-
-
-# Formes d'État et liaisons que les bulletins accolent aux noms de pays
-# (« REPUBLIQUE POPULAIRE DE CHINE », « ETATS UNIS D'AMERIQUE »…)
-FORMES_ETAT = {"REPUBLIQUE", "ROYAUME", "ETAT", "ETATS", "UNION", "SULTANAT",
-               "PRINCIPAUTE", "EMIRAT", "EMIRATS", "COMMONWEALTH", "FEDERATION",
-               "POPULAIRE", "DEMOCRATIQUE", "ISLAMIQUE", "ARABE", "FEDERALE",
-               "FEDERATIVE", "SOCIALISTE"}
-LIAISONS = {"D", "DE", "DU", "DES", "LA", "LE", "LES", "L"}
-
-
-def _correspondre_pays(libelle: str, index: dict[str, int]) -> int | None:
-    """Cherche le pays du référentiel correspondant à un libellé de bulletin.
-    `index` : nom normalisé (nom_fr et nom_cnuced) → id. Quatre passes, de la
-    plus sûre à la plus prudente ; None si aucune n'aboutit (association
-    manuelle dans l'admin). Les regroupements ANSD ne matchent jamais."""
-    n = _normaliser_nom(libelle)
-    if n in index:
-        return index[n]
-    # « REPUBLIQUE POPULAIRE DE CHINE » → « CHINE »
-    tokens = n.split()
-    while len(tokens) > 1 and tokens[0] in FORMES_ETAT | LIAISONS:
-        tokens.pop(0)
-    reduit = " ".join(tokens)
-    if reduit != n and reduit in index:
-        return index[reduit]
-    # « ETATS UNIS D AMERIQUE » : un nom du référentiel suivi d'une liaison
-    candidats = [r for r in index
-                 if n.startswith(r + " ") and n[len(r) + 1:].split()[0] in LIAISONS]
-    if candidats:
-        return index[max(candidats, key=len)]
-    # Coquilles du bulletin (« AFGANISTAN ») : rapprochement flou très serré
-    proches = get_close_matches(n, list(index), n=1, cutoff=0.9)
-    return index[proches[0]] if proches else None
+# Le rapprochement des libellés de pays est partagé avec les scripts
+# d'audit (qui doivent tourner sans FastAPI ni pilote de base).
+_normaliser_nom = normaliser_nom
+_correspondre_pays = correspondre_pays
 
 
 async def _rapprocher_pays(db: AsyncSession) -> None:

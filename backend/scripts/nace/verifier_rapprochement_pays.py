@@ -7,6 +7,17 @@ postérieures au seed.
 
     cd backend && python3 scripts/nace/verifier_rapprochement_pays.py
 
+Le script n'importe rien de l'application hormis le rapprocheur partagé :
+il tourne donc dans n'importe quel interpréteur, sans FastAPI ni asyncpg.
+Deux modes de lecture du référentiel :
+
+  1. connexion directe si psycopg2 ou psycopg (v3) est installé — l'URL
+     vient de DATABASE_URL_SYNC, DATABASE_URL ou du fichier .env (racine
+     du dépôt ou backend/), les pilotes asynchrones étant ramenés au
+     pilote synchrone ;
+  2. sinon, un export TSV passé en --ref, à produire sans aucune
+     dépendance Python (la commande exacte est rappelée à l'écran).
+
 Source des libellés, par ordre de préférence :
   1. un fichier passé en argument (un libellé par ligne) ;
   2. la table nace_pays si elle est déjà peuplée (tous les libellés
@@ -14,87 +25,163 @@ Source des libellés, par ordre de préférence :
   3. à défaut, libelles_pays_nace_2019.txt livré à côté de ce script
      (les 178 partenaires du tableau 34 de l'édition 2019).
 
-Le rapprochement réutilise tel quel celui du module BMCE, puis applique
-les alias de alias_pays_nace.json s'il existe. Sortie :
-
-  · le décompte rattachés / orphelins ;
-  · chaque orphelin avec les trois noms de ref_pays les plus proches,
-    pour trancher ;
-  · un squelette d'alias_pays_nace.json prêt à compléter ;
-  · les pays de ref_pays qu'aucun libellé n'atteint (contrôle inverse).
+Sortie : les rattachements APPROCHÉS (les seuls susceptibles de se
+tromper), les ORPHELINS avec suggestions et un squelette d'alias, puis
+le contrôle inverse (pays du référentiel qu'aucun libellé n'atteint).
 """
-import asyncio
 import json
+import os
+import re
 import sys
-from difflib import get_close_matches
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+RACINE_BACKEND = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(RACINE_BACKEND))
 
-from sqlalchemy import text                                    # noqa: E402
-from app.core.database import AsyncSessionLocal                # noqa: E402
-from app.api.routes.bmce import (                              # noqa: E402
-    _normaliser_nom, _correspondre_pays, FORMES_ETAT, LIAISONS,
+from app.utils.pays_matching import (                          # noqa: E402
+    correspondre_pays, normaliser_nom, suggerer_proches,
 )
 
 ICI = Path(__file__).parent
 FICHIER_ALIAS = ICI / "alias_pays_nace.json"
 
+REQUETE_REF = ("SELECT id, nom_fr, nom_cnuced, code_iso2 FROM ref_pays "
+               "WHERE actif IS NOT FALSE ORDER BY nom_fr")
 
-def suggerer(libelle: str, noms_ref: list[str], index: dict) -> list[str]:
-    """Noms de ref_pays les plus proches d'un libellé orphelin.
+# Repli sans dépendance Python : psql écrit le référentiel en TSV, relu par --ref
+AIDE_TSV = f"""Aucun pilote PostgreSQL (psycopg2 / psycopg) dans cet interpréteur.
 
-    La forme réduite (sans « RÉPUBLIQUE DE », « ÎLES »…) passe d'abord car
-    elle est plus discriminante : sur la chaîne entière, « REPUBLIQUE
-    TCHEQUE » suggérerait « République centrafricaine », « République
-    dominicaine »… alors que « TCHEQUE » mène droit à Tchéquie.
-    """
-    n = _normaliser_nom(libelle)
-    tokens = [t for t in n.split() if t not in FORMES_ETAT | LIAISONS
-              and t not in {"ILE", "ILES", "CITE"}]
-    reduit = " ".join(tokens)
-    formes = ([reduit] if tokens and reduit != n else []) + [n]
-    vus: list[str] = []
-    for forme in formes:
-        for p in get_close_matches(forme, noms_ref, n=3, cutoff=0.45):
-            if p not in vus:
-                vus.append(p)
-    return [f"{index[p][1]} [{index[p][2]}]" for p in vus[:3]]
+Deux solutions, au choix :
+
+  a) installer le pilote          pip install psycopg2-binary
+
+  b) exporter le référentiel en TSV, sans dépendance Python :
+       docker compose exec -T postgres sh -c \\
+         'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -F"\\t" -c "{REQUETE_REF}"' \\
+         > /tmp/ref_pays.tsv
+     puis relancer :
+       python3 scripts/nace/verifier_rapprochement_pays.py --ref /tmp/ref_pays.tsv"""
 
 
-async def charger_reference(db) -> dict[str, tuple[int, str, str]]:
+def url_base() -> str:
+    """URL PostgreSQL en pilote synchrone, depuis l'environnement ou .env."""
+    brut = os.environ.get("DATABASE_URL_SYNC") or os.environ.get("DATABASE_URL")
+    if not brut:
+        for env in (RACINE_BACKEND / ".env", RACINE_BACKEND.parent / ".env"):
+            if not env.exists():
+                continue
+            texte = env.read_text(encoding="utf-8")
+            # Les .env du projet donnent soit DATABASE_URL, soit les morceaux
+            m = re.search(r"^DATABASE_URL(?:_SYNC)?\s*=\s*(.+)$", texte, re.M)
+            if m:
+                brut = m.group(1).strip().strip('"\'')
+                break
+            morceaux = {c: re.search(rf"^{c}\s*=\s*(.+)$", texte, re.M) for c in
+                        ("POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "POSTGRES_PORT")}
+            if all(morceaux.values()):
+                v = {c: m.group(1).strip().strip('"\'') for c, m in morceaux.items()}
+                brut = (f"postgresql://{v['POSTGRES_USER']}:{v['POSTGRES_PASSWORD']}"
+                        f"@localhost:{v['POSTGRES_PORT']}/{v['POSTGRES_DB']}")
+                break
+    if not brut:
+        sys.exit("DATABASE_URL introuvable : exportez-la ou renseignez .env")
+    return re.sub(r"^postgresql\+\w+://", "postgresql://", brut)
+
+
+def indexer_reference(lignes) -> dict[str, tuple[int, str, str]]:
     """{nom normalisé: (id, nom_fr, code_iso2)} sur nom_fr ET nom_cnuced."""
-    res = await db.execute(text(
-        "SELECT id, nom_fr, nom_cnuced, code_iso2 FROM ref_pays "
-        "WHERE actif IS NOT FALSE ORDER BY nom_fr"))
     index: dict[str, tuple[int, str, str]] = {}
-    for pid, nom_fr, nom_cnuced, iso2 in res:
+    for pid, nom_fr, nom_cnuced, iso2 in lignes:
         for nom in (nom_fr, nom_cnuced):
             if nom:
-                index.setdefault(_normaliser_nom(nom), (pid, nom_fr, iso2 or "--"))
+                index.setdefault(normaliser_nom(nom), (int(pid), nom_fr, iso2 or "--"))
     return index
 
 
-async def charger_libelles(db) -> tuple[list[str], str]:
-    if len(sys.argv) > 1:
-        chemin = Path(sys.argv[1])
-        return [l.strip() for l in chemin.read_text(encoding="utf-8").splitlines() if l.strip()], str(chemin)
-    try:
-        res = await db.execute(text("SELECT DISTINCT pays FROM nace_pays ORDER BY pays"))
-        libs = [r[0] for r in res]
-        if libs:
-            return libs, "table nace_pays"
-    except Exception:
-        pass                                    # table absente : on retombe sur le fichier
+def lire_reference_tsv(chemin: Path):
+    """Lignes (id, nom_fr, nom_cnuced, code_iso2) d'un export `psql -At -F'\\t'`."""
+    lignes = []
+    for ligne in chemin.read_text(encoding="utf-8").splitlines():
+        if not ligne.strip():
+            continue
+        champs = (ligne.split("\t") + ["", "", "", ""])[:4]
+        lignes.append(tuple(c.strip() or None for c in champs))
+    if not lignes:
+        sys.exit(f"{chemin} est vide : l'export psql a-t-il abouti ?")
+    return lignes
+
+
+def charger_libelles(cur, chemin: Path | None) -> tuple[list[str], str]:
+    """Libellés NACE : fichier explicite, puis table nace_pays, puis le TXT livré."""
+    if chemin:
+        lignes = chemin.read_text(encoding="utf-8").splitlines()
+        return [l.strip() for l in lignes if l.strip()], str(chemin)
+    if cur is not None:
+        try:
+            cur.execute("SELECT DISTINCT pays FROM nace_pays ORDER BY pays")
+            libs = [r[0] for r in cur.fetchall()]
+            if libs:
+                return libs, "table nace_pays"
+        except Exception:
+            cur.connection.rollback()           # table absente : on continue
     fic = ICI / "libelles_pays_nace_2019.txt"
     return [l.strip() for l in fic.read_text(encoding="utf-8").splitlines() if l.strip()], fic.name
 
 
-async def principal() -> int:
+def pilote():
+    """psycopg2 ou psycopg (v3), selon ce qui est installé — None si aucun."""
+    for nom in ("psycopg2", "psycopg"):
+        try:
+            return __import__(nom)
+        except ModuleNotFoundError:
+            continue
+    return None
+
+
+def analyser_arguments() -> tuple[Path | None, Path | None]:
+    """(--ref export TSV, fichier de libellés positionnel)."""
+    ref = libelles = None
+    args = sys.argv[1:]
+    while args:
+        a = args.pop(0)
+        if a in ("-h", "--help"):
+            sys.exit(__doc__)
+        elif a == "--ref":
+            if not args:
+                sys.exit("--ref attend un chemin de fichier TSV")
+            ref = Path(args.pop(0))
+        elif a.startswith("--ref="):
+            ref = Path(a.split("=", 1)[1])
+        elif a.startswith("-"):
+            sys.exit(f"Option inconnue : {a}")
+        else:
+            libelles = Path(a)
+    for chemin in (ref, libelles):
+        if chemin and not chemin.exists():
+            sys.exit(f"Fichier introuvable : {chemin}")
+    return ref, libelles
+
+
+def principal() -> int:
+    chemin_ref, chemin_libelles = analyser_arguments()
     alias = json.loads(FICHIER_ALIAS.read_text(encoding="utf-8")) if FICHIER_ALIAS.exists() else {}
-    async with AsyncSessionLocal() as db:
-        index = await charger_reference(db)
-        libelles, origine = await charger_libelles(db)
+
+    if chemin_ref:
+        # Mode hors ligne : le référentiel vient de l'export psql, et les
+        # libellés du fichier fourni ou du TXT livré (pas d'accès à nace_pays).
+        index = indexer_reference(lire_reference_tsv(chemin_ref))
+        libelles, origine = charger_libelles(None, chemin_libelles)
+        source_ref = str(chemin_ref)
+    else:
+        pilote_pg = pilote()
+        if pilote_pg is None:
+            sys.exit(AIDE_TSV)
+        with pilote_pg.connect(url_base()) as conn, conn.cursor() as cur:
+            cur.execute(REQUETE_REF)
+            index = indexer_reference(cur.fetchall())
+            libelles, origine = charger_libelles(cur, chemin_libelles)
+        source_ref = f"base ({pilote_pg.__name__})"
+    print(f"Source du référentiel : {source_ref}")
 
     print(f"Référentiel : {len({v[0] for v in index.values()})} pays actifs "
           f"({len(index)} graphies avec les alias CNUCED)")
@@ -104,17 +191,18 @@ async def principal() -> int:
     print()
 
     noms_ref = list(index)
+    par_id = {v[0]: v for v in index.values()}
+    index_id = {k: v[0] for k, v in index.items()}
     rattaches: dict[str, tuple[int, str, str]] = {}
-    approches: list[tuple[str, str, str]] = []   # rattachés autrement qu'à l'identique
+    approches: list[tuple[str, str, str]] = []
     orphelins: list[str] = []
     for lib in libelles:
         vise = alias.get(lib, lib)              # alias explicite prioritaire
-        cle = _normaliser_nom(vise)
-        trouve = index.get(cle)
+        trouve = index.get(normaliser_nom(vise))
         exact = trouve is not None
         if trouve is None:
-            pid = _correspondre_pays(vise, {k: v[0] for k, v in index.items()})
-            trouve = next((v for v in index.values() if v[0] == pid), None) if pid else None
+            pid = correspondre_pays(vise, index_id)
+            trouve = par_id.get(pid) if pid else None
         if trouve:
             rattaches[lib] = trouve
             if not exact and lib not in alias:
@@ -126,8 +214,8 @@ async def principal() -> int:
           f"({len(rattaches) / max(1, len(libelles)) * 100:.0f} %) ──\n")
 
     if approches:
-        # Ces rattachements viennent de la réduction des formes d'État ou du
-        # rapprochement flou : ce sont eux qui peuvent se tromper (« CONGO
+        # Rattachements obtenus par réduction des formes d'État ou par
+        # rapprochement flou : les seuls qui peuvent se tromper (« CONGO
         # DEMOCRATIQUE » risque « Congo » au lieu de la RDC). À relire.
         print(f"── {len(approches)} rattachements APPROCHÉS, à relire ──")
         for lib, nom, iso in approches:
@@ -138,23 +226,24 @@ async def principal() -> int:
         print("── ORPHELINS et suggestions du référentiel ──")
         suggestions: dict[str, str] = {}
         for lib in orphelins:
-            proches = suggerer(lib, noms_ref, index)
-            print(f"   {lib:34} → {' · '.join(proches) if proches else '(rien de proche)'}")
-            suggestions[lib] = proches[0].rsplit(" [", 1)[0] if proches else ""
+            proches = suggerer_proches(lib, noms_ref)
+            libelle_proches = [f"{index[p][1]} [{index[p][2]}]" for p in proches]
+            print(f"   {lib:34} → {' · '.join(libelle_proches) if proches else '(rien de proche)'}")
+            suggestions[lib] = index[proches[0]][1] if proches else ""
         print("\n── Squelette pour alias_pays_nace.json (à relire et corriger) ──")
         print(json.dumps(suggestions, ensure_ascii=False, indent=2))
 
     # Contrôle inverse : pays du référentiel qu'aucun libellé n'atteint. Utile
-    # pour repérer un partenaire mal orthographié qui serait passé inaperçu.
+    # pour repérer un partenaire dont la graphie NACE n'aurait pas été reconnue.
     atteints = {v[0] for v in rattaches.values()}
-    manquants = sorted({(v[0], v[1]) for v in index.values() if v[0] not in atteints}, key=lambda x: x[1])
+    manquants = sorted((v[1] for v in par_id.values() if v[0] not in atteints))
     print(f"\n── {len(manquants)} pays de ref_pays sans libellé NACE correspondant ──")
-    print("   (normal pour les pays sans échange avec le Sénégal ; y chercher"
-          " un partenaire\n    dont la graphie NACE n'aurait pas été reconnue)")
-    for _, nom in manquants:
+    print("   (normal pour les pays sans échange avec le Sénégal ; y chercher un\n"
+          "    partenaire dont la graphie NACE n'aurait pas été reconnue)")
+    for nom in manquants:
         print(f"   {nom}")
     return 0 if not orphelins else 1
 
 
 if __name__ == "__main__":
-    raise SystemExit(asyncio.run(principal()))
+    raise SystemExit(principal())
