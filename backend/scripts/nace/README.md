@@ -96,8 +96,15 @@ Cinq familles extraites, mêmes règles et même vérification :
   années antérieures : les exportations 2019 vers l'Afrique passent de
   638 125 à 1 053 940 MFCFA et celles vers l'Europe de 676 461 à
   705 048 (régularisations pétrolières). Au-delà, les valeurs sont
-  stables d'une édition à l'autre — celles de 2020 et de 2021 sont
+  stables d'une édition à l'autre — celles de 2020, 2021 et 2022 sont
   reprises à l'identique par les éditions suivantes.
+
+  À partir de l'édition 2023, les libellés perdent leur préfixe :
+  « EUROPE », « AFRIQUE »… au lieu de « CONTINENT EUROPEEN ». Les deux
+  formes sont reconnues. Cette édition écrit aussi les millésimes de ses
+  en-têtes « 2 019 », d'où la normalisation des espaces avant lecture des
+  colonnes. Elle corrige enfin le total du poids exporté 2021
+  (8 038 328 t au lieu des 8 040 349 t imprimés en 2021 et 2022).
 
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années

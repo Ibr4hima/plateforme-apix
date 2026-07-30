@@ -34,6 +34,7 @@ def cle(s: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", unicodedata.normalize("NFD", s.upper()))
 
 CANON = {cle(k): v for k, v in {
+    # Forme longue (éditions 2019 à 2022)
     "CONTINENT EUROPEEN": "Europe",
     "CONTINENT AFRICAIN": "Afrique",
     "CONTINENT AMERICAIN": "Amérique",
@@ -41,8 +42,14 @@ CANON = {cle(k): v for k, v in {
     "CONTINENT AUSTRALIEN ET OCEANIQUE": "Océanie",
     "CONTINENT AUSTRALIEN": "Océanie",
     "CONTINENT OCEANIQUE": "Océanie",
+    # Forme courte (à partir de l'édition 2023)
+    "EUROPE": "Europe",
+    "AFRIQUE": "Afrique",
+    "AMERIQUE": "Amérique",
+    "ASIE": "Asie",
     "OCEANIE": "Océanie",
     "AUSTRALIE": "Océanie",
+    # « Divers » : le suffixe (PBE, PBF, OM, nda…) varie en ponctuation
     "DIVERS (PBE,PBF,OM,NDA..)": "Divers",
     "DIVERS": "Divers",
 }.items()}
@@ -69,11 +76,12 @@ def annees_entete(sec: str) -> list[int]:
     où les trois autres en ont cinq. On lit donc l'en-tête plutôt que de
     supposer une largeur."""
     for l in sec.split("\n"):
-        c = [t for t in colonnes(l) if re.fullmatch(r"\d{4}", t.replace(" ", ""))]
-        if len(c) >= 5 and all(1990 <= int(t) <= 2100 for t in c):
-            n = [int(t) for t in c]
-            if all(b - a == 1 for a, b in zip(n, n[1:])):
-                return n
+        # Certaines éditions écrivent les millésimes « 2 019 »
+        c = [t.replace(" ", "") for t in colonnes(l)]
+        n = [int(t) for t in c if re.fullmatch(r"\d{4}", t) and 1990 <= int(t) <= 2100]
+        if len(n) >= 5 and len(n) == len([t for t in c if re.fullmatch(r"[\d ]*\d", t)]) \
+                and all(b - a == 1 for a, b in zip(n, n[1:])):
+            return n
     return []
 
 def parse(debut: str, fin: str | None):
