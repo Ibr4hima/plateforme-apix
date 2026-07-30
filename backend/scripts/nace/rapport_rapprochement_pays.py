@@ -162,8 +162,11 @@ def principal() -> int:
         libs = autres[region]
         somme = sum(poids[l] for l in libs)
         base = total_region[region] or 1
-        print(f"\n   {region} — {len(libs)} libellés, {fmt(somme)} "
-              f"soit {somme / base * 100:.2f} % de la région")
+        # La part n'a de sens qu'avec son assiette : « 85 % de l'Océanie »
+        # porte sur 62 M FCFA, soit un pourcentage de presque rien.
+        s = "s" if len(libs) > 1 else ""
+        print(f"\n   {region} — {len(libs)} libellé{s}, {fmt(somme)} "
+              f"sur {fmt(base)} soit {somme / base * 100:.2f} % de la région")
         for lib in sorted(libs, key=lambda x: -poids[x]):
             motif = hors_ref.get(lib, "⚠ hors référentiel SANS motif déclaré")
             print(f"      {lib:30} {fmt(poids[lib]):>14}  — {motif}")
