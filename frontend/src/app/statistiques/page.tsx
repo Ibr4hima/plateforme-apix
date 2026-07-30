@@ -719,8 +719,9 @@ type Partenaire = { nom: string; iso2: string | null; region: string; valeur: nu
 // `continent` restreint la portée ; la part se rapporte alors à ce continent,
 // non au total mondial — c'est la lecture utile quand on regarde une zone.
 function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number,
-                            ratt: Record<string, string>, continent: string | null, top: number): Partenaire[] {
-  if (!pys?.disponible) return [];
+                            ratt: Record<string, string>, continent: string | null, top: number,
+): { lignes: Partenaire[]; total: number } {
+  if (!pys?.disponible) return { lignes: [], total: 0 };
   const agg = new Map<string, Partenaire>();
   // Le dénominateur inclut « Autres pays », que le classement exclut : la part
   // est celle du total de la portée, comme dans le tableau ci-dessus. La
@@ -738,21 +739,26 @@ function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, an: number
   }
   // Un partenaire sans échange sur l'année n'en est pas un : sans ce filtre,
   // l'Océanie alignerait des lignes à zéro.
-  return [...agg.values()].filter(l => l.valeur > 0)
+  const lignes = [...agg.values()].filter(l => l.valeur > 0)
     .sort((a, b) => b.valeur - a.valeur).slice(0, top)
     .map(l => ({ ...l, part: total ? l.valeur / total * 100 : null }));
+  return { lignes, total };
 }
 
-function TopPartenaires({ titre, lignes, couleur, montrerRegion }: {
-  titre: string; lignes: Partenaire[]; couleur: string; montrerRegion?: boolean;
+function TopPartenaires({ titre, lignes, total, couleur, montrerRegion }: {
+  titre: string; lignes: Partenaire[]; total: number; couleur: string; montrerRegion?: boolean;
 }) {
   // Le maximum est celui de la colonne : les barres comparent les partenaires
   // entre eux dans un sens donné, pas les deux sens l'un contre l'autre.
   const max = Math.max(1, ...lignes.map(l => l.valeur));
   return (
     <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-      <p style={{ fontSize: 9, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em",
-        textTransform: "uppercase", margin: "0 0 2px" }}>{titre}</p>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, margin: "0 8px 2px" }}>
+        <span style={{ fontSize: 9, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em", textTransform: "uppercase" }}>{titre}</span>
+        {/* Total de la portée : c'est le dénominateur des parts affichées. */}
+        <span className="ds-donnee" style={{ fontSize: 11, fontWeight: 800, color: couleur, whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums" }}>{fmtMFCFA(total)}</span>
+      </div>
       {lignes.length === 0
         ? <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "14px 0" }}>Aucun échange.</p>
         : lignes.map((l, i) => (
@@ -896,6 +902,10 @@ function CommerceExterieurPanel() {
   const [cont, setCont] = useState<NaceDataCont | null>(null);
   const [reg2, setReg2] = useState<NaceDataReg | null>(null);
   const [pys, setPys] = useState<NaceDataPays | null>(null);
+  // La famille pays est la plus lourde des sept (tous partenaires, toutes
+  // années) : sans indicateur dédié, la section 03 surgirait après coup et
+  // ferait sauter la page. On lui réserve sa place le temps du chargement.
+  const [pysEnCours, setPysEnCours] = useState(true);
   const [chap, setChap] = useState<NaceDataChap | null>(null);
   useEffect(() => {
     setLoading(true); setErreur(false);
@@ -911,8 +921,9 @@ function CommerceExterieurPanel() {
       .then(setCont).catch(() => setCont(null));
     fetch(`${API}/nace/regions`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(setReg2).catch(() => setReg2(null));
+    setPysEnCours(true);
     fetch(`${API}/nace/pays`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setPys).catch(() => setPys(null));
+      .then(setPys).catch(() => setPys(null)).finally(() => setPysEnCours(false));
   }, [tick]);
 
   const annees = data?.annees ?? [];
@@ -964,13 +975,13 @@ function CommerceExterieurPanel() {
     if (pe) m.push(`Le premier poste d'exportation est « ${pe.produit.toLowerCase()} », ${pct(exp ? (pe.valeur ?? 0) / exp * 100 : null)} des ventes à l'étranger.`);
     if (pi) m.push(`Le premier poste d'importation est « ${pi.produit.toLowerCase()} », ${pct(imp ? (pi.valeur ?? 0) / imp * 100 : null)} des achats.`);
     const ratt = reg2?.continents ?? pys?.continents ?? {};
-    const ce = classerPartenaires(pys, "export", an, ratt, null, 1)[0];
-    const ci = classerPartenaires(pys, "import", an, ratt, null, 1)[0];
+    const ce = classerPartenaires(pys, "export", an, ratt, null, 1).lignes[0];
+    const ci = classerPartenaires(pys, "import", an, ratt, null, 1).lignes[0];
     // Tournures sans article : il dépendrait du nom du pays.
     if (ce) m.push(`Premier client du Sénégal : ${ce.nom}, ${pct(ce.part)} des exportations.`);
     if (ci) m.push(`Premier fournisseur : ${ci.nom}, ${pct(ci.part)} des importations.`);
     // Concentration : combien de clients absorbent la moitié des ventes.
-    const tous = classerPartenaires(pys, "export", an, ratt, null, 999);
+    const tous = classerPartenaires(pys, "export", an, ratt, null, 999).lignes;
     let c = 0, n = 0;
     for (const x of tous) { c += x.part ?? 0; n++; if (c >= 50) break; }
     if (c >= 50) m.push(`Les exportations sont concentrées : ${n} client${n > 1 ? "s" : ""} en absorbe${n > 1 ? "nt" : ""} la moitié.`);
@@ -1114,6 +1125,12 @@ function CommerceExterieurPanel() {
       {/* 03 · Partenaires par continent : un continent à la fois, sur toute la
           largeur — les cinq côte à côte tronquaient les noms et n'aidaient à
           comparer personne, chaque continent ayant ses propres partenaires. */}
+      {pysEnCours && !pys && (
+        <>
+          <EnTeteSectionNace n={3} titre="Partenaires par continent" />
+          <div className="ds-carte" style={{ padding: "18px 20px" }}><SkeletonRows n={10} h={30} /></div>
+        </>
+      )}
       {pys?.disponible && (() => {
         const a = anCont ?? dernier;
         const ratt = reg2?.continents ?? pys.continents ?? {};
@@ -1124,7 +1141,7 @@ function CommerceExterieurPanel() {
         // alors sur le premier disponible plutôt que d'afficher une carte vide.
         const c = presents.includes(contSel) ? contSel : presents[0];
         const clients = classerPartenaires(pys, "export", a, ratt, c, 10);
-        const fournisseurs = classerPartenaires(pys, "import", a, ratt, c, 10);
+        const fourn = classerPartenaires(pys, "import", a, ratt, c, 10);
         return (
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
@@ -1135,12 +1152,15 @@ function CommerceExterieurPanel() {
             } />
             <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
               <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0 }}>
-                Parts calculées sur l&apos;ensemble des échanges {AVEC_CONTINENT(c)}, non sur le total mondial —
-                {" "}{clients.length} client{clients.length > 1 ? "s" : ""} et {fournisseurs.length} fournisseur{fournisseurs.length > 1 ? "s" : ""} affichés
+                Parts calculées sur l&apos;ensemble des échanges {AVEC_CONTINENT(c)}
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
-                <TopPartenaires titre="Clients" lignes={clients} couleur={NACE_BLEU} />
-                <TopPartenaires titre="Fournisseurs" lignes={fournisseurs} couleur={NACE_ORANGE} />
+                {/* Le rattachement régional est montré ici : dans un continent
+                    donné il distingue les sous-ensembles — en Europe, la Suisse
+                    et le Royaume-Uni relèvent des « autres pays », l'Espagne et
+                    l'Italie de l'Union européenne. */}
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} couleur={NACE_BLEU} montrerRegion />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} couleur={NACE_ORANGE} montrerRegion />
               </div>
             </div>
           </>
