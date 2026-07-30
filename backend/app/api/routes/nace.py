@@ -9,6 +9,7 @@
 # puis les libellés sont ramenés à la nomenclature la plus récente via
 # une table d'alias (renommages et regroupements vérifiés, cf. README).
 import csv
+import json
 from collections import defaultdict
 from pathlib import Path
 
@@ -20,8 +21,10 @@ from app.core.auth import require_admin
 from app.core.database import get_db
 from app.models.nace import (
     NacePrincipalProduit, NaceProduitRegroupe, NaceGroupeUtilisation, NaceChapitre,
-    NaceContinent,
+    NaceContinent, NaceRegion, NacePays,
 )
+from app.models.shared import RefPays
+from app.utils.pays_matching import correspondre_pays, normaliser_nom
 
 router = APIRouter(prefix="/nace", tags=["nace"])
 
@@ -57,7 +60,53 @@ FAMILLES = [
     ("groupes_utilisation", NaceGroupeUtilisation, "groupe"),
     ("chapitres", NaceChapitre, "chapitre"),
     ("continents", NaceContinent, "continent"),
+    ("regions", NaceRegion, "region"),
 ]
+
+# Les 13 régions dans l'ordre du rapport (Europe → Océanie, « Divers » en
+# fin) : l'ordre alphabétique n'a pas de sens pour une nomenclature
+# géographique, la lecture le restitue donc explicitement.
+REGIONS_ORDRE = [
+    "Communauté européenne", "Autres pays d'Europe",
+    "Afrique centrale", "Afrique du Nord", "Afrique de l'Ouest",
+    "Afrique orientale et du Sud",
+    "Amérique du Nord", "Amérique centrale et du Sud",
+    "Asie occidentale", "Autres pays d'Asie",
+    "Continent australien", "Océanie", "Divers",
+]
+
+# Partenaires hors référentiel, regroupés à la lecture sous ce libellé —
+# au sein de LEUR région, ce qui préserve l'égalité entre la somme des
+# pays et le sous-total imprimé de la région.
+AUTRES_PAYS = "Autres pays"
+FICHIER_ARBITRAGE = DOSSIER_CSV / "alias_pays_nace.json"
+
+
+def _arbitrage_pays() -> tuple[dict, set]:
+    """(alias vers ref_pays, libellés assumés hors référentiel).
+
+    Arbitrage figé dans alias_pays_nace.json : noms coloniaux (« HONDURAS
+    BRITANIQUE » = Belize), renommages (« SWAZILAND » = Eswatini),
+    coquilles, et pseudo-partenaires (« DIVERS », « NCA ») qui ne sont pas
+    des pays. Cf. scripts/nace/verifier_rapprochement_pays.py.
+    """
+    if not FICHIER_ARBITRAGE.exists():
+        return {}, set()
+    doc = json.loads(FICHIER_ARBITRAGE.read_text(encoding="utf-8"))
+    return doc.get("alias", {}), set(doc.get("hors_referentiel", {}))
+
+
+async def _index_ref_pays(db: AsyncSession) -> dict:
+    """{nom normalisé: id} sur nom_fr ET nom_cnuced des pays actifs."""
+    res = await db.execute(
+        select(RefPays.id, RefPays.nom_fr, RefPays.nom_cnuced)
+        .where(RefPays.actif.isnot(False)))
+    index: dict = {}
+    for pid, nom_fr, nom_cnuced in res:
+        for nom in (nom_fr, nom_cnuced):
+            if nom:
+                index.setdefault(normaliser_nom(nom), pid)
+    return index
 
 
 # ── POST /nace/importer ───────────────────────────────────────────────────────
@@ -99,6 +148,56 @@ async def importer_nace(
             total += len(lignes)
             editions.append(lignes[0]["edition"])
         rapport[famille] = {"fichiers": len(fichiers), "lignes": total, "editions": editions}
+
+    # Famille pays : à part des autres, car chaque ligne doit être rattachée
+    # au référentiel. Les libellés arbitrés hors référentiel gardent
+    # ref_pays_id NULL sans être signalés ; un libellé NI rattaché NI arbitré
+    # est remonté dans le rapport — c'est le signal qu'une nouvelle édition a
+    # introduit un partenaire à trancher dans alias_pays_nace.json.
+    alias_pays, hors_ref = _arbitrage_pays()
+    index = await _index_ref_pays(db)
+    fichiers = sorted(DOSSIER_CSV.glob("edition_[0-9][0-9][0-9][0-9]_pays.csv"))
+    total, editions, rattaches, assumes = 0, [], 0, 0
+    non_arbitres: set = set()
+    for fic in fichiers:
+        lignes = []
+        for r in csv.DictReader(open(fic, encoding="utf-8")):
+            libelle = r["pays"]
+            pid = None
+            if libelle in hors_ref:
+                assumes += 1
+            else:
+                pid = correspondre_pays(alias_pays.get(libelle, libelle), index)
+                if pid is None:
+                    non_arbitres.add(libelle)
+                else:
+                    rattaches += 1
+            lignes.append({
+                "pays": libelle,
+                "region": r["region"],
+                "ref_pays_id": pid,
+                "sens": r["sens"],
+                "annee": int(r["annee"]),
+                "valeur": r["valeur"] or None,
+                "poids": r["poids"] or None,
+                "edition": int(r["edition"]),
+            })
+        if not lignes:
+            continue
+        stmt = pg_insert(NacePays).values(lignes)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["pays", "sens", "annee", "edition"],
+            set_={"valeur": stmt.excluded.valeur, "poids": stmt.excluded.poids,
+                  "region": stmt.excluded.region, "ref_pays_id": stmt.excluded.ref_pays_id},
+        )
+        await db.execute(stmt)
+        total += len(lignes)
+        editions.append(lignes[0]["edition"])
+    rapport["pays"] = {
+        "fichiers": len(fichiers), "lignes": total, "editions": editions,
+        "rattachees": rattaches, "hors_referentiel": assumes,
+        "non_arbitres": sorted(non_arbitres),
+    }
     return rapport
 
 
@@ -191,3 +290,76 @@ async def chapitres(db: AsyncSession = Depends(get_db)):
 async def continents(db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(NaceContinent))
     return _resoudre(res.scalars().all(), {}, col="continent")
+
+
+# ── GET /nace/regions ─────────────────────────────────────────────────────────
+# Les 13 sous-totaux régionaux tels qu'imprimés (tableaux 34–37). Ils sont
+# exhaustifs : leur somme est le total du commerce extérieur.
+@router.get("/regions")
+async def regions(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(NaceRegion))
+    reponse = _resoudre(res.scalars().all(), {}, col="region")
+    reponse["ordre"] = REGIONS_ORDRE
+    return reponse
+
+
+# ── GET /nace/pays ────────────────────────────────────────────────────────────
+# Détail par pays partenaire. Les partenaires hors référentiel (DOM-TOM,
+# RAS chinoises, entités disparues, pseudo-partenaire « Divers »/« NCA »)
+# sont regroupés sous « Autres pays » DE LEUR RÉGION : la somme des pays
+# d'une région reste ainsi exactement égale à son sous-total imprimé, et
+# aucune donnée du rapport n'est perdue.
+@router.get("/pays")
+async def pays(db: AsyncSession = Depends(get_db)):
+    res = await db.execute(
+        select(NacePays, RefPays.nom_fr, RefPays.code_iso2)
+        .outerjoin(RefPays, NacePays.ref_pays_id == RefPays.id))
+    lignes = res.all()
+    if not lignes:
+        return {"disponible": False, "annees": [], "editions": [], "ordre": REGIONS_ORDRE,
+                "donnees": {"export": [], "import": []}}
+
+    # Édition retenue par (sens, année) : la plus récente qui couvre l'année.
+    retenue: dict = {}
+    for r, _, _ in lignes:
+        cle = (r.sens, r.annee)
+        if r.edition > retenue.get(cle, 0):
+            retenue[cle] = r.edition
+
+    agreg: dict = defaultdict(lambda: {"valeur": 0.0, "poids": 0.0, "v": False,
+                                       "p": False, "iso2": None, "membres": 0})
+    for r, nom_fr, iso2 in lignes:
+        if retenue[(r.sens, r.annee)] != r.edition:
+            continue
+        nom = nom_fr or AUTRES_PAYS
+        a = agreg[(r.sens, r.annee, r.region, nom)]
+        a["membres"] += 1
+        if nom_fr:
+            a["iso2"] = iso2
+        if r.valeur is not None:
+            a["valeur"] += float(r.valeur); a["v"] = True
+        if r.poids is not None:
+            a["poids"] += float(r.poids); a["p"] = True
+
+    rang = {nom: i for i, nom in enumerate(REGIONS_ORDRE)}
+    donnees: dict = {"export": [], "import": []}
+    for cle in sorted(agreg, key=lambda k: (k[1], rang.get(k[2], 99),
+                                            k[3] == AUTRES_PAYS, k[3])):
+        sens, annee, region, nom = cle
+        a = agreg[cle]
+        donnees[sens].append({
+            "pays": nom, "code_iso2": a["iso2"], "region": region, "annee": annee,
+            "valeur": a["valeur"] if a["v"] else None,
+            "poids": a["poids"] if a["p"] else None,
+            # Nombre de libellés du rapport agrégés : > 1 pour « Autres pays »
+            # et pour les pays que plusieurs graphies désignent (Yémen).
+            "libelles": a["membres"],
+            "edition": retenue[(sens, annee)],
+        })
+    return {
+        "disponible": True,
+        "annees": sorted({annee for (_, annee) in retenue}),
+        "editions": sorted({r.edition for r, _, _ in lignes}),
+        "ordre": REGIONS_ORDRE,
+        "donnees": donnees,
+    }
