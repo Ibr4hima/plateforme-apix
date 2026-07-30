@@ -81,7 +81,16 @@ Cinq familles extraites, mêmes règles et même vérification :
   somme de ses six continents donne 8 038 327 t. Les quatre autres
   familles convergent vers 8 038 328–8 038 331 t : c'est bien le total
   imprimé qui dévie (de 2 022 exactement). Les continents étant
-  exhaustifs, l'extracteur signale l'écart et retient leur somme.
+  exhaustifs, l'extracteur signale l'écart et retient leur somme. Le même
+  total erroné est repris tel quel par l'édition 2022 (tableau 24) —
+  l'extracteur le corrige donc dans les deux éditions.
+
+  L'édition 2022 mélange par ailleurs des tableaux à cinq colonnes
+  d'années (2018–2022) et un tableau à six (le 26, qui remonte à 2017) :
+  les colonnes sont donc sélectionnées d'après l'en-tête du tableau, et
+  non d'après une largeur supposée. Les libellés varient aussi d'un
+  tableau à l'autre au sein du même rapport (« CONTINENT OCEANIQUE » /
+  « CONTINENT AUSTRALIEN ET OCEANIQUE ») — tous ramenés à Océanie.
 
 Produits regroupés — notes par édition : nomenclature stable sur les
 six éditions (30 postes export, 56 import) ; l'édition 2024 (années

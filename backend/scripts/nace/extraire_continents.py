@@ -63,19 +63,37 @@ def est_entete_annees(vals: list[str]) -> bool:
 
 txt = open(FIC, encoding="utf-8").read()
 
+def annees_entete(sec: str) -> list[int]:
+    """Millésimes de l'en-tête du tableau. Le nombre de colonnes n'est pas
+    constant : le tableau 26 de l'édition 2022 en porte six (2017–2022) là
+    où les trois autres en ont cinq. On lit donc l'en-tête plutôt que de
+    supposer une largeur."""
+    for l in sec.split("\n"):
+        c = [t for t in colonnes(l) if re.fullmatch(r"\d{4}", t.replace(" ", ""))]
+        if len(c) >= 5 and all(1990 <= int(t) <= 2100 for t in c):
+            n = [int(t) for t in c]
+            if all(b - a == 1 for a, b in zip(n, n[1:])):
+                return n
+    return []
+
 def parse(debut: str, fin: str | None):
     sec = txt.split(debut)[1]
     if fin:
         sec = sec.split(fin)[0]
+    entete = annees_entete(sec)
+    manquantes = [a for a in ANNEES if a not in entete] if entete else []
+    assert not manquantes, f"{debut} : années absentes de l'en-tête {entete} — {manquantes}"
+    garder = [entete.index(a) for a in ANNEES] if entete else list(range(5))
     lignes: dict = {}
     total = None
     for l in sec.split("\n"):
         c = colonnes(l)
-        if len(c) != 6 or est_valeur(c[0]) or not all(est_valeur(t) for t in c[1:]):
+        attendu = len(entete) + 1 if entete else 6
+        if len(c) != attendu or est_valeur(c[0]) or not all(est_valeur(t) for t in c[1:]):
             continue
         if est_entete_annees(c[1:]):
             continue
-        vals = [nombre(t) for t in c[1:]]
+        vals = [nombre(c[1 + i]) for i in garder]
         k = cle(c[0])
         if k == "TOTAL":
             total = vals
