@@ -1,0 +1,121 @@
+region,sens,annee,valeur,poids,edition
+Union européenne,export,2016,231913,647241,2020
+Union européenne,export,2017,265035,643929,2020
+Union européenne,export,2018,302789,577800,2020
+Union européenne,export,2019,324218,641105,2020
+Union européenne,export,2020,264641,459827,2020
+Autres pays d'Europe,export,2016,172646,206483,2020
+Autres pays d'Europe,export,2017,205215,334335,2020
+Autres pays d'Europe,export,2018,314943,210862,2020
+Autres pays d'Europe,export,2019,380830,269172,2020
+Autres pays d'Europe,export,2020,319254,372050,2020
+Afrique centrale,export,2016,71227,45289,2020
+Afrique centrale,export,2017,61921,40805,2020
+Afrique centrale,export,2018,68168,50495,2020
+Afrique centrale,export,2019,62537,50972,2020
+Afrique centrale,export,2020,49637,51747,2020
+Afrique du Nord,export,2016,7598,19966,2020
+Afrique du Nord,export,2017,5493,5139,2020
+Afrique du Nord,export,2018,7183,6058,2020
+Afrique du Nord,export,2019,10498,9556,2020
+Afrique du Nord,export,2020,9119,8828,2020
+Afrique occidentale,export,2016,630257,4294012,2020
+Afrique occidentale,export,2017,736374,4322674,2020
+Afrique occidentale,export,2018,788263,3846983,2020
+Afrique occidentale,export,2019,965223,4271724,2020
+Afrique occidentale,export,2020,903808,4211467,2020
+Afrique orientale et du Sud,export,2016,6448,2623,2020
+Afrique orientale et du Sud,export,2017,6743,39725,2020
+Afrique orientale et du Sud,export,2018,5070,88598,2020
+Afrique orientale et du Sud,export,2019,15683,233763,2020
+Afrique orientale et du Sud,export,2020,8194,96925,2020
+Amérique du Nord,export,2016,37330,78112,2020
+Amérique du Nord,export,2017,54001,109726,2020
+Amérique du Nord,export,2018,63920,104306,2020
+Amérique du Nord,export,2019,78490,157020,2020
+Amérique du Nord,export,2020,68507,63799,2020
+Amérique centrale et du Sud,export,2016,9810,39513,2020
+Amérique centrale et du Sud,export,2017,19495,124826,2020
+Amérique centrale et du Sud,export,2018,11905,34121,2020
+Amérique centrale et du Sud,export,2019,11490,24133,2020
+Amérique centrale et du Sud,export,2020,19979,108928,2020
+Asie occidentale,export,2016,56520,151685,2020
+Asie occidentale,export,2017,91848,263957,2020
+Asie occidentale,export,2018,49882,240332,2020
+Asie occidentale,export,2019,45353,214827,2020
+Asie occidentale,export,2020,31867,118734,2020
+Autres pays d'Asie,export,2016,267845,716390,2020
+Autres pays d'Asie,export,2017,213354,669878,2020
+Autres pays d'Asie,export,2018,285933,764720,2020
+Autres pays d'Asie,export,2019,437062,1103030,2020
+Autres pays d'Asie,export,2020,374800,1021582,2020
+Océanie,export,2016,327,521,2020
+Océanie,export,2017,631,551,2020
+Océanie,export,2018,5547,50713,2020
+Océanie,export,2019,3193,1821,2020
+Océanie,export,2020,124100,798,2020
+Divers,export,2016,59367,211082,2020
+Divers,export,2017,90201,279609,2020
+Divers,export,2018,112076,316572,2020
+Divers,export,2019,112090,281047,2020
+Divers,export,2020,87441,276153,2020
+Union européenne,import,2016,1249343,2753884,2020
+Union européenne,import,2017,1521574,2971001,2020
+Union européenne,import,2018,1713003,3284247,2020
+Union européenne,import,2019,2108517,3744566,2020
+Union européenne,import,2020,1881280,3909928,2020
+Autres pays d'Europe,import,2016,209559,1040553,2020
+Autres pays d'Europe,import,2017,307361,1337922,2020
+Autres pays d'Europe,import,2018,497878,2323783,2020
+Autres pays d'Europe,import,2019,554346,2452880,2020
+Autres pays d'Europe,import,2020,524159,2573022,2020
+Afrique centrale,import,2016,15972,49514,2020
+Afrique centrale,import,2017,25474,83480,2020
+Afrique centrale,import,2018,15097,59732,2020
+Afrique centrale,import,2019,23071,84179,2020
+Afrique centrale,import,2020,14528,64476,2020
+Afrique du Nord,import,2016,111549,244155,2020
+Afrique du Nord,import,2017,110417,342259,2020
+Afrique du Nord,import,2018,110727,296376,2020
+Afrique du Nord,import,2019,132852,391055,2020
+Afrique du Nord,import,2020,143974,734261,2020
+Afrique occidentale,import,2016,362173,1466778,2020
+Afrique occidentale,import,2017,445158,1515745,2020
+Afrique occidentale,import,2018,509285,1470633,2020
+Afrique occidentale,import,2019,381932,1122830,2020
+Afrique occidentale,import,2020,430081,1446164,2020
+Afrique orientale et du Sud,import,2016,59830,548109,2020
+Afrique orientale et du Sud,import,2017,73340,587850,2020
+Afrique orientale et du Sud,import,2018,85086,812822,2020
+Afrique orientale et du Sud,import,2019,70678,622323,2020
+Afrique orientale et du Sud,import,2020,59109,417091,2020
+Amérique du Nord,import,2016,83268,152938,2020
+Amérique du Nord,import,2017,96066,222544,2020
+Amérique du Nord,import,2018,129901,328340,2020
+Amérique du Nord,import,2019,114807,165293,2020
+Amérique du Nord,import,2020,140866,267805,2020
+Amérique centrale et du Sud,import,2016,137093,530345,2020
+Amérique centrale et du Sud,import,2017,178972,848531,2020
+Amérique centrale et du Sud,import,2018,146398,753285,2020
+Amérique centrale et du Sud,import,2019,168117,822839,2020
+Amérique centrale et du Sud,import,2020,187933,861592,2020
+Asie occidentale,import,2016,133704,394409,2020
+Asie occidentale,import,2017,146130,418485,2020
+Asie occidentale,import,2018,105051,163363,2020
+Asie occidentale,import,2019,129014,280959,2020
+Asie occidentale,import,2020,172651,704704,2020
+Autres pays d'Asie,import,2016,838040,1828944,2020
+Autres pays d'Asie,import,2017,968196,2029552,2020
+Autres pays d'Asie,import,2018,1155672,2399607,2020
+Autres pays d'Asie,import,2019,1066064,2029876,2020
+Autres pays d'Asie,import,2020,911061,1965667,2020
+Océanie,import,2016,13012,7238,2020
+Océanie,import,2017,30165,8690,2020
+Océanie,import,2018,12140,5770,2020
+Océanie,import,2019,9140,3689,2020
+Océanie,import,2020,19220,3701,2020
+Divers,import,2016,4971,7861,2020
+Divers,import,2017,5851,12658,2020
+Divers,import,2018,7761,14050,2020
+Divers,import,2019,15394,74379,2020
+Divers,import,2020,9552,40345,2020

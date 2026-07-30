@@ -47,23 +47,41 @@ def cle(s: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", unicodedata.normalize("NFD", s.upper()))
 
 
-# Les 12 régions, ramenées à un libellé lisible. Le rapport hésite sur la
-# graphie (« COMMUNAUTE EUROPEENNE » dans les tableaux 34–35, « EUROPEENE »
-# — un seul N — dans les 36–37) : toutes les variantes sont listées.
+# Les 12 régions, ramenées à un libellé lisible et STABLE d'une édition à
+# l'autre. Le rapport varie de trois façons, toutes vérifiées sur les
+# éditions en main :
+#
+#  - renommages à membres identiques : « COMMUNAUTE EUROPEENNE » (éd. 2019)
+#    devient « UNION EUROPEENNE » (éd. 2020+) avec les mêmes 27 partenaires,
+#    Royaume-Uni compris ; « AFRIQUE DE L'OUEST » devient « AFRIQUE
+#    OCCIDENTALE » avec les mêmes 15 ;
+#  - fusion : l'édition 2019 sépare « CONTINENT AUSTRALIEN » d'« OCEANIE »,
+#    les suivantes n'ont plus qu'« OCEANIE ». Vérifié sur l'année 2019
+#    (3 192 + 1 = 3 193, valeur qu'imprime l'édition 2020). Les deux libellés
+#    sont donc ramenés à « Océanie » et leurs sous-totaux sommés ;
+#  - coquilles de graphie : « EUROPEENE » à un seul N, apostrophe doublée
+#    dans « D''ASIE », apostrophe courbe dans « L’OCEANIE ». cle() retirant
+#    toute ponctuation, une entrée couvre toutes les variantes d'apostrophe ;
+#    les fautes de lettres demandent chacune la leur.
 CANON = {cle(k): v for k, v in {
-    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPEENNE": "Communauté européenne",
-    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPEENE": "Communauté européenne",
-    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPENNE": "Communauté européenne",
+    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPEENNE": "Union européenne",
+    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPEENE": "Union européenne",
+    "LES PAYS MEMBRES DE LA COMMUNAUTE EUROPENNE": "Union européenne",
+    "LES PAYS DE L'UNION EUROPEENNE": "Union européenne",
+    "LES PAYS DE L'UNION EUROPEENE": "Union européenne",
     "LES AUTRES PAYS DE L'EUROPE": "Autres pays d'Europe",
+    "LES AUTRES PAYS D'EUROPE": "Autres pays d'Europe",
     "LES PAYS DE L'AFRIQUE CENTRALE": "Afrique centrale",
     "LES PAYS DE L'AFRIQUE DU NORD": "Afrique du Nord",
-    "LES PAYS DE L'AFRIQUE DE L'OUEST": "Afrique de l'Ouest",
+    "LES PAYS DE L'AFRIQUE DE L'OUEST": "Afrique occidentale",
+    "LES PAYS DE L'AFRIQUE OCCIDENTALE": "Afrique occidentale",
     "LES PAYS DE L'AFRIQUE ORIENTALE ET DU SUD": "Afrique orientale et du Sud",
     "LES PAYS DE L'AMERIQUE DU NORD": "Amérique du Nord",
     "LES PAYS DE L'AMERIQUE CENTRALE ET DU SUD": "Amérique centrale et du Sud",
     "LES PAYS DE L'ASIE OCCIDENTALE": "Asie occidentale",
     "LES AUTRES PAYS DE L'ASIE": "Autres pays d'Asie",
-    "LES PAYS DU CONTINENT AUSTRALIEN": "Continent australien",
+    "LES AUTRES PAYS D'ASIE": "Autres pays d'Asie",
+    "LES PAYS DU CONTINENT AUSTRALIEN": "Océanie",
     "LES PAYS DE L'OCEANIE": "Océanie",
     # 13e groupe, sans détail pays : le « Divers » de la famille continents
     # (PBE = provisions de bord étrangères, PBF = françaises, OM = or
@@ -76,12 +94,12 @@ CANON = {cle(k): v for k, v in {
     # (2019 : 4 922 / 4 342 / 5 696 / 5 147 / 15 001 MFCFA).
     "NCA": "Divers",
 }.items()}
-ORDRE = ["Communauté européenne", "Autres pays d'Europe",
-         "Afrique centrale", "Afrique du Nord", "Afrique de l'Ouest",
+ORDRE = ["Union européenne", "Autres pays d'Europe",
+         "Afrique centrale", "Afrique du Nord", "Afrique occidentale",
          "Afrique orientale et du Sud",
          "Amérique du Nord", "Amérique centrale et du Sud",
          "Asie occidentale", "Autres pays d'Asie",
-         "Continent australien", "Océanie", "Divers"]
+         "Océanie", "Divers"]
 
 
 # Une cellule est une suite de mots séparés par UN espace au plus : deux
@@ -169,13 +187,25 @@ def parse(debut: str, fin: str | None):
     # Bornes droites de référence des colonnes de valeurs, médianes sur les
     # lignes complètes. Les nombres sont alignés à droite : ces bornes
     # permettent de replacer les valeurs d'une ligne à cellules vides.
-    bornes = repere_colonnes(sec, attendu)
+    #
+    # Elles sont mesurées PAR PAGE, car `pdftotext -layout` réaligne les
+    # colonnes à chaque page et un tableau en couvre plusieurs : des bornes
+    # médianes sur l'ensemble ne colleraient à aucune page. Le tableau 37 de
+    # l'édition 2020 imprime ainsi ses régions à trois indentations
+    # différentes. Repli sur les bornes globales si une page est trop courte
+    # pour en fournir.
+    bornes_globales = repere_colonnes(sec, attendu)
+    lignes_pagees: list[tuple[str, list[int]]] = []
+    for page in sec.split("\f"):        # \f = saut de page de pdftotext
+        b = repere_colonnes(page, attendu) or bornes_globales
+        lignes_pagees += [(l, b) for l in page.split("\n")]
 
     regions: dict[str, list] = {}
+    libelles_regions: dict[str, str] = {}   # libellé brut, pour les régions sans détail
     pays: dict[str, tuple[str, list]] = {}
     total = None
     courante = None
-    for l in sec.split("\n"):
+    for l, bornes in lignes_pagees:
         m = morceaux(l)
         c = [t for t, _ in m]
         if len(c) < 2 or est_valeur(c[0]) or not all(est_valeur(t) for t in c[1:]):
@@ -208,15 +238,16 @@ def parse(debut: str, fin: str | None):
             total = vals
         elif k in CANON:
             nom = CANON[k]
-            assert nom not in regions, f"{debut} : région {nom} rencontrée deux fois"
-            regions[nom] = vals
+            if nom in regions:
+                # Découpage éclaté ramené à un libellé unique (« CONTINENT
+                # AUSTRALIEN » puis « OCEANIE » dans l'édition 2019) : les
+                # sous-totaux se somment, et les pays des deux blocs se
+                # rattachent à la même région.
+                regions[nom] = [(a or 0) + (b or 0) for a, b in zip(regions[nom], vals)]
+            else:
+                regions[nom] = vals
             courante = nom
-            if nom == "Divers":
-                # « Divers » n'a pas de détail : sa ligne est à la fois le
-                # sous-total de la région et son unique partenaire. L'inscrire
-                # aussi côté pays garde Σ pays = TOTAL, et la lecture la
-                # rangera sous « Autres pays » de la région Divers.
-                pays[libelle] = (nom, vals)
+            libelles_regions.setdefault(nom, libelle)
         elif libelle.upper().startswith("LES "):
             # Garde-fou : toute nouvelle région doit être déclarée dans CANON,
             # sinon ses pays seraient silencieusement rattachés à la région
@@ -231,6 +262,17 @@ def parse(debut: str, fin: str | None):
         f"{debut} : {len(regions)} régions au lieu de {len(ORDRE)} — " \
         f"manque {sorted(set(ORDRE) - set(regions))}"
     assert total, f"{debut} : TOTAL introuvable"
+
+    # Région imprimée sans détail pays : sa ligne est à la fois le sous-total
+    # et son unique partenaire, on l'inscrit donc aussi côté pays pour garder
+    # Σ pays = TOTAL. C'est le cas de « DIVERS » dans les éditions 2019 et
+    # 2020 — mais PAS en 2021, où le rapport détaille enfin ce groupe
+    # (provisions de bord E et F, divers non déterminés ailleurs, origines
+    # mélangées). Injecter sans condition y double-compterait la région.
+    avec_detail = {r for r, _ in pays.values()}
+    for nom, sous_total in regions.items():
+        if nom not in avec_detail:
+            pays[libelles_regions[nom]] = (nom, sous_total)
 
     # Contrôle 1 : la somme des pays d'une région = son sous-total imprimé.
     for nom, sous_total in regions.items():

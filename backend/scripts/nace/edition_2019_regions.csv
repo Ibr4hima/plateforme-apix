@@ -1,9 +1,9 @@
 region,sens,annee,valeur,poids,edition
-Communauté européenne,export,2015,217583,892418,2019
-Communauté européenne,export,2016,210704,547633,2019
-Communauté européenne,export,2017,227383,409187,2019
-Communauté européenne,export,2018,260967,399289,2019
-Communauté européenne,export,2019,299257,546539,2019
+Union européenne,export,2015,217583,892418,2019
+Union européenne,export,2016,210704,547633,2019
+Union européenne,export,2017,227383,409187,2019
+Union européenne,export,2018,260967,399289,2019
+Union européenne,export,2019,299257,546539,2019
 Autres pays d'Europe,export,2015,143716,136955,2019
 Autres pays d'Europe,export,2016,170357,179843,2019
 Autres pays d'Europe,export,2017,201530,307627,2019
@@ -19,11 +19,11 @@ Afrique du Nord,export,2016,6497,19097,2019
 Afrique du Nord,export,2017,4946,4842,2019
 Afrique du Nord,export,2018,6921,5830,2019
 Afrique du Nord,export,2019,10173,9507,2019
-Afrique de l'Ouest,export,2015,471048,3186295,2019
-Afrique de l'Ouest,export,2016,505091,3897938,2019
-Afrique de l'Ouest,export,2017,553049,3816228,2019
-Afrique de l'Ouest,export,2018,524893,3171957,2019
-Afrique de l'Ouest,export,2019,550965,3139646,2019
+Afrique occidentale,export,2015,471048,3186295,2019
+Afrique occidentale,export,2016,505091,3897938,2019
+Afrique occidentale,export,2017,553049,3816228,2019
+Afrique occidentale,export,2018,524893,3171957,2019
+Afrique occidentale,export,2019,550965,3139646,2019
 Afrique orientale et du Sud,export,2015,13617,192013,2019
 Afrique orientale et du Sud,export,2016,6023,2244,2019
 Afrique orientale et du Sud,export,2017,6432,39457,2019
@@ -49,26 +49,21 @@ Autres pays d'Asie,export,2016,266491,714072,2019
 Autres pays d'Asie,export,2017,210628,666758,2019
 Autres pays d'Asie,export,2018,283099,761376,2019
 Autres pays d'Asie,export,2019,436059,1100696,2019
-Continent australien,export,2015,120,147,2019
-Continent australien,export,2016,284,519,2019
-Continent australien,export,2017,580,473,2019
-Continent australien,export,2018,5547,50713,2019
-Continent australien,export,2019,3192,1821,2019
-Océanie,export,2015,10,5,2019
-Océanie,export,2016,,,2019
-Océanie,export,2017,,,2019
-Océanie,export,2018,,,2019
-Océanie,export,2019,1,0,2019
+Océanie,export,2015,130,152,2019
+Océanie,export,2016,284,519,2019
+Océanie,export,2017,580,473,2019
+Océanie,export,2018,5547,50713,2019
+Océanie,export,2019,3193,1821,2019
 Divers,export,2015,101951,263435,2019
 Divers,export,2016,59167,211024,2019
 Divers,export,2017,89433,278475,2019
 Divers,export,2018,111369,315729,2019
 Divers,export,2019,110862,279557,2019
-Communauté européenne,import,2015,1248570,2228096,2019
-Communauté européenne,import,2016,1155813,2373034,2019
-Communauté européenne,import,2017,1358489,2380002,2019
-Communauté européenne,import,2018,1443645,2532080,2019
-Communauté européenne,import,2019,1808890,2831501,2019
+Union européenne,import,2015,1248570,2228096,2019
+Union européenne,import,2016,1155813,2373034,2019
+Union européenne,import,2017,1358489,2380002,2019
+Union européenne,import,2018,1443645,2532080,2019
+Union européenne,import,2019,1808890,2831501,2019
 Autres pays d'Europe,import,2015,215901,805740,2019
 Autres pays d'Europe,import,2016,183551,909250,2019
 Autres pays d'Europe,import,2017,281683,1280850,2019
@@ -84,11 +79,11 @@ Afrique du Nord,import,2016,107219,231349,2019
 Afrique du Nord,import,2017,106050,335125,2019
 Afrique du Nord,import,2018,107420,292872,2019
 Afrique du Nord,import,2019,124839,374412,2019
-Afrique de l'Ouest,import,2015,359827,1194767,2019
-Afrique de l'Ouest,import,2016,360073,1457995,2019
-Afrique de l'Ouest,import,2017,442131,1505790,2019
-Afrique de l'Ouest,import,2018,506369,1466315,2019
-Afrique de l'Ouest,import,2019,378079,1113431,2019
+Afrique occidentale,import,2015,359827,1194767,2019
+Afrique occidentale,import,2016,360073,1457995,2019
+Afrique occidentale,import,2017,442131,1505790,2019
+Afrique occidentale,import,2018,506369,1466315,2019
+Afrique occidentale,import,2019,378079,1113431,2019
 Afrique orientale et du Sud,import,2015,67898,609384,2019
 Afrique orientale et du Sud,import,2016,57368,547506,2019
 Afrique orientale et du Sud,import,2017,62810,562052,2019
@@ -114,16 +109,11 @@ Autres pays d'Asie,import,2016,760200,1681817,2019
 Autres pays d'Asie,import,2017,844023,1696332,2019
 Autres pays d'Asie,import,2018,957464,1845177,2019
 Autres pays d'Asie,import,2019,961913,1849284,2019
-Continent australien,import,2015,16873,7407,2019
-Continent australien,import,2016,14632,8371,2019
-Continent australien,import,2017,29347,8266,2019
-Continent australien,import,2018,10974,5105,2019
-Continent australien,import,2019,7542,2699,2019
-Océanie,import,2015,27,11,2019
-Océanie,import,2016,,,2019
-Océanie,import,2017,,,2019
-Océanie,import,2018,,,2019
-Océanie,import,2019,62,214,2019
+Océanie,import,2015,16900,7418,2019
+Océanie,import,2016,14632,8371,2019
+Océanie,import,2017,29347,8266,2019
+Océanie,import,2018,10974,5105,2019
+Océanie,import,2019,7604,2913,2019
 Divers,import,2015,4922,11462,2019
 Divers,import,2016,4342,4798,2019
 Divers,import,2017,5696,12650,2019

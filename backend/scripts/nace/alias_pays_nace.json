@@ -39,7 +39,8 @@
     "BELGIQUE-LUXEMBOURG": "Belgique",
     "HONDURAS BRITANIQUE": "Belize",
     "TIMOR PORTUGAIS": "Timor-Leste",
-    "TRINIDAD ET TOBAGO": "Trinité-et-Tobago"
+    "TRINIDAD ET TOBAGO": "Trinité-et-Tobago",
+    "SAMOA OCCIDENTAL": "Samoa"
   },
   "_notes_alias": {
     "CONGO DEMOCRATIQUE": "RDC [CD], et non « Congo » [CG] que le rapprochement flou propose en premier : les deux pays existent dans ref_pays et le tableau a une ligne CONGO distincte.",
@@ -50,7 +51,8 @@
     "BELGIQUE-LUXEMBOURG": "Ancienne union économique belgo-luxembourgeoise, encore utilisée comme partenaire unique par l'ANSD. Ni « Belgique » ni « Luxembourg » n'ont de ligne propre dans le tableau : rattacher à la Belgique (de très loin prépondérante) est le seul moyen qu'elle existe dans les données. À revoir si une édition sépare les deux.",
     "HONDURAS BRITANIQUE": "Nom colonial du Belize (indépendant en 1981). Le tableau porte par ailleurs une ligne HONDURAS distincte, qui est bien le Honduras.",
     "TIMOR PORTUGAIS": "Nom colonial du Timor oriental, aujourd'hui Timor-Leste dans ref_pays.",
-    "TRINIDAD ET TOBAGO": "Graphie anglaise ; ref_pays retient la forme française Trinité-et-Tobago."
+    "TRINIDAD ET TOBAGO": "Graphie anglaise ; ref_pays retient la forme française Trinité-et-Tobago.",
+    "SAMOA OCCIDENTAL": "Ancien nom des Samoa (« Samoa occidentales » jusqu'en 1997), apparu avec l'édition 2020. Le rapprochement flou ne l'atteint pas — « SAMOA OCCIDENTAL » contre « SAMOA » donne un ratio de 0,48, loin du seuil de 0,90 — et il ne s'agit pas des Samoa américaines, absentes du référentiel comme des rapports."
   },
   "hors_referentiel": {
     "EX-YOUGOSLAVIE": "État dissous, sans successeur unique dans ref_pays",
@@ -77,7 +79,11 @@
     "ILES COOK": "État associé à la Nouvelle-Zélande, absent de ref_pays",
     "ILES PACIFIQUES US": "îles mineures éloignées des États-Unis",
     "DIVERS": "pseudo-partenaire du rapport : provisions de bord, or monétaire et non dénommé ailleurs — pas un pays",
-    "NCA": "« non classé ailleurs » : même pseudo-partenaire que DIVERS, nom utilisé par les tableaux d'import"
+    "NCA": "« non classé ailleurs » : même pseudo-partenaire que DIVERS, nom utilisé par les tableaux d'import",
+    "PROVISIONS DE BORD E": "provisions de bord étrangères (le « PBE » du titre du groupe Divers) — avitaillement de navires et d'aéronefs, pas un pays",
+    "PROVISIONS DE BORD F": "provisions de bord françaises (« PBF ») — même nature",
+    "DIVERS NON DETERMINES AILLEURS": "le « nda » du titre : échanges dont l'origine ou la destination n'est pas déterminée",
+    "ORIGINES MELANGEES (PP)": "marchandises d'origines mélangées — pas un partenaire géographique"
   },
   "_notes_referentiel": {
     "HONG-KONG": "Ajouté à ref_pays [HK] par la migration 129 : partenaire de 19,2 Md FCFA en 2019, il représentait à lui seul 90 % du commerce de pays réels qui finissait anonyme dans « Autres pays ». Rattaché depuis par simple rapprochement exact.",

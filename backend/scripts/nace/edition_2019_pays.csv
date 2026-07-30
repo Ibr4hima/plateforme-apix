@@ -1,139 +1,139 @@
 pays,region,sens,annee,valeur,poids,edition
-ALLEMAGNE,Communauté européenne,export,2015,3484,4704,2019
-ALLEMAGNE,Communauté européenne,export,2016,4506,13914,2019
-ALLEMAGNE,Communauté européenne,export,2017,2739,3358,2019
-ALLEMAGNE,Communauté européenne,export,2018,3149,3472,2019
-ALLEMAGNE,Communauté européenne,export,2019,3354,3005,2019
-AUTRICHE,Communauté européenne,export,2015,174,44,2019
-AUTRICHE,Communauté européenne,export,2016,203,52,2019
-AUTRICHE,Communauté européenne,export,2017,226,66,2019
-AUTRICHE,Communauté européenne,export,2018,109,22,2019
-AUTRICHE,Communauté européenne,export,2019,134,38,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,export,2015,6265,4099,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,export,2016,8093,3599,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,export,2017,5666,23193,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,export,2018,13708,63462,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,export,2019,23076,67550,2019
-BULGARIE,Communauté européenne,export,2015,1306,647,2019
-BULGARIE,Communauté européenne,export,2016,451,426,2019
-BULGARIE,Communauté européenne,export,2017,392,811,2019
-BULGARIE,Communauté européenne,export,2018,399,4674,2019
-BULGARIE,Communauté européenne,export,2019,235,85,2019
-CHYPRE,Communauté européenne,export,2015,425,65,2019
-CHYPRE,Communauté européenne,export,2016,622,88,2019
-CHYPRE,Communauté européenne,export,2017,590,76,2019
-CHYPRE,Communauté européenne,export,2018,744,101,2019
-CHYPRE,Communauté européenne,export,2019,661,89,2019
-CROATIE,Communauté européenne,export,2015,,,2019
-CROATIE,Communauté européenne,export,2016,8,1,2019
-CROATIE,Communauté européenne,export,2017,,,2019
-CROATIE,Communauté européenne,export,2018,,,2019
-CROATIE,Communauté européenne,export,2019,29,21,2019
-DANEMARK,Communauté européenne,export,2015,1437,1825,2019
-DANEMARK,Communauté européenne,export,2016,969,1332,2019
-DANEMARK,Communauté européenne,export,2017,807,1072,2019
-DANEMARK,Communauté européenne,export,2018,402,497,2019
-DANEMARK,Communauté européenne,export,2019,213,171,2019
-ESPAGNE,Communauté européenne,export,2015,41657,153721,2019
-ESPAGNE,Communauté européenne,export,2016,51460,113743,2019
-ESPAGNE,Communauté européenne,export,2017,60377,94004,2019
-ESPAGNE,Communauté européenne,export,2018,74446,73087,2019
-ESPAGNE,Communauté européenne,export,2019,87064,117880,2019
-FINLANDE,Communauté européenne,export,2015,8,1,2019
-FINLANDE,Communauté européenne,export,2016,9,1,2019
-FINLANDE,Communauté européenne,export,2017,19,1,2019
-FINLANDE,Communauté européenne,export,2018,12,14,2019
-FINLANDE,Communauté européenne,export,2019,2844,33005,2019
-FRANCE,Communauté européenne,export,2015,53740,156671,2019
-FRANCE,Communauté européenne,export,2016,41561,61347,2019
-FRANCE,Communauté européenne,export,2017,43160,38322,2019
-FRANCE,Communauté européenne,export,2018,45328,39620,2019
-FRANCE,Communauté européenne,export,2019,47442,32454,2019
-GRECE,Communauté européenne,export,2015,5162,1111,2019
-GRECE,Communauté européenne,export,2016,4465,1011,2019
-GRECE,Communauté européenne,export,2017,3662,568,2019
-GRECE,Communauté européenne,export,2018,3101,434,2019
-GRECE,Communauté européenne,export,2019,4598,738,2019
-HONGRIE,Communauté européenne,export,2015,3,0,2019
-HONGRIE,Communauté européenne,export,2016,576,0,2019
-HONGRIE,Communauté européenne,export,2017,3,7,2019
-HONGRIE,Communauté européenne,export,2018,39,4,2019
-HONGRIE,Communauté européenne,export,2019,89,110,2019
-IRLANDE,Communauté européenne,export,2015,252,230,2019
-IRLANDE,Communauté européenne,export,2016,1268,85,2019
-IRLANDE,Communauté européenne,export,2017,1,5,2019
-IRLANDE,Communauté européenne,export,2018,8,24,2019
-IRLANDE,Communauté européenne,export,2019,20,200,2019
-ITALIE,Communauté européenne,export,2015,43216,44428,2019
-ITALIE,Communauté européenne,export,2016,35525,20234,2019
-ITALIE,Communauté européenne,export,2017,42321,26289,2019
-ITALIE,Communauté européenne,export,2018,57563,38587,2019
-ITALIE,Communauté européenne,export,2019,57896,38824,2019
-MALTE,Communauté européenne,export,2015,323,108,2019
-MALTE,Communauté européenne,export,2016,398,72,2019
-MALTE,Communauté européenne,export,2017,354,63,2019
-MALTE,Communauté européenne,export,2018,347,61,2019
-MALTE,Communauté européenne,export,2019,230,41,2019
-PAYS BAS,Communauté européenne,export,2015,21695,79999,2019
-PAYS BAS,Communauté européenne,export,2016,17454,36781,2019
-PAYS BAS,Communauté européenne,export,2017,25196,35325,2019
-PAYS BAS,Communauté européenne,export,2018,26939,37334,2019
-PAYS BAS,Communauté européenne,export,2019,25183,32389,2019
-POLOGNE,Communauté européenne,export,2015,13058,283204,2019
-POLOGNE,Communauté européenne,export,2016,8384,201750,2019
-POLOGNE,Communauté européenne,export,2017,2824,73690,2019
-POLOGNE,Communauté européenne,export,2018,1732,41957,2019
-POLOGNE,Communauté européenne,export,2019,5585,81669,2019
-PORTUGAL,Communauté européenne,export,2015,4842,10275,2019
-PORTUGAL,Communauté européenne,export,2016,8837,6874,2019
-PORTUGAL,Communauté européenne,export,2017,6694,2315,2019
-PORTUGAL,Communauté européenne,export,2018,5567,2641,2019
-PORTUGAL,Communauté européenne,export,2019,5438,3690,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,export,2015,,,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,export,2016,,,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,export,2017,,,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,export,2018,23,52,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,export,2019,3,2,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,export,2015,143,224,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,export,2016,55,57,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,export,2017,2,2,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,export,2018,46,168,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,export,2019,,,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,export,2015,,,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,export,2016,6,20,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,export,2017,,,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,export,2018,8,4,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,export,2019,,,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2015,1,2,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2016,1,0,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2017,257,402,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2018,1,0,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,export,2019,,,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,export,2015,3,0,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,export,2016,,,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,export,2017,1,1,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,export,2018,,,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,export,2019,4,1,2019
-ROUMANIE,Communauté européenne,export,2015,81,0,2019
-ROUMANIE,Communauté européenne,export,2016,25,3,2019
-ROUMANIE,Communauté européenne,export,2017,,,2019
-ROUMANIE,Communauté européenne,export,2018,6,4,2019
-ROUMANIE,Communauté européenne,export,2019,16,2,2019
-ROYAUME UNI,Communauté européenne,export,2015,19631,150939,2019
-ROYAUME UNI,Communauté européenne,export,2016,25158,86063,2019
-ROYAUME UNI,Communauté européenne,export,2017,30405,107495,2019
-ROYAUME UNI,Communauté européenne,export,2018,25645,75686,2019
-ROYAUME UNI,Communauté européenne,export,2019,31733,98201,2019
-SLOVENIE,Communauté européenne,export,2015,4,1,2019
-SLOVENIE,Communauté européenne,export,2016,8,4,2019
-SLOVENIE,Communauté européenne,export,2017,1,2,2019
-SLOVENIE,Communauté européenne,export,2018,189,152,2019
-SLOVENIE,Communauté européenne,export,2019,23,25,2019
-SUEDE,Communauté européenne,export,2015,672,120,2019
-SUEDE,Communauté européenne,export,2016,662,174,2019
-SUEDE,Communauté européenne,export,2017,1686,2118,2019
-SUEDE,Communauté européenne,export,2018,1453,17231,2019
-SUEDE,Communauté européenne,export,2019,3387,36348,2019
+ALLEMAGNE,Union européenne,export,2015,3484,4704,2019
+ALLEMAGNE,Union européenne,export,2016,4506,13914,2019
+ALLEMAGNE,Union européenne,export,2017,2739,3358,2019
+ALLEMAGNE,Union européenne,export,2018,3149,3472,2019
+ALLEMAGNE,Union européenne,export,2019,3354,3005,2019
+AUTRICHE,Union européenne,export,2015,174,44,2019
+AUTRICHE,Union européenne,export,2016,203,52,2019
+AUTRICHE,Union européenne,export,2017,226,66,2019
+AUTRICHE,Union européenne,export,2018,109,22,2019
+AUTRICHE,Union européenne,export,2019,134,38,2019
+BELGIQUE-LUXEMBOURG,Union européenne,export,2015,6265,4099,2019
+BELGIQUE-LUXEMBOURG,Union européenne,export,2016,8093,3599,2019
+BELGIQUE-LUXEMBOURG,Union européenne,export,2017,5666,23193,2019
+BELGIQUE-LUXEMBOURG,Union européenne,export,2018,13708,63462,2019
+BELGIQUE-LUXEMBOURG,Union européenne,export,2019,23076,67550,2019
+BULGARIE,Union européenne,export,2015,1306,647,2019
+BULGARIE,Union européenne,export,2016,451,426,2019
+BULGARIE,Union européenne,export,2017,392,811,2019
+BULGARIE,Union européenne,export,2018,399,4674,2019
+BULGARIE,Union européenne,export,2019,235,85,2019
+CHYPRE,Union européenne,export,2015,425,65,2019
+CHYPRE,Union européenne,export,2016,622,88,2019
+CHYPRE,Union européenne,export,2017,590,76,2019
+CHYPRE,Union européenne,export,2018,744,101,2019
+CHYPRE,Union européenne,export,2019,661,89,2019
+CROATIE,Union européenne,export,2015,,,2019
+CROATIE,Union européenne,export,2016,8,1,2019
+CROATIE,Union européenne,export,2017,,,2019
+CROATIE,Union européenne,export,2018,,,2019
+CROATIE,Union européenne,export,2019,29,21,2019
+DANEMARK,Union européenne,export,2015,1437,1825,2019
+DANEMARK,Union européenne,export,2016,969,1332,2019
+DANEMARK,Union européenne,export,2017,807,1072,2019
+DANEMARK,Union européenne,export,2018,402,497,2019
+DANEMARK,Union européenne,export,2019,213,171,2019
+ESPAGNE,Union européenne,export,2015,41657,153721,2019
+ESPAGNE,Union européenne,export,2016,51460,113743,2019
+ESPAGNE,Union européenne,export,2017,60377,94004,2019
+ESPAGNE,Union européenne,export,2018,74446,73087,2019
+ESPAGNE,Union européenne,export,2019,87064,117880,2019
+FINLANDE,Union européenne,export,2015,8,1,2019
+FINLANDE,Union européenne,export,2016,9,1,2019
+FINLANDE,Union européenne,export,2017,19,1,2019
+FINLANDE,Union européenne,export,2018,12,14,2019
+FINLANDE,Union européenne,export,2019,2844,33005,2019
+FRANCE,Union européenne,export,2015,53740,156671,2019
+FRANCE,Union européenne,export,2016,41561,61347,2019
+FRANCE,Union européenne,export,2017,43160,38322,2019
+FRANCE,Union européenne,export,2018,45328,39620,2019
+FRANCE,Union européenne,export,2019,47442,32454,2019
+GRECE,Union européenne,export,2015,5162,1111,2019
+GRECE,Union européenne,export,2016,4465,1011,2019
+GRECE,Union européenne,export,2017,3662,568,2019
+GRECE,Union européenne,export,2018,3101,434,2019
+GRECE,Union européenne,export,2019,4598,738,2019
+HONGRIE,Union européenne,export,2015,3,0,2019
+HONGRIE,Union européenne,export,2016,576,0,2019
+HONGRIE,Union européenne,export,2017,3,7,2019
+HONGRIE,Union européenne,export,2018,39,4,2019
+HONGRIE,Union européenne,export,2019,89,110,2019
+IRLANDE,Union européenne,export,2015,252,230,2019
+IRLANDE,Union européenne,export,2016,1268,85,2019
+IRLANDE,Union européenne,export,2017,1,5,2019
+IRLANDE,Union européenne,export,2018,8,24,2019
+IRLANDE,Union européenne,export,2019,20,200,2019
+ITALIE,Union européenne,export,2015,43216,44428,2019
+ITALIE,Union européenne,export,2016,35525,20234,2019
+ITALIE,Union européenne,export,2017,42321,26289,2019
+ITALIE,Union européenne,export,2018,57563,38587,2019
+ITALIE,Union européenne,export,2019,57896,38824,2019
+MALTE,Union européenne,export,2015,323,108,2019
+MALTE,Union européenne,export,2016,398,72,2019
+MALTE,Union européenne,export,2017,354,63,2019
+MALTE,Union européenne,export,2018,347,61,2019
+MALTE,Union européenne,export,2019,230,41,2019
+PAYS BAS,Union européenne,export,2015,21695,79999,2019
+PAYS BAS,Union européenne,export,2016,17454,36781,2019
+PAYS BAS,Union européenne,export,2017,25196,35325,2019
+PAYS BAS,Union européenne,export,2018,26939,37334,2019
+PAYS BAS,Union européenne,export,2019,25183,32389,2019
+POLOGNE,Union européenne,export,2015,13058,283204,2019
+POLOGNE,Union européenne,export,2016,8384,201750,2019
+POLOGNE,Union européenne,export,2017,2824,73690,2019
+POLOGNE,Union européenne,export,2018,1732,41957,2019
+POLOGNE,Union européenne,export,2019,5585,81669,2019
+PORTUGAL,Union européenne,export,2015,4842,10275,2019
+PORTUGAL,Union européenne,export,2016,8837,6874,2019
+PORTUGAL,Union européenne,export,2017,6694,2315,2019
+PORTUGAL,Union européenne,export,2018,5567,2641,2019
+PORTUGAL,Union européenne,export,2019,5438,3690,2019
+REPUBLIQUE D'ESTONIE,Union européenne,export,2015,,,2019
+REPUBLIQUE D'ESTONIE,Union européenne,export,2016,,,2019
+REPUBLIQUE D'ESTONIE,Union européenne,export,2017,,,2019
+REPUBLIQUE D'ESTONIE,Union européenne,export,2018,23,52,2019
+REPUBLIQUE D'ESTONIE,Union européenne,export,2019,3,2,2019
+REPUBLIQUE DE LETTONIE,Union européenne,export,2015,143,224,2019
+REPUBLIQUE DE LETTONIE,Union européenne,export,2016,55,57,2019
+REPUBLIQUE DE LETTONIE,Union européenne,export,2017,2,2,2019
+REPUBLIQUE DE LETTONIE,Union européenne,export,2018,46,168,2019
+REPUBLIQUE DE LETTONIE,Union européenne,export,2019,,,2019
+REPUBLIQUE DE LITUANIE,Union européenne,export,2015,,,2019
+REPUBLIQUE DE LITUANIE,Union européenne,export,2016,6,20,2019
+REPUBLIQUE DE LITUANIE,Union européenne,export,2017,,,2019
+REPUBLIQUE DE LITUANIE,Union européenne,export,2018,8,4,2019
+REPUBLIQUE DE LITUANIE,Union européenne,export,2019,,,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2015,1,2,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2016,1,0,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2017,257,402,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2018,1,0,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2019,,,2019
+REPUBLIQUE TCHEQUE,Union européenne,export,2015,3,0,2019
+REPUBLIQUE TCHEQUE,Union européenne,export,2016,,,2019
+REPUBLIQUE TCHEQUE,Union européenne,export,2017,1,1,2019
+REPUBLIQUE TCHEQUE,Union européenne,export,2018,,,2019
+REPUBLIQUE TCHEQUE,Union européenne,export,2019,4,1,2019
+ROUMANIE,Union européenne,export,2015,81,0,2019
+ROUMANIE,Union européenne,export,2016,25,3,2019
+ROUMANIE,Union européenne,export,2017,,,2019
+ROUMANIE,Union européenne,export,2018,6,4,2019
+ROUMANIE,Union européenne,export,2019,16,2,2019
+ROYAUME UNI,Union européenne,export,2015,19631,150939,2019
+ROYAUME UNI,Union européenne,export,2016,25158,86063,2019
+ROYAUME UNI,Union européenne,export,2017,30405,107495,2019
+ROYAUME UNI,Union européenne,export,2018,25645,75686,2019
+ROYAUME UNI,Union européenne,export,2019,31733,98201,2019
+SLOVENIE,Union européenne,export,2015,4,1,2019
+SLOVENIE,Union européenne,export,2016,8,4,2019
+SLOVENIE,Union européenne,export,2017,1,2,2019
+SLOVENIE,Union européenne,export,2018,189,152,2019
+SLOVENIE,Union européenne,export,2019,23,25,2019
+SUEDE,Union européenne,export,2015,672,120,2019
+SUEDE,Union européenne,export,2016,662,174,2019
+SUEDE,Union européenne,export,2017,1686,2118,2019
+SUEDE,Union européenne,export,2018,1453,17231,2019
+SUEDE,Union européenne,export,2019,3387,36348,2019
 ALBANIE,Autres pays d'Europe,export,2015,1882,2162,2019
 ALBANIE,Autres pays d'Europe,export,2016,110,66,2019
 ALBANIE,Autres pays d'Europe,export,2017,58,39,2019
@@ -314,81 +314,81 @@ TUNISIE,Afrique du Nord,export,2016,977,1267,2019
 TUNISIE,Afrique du Nord,export,2017,1083,1100,2019
 TUNISIE,Afrique du Nord,export,2018,519,644,2019
 TUNISIE,Afrique du Nord,export,2019,2349,3442,2019
-BENIN,Afrique de l'Ouest,export,2015,11688,47327,2019
-BENIN,Afrique de l'Ouest,export,2016,10774,40329,2019
-BENIN,Afrique de l'Ouest,export,2017,9048,35207,2019
-BENIN,Afrique de l'Ouest,export,2018,9977,25325,2019
-BENIN,Afrique de l'Ouest,export,2019,11813,33679,2019
-BURKINA FASO,Afrique de l'Ouest,export,2015,25602,105042,2019
-BURKINA FASO,Afrique de l'Ouest,export,2016,30196,118784,2019
-BURKINA FASO,Afrique de l'Ouest,export,2017,33155,79300,2019
-BURKINA FASO,Afrique de l'Ouest,export,2018,37058,79615,2019
-BURKINA FASO,Afrique de l'Ouest,export,2019,36279,84937,2019
-COTE D'IVOIRE,Afrique de l'Ouest,export,2015,71692,260022,2019
-COTE D'IVOIRE,Afrique de l'Ouest,export,2016,78420,233791,2019
-COTE D'IVOIRE,Afrique de l'Ouest,export,2017,80362,231556,2019
-COTE D'IVOIRE,Afrique de l'Ouest,export,2018,71539,211992,2019
-COTE D'IVOIRE,Afrique de l'Ouest,export,2019,91054,286891,2019
-GAMBIE,Afrique de l'Ouest,export,2015,39412,384914,2019
-GAMBIE,Afrique de l'Ouest,export,2016,44663,663133,2019
-GAMBIE,Afrique de l'Ouest,export,2017,55144,568889,2019
-GAMBIE,Afrique de l'Ouest,export,2018,40208,360746,2019
-GAMBIE,Afrique de l'Ouest,export,2019,38890,392006,2019
-GHANA,Afrique de l'Ouest,export,2015,5548,7826,2019
-GHANA,Afrique de l'Ouest,export,2016,9215,13487,2019
-GHANA,Afrique de l'Ouest,export,2017,9208,11582,2019
-GHANA,Afrique de l'Ouest,export,2018,13127,15177,2019
-GHANA,Afrique de l'Ouest,export,2019,5500,9691,2019
-GUINEE BISSAU,Afrique de l'Ouest,export,2015,22578,88826,2019
-GUINEE BISSAU,Afrique de l'Ouest,export,2016,22495,81574,2019
-GUINEE BISSAU,Afrique de l'Ouest,export,2017,23340,92540,2019
-GUINEE BISSAU,Afrique de l'Ouest,export,2018,19416,70332,2019
-GUINEE BISSAU,Afrique de l'Ouest,export,2019,21708,53171,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2015,46911,59413,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2016,39883,52076,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2017,47481,72057,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2018,52337,79467,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,export,2019,61399,98426,2019
-ILES DU CAP VERT,Afrique de l'Ouest,export,2015,1116,371,2019
-ILES DU CAP VERT,Afrique de l'Ouest,export,2016,1663,2525,2019
-ILES DU CAP VERT,Afrique de l'Ouest,export,2017,2172,1044,2019
-ILES DU CAP VERT,Afrique de l'Ouest,export,2018,2087,3242,2019
-ILES DU CAP VERT,Afrique de l'Ouest,export,2019,1436,762,2019
-LIBERIA,Afrique de l'Ouest,export,2015,4038,3169,2019
-LIBERIA,Afrique de l'Ouest,export,2016,4101,3875,2019
-LIBERIA,Afrique de l'Ouest,export,2017,3894,3301,2019
-LIBERIA,Afrique de l'Ouest,export,2018,4102,4321,2019
-LIBERIA,Afrique de l'Ouest,export,2019,1599,2002,2019
-MALI,Afrique de l'Ouest,export,2015,172668,2051219,2019
-MALI,Afrique de l'Ouest,export,2016,184194,2318247,2019
-MALI,Afrique de l'Ouest,export,2017,209786,2419618,2019
-MALI,Afrique de l'Ouest,export,2018,190997,2155974,2019
-MALI,Afrique de l'Ouest,export,2019,204980,1973771,2019
-MAURITANIE,Afrique de l'Ouest,export,2015,24346,66035,2019
-MAURITANIE,Afrique de l'Ouest,export,2016,39847,301447,2019
-MAURITANIE,Afrique de l'Ouest,export,2017,39256,252264,2019
-MAURITANIE,Afrique de l'Ouest,export,2018,34327,42232,2019
-MAURITANIE,Afrique de l'Ouest,export,2019,32617,51536,2019
-NIGER,Afrique de l'Ouest,export,2015,10687,15213,2019
-NIGER,Afrique de l'Ouest,export,2016,12902,23339,2019
-NIGER,Afrique de l'Ouest,export,2017,9624,12556,2019
-NIGER,Afrique de l'Ouest,export,2018,15616,86246,2019
-NIGER,Afrique de l'Ouest,export,2019,8745,104299,2019
-NIGERIA,Afrique de l'Ouest,export,2015,5900,6232,2019
-NIGERIA,Afrique de l'Ouest,export,2016,5649,8065,2019
-NIGERIA,Afrique de l'Ouest,export,2017,12211,11287,2019
-NIGERIA,Afrique de l'Ouest,export,2018,16402,12330,2019
-NIGERIA,Afrique de l'Ouest,export,2019,14770,17239,2019
-SIERRA LEONE,Afrique de l'Ouest,export,2015,11644,71501,2019
-SIERRA LEONE,Afrique de l'Ouest,export,2016,8476,22191,2019
-SIERRA LEONE,Afrique de l'Ouest,export,2017,5850,10378,2019
-SIERRA LEONE,Afrique de l'Ouest,export,2018,6175,11870,2019
-SIERRA LEONE,Afrique de l'Ouest,export,2019,6767,15243,2019
-TOGO,Afrique de l'Ouest,export,2015,17218,19186,2019
-TOGO,Afrique de l'Ouest,export,2016,12613,15075,2019
-TOGO,Afrique de l'Ouest,export,2017,12518,14650,2019
-TOGO,Afrique de l'Ouest,export,2018,11528,13089,2019
-TOGO,Afrique de l'Ouest,export,2019,13408,15994,2019
+BENIN,Afrique occidentale,export,2015,11688,47327,2019
+BENIN,Afrique occidentale,export,2016,10774,40329,2019
+BENIN,Afrique occidentale,export,2017,9048,35207,2019
+BENIN,Afrique occidentale,export,2018,9977,25325,2019
+BENIN,Afrique occidentale,export,2019,11813,33679,2019
+BURKINA FASO,Afrique occidentale,export,2015,25602,105042,2019
+BURKINA FASO,Afrique occidentale,export,2016,30196,118784,2019
+BURKINA FASO,Afrique occidentale,export,2017,33155,79300,2019
+BURKINA FASO,Afrique occidentale,export,2018,37058,79615,2019
+BURKINA FASO,Afrique occidentale,export,2019,36279,84937,2019
+COTE D'IVOIRE,Afrique occidentale,export,2015,71692,260022,2019
+COTE D'IVOIRE,Afrique occidentale,export,2016,78420,233791,2019
+COTE D'IVOIRE,Afrique occidentale,export,2017,80362,231556,2019
+COTE D'IVOIRE,Afrique occidentale,export,2018,71539,211992,2019
+COTE D'IVOIRE,Afrique occidentale,export,2019,91054,286891,2019
+GAMBIE,Afrique occidentale,export,2015,39412,384914,2019
+GAMBIE,Afrique occidentale,export,2016,44663,663133,2019
+GAMBIE,Afrique occidentale,export,2017,55144,568889,2019
+GAMBIE,Afrique occidentale,export,2018,40208,360746,2019
+GAMBIE,Afrique occidentale,export,2019,38890,392006,2019
+GHANA,Afrique occidentale,export,2015,5548,7826,2019
+GHANA,Afrique occidentale,export,2016,9215,13487,2019
+GHANA,Afrique occidentale,export,2017,9208,11582,2019
+GHANA,Afrique occidentale,export,2018,13127,15177,2019
+GHANA,Afrique occidentale,export,2019,5500,9691,2019
+GUINEE BISSAU,Afrique occidentale,export,2015,22578,88826,2019
+GUINEE BISSAU,Afrique occidentale,export,2016,22495,81574,2019
+GUINEE BISSAU,Afrique occidentale,export,2017,23340,92540,2019
+GUINEE BISSAU,Afrique occidentale,export,2018,19416,70332,2019
+GUINEE BISSAU,Afrique occidentale,export,2019,21708,53171,2019
+GUINEE REPUBLIQUE,Afrique occidentale,export,2015,46911,59413,2019
+GUINEE REPUBLIQUE,Afrique occidentale,export,2016,39883,52076,2019
+GUINEE REPUBLIQUE,Afrique occidentale,export,2017,47481,72057,2019
+GUINEE REPUBLIQUE,Afrique occidentale,export,2018,52337,79467,2019
+GUINEE REPUBLIQUE,Afrique occidentale,export,2019,61399,98426,2019
+ILES DU CAP VERT,Afrique occidentale,export,2015,1116,371,2019
+ILES DU CAP VERT,Afrique occidentale,export,2016,1663,2525,2019
+ILES DU CAP VERT,Afrique occidentale,export,2017,2172,1044,2019
+ILES DU CAP VERT,Afrique occidentale,export,2018,2087,3242,2019
+ILES DU CAP VERT,Afrique occidentale,export,2019,1436,762,2019
+LIBERIA,Afrique occidentale,export,2015,4038,3169,2019
+LIBERIA,Afrique occidentale,export,2016,4101,3875,2019
+LIBERIA,Afrique occidentale,export,2017,3894,3301,2019
+LIBERIA,Afrique occidentale,export,2018,4102,4321,2019
+LIBERIA,Afrique occidentale,export,2019,1599,2002,2019
+MALI,Afrique occidentale,export,2015,172668,2051219,2019
+MALI,Afrique occidentale,export,2016,184194,2318247,2019
+MALI,Afrique occidentale,export,2017,209786,2419618,2019
+MALI,Afrique occidentale,export,2018,190997,2155974,2019
+MALI,Afrique occidentale,export,2019,204980,1973771,2019
+MAURITANIE,Afrique occidentale,export,2015,24346,66035,2019
+MAURITANIE,Afrique occidentale,export,2016,39847,301447,2019
+MAURITANIE,Afrique occidentale,export,2017,39256,252264,2019
+MAURITANIE,Afrique occidentale,export,2018,34327,42232,2019
+MAURITANIE,Afrique occidentale,export,2019,32617,51536,2019
+NIGER,Afrique occidentale,export,2015,10687,15213,2019
+NIGER,Afrique occidentale,export,2016,12902,23339,2019
+NIGER,Afrique occidentale,export,2017,9624,12556,2019
+NIGER,Afrique occidentale,export,2018,15616,86246,2019
+NIGER,Afrique occidentale,export,2019,8745,104299,2019
+NIGERIA,Afrique occidentale,export,2015,5900,6232,2019
+NIGERIA,Afrique occidentale,export,2016,5649,8065,2019
+NIGERIA,Afrique occidentale,export,2017,12211,11287,2019
+NIGERIA,Afrique occidentale,export,2018,16402,12330,2019
+NIGERIA,Afrique occidentale,export,2019,14770,17239,2019
+SIERRA LEONE,Afrique occidentale,export,2015,11644,71501,2019
+SIERRA LEONE,Afrique occidentale,export,2016,8476,22191,2019
+SIERRA LEONE,Afrique occidentale,export,2017,5850,10378,2019
+SIERRA LEONE,Afrique occidentale,export,2018,6175,11870,2019
+SIERRA LEONE,Afrique occidentale,export,2019,6767,15243,2019
+TOGO,Afrique occidentale,export,2015,17218,19186,2019
+TOGO,Afrique occidentale,export,2016,12613,15075,2019
+TOGO,Afrique occidentale,export,2017,12518,14650,2019
+TOGO,Afrique occidentale,export,2018,11528,13089,2019
+TOGO,Afrique occidentale,export,2019,13408,15994,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,export,2015,11771,190120,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,export,2016,985,1233,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,export,2017,2628,1132,2019
@@ -859,176 +859,176 @@ VIETNAM,Autres pays d'Asie,export,2016,22971,49467,2019
 VIETNAM,Autres pays d'Asie,export,2017,3468,4503,2019
 VIETNAM,Autres pays d'Asie,export,2018,9180,12913,2019
 VIETNAM,Autres pays d'Asie,export,2019,14203,29653,2019
-AUSTRALIE,Continent australien,export,2015,79,103,2019
-AUSTRALIE,Continent australien,export,2016,230,362,2019
-AUSTRALIE,Continent australien,export,2017,326,450,2019
-AUSTRALIE,Continent australien,export,2018,787,901,2019
-AUSTRALIE,Continent australien,export,2019,1579,1517,2019
-NAURU,Continent australien,export,2015,1,1,2019
-NAURU,Continent australien,export,2016,,,2019
-NAURU,Continent australien,export,2017,2,0,2019
-NAURU,Continent australien,export,2018,4132,49591,2019
-NAURU,Continent australien,export,2019,,,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2015,35,6,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2016,30,63,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2017,2,0,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2018,6,1,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,export,2019,199,81,2019
-NOUVELLE ZELANDE,Continent australien,export,2015,6,38,2019
-NOUVELLE ZELANDE,Continent australien,export,2016,24,94,2019
-NOUVELLE ZELANDE,Continent australien,export,2017,249,23,2019
-NOUVELLE ZELANDE,Continent australien,export,2018,622,221,2019
-NOUVELLE ZELANDE,Continent australien,export,2019,1414,223,2019
+AUSTRALIE,Océanie,export,2015,79,103,2019
+AUSTRALIE,Océanie,export,2016,230,362,2019
+AUSTRALIE,Océanie,export,2017,326,450,2019
+AUSTRALIE,Océanie,export,2018,787,901,2019
+AUSTRALIE,Océanie,export,2019,1579,1517,2019
 "ILES NIOUE, ILES TOKELOU",Océanie,export,2015,10,5,2019
 "ILES NIOUE, ILES TOKELOU",Océanie,export,2016,,,2019
 "ILES NIOUE, ILES TOKELOU",Océanie,export,2017,,,2019
 "ILES NIOUE, ILES TOKELOU",Océanie,export,2018,,,2019
 "ILES NIOUE, ILES TOKELOU",Océanie,export,2019,,,2019
+NAURU,Océanie,export,2015,1,1,2019
+NAURU,Océanie,export,2016,,,2019
+NAURU,Océanie,export,2017,2,0,2019
+NAURU,Océanie,export,2018,4132,49591,2019
+NAURU,Océanie,export,2019,,,2019
 NOUVELLE CALEDONIE,Océanie,export,2015,,,2019
 NOUVELLE CALEDONIE,Océanie,export,2016,,,2019
 NOUVELLE CALEDONIE,Océanie,export,2017,,,2019
 NOUVELLE CALEDONIE,Océanie,export,2018,,,2019
 NOUVELLE CALEDONIE,Océanie,export,2019,1,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2015,35,6,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2016,30,63,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2017,2,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2018,6,1,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2019,199,81,2019
+NOUVELLE ZELANDE,Océanie,export,2015,6,38,2019
+NOUVELLE ZELANDE,Océanie,export,2016,24,94,2019
+NOUVELLE ZELANDE,Océanie,export,2017,249,23,2019
+NOUVELLE ZELANDE,Océanie,export,2018,622,221,2019
+NOUVELLE ZELANDE,Océanie,export,2019,1414,223,2019
 DIVERS,Divers,export,2015,101951,263435,2019
 DIVERS,Divers,export,2016,59167,211024,2019
 DIVERS,Divers,export,2017,89433,278475,2019
 DIVERS,Divers,export,2018,111369,315729,2019
 DIVERS,Divers,export,2019,110862,279557,2019
-ALLEMAGNE,Communauté européenne,import,2015,82072,121798,2019
-ALLEMAGNE,Communauté européenne,import,2016,63816,79483,2019
-ALLEMAGNE,Communauté européenne,import,2017,101154,151910,2019
-ALLEMAGNE,Communauté européenne,import,2018,80164,132822,2019
-ALLEMAGNE,Communauté européenne,import,2019,79573,66731,2019
-AUTRICHE,Communauté européenne,import,2015,3846,2780,2019
-AUTRICHE,Communauté européenne,import,2016,3112,3252,2019
-AUTRICHE,Communauté européenne,import,2017,9256,1969,2019
-AUTRICHE,Communauté européenne,import,2018,3505,1875,2019
-AUTRICHE,Communauté européenne,import,2019,4922,2932,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,import,2015,89226,133737,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,import,2016,83076,102317,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,import,2017,114663,174842,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,import,2018,167529,300697,2019
-BELGIQUE-LUXEMBOURG,Communauté européenne,import,2019,212464,497006,2019
-BULGARIE,Communauté européenne,import,2015,3131,2689,2019
-BULGARIE,Communauté européenne,import,2016,2555,2086,2019
-BULGARIE,Communauté européenne,import,2017,3954,2276,2019
-BULGARIE,Communauté européenne,import,2018,5632,7472,2019
-BULGARIE,Communauté européenne,import,2019,3076,1094,2019
-CHYPRE,Communauté européenne,import,2015,68,11,2019
-CHYPRE,Communauté européenne,import,2016,26,27,2019
-CHYPRE,Communauté européenne,import,2017,61,44,2019
-CHYPRE,Communauté européenne,import,2018,7,20,2019
-CHYPRE,Communauté européenne,import,2019,,,2019
-CROATIE,Communauté européenne,import,2015,16,9,2019
-CROATIE,Communauté européenne,import,2016,127,44,2019
-CROATIE,Communauté européenne,import,2017,30,116,2019
-CROATIE,Communauté européenne,import,2018,,,2019
-CROATIE,Communauté européenne,import,2019,597,1846,2019
-DANEMARK,Communauté européenne,import,2015,4925,1525,2019
-DANEMARK,Communauté européenne,import,2016,4388,1103,2019
-DANEMARK,Communauté européenne,import,2017,5487,2466,2019
-DANEMARK,Communauté européenne,import,2018,14518,5259,2019
-DANEMARK,Communauté européenne,import,2019,90066,22753,2019
-ESPAGNE,Communauté européenne,import,2015,136572,367742,2019
-ESPAGNE,Communauté européenne,import,2016,153141,475105,2019
-ESPAGNE,Communauté européenne,import,2017,148864,485515,2019
-ESPAGNE,Communauté européenne,import,2018,133165,496132,2019
-ESPAGNE,Communauté européenne,import,2019,140111,440162,2019
-FINLANDE,Communauté européenne,import,2015,32586,13547,2019
-FINLANDE,Communauté européenne,import,2016,19685,7828,2019
-FINLANDE,Communauté européenne,import,2017,14699,3720,2019
-FINLANDE,Communauté européenne,import,2018,11678,2108,2019
-FINLANDE,Communauté européenne,import,2019,12058,7751,2019
-FRANCE,Communauté européenne,import,2015,549230,715099,2019
-FRANCE,Communauté européenne,import,2016,500214,581088,2019
-FRANCE,Communauté européenne,import,2017,576812,491835,2019
-FRANCE,Communauté européenne,import,2018,574690,432060,2019
-FRANCE,Communauté européenne,import,2019,794892,638869,2019
-GRECE,Communauté européenne,import,2015,3537,10829,2019
-GRECE,Communauté européenne,import,2016,5160,19965,2019
-GRECE,Communauté européenne,import,2017,2331,7418,2019
-GRECE,Communauté européenne,import,2018,5443,54386,2019
-GRECE,Communauté européenne,import,2019,7125,19816,2019
-HONGRIE,Communauté européenne,import,2015,4690,1782,2019
-HONGRIE,Communauté européenne,import,2016,6034,1803,2019
-HONGRIE,Communauté européenne,import,2017,8235,2303,2019
-HONGRIE,Communauté européenne,import,2018,6638,2436,2019
-HONGRIE,Communauté européenne,import,2019,4453,1236,2019
-IRLANDE,Communauté européenne,import,2015,7816,5999,2019
-IRLANDE,Communauté européenne,import,2016,9850,7413,2019
-IRLANDE,Communauté européenne,import,2017,8116,5987,2019
-IRLANDE,Communauté européenne,import,2018,12817,12037,2019
-IRLANDE,Communauté européenne,import,2019,15889,13208,2019
-ITALIE,Communauté européenne,import,2015,71310,93888,2019
-ITALIE,Communauté européenne,import,2016,75542,147561,2019
-ITALIE,Communauté européenne,import,2017,86349,143671,2019
-ITALIE,Communauté européenne,import,2018,105734,185423,2019
-ITALIE,Communauté européenne,import,2019,80195,132784,2019
-MALTE,Communauté européenne,import,2015,1191,787,2019
-MALTE,Communauté européenne,import,2016,1268,544,2019
-MALTE,Communauté européenne,import,2017,1095,645,2019
-MALTE,Communauté européenne,import,2018,829,355,2019
-MALTE,Communauté européenne,import,2019,3373,42839,2019
-PAYS BAS,Communauté européenne,import,2015,136113,600325,2019
-PAYS BAS,Communauté européenne,import,2016,121188,729089,2019
-PAYS BAS,Communauté européenne,import,2017,161304,714587,2019
-PAYS BAS,Communauté européenne,import,2018,195551,634893,2019
-PAYS BAS,Communauté européenne,import,2019,211677,744914,2019
-POLOGNE,Communauté européenne,import,2015,19453,59862,2019
-POLOGNE,Communauté européenne,import,2016,30093,53408,2019
-POLOGNE,Communauté européenne,import,2017,29269,40760,2019
-POLOGNE,Communauté européenne,import,2018,32958,37302,2019
-POLOGNE,Communauté européenne,import,2019,47029,35153,2019
-PORTUGAL,Communauté européenne,import,2015,29289,43627,2019
-PORTUGAL,Communauté européenne,import,2016,22173,82140,2019
-PORTUGAL,Communauté européenne,import,2017,24466,67665,2019
-PORTUGAL,Communauté européenne,import,2018,24429,77861,2019
-PORTUGAL,Communauté européenne,import,2019,21102,41927,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,import,2015,20,8,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,import,2016,2034,6543,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,import,2017,2578,7655,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,import,2018,7976,39812,2019
-REPUBLIQUE D'ESTONIE,Communauté européenne,import,2019,97,153,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,import,2015,101,207,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,import,2016,29,160,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,import,2017,6,25,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,import,2018,4,25,2019
-REPUBLIQUE DE LETTONIE,Communauté européenne,import,2019,150,302,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,import,2015,173,141,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,import,2016,3635,21625,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,import,2017,699,2706,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,import,2018,1010,3508,2019
-REPUBLIQUE DE LITUANIE,Communauté européenne,import,2019,1476,1586,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2015,435,198,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2016,1051,1279,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2017,1859,1226,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2018,1408,440,2019
-REPUBLIQUE DE SLOVAQUIE,Communauté européenne,import,2019,3008,2326,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,import,2015,3198,3912,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,import,2016,2787,10403,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,import,2017,3041,6444,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,import,2018,2183,3322,2019
-REPUBLIQUE TCHEQUE,Communauté européenne,import,2019,2255,2998,2019
-ROUMANIE,Communauté européenne,import,2015,2067,1902,2019
-ROUMANIE,Communauté européenne,import,2016,2879,2884,2019
-ROUMANIE,Communauté européenne,import,2017,4555,3736,2019
-ROUMANIE,Communauté européenne,import,2018,7305,37732,2019
-ROUMANIE,Communauté européenne,import,2019,5051,5183,2019
-ROYAUME UNI,Communauté européenne,import,2015,52977,29850,2019
-ROYAUME UNI,Communauté européenne,import,2016,29287,17302,2019
-ROYAUME UNI,Communauté européenne,import,2017,36144,44974,2019
-ROYAUME UNI,Communauté européenne,import,2018,34643,49314,2019
-ROYAUME UNI,Communauté européenne,import,2019,52478,90985,2019
-SLOVENIE,Communauté européenne,import,2015,37,6,2019
-SLOVENIE,Communauté européenne,import,2016,22,89,2019
-SLOVENIE,Communauté européenne,import,2017,78,292,2019
-SLOVENIE,Communauté européenne,import,2018,1327,491,2019
-SLOVENIE,Communauté européenne,import,2019,611,477,2019
-SUEDE,Communauté européenne,import,2015,14491,15838,2019
-SUEDE,Communauté européenne,import,2016,12641,18494,2019
-SUEDE,Communauté européenne,import,2017,13384,15216,2019
-SUEDE,Communauté européenne,import,2018,12504,14299,2019
-SUEDE,Communauté européenne,import,2019,15164,16470,2019
+ALLEMAGNE,Union européenne,import,2015,82072,121798,2019
+ALLEMAGNE,Union européenne,import,2016,63816,79483,2019
+ALLEMAGNE,Union européenne,import,2017,101154,151910,2019
+ALLEMAGNE,Union européenne,import,2018,80164,132822,2019
+ALLEMAGNE,Union européenne,import,2019,79573,66731,2019
+AUTRICHE,Union européenne,import,2015,3846,2780,2019
+AUTRICHE,Union européenne,import,2016,3112,3252,2019
+AUTRICHE,Union européenne,import,2017,9256,1969,2019
+AUTRICHE,Union européenne,import,2018,3505,1875,2019
+AUTRICHE,Union européenne,import,2019,4922,2932,2019
+BELGIQUE-LUXEMBOURG,Union européenne,import,2015,89226,133737,2019
+BELGIQUE-LUXEMBOURG,Union européenne,import,2016,83076,102317,2019
+BELGIQUE-LUXEMBOURG,Union européenne,import,2017,114663,174842,2019
+BELGIQUE-LUXEMBOURG,Union européenne,import,2018,167529,300697,2019
+BELGIQUE-LUXEMBOURG,Union européenne,import,2019,212464,497006,2019
+BULGARIE,Union européenne,import,2015,3131,2689,2019
+BULGARIE,Union européenne,import,2016,2555,2086,2019
+BULGARIE,Union européenne,import,2017,3954,2276,2019
+BULGARIE,Union européenne,import,2018,5632,7472,2019
+BULGARIE,Union européenne,import,2019,3076,1094,2019
+CHYPRE,Union européenne,import,2015,68,11,2019
+CHYPRE,Union européenne,import,2016,26,27,2019
+CHYPRE,Union européenne,import,2017,61,44,2019
+CHYPRE,Union européenne,import,2018,7,20,2019
+CHYPRE,Union européenne,import,2019,,,2019
+CROATIE,Union européenne,import,2015,16,9,2019
+CROATIE,Union européenne,import,2016,127,44,2019
+CROATIE,Union européenne,import,2017,30,116,2019
+CROATIE,Union européenne,import,2018,,,2019
+CROATIE,Union européenne,import,2019,597,1846,2019
+DANEMARK,Union européenne,import,2015,4925,1525,2019
+DANEMARK,Union européenne,import,2016,4388,1103,2019
+DANEMARK,Union européenne,import,2017,5487,2466,2019
+DANEMARK,Union européenne,import,2018,14518,5259,2019
+DANEMARK,Union européenne,import,2019,90066,22753,2019
+ESPAGNE,Union européenne,import,2015,136572,367742,2019
+ESPAGNE,Union européenne,import,2016,153141,475105,2019
+ESPAGNE,Union européenne,import,2017,148864,485515,2019
+ESPAGNE,Union européenne,import,2018,133165,496132,2019
+ESPAGNE,Union européenne,import,2019,140111,440162,2019
+FINLANDE,Union européenne,import,2015,32586,13547,2019
+FINLANDE,Union européenne,import,2016,19685,7828,2019
+FINLANDE,Union européenne,import,2017,14699,3720,2019
+FINLANDE,Union européenne,import,2018,11678,2108,2019
+FINLANDE,Union européenne,import,2019,12058,7751,2019
+FRANCE,Union européenne,import,2015,549230,715099,2019
+FRANCE,Union européenne,import,2016,500214,581088,2019
+FRANCE,Union européenne,import,2017,576812,491835,2019
+FRANCE,Union européenne,import,2018,574690,432060,2019
+FRANCE,Union européenne,import,2019,794892,638869,2019
+GRECE,Union européenne,import,2015,3537,10829,2019
+GRECE,Union européenne,import,2016,5160,19965,2019
+GRECE,Union européenne,import,2017,2331,7418,2019
+GRECE,Union européenne,import,2018,5443,54386,2019
+GRECE,Union européenne,import,2019,7125,19816,2019
+HONGRIE,Union européenne,import,2015,4690,1782,2019
+HONGRIE,Union européenne,import,2016,6034,1803,2019
+HONGRIE,Union européenne,import,2017,8235,2303,2019
+HONGRIE,Union européenne,import,2018,6638,2436,2019
+HONGRIE,Union européenne,import,2019,4453,1236,2019
+IRLANDE,Union européenne,import,2015,7816,5999,2019
+IRLANDE,Union européenne,import,2016,9850,7413,2019
+IRLANDE,Union européenne,import,2017,8116,5987,2019
+IRLANDE,Union européenne,import,2018,12817,12037,2019
+IRLANDE,Union européenne,import,2019,15889,13208,2019
+ITALIE,Union européenne,import,2015,71310,93888,2019
+ITALIE,Union européenne,import,2016,75542,147561,2019
+ITALIE,Union européenne,import,2017,86349,143671,2019
+ITALIE,Union européenne,import,2018,105734,185423,2019
+ITALIE,Union européenne,import,2019,80195,132784,2019
+MALTE,Union européenne,import,2015,1191,787,2019
+MALTE,Union européenne,import,2016,1268,544,2019
+MALTE,Union européenne,import,2017,1095,645,2019
+MALTE,Union européenne,import,2018,829,355,2019
+MALTE,Union européenne,import,2019,3373,42839,2019
+PAYS BAS,Union européenne,import,2015,136113,600325,2019
+PAYS BAS,Union européenne,import,2016,121188,729089,2019
+PAYS BAS,Union européenne,import,2017,161304,714587,2019
+PAYS BAS,Union européenne,import,2018,195551,634893,2019
+PAYS BAS,Union européenne,import,2019,211677,744914,2019
+POLOGNE,Union européenne,import,2015,19453,59862,2019
+POLOGNE,Union européenne,import,2016,30093,53408,2019
+POLOGNE,Union européenne,import,2017,29269,40760,2019
+POLOGNE,Union européenne,import,2018,32958,37302,2019
+POLOGNE,Union européenne,import,2019,47029,35153,2019
+PORTUGAL,Union européenne,import,2015,29289,43627,2019
+PORTUGAL,Union européenne,import,2016,22173,82140,2019
+PORTUGAL,Union européenne,import,2017,24466,67665,2019
+PORTUGAL,Union européenne,import,2018,24429,77861,2019
+PORTUGAL,Union européenne,import,2019,21102,41927,2019
+REPUBLIQUE D'ESTONIE,Union européenne,import,2015,20,8,2019
+REPUBLIQUE D'ESTONIE,Union européenne,import,2016,2034,6543,2019
+REPUBLIQUE D'ESTONIE,Union européenne,import,2017,2578,7655,2019
+REPUBLIQUE D'ESTONIE,Union européenne,import,2018,7976,39812,2019
+REPUBLIQUE D'ESTONIE,Union européenne,import,2019,97,153,2019
+REPUBLIQUE DE LETTONIE,Union européenne,import,2015,101,207,2019
+REPUBLIQUE DE LETTONIE,Union européenne,import,2016,29,160,2019
+REPUBLIQUE DE LETTONIE,Union européenne,import,2017,6,25,2019
+REPUBLIQUE DE LETTONIE,Union européenne,import,2018,4,25,2019
+REPUBLIQUE DE LETTONIE,Union européenne,import,2019,150,302,2019
+REPUBLIQUE DE LITUANIE,Union européenne,import,2015,173,141,2019
+REPUBLIQUE DE LITUANIE,Union européenne,import,2016,3635,21625,2019
+REPUBLIQUE DE LITUANIE,Union européenne,import,2017,699,2706,2019
+REPUBLIQUE DE LITUANIE,Union européenne,import,2018,1010,3508,2019
+REPUBLIQUE DE LITUANIE,Union européenne,import,2019,1476,1586,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2015,435,198,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2016,1051,1279,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2017,1859,1226,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2018,1408,440,2019
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2019,3008,2326,2019
+REPUBLIQUE TCHEQUE,Union européenne,import,2015,3198,3912,2019
+REPUBLIQUE TCHEQUE,Union européenne,import,2016,2787,10403,2019
+REPUBLIQUE TCHEQUE,Union européenne,import,2017,3041,6444,2019
+REPUBLIQUE TCHEQUE,Union européenne,import,2018,2183,3322,2019
+REPUBLIQUE TCHEQUE,Union européenne,import,2019,2255,2998,2019
+ROUMANIE,Union européenne,import,2015,2067,1902,2019
+ROUMANIE,Union européenne,import,2016,2879,2884,2019
+ROUMANIE,Union européenne,import,2017,4555,3736,2019
+ROUMANIE,Union européenne,import,2018,7305,37732,2019
+ROUMANIE,Union européenne,import,2019,5051,5183,2019
+ROYAUME UNI,Union européenne,import,2015,52977,29850,2019
+ROYAUME UNI,Union européenne,import,2016,29287,17302,2019
+ROYAUME UNI,Union européenne,import,2017,36144,44974,2019
+ROYAUME UNI,Union européenne,import,2018,34643,49314,2019
+ROYAUME UNI,Union européenne,import,2019,52478,90985,2019
+SLOVENIE,Union européenne,import,2015,37,6,2019
+SLOVENIE,Union européenne,import,2016,22,89,2019
+SLOVENIE,Union européenne,import,2017,78,292,2019
+SLOVENIE,Union européenne,import,2018,1327,491,2019
+SLOVENIE,Union européenne,import,2019,611,477,2019
+SUEDE,Union européenne,import,2015,14491,15838,2019
+SUEDE,Union européenne,import,2016,12641,18494,2019
+SUEDE,Union européenne,import,2017,13384,15216,2019
+SUEDE,Union européenne,import,2018,12504,14299,2019
+SUEDE,Union européenne,import,2019,15164,16470,2019
 ALBANIE,Autres pays d'Europe,import,2015,5073,8715,2019
 ALBANIE,Autres pays d'Europe,import,2016,3515,3258,2019
 ALBANIE,Autres pays d'Europe,import,2017,3482,2863,2019
@@ -1214,81 +1214,81 @@ TUNISIE,Afrique du Nord,import,2016,24467,81062,2019
 TUNISIE,Afrique du Nord,import,2017,29979,178161,2019
 TUNISIE,Afrique du Nord,import,2018,25079,92490,2019
 TUNISIE,Afrique du Nord,import,2019,27073,96244,2019
-BENIN,Afrique de l'Ouest,import,2015,782,1804,2019
-BENIN,Afrique de l'Ouest,import,2016,236,711,2019
-BENIN,Afrique de l'Ouest,import,2017,337,1683,2019
-BENIN,Afrique de l'Ouest,import,2018,480,1712,2019
-BENIN,Afrique de l'Ouest,import,2019,459,905,2019
-BURKINA FASO,Afrique de l'Ouest,import,2015,28,1,2019
-BURKINA FASO,Afrique de l'Ouest,import,2016,524,140,2019
-BURKINA FASO,Afrique de l'Ouest,import,2017,137,59,2019
-BURKINA FASO,Afrique de l'Ouest,import,2018,8,3,2019
-BURKINA FASO,Afrique de l'Ouest,import,2019,226,1029,2019
-COTE D'IVOIRE,Afrique de l'Ouest,import,2015,61550,142854,2019
-COTE D'IVOIRE,Afrique de l'Ouest,import,2016,61021,132662,2019
-COTE D'IVOIRE,Afrique de l'Ouest,import,2017,73359,122340,2019
-COTE D'IVOIRE,Afrique de l'Ouest,import,2018,49632,125620,2019
-COTE D'IVOIRE,Afrique de l'Ouest,import,2019,54942,140539,2019
-GAMBIE,Afrique de l'Ouest,import,2015,623,2088,2019
-GAMBIE,Afrique de l'Ouest,import,2016,138,2851,2019
-GAMBIE,Afrique de l'Ouest,import,2017,1109,2930,2019
-GAMBIE,Afrique de l'Ouest,import,2018,2725,5337,2019
-GAMBIE,Afrique de l'Ouest,import,2019,2478,3620,2019
-GHANA,Afrique de l'Ouest,import,2015,17849,29867,2019
-GHANA,Afrique de l'Ouest,import,2016,32587,58732,2019
-GHANA,Afrique de l'Ouest,import,2017,39484,74005,2019
-GHANA,Afrique de l'Ouest,import,2018,23284,49507,2019
-GHANA,Afrique de l'Ouest,import,2019,43617,85182,2019
-GUINEE BISSAU,Afrique de l'Ouest,import,2015,48,93,2019
-GUINEE BISSAU,Afrique de l'Ouest,import,2016,10,80,2019
-GUINEE BISSAU,Afrique de l'Ouest,import,2017,,,2019
-GUINEE BISSAU,Afrique de l'Ouest,import,2018,29,33,2019
-GUINEE BISSAU,Afrique de l'Ouest,import,2019,214,165,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2015,1645,4691,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2016,1957,10397,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2017,2402,12864,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2018,4342,11446,2019
-GUINEE REPUBLIQUE,Afrique de l'Ouest,import,2019,1122,2443,2019
-ILES DU CAP VERT,Afrique de l'Ouest,import,2015,156,153,2019
-ILES DU CAP VERT,Afrique de l'Ouest,import,2016,47,55,2019
-ILES DU CAP VERT,Afrique de l'Ouest,import,2017,5,12,2019
-ILES DU CAP VERT,Afrique de l'Ouest,import,2018,6,19,2019
-ILES DU CAP VERT,Afrique de l'Ouest,import,2019,42,73,2019
-LIBERIA,Afrique de l'Ouest,import,2015,86,573,2019
-LIBERIA,Afrique de l'Ouest,import,2016,1244,4322,2019
-LIBERIA,Afrique de l'Ouest,import,2017,,,2019
-LIBERIA,Afrique de l'Ouest,import,2018,10,33,2019
-LIBERIA,Afrique de l'Ouest,import,2019,8,22,2019
-MALI,Afrique de l'Ouest,import,2015,976,8515,2019
-MALI,Afrique de l'Ouest,import,2016,3919,7816,2019
-MALI,Afrique de l'Ouest,import,2017,4122,9875,2019
-MALI,Afrique de l'Ouest,import,2018,879,2649,2019
-MALI,Afrique de l'Ouest,import,2019,1538,1621,2019
-MAURITANIE,Afrique de l'Ouest,import,2015,3064,4268,2019
-MAURITANIE,Afrique de l'Ouest,import,2016,5226,62608,2019
-MAURITANIE,Afrique de l'Ouest,import,2017,3662,44440,2019
-MAURITANIE,Afrique de l'Ouest,import,2018,6763,15824,2019
-MAURITANIE,Afrique de l'Ouest,import,2019,3258,5804,2019
-NIGER,Afrique de l'Ouest,import,2015,30,25,2019
-NIGER,Afrique de l'Ouest,import,2016,17,42,2019
-NIGER,Afrique de l'Ouest,import,2017,84,153,2019
-NIGER,Afrique de l'Ouest,import,2018,338,246,2019
-NIGER,Afrique de l'Ouest,import,2019,801,456,2019
-NIGERIA,Afrique de l'Ouest,import,2015,268656,991215,2019
-NIGERIA,Afrique de l'Ouest,import,2016,249289,1167652,2019
-NIGERIA,Afrique de l'Ouest,import,2017,308194,1217568,2019
-NIGERIA,Afrique de l'Ouest,import,2018,391699,1156023,2019
-NIGERIA,Afrique de l'Ouest,import,2019,244789,805280,2019
-SIERRA LEONE,Afrique de l'Ouest,import,2015,433,537,2019
-SIERRA LEONE,Afrique de l'Ouest,import,2016,698,2689,2019
-SIERRA LEONE,Afrique de l'Ouest,import,2017,1897,5033,2019
-SIERRA LEONE,Afrique de l'Ouest,import,2018,4718,11602,2019
-SIERRA LEONE,Afrique de l'Ouest,import,2019,5788,14648,2019
-TOGO,Afrique de l'Ouest,import,2015,3901,8083,2019
-TOGO,Afrique de l'Ouest,import,2016,3158,7238,2019
-TOGO,Afrique de l'Ouest,import,2017,7339,14829,2019
-TOGO,Afrique de l'Ouest,import,2018,21456,86262,2019
-TOGO,Afrique de l'Ouest,import,2019,18799,51645,2019
+BENIN,Afrique occidentale,import,2015,782,1804,2019
+BENIN,Afrique occidentale,import,2016,236,711,2019
+BENIN,Afrique occidentale,import,2017,337,1683,2019
+BENIN,Afrique occidentale,import,2018,480,1712,2019
+BENIN,Afrique occidentale,import,2019,459,905,2019
+BURKINA FASO,Afrique occidentale,import,2015,28,1,2019
+BURKINA FASO,Afrique occidentale,import,2016,524,140,2019
+BURKINA FASO,Afrique occidentale,import,2017,137,59,2019
+BURKINA FASO,Afrique occidentale,import,2018,8,3,2019
+BURKINA FASO,Afrique occidentale,import,2019,226,1029,2019
+COTE D'IVOIRE,Afrique occidentale,import,2015,61550,142854,2019
+COTE D'IVOIRE,Afrique occidentale,import,2016,61021,132662,2019
+COTE D'IVOIRE,Afrique occidentale,import,2017,73359,122340,2019
+COTE D'IVOIRE,Afrique occidentale,import,2018,49632,125620,2019
+COTE D'IVOIRE,Afrique occidentale,import,2019,54942,140539,2019
+GAMBIE,Afrique occidentale,import,2015,623,2088,2019
+GAMBIE,Afrique occidentale,import,2016,138,2851,2019
+GAMBIE,Afrique occidentale,import,2017,1109,2930,2019
+GAMBIE,Afrique occidentale,import,2018,2725,5337,2019
+GAMBIE,Afrique occidentale,import,2019,2478,3620,2019
+GHANA,Afrique occidentale,import,2015,17849,29867,2019
+GHANA,Afrique occidentale,import,2016,32587,58732,2019
+GHANA,Afrique occidentale,import,2017,39484,74005,2019
+GHANA,Afrique occidentale,import,2018,23284,49507,2019
+GHANA,Afrique occidentale,import,2019,43617,85182,2019
+GUINEE BISSAU,Afrique occidentale,import,2015,48,93,2019
+GUINEE BISSAU,Afrique occidentale,import,2016,10,80,2019
+GUINEE BISSAU,Afrique occidentale,import,2017,,,2019
+GUINEE BISSAU,Afrique occidentale,import,2018,29,33,2019
+GUINEE BISSAU,Afrique occidentale,import,2019,214,165,2019
+GUINEE REPUBLIQUE,Afrique occidentale,import,2015,1645,4691,2019
+GUINEE REPUBLIQUE,Afrique occidentale,import,2016,1957,10397,2019
+GUINEE REPUBLIQUE,Afrique occidentale,import,2017,2402,12864,2019
+GUINEE REPUBLIQUE,Afrique occidentale,import,2018,4342,11446,2019
+GUINEE REPUBLIQUE,Afrique occidentale,import,2019,1122,2443,2019
+ILES DU CAP VERT,Afrique occidentale,import,2015,156,153,2019
+ILES DU CAP VERT,Afrique occidentale,import,2016,47,55,2019
+ILES DU CAP VERT,Afrique occidentale,import,2017,5,12,2019
+ILES DU CAP VERT,Afrique occidentale,import,2018,6,19,2019
+ILES DU CAP VERT,Afrique occidentale,import,2019,42,73,2019
+LIBERIA,Afrique occidentale,import,2015,86,573,2019
+LIBERIA,Afrique occidentale,import,2016,1244,4322,2019
+LIBERIA,Afrique occidentale,import,2017,,,2019
+LIBERIA,Afrique occidentale,import,2018,10,33,2019
+LIBERIA,Afrique occidentale,import,2019,8,22,2019
+MALI,Afrique occidentale,import,2015,976,8515,2019
+MALI,Afrique occidentale,import,2016,3919,7816,2019
+MALI,Afrique occidentale,import,2017,4122,9875,2019
+MALI,Afrique occidentale,import,2018,879,2649,2019
+MALI,Afrique occidentale,import,2019,1538,1621,2019
+MAURITANIE,Afrique occidentale,import,2015,3064,4268,2019
+MAURITANIE,Afrique occidentale,import,2016,5226,62608,2019
+MAURITANIE,Afrique occidentale,import,2017,3662,44440,2019
+MAURITANIE,Afrique occidentale,import,2018,6763,15824,2019
+MAURITANIE,Afrique occidentale,import,2019,3258,5804,2019
+NIGER,Afrique occidentale,import,2015,30,25,2019
+NIGER,Afrique occidentale,import,2016,17,42,2019
+NIGER,Afrique occidentale,import,2017,84,153,2019
+NIGER,Afrique occidentale,import,2018,338,246,2019
+NIGER,Afrique occidentale,import,2019,801,456,2019
+NIGERIA,Afrique occidentale,import,2015,268656,991215,2019
+NIGERIA,Afrique occidentale,import,2016,249289,1167652,2019
+NIGERIA,Afrique occidentale,import,2017,308194,1217568,2019
+NIGERIA,Afrique occidentale,import,2018,391699,1156023,2019
+NIGERIA,Afrique occidentale,import,2019,244789,805280,2019
+SIERRA LEONE,Afrique occidentale,import,2015,433,537,2019
+SIERRA LEONE,Afrique occidentale,import,2016,698,2689,2019
+SIERRA LEONE,Afrique occidentale,import,2017,1897,5033,2019
+SIERRA LEONE,Afrique occidentale,import,2018,4718,11602,2019
+SIERRA LEONE,Afrique occidentale,import,2019,5788,14648,2019
+TOGO,Afrique occidentale,import,2015,3901,8083,2019
+TOGO,Afrique occidentale,import,2016,3158,7238,2019
+TOGO,Afrique occidentale,import,2017,7339,14829,2019
+TOGO,Afrique occidentale,import,2018,21456,86262,2019
+TOGO,Afrique occidentale,import,2019,18799,51645,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,import,2015,54772,603700,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,import,2016,51517,544471,2019
 AFRIQUE DU SUD,Afrique orientale et du Sud,import,2017,59631,559785,2019
@@ -1784,26 +1784,11 @@ VIETNAM,Autres pays d'Asie,import,2016,2505,4248,2019
 VIETNAM,Autres pays d'Asie,import,2017,2523,5078,2019
 VIETNAM,Autres pays d'Asie,import,2018,5449,13685,2019
 VIETNAM,Autres pays d'Asie,import,2019,12098,40638,2019
-AUSTRALIE,Continent australien,import,2015,6221,1073,2019
-AUSTRALIE,Continent australien,import,2016,5019,1398,2019
-AUSTRALIE,Continent australien,import,2017,26170,6446,2019
-AUSTRALIE,Continent australien,import,2018,5811,1729,2019
-AUSTRALIE,Continent australien,import,2019,5963,1459,2019
-NAURU,Continent australien,import,2015,1,0,2019
-NAURU,Continent australien,import,2016,83,52,2019
-NAURU,Continent australien,import,2017,61,34,2019
-NAURU,Continent australien,import,2018,0,0,2019
-NAURU,Continent australien,import,2019,4,0,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2015,0,0,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2016,113,236,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2017,13,38,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2018,112,238,2019
-NOUVELLE GUINEE ET PAPOUASIE,Continent australien,import,2019,35,31,2019
-NOUVELLE ZELANDE,Continent australien,import,2015,10652,6334,2019
-NOUVELLE ZELANDE,Continent australien,import,2016,9417,6685,2019
-NOUVELLE ZELANDE,Continent australien,import,2017,3104,1749,2019
-NOUVELLE ZELANDE,Continent australien,import,2018,5050,3137,2019
-NOUVELLE ZELANDE,Continent australien,import,2019,1540,1209,2019
+AUSTRALIE,Océanie,import,2015,6221,1073,2019
+AUSTRALIE,Océanie,import,2016,5019,1398,2019
+AUSTRALIE,Océanie,import,2017,26170,6446,2019
+AUSTRALIE,Océanie,import,2018,5811,1729,2019
+AUSTRALIE,Océanie,import,2019,5963,1459,2019
 ILES COOK,Océanie,import,2015,1,0,2019
 ILES COOK,Océanie,import,2016,,,2019
 ILES COOK,Océanie,import,2017,,,2019
@@ -1819,11 +1804,26 @@ ILES PACIFIQUES US,Océanie,import,2016,,,2019
 ILES PACIFIQUES US,Océanie,import,2017,,,2019
 ILES PACIFIQUES US,Océanie,import,2018,,,2019
 ILES PACIFIQUES US,Océanie,import,2019,52,206,2019
+NAURU,Océanie,import,2015,1,0,2019
+NAURU,Océanie,import,2016,83,52,2019
+NAURU,Océanie,import,2017,61,34,2019
+NAURU,Océanie,import,2018,0,0,2019
+NAURU,Océanie,import,2019,4,0,2019
 NOUVELLE CALEDONIE,Océanie,import,2015,18,9,2019
 NOUVELLE CALEDONIE,Océanie,import,2016,,,2019
 NOUVELLE CALEDONIE,Océanie,import,2017,,,2019
 NOUVELLE CALEDONIE,Océanie,import,2018,,,2019
 NOUVELLE CALEDONIE,Océanie,import,2019,,,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2015,0,0,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2016,113,236,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2017,13,38,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2018,112,238,2019
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2019,35,31,2019
+NOUVELLE ZELANDE,Océanie,import,2015,10652,6334,2019
+NOUVELLE ZELANDE,Océanie,import,2016,9417,6685,2019
+NOUVELLE ZELANDE,Océanie,import,2017,3104,1749,2019
+NOUVELLE ZELANDE,Océanie,import,2018,5050,3137,2019
+NOUVELLE ZELANDE,Océanie,import,2019,1540,1209,2019
 TONGA,Océanie,import,2015,0,0,2019
 TONGA,Océanie,import,2016,,,2019
 TONGA,Océanie,import,2017,,,2019

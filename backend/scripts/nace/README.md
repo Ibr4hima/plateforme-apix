@@ -235,6 +235,87 @@ l'huile brute est extrait d'« Autres produits » (2020 : 622 296 =
 révisions des imports (Machines et appareils 2020 : 612 244 contre
 604 249 en 2023).
 
+## Famille pays / régions (tableaux 34–37)
+
+Seule famille **hiérarchique** : une ligne de région porte son sous-total,
+suivie du détail de ses pays. Une lecture unique alimente donc les deux
+granularités (`nace_regions` et `nace_pays`). Les libellés de pays sont
+conservés BRUTS, en capitales, parce qu'ils servent de clé de rapprochement
+au référentiel (cf. `alias_pays_nace.json` et
+`verifier_rapprochement_pays.py`) ; l'affichage passe ensuite par
+`ref_pays.nom_fr`, ou « Autres pays » pour les partenaires hors référentiel.
+
+### Un 13e groupe qui n'est pas une région géographique
+
+Le rapport ferme ses tableaux sur un groupe résiduel, dont le nom change
+selon l'édition et le sens : **`DIVERS`** à l'export, **`NCA`** (« non classé
+ailleurs ») dans les tableaux d'import de 2019, **`DIVERS (PBE,PBF,OM,nda..)`**
+à partir de 2021. Identité vérifiée au chiffre près contre la famille
+continents, dont le « Divers » vaut exactement la même chose (édition 2019,
+import : 4 922 / 4 342 / 5 696 / 5 147 / 15 001 MFCFA et 11 462 / 4 798 /
+12 650 / 8 500 / 74 830 t).
+
+Ce groupe n'a **pas** de détail pays dans les éditions 2019 et 2020 : sa
+ligne est à la fois le sous-total et son unique partenaire. L'édition 2021
+le détaille enfin (provisions de bord étrangères et françaises, divers non
+déterminés ailleurs, origines mélangées), et la somme boucle : 8 + 1 +
+5 366 + 476 = 5 851, le sous-total imprimé du tableau 36 pour 2017.
+L'extraction n'injecte donc la ligne de région comme partenaire que si la
+région est imprimée sans détail — sans quoi 2021 serait double-comptée.
+
+### Libellés de régions rendus stables entre éditions
+
+Le rapport renomme, fusionne et se trompe de graphie d'une édition à
+l'autre. Toutes ces variantes sont ramenées à 12 libellés stables :
+
+| Variantes du rapport | Libellé retenu | Vérification |
+|---|---|---|
+| `COMMUNAUTE EUROPEENNE` (2019), `EUROPEENE` à un seul N (T36–37), `UNION EUROPEENNE` (2020+) | Union européenne | mêmes 27 partenaires, Royaume-Uni compris |
+| `AFRIQUE DE L'OUEST` (2019), `AFRIQUE OCCIDENTALE` (2020+) | Afrique occidentale | mêmes 15 partenaires |
+| `CONTINENT AUSTRALIEN` + `OCEANIE` (2019), `OCEANIE` seule (2020+) | Océanie | 3 192 + 1 = 3 193, valeur qu'imprime l'édition 2020 |
+| `D''ASIE` (apostrophe doublée), `L’OCEANIE` (apostrophe courbe) | — | `cle()` retirant la ponctuation, une entrée suffit |
+
+L'édition 2021 est la plus incohérente : ses tableaux 34–35 emploient la
+nomenclature 2020 (`UNION EUROPEENNE`, `AFRIQUE OCCIDENTALE`) tandis que
+ses tableaux 36–37 reviennent à celle de 2019 (`COMMUNAUTE EUROPEENE`,
+`AFRIQUE DE L'OUEST`).
+
+### Colonnes repérées par page, et non par tableau
+
+`pdftotext -layout` réaligne les colonnes **à chaque page**, et un tableau
+pays en couvre plusieurs : le tableau 37 de l'édition 2020 imprime ainsi
+ses régions à trois indentations différentes. Des bornes de colonnes
+médianes calculées sur tout le tableau ne collent alors à aucune page, ce
+qui fait échouer la lecture des lignes à cellules vides. Deux dégâts
+observés avant correction, tous deux silencieux au comptage de colonnes :
+
+- `TONGA` perdu dans le tableau 37 de 2020 (seules 2019 et 2020 sont
+  imprimées), et l'Océanie faussée en conséquence ;
+- un écart de 7 unités sur « Autres pays d'Asie » en 2018 (tableau 36),
+  que l'on aurait pu prendre pour de l'arrondi — c'était bien une valeur
+  posée dans la mauvaise colonne.
+
+Les bornes sont donc mesurées par page, avec repli sur les bornes globales
+si une page est trop courte pour en fournir.
+
+### Contrôles
+
+`verifier_pays.py` enchaîne quatre contrôles, dont un seul est réellement
+indépendant — une somme comparée à un total lu dans le même tableau ne
+prouve rien si les deux viennent de la même ligne mal lue :
+
+1. Σ pays d'une région = sous-total imprimé (tolérance 6) ;
+2. Σ régions = ligne TOTAL (tolérance 8) ;
+3. complétude : 12 régions × 2 sens × 5 ans, chaque partenaire présent en
+   valeur comme en poids ;
+4. **Σ régions d'un continent = famille `nace_continents`** — deux
+   extractions distinctes confrontées (tolérance 3).
+
+Mesures sur les éditions 2019 à 2021 : écart maximum de **1 unité** sur le
+contrôle inter-familles, **3** sur les TOTAL, **5** sur un sous-total de
+région. Ce sont des arrondis — le rapport arrondit chaque sous-total
+indépendamment de son détail. Toute erreur réelle se compte en milliers.
+
 ## Corrections apportées aux données (édition 2019)
 
 - **« Autres produits » — export, poids (T9)** : le PDF imprime cette

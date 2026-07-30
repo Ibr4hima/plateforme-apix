@@ -9,7 +9,7 @@ d'indépendant, puisqu'il confronte deux extractions distinctes.
 
   1. Σ pays d'une région   = sous-total imprimé de la région ;
   2. Σ régions             = ligne TOTAL du tableau ;
-  3. complétude            : 13 régions × 2 sens × 5 ans, et chaque
+  3. complétude            : 12 régions × 2 sens × 5 ans, et chaque
                              partenaire présent en valeur ET en poids ;
   4. Σ régions d'un continent = famille nace_continents (inter-familles).
 
@@ -31,18 +31,19 @@ TOL_REGION, TOL_TOTAL, TOL_FAMILLE = 6, 8, 3
 MESURES = ("valeur", "poids")
 SENS = ("export", "import")
 
-# Rattachement des 13 régions du rapport aux 6 continents de la famille
+# Rattachement des 12 régions du rapport aux 6 continents de la famille
 # nace_continents. « Divers » (NCA côté import) est un continent à lui seul
-# dans cette nomenclature de l'ANSD.
+# dans cette nomenclature de l'ANSD. Les libellés sont ceux que
+# extraire_pays.py rend stables d'une édition à l'autre.
 CONTINENT = {
-    "Communauté européenne": "Europe", "Autres pays d'Europe": "Europe",
+    "Union européenne": "Europe", "Autres pays d'Europe": "Europe",
     "Afrique centrale": "Afrique", "Afrique du Nord": "Afrique",
-    "Afrique de l'Ouest": "Afrique", "Afrique orientale et du Sud": "Afrique",
+    "Afrique occidentale": "Afrique", "Afrique orientale et du Sud": "Afrique",
     "Amérique du Nord": "Amérique", "Amérique centrale et du Sud": "Amérique",
     "Asie occidentale": "Asie", "Autres pays d'Asie": "Asie",
-    "Continent australien": "Océanie", "Océanie": "Océanie",
-    "Divers": "Divers",
+    "Océanie": "Océanie", "Divers": "Divers",
 }
+NB_REGIONS = len(CONTINENT)
 
 
 def lire(fichier: Path) -> list[dict]:
@@ -102,8 +103,8 @@ def verifier(edition: int) -> list[str]:
         anomalies.append(f"{len(annees)} années au lieu de 5 — {annees}")
     for sens in SENS:
         noms = {r["region"] for r in regions if r["sens"] == sens}
-        if len(noms) != 13:
-            anomalies.append(f"{len(noms)} régions au lieu de 13 en {sens}")
+        if len(noms) != NB_REGIONS:
+            anomalies.append(f"{len(noms)} régions au lieu de {NB_REGIONS} en {sens}")
         # chaque partenaire doit couvrir les 5 années, en valeur comme en poids
         vus = collections.Counter()
         for r in pays:
