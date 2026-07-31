@@ -11,6 +11,8 @@ import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur,
+  varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -585,139 +587,28 @@ type NaceDataReg = { disponible: boolean; annees: number[]; editions: number[]; 
   continents: Record<string, string>;
   donnees: { export: (NaceLigneCle & { region: string })[]; import: (NaceLigneCle & { region: string })[] } };
 
-// Curseur d'année : même geste et même rendu que ceux du tableau de bord, où
-// il pilote les KPIs d'une section. Ici il pilote TOUT l'onglet — KPIs, courbe
-// d'évolution, produits, zones géographiques et chapitres suivent l'année.
-function CurseurAnneeNace({ min, max, value, onChange, largeur = 210 }: {
-  min: number; max: number; value: number; onChange: (a: number) => void; largeur?: number;
-}) {
-  if (!(max > min)) return null;
-  return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0, ...varsAccent(ACCENT_BLEU) }}>
-      <StylesCurseurNace />
-      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{min}</span>
-      <input type="range" min={min} max={max} step={1} value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
-      <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>{value}</span>
-    </div>
-  );
-}
-
-// Curseur de période : une poignée en lecture annuelle, deux dès qu'un calcul
-// est choisi. Le même contrôle sert les deux modes pour que la bascule de
-// calcul ne fasse pas apparaître un second réglage à côté du premier.
-//
-// Les deux poignées sont deux `input[type=range]` superposés : la piste ne
-// reçoit pas le pointeur, seules les poignées le captent, faute de quoi celle
-// du dessus intercepterait tous les clics de l'autre. La poignée de début est
-// au-dessus, parce que c'est elle qu'on saisit pour ouvrir un intervalle depuis
-// la dernière année, là où les deux se superposent.
-// Feuille de style du curseur, partagée : le même contrôle sert le commerce
-// extérieur et les flux bilatéraux. L'accent passe par une variable CSS, seul
-// moyen de teindre une poignée d'`input[type=range]`, qui vit dans un
-// pseudo-élément et n'accepte donc pas de style en ligne.
-const ACCENT_BLEU = { trait: NACE_BLEU, piste: "rgba(0,79,145,0.18)", voile: "rgba(0,79,145,0.08)" };
-const ACCENT_ORANGE = { trait: NACE_ORANGE, piste: "rgba(202,99,31,0.20)", voile: "rgba(202,99,31,0.09)" };
-type AccentNace = typeof ACCENT_BLEU;
-const varsAccent = (a: AccentNace) =>
-  ({ "--nace-accent": a.trait, "--nace-piste": a.piste }) as React.CSSProperties;
-
-function StylesCurseurNace() {
-  return (
-    <style>{`
-      .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
-        background: var(--nace-piste, rgba(0,79,145,0.18)); outline: none; cursor: pointer; }
-      .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
-        border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-      .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-      .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
-        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-      .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
-      .nace-plage { position: relative; height: 16px; }
-      .nace-plage .nace-piste { position: absolute; top: 6px; left: 0; right: 0; height: 4px;
-        border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
-      .nace-plage .nace-remplie { position: absolute; top: 6px; height: 4px; border-radius: 999px;
-        background: var(--nace-accent, #004f91); opacity: 0.55; }
-      .nace-plage input { position: absolute; top: 0; left: 0; width: 100%; height: 16px; margin: 0;
-        -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
-      .nace-plage input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto;
-        width: 15px; height: 15px; border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff;
-        box-shadow: var(--ombre-1); cursor: grab; }
-      .nace-plage input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-      .nace-plage input::-moz-range-thumb { pointer-events: auto; width: 15px; height: 15px; border-radius: 50%;
-        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-      .nace-plage input::-moz-range-track { height: 4px; background: transparent; }
-    `}</style>
-  );
-}
-
-// Pastille de valeur du curseur, commune elle aussi.
-const pastilleCurseur = (a: AccentNace): React.CSSProperties => ({
-  fontSize: 12, fontWeight: 800, color: a.trait, background: a.voile, padding: "3px 11px",
-  borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap",
-});
-
 function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
   min: number; max: number; periode: Periode; onChange: (p: Periode) => void; largeur?: number;
 }) {
   if (!(max > min)) return null;
-  const plage = estIntervalle(periode);
+  if (!estIntervalle(periode)) {
+    return <CurseurAnneeCommun min={min} max={max} value={Math.min(max, Math.max(min, periode.fin))}
+      largeur={largeur} onChange={v => onChange({ debut: v, fin: v, intervalle: false })} />;
+  }
   // Un intervalle d'une seule année n'en est pas un : les poignées se bornent
   // l'une l'autre à une année d'écart au moins, faute de quoi la lecture
   // « intervalle » afficherait les statistiques d'un millésime unique — une
   // moyenne égale à la somme, un minimum égal au maximum.
-  const debut = Math.max(min, Math.min(periode.debut, plage ? periode.fin - 1 : periode.fin));
-  const fin = Math.min(max, Math.max(plage ? debut + 1 : debut, periode.fin));
-  const pos = (a: number) => ((a - min) / (max - min)) * 100;
+  const debut = Math.max(min, Math.min(periode.debut, periode.fin - 1));
+  const fin = Math.min(max, Math.max(debut + 1, periode.fin));
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
-      <style>{`
-        .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
-          background: rgba(0,79,145,0.18); outline: none; cursor: pointer; }
-        .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
-          border-radius: 50%; background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-        .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
-          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(0,79,145,0.18); }
-        .nace-plage { position: relative; height: 16px; }
-        .nace-plage .nace-piste { position: absolute; top: 6px; left: 0; right: 0; height: 4px;
-          border-radius: 999px; background: rgba(0,79,145,0.18); }
-        .nace-plage .nace-remplie { position: absolute; top: 6px; height: 4px; border-radius: 999px; background: #004f91; opacity: 0.55; }
-        .nace-plage input { position: absolute; top: 0; left: 0; width: 100%; height: 16px; margin: 0;
-          -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
-        .nace-plage input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto;
-          width: 15px; height: 15px; border-radius: 50%; background: #004f91; border: 2.5px solid #fff;
-          box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-plage input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-        .nace-plage input::-moz-range-thumb { pointer-events: auto; width: 15px; height: 15px; border-radius: 50%;
-          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-plage input::-moz-range-track { height: 4px; background: transparent; }
-      `}</style>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0, ...varsAccent(ACCENT_BLEU) }}>
+      <StylesCurseurNace />
       <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{min}</span>
-      {plage ? (
-        <div className="nace-plage" style={{ width: largeur }}>
-          <div className="nace-piste" />
-          <div className="nace-remplie" style={{ left: `${pos(debut)}%`, width: `${Math.max(0, pos(fin) - pos(debut))}%` }} />
-          {/* Les poignées ne se croisent pas : chacune borne l'autre. */}
-          {/* Les deux entrées gardent les MÊMES bornes : les restreindre
-              décalerait leurs échelles et les poignées ne s'aligneraient plus
-              sur la même année. C'est la valeur qui est bornée, pas la plage. */}
-          <input type="range" min={min} max={max} step={1} value={fin} style={{ zIndex: 1 }}
-            onChange={e => onChange({ ...periode, fin: Math.max(debut + 1, Number(e.target.value)) })}
-            aria-label="Dernière année de l'intervalle" />
-          <input type="range" min={min} max={max} step={1} value={debut} style={{ zIndex: 2 }}
-            onChange={e => onChange({ ...periode, debut: Math.min(fin - 1, Number(e.target.value)) })}
-            aria-label="Première année de l'intervalle" />
-        </div>
-      ) : (
-        <input type="range" min={min} max={max} step={1} value={fin}
-          onChange={e => onChange({ ...periode, debut: Number(e.target.value), fin: Number(e.target.value) })}
-          className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
-      )}
-      <span style={pastilleCurseur(ACCENT_BLEU)}>{plage ? `${debut}–${fin}` : fin}</span>
-    </div>
+      <CurseurPlageNace min={min} max={max} debut={debut} fin={fin} ecartMin={1} largeur={largeur}
+        onChange={(d, f) => onChange({ ...periode, debut: d, fin: f })} />
+      <span style={pastilleCurseur(ACCENT_BLEU)}>{debut}–{fin}</span>
+    </span>
   );
 }
 
@@ -1646,7 +1537,7 @@ function CommerceExterieurPanel() {
       {/* En-tête : titre + curseur des KPIs */}
       <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginBottom: 20 }}>
         <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>Commerce extérieur du Sénégal</h2>
-        <CurseurAnneeNace min={annees[0]} max={dernier} value={an} onChange={setAnKpi} />
+        <CurseurAnneeCommun min={annees[0]} max={dernier} value={an} onChange={setAnKpi} largeur={210} />
       </div>
 
       {/* KPIs de l'année */}

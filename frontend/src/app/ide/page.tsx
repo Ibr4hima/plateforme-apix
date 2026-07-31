@@ -19,6 +19,8 @@ import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } f
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
+import { ACCENT_BLEU, AccentNace, accentDe, CurseurAnneeNace, CurseurPlageNace,
+  StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -460,11 +462,9 @@ function CarteTableauAnnees({ titre, rows, accent = "#004f91" }: { titre: string
         <>
           {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 10, padding: "7px 11px" }}>
-            <input type="range" min={anMin} max={anMax} step="any" defaultValue={anMax}
-              onInput={e => setPosCurseur(Number((e.target as HTMLInputElement).value))}
-              aria-label="Explorer une année"
-              style={{ flex: 1, accentColor: accent, cursor: "pointer", minWidth: 0 }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, color: accent, background: accent + "14", padding: "2px 9px", borderRadius: 999, flexShrink: 0 }}>{anCurseur}</span>
+            <CurseurAnneeNace min={anMin} max={anMax} value={anCurseur} flexible
+              accent={accentDe(accent)} ariaLabel="Explorer une année"
+              onChange={v => setPosCurseur(v)} />
             <button onClick={() => togglePin(anCurseur)}
               title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
@@ -554,13 +554,9 @@ function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }: {
         <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <input type="range" min={0} max={n} step="any" defaultValue={n}
-              onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); setAnnee(i >= n ? null : annees[i]); }}
-              aria-label="Cumul ou année"
-              style={{ width: 150, accentColor: "#004f91", cursor: "pointer" }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" as const }}>
-              {annee ?? "Cumul"}
-            </span>
+            <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
+              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Cumul ou année"
+              onChange={i => setAnnee(i >= n ? null : annees[i])} />
           </span>
         )}
       </div>
@@ -1261,17 +1257,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 </div>
                 {modeAnnees==="plage" ? (
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-borneMin)/(borneMax-borneMin))*100}%`, width:`${Math.max(0,((anneeMax-borneMin)/(borneMax-borneMin))*100-((anneeMin-borneMin)/(borneMax-borneMin))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <input type="range" min={borneMin} max={borneMax} value={anneeMin}
-                        onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
-                        className="drs-thumb"
-                        style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                      <input type="range" min={borneMin} max={borneMax} value={anneeMax}
-                        onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
-                        className="drs-thumb"
-                        style={{zIndex:3} as React.CSSProperties}/>
+                    <div style={{ padding:"4px 0" }}>
+                      <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
+                        onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -1822,17 +1810,9 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             </div>
             {modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                  <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-borneMin)/(borneMax-borneMin||1))*100}%`, width:`${Math.max(0,((anneeMax-borneMin)/(borneMax-borneMin||1))*100-((anneeMin-borneMin)/(borneMax-borneMin||1))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <input type="range" min={borneMin} max={borneMax} value={anneeMin}
-                    onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))}
-                    className="drs-thumb"
-                    style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                  <input type="range" min={borneMin} max={borneMax} value={anneeMax}
-                    onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))}
-                    className="drs-thumb"
-                    style={{zIndex:3} as React.CSSProperties}/>
+                <div style={{ padding:"4px 0" }}>
+                  <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
+                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -2014,13 +1994,9 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
         <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <input type="range" min={0} max={n} step="any" defaultValue={n}
-              onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); onAnnee(i >= n ? null : annees[i]); }}
-              aria-label="Cumul ou année"
-              style={{ width: 150, accentColor: "#004f91", cursor: "pointer" }} />
-            <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" as const }}>
-              {annee ?? "Cumul"}
-            </span>
+            <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
+              borne={annees[0]} pastille={annee ?? "Cumul"} ariaLabel="Cumul ou année"
+              onChange={i => onAnnee(i >= n ? null : annees[i])} />
           </span>
         )}
       </div>
@@ -2407,11 +2383,9 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
             </div>
             {modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                  <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-borneMin)/(borneMax-borneMin))*100}%`, width:`${Math.max(0,((anneeMax-borneMin)/(borneMax-borneMin))*100-((anneeMin-borneMin)/(borneMax-borneMin))*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <input type="range" min={borneMin} max={borneMax} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax-1))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax-1?4:2} as React.CSSProperties}/>
-                  <input type="range" min={borneMin} max={borneMax} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin+1))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                <div style={{ padding:"4px 0" }}>
+                  <CurseurPlageNace min={borneMin} max={borneMax} debut={anneeMin} fin={anneeMax} ecartMin={1}
+                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -3301,11 +3275,9 @@ function OngletNational() {
                 </div>
                 {modeAnnees==="plage" ? (
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                    <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                      <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                      <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax?4:2} as React.CSSProperties}/>
-                      <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                    <div style={{ padding:"4px 0" }}>
+                      <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
+                        onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                       <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -3412,11 +3384,9 @@ function OngletNational() {
             </div>
             {modeAnnees==="plage" ? (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
-                <div style={{ position:"relative" as const, height:24, marginBottom:2 }}>
-                  <div style={{ position:"absolute" as const, top:"50%", left:0, right:0, height:4, background:"#E8E5E3", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <div style={{ position:"absolute" as const, top:"50%", left:`${((anneeMin-bornes[0])/span)*100}%`, width:`${Math.max(0,((anneeMax-bornes[0])/span)*100-((anneeMin-bornes[0])/span)*100)}%`, height:4, background:"#004f91", borderRadius:2, transform:"translateY(-50%)" }}/>
-                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin} onChange={e=>setAnneeMin(Math.min(+e.target.value,anneeMax))} className="drs-thumb" style={{zIndex:anneeMin>=anneeMax?4:2} as React.CSSProperties}/>
-                  <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMax} onChange={e=>setAnneeMax(Math.max(+e.target.value,anneeMin))} className="drs-thumb" style={{zIndex:3} as React.CSSProperties}/>
+                <div style={{ padding:"4px 0" }}>
+                  <CurseurPlageNace min={bornes[0]} max={bornes[1]} debut={anneeMin} fin={anneeMax} ecartMin={0}
+                    onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
@@ -3654,12 +3624,9 @@ export default function IdePage() {
 
   return (
     <div style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
-.drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
-.drs-thumb::-moz-range-track{background:transparent;height:4px}
-.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
-.drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
+      {/* Les curseurs de la page viennent du module commun, qui apporte sa
+          propre feuille de style ; il ne reste ici que l'animation d'attente. */}
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <BarreTitre titre="Investissements Privés" compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
