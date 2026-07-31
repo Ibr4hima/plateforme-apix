@@ -884,10 +884,9 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       { unite, balance: true, agregeSous: AUTRES_PAYS, libelle: k => k.split("·")[1] ?? k,
         parent: k => { const r = k.split("·")[0]; return ratt[r] ? `${r} (${ratt[r]})` : r; },
         titreParent: "Région (continent)" }));
-    const editions = [cont, reg, pys].flatMap(x => x?.editions ?? []);
     await ecrireClasseurNace(
       `NACE_Zones-geographiques_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
-      contexteNace(mesure, periode, editions), feuilles);
+      contexteNace(mesure, periode), feuilles);
   };
 
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
@@ -1153,13 +1152,12 @@ function feuillesPortees(pys: NaceDataPays, portees: { nom: string; garde: (r: N
 
 // Bandeau de contexte identique dans toutes les feuilles : sans lui, un fichier
 // retrouvé plus tard ne dit ni sa source, ni son unité, ni sa période.
-function contexteNace(mesure: NaceMesure, per: Periode, editions?: number[]): string[] {
+function contexteNace(mesure: NaceMesure, per: Periode): string[] {
   return [
     "Source : Notes d'analyse du commerce extérieur (NACE), ANSD — Sénégal",
     `Unité : ${mesure === "valeur" ? "millions de FCFA" : "tonnes (poids net)"}`,
     `Période : ${libellePeriode(per)}`,
-    ...(editions?.length ? [`Éditions NACE mobilisées : ${[...new Set(editions)].sort().join(", ")} — chaque année est lue dans l'édition la plus récente qui la couvre`] : []),
-    `Extrait le ${new Date().toLocaleDateString("fr-FR")} depuis la plateforme APIX`,
+    `Extrait le ${new Date().toLocaleDateString("fr-FR")}`,
   ];
 }
 const suffixeFichier = (mesure: NaceMesure, per: Periode) =>
@@ -1404,14 +1402,13 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
       { nom: "Produits regroupés", colonne: "Produit", cle: "produit", src: regroupes?.disponible ? regroupes.donnees : null, balance: false, agrege: AUTRES_PRODUITS },
       { nom: "Chapitres SH", colonne: "Chapitre", cle: "chapitre", src: chapitres?.disponible ? chapitres.donnees : null, balance: true },
     ];
-    const editions = [principaux, gu, regroupes, chapitres].flatMap(x => x?.editions ?? []);
     const feuilles = sources.filter(x => x.src).map(x => feuilleFamille(
       x.nom, x.colonne, x.src!, r => String((r as unknown as Record<string, unknown>)[x.cle]),
       sens, mesure, periode,
       { unite: mesure === "valeur" ? "M FCFA" : "tonnes", balance: x.balance, agregeSous: x.agrege }));
     await ecrireClasseurNace(
       `NACE_Produits_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
-      contexteNace(mesure, periode, editions), feuilles);
+      contexteNace(mesure, periode), feuilles);
   };
 
   return (
@@ -1739,7 +1736,7 @@ function CommerceExterieurPanel() {
         // regarder, pas à décider de ce qu'on emporte.
         const exporterCont = () => ecrireClasseurNace(
           `NACE_Partenaires-par-continent_${suffixeFichier(contMesure, p)}.xlsx`,
-          contexteNace(contMesure, p, pys.editions),
+          contexteNace(contMesure, p),
           feuillesPortees(pys, presents.map(x => ({ nom: x, garde: (r: NacePaysLigne) => ratt[r.region] === x })),
                           contMesure, p, true));
         return (
@@ -1802,7 +1799,7 @@ function CommerceExterieurPanel() {
         // Tous les groupements du référentiel, pas seulement celui affiché.
         const exporterGrp = () => ecrireClasseurNace(
           `NACE_Partenaires-par-groupement_${suffixeFichier(grpMesure, p)}.xlsx`,
-          [...contexteNace(grpMesure, p, pys.editions),
+          [...contexteNace(grpMesure, p),
            `Composition des groupements : référentiel APIX — ${groupements.map(x => `${x.code} (${x.membres.length} membres)`).join(", ")}`],
           feuillesPortees(pys, groupements.map(x => {
             const m = new Set(x.membres);
