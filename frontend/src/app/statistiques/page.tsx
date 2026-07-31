@@ -593,17 +593,8 @@ function CurseurAnneeNace({ min, max, value, onChange, largeur = 210 }: {
 }) {
   if (!(max > min)) return null;
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
-      <style>{`
-        .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
-          background: rgba(0,79,145,0.18); outline: none; cursor: pointer; }
-        .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
-          border-radius: 50%; background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-        .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
-          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(0,79,145,0.18); }
-      `}</style>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0, ...varsAccent(ACCENT_BLEU) }}>
+      <StylesCurseurNace />
       <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{min}</span>
       <input type="range" min={min} max={max} step={1} value={value}
         onChange={e => onChange(Number(e.target.value))}
@@ -622,6 +613,51 @@ function CurseurAnneeNace({ min, max, value, onChange, largeur = 210 }: {
 // du dessus intercepterait tous les clics de l'autre. La poignée de début est
 // au-dessus, parce que c'est elle qu'on saisit pour ouvrir un intervalle depuis
 // la dernière année, là où les deux se superposent.
+// Feuille de style du curseur, partagée : le même contrôle sert le commerce
+// extérieur et les flux bilatéraux. L'accent passe par une variable CSS, seul
+// moyen de teindre une poignée d'`input[type=range]`, qui vit dans un
+// pseudo-élément et n'accepte donc pas de style en ligne.
+const ACCENT_BLEU = { trait: NACE_BLEU, piste: "rgba(0,79,145,0.18)", voile: "rgba(0,79,145,0.08)" };
+const ACCENT_ORANGE = { trait: NACE_ORANGE, piste: "rgba(202,99,31,0.20)", voile: "rgba(202,99,31,0.09)" };
+type AccentNace = typeof ACCENT_BLEU;
+const varsAccent = (a: AccentNace) =>
+  ({ "--nace-accent": a.trait, "--nace-piste": a.piste }) as React.CSSProperties;
+
+function StylesCurseurNace() {
+  return (
+    <style>{`
+      .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
+        background: var(--nace-piste, rgba(0,79,145,0.18)); outline: none; cursor: pointer; }
+      .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
+        border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+      .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
+      .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
+        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+      .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
+      .nace-plage { position: relative; height: 16px; }
+      .nace-plage .nace-piste { position: absolute; top: 6px; left: 0; right: 0; height: 4px;
+        border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
+      .nace-plage .nace-remplie { position: absolute; top: 6px; height: 4px; border-radius: 999px;
+        background: var(--nace-accent, #004f91); opacity: 0.55; }
+      .nace-plage input { position: absolute; top: 0; left: 0; width: 100%; height: 16px; margin: 0;
+        -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+      .nace-plage input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto;
+        width: 15px; height: 15px; border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff;
+        box-shadow: var(--ombre-1); cursor: grab; }
+      .nace-plage input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
+      .nace-plage input::-moz-range-thumb { pointer-events: auto; width: 15px; height: 15px; border-radius: 50%;
+        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+      .nace-plage input::-moz-range-track { height: 4px; background: transparent; }
+    `}</style>
+  );
+}
+
+// Pastille de valeur du curseur, commune elle aussi.
+const pastilleCurseur = (a: AccentNace): React.CSSProperties => ({
+  fontSize: 12, fontWeight: 800, color: a.trait, background: a.voile, padding: "3px 11px",
+  borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap",
+});
+
 function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
   min: number; max: number; periode: Periode; onChange: (p: Periode) => void; largeur?: number;
 }) {
@@ -680,9 +716,7 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
           onChange={e => onChange({ ...periode, debut: Number(e.target.value), fin: Number(e.target.value) })}
           className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
       )}
-      <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>
-        {plage ? `${debut}–${fin}` : fin}
-      </span>
+      <span style={pastilleCurseur(ACCENT_BLEU)}>{plage ? `${debut}–${fin}` : fin}</span>
     </div>
   );
 }
@@ -2338,10 +2372,15 @@ function CommercePanel() {
       </aside>
 
       {/* ── Zone principale ── */}
+      {/* L'accent suit le sens affiché — bleu à l'export, orange à l'import —
+          comme dans le commerce extérieur : la couleur dit de quel flux on
+          parle, sans qu'il faille relire la bascule. Le panneau de filtres
+          reste bleu : il sélectionne, il ne montre pas de donnée. */}
+      {(() => { const accent = vue === "exportateur" ? ACCENT_BLEU : ACCENT_ORANGE; return (
       <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
         {/* Header : pays → bascule Exportations/Importations → période */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: accent.trait, flexShrink: 0 }} />
           <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>{selPays?.nom || "—"}</h2>
           <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3, flexShrink: 0 }}>
             {VUES_COM.map(o => {
@@ -2349,7 +2388,7 @@ function CommercePanel() {
               return (
                 <button key={o.v} onClick={() => setVue(o.v)}
                   style={{ padding: "5px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const,
-                    background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#9aa5b4",
+                    background: actif ? "#fff" : "transparent", color: actif ? (o.v === "exportateur" ? NACE_BLEU : NACE_ORANGE) : "#9aa5b4",
                     boxShadow: actif ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s", fontFamily: "var(--font-google-sans)" }}>
                   {o.v === "exportateur" ? "Exportations" : "Importations"}
                 </button>
@@ -2357,7 +2396,7 @@ function CommercePanel() {
             })}
           </div>
           <BadgePeriode>{perLabel}</BadgePeriode>
-          <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
+          <button onClick={() => setShowTable(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: accent.trait, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0 }}
             onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
             <Table size={14} /> Tableau de données
           </button>
@@ -2378,10 +2417,10 @@ function CommercePanel() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
               {cards.map((c, i) => (
                 <div key={i} style={{ background: "#fff", borderRadius: 14, padding: "13px 14px", border: "1px solid rgba(16,26,46,0.12)", boxShadow: "none", transition: "border-color 0.18s", minWidth: 0 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = accent.piste; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
                   <div style={{ marginBottom: 7 }}>
-                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: accent.trait, textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
                     {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
                   </div>
                   <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: "#1a1a2e", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
@@ -2395,8 +2434,8 @@ function CommercePanel() {
         {/* Graphes */}
         {balance.length > 0 && (() => {
           const expDir = vue === "exportateur";
-          const balSerie = [{ nom: "Balance commerciale", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
-          const fluxSerie = [{ nom: expDir ? "Exportations" : "Importations", couleur: "#004f91", data: balance.map(b => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations })) }];
+          const balSerie = [{ nom: "Balance commerciale", couleur: accent.trait, data: balance.map(b => ({ annee: b.annee, valeur: b.balance })) }];
+          const fluxSerie = [{ nom: expDir ? "Exportations" : "Importations", couleur: accent.trait, data: balance.map(b => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations })) }];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
               {/* 1. Évolution du total exporté / importé */}
@@ -2448,12 +2487,12 @@ function CommercePanel() {
                 <div style={carte}>
                   <div style={enTete}>
                     <h3 style={titreStyle}>{expDir ? "Poids des ressources exportées" : "Poids des ressources importées"}</h3>
-                    <BarreCumulAnnee annees={anneesTabs} annee={anneePoids} onAnnee={setAnneePoids} />
+                    <BarreCumulAnnee annees={anneesTabs} annee={anneePoids} onAnnee={setAnneePoids} accent={accent} />
                   </div>
                   {anneePoids !== null && chargTopsAnnee
                     ? <SkeletonRows n={Math.max(3, donutData.length || 6)} h={26} />
                     : donutData.length > 0
-                    ? <TableauPoidsRessources data={donutData} total={topsAff?.total || 0} />
+                    ? <TableauPoidsRessources data={donutData} total={topsAff?.total || 0} accent={accent} />
                     : anneePoids !== null && <Vide annee={anneePoids} />}
                 </div>
               )}
@@ -2461,12 +2500,12 @@ function CommercePanel() {
                 <div style={carte}>
                   <div style={enTete}>
                     <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
-                    <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} />
+                    <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} accent={accent} />
                   </div>
                   {anneeRepart !== null && chargRepartAnnee
                     ? <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
                     : parts.length > 0
-                    ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} />
+                    ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent} />
                     : anneeRepart !== null && <Vide annee={anneeRepart} />}
                 </div>
               )}
@@ -2474,6 +2513,7 @@ function CommercePanel() {
           );
         })()}
       </div>
+      ); })()}
       <ModalDonneesCommerce open={showTable} onClose={() => setShowTable(false)} selId={selId} vue={vue}
         nomPays={selPays?.nom || "—"} anneesTabs={anneesTabs} />
     </div>
@@ -2481,29 +2521,33 @@ function CommercePanel() {
 }
 
 // ── Bascule Cumul / année des tableaux de flux ────────────────────────────────
-// Un seul curseur continu (non contrôlé : fluidité native) : tout à droite le
-// Cumul de la période, puis en glissant vers la gauche les années en ordre
-// décroissant. La pastille reflète la position (Cumul ou l'année).
-function BarreCumulAnnee({ annees, annee, onAnnee }: { annees: number[]; annee: number | null; onAnnee: (a: number | null) => void }) {
+// Même curseur que le commerce extérieur — bornes, poignée, pastille — pour
+// qu'un seul geste se lise de la même façon d'un onglet à l'autre. La graduation
+// diffère : les années croissantes, puis un cran de plus tout à droite pour le
+// cumul de la période, qui est la lecture par défaut.
+function BarreCumulAnnee({ annees, annee, onAnnee, accent }: {
+  annees: number[]; annee: number | null; onAnnee: (a: number | null) => void; accent: AccentNace;
+}) {
   if (annees.length < 2) return null;
-  // Positions 0..n-1 = années croissantes, position n = Cumul (extrémité droite)
-  const n = annees.length;
+  const n = annees.length;                       // position n = Cumul
+  const i = annee == null ? n : Math.max(0, annees.indexOf(annee));
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: "auto", flexShrink: 0 }}>
-      <input type="range" min={0} max={n} step="any" defaultValue={n}
-        onInput={e => { const i = Math.round(Number((e.target as HTMLInputElement).value)); onAnnee(i >= n ? null : annees[i]); }}
-        aria-label="Cumul ou année"
-        style={{ width: 190, accentColor: "#004f91", cursor: "pointer" }} />
-      <span style={{ fontSize: 10.5, fontWeight: 800, padding: "3px 11px", borderRadius: 999, background: "#004f91", color: "#fff", flexShrink: 0, minWidth: 44, textAlign: "center" }}>
-        {annee ?? "Cumul"}
-      </span>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 11, marginLeft: "auto", flexShrink: 0, ...varsAccent(accent) }}>
+      <StylesCurseurNace />
+      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{annees[0]}</span>
+      <input type="range" min={0} max={n} step={1} value={i}
+        onChange={e => { const k = Number(e.target.value); onAnnee(k >= n ? null : annees[k]); }}
+        aria-label="Cumul ou année" className="nace-curseur" style={{ width: 150 }} />
+      <span style={pastilleCurseur(accent)}>{annee ?? "Cumul"}</span>
     </span>
   );
 }
 
 // ── Tableau du poids des ressources (Flux bilatéraux) ─────────────────────────
 // Tableau fixe : ressource · valeur · part du total · barre, total en pied.
-function TableauPoidsRessources({ data, total }: { data: { label: string; valeur: number }[]; total: number }) {
+function TableauPoidsRessources({ data, total, accent }: {
+  data: { label: string; valeur: number }[]; total: number; accent: AccentNace;
+}) {
   const somme = total || data.reduce((s, d) => s + d.valeur, 0) || 1;
   const max = Math.max(1e-9, ...data.map(d => d.valeur));
   return (
@@ -2520,13 +2564,13 @@ function TableauPoidsRessources({ data, total }: { data: { label: string; valeur
         const zebre = i % 2 === 1;
         return (
           <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 8px", borderRadius: 8, background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.05)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = accent.voile; }}
             onMouseLeave={e => { e.currentTarget.style.background = zebre ? "#F8F9FB" : "transparent"; }}>
             <span title={d.label} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: autres ? "#9aa5b4" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.label}</span>
-            <span style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: autres ? "#9aa5b4" : "#004f91", textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(d.valeur)}</span>
+            <span style={{ width: 84, fontSize: 11.5, fontWeight: 800, color: autres ? "#9aa5b4" : accent.trait, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtUSD(d.valeur)}</span>
             <span style={{ width: 56, fontSize: 10.5, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>{(d.valeur / somme * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>
             <div style={{ width: "34%", height: 8, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-              <div style={{ height: "100%", width: `${Math.max(1.5, d.valeur / max * 100)}%`, borderRadius: 99, background: autres ? "#C5BFBB" : "#004f91", opacity: autres ? 0.6 : 0.8 }} />
+              <div style={{ height: "100%", width: `${Math.max(1.5, d.valeur / max * 100)}%`, borderRadius: 99, background: autres ? "#C5BFBB" : accent.trait, opacity: autres ? 0.6 : 0.8 }} />
             </div>
           </div>
         );
@@ -2552,8 +2596,9 @@ function DrapeauPays({ iso, nom }: { iso?: string | null; nom: string }) {
   return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
 }
 
-function TableauPartenairesRessources({ partenaires, ressources }: {
-  partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[]; ressources: string[];
+function TableauPartenairesRessources({ partenaires, ressources, accent }: {
+  partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[];
+  ressources: string[]; accent: AccentNace;
 }) {
   return (
     <div style={{ overflowX: "auto" }}>
@@ -2565,7 +2610,7 @@ function TableauPartenairesRessources({ partenaires, ressources }: {
             {ressources.map(r => (
               <th key={r} style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7", whiteSpace: "nowrap" }}>{r}</th>
             ))}
-            <th style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
+            <th style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: accent.trait, textTransform: "uppercase", borderBottom: "1px solid #ECEAE7" }}>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -2576,11 +2621,11 @@ function TableauPartenairesRessources({ partenaires, ressources }: {
             const podium = i < 3;
             return (
             <tr key={p.nom} style={{ background: zebre ? "#F8F9FB" : "transparent", transition: "background 0.12s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(0,79,145,0.05)"; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = accent.voile; }}
               onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = zebre ? "#F8F9FB" : "transparent"; }}>
               <td style={{ padding: "7px 6px 7px 10px", borderBottom: "1px solid #F2F0EF" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%",
-                  background: podium ? "#004f91" : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10.5, fontWeight: 800 }}>{i + 1}</span>
+                  background: podium ? accent.trait : "#EFEDEA", color: podium ? "#fff" : "#9aa5b4", fontSize: 10.5, fontWeight: 800 }}>{i + 1}</span>
               </td>
               <td style={{ padding: "7px 10px", borderBottom: "1px solid #F2F0EF" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
@@ -2593,7 +2638,7 @@ function TableauPartenairesRessources({ partenaires, ressources }: {
                 const dominante = v > 0 && v === vMax;
                 return <td key={r} style={{ padding: "7px 10px", fontSize: 11.5, fontWeight: dominante ? 800 : v > 0 ? 600 : 400, color: dominante ? "#188038" : v > 0 ? "#1a1a2e" : "#C5BFBB", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF", fontVariantNumeric: "tabular-nums" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
               })}
-              <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 800, color: "#004f91", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(p.total)}</td>
+              <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 800, color: accent.trait, textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid #F2F0EF", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(p.total)}</td>
             </tr>
             );
           })}
