@@ -286,7 +286,11 @@ function statistiquesPeriode(serie: Map<number, number | null>, per: Periode, an
 // `v`/`p` portent la valeur qui classe : celle de l'année en lecture annuelle,
 // la somme de l'intervalle sinon. `sv`/`sp` ne sont renseignés qu'en
 // intervalle, où ils alimentent les colonnes Moyenne, Min et Max.
-type AgrNace = { v: number | null; p: number | null; sv: Stats | null; sp: Stats | null };
+// `serie` porte le détail annuel. L'affichage ne s'en sert pas — il ne montre
+// que le résumé — mais l'export Excel en fait une colonne par année, ce qui est
+// la matière première d'une analyse plus poussée.
+type AgrNace = { v: number | null; p: number | null; sv: Stats | null; sp: Stats | null;
+                 serie: { v: Map<number, number | null>; p: Map<number, number | null> } };
 function indexerNace<T extends { annee: number; valeur: number | null; poids: number | null }>(
   lignes: T[], cle: (r: T) => string, per: Periode,
 ): Map<string, AgrNace> {
@@ -304,18 +308,18 @@ function indexerNace<T extends { annee: number; valeur: number | null; poids: nu
   const m = new Map<string, AgrNace>();
   for (const [k, s] of series) {
     if (!per.intervalle) {
-      m.set(k, { v: s.v.get(per.fin) ?? null, p: s.p.get(per.fin) ?? null, sv: null, sp: null });
+      m.set(k, { v: s.v.get(per.fin) ?? null, p: s.p.get(per.fin) ?? null, sv: null, sp: null, serie: s });
       continue;
     }
     const sv = statistiquesPeriode(s.v, per, annees), sp = statistiquesPeriode(s.p, per, annees);
-    m.set(k, { v: sv.somme, p: sp.somme, sv, sp });
+    m.set(k, { v: sv.somme, p: sp.somme, sv, sp, serie: s });
   }
   return m;
 }
 
 function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drapeaux, top,
   entete, nomPortee, totalLibelle, onOuvrir, montrerParent, libelleParent, balance = true,
-  granularite, uniteBascule, periode, totalPeriode }: {
+  granularite, uniteBascule, actions, periode, totalPeriode }: {
   lignes: LigneClassement[];
   // Libellé de la ligne fourre-tout à épingler hors classement, s'il y en a
   // une : « Autres pays » pour les zones, « Autres produits » pour les
@@ -340,7 +344,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // niveau géographique) et unité de mesure — plutôt que par l'en-tête de
   // section : ce sont des réglages de lecture du tableau, pas de la section,
   // qui ne garde que le sens des échanges et l'année.
-  granularite?: React.ReactNode; uniteBascule?: React.ReactNode;
+  granularite?: React.ReactNode; uniteBascule?: React.ReactNode; actions?: React.ReactNode;
   periode: Periode;
   // Statistiques de la portée entière : la moyenne, le minimum et le maximum
   // du total ne se déduisent pas des lignes — la somme des minima n'est le
@@ -464,11 +468,13 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
     <div className="ds-carte" style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
       {/* Barre d'outils du tableau : granularité et fil d'Ariane à gauche,
           unité de mesure à droite */}
-      {(granularite || entete || uniteBascule) && (
+      {(granularite || entete || uniteBascule || actions) && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {granularite}
           {entete}
-          {uniteBascule && <span style={{ marginLeft: "auto" }}>{uniteBascule}</span>}
+          <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
+            {uniteBascule}{actions}
+          </span>
         </div>
       )}
 
@@ -860,6 +866,30 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
     }) };
   }, [niveau, sens, autre, periode, cont, reg, pys, ratt, zoomCont, zoomReg]);
 
+  // Le classeur couvre les TROIS granularités et le monde entier, quelle que
+  // soit la descente en cours : dans un tableur, on filtre soi-même.
+  const exporter = async () => {
+    const unite = mesure === "valeur" ? "M FCFA" : "tonnes";
+    const feuilles: FeuilleXL[] = [];
+    if (cont?.disponible) feuilles.push(feuilleFamille(
+      "Continents", "Continent", cont.donnees, r => r.continent, sens, mesure, periode,
+      { unite, balance: true }));
+    if (reg?.disponible) feuilles.push(feuilleFamille(
+      "Régions", "Région", reg.donnees, r => r.region, sens, mesure, periode,
+      { unite, balance: true, parent: k => ratt[k] ?? null, titreParent: "Continent" }));
+    if (pys?.disponible) feuilles.push(feuilleFamille(
+      // Clé région·pays, comme le tableau : « Autres pays » existe dans chaque
+      // région et n'est pas le même reste de l'une à l'autre.
+      "Pays partenaires", "Partenaire", pys.donnees, r => `${r.region}·${r.pays}`, sens, mesure, periode,
+      { unite, balance: true, agregeSous: AUTRES_PAYS, libelle: k => k.split("·")[1] ?? k,
+        parent: k => { const r = k.split("·")[0]; return ratt[r] ? `${r} (${ratt[r]})` : r; },
+        titreParent: "Région (continent)" }));
+    const editions = [cont, reg, pys].flatMap(x => x?.editions ?? []);
+    await ecrireClasseurNace(
+      `NACE_Zones-geographiques_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
+      contexteNace(mesure, periode, editions), feuilles);
+  };
+
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
   // Fil d'Ariane. « Océanie » et « Divers » nomment à la fois un continent et
   // une région : descendre dans la région produirait deux crans identiques —
@@ -897,6 +927,8 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
         <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
           valeur={mesure} onChange={setMesure} accent={couleur} />
       }
+      actions={<BoutonExcel construire={exporter}
+        titre={`Télécharger continents, régions et pays — ${sens === "export" ? "exportations" : "importations"}, ${mesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(periode)}`} />}
       onOuvrir={l => niveau === "continent"
         ? setPortee({ niveau: "region", cont: l.nom, reg: null })
         : setPortee({ niveau: "pays", cont: l.parent ?? zoomCont, reg: l.nom })}
@@ -922,6 +954,238 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
         </div>
       }
     />
+  );
+}
+
+// ── Export Excel ─────────────────────────────────────────────────────────────
+// Le classeur reprend EXACTEMENT la sélection en cours — sens, unité, période —
+// mais toutes les lignes, pas seulement celles que le tableau montre, et toutes
+// les nomenclatures de la section, pas seulement celle affichée : à l'écran on
+// compare, dans un tableur on dépouille.
+//
+// En intervalle, chaque feuille ajoute le détail annuel après le résumé. C'est
+// ce qui rend l'analyse possible ailleurs : une somme et une médiane se
+// recalculent, une série annuelle ne se devine pas.
+type ColonneXL = { titre: string; largeur: number; format?: string };
+type FeuilleXL = { nom: string; titre: string; colonnes: ColonneXL[];
+                   lignes: (string | number | null)[][]; total?: (string | number | null)[] };
+
+const FMT_NOMBRE = "#,##0";
+const FMT_PART = "0.0%";
+
+// Un nom de feuille Excel : 31 caractères au plus, et []:*?/\ interdits.
+const nomFeuille = (t: string) => t.replace(/[[\]:*?/\\]/g, " ").slice(0, 31);
+
+function libellePeriode(per: Periode) {
+  return per.intervalle ? `${per.debut} à ${per.fin}` : String(per.fin);
+}
+
+// Colonnes de statistiques, identiques dans toutes les feuilles pour que deux
+// onglets se comparent sans relire les en-têtes.
+function colonnesStats(per: Periode, unite: string, annees: number[]): ColonneXL[] {
+  if (!per.intervalle) return [
+    { titre: `Valeur (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: "Part", largeur: 9, format: FMT_PART },
+    { titre: "Part cumulée", largeur: 13, format: FMT_PART },
+    { titre: `Variation vs ${per.fin - 1}`, largeur: 15, format: FMT_PART },
+  ];
+  return [
+    { titre: `Somme (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: `Moyenne (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: `Médiane (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: `Minimum (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: "Année du minimum", largeur: 16 },
+    { titre: `Maximum (${unite})`, largeur: 16, format: FMT_NOMBRE },
+    { titre: "Année du maximum", largeur: 16 },
+    ...annees.map(a => ({ titre: String(a), largeur: 14, format: FMT_NOMBRE })),
+  ];
+}
+
+// Valeurs correspondantes. `part` et `cumul` sont des fractions : Excel les
+// affiche en pourcentage grâce au format, et elles restent calculables.
+function valeursStats(a: AgrNace | undefined, per: Periode, mesure: NaceMesure, annees: number[],
+                      part: number | null, cumul: number | null, prec: number | null,
+): (string | number | null)[] {
+  const serie = mesure === "valeur" ? a?.serie.v : a?.serie.p;
+  const v = a ? (mesure === "valeur" ? a.v : a.p) : null;
+  if (!per.intervalle) return [
+    v, part, cumul,
+    prec != null && prec !== 0 && v != null ? (v - prec) / Math.abs(prec) : null,
+  ];
+  const st = (mesure === "valeur" ? a?.sv : a?.sp) ?? null;
+  return [
+    st?.somme ?? null, st?.moyenne ?? null, st?.mediane ?? null,
+    st?.min ?? null, st?.anMin ?? null, st?.max ?? null, st?.anMax ?? null,
+    ...annees.map(an => serie?.get(an) ?? null),
+  ];
+}
+
+async function ecrireClasseurNace(fichier: string, entete: string[], feuilles: FeuilleXL[]) {
+  // SheetJS chargé à la demande (~400 Ko) : uniquement au clic.
+  const XLSX = await import("xlsx");
+  const wb = XLSX.utils.book_new();
+  for (const f of feuilles) {
+    // Bandeau de contexte avant le tableau : ouvert six mois plus tard, le
+    // fichier doit encore dire de quoi il parle et d'où il vient.
+    const aoa: (string | number | null)[][] = [
+      [f.titre], ...entete.map(l => [l]), [],
+      f.colonnes.map(c => c.titre),
+      ...f.lignes,
+      ...(f.total ? [f.total] : []),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = f.colonnes.map(c => ({ wch: c.largeur }));
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(1, f.colonnes.length - 1) } }];
+    const lgEntete = 1 + entete.length + 1;              // titre + contexte + ligne vide
+    const derniere = lgEntete + f.lignes.length + (f.total ? 1 : 0);
+    ws["!autofilter"] = { ref: XLSX.utils.encode_range(
+      { s: { r: lgEntete, c: 0 }, e: { r: derniere, c: f.colonnes.length - 1 } }) };
+    // Formats numériques posés cellule par cellule : le format vit sur la
+    // cellule dans le fichier xlsx, il n'y a pas de format de colonne.
+    f.colonnes.forEach((c, ci) => {
+      if (!c.format) return;
+      for (let r = lgEntete + 1; r <= derniere; r++) {
+        const cell = ws[XLSX.utils.encode_cell({ r, c: ci })];
+        if (cell && typeof cell.v === "number") cell.z = c.format;
+      }
+    });
+    XLSX.utils.book_append_sheet(wb, ws, nomFeuille(f.nom));
+  }
+  XLSX.writeFile(wb, fichier);
+}
+
+// Années effectivement couvertes par la période dans une famille donnée : une
+// famille peut ne pas porter toutes les années de l'onglet.
+function anneesDe(lignes: { annee: number }[], per: Periode): number[] {
+  const s = new Set<number>();
+  for (const r of lignes) if (r.annee >= per.debut && r.annee <= per.fin) s.add(r.annee);
+  return [...s].sort((a, b) => a - b);
+}
+
+// Construit une feuille à partir d'une famille brute. Le classement, le total
+// et les parts sont recalculés ici avec les mêmes fonctions que l'affichage —
+// c'est la même vérité, pas une seconde implémentation.
+function feuilleFamille<T extends NaceLigneCle>(
+  nom: string, colonneLibelle: string, source: { export: T[]; import: T[] },
+  cle: (r: T) => string, sens: ZoneSens, mesure: NaceMesure, per: Periode,
+  opts: { unite: string; parent?: (k: string) => string | null; titreParent?: string;
+          libelle?: (k: string) => string; balance?: boolean; agregeSous?: string } = { unite: "M FCFA" },
+): FeuilleXL {
+  const autre: ZoneSens = sens === "export" ? "import" : "export";
+  const annees = anneesDe(source[sens], per);
+  const idx = indexerNace(source[sens], cle, per);
+  const idxAutre = opts.balance ? indexerNace(source[autre], cle, per) : null;
+  const prec = per.intervalle ? null : indexerNace(source[sens], cle, anneeSeule(per.fin - 1));
+  const mv = (a: AgrNace | undefined) => (a ? (mesure === "valeur" ? a.v : a.p) : null) ?? 0;
+
+  // Le fourre-tout — « Autres produits », « Autres pays » — sort du classement
+  // et passe en dernier, exactement comme à l'écran : ce n'est pas une modalité
+  // et lui donner le rang 1 ferait dire au fichier autre chose que le tableau.
+  // Il reste dans la feuille, et dans le total.
+  const estAgrege = (k: string) => opts.agregeSous != null && (opts.libelle ? opts.libelle(k) : k) === opts.agregeSous;
+  const classees = [...idx.keys()].filter(k => !estAgrege(k)).sort((x, y) => mv(idx.get(y)) - mv(idx.get(x)));
+  const cles = [...classees, ...[...idx.keys()].filter(estAgrege)];
+  const total = cles.reduce((t, k) => t + Math.max(0, mv(idx.get(k))), 0);
+  let cumul = 0;
+  const lignes = cles.map((k, i) => {
+    const range = i < classees.length;
+    if (range) cumul += Math.max(0, mv(idx.get(k)));
+    const a = idx.get(k);
+    const pr = prec ? (mesure === "valeur" ? prec.get(k)?.v : prec.get(k)?.p) ?? null : null;
+    const bal = idxAutre
+      ? (sens === "export" ? mv(a) - mv(idxAutre.get(k)) : mv(idxAutre.get(k)) - mv(a))
+      : null;
+    return [
+      range ? i + 1 : null, opts.libelle ? opts.libelle(k) : k,
+      ...(opts.parent ? [opts.parent(k)] : []),
+      ...valeursStats(a, per, mesure, annees, total ? Math.max(0, mv(a)) / total : null,
+                      range && total ? cumul / total : null, pr),
+      ...(idxAutre ? [bal] : []),
+    ];
+  });
+  // Total de la portée agrégé comme les lignes : en Min/Max/Médiane, leur
+  // somme ne le donnerait pas.
+  const agTotal = indexerNace(source[sens], () => "∑", per).get("∑");
+  const agAutre = idxAutre ? indexerNace(source[autre], () => "∑", per).get("∑") : null;
+  const prTotal = prec ? indexerNace(source[sens], () => "∑", anneeSeule(per.fin - 1)).get("∑") : null;
+  const prV = prTotal ? (mesure === "valeur" ? prTotal.v : prTotal.p) : null;
+
+  return {
+    nom, titre: `${nom} — ${sens === "export" ? "Exportations" : "Importations"} · ${opts.unite === "tonnes" ? "poids net" : "valeur"} · ${libellePeriode(per)}`,
+    colonnes: [
+      { titre: "Rang", largeur: 6 },
+      { titre: colonneLibelle, largeur: 44 },
+      ...(opts.parent ? [{ titre: opts.titreParent ?? "Rattachement", largeur: 26 }] : []),
+      ...colonnesStats(per, opts.unite, annees),
+      ...(idxAutre ? [{ titre: `Balance (${opts.unite})`, largeur: 18, format: FMT_NOMBRE }] : []),
+    ],
+    lignes,
+    total: [
+      null, "ENSEMBLE", ...(opts.parent ? [null] : []),
+      ...valeursStats(agTotal, per, mesure, annees, null, null, prV),
+      ...(agAutre ? [sens === "export" ? mv(agTotal) - mv(agAutre) : mv(agAutre) - mv(agTotal)] : []),
+    ],
+  };
+}
+
+// Sections 03 et 04 : deux feuilles par portée. Les fondre en une seule
+// obligerait à choisir un classement — celui des clients ou celui des
+// fournisseurs — et à laisser des trous pour les pays absents d'un des sens.
+function feuillesPortees(pys: NaceDataPays, portees: { nom: string; garde: (r: NacePaysLigne) => boolean }[],
+                         mesure: NaceMesure, per: Periode, montrerRegion: boolean): FeuilleXL[] {
+  const unite = mesure === "valeur" ? "M FCFA" : "tonnes";
+  return portees.flatMap(z => {
+    const src = { export: pys.donnees.export.filter(z.garde), import: pys.donnees.import.filter(z.garde) };
+    if (!src.export.length && !src.import.length) return [];
+    return (["export", "import"] as ZoneSens[]).map(sens => ({
+      ...feuilleFamille(
+        `${z.nom} — ${sens === "export" ? "Clients" : "Fournisseurs"}`, "Partenaire", src,
+        r => `${r.region}·${r.pays}`, sens, mesure, per,
+        { unite, balance: true, agregeSous: AUTRES_PAYS, libelle: k => k.split("·")[1] ?? k,
+          ...(montrerRegion ? { parent: (k: string) => k.split("·")[0], titreParent: "Région" } : {}) }),
+    }));
+  });
+}
+
+// Bandeau de contexte identique dans toutes les feuilles : sans lui, un fichier
+// retrouvé plus tard ne dit ni sa source, ni son unité, ni sa période.
+function contexteNace(mesure: NaceMesure, per: Periode, editions?: number[]): string[] {
+  return [
+    "Source : Notes d'analyse du commerce extérieur (NACE), ANSD — Sénégal",
+    `Unité : ${mesure === "valeur" ? "millions de FCFA" : "tonnes (poids net)"}`,
+    `Période : ${libellePeriode(per)}`,
+    ...(editions?.length ? [`Éditions NACE mobilisées : ${[...new Set(editions)].sort().join(", ")} — chaque année est lue dans l'édition la plus récente qui la couvre`] : []),
+    `Extrait le ${new Date().toLocaleDateString("fr-FR")} depuis la plateforme APIX`,
+  ];
+}
+const suffixeFichier = (mesure: NaceMesure, per: Periode) =>
+  `${mesure === "valeur" ? "valeur" : "volume"}_${per.intervalle ? `${per.debut}-${per.fin}` : per.fin}`;
+
+// Bouton d'export d'une section. L'état d'attente est réel : SheetJS pèse
+// ~400 Ko et n'est chargé qu'ici, le premier clic met donc un instant.
+function BoutonExcel({ construire, titre }: { construire: () => Promise<void>; titre: string }) {
+  const [enCours, setEnCours] = useState(false);
+  const [echec, setEchec] = useState(false);
+  return (
+    <>
+    {/* Les keyframes voyagent avec le bouton : celles définies plus bas dans le
+        fichier appartiennent à un composant que cet onglet ne monte pas. */}
+    <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+    <button
+      onClick={async () => {
+        if (enCours) return;
+        setEnCours(true); setEchec(false);
+        try { await construire(); } catch { setEchec(true); } finally { setEnCours(false); }
+      }}
+      title={echec ? "L'export a échoué — réessayer" : titre}
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1px solid #E8E5E3",
+        background: "#fff", borderRadius: 999, padding: "4px 13px", fontSize: 11, fontWeight: 700,
+        color: echec ? "#dc2626" : "#188038", cursor: enCours ? "progress" : "pointer",
+        fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", boxShadow: "var(--ombre-1)" }}>
+      {enCours ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : <FileSpreadsheet size={12} />}
+      {echec ? "Réessayer" : "Excel"}
+    </button>
+    </>
   );
 }
 
@@ -1123,6 +1387,29 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
   }, [famille, sens, autre, periode, principaux, gu, regroupes, chapitres]);
 
   const nom = FAMILLES_PRODUITS.find(f => f.v === famille)?.l ?? "Produits";
+
+  // Le classeur reprend la sélection — sens, unité, période — mais couvre les
+  // QUATRE nomenclatures et toutes leurs lignes : la bascule sert à comparer à
+  // l'écran, elle n'a pas à amputer un fichier destiné au dépouillement.
+  const exporter = async () => {
+    const sources: { nom: string; colonne: string; cle: string;
+                     src: { export: NaceLigneCle[]; import: NaceLigneCle[] } | null; balance: boolean;
+                     agrege?: string }[] = [
+      { nom: "Principaux produits", colonne: "Produit", cle: "produit", src: principaux?.disponible ? principaux.donnees : null, balance: false, agrege: AUTRES_PRODUITS },
+      { nom: "Groupes d'utilisation", colonne: "Groupe", cle: "groupe", src: gu?.disponible ? gu.donnees : null, balance: true },
+      { nom: "Produits regroupés", colonne: "Produit", cle: "produit", src: regroupes?.disponible ? regroupes.donnees : null, balance: false, agrege: AUTRES_PRODUITS },
+      { nom: "Chapitres SH", colonne: "Chapitre", cle: "chapitre", src: chapitres?.disponible ? chapitres.donnees : null, balance: true },
+    ];
+    const editions = [principaux, gu, regroupes, chapitres].flatMap(x => x?.editions ?? []);
+    const feuilles = sources.filter(x => x.src).map(x => feuilleFamille(
+      x.nom, x.colonne, x.src!, r => String((r as unknown as Record<string, unknown>)[x.cle]),
+      sens, mesure, periode,
+      { unite: mesure === "valeur" ? "M FCFA" : "tonnes", balance: x.balance, agregeSous: x.agrege }));
+    await ecrireClasseurNace(
+      `NACE_Produits_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
+      contexteNace(mesure, periode, editions), feuilles);
+  };
+
   return (
     <TableauClassementNace
       lignes={lignes}
@@ -1142,6 +1429,8 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
         <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
           valeur={mesure} onChange={setMesure} accent={couleur} />
       }
+      actions={<BoutonExcel construire={exporter}
+        titre={`Télécharger les quatre nomenclatures — ${sens === "export" ? "exportations" : "importations"}, ${mesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(periode)}`} />}
     />
   );
 }
@@ -1442,6 +1731,13 @@ function CommerceExterieurPanel() {
         const dansC = (r: NacePaysLigne) => ratt[r.region] === c;
         const clients = classerPartenaires(pys, "export", p, 10, contMesure, dansC);
         const fourn = classerPartenaires(pys, "import", p, 10, contMesure, dansC);
+        // Tous les continents, pas seulement celui affiché : la bascule sert à
+        // regarder, pas à décider de ce qu'on emporte.
+        const exporterCont = () => ecrireClasseurNace(
+          `NACE_Partenaires-par-continent_${suffixeFichier(contMesure, p)}.xlsx`,
+          contexteNace(contMesure, p, pys.editions),
+          feuillesPortees(pys, presents.map(x => ({ nom: x, garde: (r: NacePaysLigne) => ratt[r.region] === x })),
+                          contMesure, p, true));
         return (
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
@@ -1460,6 +1756,8 @@ function CommerceExterieurPanel() {
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={contMesure} onChange={setContMesure} />
+                <BoutonExcel construire={exporterCont}
+                  titre={`Télécharger les ${presents.length} continents, clients et fournisseurs — ${contMesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Le rattachement régional est montré ici : dans un continent
@@ -1497,6 +1795,15 @@ function CommerceExterieurPanel() {
         const membre = (r: NacePaysLigne) => r.code_iso2 != null && membres.has(r.code_iso2);
         const clients = classerPartenaires(pys, "export", p, 20, grpMesure, membre);
         const fourn = classerPartenaires(pys, "import", p, 20, grpMesure, membre);
+        // Tous les groupements du référentiel, pas seulement celui affiché.
+        const exporterGrp = () => ecrireClasseurNace(
+          `NACE_Partenaires-par-groupement_${suffixeFichier(grpMesure, p)}.xlsx`,
+          [...contexteNace(grpMesure, p, pys.editions),
+           `Composition des groupements : référentiel APIX — ${groupements.map(x => `${x.code} (${x.membres.length} membres)`).join(", ")}`],
+          feuillesPortees(pys, groupements.map(x => {
+            const m = new Set(x.membres);
+            return { nom: x.code, garde: (r: NacePaysLigne) => r.code_iso2 != null && m.has(r.code_iso2) };
+          }), grpMesure, p, false));
         if (!clients.lignes.length && !fourn.lignes.length) return null;
         return (
           <>
@@ -1516,6 +1823,8 @@ function CommerceExterieurPanel() {
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={grpMesure} onChange={setGrpMesure} />
+                <BoutonExcel construire={exporterGrp}
+                  titre={`Télécharger les ${groupements.length} groupements, clients et fournisseurs — ${grpMesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Pas de rattachement régional ici : tous les membres de la
