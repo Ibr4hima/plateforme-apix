@@ -30,8 +30,8 @@ export default function AvantageVueModal({ avg: a, onClose }: { avg:any; onClose
       {(data.selections || []).length > 0 && (
         <FicheSection titre="Avantages & incitations">
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {(data.selections || []).map((s: any) => (
-              <FicheCarteNeutre key={s.id}>
+            {(data.selections || []).map((s: any, i: number) => (
+              <FicheCarteNeutre key={s.id ?? i}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: s.commentaire ? 6 : 0 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#188038", flexShrink: 0 }} />
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#188038" }}>{s.type_libelle}</span>

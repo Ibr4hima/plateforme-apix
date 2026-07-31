@@ -2,33 +2,43 @@
 
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { Building2, ChevronDown, ChevronUp, Clock, FileText, Globe, Mail, MapPin, MessageCircle, MessageSquare, Phone, Search, Send, SlidersHorizontal, User, Video, X } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { parsePhoneNumber } from "libphonenumber-js";
-import { useNaema } from "@/lib/referentiels";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
-import { demarrerRedimension } from "@/lib/redimension";
 import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
-import ProspectVueModal, { ilYa, badgeProspect, cycleCourantDebut, contraintesCycleCourant, canalIcon } from "@/components/shared/ProspectVueModal";
+import ProspectVueModal, { ilYa, badgeProspect } from "@/components/shared/ProspectVueModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
+// ── Statuts : un seul mapping jeton + couleur, partagé par les cartes et le
+// filtre. Trois copies vivaient dans ce fichier, dont deux recréées à chaque
+// carte rendue.
+const STATUT_BADGE: Record<string, React.CSSProperties> = {
+  "En cours":             badge_vert,
+  "À recontacter":        badge_bleu,
+  "Installation à venir": badge_vert,
+  "Inactif":              badge_rouge,
+  "Décliné":              badge_gris,
+  "En attente":           badge_gris,
+};
+const STATUT_COULEUR: Record<string, string> = {
+  "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
+  "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
+};
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
 
 function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "cibles" | "historique" | "termines"; onOpen?: () => void; onOpenInfos?: () => void }) {
   const badge = badgeProspect(p);
   const tel = p.telephones?.[0] || p.points_focaux?.[0]?.telephones?.[0] || "";
-  const mail = p.mails?.[0] || p.points_focaux?.[0]?.mails?.[0] || "";
-  const nbActs = (p.activite_ids || []).length;
   // Second bloc libellé, contextuel selon l'onglet
   const info2 = onglet === "cibles"
     ? { label: "Téléphone", value: tel ? fmtPhone(tel) : null }
@@ -40,25 +50,11 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         ? { label: "Décliné le", value: p.issue_conclu_le ? fmtDate(p.issue_conclu_le.slice(0, 10)) : null }
         : { label: "Conclusion", value: null });
 
-  // Statuts sur les jetons du design system : progression → vert, inactif →
-  // rouge, décliné / en attente → gris ; l'accent de survol suit la couleur.
-  const STATUT_BADGE: Record<string, React.CSSProperties> = {
-    "En cours":             badge_vert,
-    "À recontacter":        badge_bleu,
-    "Installation à venir": badge_vert,
-    "Inactif":              badge_rouge,
-    "Décliné":              badge_gris,
-    "En attente":           badge_gris,
-  };
-  const STATUT_HEX: Record<string, string> = {
-    "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
-    "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
-  };
   const badgeStatut = badge ? (STATUT_BADGE[badge.label] || badge_gris) : null;
-  const hoverC = badge ? (STATUT_HEX[badge.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
+  const hoverC = badge ? (STATUT_COULEUR[badge.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
 
   return (
-    <div onClick={onOpen}
+    <div {...(onOpen ? carteCliquable(onOpen) : {})}
       style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: onOpen ? "pointer" : "default", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = hoverC; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
@@ -110,14 +106,18 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
       {/* Actions (deux cibles de clic distinctes : la barre reste nécessaire) */}
       {(onglet === "historique" || onglet === "termines") && (
         <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
-          <div onClick={ev => { ev.stopPropagation(); onOpenInfos?.(); }}
+          <div role="button" tabIndex={0}
+            onKeyDown={ev => { ev.stopPropagation(); if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOpenInfos?.(); } }}
+            onClick={ev => { ev.stopPropagation(); onOpenInfos?.(); }}
             style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
             Infos investisseur
           </div>
           <div style={{ width: 1, background: "#F2F0EF" }}/>
-          <div onClick={ev => { ev.stopPropagation(); onOpen?.(); }}
+          <div role="button" tabIndex={0}
+            onKeyDown={ev => { ev.stopPropagation(); if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOpen?.(); } }}
+            onClick={ev => { ev.stopPropagation(); onOpen?.(); }}
             style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
@@ -162,22 +162,12 @@ export default function ProspectsPage() {
     : onglet === "termines"
     ? ["Installation à venir", "Décliné"]
     : [];
-  // Chaque statut affiche sa couleur de badge (vert / rouge / gris) une fois coché.
-  const STATUT_COULEUR: Record<string, string> = {
-    "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
-    "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
-  };
   // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
   useEffect(() => { setStatutSel([]); }, [onglet]);
 
-  // Sidebar
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(260);
-  const isResizing = useRef(false);
-  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 480);
-
+  const [erreur, setErreur] = useState(false);
   const charger = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); setErreur(false);
     try {
       const [c, e, t] = await Promise.all([
         fetchTous(`${API_BASE}/prospects?conclu=false&contactes=false`),
@@ -193,7 +183,7 @@ export default function ProspectsPage() {
       const secs = [...new Set(tous.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[];
       setPaysOpts(pays.sort());
       setSecteurOpts(secs.sort());
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); setErreur(true); }
     finally { setLoading(false); }
   }, []);
 
@@ -222,12 +212,9 @@ export default function ProspectsPage() {
   const reinit = () => { setRecherche(""); setPaysSel([]); setSecteursSel([]); setStatutSel([]); };
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length + statutSel.length;
 
-  const total = cibles.length + enContact.length + termines.length;
-
   return (
     <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ── */}
       <BarreTitre titre="Prospects" compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[
@@ -240,45 +227,20 @@ export default function ProspectsPage() {
       {/* ── Corps : sidebar + grille ── */}
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Sidebar */}
-        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "100vh", overflowY: "auto" as const, position: "sticky" as const, top: 0, display: "flex", flexDirection: "column" as const }}>
-          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-          {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute" as const, right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent", transition: "background 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.3)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
-          <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
-            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Filtres</span>}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
-                <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
-                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
-              </button>
-              {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser"
-                style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center", transition: "background 0.15s" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
-                <span className="material-symbols-outlined" style={{ fontSize: 15, color: "#dc2626", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>close</span>
-              </button>}
-            </div>
-          </div>
-          {sidebarOpen && (
-            <div style={{ padding: "16px", overflowY: "auto" as const, flex: 1 }}>
-              {/* Recherche */}
-              <div style={{ position: "relative" as const, marginBottom: 18 }}>
-                <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
-                <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…"
-                  style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
-                {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche" style={{ position: "absolute" as const, right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
-              </div>
+        <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+          recherche={recherche} setRecherche={setRecherche}>
               <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
               {statutOpts.length > 0 && <><SideFilter label="Statut" color="#004f91" colorOf={v => STATUT_COULEUR[v] || "#004f91"} items={statutOpts} selected={statutSel} onToggle={toggleStatut} /><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /></>}
               {paysOpts.length > 0 && <SideFilter label="Pays / Siège" color="#004f91" items={paysOpts} selected={paysSel} onToggle={togglePays} listMaxHeight={180} />}
               {secteurOpts.length > 0 && <><div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} /><SideFilter label="Secteur" color="#004f91" items={secteurOpts} selected={secteursSel} onToggle={toggleSecteur} listMaxHeight={180} /></>}
-            </div>
-          )}
-        </aside>
+        </PanneauFiltres>
 
         {/* Grille */}
         <div style={{ flex: 1, minWidth: 0, padding: "36px 40px 80px" }}>
           {loading ? (
             <SkeletonCards n={9} cols={3} height={200} />
+          ) : erreur ? (
+            <ErreurChargement onRetry={() => charger()} />
           ) : listeCourante.length === 0 ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
               <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
@@ -287,9 +249,12 @@ export default function ProspectsPage() {
               {hasFilter && <BoutonEffacerFiltres onClick={reinit}/>}
             </div>
           ) : (
+            <>
+            <CompteurResultats n={listeCourante.length} singulier="prospect" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
               {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => { setSelecInfos(false); setSelec(p); }} onOpenInfos={() => { setSelecInfos(true); setSelec(p); }} />)}
             </div>
+            </>
           )}
         </div>
       </div>
