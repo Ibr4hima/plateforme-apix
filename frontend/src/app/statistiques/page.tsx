@@ -253,10 +253,11 @@ const anneeSeule = (a: number): Periode => ({ debut: a, fin: a, intervalle: fals
 // Le minimum et le maximum, eux, ne portent que sur les années renseignées :
 // un « minimum de 0 » sur une année sans échange ne dirait rien, et l'année
 // affichée à côté serait arbitraire.
-type Stats = { somme: number | null; moyenne: number | null;
+type Stats = { somme: number | null; moyenne: number | null; mediane: number | null;
                min: number | null; anMin: number | null;
                max: number | null; anMax: number | null };
-function statistiquesPeriode(serie: Map<number, number | null>, per: Periode, nbAnnees: number): Stats {
+const VIDE: Stats = { somme: null, moyenne: null, mediane: null, min: null, anMin: null, max: null, anMax: null };
+function statistiquesPeriode(serie: Map<number, number | null>, per: Periode, annees: Set<number>): Stats {
   let somme: number | null = null;
   let min: number | null = null, anMin: number | null = null;
   let max: number | null = null, anMax: number | null = null;
@@ -266,7 +267,18 @@ function statistiquesPeriode(serie: Map<number, number | null>, per: Periode, nb
     if (min == null || v < min) { min = v; anMin = annee; }
     if (max == null || v > max) { max = v; anMax = annee; }
   }
-  return { somme, moyenne: somme != null && nbAnnees > 0 ? somme / nbAnnees : null, min, anMin, max, anMax };
+  if (somme == null) return VIDE;
+  // Moyenne et médiane décrivent toutes deux le niveau annuel courant : elles
+  // portent donc sur la MÊME population, les années couvertes par l'intervalle,
+  // une année sans échange comptant pour zéro. Les prendre sur des populations
+  // différentes rendrait leur écart illisible.
+  const valeurs = [...annees].map(a => serie.get(a) ?? 0).sort((x, y) => x - y);
+  const n = valeurs.length, mi = n >> 1;
+  return {
+    somme, moyenne: n > 0 ? somme / n : null,
+    mediane: n === 0 ? null : n % 2 ? valeurs[mi] : (valeurs[mi - 1] + valeurs[mi]) / 2,
+    min, anMin, max, anMax,
+  };
 }
 
 // Indexe une famille par modalité sur la période, en sommant d'abord les
@@ -295,7 +307,7 @@ function indexerNace<T extends { annee: number; valeur: number | null; poids: nu
       m.set(k, { v: s.v.get(per.fin) ?? null, p: s.p.get(per.fin) ?? null, sv: null, sp: null });
       continue;
     }
-    const sv = statistiquesPeriode(s.v, per, annees.size), sp = statistiquesPeriode(s.p, per, annees.size);
+    const sv = statistiquesPeriode(s.v, per, annees), sp = statistiquesPeriode(s.p, per, annees);
     m.set(k, { v: sv.somme, p: sp.somme, sv, sp });
   }
   return m;
@@ -353,6 +365,9 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // et les trois nouvelles colonnes prennent la place des deux premières.
   const intervalle = estIntervalle(periode);
   const statDe = (l: LigneClassement) => (mesure === "valeur" ? l.sv : l.sp) ?? null;
+  // La balance disparaît en intervalle : les quatre statistiques suffisent, et
+  // en ajouter une cinquième colonne d'une autre nature chargerait la lecture.
+  const colBalance = balance && !intervalle;
 
   const rangees = lignes.filter(l => l.nom !== agregeSous).sort((x, y) => mv(y) - mv(x));
   const agregee = agregeSous ? lignes.find(l => l.nom === agregeSous) ?? null : null;
@@ -360,7 +375,6 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // restent interprétables après une descente ou un changement de famille.
   const total = lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
   const statTotal = totalPeriode ? (mesure === "valeur" ? totalPeriode.sv : totalPeriode.sp) : null;
-  const max = Math.max(1e-9, ...rangees.map(mv));
 
   // La balance commerciale est TOUJOURS exportations − importations, quel que
   // soit le sens affiché : la définir par rapport à la colonne visible ferait
@@ -423,6 +437,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
         <span className="ds-donnee" style={{ width: intervalle ? L_SOMME : 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
         {intervalle ? <>
           <CelluleStat v={statDe(l)?.moyenne ?? null} fmt={fmtV} large={L_MOY} attenue={epingle} />
+          <CelluleStat v={statDe(l)?.mediane ?? null} fmt={fmtV} large={L_MOY} attenue={epingle} />
           <CelluleStat v={statDe(l)?.min ?? null} an={statDe(l)?.anMin ?? null} fmt={fmtV} large={L_EXT} attenue={epingle} />
           <CelluleStat v={statDe(l)?.max ?? null} an={statDe(l)?.anMax ?? null} fmt={fmtV} large={L_EXT} attenue={epingle} />
         </> : <>
@@ -434,18 +449,11 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
           </span>
           <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
         </>}
-        {balance && (
+        {colBalance && (
           <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
             color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
             {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
           </span>
-        )}
-        {/* Pas de barre en intervalle : quatre colonnes de chiffres suffisent
-            à situer les lignes, une jauge de plus surchargerait la lecture. */}
-        {!intervalle && (
-          <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-            {mv(l) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, mv(l) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
-          </div>
         )}
       </div>
     );
@@ -487,6 +495,8 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
         {intervalle ? <>
           <span title={`Moyenne annuelle sur les ${periode.fin - periode.debut + 1} années de l'intervalle`}
             style={{ ...EN_TETE, width: L_MOY, textAlign: "right", flexShrink: 0 }}>Moyenne</span>
+          <span title="Année médiane de l'intervalle : la moitié des années sont en dessous"
+            style={{ ...EN_TETE, width: L_MOY, textAlign: "right", flexShrink: 0 }}>Médiane</span>
           <span title="Année la plus basse de l'intervalle, et son année" style={{ ...EN_TETE, width: L_EXT, textAlign: "right", flexShrink: 0 }}>Min</span>
           <span title="Année la plus haute de l'intervalle, et son année" style={{ ...EN_TETE, width: L_EXT, textAlign: "right", flexShrink: 0 }}>Max</span>
         </> : <>
@@ -494,11 +504,10 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
           <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
           <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>
         </>}
-        {balance && (
+        {colBalance && (
           <span title="Exportations − importations, quel que soit le sens affiché"
             style={{ ...EN_TETE, width: 92, textAlign: "right", flexShrink: 0 }}>Balance</span>
         )}
-        {!intervalle && <span style={{ width: "11%", flexShrink: 0 }} />}
       </div>
 
       {filtres.length === 0 ? (
@@ -529,13 +538,14 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
             <span className="ds-donnee" style={{ width: intervalle ? L_SOMME : 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
             {intervalle ? <>
               <CelluleStat v={statTotal?.moyenne ?? null} fmt={fmtV} large={L_MOY} />
+              <CelluleStat v={statTotal?.mediane ?? null} fmt={fmtV} large={L_MOY} />
               <CelluleStat v={statTotal?.min ?? null} an={statTotal?.anMin ?? null} fmt={fmtV} large={L_EXT} />
               <CelluleStat v={statTotal?.max ?? null} an={statTotal?.anMax ?? null} fmt={fmtV} large={L_EXT} />
             </> : <>
               <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} />
               <span style={{ width: 58, flexShrink: 0 }} />
             </>}
-            {balance && (() => {
+            {colBalance && (() => {
               const bal = lignes.reduce((s, l) => s + balanceDe(l), 0);
               return (
                 <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
@@ -544,7 +554,6 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
                 </span>
               );
             })()}
-            {!intervalle && <span style={{ width: "11%", flexShrink: 0 }} />}
           </div>
         </div>
       )}
@@ -612,8 +621,12 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
 }) {
   if (!(max > min)) return null;
   const plage = estIntervalle(periode);
-  const debut = Math.max(min, Math.min(periode.debut, periode.fin));
-  const fin = Math.min(max, Math.max(periode.debut, periode.fin));
+  // Un intervalle d'une seule année n'en est pas un : les poignées se bornent
+  // l'une l'autre à une année d'écart au moins, faute de quoi la lecture
+  // « intervalle » afficherait les statistiques d'un millésime unique — une
+  // moyenne égale à la somme, un minimum égal au maximum.
+  const debut = Math.max(min, Math.min(periode.debut, plage ? periode.fin - 1 : periode.fin));
+  const fin = Math.min(max, Math.max(plage ? debut + 1 : debut, periode.fin));
   const pos = (a: number) => ((a - min) / (max - min)) * 100;
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
@@ -646,11 +659,14 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
           <div className="nace-piste" />
           <div className="nace-remplie" style={{ left: `${pos(debut)}%`, width: `${Math.max(0, pos(fin) - pos(debut))}%` }} />
           {/* Les poignées ne se croisent pas : chacune borne l'autre. */}
+          {/* Les deux entrées gardent les MÊMES bornes : les restreindre
+              décalerait leurs échelles et les poignées ne s'aligneraient plus
+              sur la même année. C'est la valeur qui est bornée, pas la plage. */}
           <input type="range" min={min} max={max} step={1} value={fin} style={{ zIndex: 1 }}
-            onChange={e => onChange({ ...periode, fin: Math.max(debut, Number(e.target.value)) })}
+            onChange={e => onChange({ ...periode, fin: Math.max(debut + 1, Number(e.target.value)) })}
             aria-label="Dernière année de l'intervalle" />
           <input type="range" min={min} max={max} step={1} value={debut} style={{ zIndex: 2 }}
-            onChange={e => onChange({ ...periode, debut: Math.min(fin, Number(e.target.value)) })}
+            onChange={e => onChange({ ...periode, debut: Math.min(fin - 1, Number(e.target.value)) })}
             aria-label="Première année de l'intervalle" />
         </div>
       ) : (
@@ -659,7 +675,7 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
           className="nace-curseur" aria-label="Année affichée" style={{ width: largeur }} />
       )}
       <span style={{ fontSize: 12, fontWeight: 800, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>
-        {plage && fin > debut ? `${debut}–${fin}` : fin}
+        {plage ? `${debut}–${fin}` : fin}
       </span>
     </div>
   );
@@ -947,12 +963,12 @@ function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, per: Perio
   // La valeur qui classe : celle de l'année, ou la somme de l'intervalle.
   const classante = (serie: Map<number, number | null>, st: Stats) =>
     per.intervalle ? st.somme ?? 0 : serie.get(per.fin) ?? 0;
-  const st = statistiquesPeriode(serieTotal, per, annees.size);
+  const st = statistiquesPeriode(serieTotal, per, annees);
   const total = classante(serieTotal, st);
   // Un partenaire sans échange sur la période n'en est pas un : sans ce filtre,
   // l'Océanie alignerait des lignes à zéro.
   const lignes = [...series.values()]
-    .map(s => { const x = statistiquesPeriode(s.an, per, annees.size);
+    .map(s => { const x = statistiquesPeriode(s.an, per, annees);
                 return { s, x, v: classante(s.an, x) }; })
     .filter(e => e.v > 0)
     .sort((a, b) => b.v - a.v).slice(0, top)
@@ -969,9 +985,6 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion, interval
   couleur: string; montrerRegion?: boolean; intervalle?: boolean; mesure?: NaceMesure;
 }) {
   const fmt = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
-  // Le maximum est celui de la colonne : les barres comparent les partenaires
-  // entre eux dans un sens donné, pas les deux sens l'un contre l'autre.
-  const max = Math.max(1, ...lignes.map(l => l.valeur));
   return (
     <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, margin: "0 8px 2px" }}>
@@ -988,7 +1001,7 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion, interval
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px 2px" }}>
           <span style={{ width: 20, flexShrink: 0 }} /><span style={{ width: 20, flexShrink: 0 }} />
           <span style={{ flex: 1 }} />
-          {[["Somme", L_SOMME], ["Moyenne", L_MOY], ["Min", L_EXT], ["Max", L_EXT]].map(([t, w]) => (
+          {[["Somme", L_SOMME], ["Moyenne", L_MOY], ["Médiane", L_MOY], ["Min", L_EXT], ["Max", L_EXT]].map(([t, w]) => (
             <span key={t as string} style={{ width: w as number, flexShrink: 0, textAlign: "right", fontSize: 8.5,
               fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>{t}</span>
           ))}
@@ -1016,18 +1029,13 @@ function TopPartenaires({ titre, lignes, total, couleur, montrerRegion, interval
               flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmt(l.valeur)}</span>
             {intervalle ? <>
               <CelluleStat v={l.stats?.moyenne ?? null} fmt={fmt} large={L_MOY} />
+              <CelluleStat v={l.stats?.mediane ?? null} fmt={fmt} large={L_MOY} />
               <CelluleStat v={l.stats?.min ?? null} an={l.stats?.anMin ?? null} fmt={fmt} large={L_EXT} />
               <CelluleStat v={l.stats?.max ?? null} an={l.stats?.anMax ?? null} fmt={fmt} large={L_EXT} />
             </> : (
               <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
                 {l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
               </span>
-            )}
-            {!intervalle && (
-              <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99,
-                  background: couleur, opacity: i < 3 ? 0.9 : 0.55 }} />
-              </div>
             )}
           </div>
         ))}
