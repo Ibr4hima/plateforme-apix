@@ -302,32 +302,39 @@ function NavFleches({ libelle, onPrec, onSuiv, titre, fort }: {
   );
 }
 
-// KPI du bandeau, sur trois lignes franches : le libellé et l'année, la valeur
-// seule, puis la variation. Le rang du Sénégal — pour les flux d'IDE — s'ajoute
-// à la dernière ligne avec sa propre navigation de portée. La valeur n'a ainsi
-// rien à côté d'elle et n'est jamais tronquée, ce qui était le défaut d'une
-// disposition où le rang lui disputait la place.
-function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargement,
-  rang, portee, onPortee, portees, rangPrec, delta }: {
+// KPI du bandeau. Deux dispositions, selon qu'il y a un rang à montrer :
+//
+//   flux d'IDE  — la valeur et sa variation partagent la première ligne, le
+//                 rang du Sénégal occupe la seconde avec sa navigation de
+//                 portée. La variation porte sur la VALEUR, pas sur le rang :
+//                 c'est la grandeur affichée juste à côté.
+//   commerce    — même dessin que les KPIs de la section 3, dont ces deux
+//                 cartes sont le résumé : libellé, millésime, valeur, écart.
+//
+// La comparaison se dit « vs » quand elle voisine la valeur, faute de place, et
+// « par rapport à » quand elle a sa ligne.
+function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, valeur, chargement,
+  delta, rang, portee, onPortee, portees }: {
   label: string; annee: number | null; onAnnee: (a: number) => void; anneeMin?: number; anneeMax?: number;
-  valeur: string; chargement?: boolean;
+  prefixeAnnee?: string; valeur: string; chargement?: boolean; delta?: number | null;
   rang?: number | null; portee?: { abrege: string; nomComplet: string }; onPortee?: (pas: -1 | 1) => void;
   portees?: { avant: boolean; apres: boolean };
-  rangPrec?: number | null; delta?: number | null;
 }) {
-  // Gagner des places fait descendre le numéro de rang : la différence se lit
-  // donc à l'envers d'une variation de montant, pour que le vert reste du côté
-  // de l'amélioration dans les deux cas.
-  const dRang = rang != null && rangPrec != null ? rangPrec - rang : null;
-  const bon = dRang != null ? dRang > 0 : delta != null ? delta > 0 : null;
-  const mauvais = dRang != null ? dRang < 0 : delta != null ? delta < 0 : null;
+  const avecRang = !!(portee && onPortee);
+  const Variation = ({ court }: { court: boolean }) => delta == null ? null : (
+    <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+      color: delta > 0 ? "#188038" : delta < 0 ? "#dc2626" : "#9aa5b4" }}>
+      {delta > 0 ? "▲" : delta < 0 ? "▼" : "="}&nbsp;{nf(Math.abs(delta), 1)} %
+      {annee != null && <span style={{ fontWeight: 600, color: "#9aa5b4" }}>{court ? ` vs ${annee - 1}` : ` par rapport à ${annee - 1}`}</span>}
+    </span>
+  );
   return (
     <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
           textTransform: "uppercase", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</p>
         {annee != null && (
-          <NavFleches libelle={annee} titre="Changer d'année"
+          <NavFleches libelle={prefixeAnnee ? `${prefixeAnnee} · ${annee}` : annee} titre="Changer d'année"
             onPrec={anneeMin != null && annee > anneeMin ? () => onAnnee(annee - 1) : undefined}
             onSuiv={anneeMax != null && annee < anneeMax ? () => onAnnee(annee + 1) : undefined} />
         )}
@@ -339,24 +346,18 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargem
         </>
       ) : (
         <>
-          <p className="ds-donnee" style={{ fontSize: "1.6rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
+            <p className="ds-donnee" style={{ fontSize: "1.6rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+            {avecRang && <Variation court />}
+          </div>
           <div style={{ marginTop: 9, minHeight: 20, display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
-            {portee && onPortee && (
-              <NavFleches fort titre={`Rang du Sénégal — ${portee.nomComplet}. Flèches : changer de classement.`}
-                libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee.abrege}</>}
-                onPrec={portees?.avant ? () => onPortee(-1) : undefined}
-                onSuiv={portees?.apres ? () => onPortee(1) : undefined} />
-            )}
-            {(dRang != null || delta != null) && (
-              <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
-                color: bon ? "#188038" : mauvais ? "#dc2626" : "#9aa5b4" }}>
-                {bon ? "▲" : mauvais ? "▼" : "="}&nbsp;{dRang != null
-                  ? (dRang === 0 ? "stable" : `${Math.abs(dRang)} place${Math.abs(dRang) > 1 ? "s" : ""}`)
-                  : `${nf(Math.abs(delta as number), 1)} %`}
-                {annee != null && <span style={{ fontWeight: 600, color: "#9aa5b4" }}> vs {annee - 1}</span>}
-              </span>
-            )}
+            {avecRang ? (
+              <NavFleches fort titre={`Rang du Sénégal — ${portee!.nomComplet}. Flèches : changer de classement.`}
+                libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee!.abrege}</>}
+                onPrec={portees?.avant ? () => onPortee!(-1) : undefined}
+                onSuiv={portees?.apres ? () => onPortee!(1) : undefined} />
+            ) : <Variation court={false} />}
           </div>
         </>
       )}
@@ -750,7 +751,10 @@ export default function TableauDeBordPage() {
                     annee={an} onAnnee={(a) => setKpiFluxAnnee((p) => ({ ...p, [sens]: a }))}
                     anneeMin={ideBornes?.min} anneeMax={ideBornes?.max}
                     valeur={fmtMUSD(sen?.valeur ?? null)} chargement={!cur}
-                    rang={sen?.rang ?? null} rangPrec={senP?.rang ?? null}
+                    // La variation porte sur le montant des flux, la grandeur
+                    // affichée à côté ; le rang, lui, se lit sur la ligne du bas.
+                    delta={sen?.valeur != null && senP?.valeur ? ((sen.valeur - senP.valeur) / Math.abs(senP.valeur)) * 100 : null}
+                    rang={sen?.rang ?? null}
                     portee={{ abrege: z.abrege, nomComplet: z.nomComplet }}
                     portees={{ avant: iz > 0, apres: iz < zonesRang.length - 1 }}
                     onPortee={(pas) => setKpiFluxZone((p) => ({
@@ -761,9 +765,13 @@ export default function TableauDeBordPage() {
                 const an = kpiComAnnee[sens] ?? (comAnnees.length ? comAnnees[comAnnees.length - 1] : null);
                 const v = comTotal(sens, an), p = comTotal(sens, an != null ? an - 1 : null);
                 return (
-                  <KpiBandeau key={sens} label={`${sens === "export" ? "Exportations" : "Importations"} · Commerce ext.`}
+                  <KpiBandeau key={sens} label={sens === "export" ? "Exportations" : "Importations"}
                     annee={an} onAnnee={(a) => setKpiComAnnee((q) => ({ ...q, [sens]: a }))}
                     anneeMin={comAnnees[0]} anneeMax={comAnnees[comAnnees.length - 1]}
+                    // FAB à l'export, CAF à l'import : la mention accompagne le
+                    // millésime comme dans la section 3, dont ces cartes sont
+                    // le résumé.
+                    prefixeAnnee={sens === "export" ? "FAB" : "CAF"}
                     valeur={fmtMFCFA(v)} chargement={!naceProd}
                     delta={v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null} />
                 );
