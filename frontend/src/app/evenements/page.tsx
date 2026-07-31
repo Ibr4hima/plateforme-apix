@@ -2,10 +2,9 @@
 
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
-import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { CalendarDays, FileText, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarDays, Search, SlidersHorizontal, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
@@ -46,15 +45,6 @@ const ROLE_ACCENT: Record<string, string> = {
   "Invité": "#6A1B9A", "Sponsor": "#a16207",
 };
 const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#004f91";
-
-const ROLE_VARIANT: Record<string, BadgeVariant> = {
-  "Organisateur":    "green",
-  "Co-organisateur": "yellow",
-  "Participant":     "orange",
-  "Partenaire":      "teal",
-  "Sponsor":         "lavender",
-  "Invité":          "gray",
-};
 
 
 
@@ -242,7 +232,6 @@ export default function EvenementsPage() {
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
-  const [stats,       setStats]       = useState<any>({a_venir:0,en_cours:0,total:0});
 
   const [recherche,    setRecherche]    = useState("");
   const [vueMode,      setVueMode]      = useEtatUrl<"liste"|"frise">("vue", "liste", ["liste","frise"]);
@@ -257,19 +246,14 @@ export default function EvenementsPage() {
   const { arbre: naemaArbre } = useNaemaArbre();
   useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
   useEffect(()=>{
-    const safe = (p:Promise<any>, fb:any) => p.catch(()=>fb);
-    Promise.all([
-      safe(fetch(`${API_BASE}/evenements/pays-hotes`).then(r=>r.json()), []),
-      safe(fetch(`${API_BASE}/evenements/stats`).then(r=>r.json()),      {}),
-    ]).then(([hotes,statsData])=>{
-      const refPays = (refPaysData as any[]) || [];
-      const enrichis=(hotes||[]).map((nom:string)=>{
-        const ref=refPays.find((p:any)=>p.nom_fr===nom);
-        return {nom,code_iso2:ref?.code_iso2||""};
+    fetch(`${API_BASE}/evenements/pays-hotes`).then(r=>r.json()).catch(()=>[])
+      .then((hotes)=>{
+        const refPays = (refPaysData as any[]) || [];
+        setPaysHotes((hotes||[]).map((nom:string)=>{
+          const ref=refPays.find((p:any)=>p.nom_fr===nom);
+          return {nom,code_iso2:ref?.code_iso2||""};
+        }));
       });
-      setPaysHotes(enrichis);
-      setStats(statsData||{});
-    });
   },[refPaysData]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance
@@ -296,6 +280,11 @@ export default function EvenementsPage() {
         if (statutFiltre==="a_venir"  && debut <= today) return false;
         if (statutFiltre==="en_cours" && (debut > today || fin < today)) return false;
         if (statutFiltre==="termine"  && fin >= today) return false;
+      } else {
+        // Récurrent sans date fixée : sa prochaine occurrence est à venir —
+        // c'est ce que les cartes affichent déjà. Sans cette branche, il
+        // traversait TOUS les filtres de statut, « Terminés » compris.
+        if (statutFiltre !== "a_venir") return false;
       }
     }
     if (paysFiltres.length>0 && !paysFiltres.includes(e.pays_hote_nom||"")) return false;
@@ -305,17 +294,25 @@ export default function EvenementsPage() {
     return true;
   }), [tous, recherche, statutFiltre, paysFiltres, secteursSel, branchesSel, activitesSel]);
 
-  // Prochain événement à venir (date la plus proche dans le futur)
-  const prochainId: number|null = useMemo(()=>{
+  // Prochain événement (date future la plus proche). Deux portées, deux rôles :
+  // sur la liste FILTRÉE pour la carte à mettre en avant dans la vue courante,
+  // sur `tous` pour le badge du bandeau — il annonce le prochain événement de
+  // l'agence, pas celui du filtre en cours, sans quoi filtrer sur un secteur
+  // faisait proclamer au hero un « prochain événement » qui n'était pas le vrai.
+  const prochainDe = (liste:any[]): number|null => {
     const today = new Date(); today.setHours(0,0,0,0);
     let best: any = null, bestD: Date|null = null;
-    evenements.forEach(e=>{
+    liste.forEach(e=>{
       const d = e.date_debut ? new Date(e.date_debut+"T00:00:00")
         : e.prochain_annee ? new Date(e.prochain_annee,(e.prochain_mois||1)-1,e.prochain_jour||1) : null;
       if (d && d>today && (!bestD || d<bestD)) { bestD=d; best=e; }
     });
     return best?.id ?? null;
-  },[evenements]);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const prochainId: number|null = useMemo(()=>prochainDe(evenements),[evenements]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const prochainGlobalId: number|null = useMemo(()=>prochainDe(tous),[tous]);
 
   const hasFilter = !!recherche||!!statutFiltre||paysFiltres.length>0||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit = ()=>{ setRecherche(""); setStatutFiltre(""); setPaysFiltres([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
@@ -336,7 +333,7 @@ export default function EvenementsPage() {
       {/* Barre de titre */}
       <BarreTitre titre="Événements" compact actions={<NavActions onDark home flouFond/>}
         droite={(()=>{
-          const prochain = prochainId!=null ? tous.find(e=>e.id===prochainId) : null;
+          const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
           if (!prochain) return null;
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
             icon={<span className="material-symbols-outlined" style={{fontSize:16,color:"#fff",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;

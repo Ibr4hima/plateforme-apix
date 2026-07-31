@@ -2,7 +2,6 @@
 
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import Badge, { BadgeVariant } from "@/components/shared/Badge";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
@@ -19,10 +18,6 @@ import { useFicheUrl } from "@/lib/ficheUrl";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const STATUT_VARIANT: Record<string, BadgeVariant> = { en_vigueur:"green", signe:"blue", expire:"orange" };
-
-const STATUT_LABELS: Record<string,string> = { en_vigueur:"En vigueur", expire:"Expiré", signe:"Signé non en vigueur" };
-
 // Durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »…
 const dureeDepuis = (dstr:string): string => {
   const d = new Date(dstr+"T00:00:00"), now = new Date();
@@ -33,12 +28,6 @@ const dureeDepuis = (dstr:string): string => {
   if (ans >= 1) return `${ans} an${ans>1?"s":""}`;
   return `${mois} mois`;
 };
-
-const STATUT_OPTS = [
-  { value:"",           label:"Tous",        bg:"#F2F0EF",             text:"#4a5568" },
-  { value:"en_vigueur", label:"En vigueur",  bg:"rgba(0,79,145,0.08)", text:"#004f91" },
-  { value:"expire",     label:"Expirés",     bg:"#f3f4f6",             text:"#6b7280" },
-];
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
@@ -107,7 +96,10 @@ export default function AccordsPage() {
     if ((a.type_accord || "tbi") !== "tbi") return false;
     if (recherche) {
       const q=recherche.toLowerCase();
-      const paysStr=getPaysNoms(a).toLowerCase();
+      // max=0 : la recherche porte sur la liste COMPLÈTE des signataires — la
+      // chaîne d'affichage tronquée (« France, Italie, +3 ») rendait
+      // introuvable tout accord par son 3e pays et au-delà.
+      const paysStr=getPaysNoms(a, 0).toLowerCase();
       if (!a.titre?.toLowerCase().includes(q)&&!a.reference?.toLowerCase().includes(q)&&!paysStr.includes(q)) return false;
     }
     if (statutFiltre&&computeStatut(a)!==statutFiltre) return false;
@@ -138,11 +130,6 @@ export default function AccordsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [tous, recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel, secteurs, allPays]);
 
-  const stats = {
-    total:      tous.length,
-    en_vigueur: tous.filter(a=>computeStatut(a)==="en_vigueur").length,
-    expire:     tous.filter(a=>computeStatut(a)==="expire").length,
-  };
   const hasFilter=!!recherche||!!statutFiltre||paysIdsFiltres.length>0||apixFiltre||secteursSel.length>0||branchesSel.length>0||activitesSel.length>0;
   const reinit=()=>{setRecherche("");setStatutFiltre("");setPaysIdsFiltres([]);setApixFiltre(false);setSecteursSel([]);setBranchesSel([]);setActivitesSel([]);};
   const nbFiltres=(recherche?1:0)+(statutFiltre?1:0)+paysIdsFiltres.length+(apixFiltre?1:0)+secteursSel.length+branchesSel.length+activitesSel.length;
