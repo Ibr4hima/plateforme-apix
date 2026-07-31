@@ -4,11 +4,12 @@
 // dans le style du rapport exécutif (bandeau dégradé profond, épure). Alimenté
 // par l'API /code-investissement et /modalites-application.
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
-import NavActions from "@/components/layout/NavActions";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
+import BandeauDocument, { RechercheBandeau } from "@/components/shared/BandeauDocument";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -36,21 +37,24 @@ export default function CodeInvestissementsPage() {
   const [results, setResults] = useState<any[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [erreur, setErreur] = useState(false);
   const [pendingArtId, setPendingArtId] = useState<string | null>(null);
 
-  // Chargement du contenu à chaque changement de loi
-  useEffect(() => {
-    setLoading(true); setChapitres([]); setActiveChapId(null); setActiveSecId(null); setQ(""); setResults(null);
+  // Chargement du contenu à chaque changement de loi ; en cas d'échec, état
+  // d'erreur avec relance plutôt qu'un « Aucun contenu » trompeur.
+  const charger = useCallback(() => {
+    setLoading(true); setErreur(false); setChapitres([]); setActiveChapId(null); setActiveSecId(null); setQ(""); setResults(null);
     Promise.all([
-      fetch(`${base}`).then((r) => r.json()),
+      fetch(`${base}`).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
       fetch(`${base}/pdf/info`).then((r) => r.json()).catch(() => null),
     ]).then(([code, pdf]) => {
       const list = Array.isArray(code) ? code : [];
       setChapitres(list);
       setPdfInfo(pdf);
       if (list.length > 0) setActiveChapId(list[0].id);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => setErreur(true)).finally(() => setLoading(false));
   }, [base]);
+  useEffect(() => { charger(); }, [charger]);
 
   // Recherche full-text
   useEffect(() => {
@@ -109,61 +113,32 @@ export default function CodeInvestissementsPage() {
       `}</style>
 
       {/* ── Bandeau ── */}
-      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 0 }}>
-              <div style={{ width: 54, height: 66, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}>
-                <Image src="/armoiries_senegal.svg" alt="Armoiries du Sénégal" width={54} height={66} style={{ height: 64, width: "auto", objectFit: "contain" }} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "2px 0 8px" }}>
-                  République du Sénégal · Lois &amp; Règlementations
-                </p>
-                <h1 style={{ fontSize: "1.85rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>{titre}</h1>
-                <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>
-                  {loading ? "Chargement…" : `${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
-                </p>
-              </div>
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              <NavActions onDark home flouTotal />
-            </div>
+      <BandeauDocument surtitre="République du Sénégal · Lois & Règlementations" titre={titre}
+        sousTitre={loading ? "Chargement…" : erreur ? "—" : `${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
+        outils={<>
+          <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 3, padding: 3, background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999 }}>
+            {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => {
+              const actif = loi === key;
+              return (
+                <button key={key} role="tab" aria-selected={actif} onClick={() => setLoi(key)}
+                  style={{ padding: "6px 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 800,
+                    background: actif ? "#fff" : "transparent", color: actif ? BLEU : "rgba(255,255,255,0.75)", transition: "background 0.16s, color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                  {label}
+                </button>
+              );
+            })}
           </div>
-
-          {/* Onglets + recherche + PDF */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
-            <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 3, padding: 3, background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999 }}>
-              {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => {
-                const actif = loi === key;
-                return (
-                  <button key={key} role="tab" aria-selected={actif} onClick={() => setLoi(key)}
-                    style={{ padding: "6px 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 800,
-                      background: actif ? "#fff" : "transparent", color: actif ? BLEU : "rgba(255,255,255,0.75)", transition: "background 0.16s, color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ flex: 1 }} />
-            <div style={{ position: "relative", width: "min(300px, 100%)" }}>
-              <Search size={14} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.6)" }} />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label="Rechercher"
-                style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: "9px 14px 9px 38px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
-            </div>
-            {pdfInfo && (
-              <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel" aria-label="Télécharger le PDF officiel"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "50%", color: "#fff", textDecoration: "none", flexShrink: 0, transition: "background 0.15s" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.22)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.13)"; }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 19, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
-              </a>
-            )}
-          </div>
-        </div>
-      </div>
+          <div style={{ flex: 1 }} />
+          <RechercheBandeau q={q} setQ={setQ} />
+          {pdfInfo && (
+            <a href={`${base}/pdf/download`} target="_blank" rel="noopener noreferrer" title="Télécharger le PDF officiel" aria-label="Télécharger le PDF officiel"
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "50%", color: "#fff", textDecoration: "none", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.22)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.13)"; }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 19, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>picture_as_pdf</span>
+            </a>
+          )}
+        </>} />
 
       {/* ── Corps ── */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 40px 80px" }}>
@@ -182,7 +157,7 @@ export default function CodeInvestissementsPage() {
                 ))}
               </div>
             ) : chapitres.length === 0 ? (
-              <div style={{ padding: "16px 20px", color: "#9aa5b4", fontSize: 12.5 }}>Aucun contenu.</div>
+              <div style={{ padding: "16px 20px", color: "#9aa5b4", fontSize: 12.5 }}>{erreur ? "Chargement impossible." : "Aucun contenu."}</div>
             ) : chapitres.map((c) => {
               const actif = activeChapId === c.id;
               return (
@@ -231,6 +206,8 @@ export default function CodeInvestissementsPage() {
                   </div>
                 ))}
               </div>
+            ) : erreur ? (
+              <ErreurChargement onRetry={charger} />
             ) : q.length >= 2 ? (
               /* Résultats de recherche */
               <div>
@@ -241,7 +218,7 @@ export default function CodeInvestissementsPage() {
                   {results?.map((r) => {
                     const chap = chapitres.find((c) => c.id === r.chapitre_id);
                     return (
-                      <div key={r.id} onClick={() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); } }}
+                      <div key={r.id} {...carteCliquable(() => { if (chap) { setActiveChapId(chap.id); setActiveSecId(null); setQ(""); setResults(null); setPendingArtId(r.id); } })}
                         style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}
                         onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(202,99,31,0.35)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "var(--ombre-2)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#F0EEEC"; e.currentTarget.style.background = "#FAFAF9"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
