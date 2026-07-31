@@ -10,12 +10,14 @@ import { useSearchParams } from "next/navigation";
 import { ArrowRight, Building2, FileText, Landmark, Scale } from "lucide-react";
 import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
+import ErreurChargement from "@/components/shared/ErreurChargement";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fond_bleu, badge_bleu, badgeSurvol } from "@/lib/couleurs";
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -94,13 +96,21 @@ function ContenuFichePays() {
   const [entSiege, setEntSiege] = useState<any>(null);
   const [accordOuvert, setAccordOuvert] = useState<any>(null);
   const [entOuverte, setEntOuverte] = useState<any>(null);
+  // Échecs des deux requêtes structurantes : sans elles la page resterait en
+  // squelette pour toujours — on montre l'état d'erreur avec relance.
+  const [errPays, setErrPays] = useState(false);
+  const [tickPays, setTickPays] = useState(0);
+  const [errData, setErrData] = useState(false);
+  const [tickFiche, setTickFiche] = useState(0);
 
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
   // Liste des pays puis sélection initiale : URL ?pays=a,b sinon Sénégal × 1er pays
   useEffect(() => {
-    fetch(`${API}/statistiques/pays`).then(r => r.json()).then(setPays).catch(() => {});
-  }, []);
+    setErrPays(false);
+    fetch(`${API}/statistiques/pays`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(setPays).catch(() => setErrPays(true));
+  }, [tickPays]);
   useEffect(() => {
     if (!pays.length || ids) return;
     const brut = (params.get("pays") || "").split(",").map(Number).filter(n => pays.some(p => p.id === n));
@@ -114,15 +124,16 @@ function ContenuFichePays() {
   useEffect(() => {
     if (!ids) return;
     window.history.replaceState(null, "", `/fiche-pays?pays=${ids.join(",")}`);
-    setData(null); setBilat(null); setEntSiege(null); setIdeFlux(null);
-    fetch(`${API}/statistiques/comparaison?pays=${ids.join(",")}`).then(r => r.json()).then(setData).catch(() => {});
+    setData(null); setBilat(null); setEntSiege(null); setIdeFlux(null); setErrData(false);
+    fetch(`${API}/statistiques/comparaison?pays=${ids.join(",")}`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(setData).catch(() => setErrData(true));
     fetch(`${API}/statistiques/ide_flux?pays=${ids.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
     fetch(`${API}/statistiques/commerce/bilateral?pays_a=${ids[0]}&pays_b=${ids[1]}`).then(r => r.json()).then(setBilat).catch(() => setBilat(null));
     const autre = senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) : null;
     if (autre != null) {
       fetch(`${API}/statistiques/entreprises-siege?pays_id=${autre}`).then(r => r.json()).then(setEntSiege).catch(() => setEntSiege(null));
     }
-  }, [ids, senId]);
+  }, [ids, senId, tickFiche]);
 
   const ouvrirEntreprise = (id: number) => {
     fetch(`${API}/entreprises/${id}`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -177,9 +188,7 @@ function ContenuFichePays() {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
-            <span key={i} title={it.title || it.label} onClick={it.onClick} role={it.onClick ? "button" : undefined}
-              tabIndex={it.onClick ? 0 : undefined}
-              onKeyDown={it.onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); it.onClick!(); } } : undefined}
+            <span key={i} title={it.title || it.label} {...(it.onClick ? carteCliquable(it.onClick) : {})}
               style={{ ...badge_bleu, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
               onMouseEnter={ev => { if (it.onClick) { const s = badgeSurvol("bleu"); ev.currentTarget.style.background = s.background; ev.currentTarget.style.borderColor = s.borderColor; } }}
               onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = badge_bleu.background as string; ev.currentTarget.style.border = badge_bleu.border as string; } }}>
@@ -235,7 +244,11 @@ function ContenuFichePays() {
 
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "0 40px 70px" }}>
         {/* ── KPIs relationnels chevauchant le bandeau ── */}
-        {!ids ? (
+        {errPays && !ids ? (
+          <div className="ds-carte" style={{ marginTop: -52 }}>
+            <ErreurChargement onRetry={() => setTickPays(t => t + 1)} />
+          </div>
+        ) : !ids ? (
           <div style={{ marginTop: -52 }}><SkeletonKPIs n={4} /></div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: -52 }}>
@@ -269,11 +282,11 @@ function ContenuFichePays() {
           </div>
         )}
 
-        {/* ── Indicateurs comparés ── */}
-        <div className="ds-carte" style={{ marginTop: 18, padding: "20px 24px" }}>
+        {/* ── Indicateurs comparés (absent tant que la liste des pays est en échec) ── */}
+        {!(errPays && !ids) && <div className="ds-carte" style={{ marginTop: 18, padding: "20px 24px" }}>
           <p style={TITRE_SEC}>Indicateurs comparés</p>
           {!data ? (
-            <SkeletonRows n={10} h={34} />
+            errData ? <ErreurChargement compact onRetry={() => setTickFiche(t => t + 1)} /> : <SkeletonRows n={10} h={34} />
           ) : (
             <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
@@ -329,7 +342,7 @@ function ContenuFichePays() {
               </tbody>
             </table>
           )}
-        </div>
+        </div>}
 
         {/* ── Échanges bilatéraux ── */}
         {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (() => {
