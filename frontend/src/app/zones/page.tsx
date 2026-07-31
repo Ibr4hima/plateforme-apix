@@ -2,171 +2,18 @@
 
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
-import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
+import { ZONE_TYPE_META as TYPE_META, ZONE_TYPE_ORDER } from "@/components/shared/zoneTypes";
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
-import { d3, useD3Pret } from "@/lib/d3lazy";
-import { useEffect, useRef, useState } from "react";
-import { useAuthGate } from "@/lib/authGate";
-import { Building2, ChevronRight, FileText, X } from "lucide-react";
-import { useNaema, useRefPolesTerritoires } from "@/lib/referentiels";
+import { useEffect, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
-import { fmtDate } from "@/lib/format";
 import { badgePole, poleAccent } from "@/lib/couleurs";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-const TYPE_META = ZONE_TYPE_META;
-
-const POLE_COLORS = ["#FFD9B3","#FFF4A3","#C8EEC8","#A8DFE8","#B8C8F8","#D8B8F0","#FADADD","#F0D8C8"];
-
-// ── Sunburst par type ─────────────────────────────────────────────────────────
-function SunburstZones({ zones }: { zones:any[] }) {
-  const gate = useAuthGate();
-  const svgRef = useRef<SVGSVGElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [ficheEnt, setFicheEnt] = useState<any>(null);
-
-  useEffect(() => {
-    if (!zones.length || !svgRef.current || !wrapRef.current) return;
-    const W = wrapRef.current.clientWidth || 900;
-    const H = 500;
-
-    const byType: Record<string,any[]> = {};
-    zones.forEach(z => { if (!byType[z.type_zone]) byType[z.type_zone] = []; byType[z.type_zone].push(z); });
-
-    const tree = {
-      name: "Zones d'Investissement",
-      children: Object.entries(byType).map(([type,zs]) => ({
-        name: TYPE_META[type]?.label || type,
-        type,
-        children: zs.map(z => ({
-          name: z.nom_zone, type,
-          value: 1, data: z,
-          children: z.entreprises?.filter((ze:any)=>ze.statut==="installee").length > 0
-            ? z.entreprises.filter((ze:any)=>ze.statut==="installee").map((ze:any)=>({ name: ze.entreprise?.nom||"—", type, value:1, data:ze.entreprise }))
-            : undefined,
-        })),
-      })),
-    };
-
-    const el = svgRef.current;
-    d3.select(el).selectAll("*").remove();
-
-    const hierarchy = d3.hierarchy(tree).sum((d:any)=>d.children?0:1)
-      .sort((a,b)=>(b.height-a.height)||((b.value||0)-(a.value||0)));
-    const root = d3.partition<any>().size([H,(hierarchy.height+1)*W/3])(hierarchy as any);
-
-    const svg = d3.select(el).attr("viewBox",`0 0 ${W} ${H}`).attr("width",W).attr("height",H).attr("style","max-width:100%;height:auto;");
-
-    const ZONE_COL: Record<string,string> = { ZES:POLE_COLORS[0], ZAI:POLE_COLORS[1], ZFI:POLE_COLORS[2] };
-    const getColor = (d:any):string => {
-      if (d.depth===0) return "#F2F2F2";
-      let n=d; while(n.depth>1) n=n.parent;
-      const c = ZONE_COL[n.data.type] || "#9aa5b4";
-      const a = d.depth===1?0.45:d.depth===2?0.40:d.depth===3?0.37:0.12+d.depth*0.15;
-      return c + Math.round(Math.min(a,0.85)*255).toString(16).padStart(2,"0");
-    };
-    const rectH = (d:any)=>Math.max(0,d.x1-d.x0-Math.min(1,(d.x1-d.x0)/2));
-    const labelOk = (d:any)=>d.y1<=W&&d.y0>=0&&d.x1-d.x0>16;
-
-    const cell = svg.selectAll<SVGGElement,any>("g").data(root.descendants()).join("g")
-      .attr("transform",(d:any)=>`translate(${d.y0},${d.x0})`);
-
-    cell.append("rect")
-      .attr("width",(d:any)=>Math.max(0,d.y1-d.y0-1))
-      .attr("height",(d:any)=>rectH(d))
-      .attr("fill",getColor).attr("stroke","#F2F0EF").attr("stroke-width",0.05)
-      .style("cursor","pointer");
-
-    const text = cell.append("text").style("user-select","none").attr("pointer-events","none")
-      .attr("x",6).attr("y",14)
-      .attr("font-size",(d:any)=>d.depth===0?13:d.depth===1?12:11)
-      .attr("font-weight",(d:any)=>d.depth<=1?700:400)
-      .attr("font-family","var(--font-google-sans),sans-serif")
-      .attr("fill","#1a1a2e").attr("fill-opacity",(d:any)=>+labelOk(d));
-
-    text.append("tspan").text((d:any)=>{
-      const w=(d.y1-d.y0)-12; const n=d.data.name||""; const c=Math.floor(w/6.5);
-      return n.length>c?n.slice(0,Math.max(3,c-1))+"…":n;
-    });
-
-    // ── Badges via foreignObject (centrage CSS parfait) ───────────────────────
-    const getTypeColor = (d:any):string => { let n=d; while(n.depth>1) n=n.parent; return TYPE_META[n.data.type]?.color||"#9aa5b4"; };
-
-    // depth=1 : badge "N ZES" centré sous le titre
-    cell.filter((d:any)=>d.depth===1&&d.children&&labelOk(d)&&(d.x1-d.x0)>32)
-      .each(function(d:any) {
-        const n=d.children?.length||0; if(!n) return;
-        const col=getTypeColor(d);
-        const w=Math.max(0,d.y1-d.y0-12);
-        d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",18).attr("width",w).attr("height",26)
-          .attr("pointer-events","none")
-          .append("xhtml:div")
-          .style("display","inline-flex").style("align-items","center").style("justify-content","center")
-          .style("height","18px").style("padding","0 7px")
-          .style("background",col+"22").style("border",`1px solid ${col}55`)
-          .style("border-radius","8px").style("font-size","9px").style("font-weight","700")
-          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
-          .style("white-space","nowrap").style("line-height","18px")
-          .text(`${n} ${d.data.type||""}`);
-      });
-
-    // depth=2 : badge numérique aligné à droite sur la ligne du nom
-    cell.filter((d:any)=>d.depth===2&&labelOk(d)&&(d.x1-d.x0)>24)
-      .each(function(d:any) {
-        const ents=(d.data.data?.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
-        if(!ents) return;
-        const col=getTypeColor(d);
-        const w=Math.max(0,d.y1-d.y0-12);
-        d3.select(this as SVGGElement).append("foreignObject")
-          .attr("x",6).attr("y",2).attr("width",w).attr("height",18)
-          .attr("pointer-events","none")
-          .append("xhtml:div")
-          .style("display","flex").style("justify-content","flex-end").style("align-items","center").style("height","18px")
-          .append("xhtml:span")
-          .style("display","inline-flex").style("align-items","center")
-          .style("height","15px").style("padding","0 6px")
-          .style("background",col+"22").style("border",`1px solid ${col}55`)
-          .style("border-radius","6px").style("font-size","9px").style("font-weight","700")
-          .style("font-family","var(--font-google-sans),sans-serif").style("color",col)
-          .text(`${ents}`);
-      });
-
-    let focus=root;
-    cell.select("rect").on("click",function(_:any,p:any){
-      if(p.depth===3&&p.data.data?.id){
-        gate(()=>{
-          fetch(`${API_BASE}/entreprises/${p.data.data.id}`)
-            .then(r=>r.json()).then(d=>setFicheEnt(d)).catch(()=>{});
-        });
-        return;
-      }
-      focus=focus===p?(p=p.parent):p;
-      if(!p) return;
-      root.each((d:any)=>{ d.target={
-        x0:(d.x0-p.x0)/(p.x1-p.x0)*H, x1:(d.x1-p.x0)/(p.x1-p.x0)*H,
-        y0:d.y0-p.y0, y1:d.y1-p.y0,
-      };});
-      const t: any = cell.transition().duration(750).ease(d3.easeCubicInOut)
-        .attr("transform",(d:any)=>`translate(${d.target.y0},${d.target.x0})`);
-      cell.select("rect").transition(t).attr("height",(d:any)=>rectH(d.target));
-      text.transition(t).attr("fill-opacity",(d:any)=>+labelOk(d.target));
-    });
-    cell.append("title").text((d:any)=>d.ancestors().map((n:any)=>n.data.name).reverse().join(" › "));
-  },[zones]);
-
-  return (
-    <div ref={wrapRef}>
-      <svg ref={svgRef} style={{ width:"100%",height:500,display:"block" }}/>
-      <EntreprisePublicModal entreprise={ficheEnt} onClose={()=>setFicheEnt(null)}/>
-    </div>
-  );
-}
 
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {
@@ -207,7 +54,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
           };
           const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
           return (
-            <div key={t.type} onClick={() => setSelectedType(active ? null : t.type)}
+            <div key={t.type} {...carteCliquable(() => setSelectedType(active ? null : t.type))}
               style={{ background:"#fff", border:`1.5px solid ${c}${active ? "99" : "73"}`, borderRadius:14, cursor:"pointer",
                 transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
                 boxShadow: active ? `0 12px 28px ${c}2e` : `0 4px 18px ${c}26`,
@@ -302,7 +149,7 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
   const entreprises = (zone.entreprises||[]).length;
   const hoverC = zone.pole_nom ? poleAccent(zone.pole_nom) : `${color}55`;
   return (
-    <div onClick={onClick}
+    <div {...carteCliquable(onClick)}
       style={{ background:"#fff", border:"1px solid rgba(16,26,46,0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}
       onMouseEnter={e=>{
         e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor=hoverC;
@@ -353,11 +200,9 @@ function ZoneBigCard({ zone, color="#004f91", onClick }: { zone:any; color?:stri
   );
 }
 
-// ── Modal détail zone ─────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function ZonesPage() {
   const [zones,      setZones]      = useState<any[]>([]);
-  const { data: polesRefData } = useRefPolesTerritoires();
-  const polesCount = ((polesRefData as any[]) || []).length;
   const [loading,    setLoading]    = useState(true);
   const [erreur,     setErreur]     = useState(false);
   const [tick,       setTick]       = useState(0);
@@ -371,25 +216,9 @@ export default function ZonesPage() {
       .catch(()=>setErreur(true)).finally(()=>setLoading(false));
   },[tick]);
 
-  const stats = {
-    total:      zones.length,
-    poles:      polesCount,
-    zes:        zones.filter(z=>z.type_zone==="ZES").length,
-    zai:        zones.filter(z=>z.type_zone==="ZAI").length,
-    zfi:        zones.filter(z=>z.type_zone==="ZFI").length,
-    installes:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length,0),
-    eligibles:  zones.reduce((s,z)=>s+(z.entreprises||[]).filter((ze:any)=>ze.statut==="eligible").length,0),
-  };
-
-  // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
-  // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
-  const d3Pret = useD3Pret();
-  if (!d3Pret) return <main style={{ minHeight:"100vh", background:"#F6F5F3" }}/>;
-
   return (
     <main style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+      <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
       {/* ── Hero ── */}
       <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[{v:"zones",l:"Zones d'investissement"},{v:"territoire",l:"Pôles territoires"}]} value={onglet} onChange={setOnglet}/>
