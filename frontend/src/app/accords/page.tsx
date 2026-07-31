@@ -1,10 +1,11 @@
 "use client";
 
+import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { ChevronDown, ChevronUp, FileText, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
@@ -12,7 +13,6 @@ import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
-import { demarrerRedimension } from "@/lib/redimension";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
 
@@ -37,11 +37,7 @@ export default function AccordsPage() {
   const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
-  const [sidebarOpen,  setSidebarOpen]  = useState(true);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const isResizing = useRef(false);
 
-  const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
   const [paysDistincts, setPaysDistincts] = useState<{id:number;nom:string;code_iso2:string}[]>([]);
   const [secteurs,    setSecteurs]    = useState<any[]>([]);
   const [allPays,     setAllPays]     = useState<any[]>([]);
@@ -123,10 +119,18 @@ export default function AccordsPage() {
     }
     return true;
   }).sort((a:any,b:any)=>{
+    // Les accords ACTIFS d'abord, classés par échéance croissante — celui qui
+    // expire le plus tôt en tête, c'est lui qui réclame l'attention. Les
+    // expirés vont en fin de liste (du plus récemment expiré au plus ancien).
+    // L'ancien tri, échéance croissante brute, ouvrait la page sur les
+    // accords déjà expirés depuis le plus longtemps.
+    const exp = (x:any) => computeStatut(x)==="expire";
+    if (exp(a) !== exp(b)) return exp(a) ? 1 : -1;
     if (!a.date_expiration && !b.date_expiration) return 0;
     if (!a.date_expiration) return 1;
     if (!b.date_expiration) return -1;
-    return a.date_expiration.localeCompare(b.date_expiration);
+    const c = a.date_expiration.localeCompare(b.date_expiration);
+    return exp(a) ? -c : c;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [tous, recherche, statutFiltre, paysIdsFiltres, apixFiltre, secteursSel, branchesSel, activitesSel, secteurs, allPays]);
 
@@ -172,37 +176,8 @@ export default function AccordsPage() {
       <div style={{display:"flex",alignItems:"flex-start"}}>
 
           {/* Sidebar bande */}
-          <aside style={{width:sidebarOpen?sidebarWidth:52,flexShrink:0,transition:isResizing.current?"none":"width 0.25s",background:"#fff",borderRight:"1px solid #E8E5E3",height:"100vh",overflowY:"auto" as const,position:"sticky" as const,top:0,display:"flex",flexDirection:"column" as const}}>
-            <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-            {/* Handle de resize */}
-            {sidebarOpen&&<div onMouseDown={startResize}
-              style={{position:"absolute" as const,right:0,top:0,bottom:0,width:4,cursor:"col-resize",zIndex:10,background:"transparent",transition:"background 0.15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}}
-              onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
-            {/* Header toggle */}
-            <div style={{padding:sidebarOpen?"14px 16px 10px":"12px 8px",borderBottom:"1px solid #F2F0EF",display:"flex",alignItems:"center",justifyContent:sidebarOpen?"space-between":"center",flexShrink:0}}>
-              {sidebarOpen&&<span style={{fontSize:12,fontWeight:700,color:"#1a1a2e",letterSpacing:"0.08em",textTransform:"uppercase" as const}}>Filtres</span>}
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen?"Réduire les filtres":"Afficher les filtres"}
-                  style={{background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:8,padding:"6px 8px",display:"flex",alignItems:"center",gap:5}}>
-                  <SlidersHorizontal size={14} style={{color:"#004f91"}}/>
-                  {sidebarOpen&&nbFiltres>0&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.15)",borderRadius:999,padding:"1px 5px"}}>{nbFiltres}</span>}
-                </button>
-                {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser"
-                  style={{background:"rgba(220,38,38,0.08)",border:"1px solid rgba(220,38,38,0.20)",cursor:"pointer",borderRadius:999,padding:"5px",display:"flex",alignItems:"center",transition:"background 0.15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
-                  <span className="material-symbols-outlined" style={{fontSize:15,color:"#dc2626",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>close</span>
-                </button>}
-              </div>
-            </div>
-            {sidebarOpen&&<div style={{padding:"16px",overflowY:"auto" as const,flex:1}}>
-                <div style={{position:"relative" as const,marginBottom:18}}>
-                  <Search size={13} style={{position:"absolute" as const,left:9,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
-                  <input value={recherche} onChange={e=>setRecherche(e.target.value)} placeholder="Rechercher…"
-                    style={{width:"100%",paddingLeft:30,paddingRight:8,paddingTop:8,paddingBottom:8,borderRadius:8,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:12,color:"#1a1a2e",outline:"none",fontFamily:"var(--font-google-sans)",boxSizing:"border-box" as const}}/>
-                  {recherche&&<button onClick={()=>setRecherche("")} aria-label="Effacer la recherche" style={{position:"absolute" as const,right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",padding:0}}><X size={11} style={{color:"#9aa5b4"}}/></button>}
-                </div>
+          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+            recherche={recherche} setRecherche={setRecherche}>
                 {/* Statut */}
                 <div style={{marginBottom:18}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
@@ -284,8 +259,7 @@ export default function AccordsPage() {
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
                   onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite} marginBottom={0}/>
-            </div>}
-          </aside>
+          </PanneauFiltres>
 
           {/* Grille accords */}
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
@@ -301,6 +275,8 @@ export default function AccordsPage() {
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ) : (
+              <>
+              <CompteurResultats n={accords.length} singulier="accord" pluriel="accords" />
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
@@ -321,7 +297,7 @@ export default function AccordsPage() {
                   // Accent du survol = couleur du statut
                   const accent = st ? st.accent : "#C5BFBB";
                   return (
-                  <div key={a.id} onClick={()=>gate(()=>setSelec(a))}
+                  <div key={a.id} {...carteCliquable(()=>gate(()=>setSelec(a)))}
                     style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
                     onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
@@ -361,6 +337,7 @@ export default function AccordsPage() {
                   );
                 })}
               </div>
+              </>
             )}
           </div>
       </div>
