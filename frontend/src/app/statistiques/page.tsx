@@ -1038,8 +1038,12 @@ async function ecrireClasseurNace(fichier: string, entete: string[], feuilles: F
     ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(1, f.colonnes.length - 1) } }];
     const lgEntete = 1 + entete.length + 1;              // titre + contexte + ligne vide
     const derniere = lgEntete + f.lignes.length + (f.total ? 1 : 0);
-    ws["!autofilter"] = { ref: XLSX.utils.encode_range(
-      { s: { r: lgEntete, c: 0 }, e: { r: derniere, c: f.colonnes.length - 1 } }) };
+    // Pas de filtre automatique : SheetJS l'accompagne d'un nom défini
+    // `_xlnm._FilterDatabase` dont il n'échappe pas l'apostrophe du nom de
+    // feuille — « 'Groupes d'utilisation'!A8:O18 » n'est pas une formule
+    // valide. Excel ouvrait alors le classeur en mode réparation et retirait
+    // le nom défini. Un fichier qui s'ouvre sans avertissement vaut mieux que
+    // des menus de filtre, que l'utilisateur pose d'un clic (Données ▸ Filtrer).
     // Formats numériques posés cellule par cellule : le format vit sur la
     // cellule dans le fichier xlsx, il n'y a pas de format de colonne.
     f.colonnes.forEach((c, ci) => {
