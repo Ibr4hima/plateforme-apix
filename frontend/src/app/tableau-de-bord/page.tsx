@@ -279,33 +279,34 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
 }
 
 // Petite navigation par flèches, pour parcourir une liste sans la déplier :
-// une année de plus, une zone de plus. Les extrémités désactivent la flèche
-// correspondante plutôt que de boucler, pour qu'on sache où l'on est.
+// une année de plus, une portée de classement de plus. Les extrémités
+// désactivent la flèche correspondante plutôt que de boucler, pour qu'on sache
+// où l'on est dans la liste.
 function NavFleches({ libelle, onPrec, onSuiv, titre, fort }: {
   libelle: React.ReactNode; onPrec?: () => void; onSuiv?: () => void; titre?: string; fort?: boolean;
 }) {
-  const fleche = (actif: boolean, fn: (() => void) | undefined, d: "‹" | "›", aria: string) => (
-    <button onClick={fn} disabled={!actif} aria-label={aria}
-      style={{ border: "none", background: "transparent", cursor: actif ? "pointer" : "default", padding: "0 3px",
-        fontSize: fort ? 13 : 12, lineHeight: 1, fontWeight: 800, color: actif ? (fort ? "rgba(255,255,255,0.85)" : "#8a93a3") : (fort ? "rgba(255,255,255,0.3)" : "#D5D9E0"),
-        fontFamily: "var(--font-google-sans)", flexShrink: 0 }}>{d}</button>
+  const fleche = (fn: (() => void) | undefined, d: "‹" | "›", aria: string) => (
+    <button onClick={fn} disabled={!fn} aria-label={aria}
+      style={{ border: "none", background: "transparent", cursor: fn ? "pointer" : "default", padding: "0 4px",
+        fontSize: 13, lineHeight: 1, fontWeight: 800, fontFamily: "var(--font-google-sans)", flexShrink: 0,
+        color: fort ? (fn ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.3)") : (fn ? "#9aa5b4" : "#DCE0E6") }}>{d}</button>
   );
   return (
-    <span title={titre} style={{ display: "inline-flex", alignItems: "center", gap: 1, flexShrink: 0,
-      ...(fort ? { background: BLEU, borderRadius: 999, padding: "3px 6px" } : { background: "#EEF1F6", borderRadius: 6, padding: "2px 4px" })}}>
-      {fleche(!!onPrec, onPrec, "‹", "Précédent")}
-      <span style={{ fontSize: fort ? 11 : 8.5, fontWeight: fort ? 800 : 700, color: fort ? "#fff" : "#8a93a3",
-        whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", padding: "0 3px" }}>{libelle}</span>
-      {fleche(!!onSuiv, onSuiv, "›", "Suivant")}
+    <span title={titre} style={{ display: "inline-flex", alignItems: "center", flexShrink: 0,
+      ...(fort ? { background: BLEU, borderRadius: 999, padding: "3px 5px" } : {}) }}>
+      {fleche(onPrec, "‹", "Précédent")}
+      <span style={{ fontSize: fort ? 11 : 10.5, fontWeight: fort ? 800 : 700, color: fort ? "#fff" : "#8a93a3",
+        whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{libelle}</span>
+      {fleche(onSuiv, "›", "Suivant")}
     </span>
   );
 }
 
-// KPI du bandeau : une valeur, l'année parcourue aux flèches, et — pour les
-// flux d'IDE — le rang du Sénégal dans un classement dont on change la portée
-// aux flèches également (monde, Afrique, Afrique de l'Ouest, CEDEAO, UEMOA).
-// Le pied de carte porte la variation : places gagnées pour un rang, écart en
-// pourcentage pour un montant.
+// KPI du bandeau, sur trois lignes franches : le libellé et l'année, la valeur
+// seule, puis la variation. Le rang du Sénégal — pour les flux d'IDE — s'ajoute
+// à la dernière ligne avec sa propre navigation de portée. La valeur n'a ainsi
+// rien à côté d'elle et n'est jamais tronquée, ce qui était le défaut d'une
+// disposition où le rang lui disputait la place.
 function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargement,
   rang, portee, onPortee, portees, rangPrec, delta }: {
   label: string; annee: number | null; onAnnee: (a: number) => void; anneeMin?: number; anneeMax?: number;
@@ -314,19 +315,17 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargem
   portees?: { avant: boolean; apres: boolean };
   rangPrec?: number | null; delta?: number | null;
 }) {
-  // Gagner des places fait monter le rang vers 1 : la différence est donc
-  // inversée par rapport à une variation de montant.
+  // Gagner des places fait descendre le numéro de rang : la différence se lit
+  // donc à l'envers d'une variation de montant, pour que le vert reste du côté
+  // de l'amélioration dans les deux cas.
   const dRang = rang != null && rangPrec != null ? rangPrec - rang : null;
   const bon = dRang != null ? dRang > 0 : delta != null ? delta > 0 : null;
   const mauvais = dRang != null ? dRang < 0 : delta != null ? delta < 0 : null;
   return (
-    <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
-      {/* Le libellé peut tenir sur deux lignes — « Exportations · Commerce
-          extérieur » ne rentre pas sur une — et la hauteur est réservée pour
-          les quatre cartes, sinon elles ne s'aligneraient plus. */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12, minHeight: 26 }}>
-        <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.05em", color: BLEU,
-          textTransform: "uppercase", margin: 0, lineHeight: 1.35 }}>{label}</p>
+    <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
+          textTransform: "uppercase", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</p>
         {annee != null && (
           <NavFleches libelle={annee} titre="Changer d'année"
             onPrec={anneeMin != null && annee > anneeMin ? () => onAnnee(annee - 1) : undefined}
@@ -340,28 +339,23 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargem
         </>
       ) : (
         <>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-            <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+          <p className="ds-donnee" style={{ fontSize: "1.6rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+          <div style={{ marginTop: 9, minHeight: 20, display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
             {portee && onPortee && (
               <NavFleches fort titre={`Rang du Sénégal — ${portee.nomComplet}. Flèches : changer de classement.`}
                 libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee.abrege}</>}
                 onPrec={portees?.avant ? () => onPortee(-1) : undefined}
                 onSuiv={portees?.apres ? () => onPortee(1) : undefined} />
             )}
-          </div>
-          <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            {dRang != null || delta != null ? (
-              <>
-                <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
-                  color: bon ? "#188038" : mauvais ? "#dc2626" : "#9aa5b4" }}>
-                  {bon ? "▲" : mauvais ? "▼" : "="}&nbsp;{dRang != null
-                    ? (dRang === 0 ? "rang stable" : `${Math.abs(dRang)} place${Math.abs(dRang) > 1 ? "s" : ""}`)
-                    : `${nf(Math.abs(delta as number), 1)} %`}
-                </span>
-                {annee != null && <span style={{ fontSize: 10.5, color: "#9aa5b4", whiteSpace: "nowrap" }}>par rapport à {annee - 1}</span>}
-              </>
-            ) : (
-              <span style={{ fontSize: 10.5, color: "#9aa5b4" }}>{rang != null || valeur !== "—" ? `comparaison à ${annee != null ? annee - 1 : "l'année précédente"} indisponible` : ""}</span>
+            {(dRang != null || delta != null) && (
+              <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+                color: bon ? "#188038" : mauvais ? "#dc2626" : "#9aa5b4" }}>
+                {bon ? "▲" : mauvais ? "▼" : "="}&nbsp;{dRang != null
+                  ? (dRang === 0 ? "stable" : `${Math.abs(dRang)} place${Math.abs(dRang) > 1 ? "s" : ""}`)
+                  : `${nf(Math.abs(delta as number), 1)} %`}
+                {annee != null && <span style={{ fontWeight: 600, color: "#9aa5b4" }}> vs {annee - 1}</span>}
+              </span>
             )}
           </div>
         </>
