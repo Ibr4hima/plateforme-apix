@@ -13,19 +13,19 @@ import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMul
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
+import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
+import { useEtatUrl } from "@/lib/useEtatUrl";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const BLEU = "#004f91", ENCRE = "#101a2e";
+const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
 
 // Formatage : lib/format est LA source — les copies locales qui vivaient ici
 // avaient déjà divergé de /statistiques (« Md$ » contre « Md $ », 0 contre 1
 // décimale sur les mêmes flux). fmtMd s'appelle désormais fmtFCFA, son unité
 // d'entrée (FCFA bruts) étant dans le nom.
 const getJSON = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-
-
-// Libellés de mois (les périodes BMCE sont datées « AAAA-MM-JJ »)
 
 // ── Petits blocs de présentation ──────────────────────────────────────────────
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
@@ -96,21 +96,13 @@ function Segment<T extends string>({ value, options, onChange }: { value: T; opt
 
 // Curseur d'année pour les KPIs d'une section : défile de la première année
 // disponible à la dernière (défaut), les cartes s'adaptent.
-function CurseurAnnee({ min, max, value, onChange, fmtMin, fmtVal }: { min: number; max: number; value: number; onChange: (a: number) => void; fmtMin?: (v: number) => string; fmtVal?: (v: number) => string }) {
-  if (!(max > min)) return null;
-  return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-      <span style={{ fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtMin ? fmtMin(min) : min}</span>
-      <input
-        type="range" min={min} max={max} step={1} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="tdb-curseur" aria-label="Période affichée"
-        style={{ width: 170 }}
-      />
-      <span style={{ fontSize: 12, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.08)", padding: "3px 11px", borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap" }}>{fmtVal ? fmtVal(value) : value}</span>
-    </div>
-  );
-}
+// Curseur d'année : le composant commun de la plateforme. La page portait sa
+// propre copie (.tdb-curseur) — c'était l'original dont les autres pages ont
+// été rapprochées, il ne restait plus qu'à le rapprocher de lui-même. Les
+// paramètres fmtMin/fmtVal de l'époque des mois BMCE n'étaient plus passés
+// par personne.
+const CurseurAnnee = (p: { min: number; max: number; value: number; onChange: (a: number) => void }) =>
+  <CurseurAnneeNace {...p} largeur={170} />;
 
 // Barres horizontales top-N pour [{label, valeur}]
 function MiniBarres({ data, couleur = BLEU, fmt = (v: number) => nf(v), max = 6 }: { data: { label: string; valeur: number }[]; couleur?: string; fmt?: (v: number) => string; max?: number }) {
@@ -441,7 +433,8 @@ const GROUPES_TABLES: { titre: string; tables: { id: string; titre: string; desc
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TableauDeBordPage() {
-  const [onglet, setOnglet] = useState<"viz" | "tables">("viz");
+  // Dans l'URL comme partout ailleurs : F5 et lien partagé conservent l'onglet.
+  const [onglet, setOnglet] = useEtatUrl<"viz" | "tables">("onglet", "viz", ["viz", "tables"]);
 
   // Données
   const [ideFlux, setIdeFlux] = useState<any[]>([]);
@@ -496,16 +489,34 @@ export default function TableauDeBordPage() {
     });
   }, []);
 
-  // Flux bilatéraux : KPIs, tops et répartition rechargés à chaque changement
-  // de direction OU d'année au curseur (les variations n vs n-1 restent
-  // calculées côté backend, hors bornes de période).
+  // Flux bilatéraux : KPIs, tops et répartition dépendent de la direction et
+  // de l'année. Chaque triplet n'est demandé qu'UNE fois par session — glisser
+  // le curseur sur dix ans tirait trois requêtes par cran, et revenir sur une
+  // année déjà vue re-payait tout. Le cache est un ref : le remplir ne doit
+  // pas re-rendre, seule l'arrivée des données affichées le fait.
+  const bilatCache = useRef<Map<string, { kpis: any; tops: any; repart: any }>>(new Map());
   useEffect(() => {
     if (!commCtx || bilatAnnee == null) return;
+    const cle = `${bilatDir}|${bilatAnnee}`;
+    const poser = (d: { kpis: any; tops: any; repart: any }) => {
+      setBilat(d.kpis); setBilatTops(d.tops); setBilatRepart(d.repart);
+    };
+    const connu = bilatCache.current.get(cle);
+    if (connu) { poser(connu); return; }
     const base = `pays_id=${commCtx.id}&direction=${bilatDir}`;
     const an = `annee_min=${bilatAnnee}&annee_max=${bilatAnnee}`;
-    getJSON(`${API}/statistiques/commerce/kpis?${base}&${an}`).then(setBilat);
-    getJSON(`${API}/statistiques/commerce/tops?${base}&${an}&limite=8`).then(setBilatTops);
-    getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`).then(setBilatRepart);
+    let annule = false;
+    Promise.all([
+      getJSON(`${API}/statistiques/commerce/kpis?${base}&${an}`),
+      getJSON(`${API}/statistiques/commerce/tops?${base}&${an}&limite=8`),
+      getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`),
+    ]).then(([kpis, tops, repart]) => {
+      const d = { kpis, tops, repart };
+      bilatCache.current.set(cle, d);
+      // Réponse d'une sélection dépassée : mise en cache, mais pas affichée.
+      if (!annule) poser(d);
+    });
+    return () => { annule = true; };
   }, [commCtx, bilatDir, bilatAnnee]);
 
   // Commerce extérieur (NACE) : année choisie au curseur, dernière par défaut.
@@ -536,29 +547,61 @@ export default function TableauDeBordPage() {
     return [...m.values()].filter(x => x.valeur > 0).sort((a, b) => b.valeur - a.valeur);
   }, [nacePays]);
 
+  // Section 3 : partenaires de l'année et suivi du premier sur l'année d'avant,
+  // calculés UNE fois par (sens, année). Ces balayages du fichier pays NACE
+  // (plusieurs milliers de lignes) se refaisaient à chaque rendu — chaque cran
+  // de curseur, chaque survol re-payait deux parcours complets. Le premier
+  // partenaire est suivi PAR SON NOM sur l'année précédente : la variation
+  // compare le même pays, pas le premier de chaque millésime.
+  const comTops = useMemo(() => {
+    const an = comAnnee, prec = an != null ? an - 1 : null;
+    const tops = comPartenaires(comDir, an);
+    const top = tops[0] ?? null;
+    const topPrec = top ? comPartenaires(comDir, prec).find(x => x.nom === top.nom) ?? null : null;
+    return { tops, topPrec };
+  }, [comDir, comAnnee, comPartenaires]);
+
   // ── Dérivés socio-économiques ──
-  // Bornes d'années couvertes par les 4 indicateurs des KPIs + curseur
-  const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
+  // Le tableau plat de l'API est indexé UNE fois par indicateur (série triée) :
+  // valeurs des KPIs et séries des graphes se servent ensuite en O(1) — les
+  // sept filtre+tri qui se rejouaient à chaque rendu disparaissent.
+  const socioParIndicateur = useMemo(() => {
+    const m = new Map<string, { annee: number; valeur: number }[]>();
+    for (const r of socio) {
+      if (r.valeur == null) continue;
+      let l = m.get(r.indicateur);
+      if (!l) { l = []; m.set(r.indicateur, l); }
+      l.push({ annee: r.annee as number, valeur: r.valeur as number });
+    }
+    for (const l of m.values()) l.sort((a, b) => a.annee - b.annee);
+    return m;
+  }, [socio]);
+  const serieSocio = useCallback((code: string) => socioParIndicateur.get(code) ?? [], [socioParIndicateur]);
+
   const socioBornes = useMemo(() => {
-    const ans = socio.filter((r) => SOCIO_KPIS.includes(r.indicateur) && r.valeur != null).map((r) => r.annee as number);
+    const ans = SOCIO_KPIS.flatMap((c) => serieSocio(c)).map((r) => r.annee);
     return ans.length ? { min: Math.min(...ans), max: Math.max(...ans) } : null;
-  }, [socio]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [serieSocio]);
   const [socioAnneeSel, setSocioAnneeSel] = useState<number | null>(null);
   const socioAnnee = socioAnneeSel ?? socioBornes?.max ?? null;
 
-  // Valeur à l'année du curseur + valeur disponible précédente (variation ▲/▼ %)
-  const socioVal = (code: string) => {
-    const rows = socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee);
+  // Valeur à l'année du curseur + valeur disponible précédente (variation ▲/▼ %).
+  // `prev.valeur != null` et non un test de vérité : une valeur nulle (0) est
+  // un vrai point de comparaison, pas une absence.
+  const socioVal = useCallback((code: string) => {
+    const rows = serieSocio(code);
     if (!rows.length || socioAnnee == null) return null;
     const last = rows.find((r) => r.annee === socioAnnee) || null;
     const avant = rows.filter((r) => r.annee < socioAnnee);
     const prev = avant.length ? avant[avant.length - 1] : null;
     const delta = last && prev && prev.valeur ? ((last.valeur - prev.valeur) / Math.abs(prev.valeur)) * 100 : null;
     return { valeur: (last?.valeur as number) ?? null, annee: socioAnnee, prevAnnee: last ? ((prev?.annee as number) ?? null) : null, delta };
-  };
-  const pib = socioVal("pib"), pop = socioVal("population"), pibHab = socioVal("pib_hab"), croiss = socioVal("croissance_pib");
-  const serieSocio = (code: string) => socio.filter((r) => r.indicateur === code && r.valeur != null).sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number }));
-  const seriePib = useMemo(() => serieSocio("pib"), [socio]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [serieSocio, socioAnnee]);
+  const { pib, pop, pibHab, croiss } = useMemo(() => ({
+    pib: socioVal("pib"), pop: socioVal("population"),
+    pibHab: socioVal("pib_hab"), croiss: socioVal("croissance_pib"),
+  }), [socioVal]);
+  const seriePib = serieSocio("pib");
 
   const toSerie = (rows: any[]) => rows.slice().sort((a, b) => a.annee - b.annee).map((r) => ({ annee: r.annee as number, valeur: r.valeur as number | null }));
   const serieFluxEnt = useMemo(() => toSerie(ideFlux), [ideFlux]);
@@ -683,17 +726,9 @@ export default function TableauDeBordPage() {
         .tdb-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: stretch; }
         @media (max-width: 980px) { .tdb-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .tdb-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .tdb-kpis { grid-template-columns: 1fr; } }
-        .tdb-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
-          background: rgba(0,79,145,0.18); outline: none; cursor: pointer; }
-        .tdb-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
-          border-radius: 50%; background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .tdb-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
-        .tdb-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
-          background: #004f91; border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-        .tdb-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: rgba(0,79,145,0.18); }
       `}</style>
       {/* ── Bandeau exécutif ── */}
-      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 78px" }}>
+      <div style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "30px 40px 78px" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
@@ -773,7 +808,11 @@ export default function TableauDeBordPage() {
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
                 {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
-                  const st = ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
+                  // Repli sans code (groupements pas encore résolus) : squelette
+                  // obligatoire. Lire cleClass("", année) servirait la clé MONDE —
+                  // un classement mondial s'afficherait sous le titre « Afrique »
+                  // ou « CEDEAO » le temps de la résolution.
+                  const st = z.code && ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
                   const dir = zoneDir[z.code] ?? "entrant";
                   return (
                     <TableauZoneSenegal key={z.cle} titre={z.titre} nomComplet={z.nomComplet}
@@ -878,13 +917,10 @@ export default function TableauDeBordPage() {
                 const tag = an != null ? String(an) : undefined;
                 const prec = an != null ? an - 1 : null;
                 const tot = comTotal(comDir, an), totPrec = comTotal(comDir, prec);
+                const { tops, topPrec } = comTops;
                 const varDe = (v: number | null, p: number | null) =>
                   v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null;
-                // Premier partenaire de l'année, et sa position l'année d'avant
-                // pour la variation : c'est le même pays qu'on suit, pas le
-                // premier de chaque millésime.
-                const tops = comPartenaires(comDir, an), top = tops[0] ?? null;
-                const topPrec = top ? comPartenaires(comDir, prec).find(x => x.nom === top.nom) ?? null : null;
+                const top = tops[0] ?? null;
                 const part = top && tot ? (top.valeur / tot) * 100 : null;
                 const totP = comTotal(comDir, prec);
                 const partPrec = topPrec && totP ? (topPrec.valeur / totP) * 100 : null;
@@ -923,7 +959,7 @@ export default function TableauDeBordPage() {
                   return { annee: a, valeur: e != null && i != null ? enFcfa(e - i) : null };
                 });
                 const plage = comAnnees.length ? `${comAnnees[0]}–${comAnnees[comAnnees.length - 1]}` : undefined;
-                const partenaires = comPartenaires(comDir, an);
+                const partenaires = comTops.tops;
                 // Groupes d'utilisation : la nomenclature exhaustive du rapport,
                 // celle qui répond à « à quoi servent ces marchandises ».
                 const groupes = an == null || !naceGU?.disponible ? []
