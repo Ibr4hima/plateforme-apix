@@ -6,7 +6,7 @@
 // « Visualisation de données » (KPIs + graphes) et « Tableaux analytiques »
 // (toutes les tables détaillées). Style aligné sur le rapport commerce.
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
@@ -19,6 +19,10 @@ const BLEU = "#004f91", ENCRE = "#101a2e";
 // ── Formatage ─────────────────────────────────────────────────────────────────
 const nf = (v: number | null | undefined, d = 0) => (v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—");
 const fmtMd = (fcfa?: number | null) => (fcfa == null ? "—" : `${nf(fcfa / 1e9, 1)} Md FCFA`);
+// La NACE compte en MILLIONS de FCFA : lui appliquer fmtMd, qui attend des
+// FCFA bruts, diviserait tous les montants par mille.
+const fmtMFCFA = (v?: number | null) => v == null || !isFinite(v) ? "—"
+  : Math.abs(v) >= 1000 ? `${nf(v / 1000, 1)} Md FCFA` : `${nf(v, 0)} M FCFA`;
 function fmtUSD(v?: number | null) {
   if (v == null || !isFinite(v)) return "—";
   if (Math.abs(v) >= 1e9) return `${nf(v / 1e9, 1)} Md$`;
@@ -42,10 +46,6 @@ const drapeau = (iso2?: string | null) => {
 };
 
 // Libellés de mois (les périodes BMCE sont datées « AAAA-MM-JJ »)
-const MOIS_FR = ["", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-const MOIS_COURT = ["", "Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
-const moisLong = (p?: string | null) => { if (!p) return ""; const [y, m] = p.split("-"); return `${MOIS_FR[Number(m)] || ""} ${y}`.trim(); };
-const moisCourt = (p?: string | null) => { if (!p) return ""; const [y, m] = p.split("-"); return `${MOIS_COURT[Number(m)] || ""} ${y.slice(2)}`.trim(); };
 
 // ── Petits blocs de présentation ──────────────────────────────────────────────
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
@@ -450,9 +450,12 @@ export default function TableauDeBordPage() {
   // Année sélectionnée au curseur de la section (null = dernière disponible)
   const [bilatAnneeSel, setBilatAnneeSel] = useState<number | null>(null);
   const bilatAnnee = bilatAnneeSel ?? commCtx?.amax ?? null;
-  const [comExt, setComExt] = useState<any>(null);
-  const [comMois, setComMois] = useState<any>(null);
-  const [comMoisSel, setComMoisSel] = useState<number | null>(null);
+  // Commerce extérieur : Notes d'analyse du commerce extérieur (NACE, ANSD),
+  // la même source que l'onglet dédié — annuelle, et non plus mensuelle.
+  const [naceProd, setNaceProd] = useState<any>(null);   // totaux et séries
+  const [nacePays, setNacePays] = useState<any>(null);   // partenaires
+  const [naceGU, setNaceGU] = useState<any>(null);       // groupes d'utilisation
+  const [comAnneeSel, setComAnneeSel] = useState<number | null>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
   const [socio, setSocio] = useState<any[]>([]);
   const [socioPays, setSocioPays] = useState<string>("Sénégal");
@@ -462,7 +465,9 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=stock`).then((d) => setIdeStock(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=flux`).then((d) => setIdeFluxSort(Array.isArray(d) ? d : []));
     getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=stock`).then((d) => setIdeStockSort(Array.isArray(d) ? d : []));
-    getJSON(`${API}/bmce/apercu`).then(setComExt);
+    getJSON(`${API}/nace/principaux-produits`).then(setNaceProd);
+    getJSON(`${API}/nace/groupes-utilisation`).then(setNaceGU);
+    getJSON(`${API}/nace/pays`).then(setNacePays);
 
     // Flux bilatéraux : résoudre l'id du Sénégal puis charger la balance ;
     // KPIs/tops dépendent de la direction → effet dédié ci-dessous.
@@ -496,14 +501,33 @@ export default function TableauDeBordPage() {
     getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`).then(setBilatRepart);
   }, [commCtx, bilatDir, bilatAnnee]);
 
-  // Commerce extérieur (ANSD) : mois sélectionné au curseur (index dans la
-  // liste des périodes disponibles ; défaut = dernier mois).
-  const comPeriodes: string[] = useMemo(() => (comExt?.serie || []).map((s: any) => s.periode as string), [comExt]);
-  const comIdx = comMoisSel ?? (comPeriodes.length ? comPeriodes.length - 1 : null);
-  useEffect(() => {
-    if (comIdx == null || !comPeriodes[comIdx]) return;
-    getJSON(`${API}/bmce/mois?periode=${comPeriodes[comIdx]}`).then(setComMois);
-  }, [comIdx, comPeriodes]);
+  // Commerce extérieur (NACE) : année choisie au curseur, dernière par défaut.
+  // Tout se calcule côté client à partir des trois familles déjà chargées —
+  // l'API les livre entières, il n'y a pas de requête par année à faire.
+  const comAnnees: number[] = useMemo(() => (naceProd?.annees || []) as number[], [naceProd]);
+  const comAnnee = comAnneeSel ?? (comAnnees.length ? comAnnees[comAnnees.length - 1] : null);
+
+  // Total d'un sens sur une année : la somme des principaux produits égale le
+  // TOTAL imprimé par l'ANSD, aux arrondis près.
+  const comTotal = useCallback((sens: "export" | "import", an: number | null): number | null => {
+    if (an == null || !naceProd?.disponible) return null;
+    const l = (naceProd.donnees?.[sens] || []).filter((r: any) => r.annee === an);
+    return l.length ? l.reduce((t: number, r: any) => t + (r.valeur ?? 0), 0) : null;
+  }, [naceProd]);
+
+  // Partenaires d'un sens sur une année, « Autres pays » écarté : ce n'est pas
+  // un pays et il capterait la première place de plusieurs régions.
+  const comPartenaires = useCallback((sens: "export" | "import", an: number | null) => {
+    if (an == null || !nacePays?.disponible) return [] as { nom: string; valeur: number; iso2: string | null }[];
+    const m = new Map<string, { nom: string; valeur: number; iso2: string | null }>();
+    for (const r of nacePays.donnees?.[sens] || []) {
+      if (r.annee !== an || r.pays === "Autres pays") continue;
+      const e = m.get(r.pays) ?? { nom: r.pays, valeur: 0, iso2: r.code_iso2 ?? null };
+      e.valeur += r.valeur ?? 0;
+      m.set(r.pays, e);
+    }
+    return [...m.values()].filter(x => x.valeur > 0).sort((a, b) => b.valeur - a.valeur);
+  }, [nacePays]);
 
   // ── Dérivés socio-économiques ──
   // Bornes d'années couvertes par les 4 indicateurs des KPIs + curseur
@@ -762,72 +786,97 @@ export default function TableauDeBordPage() {
               })()}
             </section>
 
-            {/* ── 3. Commerce extérieur ── */}
+            {/* ── 3. Commerce extérieur (NACE) ── */}
             <section style={{ marginTop: 40 }}>
               <SectionHead n={3} titre="Commerce extérieur" extra={
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
                   <Segment value={comDir} onChange={setComDir} options={[{ v: "export", l: "Exportations" }, { v: "import", l: "Importations" }]} />
-                  {comIdx != null && comPeriodes.length > 1 && (
-                    <CurseurAnnee min={0} max={comPeriodes.length - 1} value={comIdx} onChange={setComMoisSel}
-                      fmtMin={(i) => moisCourt(comPeriodes[i])} fmtVal={(i) => moisCourt(comPeriodes[i])} />
+                  {comAnnee != null && comAnnees.length > 1 && (
+                    <CurseurAnnee min={comAnnees[0]} max={comAnnees[comAnnees.length - 1]} value={comAnnee} onChange={setComAnneeSel} />
                   )}
                 </div>
               } />
               {(() => {
                 const exp = comDir === "export";
-                const mois = comMois?.disponible ? comMois : null;
-                const dir = mois?.[comDir];
-                const top = dir?.top || null;
-                const moisTag = mois?.periode ? moisLong(mois.periode) : undefined;   // « Mai 2026 »
-                const refMois = mois?.periode_prec ? moisLong(mois.periode_prec) : null; // « Avril 2026 »
+                const an = comAnnee;
+                const tag = an != null ? String(an) : undefined;
+                const prec = an != null ? an - 1 : null;
+                const tot = comTotal(comDir, an), totPrec = comTotal(comDir, prec);
+                const varDe = (v: number | null, p: number | null) =>
+                  v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null;
+                // Premier partenaire de l'année, et sa position l'année d'avant
+                // pour la variation : c'est le même pays qu'on suit, pas le
+                // premier de chaque millésime.
+                const tops = comPartenaires(comDir, an), top = tops[0] ?? null;
+                const topPrec = top ? comPartenaires(comDir, prec).find(x => x.nom === top.nom) ?? null : null;
+                const part = top && tot ? (top.valeur / tot) * 100 : null;
+                const totP = comTotal(comDir, prec);
+                const partPrec = topPrec && totP ? (topPrec.valeur / totP) * 100 : null;
+                const expTot = comTotal("export", an), impTot = comTotal("import", an);
+                const taux = expTot != null && impTot ? (expTot / impTot) * 100 : null;
+                const expP = comTotal("export", prec), impP = comTotal("import", prec);
+                const tauxPrec = expP != null && impP ? (expP / impP) * 100 : null;
                 return (
                   <div className="tdb-kpis">
-                    <Kpi label={exp ? "Exportations" : "Importations"} tag={moisTag ? `${exp ? "FAB" : "CAF"} · ${moisTag}` : undefined} valeur={fmtMd(dir?.total)} delta={dir?.variation ?? null} refAnnee={refMois} />
-                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={moisTag}
-                      valeur={top?.libelle || "—"} sousLabel={top ? fmtMd(top.valeur) : ""} delta={top?.variation ?? null} refAnnee={refMois} />
-                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={moisTag}
-                      valeur={top?.part_pct != null ? `${nf(top.part_pct, 1)} %` : "—"} delta={top?.part_variation ?? null} refAnnee={refMois} />
-                    <Kpi label="Taux de couverture" tag={moisTag} valeur={mois?.taux_couverture != null ? `${nf(mois.taux_couverture, 1)} %` : "—"} delta={mois?.taux_couverture_variation ?? null} refAnnee={refMois} sousLabel="export / import" />
+                    <Kpi label={exp ? "Exportations" : "Importations"} tag={tag ? `${exp ? "FAB" : "CAF"} · ${tag}` : undefined}
+                      valeur={fmtMFCFA(tot)} delta={varDe(tot, totPrec)} refAnnee={prec} />
+                    <Kpi texte label={exp ? "1er client" : "1er fournisseur"} tag={tag}
+                      valeur={top?.nom || "—"} sousLabel={top ? fmtMFCFA(top.valeur) : ""}
+                      delta={varDe(top?.valeur ?? null, topPrec?.valeur ?? null)} refAnnee={prec} />
+                    <Kpi label={exp ? "Part du 1er client" : "Part du 1er fournisseur"} tag={tag}
+                      valeur={part != null ? `${nf(part, 1)} %` : "—"} delta={varDe(part, partPrec)} refAnnee={prec} />
+                    <Kpi label="Taux de couverture" tag={tag} valeur={taux != null ? `${nf(taux, 1)} %` : "—"}
+                      delta={varDe(taux, tauxPrec)} refAnnee={prec} sousLabel="export / import" />
                   </div>
                 );
               })()}
 
               {(() => {
                 const exp = comDir === "export";
-                // Séries mensuelles (3 dernières années) — évolution et balance
-                const serieMois = (comExt?.serie || []).slice(-36);
-                const evoData = serieMois.map((s: any, i: number) => ({ annee: i, valeur: (exp ? s.export : s.import)?.valeur ?? null }));
-                const balData = serieMois.map((s: any, i: number) => {
-                  const e = s.export?.valeur, im = s.import?.valeur;
-                  return { annee: i, valeur: e != null && im != null ? e - im : null };
+                const an = comAnnee;
+                const tag = an != null ? String(an) : undefined;
+                // Les deux graphes reçoivent des FCFA bruts, pas des millions :
+                // l'échelle du composant met en forme ses graduations elle-même,
+                // sans surcharge possible, et lirait « 4M » là où il s'agit de
+                // 3 909 Md. La conversion est locale aux séries ; partout
+                // ailleurs la section reste dans l'unité de la NACE.
+                const enFcfa = (v: number | null) => (v == null ? null : v * 1e6);
+                const evoData = comAnnees.map(a => ({ annee: a, valeur: enFcfa(comTotal(comDir, a)) }));
+                const balData = comAnnees.map(a => {
+                  const e = comTotal("export", a), i = comTotal("import", a);
+                  return { annee: a, valeur: e != null && i != null ? enFcfa(e - i) : null };
                 });
-                const fmtMoisX = (i: number) => moisCourt(serieMois[i]?.periode);
-                const ans = serieMois.map((s: any) => s.periode?.slice(0, 4)).filter(Boolean);
-                const evoTag = ans.length ? (ans[0] === ans[ans.length - 1] ? ans[0] : `${ans[0]}–${ans[ans.length - 1]}`) : undefined;
-                const mois = comMois?.disponible ? comMois : null;
-                const moisRef = mois?.periode ? moisLong(mois.periode) : undefined;
-                const paysList = mois?.[comDir]?.pays || [];
-                const groupes = mois?.[comDir]?.groupes || [];
+                const plage = comAnnees.length ? `${comAnnees[0]}–${comAnnees[comAnnees.length - 1]}` : undefined;
+                const partenaires = comPartenaires(comDir, an);
+                // Groupes d'utilisation : la nomenclature exhaustive du rapport,
+                // celle qui répond à « à quoi servent ces marchandises ».
+                const groupes = an == null || !naceGU?.disponible ? []
+                  : (naceGU.donnees?.[comDir] || [])
+                      .filter((r: any) => r.annee === an && (r.valeur ?? 0) > 0)
+                      .map((r: any) => ({ label: r.groupe, valeur: r.valeur as number }))
+                      .sort((a: any, b: any) => b.valeur - a.valeur);
+                const vide = <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
                 return (
                   <>
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
-                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag}>
+                      <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage}>
                         {evoData.length > 1 ? (
-                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} fmtX={fmtMoisX} showDots={false} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
-                        ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
+                        ) : vide}
                       </Carte>
-                      <Carte titre="Balance commerciale" tag={evoTag}>
+                      <Carte titre="Balance commerciale" tag={plage}>
                         {balData.length > 1 ? (
-                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} fmtX={fmtMoisX} showDots={false} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
-                        ) : <p style={{ color: "#9aa5b4", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
+                        ) : vide}
                       </Carte>
                     </div>
                     <div className="tdb-duo" style={{ marginTop: 16 }}>
-                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={moisRef}>
-                        <TopTable rows={paysList.map((p: any) => ({ nom: p.libelle, valeur: p.valeur, iso2: p.code_iso2 }))} colNom="Pays" colVal="Valeur" fmt={(v) => fmtMd(v)} max={7} drapeaux />
+                      <Carte titre={exp ? "Principaux clients à l'exportation" : "Principaux fournisseurs à l'importation"} tag={tag}>
+                        <TopTable rows={partenaires.slice(0, 7).map(p => ({ nom: p.nom, valeur: p.valeur, iso2: p.iso2 }))}
+                          colNom="Pays" colVal="Valeur" fmt={(v) => fmtMFCFA(v)} max={7} drapeaux />
                       </Carte>
-                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={moisRef}>
-                        <MiniBarres data={groupes.map((g: any) => ({ label: g.libelle, valeur: g.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMd(v)} max={7} />
+                      <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} sousTitre="Groupe d'utilisation" tag={tag}>
+                        <MiniBarres data={groupes} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtMFCFA(v)} max={7} />
                       </Carte>
                     </div>
                   </>
