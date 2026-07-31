@@ -168,6 +168,24 @@ function fmtTonnes(v: number | null | undefined): string {
   if (Math.abs(v) >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} kt`;
   return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} t`;
 }
+// Cellule d'une statistique d'intervalle. L'année accompagne le minimum et le
+// maximum : sans elle, on saurait qu'un creux a eu lieu sans savoir quand,
+// ce qui est justement ce qu'on cherche en lisant plusieurs années.
+// « 16 395,8 Md FCFA » et « 303,9 Md FCFA · 2018 » sont les gabarits les plus
+// larges : les colonnes sont dimensionnées dessus, faute de quoi les nombres se
+// chevauchent d'une colonne à l'autre.
+const L_SOMME = 106, L_MOY = 98, L_EXT = 130;
+function CelluleStat({ v, an, fmt, large, attenue }: {
+  v: number | null; an?: number | null; fmt: (x: number | null) => string; large: number; attenue?: boolean;
+}) {
+  return (
+    <span className="ds-donnee" style={{ width: large, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
+      fontVariantNumeric: "tabular-nums", fontSize: 10.5, fontWeight: 700, color: attenue ? "#9aa5b4" : "#4a5568" }}>
+      {v == null ? "—" : fmt(v)}
+      {v != null && an != null && <span style={{ color: "#C5BFBB", fontWeight: 650 }}> · {an}</span>}
+    </span>
+  );
+}
 function VariationNace({ v }: { v: number | null }) {
   if (v == null || !isFinite(v)) return <span style={{ fontSize: 10.5, color: "#C5BFBB" }}>—</span>;
   const pos = v > 0, neg = v < 0;
@@ -198,7 +216,7 @@ type LigneClassement = {
   v: number | null; p: number | null;              // sens affiché
   vAutre: number | null; pAutre: number | null;    // sens opposé, pour la balance
   vPrec: number | null; pPrec: number | null;      // année n-1, pour la variation
-  anV?: number | null; anP?: number | null;        // année de l'extremum, en Min/Max
+  sv?: Stats | null; sp?: Stats | null;            // moyenne/min/max, en intervalle
   libelles?: number;                               // > 1 : ligne agrégée
   ouvrable?: boolean;                              // descend d'un niveau au clic
 };
@@ -213,28 +231,18 @@ const sommeNace = (a: number | null | undefined, b: number | null | undefined) =
 // Chaque section se lit soit sur une année, soit sur un intervalle résumé par
 // un calcul. Les deux modes tiennent dans un seul objet, pour qu'une section
 // n'ait qu'un état de période et une seule commande.
-type Calcul = "annee" | "somme" | "moyenne" | "min" | "max";
-type Periode = { debut: number; fin: number; calcul: Calcul };
-const CALCULS: { v: Calcul; l: string }[] = [
-  { v: "annee", l: "Année" }, { v: "somme", l: "Somme" },
-  { v: "moyenne", l: "Moyenne" }, { v: "min", l: "Min" }, { v: "max", l: "Max" },
+type Periode = { debut: number; fin: number; intervalle: boolean };
+const MODES_PERIODE: { v: "annee" | "intervalle"; l: string }[] = [
+  { v: "annee", l: "Année" }, { v: "intervalle", l: "Intervalle" },
 ];
-// Deux propriétés commandent l'affichage, et elles ne se recouvrent pas :
-//  - `estIntervalle` : la lecture porte sur plusieurs années, donc la variation
-//    « vs n-1 » n'a plus de terme de comparaison ;
-//  - `estExtremum`   : la valeur affichée est celle d'UNE année choisie dans
-//    l'intervalle. Part, cumul et balance deviennent alors trompeurs — la somme
-//    des minima n'est le minimum de rien, et le minimum des exportations et
-//    celui des importations peuvent tomber sur deux années différentes, si bien
-//    que leur différence ne serait pas une balance. On les masque, et on montre
-//    à la place l'année de l'extremum.
-const estIntervalle = (p: Periode) => p.calcul !== "annee";
-const estExtremum = (p: Periode) => p.calcul === "min" || p.calcul === "max";
-const anneeSeule = (a: number): Periode => ({ debut: a, fin: a, calcul: "annee" });
+const estIntervalle = (p: Periode) => p.intervalle;
+const anneeSeule = (a: number): Periode => ({ debut: a, fin: a, intervalle: false });
 
-// Résume une série annuelle selon le calcul de la période. Renvoie aussi
-// l'année retenue pour un extremum, seule information qui ne se lit pas dans
-// la valeur elle-même.
+// Résumé d'une série annuelle sur l'intervalle. Les quatre statistiques sont
+// calculées d'un coup et affichées ensemble : le classement se lit sur la
+// somme, et les trois autres colonnes disent comment cette somme s'est faite —
+// un total tiré par une seule année exceptionnelle ne se lit pas comme un
+// courant régulier.
 //
 // La moyenne divise par le nombre d'années COUVERTES par l'intervalle, et non
 // par le nombre d'années où la modalité a échangé : le rapport imprime « - »
@@ -245,24 +253,28 @@ const anneeSeule = (a: number): Periode => ({ debut: a, fin: a, calcul: "annee" 
 // Le minimum et le maximum, eux, ne portent que sur les années renseignées :
 // un « minimum de 0 » sur une année sans échange ne dirait rien, et l'année
 // affichée à côté serait arbitraire.
-function reduirePeriode(serie: Map<number, number | null>, per: Periode, nbAnnees: number,
-): { v: number | null; an: number | null } {
-  if (!estIntervalle(per)) return { v: serie.get(per.fin) ?? null, an: null };
-  let total: number | null = null, ext: number | null = null, anExt: number | null = null;
+type Stats = { somme: number | null; moyenne: number | null;
+               min: number | null; anMin: number | null;
+               max: number | null; anMax: number | null };
+function statistiquesPeriode(serie: Map<number, number | null>, per: Periode, nbAnnees: number): Stats {
+  let somme: number | null = null;
+  let min: number | null = null, anMin: number | null = null;
+  let max: number | null = null, anMax: number | null = null;
   for (const [annee, v] of serie) {
     if (v == null || annee < per.debut || annee > per.fin) continue;
-    total = (total ?? 0) + v;
-    if (ext == null || (per.calcul === "min" ? v < ext : v > ext)) { ext = v; anExt = annee; }
+    somme = (somme ?? 0) + v;
+    if (min == null || v < min) { min = v; anMin = annee; }
+    if (max == null || v > max) { max = v; anMax = annee; }
   }
-  if (per.calcul === "min" || per.calcul === "max") return { v: ext, an: anExt };
-  if (total == null) return { v: null, an: null };
-  return { v: per.calcul === "moyenne" && nbAnnees > 0 ? total / nbAnnees : total, an: null };
+  return { somme, moyenne: somme != null && nbAnnees > 0 ? somme / nbAnnees : null, min, anMin, max, anMax };
 }
 
 // Indexe une famille par modalité sur la période, en sommant d'abord les
-// doublons de chaque année (deux libellés du rapport visant la même modalité)
-// avant d'appliquer le calcul.
-type AgrNace = { v: number | null; p: number | null; anV: number | null; anP: number | null };
+// doublons de chaque année (deux libellés du rapport visant la même modalité).
+// `v`/`p` portent la valeur qui classe : celle de l'année en lecture annuelle,
+// la somme de l'intervalle sinon. `sv`/`sp` ne sont renseignés qu'en
+// intervalle, où ils alimentent les colonnes Moyenne, Min et Max.
+type AgrNace = { v: number | null; p: number | null; sv: Stats | null; sp: Stats | null };
 function indexerNace<T extends { annee: number; valeur: number | null; poids: number | null }>(
   lignes: T[], cle: (r: T) => string, per: Periode,
 ): Map<string, AgrNace> {
@@ -279,8 +291,12 @@ function indexerNace<T extends { annee: number; valeur: number | null; poids: nu
   }
   const m = new Map<string, AgrNace>();
   for (const [k, s] of series) {
-    const v = reduirePeriode(s.v, per, annees.size), p = reduirePeriode(s.p, per, annees.size);
-    m.set(k, { v: v.v, p: p.v, anV: v.an, anP: p.an });
+    if (!per.intervalle) {
+      m.set(k, { v: s.v.get(per.fin) ?? null, p: s.p.get(per.fin) ?? null, sv: null, sp: null });
+      continue;
+    }
+    const sv = statistiquesPeriode(s.v, per, annees.size), sp = statistiquesPeriode(s.p, per, annees.size);
+    m.set(k, { v: sv.somme, p: sp.somme, sv, sp });
   }
   return m;
 }
@@ -314,10 +330,11 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   // qui ne garde que le sens des échanges et l'année.
   granularite?: React.ReactNode; uniteBascule?: React.ReactNode;
   periode: Periode;
-  // Total de la portée en Min/Max : il ne peut pas se déduire des lignes, la
-  // somme des minima n'étant pas le minimum de la somme. L'appelant le calcule
-  // donc de la même façon que les lignes, mais sur la portée entière.
-  totalPeriode?: { v: number | null; p: number | null; anV: number | null; anP: number | null };
+  // Statistiques de la portée entière : la moyenne, le minimum et le maximum
+  // du total ne se déduisent pas des lignes — la somme des minima n'est le
+  // minimum de rien, les modalités n'atteignant pas leur creux la même année.
+  // L'appelant les calcule donc comme les lignes, mais sur la portée entière.
+  totalPeriode?: AgrNace;
 }) {
   const [q, setQ] = useState("");
   const [tout, setTout] = useState(false);
@@ -330,23 +347,19 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
   const fmtV = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   const mv = (l: LigneClassement) => (mesure === "valeur" ? l.v : l.p) ?? 0;
-  const anDe = (l: LigneClassement) => (mesure === "valeur" ? l.anV : l.anP) ?? null;
-  // Un extremum est la valeur d'une année : part, cumul et balance en
-  // deviendraient faux (cf. `estExtremum`), la variation n'a plus de terme de
-  // comparaison dès qu'on lit plusieurs années.
-  const extremum = estExtremum(periode);
-  const parts = !extremum;
-  const variation = !estIntervalle(periode);
-  const colBalance = balance && !extremum;
+  // En intervalle, le classement se lit sur la somme et les colonnes de droite
+  // deviennent Moyenne, Min et Max : part et cumul restent valides (la somme
+  // est additive) mais la variation « vs n-1 » n'a plus de terme de comparaison,
+  // et les trois nouvelles colonnes prennent la place des deux premières.
+  const intervalle = estIntervalle(periode);
+  const statDe = (l: LigneClassement) => (mesure === "valeur" ? l.sv : l.sp) ?? null;
 
   const rangees = lignes.filter(l => l.nom !== agregeSous).sort((x, y) => mv(y) - mv(x));
   const agregee = agregeSous ? lignes.find(l => l.nom === agregeSous) ?? null : null;
   // Le total est celui de la portée affichée, pour que « Part » et « Cumul »
   // restent interprétables après une descente ou un changement de famille.
-  const totalMes = totalPeriode ? (mesure === "valeur" ? totalPeriode.v : totalPeriode.p) : null;
-  const total = extremum && totalMes != null ? totalMes
-    : lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
-  const anTotal = totalPeriode ? (mesure === "valeur" ? totalPeriode.anV : totalPeriode.anP) : null;
+  const total = lignes.reduce((s, l) => s + Math.max(0, mv(l)), 0);
+  const statTotal = totalPeriode ? (mesure === "valeur" ? totalPeriode.sv : totalPeriode.sp) : null;
   const max = Math.max(1e-9, ...rangees.map(mv));
 
   // La balance commerciale est TOUJOURS exportations − importations, quel que
@@ -407,30 +420,33 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
           )}
           {ouvrable && <ChevronRight size={12} style={{ color: "#C5BFBB", flexShrink: 0 }} />}
         </span>
-        <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
-        {extremum && (
-          <span className="ds-donnee" style={{ width: 46, fontSize: 10.5, fontWeight: 700, color: epingle ? "#C5BFBB" : "#4a5568", textAlign: "right", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
-            {anDe(l) ?? "—"}
-          </span>
-        )}
-        {parts && <>
+        <span className="ds-donnee" style={{ width: intervalle ? L_SOMME : 88, fontSize: 11.5, fontWeight: 800, color: epingle ? "#9aa5b4" : couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtV(mv(l))}</span>
+        {intervalle ? <>
+          <CelluleStat v={statDe(l)?.moyenne ?? null} fmt={fmtV} large={L_MOY} attenue={epingle} />
+          <CelluleStat v={statDe(l)?.min ?? null} an={statDe(l)?.anMin ?? null} fmt={fmtV} large={L_EXT} attenue={epingle} />
+          <CelluleStat v={statDe(l)?.max ?? null} an={statDe(l)?.anMax ?? null} fmt={fmtV} large={L_EXT} attenue={epingle} />
+        </> : <>
           <span style={{ width: 38, fontSize: 10, fontWeight: 700, color: epingle ? "#9aa5b4" : "#4a5568", textAlign: "right", flexShrink: 0 }}>
             {total > 0 ? `${(Math.max(0, mv(l)) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
           </span>
           <span style={{ width: 40, fontSize: 10, fontWeight: 650, color: "#C5BFBB", textAlign: "right", flexShrink: 0 }}>
             {rang != null && total > 0 ? `${((cumulDe.get(l.cle) ?? 0) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : ""}
           </span>
+          <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>
         </>}
-        {variation && <span style={{ width: 58, textAlign: "right", flexShrink: 0 }}><VariationNace v={delta} /></span>}
-        {colBalance && (
+        {balance && (
           <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums",
             color: bal > 0 ? "#188038" : bal < 0 ? "#dc2626" : "#C5BFBB" }}>
             {bal > 0 ? "+" : bal < 0 ? "−" : ""}{fmtV(Math.abs(bal))}
           </span>
         )}
-        <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-          {mv(l) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, mv(l) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
-        </div>
+        {/* Pas de barre en intervalle : quatre colonnes de chiffres suffisent
+            à situer les lignes, une jauge de plus surchargerait la lecture. */}
+        {!intervalle && (
+          <div style={{ width: "11%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+            {mv(l) > 0 && <div style={{ height: "100%", width: `${Math.min(100, Math.max(2, mv(l) / max * 100))}%`, borderRadius: 99, background: couleur, opacity: epingle ? 0.3 : podium ? 0.9 : 0.55 }} />}
+          </div>
+        )}
       </div>
     );
   };
@@ -464,21 +480,25 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
         <span style={{ ...EN_TETE, width: 24, flexShrink: 0 }}>#</span>
         {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
         <span style={{ ...EN_TETE, flex: 1 }}>{colonne}</span>
-        <span style={{ ...EN_TETE, width: 88, textAlign: "right", flexShrink: 0 }}>{sens === "export" ? "Export" : "Import"}</span>
-        {extremum && (
-          <span title={`Année où ${periode.calcul === "min" ? "le minimum" : "le maximum"} est atteint, entre ${periode.debut} et ${periode.fin}`}
-            style={{ ...EN_TETE, width: 46, textAlign: "right", flexShrink: 0 }}>Année</span>
-        )}
-        {parts && <>
+        <span title={intervalle ? `Somme des ${sens === "export" ? "exportations" : "importations"} de ${periode.debut} à ${periode.fin} — c'est elle qui classe` : undefined}
+          style={{ ...EN_TETE, width: intervalle ? L_SOMME : 88, textAlign: "right", flexShrink: 0 }}>
+          {intervalle ? "Somme" : sens === "export" ? "Export" : "Import"}
+        </span>
+        {intervalle ? <>
+          <span title={`Moyenne annuelle sur les ${periode.fin - periode.debut + 1} années de l'intervalle`}
+            style={{ ...EN_TETE, width: L_MOY, textAlign: "right", flexShrink: 0 }}>Moyenne</span>
+          <span title="Année la plus basse de l'intervalle, et son année" style={{ ...EN_TETE, width: L_EXT, textAlign: "right", flexShrink: 0 }}>Min</span>
+          <span title="Année la plus haute de l'intervalle, et son année" style={{ ...EN_TETE, width: L_EXT, textAlign: "right", flexShrink: 0 }}>Max</span>
+        </> : <>
           <span style={{ ...EN_TETE, width: 38, textAlign: "right", flexShrink: 0 }}>Part</span>
           <span style={{ ...EN_TETE, width: 40, textAlign: "right", flexShrink: 0 }}>Cumul</span>
+          <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>
         </>}
-        {variation && <span style={{ ...EN_TETE, width: 58, textAlign: "right", flexShrink: 0 }}>vs n-1</span>}
-        {colBalance && (
+        {balance && (
           <span title="Exportations − importations, quel que soit le sens affiché"
             style={{ ...EN_TETE, width: 92, textAlign: "right", flexShrink: 0 }}>Balance</span>
         )}
-        <span style={{ width: "11%", flexShrink: 0 }} />
+        {!intervalle && <span style={{ width: "11%", flexShrink: 0 }} />}
       </div>
 
       {filtres.length === 0 ? (
@@ -506,15 +526,16 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
             <span style={{ width: 24, flexShrink: 0 }} />
             {drapeaux && <span style={{ width: 20, flexShrink: 0 }} />}
             <span style={{ flex: 1, fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "#4a5568", textTransform: "uppercase" }}>{totalLibelle}</span>
-            <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
-            {extremum && (
-              <span className="ds-donnee" style={{ width: 46, fontSize: 10.5, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
-                {anTotal ?? "—"}
-              </span>
-            )}
-            {parts && <><span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} /></>}
-            {variation && <span style={{ width: 58, flexShrink: 0 }} />}
-            {colBalance && (() => {
+            <span className="ds-donnee" style={{ width: intervalle ? L_SOMME : 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap" }}>{fmtV(total)}</span>
+            {intervalle ? <>
+              <CelluleStat v={statTotal?.moyenne ?? null} fmt={fmtV} large={L_MOY} />
+              <CelluleStat v={statTotal?.min ?? null} an={statTotal?.anMin ?? null} fmt={fmtV} large={L_EXT} />
+              <CelluleStat v={statTotal?.max ?? null} an={statTotal?.anMax ?? null} fmt={fmtV} large={L_EXT} />
+            </> : <>
+              <span style={{ width: 38, flexShrink: 0 }} /><span style={{ width: 40, flexShrink: 0 }} />
+              <span style={{ width: 58, flexShrink: 0 }} />
+            </>}
+            {balance && (() => {
               const bal = lignes.reduce((s, l) => s + balanceDe(l), 0);
               return (
                 <span className="ds-donnee" style={{ width: 92, fontSize: 11, fontWeight: 800, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap",
@@ -523,7 +544,7 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
                 </span>
               );
             })()}
-            <span style={{ width: "11%", flexShrink: 0 }} />
+            {!intervalle && <span style={{ width: "11%", flexShrink: 0 }} />}
           </div>
         </div>
       )}
@@ -772,7 +793,7 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       cles.map(nom => ({
         cle: nom, nom,
         v: i.a.get(nom)?.v ?? null, p: i.a.get(nom)?.p ?? null,
-        anV: i.a.get(nom)?.anV ?? null, anP: i.a.get(nom)?.anP ?? null,
+        sv: i.a.get(nom)?.sv ?? null, sp: i.a.get(nom)?.sp ?? null,
         vAutre: i.b.get(nom)?.v ?? null, pAutre: i.b.get(nom)?.p ?? null,
         vPrec: i.pr.get(nom)?.v ?? null, pPrec: i.pr.get(nom)?.p ?? null,
         ...extra(nom),
@@ -893,19 +914,19 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
 // répond à « comment se répartit tel niveau », ceux-ci à « qui sont les
 // premiers partenaires », mondialement puis dans chaque continent.
 type Partenaire = { nom: string; iso2: string | null; region: string; valeur: number;
-                    part: number | null; annee: number | null };
+                    part: number | null; stats: Stats | null };
 
 // `garder` restreint la portée — un continent, un groupement économique, ou
 // rien pour le monde entier. La part se rapporte alors à cette portée et non
 // au total mondial : c'est la lecture utile quand on regarde une zone.
 function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, per: Periode, top: number,
                             mesure: NaceMesure = "valeur", garder?: (r: NacePaysLigne) => boolean,
-): { lignes: Partenaire[]; total: number; anTotal: number | null } {
+): { lignes: Partenaire[]; total: number } {
   const mes = (r: NacePaysLigne) => (mesure === "valeur" ? r.valeur : r.poids);
-  if (!pys?.disponible) return { lignes: [], total: 0, anTotal: null };
-  // Série annuelle par partenaire, puis réduction selon le calcul : sur un
-  // intervalle, le minimum d'un partenaire est celui de ses valeurs annuelles,
-  // pas celui d'une somme déjà écrasée.
+  if (!pys?.disponible) return { lignes: [], total: 0 };
+  // Série annuelle par partenaire, puis résumé sur l'intervalle : le minimum
+  // d'un partenaire est celui de ses valeurs annuelles, pas celui d'une somme
+  // déjà écrasée.
   const series = new Map<string, { meta: NacePaysLigne; an: Map<number, number | null> }>();
   // Le dénominateur inclut « Autres pays », que le classement exclut : la part
   // est celle du total de la portée, comme dans le tableau ci-dessus. La
@@ -923,27 +944,29 @@ function classerPartenaires(pys: NaceDataPays | null, sens: ZoneSens, per: Perio
     if (!s) { s = { meta: r, an: new Map() }; series.set(r.pays, s); }
     s.an.set(r.annee, sommeNace(s.an.get(r.annee), mes(r)));
   }
-  const t = reduirePeriode(serieTotal, per, annees.size);
-  const total = t.v ?? 0;
+  // La valeur qui classe : celle de l'année, ou la somme de l'intervalle.
+  const classante = (serie: Map<number, number | null>, st: Stats) =>
+    per.intervalle ? st.somme ?? 0 : serie.get(per.fin) ?? 0;
+  const st = statistiquesPeriode(serieTotal, per, annees.size);
+  const total = classante(serieTotal, st);
   // Un partenaire sans échange sur la période n'en est pas un : sans ce filtre,
   // l'Océanie alignerait des lignes à zéro.
   const lignes = [...series.values()]
-    .map(s => ({ s, r: reduirePeriode(s.an, per, annees.size) }))
-    .filter(x => (x.r.v ?? 0) > 0)
-    .sort((a, b) => (b.r.v ?? 0) - (a.r.v ?? 0)).slice(0, top)
-    .map(({ s, r }) => ({
+    .map(s => { const x = statistiquesPeriode(s.an, per, annees.size);
+                return { s, x, v: classante(s.an, x) }; })
+    .filter(e => e.v > 0)
+    .sort((a, b) => b.v - a.v).slice(0, top)
+    .map(({ s, x, v }) => ({
       nom: s.meta.pays, iso2: s.meta.code_iso2, region: s.meta.region,
-      valeur: r.v ?? 0, annee: r.an,
-      // En Min/Max la part serait celle d'un total qui n'est pas la somme des
-      // lignes affichées — les extrema ne tombent pas tous la même année.
-      part: estExtremum(per) || !total ? null : (r.v ?? 0) / total * 100,
+      valeur: v, stats: per.intervalle ? x : null,
+      part: total ? v / total * 100 : null,
     }));
-  return { lignes, total, anTotal: t.an };
+  return { lignes, total };
 }
 
-function TopPartenaires({ titre, lignes, total, anTotal, couleur, montrerRegion, extremum, mesure = "valeur" }: {
-  titre: string; lignes: Partenaire[]; total: number; anTotal?: number | null;
-  couleur: string; montrerRegion?: boolean; extremum?: boolean; mesure?: NaceMesure;
+function TopPartenaires({ titre, lignes, total, couleur, montrerRegion, intervalle, mesure = "valeur" }: {
+  titre: string; lignes: Partenaire[]; total: number;
+  couleur: string; montrerRegion?: boolean; intervalle?: boolean; mesure?: NaceMesure;
 }) {
   const fmt = mesure === "valeur" ? fmtMFCFA : fmtTonnes;
   // Le maximum est celui de la colonne : les barres comparent les partenaires
@@ -954,13 +977,23 @@ function TopPartenaires({ titre, lignes, total, anTotal, couleur, montrerRegion,
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, margin: "0 8px 2px" }}>
         <span style={{ fontSize: 9, fontWeight: 800, color: "#9aa5b4", letterSpacing: "0.09em", textTransform: "uppercase" }}>{titre}</span>
         {/* Total de la portée : c'est le dénominateur des parts affichées. En
-            Min/Max il est calculé sur la portée entière, année par année — la
-            somme des extrema des lignes ne serait l'extremum de rien. */}
+            intervalle il est résumé sur la portée entière, année par année — la
+            somme des minima des lignes ne serait le minimum de rien. */}
         <span className="ds-donnee" style={{ fontSize: 11, fontWeight: 800, color: couleur, whiteSpace: "nowrap",
-          fontVariantNumeric: "tabular-nums" }}>
-          {fmt(total)}{extremum && anTotal != null && <span style={{ color: "#9aa5b4", fontWeight: 700 }}> · {anTotal}</span>}
-        </span>
+          fontVariantNumeric: "tabular-nums" }}>{fmt(total)}</span>
       </div>
+      {/* En-tête de colonnes : nécessaire dès qu'il y en a quatre, la seule
+          colonne « part » de la lecture annuelle se passant d'intitulé. */}
+      {intervalle && lignes.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px 2px" }}>
+          <span style={{ width: 20, flexShrink: 0 }} /><span style={{ width: 20, flexShrink: 0 }} />
+          <span style={{ flex: 1 }} />
+          {[["Somme", L_SOMME], ["Moyenne", L_MOY], ["Min", L_EXT], ["Max", L_EXT]].map(([t, w]) => (
+            <span key={t as string} style={{ width: w as number, flexShrink: 0, textAlign: "right", fontSize: 8.5,
+              fontWeight: 800, letterSpacing: "0.08em", color: "#9aa5b4", textTransform: "uppercase" }}>{t}</span>
+          ))}
+        </div>
+      )}
       {lignes.length === 0
         ? <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "14px 0" }}>Aucun échange.</p>
         : lignes.map((l, i) => (
@@ -979,18 +1012,23 @@ function TopPartenaires({ titre, lignes, total, anTotal, couleur, montrerRegion,
                 </span>
               )}
             </span>
-            <span className="ds-donnee" style={{ width: 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right",
+            <span className="ds-donnee" style={{ width: intervalle ? L_SOMME : 88, fontSize: 11.5, fontWeight: 800, color: couleur, textAlign: "right",
               flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmt(l.valeur)}</span>
-            <span className={extremum ? "ds-donnee" : undefined}
-              style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0,
-                fontVariantNumeric: extremum ? "tabular-nums" : undefined }}>
-              {extremum ? (l.annee ?? "—")
-                : l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
-            </span>
-            <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-              <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99,
-                background: couleur, opacity: i < 3 ? 0.9 : 0.55 }} />
-            </div>
+            {intervalle ? <>
+              <CelluleStat v={l.stats?.moyenne ?? null} fmt={fmt} large={L_MOY} />
+              <CelluleStat v={l.stats?.min ?? null} an={l.stats?.anMin ?? null} fmt={fmt} large={L_EXT} />
+              <CelluleStat v={l.stats?.max ?? null} an={l.stats?.anMax ?? null} fmt={fmt} large={L_EXT} />
+            </> : (
+              <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "#4a5568", textAlign: "right", flexShrink: 0 }}>
+                {l.part != null ? `${l.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—"}
+              </span>
+            )}
+            {!intervalle && (
+              <div style={{ width: "16%", height: 7, background: "#F2F0EF", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                <div style={{ height: "100%", width: `${Math.max(2, l.valeur / max * 100)}%`, borderRadius: 99,
+                  background: couleur, opacity: i < 3 ? 0.9 : 0.55 }} />
+              </div>
+            )}
           </div>
         ))}
     </div>
@@ -1066,7 +1104,7 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
       lignes: [...a.keys()].map(nom => ({
         cle: nom, nom,
         v: a.get(nom)?.v ?? null, p: a.get(nom)?.p ?? null,
-        anV: a.get(nom)?.anV ?? null, anP: a.get(nom)?.anP ?? null,
+        sv: a.get(nom)?.sv ?? null, sp: a.get(nom)?.sp ?? null,
         vAutre: b.get(nom)?.v ?? null, pAutre: b.get(nom)?.p ?? null,
         vPrec: pr.get(nom)?.v ?? null, pPrec: pr.get(nom)?.p ?? null,
       })),
@@ -1241,18 +1279,17 @@ function CommerceExterieurPanel() {
   const expPrec = totalDe("export", an - 1), impPrec = totalDe("import", an - 1);
   // Période d'une section : par défaut la dernière année seule, comme avant.
   const per = (p: Periode | null): Periode => p ?? anneeSeule(dernier);
-  // Commandes de période d'une section : le calcul, puis le curseur. Choisir un
-  // calcul ouvre l'intervalle sur toute la période couverte — c'est le point de
-  // départ naturel d'une analyse pluriannuelle, que le curseur resserre ensuite.
-  // Revenir à « Par année » retient la dernière année de l'intervalle.
+  // Commandes de période d'une section : le mode, puis le curseur. Passer en
+  // intervalle l'ouvre sur toute la période couverte — point de départ naturel
+  // d'une analyse pluriannuelle, que le curseur resserre ensuite. Revenir à
+  // « Année » retient la dernière année de l'intervalle.
   const commandePeriode = (p: Periode | null, poser: (q: Periode) => void) => {
     const v = per(p);
     return (
       <>
-        <SegmentNace options={CALCULS} valeur={v.calcul} onChange={c => poser(
-          c === "annee" ? anneeSeule(v.fin)
-            : estIntervalle(v) ? { ...v, calcul: c }
-            : { debut: annees[0], fin: dernier, calcul: c })} />
+        <SegmentNace options={MODES_PERIODE} valeur={v.intervalle ? "intervalle" : "annee"}
+          onChange={m => poser(m === "annee" ? anneeSeule(v.fin)
+            : { debut: annees[0], fin: dernier, intervalle: true })} />
         <CurseurPeriodeNace min={annees[0]} max={dernier} periode={v} onChange={poser} largeur={150} />
       </>
     );
@@ -1386,7 +1423,7 @@ function CommerceExterieurPanel() {
       )}
       {pys?.disponible && (() => {
         const p = per(perCont);
-        const ext = estExtremum(p);
+        const inter = estIntervalle(p);
         const ratt = reg2?.continents ?? pys.continents ?? {};
         const presents = CONTINENTS_ORDRE.filter(c => pys.donnees.export.some(
           r => r.annee >= p.debut && r.annee <= p.fin && ratt[r.region] === c));
@@ -1410,21 +1447,21 @@ function CommerceExterieurPanel() {
                   tableaux met Valeur/Volume à droite : même grammaire. */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0, flex: 1, minWidth: 200 }}>
-                  {ext ? `${p.calcul === "min" ? "Minimum" : "Maximum"} annuel des échanges ${AVEC_CONTINENT(c)}, et l'année où il est atteint`
+                  {inter ? `Classement par la somme ${p.debut}-${p.fin} des échanges ${AVEC_CONTINENT(c)}`
                     : `Parts calculées sur l'ensemble des échanges ${AVEC_CONTINENT(c)}`}
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={contMesure} onChange={setContMesure} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
+              <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Le rattachement régional est montré ici : dans un continent
                     donné il distingue les sous-ensembles — en Europe, la Suisse
                     et le Royaume-Uni relèvent des « autres pays », l'Espagne et
                     l'Italie de l'Union européenne. */}
-                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} anTotal={clients.anTotal}
-                  couleur={NACE_BLEU} montrerRegion extremum={ext} mesure={contMesure} />
-                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} anTotal={fourn.anTotal}
-                  couleur={NACE_ORANGE} montrerRegion extremum={ext} mesure={contMesure} />
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total}
+                  couleur={NACE_BLEU} montrerRegion intervalle={inter} mesure={contMesure} />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total}
+                  couleur={NACE_ORANGE} montrerRegion intervalle={inter} mesure={contMesure} />
               </div>
             </div>
           </>
@@ -1443,7 +1480,7 @@ function CommerceExterieurPanel() {
       )}
       {pys?.disponible && groupements.length > 0 && (() => {
         const p = per(perGrp);
-        const ext = estExtremum(p);
+        const inter = estIntervalle(p);
         const g = groupements.find(x => x.code === grpSel) ?? groupements[0];
         const membres = new Set(g.membres);
         // Le rapprochement au référentiel porte le code ISO : un partenaire
@@ -1466,20 +1503,20 @@ function CommerceExterieurPanel() {
                 {/* Le nom développé plutôt qu'un article accordé au sigle : il
                     dit ce que recouvre la bascule, et il vient du référentiel. */}
                 <p style={{ fontSize: 11.5, color: "#9aa5b4", fontWeight: 600, margin: 0, flex: 1, minWidth: 200 }}>
-                  {ext ? `${p.calcul === "min" ? "Minimum" : "Maximum"} annuel des échanges avec les pays membres, et l'année où il est atteint · ${g.nom_fr}`
+                  {inter ? `Classement par la somme ${p.debut}-${p.fin} des échanges avec les pays membres · ${g.nom_fr}`
                     : `Parts calculées sur l'ensemble des échanges avec les pays membres · ${g.nom_fr}`}
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={grpMesure} onChange={setGrpMesure} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 22 }}>
+              <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Pas de rattachement régional ici : tous les membres de la
                     CEDEAO comme de l'UEMOA relèvent de l'Afrique occidentale,
                     la colonne répéterait la même mention à chaque ligne. */}
-                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total} anTotal={clients.anTotal}
-                  couleur={NACE_BLEU} extremum={ext} mesure={grpMesure} />
-                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total} anTotal={fourn.anTotal}
-                  couleur={NACE_ORANGE} extremum={ext} mesure={grpMesure} />
+                <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total}
+                  couleur={NACE_BLEU} intervalle={inter} mesure={grpMesure} />
+                <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total}
+                  couleur={NACE_ORANGE} intervalle={inter} mesure={grpMesure} />
               </div>
             </div>
           </>
