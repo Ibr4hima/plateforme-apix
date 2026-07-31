@@ -1,5 +1,6 @@
 "use client";
 
+import { feature, mesh, merge } from "topojson-client";
 import { useEffect, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
@@ -117,25 +118,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
     if (!container) return;
     let cancelled = false;
 
-    const loadTopojson = () =>
-      new Promise<any>((res, rej) => {
-        const poll = () => { if ((window as any).topojson) res((window as any).topojson); else setTimeout(poll, 50); };
-        if ((window as any).topojson) { res((window as any).topojson); return; }
-        if (document.querySelector('script[data-lib="topojson"]')) { poll(); return; }
-        const s = document.createElement("script");
-        s.setAttribute("data-lib", "topojson");
-        s.src = "https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js";
-        s.onerror = rej; s.onload = poll;
-        document.head.appendChild(s);
-      });
-
-    loadTopojson()
-    .then(() => fetch("https://cdn.jsdelivr.net/npm/datamaps@0.5.10/src/js/data/sen.topo.json"))
+    // Fond de carte AUTO-HÉBERGÉ (public/cartes, extrait du paquet npm
+    // datamaps) et topojson-client importé comme toute dépendance : la carte
+    // du territoire national ne doit dépendre d'aucun CDN étranger — ni pour
+    // sa disponibilité, ni surtout pour l'exécution d'un script tiers dans
+    // une application authentifiée.
+    fetch("/cartes/sen.topo.json")
     .then(r => r.json())
     .then((topo: any) => {
       if (cancelled || !containerRef.current) return;
 
-      const topojson: any = (window as any).topojson;
       const W = Math.min(container.clientWidth || 780, 780);
       const H = Math.round(W * 0.78);
 
@@ -146,7 +138,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         .attr("viewBox", `0 0 ${W} ${H}`)
         .style("display", "block");
 
-      const geojson = topojson.feature(topo, topo.objects.sen);
+      const geojson: any = feature(topo, topo.objects.sen);
       const features = geojson.features;
       const projection = d3.geoMercator().fitExtent([[10, 10], [W - 10, H - 10]], geojson);
       const pathGen = d3.geoPath().projection(projection);
@@ -216,7 +208,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       if (mode === "pole") {
         // ── Couche 2 : bordures inter-pôles uniquement ──────────────────────────
         svg.append("path")
-          .datum(topojson.mesh(topo, topo.objects.sen,
+          .datum(mesh(topo, topo.objects.sen,
             (a: any, b: any) => poleIdOfGeom(a) !== poleIdOfGeom(b)
           ))
           .attr("d", pathGen)
@@ -227,7 +219,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
         // Contour extérieur du Sénégal
         svg.append("path")
-          .datum(topojson.mesh(topo, topo.objects.sen, (a: any, b: any) => a === b))
+          .datum(mesh(topo, topo.objects.sen, (a: any, b: any) => a === b))
           .attr("d", pathGen)
           .attr("fill", "none")
           .attr("stroke", "#66615E")
@@ -240,7 +232,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             .map(r => geometryByName[r]).filter(Boolean);
           if (!geoms.length) return;
           let merged: any;
-          try { merged = topojson.merge(topo, geoms); } catch { return; }
+          try { merged = merge(topo, geoms); } catch { return; }
 
           svg.append("path")
             .datum(merged)
