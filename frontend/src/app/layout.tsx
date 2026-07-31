@@ -32,9 +32,13 @@ export default function RootLayout({
   return (
     <html lang="fr" className={googleSans.variable}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_tree,admin_panel_settings,all_inclusive,analytics,anchor,bookmark_stacks,close,currency_exchange,dashboard,database,enterprise,event,finance_mode,flag,frame_inspect,gavel,home_app_logo,language,location_on,logout,map,menu,menu_open,payments,picture_as_pdf,public,real_estate_agent,search,security,send,show_chart,signature,sort,table_chart,universal_currency_alt" />
+        {/* Les icônes Material Symbols sont AUTO-HÉBERGÉES : la police
+            subsettée (nos 35 glyphes, 41 Ko) vit dans public/polices et sa
+            @font-face dans globals.css. Aucune requête ne part vers Google —
+            question de souveraineté autant que de latence. Pour AJOUTER une
+            icône, régénérer le woff2 : l'URL css2 à interroger (avec le
+            paramètre icon_names complété) est dans globals.css. */}
+        <link rel="preload" href="/polices/material-symbols.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* Zoom forcé (démo) : appliqué seulement si NEXT_PUBLIC_FORCE_ZOOM est défini, et uniquement sur grand écran */}
         {process.env.NEXT_PUBLIC_FORCE_ZOOM ? (
           <style>{`@media (min-width:1024px){html{zoom:${process.env.NEXT_PUBLIC_FORCE_ZOOM}}}`}</style>

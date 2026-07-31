@@ -9,11 +9,13 @@
 # puis les libellés sont ramenés à la nomenclature la plus récente via
 # une table d'alias (renommages et regroupements vérifiés, cf. README).
 import csv
+import hashlib
 import json
+import time
 from collections import defaultdict
 from pathlib import Path
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -226,6 +228,10 @@ async def importer_csv(db: AsyncSession) -> dict:
         "rattachees": rattaches, "hors_referentiel": assumes,
         "non_arbitres": sorted(non_arbitres),
     }
+    # Les lectures mises en cache reflètent l'état d'avant l'import : purge.
+    # Ne couvre que le processus courant — l'import de déploiement tourne dans
+    # le sien, c'est le TTL du cache qui prend le relais (cf. _CACHE_TTL).
+    _vider_cache_nace()
     return rapport
 
 
@@ -282,38 +288,91 @@ def _resoudre(rows, alias: dict, col: str = "produit") -> dict:
     }
 
 
+# ── Cache mémoire des lectures ────────────────────────────────────────────────
+# Les familles NACE ne changent qu'à l'import : entre deux déploiements, chaque
+# réponse est rigoureusement la même. Sans cache, chaque visiteur relisait la
+# table entière (11 000 lignes pour les pays) et rejouait la résolution
+# d'éditions en Python.
+#
+# Chaque entrée est servie depuis la mémoire avec un ETag — l'empreinte du
+# contenu, stable d'un redémarrage à l'autre puisque calculée sur les données —
+# si bien qu'un navigateur qui possède déjà la réponse reçoit un 304 nu au lieu
+# de la retélécharger.
+#
+# L'invalidation est double, et le TTL n'est pas un luxe : l'import de
+# déploiement s'exécute dans un AUTRE processus (scripts/nace/importer.py, via
+# docker compose exec), où vider le dictionnaire du serveur est impossible.
+# `importer_csv` purge donc le cache quand l'import passe par la route HTTP,
+# et le TTL couvre le chemin CLI — au pire, dix minutes de données de la
+# version précédente juste après un déploiement.
+_CACHE_TTL = 600
+_cache_nace: dict[str, tuple[dict, str, float]] = {}
+
+
+def _vider_cache_nace() -> None:
+    _cache_nace.clear()
+
+
+async def _reponse_en_cache(nom: str, request: Request, response: Response, calcul):
+    entree = _cache_nace.get(nom)
+    if entree is None or time.monotonic() - entree[2] > _CACHE_TTL:
+        payload = await calcul()
+        etag = 'W/"' + hashlib.md5(
+            json.dumps(payload, sort_keys=True, default=str).encode()
+        ).hexdigest() + '"'
+        entree = (payload, etag, time.monotonic())
+        _cache_nace[nom] = entree
+    payload, etag, _ = entree
+    # `private` : la plateforme est servie derrière une authentification, seuls
+    # les navigateurs gardent la réponse. Passé max-age, ils revalident par
+    # ETag et repartent avec un 304 sans corps.
+    response.headers["Cache-Control"] = "private, max-age=300, stale-while-revalidate=3600"
+    response.headers["ETag"] = etag
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=dict(response.headers))
+    return payload
+
+
 # ── GET /nace/principaux-produits ─────────────────────────────────────────────
 @router.get("/principaux-produits")
-async def principaux_produits(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NacePrincipalProduit))
-    return _resoudre(res.scalars().all(), ALIAS)
+async def principaux_produits(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NacePrincipalProduit))
+        return _resoudre(res.scalars().all(), ALIAS)
+    return await _reponse_en_cache("principaux", request, response, calcul)
 
 
 # ── GET /nace/produits-regroupes ──────────────────────────────────────────────
 # Nomenclature fine (30–31 postes export, 56 import) — libellés stables
 # d'une édition à l'autre (normalisés à l'extraction), aucun alias requis.
 @router.get("/produits-regroupes")
-async def produits_regroupes(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NaceProduitRegroupe))
-    return _resoudre(res.scalars().all(), {})
+async def produits_regroupes(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NaceProduitRegroupe))
+        return _resoudre(res.scalars().all(), {})
+    return await _reponse_en_cache("regroupes", request, response, calcul)
 
 
 # ── GET /nace/groupes-utilisation ─────────────────────────────────────────────
 # 9 groupes exhaustifs par sens : leur somme est le total du commerce
 # extérieur (aucune ligne « Autres »). Libellés stables entre éditions.
 @router.get("/groupes-utilisation")
-async def groupes_utilisation(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NaceGroupeUtilisation))
-    return _resoudre(res.scalars().all(), {}, col="groupe")
+async def groupes_utilisation(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NaceGroupeUtilisation))
+        return _resoudre(res.scalars().all(), {}, col="groupe")
+    return await _reponse_en_cache("groupes", request, response, calcul)
 
 
 # ── GET /nace/chapitres ───────────────────────────────────────────────────────
 # Nomenclature du Système Harmonisé (jusqu'à 97 chapitres par sens),
 # exhaustive elle aussi. Libellés stables entre éditions.
 @router.get("/chapitres")
-async def chapitres(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NaceChapitre))
-    return _resoudre(res.scalars().all(), {}, col="chapitre")
+async def chapitres(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NaceChapitre))
+        return _resoudre(res.scalars().all(), {}, col="chapitre")
+    return await _reponse_en_cache("chapitres", request, response, calcul)
 
 
 # ── GET /nace/continents ──────────────────────────────────────────────────────
@@ -323,21 +382,25 @@ async def chapitres(db: AsyncSession = Depends(get_db)):
 # sont déjà ramenés au libellé canonique à l'extraction ; la résolution
 # somme les lignes qui le partagent.
 @router.get("/continents")
-async def continents(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NaceContinent))
-    return _resoudre(res.scalars().all(), {}, col="continent")
+async def continents(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NaceContinent))
+        return _resoudre(res.scalars().all(), {}, col="continent")
+    return await _reponse_en_cache("continents", request, response, calcul)
 
 
 # ── GET /nace/regions ─────────────────────────────────────────────────────────
 # Les 12 sous-totaux régionaux tels qu'imprimés (tableaux 34–37). Ils sont
 # exhaustifs : leur somme est le total du commerce extérieur.
 @router.get("/regions")
-async def regions(db: AsyncSession = Depends(get_db)):
-    res = await db.execute(select(NaceRegion))
-    reponse = _resoudre(res.scalars().all(), {}, col="region")
-    reponse["ordre"] = REGIONS_ORDRE
-    reponse["continents"] = REGION_CONTINENT
-    return reponse
+async def regions(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        res = await db.execute(select(NaceRegion))
+        reponse = _resoudre(res.scalars().all(), {}, col="region")
+        reponse["ordre"] = REGIONS_ORDRE
+        reponse["continents"] = REGION_CONTINENT
+        return reponse
+    return await _reponse_en_cache("regions", request, response, calcul)
 
 
 # ── GET /nace/groupements ─────────────────────────────────────────────────────
@@ -382,8 +445,10 @@ async def groupements(db: AsyncSession = Depends(get_db)):
 # aucune donnée du rapport n'est perdue. Le corps est isolé dans
 # `_pays_resolus` car le rapport d'analyse s'en sert aussi.
 @router.get("/pays")
-async def pays(db: AsyncSession = Depends(get_db)):
-    return await _pays_resolus(db)
+async def pays(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    async def calcul():
+        return await _pays_resolus(db)
+    return await _reponse_en_cache("pays", request, response, calcul)
 
 
 async def _pays_resolus(db: AsyncSession) -> dict:

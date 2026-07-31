@@ -235,3 +235,37 @@ body {
 .mod-card:hover .mod-arrow { opacity: 1; }
 .mod-card:hover .mod-num { color: var(--mod-couleur, var(--ds-primaire)); }
 
+
+/* ── Icônes Material Symbols, auto-hébergées ─────────────────────────────────
+   Police subsettée sur les 35 glyphes de l'application (41 Ko), servie depuis
+   public/polices : aucune requête vers fonts.googleapis.com. Pour ajouter une
+   icône : compléter icon_names dans l'URL ci-dessous, télécharger le CSS avec
+   un User-Agent de navigateur, puis le woff2 qu'il référence à la place du
+   fichier actuel.
+   https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_tree,admin_panel_settings,all_inclusive,analytics,anchor,bookmark_stacks,close,currency_exchange,dashboard,database,enterprise,event,finance_mode,flag,frame_inspect,gavel,home_app_logo,language,location_on,logout,map,menu,menu_open,payments,picture_as_pdf,public,real_estate_agent,search,security,send,show_chart,signature,sort,table_chart,universal_currency_alt */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 100 700;
+  /* block : une icône affichée en toutes lettres (« dashboard ») le temps du
+     chargement serait pire qu'un court blanc ; le preload du layout rend de
+     toute façon l'attente à peu près nulle. */
+  font-display: block;
+  src: url("/polices/material-symbols.woff2") format("woff2");
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}

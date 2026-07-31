@@ -2474,14 +2474,14 @@ function TableauPoidsRessources({ data, total, accent }: {
 // Matrice fixe pays × ressources : rang (top 3 en bleu), drapeau, lignes
 // zébrées, plus grande valeur de chaque pays en vert, colonne Total en bleu.
 
-// Drapeau emoji (liste validée), image flagcdn sinon, globe pour les
+// Drapeau emoji (liste validée), image locale (public/drapeaux) sinon, globe pour les
 // partenaires sans pays (« Bunkers », zones spéciales…)
 function DrapeauPays({ iso, nom }: { iso?: string | null; nom: string }) {
   if (iso) {
     const emoji = drapeauEmoji(iso);
     if (emoji) return <span title={nom} style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
+    return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
       style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
   }
   return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>🌐</span>;

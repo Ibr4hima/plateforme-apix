@@ -45,7 +45,7 @@ function Drapeau({ iso, nom, taille = 17 }: { iso?: string | null; nom: string; 
   const emoji = drapeauEmoji(iso);
   if (emoji) return <span title={nom} style={{ fontSize: taille, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
+  return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
     style={{ width: taille * 1.25, height: taille * 0.9, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
 }
 

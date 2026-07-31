@@ -33,7 +33,7 @@ async function getToken(req: NextRequest): Promise<Record<string, unknown> | nul
   }
 }
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   if (!enforced) return NextResponse.next()
 
   const { pathname } = req.nextUrl

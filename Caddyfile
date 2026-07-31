@@ -7,6 +7,33 @@
         {$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
     }
 
+    # Compression de toutes les réponses texte (HTML, JS, JSON). L'onglet
+    # Commerce extérieur télécharge ~970 Ko de JSON NACE : compressé, il en
+    # reste moins d'un dixième. zstd d'abord (meilleur ratio, tous les
+    # navigateurs récents), gzip en repli.
+    encode zstd gzip
+
+    header {
+        # HSTS : une fois venu en HTTPS, le navigateur refuse tout retour en
+        # clair pendant un an. Caddy gère déjà le certificat ; ceci verrouille
+        # le canal côté client.
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        # La plateforme n'a aucune raison d'être affichée dans une iframe
+        # tierce (protection contre le clickjacking).
+        X-Frame-Options "DENY"
+        # Les navigateurs ne doivent pas deviner un type MIME différent de
+        # celui annoncé.
+        X-Content-Type-Options "nosniff"
+        # Les URLs internes (avec leurs paramètres) ne partent pas dans le
+        # Referer des liens sortants.
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Ni caméra, ni micro, ni géolocalisation : l'application n'en a pas
+        # l'usage, autant le déclarer.
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        # La bannière de version du serveur n'apporte qu'aux attaquants.
+        -Server
+    }
+
     # L'API backend est servie sous /api/v1/* uniquement. On ne route QUE ce
     # préfixe vers FastAPI : les routes NextAuth (/api/auth/*) doivent rester
     # sur le frontend Next.js, sinon Caddy les enverrait au backend (404).

@@ -1961,13 +1961,13 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 // Affichée par défaut dans la vue Monde : totaux mondiaux (séries + KPIs) et
 // top 10 des pays récepteurs / émetteurs avec curseur Cumul ⇆ année.
 
-// Drapeau emoji (liste validée), image flagcdn sinon, globe sans ISO2
+// Drapeau emoji (liste validée), image locale (public/drapeaux) sinon, globe sans ISO2
 function DrapeauMonde({ iso, nom }: { iso?: string | null; nom: string }) {
   if (iso) {
     const emoji = drapeauEmoji(iso);
     if (emoji) return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`https://flagcdn.com/w40/${iso.toLowerCase()}.png`} alt="" title={nom}
+    return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
       style={{ width: 19, height: 13.5, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
   }
   return <span title={nom} style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
