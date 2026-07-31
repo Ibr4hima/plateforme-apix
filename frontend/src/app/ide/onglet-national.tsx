@@ -1,28 +1,15 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
-
-import NavActions from "@/components/layout/NavActions";
-import GrapheSignature from "@/components/shared/GrapheMultiPays";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
-import { d3, useD3Pret } from "@/lib/d3lazy";
-import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Pin } from "lucide-react";
-import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
-import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { X, Plus, Table, ChevronDown, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
+import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
-import { useDebounced } from "@/lib/useDebounced";
-import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
-import { HBarChart } from "@/components/charts/HBarChart";
-import { DivergingBars } from "@/components/charts/DivergingBars";
-import { ACCENT_BLEU, AccentNace, accentDe, CurseurAnneeNace, CurseurPlageNace,
-  StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
-import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, PAYS_COLORS, PALETTE, getPaysColor, fmtVal, BADGES_4, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SOUS_TYPE_NAV, SelecteurVueAnalyse, BtnAjoutPaysComp, BtnAjoutGroupement, SousTypeNav, ANNEE_MIN, ANNEE_MAX, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, interpreterKpi, splitKpiTitre, MiniModalKpi, CONT_ORDER, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
+import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+import { API, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
 const BDEF_CAT_COULEURS = ["#004f91","#ca631f","#188038","#7c3aed","#0891b2","#dc2626","#d97706","#059669"];

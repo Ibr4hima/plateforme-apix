@@ -1,46 +1,23 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
-
-import NavActions from "@/components/layout/NavActions";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { Fragment, useEffect, useRef, useState, useCallback } from "react";
-import { d3, useD3Pret } from "@/lib/d3lazy";
-import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Pin } from "lucide-react";
-import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
-import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
-import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
-import { useDebounced } from "@/lib/useDebounced";
-import { useEtatUrl } from "@/lib/useEtatUrl";
-import { demarrerRedimension } from "@/lib/redimension";
-import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
-import { HBarChart } from "@/components/charts/HBarChart";
-import { DivergingBars } from "@/components/charts/DivergingBars";
-import { ACCENT_BLEU, AccentNace, accentDe, CurseurAnneeNace, CurseurPlageNace,
-  StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
-import DrapeauPays from "@/components/shared/DrapeauPays";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
+import { X, Plus, Table, ChevronDown, FileSpreadsheet, Pin } from "lucide-react";
+import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
+import { fmtMillionsUSD } from "@/lib/format";
+import { IconeCached } from "@/components/shared/PickerKpi";
+import { accentDe, CurseurAnneeNace } from "@/components/shared/CurseurNace";
+
 
 export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-// ── Couleurs par pays ─────────────────────────────────────────────────────────
-export const PAYS_COLORS: Record<string,string> = {
-  "Sénégal":  "#188038",
-  "Cameroun": "#3b6bcc",
-};
-export const PALETTE = ["#188038","#3b6bcc","#e07a2e","#7c3aed","#0891b2","#dc2626","#d97706","#059669"];
-export function getPaysColor(nom: string, index: number): string {
-  return PAYS_COLORS[nom] || PALETTE[index % PALETTE.length];
-}
 
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
 export const fmtVal = fmtMillionsUSD;
 
 // ── Pastilles d'en-tête (période + séries) — styles badge_* de la plateforme ──
 // Les 4 premières séries suivent les 4 teintes canoniques ; au-delà, badgeDe().
-export const BADGES_4 = [badge_bleu, badge_orange, badge_vert, badge_violet];
+const BADGES_4 = [badge_bleu, badge_orange, badge_vert, badge_violet];
 export function BadgePeriode({ children }: { children: React.ReactNode }) {
   return <span style={{ ...badge_gris, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" as const }}>{children}</span>;
 }
@@ -90,7 +67,7 @@ export const fmtNombre = (v: number | null) => v === null || v === undefined ? "
 
 // ── Navigation entre catégories d'investissement ──────────────────────────────
 // Sélecteur principal de la zone de contenu : Flux & Stocks / Greenfield / M&A.
-export const SOUS_TYPE_NAV = [
+const SOUS_TYPE_NAV = [
   { v: "fluxstock",  l: "Flux & Stocks" },
   { v: "greenfield", l: "Greenfield" },
   { v: "fusion",     l: "Fusion & Acquisition" },
@@ -330,10 +307,17 @@ export const ANNEE_MAX = 2025;
 // Bornes réelles depuis l'API, par catégorie de données (fluxstock /
 // greenfield / fusion) : sliders et pastilles s'alignent sur la couverture du
 // sous-type actif, et s'étendent automatiquement à chaque nouvel import.
+// La réponse est mémorisée au niveau du module : chaque bascule d'onglet
+// remonte le hook, mais la requête ne part qu'une fois par session.
+let _bornesCnuced: Promise<any> | null = null;
 export function useBornesCnuced(sousType: string = "fluxstock"): [number, number] {
   const [annees, setAnnees] = useState<any>(null);
   useEffect(() => {
-    fetch(`${API}/ide/cnuced/annees`).then(r => r.json()).then(setAnnees).catch(() => {});
+    _bornesCnuced ??= fetch(`${API}/ide/cnuced/annees`).then(r => r.json())
+      .catch(() => { _bornesCnuced = null; return null; });
+    let actif = true;
+    _bornesCnuced.then(d => { if (actif && d) setAnnees(d); });
+    return () => { actif = false; };
   }, []);
   const cat = annees?.categories?.[sousType];
   return [
@@ -777,7 +761,7 @@ export const KPI_25_IDS = [
 ];
 
 // ── Interprétation contextuelle d'un KPI ─────────────────────────────────────
-export function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
+function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
   if (k.valeur === null || k.valeur === undefined || isNaN(k.valeur)) return "Données insuffisantes pour interpréter cet indicateur.";
   const v = k.valeur;
   const fmt = fmtKpi(k);
@@ -910,7 +894,7 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
 }
 
 // ── Helpers pays groupés ──────────────────────────────────────────────────────
-export const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 export function sortContinents(conts: string[]) {
   return [...conts].sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);

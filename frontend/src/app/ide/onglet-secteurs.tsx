@@ -1,27 +1,14 @@
 "use client";
-
-import NavActions from "@/components/layout/NavActions";
-import GrapheSignature from "@/components/shared/GrapheMultiPays";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { Fragment, useEffect, useRef, useState, useCallback } from "react";
-import { d3, useD3Pret } from "@/lib/d3lazy";
-import { COMP_PALETTE, badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, ChevronUp, ChevronRight, SlidersHorizontal, Search, FileSpreadsheet, Pin } from "lucide-react";
-import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
-import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
+import { useEffect, useRef, useState } from "react";
+import { COMP_PALETTE } from "@/lib/couleurs";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtMillionsUSD, fmtAxe } from "@/lib/format";
-import { useDebounced } from "@/lib/useDebounced";
-import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
-import { HBarChart } from "@/components/charts/HBarChart";
-import { DivergingBars } from "@/components/charts/DivergingBars";
-import { ACCENT_BLEU, AccentNace, accentDe, CurseurAnneeNace, CurseurPlageNace,
-  StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
-import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, PAYS_COLORS, PALETTE, getPaysColor, fmtVal, BADGES_4, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SOUS_TYPE_NAV, SelecteurVueAnalyse, BtnAjoutPaysComp, BtnAjoutGroupement, SousTypeNav, ANNEE_MIN, ANNEE_MAX, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, interpreterKpi, splitKpiTitre, MiniModalKpi, CONT_ORDER, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow } from "./partage";
+
 
 // ── Vue Secteurs (analyse sectorielle CNUCED) ─────────────────────────────────
 // Greenfield (Annex 15/18, direction « total ») et M&A (Annex 09-12, ventes /
