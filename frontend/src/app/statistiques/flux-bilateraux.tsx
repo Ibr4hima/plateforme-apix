@@ -1,4 +1,5 @@
 "use client";
+import { useEchap } from "@/lib/useEchap";
 
 import NavActions from "@/components/layout/NavActions";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
@@ -30,6 +31,7 @@ function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }
   open: boolean; onClose: () => void; selId: number | null; vue: "exportateur" | "importateur";
   nomPays: string; anneesTabs: number[];
 }) {
+  useEchap(open, onClose);
   const [annee, setAnnee] = useState<number | null>(null);
   const [partenaires, setPartenaires] = useState<{ nom: string; total: number; lignes: { ressource: string; valeur: number }[] }[]>([]);
   const [charg, setCharg] = useState(false);

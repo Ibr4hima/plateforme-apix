@@ -302,6 +302,10 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
     return (
       <div onClick={ouvrable ? () => onOuvrir!(l) : undefined}
         role={ouvrable ? "button" : undefined} tabIndex={ouvrable ? 0 : undefined}
+        // Entrée et Espace équivalent au clic : la ligne porte role="button",
+        // elle doit en honorer le contrat clavier. preventDefault retient le
+        // défilement que déclencherait Espace.
+        onKeyDown={ouvrable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir!(l); } } : undefined}
         title={ouvrable ? `Voir le détail de « ${l.nom} »` : undefined}
         style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8,
           cursor: ouvrable ? "pointer" : "default", transition: "background .12s",

@@ -1,4 +1,5 @@
 "use client";
+import { useEchap } from "@/lib/useEchap";
 
 import NavActions from "@/components/layout/NavActions";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
@@ -93,6 +94,7 @@ const BDEF_MACRO_COULEURS = ["#004f91", "#ca631f", "#188038", "#6A1B9A"];
 function ModalBdefTable({ open, onClose, blocs, annees }: {
   open:boolean; onClose:()=>void; blocs:{libelle:string; couleur:string; indicateurs:BdefIndic[]}[]; annees:number[];
 }) {
+  useEchap(open, onClose);
   if (!open) return null;
   const parCatDe = (indicateurs:BdefIndic[]) => {
     const parCat: {cat:string; inds:BdefIndic[]}[] = [];
@@ -257,6 +259,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
 function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
 }) {
+  useEchap(!!ind, onClose);
   if (!ind) return null;
   const lastA  = annees.length ? annees[annees.length - 1] : null;
   const v      = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;

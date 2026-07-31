@@ -1,4 +1,5 @@
 "use client";
+import { useEchap } from "@/lib/useEchap";
 
 import NavActions from "@/components/layout/NavActions";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
@@ -122,6 +123,7 @@ const DEF_INDICATEUR: Record<string, string> = {
 };
 
 function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null; pays: string; couleur: string; onClose: () => void }) {
+  useEchap(!!kpi, onClose);
   if (!kpi) return null;
   const { ind, valeur, annee, precedent } = kpi;
   const def = DEF_INDICATEUR[ind.code] || `${ind.libelle} — ${ind.unite}.`;
@@ -224,6 +226,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
   open: boolean; onClose: () => void; donnees: Donnee[]; indicateurs: Indicateur[];
   paysSelectionnes: { id: number; nom: string; couleur: string }[]; annees: number[];
 }) {
+  useEchap(open, onClose);
   if (!open) return null;
   const periode = annees.length ? `${annees[0]}_${annees[annees.length - 1]}` : "all";
   const val = (pid: number, code: string, a: number) =>

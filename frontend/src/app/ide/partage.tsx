@@ -1,4 +1,5 @@
 "use client";
+import { useEchap } from "@/lib/useEchap";
 
 import NavActions from "@/components/layout/NavActions";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
@@ -646,6 +647,7 @@ async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: stri
 
 // ── Modal données ─────────────────────────────────────────────────────────────
 export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fluxstock", entite = "pays" }: any) {
+  useEchap(open, onClose);
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
@@ -820,6 +822,7 @@ export function splitKpiTitre(label: string): { main: string; suffix: string | n
 
 // ── Mini modal KPI ────────────────────────────────────────────────────────────
 export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
+  useEchap(!!kpi, onClose);
   if (!kpi) return null;
   const interp = interpreterKpi(kpi, pays, couleur);
   const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
