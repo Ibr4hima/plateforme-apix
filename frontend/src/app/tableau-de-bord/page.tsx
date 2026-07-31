@@ -6,7 +6,7 @@
 // « Visualisation de données » (KPIs + graphes) et « Tableaux analytiques »
 // (toutes les tables détaillées). Style aligné sur le rapport commerce.
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
@@ -278,33 +278,60 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
   );
 }
 
-// KPI « Sénégal dans une zone » : valeur des flux + rang dans le classement
-// de la zone, bascule Entrants ⇆ Sortants, variation du rang vs l'année
-// précédente (gagner des places = ▲ vert).
-function KpiSenegalZone({ abrege, nomComplet, tag, dir, onDir, valeur, rang, rangPrec, anneePrec, chargement }: {
-  abrege: string; nomComplet?: string; tag?: string; dir: "entrant" | "sortant"; onDir: (d: "entrant" | "sortant") => void;
-  valeur: number | null; rang: number | null; rangPrec: number | null; anneePrec: number | null; chargement: boolean;
+// Petite navigation par flèches, pour parcourir une liste sans la déplier :
+// une année de plus, une zone de plus. Les extrémités désactivent la flèche
+// correspondante plutôt que de boucler, pour qu'on sache où l'on est.
+function NavFleches({ libelle, onPrec, onSuiv, titre, fort }: {
+  libelle: React.ReactNode; onPrec?: () => void; onSuiv?: () => void; titre?: string; fort?: boolean;
 }) {
-  const deltaRang = rang != null && rangPrec != null ? rangPrec - rang : null;
-  const gain = deltaRang != null && deltaRang > 0, perte = deltaRang != null && deltaRang < 0;
+  const fleche = (actif: boolean, fn: (() => void) | undefined, d: "‹" | "›", aria: string) => (
+    <button onClick={fn} disabled={!actif} aria-label={aria}
+      style={{ border: "none", background: "transparent", cursor: actif ? "pointer" : "default", padding: "0 3px",
+        fontSize: fort ? 13 : 12, lineHeight: 1, fontWeight: 800, color: actif ? (fort ? "rgba(255,255,255,0.85)" : "#8a93a3") : (fort ? "rgba(255,255,255,0.3)" : "#D5D9E0"),
+        fontFamily: "var(--font-google-sans)", flexShrink: 0 }}>{d}</button>
+  );
+  return (
+    <span title={titre} style={{ display: "inline-flex", alignItems: "center", gap: 1, flexShrink: 0,
+      ...(fort ? { background: BLEU, borderRadius: 999, padding: "3px 6px" } : { background: "#EEF1F6", borderRadius: 6, padding: "2px 4px" })}}>
+      {fleche(!!onPrec, onPrec, "‹", "Précédent")}
+      <span style={{ fontSize: fort ? 11 : 8.5, fontWeight: fort ? 800 : 700, color: fort ? "#fff" : "#8a93a3",
+        whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", padding: "0 3px" }}>{libelle}</span>
+      {fleche(!!onSuiv, onSuiv, "›", "Suivant")}
+    </span>
+  );
+}
+
+// KPI du bandeau : une valeur, l'année parcourue aux flèches, et — pour les
+// flux d'IDE — le rang du Sénégal dans un classement dont on change la portée
+// aux flèches également (monde, Afrique, Afrique de l'Ouest, CEDEAO, UEMOA).
+// Le pied de carte porte la variation : places gagnées pour un rang, écart en
+// pourcentage pour un montant.
+function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, valeur, chargement,
+  rang, portee, onPortee, portees, rangPrec, delta }: {
+  label: string; annee: number | null; onAnnee: (a: number) => void; anneeMin?: number; anneeMax?: number;
+  valeur: string; chargement?: boolean;
+  rang?: number | null; portee?: { abrege: string; nomComplet: string }; onPortee?: (pas: -1 | 1) => void;
+  portees?: { avant: boolean; apres: boolean };
+  rangPrec?: number | null; delta?: number | null;
+}) {
+  // Gagner des places fait monter le rang vers 1 : la différence est donc
+  // inversée par rapport à une variation de montant.
+  const dRang = rang != null && rangPrec != null ? rangPrec - rang : null;
+  const bon = dRang != null ? dRang > 0 : delta != null ? delta > 0 : null;
+  const mauvais = dRang != null ? dRang < 0 : delta != null ? delta < 0 : null;
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
-      {/* La bascule EST le titre de la carte */}
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
-        <div style={{ display: "inline-flex", background: "#EEF1F6", borderRadius: 999, padding: 2, gap: 2, flex: 1, minWidth: 0 }}>
-          {([{ v: "entrant", l: "Flux entrants" }, { v: "sortant", l: "Flux sortants" }] as const).map((o) => {
-            const actif = o.v === dir;
-            return (
-              <button key={o.v} onClick={() => onDir(o.v)} style={{
-                border: "none", cursor: "pointer", padding: "4px 10px", borderRadius: 999, flex: 1, minWidth: 0,
-                fontSize: 10, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                background: actif ? "#fff" : "transparent", color: actif ? BLEU : "#6b7684",
-                boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
-              }}>{o.l}</button>
-            );
-          })}
-        </div>
-        {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "#8a93a3", background: "#EEF1F6", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
+      {/* Le libellé peut tenir sur deux lignes — « Exportations · Commerce
+          extérieur » ne rentre pas sur une — et la hauteur est réservée pour
+          les quatre cartes, sinon elles ne s'aligneraient plus. */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12, minHeight: 26 }}>
+        <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.05em", color: BLEU,
+          textTransform: "uppercase", margin: 0, lineHeight: 1.35 }}>{label}</p>
+        {annee != null && (
+          <NavFleches libelle={annee} titre="Changer d'année"
+            onPrec={anneeMin != null && annee > anneeMin ? () => onAnnee(annee - 1) : undefined}
+            onSuiv={anneeMax != null && annee < anneeMax ? () => onAnnee(annee + 1) : undefined} />
+        )}
       </div>
       {chargement ? (
         <>
@@ -314,22 +341,27 @@ function KpiSenegalZone({ abrege, nomComplet, tag, dir, onDir, valeur, rang, ran
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-            <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtMUSD(valeur)}</p>
-            {rang != null && (
-              <span title={`Rang du Sénégal dans le classement ${nomComplet ?? abrege}`}
-                style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: BLEU, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0, fontVariantNumeric: "tabular-nums", overflow: "hidden", textOverflow: "ellipsis" }}>{rang}ᵉ · {abrege}</span>
+            <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
+            {portee && onPortee && (
+              <NavFleches fort titre={`Rang du Sénégal — ${portee.nomComplet}. Flèches : changer de classement.`}
+                libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee.abrege}</>}
+                onPrec={portees?.avant ? () => onPortee(-1) : undefined}
+                onSuiv={portees?.apres ? () => onPortee(1) : undefined} />
             )}
           </div>
           <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            {deltaRang != null ? (
+            {dRang != null || delta != null ? (
               <>
-                <span style={{ fontSize: 11.5, fontWeight: 800, color: gain ? "#188038" : perte ? "#dc2626" : "#9aa5b4", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                  {gain ? "▲" : perte ? "▼" : "="}&nbsp;{deltaRang === 0 ? "rang stable" : `${Math.abs(deltaRang)} place${Math.abs(deltaRang) > 1 ? "s" : ""}`}
+                <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+                  color: bon ? "#188038" : mauvais ? "#dc2626" : "#9aa5b4" }}>
+                  {bon ? "▲" : mauvais ? "▼" : "="}&nbsp;{dRang != null
+                    ? (dRang === 0 ? "rang stable" : `${Math.abs(dRang)} place${Math.abs(dRang) > 1 ? "s" : ""}`)
+                    : `${nf(Math.abs(delta as number), 1)} %`}
                 </span>
-                {anneePrec != null && <span style={{ fontSize: 10.5, color: "#9aa5b4", whiteSpace: "nowrap" }}>par rapport à {anneePrec}</span>}
+                {annee != null && <span style={{ fontSize: 10.5, color: "#9aa5b4", whiteSpace: "nowrap" }}>par rapport à {annee - 1}</span>}
               </>
             ) : (
-              <span style={{ fontSize: 10.5, color: "#9aa5b4" }}>{valeur != null ? "rang précédent indisponible" : ""}</span>
+              <span style={{ fontSize: 10.5, color: "#9aa5b4" }}>{rang != null || valeur !== "—" ? `comparaison à ${annee != null ? annee - 1 : "l'année précédente"} indisponible` : ""}</span>
             )}
           </div>
         </>
@@ -592,22 +624,67 @@ export default function TableauDeBordPage() {
     () => ZONES_SEN.map((z) => { const g = grpMonde.find(z.trouve); return g ? { cle: z.cle, titre: z.titre, abrege: z.abrege, code: g.code, nomComplet: g.nom_fr } : null; })
       .filter(Boolean) as { cle: string; titre: string; abrege: string; code: string; nomComplet: string }[],
     [grpMonde]);
-  const [zoneTops, setZoneTops] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
-  const [zonePrec, setZonePrec] = useState<Record<string, { annee: number; tops: { entrant: LigneTopZone[]; sortant: LigneTopZone[] } }>>({});
   const [zoneDir, setZoneDir] = useState<Record<string, "entrant" | "sortant">>({});
-  // Direction des KPIs « Sénégal · zone » (indépendante de celle des tableaux)
-  const [zoneKpiDir, setZoneKpiDir] = useState<Record<string, "entrant" | "sortant">>({});
+
+  // Classements mémorisés par (groupement, année) : les KPIs du haut et les
+  // tableaux de la section 1 puisent au même endroit, et chaque couple n'est
+  // demandé qu'une fois — naviguer d'une année à l'autre puis revenir ne
+  // relance rien. Un code vide vaut le monde entier : l'API classe alors tous
+  // les pays, sans restriction de groupement.
+  const [classements, setClassements] = useState<Record<string, { entrant: LigneTopZone[]; sortant: LigneTopZone[] }>>({});
+  const enVol = useRef<Set<string>>(new Set());
+  const cleClass = (code: string, annee: number) => `${code || "MONDE"}|${annee}`;
+  const [besoins, setBesoins] = useState<{ code: string; annee: number }[]>([]);
   useEffect(() => {
-    if (ideAnnee == null) return;
-    zonesSen.forEach((z) => {
-      getJSON(`${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(z.code)}&annees=${ideAnnee}`)
-        .then((d) => { if (d?.tops) setZoneTops((p) => ({ ...p, [z.code]: { annee: ideAnnee, tops: d.tops } })); });
-      // Année précédente : sert à la variation de rang du Sénégal dans les KPIs
-      getJSON(`${API}/ide/monde/global?indicateur=flux&code=${encodeURIComponent(z.code)}&annees=${ideAnnee - 1}`)
-        .then((d) => { if (d?.tops) setZonePrec((p) => ({ ...p, [z.code]: { annee: ideAnnee - 1, tops: d.tops } })); });
+    besoins.forEach(({ code, annee }) => {
+      const k = cleClass(code, annee);
+      if (classements[k] || enVol.current.has(k)) return;
+      enVol.current.add(k);
+      const q = code ? `&code=${encodeURIComponent(code)}` : "";
+      getJSON(`${API}/ide/monde/global?indicateur=flux${q}&annees=${annee}`)
+        .then((d) => setClassements((p) => ({ ...p, [k]: d?.tops ?? { entrant: [], sortant: [] } })))
+        .finally(() => enVol.current.delete(k));
     });
-  }, [zonesSen, ideAnnee]);
+  }, [besoins, classements]);
+  // Enregistre un couple à charger. Le tableau de besoins ne grandit que sur
+  // du nouveau, sinon l'effet ci-dessus se rappellerait sans fin.
+  const exigerClassement = useCallback((code: string, annee: number | null) => {
+    if (annee == null) return;
+    setBesoins((p) => p.some((b) => b.code === code && b.annee === annee) ? p : [...p, { code, annee }]);
+  }, []);
   const senDans = (tops?: LigneTopZone[]) => tops?.find((r) => r.pays === "Sénégal" || r.pays === "Senegal") ?? null;
+
+  // Portées de classement offertes aux KPIs, du plus large au plus étroit.
+  // Le monde n'est pas un groupement du référentiel : c'est l'appel sans code,
+  // que l'API interprète comme « tous les pays ». Les quatre autres viennent du
+  // référentiel et disparaissent d'elles-mêmes si elles n'y sont pas.
+  const zonesRang = useMemo(() => [
+    { cle: "monde", code: "", abrege: "Monde", nomComplet: "Classement mondial" },
+    ...zonesSen.map((z) => ({ cle: z.cle, code: z.code, abrege: z.abrege, nomComplet: z.nomComplet })),
+  ], [zonesSen]);
+  const IDX_AFRIQUE = 1;   // portée par défaut, juste après le monde
+
+  // Une année et une portée par carte de flux : les deux sens se comparent mal
+  // s'ils ne peuvent pas être réglés séparément.
+  const [kpiFluxAnnee, setKpiFluxAnnee] = useState<Record<string, number>>({});
+  const [kpiFluxZone, setKpiFluxZone] = useState<Record<string, number>>({ entrant: IDX_AFRIQUE, sortant: IDX_AFRIQUE });
+  const [kpiComAnnee, setKpiComAnnee] = useState<Record<string, number>>({});
+
+  // Les KPIs déclarent ce dont ils ont besoin — année affichée et précédente,
+  // pour la variation de rang — et le cache s'en charge.
+  useEffect(() => {
+    (["entrant", "sortant"] as const).forEach((sens) => {
+      const an = kpiFluxAnnee[sens] ?? ideBornes?.max ?? null;
+      const z = zonesRang[Math.min(kpiFluxZone[sens] ?? IDX_AFRIQUE, zonesRang.length - 1)];
+      if (!z || an == null) return;
+      exigerClassement(z.code, an);
+      exigerClassement(z.code, an - 1);
+    });
+  }, [kpiFluxAnnee, kpiFluxZone, zonesRang, ideBornes, exigerClassement]);
+
+  // Les tableaux de la section 1 suivent le curseur de leur section.
+  useEffect(() => { zonesSen.forEach((z) => exigerClassement(z.code, ideAnnee)); },
+    [zonesSen, ideAnnee, exigerClassement]);
 
   // Valeur d'une série à l'année choisie + valeur disponible précédente (Δ %)
   const pointAnnee = (rows: { annee: number; valeur: number | null }[], annee: number | null) => {
@@ -661,23 +738,40 @@ export default function TableauDeBordPage() {
 
         {onglet === "viz" ? (
           <>
-            {/* ── KPIs du Sénégal dans ses groupements (chevauchent le bandeau) :
-                 valeur des flux + rang dans la zone, bascule Entrants ⇆
-                 Sortants, variation de rang vs n-1 ── */}
+            {/* ── Bandeau de KPIs (chevauche le hero) : les deux sens des flux
+                 d'IDE, avec le rang du Sénégal dans un classement dont on
+                 change la portée aux flèches, puis les deux sens du commerce
+                 extérieur. Chaque carte porte sa propre année. ── */}
             <div className="tdb-kpis" style={{ marginTop: -48, position: "relative", zIndex: 2 }}>
-              {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, abrege: z.abrege, code: "", nomComplet: z.titre }))).map((z) => {
-                const st = z.code ? zoneTops[z.code] : undefined;
-                const pv = z.code ? zonePrec[z.code] : undefined;
-                const dir = zoneKpiDir[z.code] ?? "entrant";
-                const sen = senDans(st?.tops?.[dir]);
-                const senPrec = senDans(pv?.tops?.[dir]);
+              {(["entrant", "sortant"] as const).map((sens) => {
+                const an = kpiFluxAnnee[sens] ?? ideBornes?.max ?? null;
+                const iz = kpiFluxZone[sens] ?? 0;
+                const z = zonesRang[Math.min(iz, zonesRang.length - 1)];
+                const cur = an != null ? classements[cleClass(z.code, an)] : undefined;
+                const prec = an != null ? classements[cleClass(z.code, an - 1)] : undefined;
+                const sen = senDans(cur?.[sens]);
+                const senP = senDans(prec?.[sens]);
                 return (
-                  <KpiSenegalZone key={z.cle} abrege={z.abrege} nomComplet={z.nomComplet}
-                    tag={ideAnnee != null ? String(ideAnnee) : undefined}
-                    dir={dir} onDir={(d) => setZoneKpiDir((p) => ({ ...p, [z.code]: d }))}
-                    valeur={sen?.valeur ?? null} rang={sen?.rang ?? null}
-                    rangPrec={senPrec?.rang ?? null} anneePrec={pv?.annee ?? null}
-                    chargement={!st || st.annee !== ideAnnee} />
+                  <KpiBandeau key={sens} label={sens === "entrant" ? "Flux entrants" : "Flux sortants"}
+                    annee={an} onAnnee={(a) => setKpiFluxAnnee((p) => ({ ...p, [sens]: a }))}
+                    anneeMin={ideBornes?.min} anneeMax={ideBornes?.max}
+                    valeur={fmtMUSD(sen?.valeur ?? null)} chargement={!cur}
+                    rang={sen?.rang ?? null} rangPrec={senP?.rang ?? null}
+                    portee={{ abrege: z.abrege, nomComplet: z.nomComplet }}
+                    portees={{ avant: iz > 0, apres: iz < zonesRang.length - 1 }}
+                    onPortee={(pas) => setKpiFluxZone((p) => ({
+                      ...p, [sens]: Math.max(0, Math.min(zonesRang.length - 1, iz + pas)) }))} />
+                );
+              })}
+              {(["export", "import"] as const).map((sens) => {
+                const an = kpiComAnnee[sens] ?? (comAnnees.length ? comAnnees[comAnnees.length - 1] : null);
+                const v = comTotal(sens, an), p = comTotal(sens, an != null ? an - 1 : null);
+                return (
+                  <KpiBandeau key={sens} label={`${sens === "export" ? "Exportations" : "Importations"} · Commerce ext.`}
+                    annee={an} onAnnee={(a) => setKpiComAnnee((q) => ({ ...q, [sens]: a }))}
+                    anneeMin={comAnnees[0]} anneeMax={comAnnees[comAnnees.length - 1]}
+                    valeur={fmtMFCFA(v)} chargement={!naceProd}
+                    delta={v != null && p != null && p !== 0 ? ((v - p) / Math.abs(p)) * 100 : null} />
                 );
               })}
             </div>
@@ -697,12 +791,12 @@ export default function TableauDeBordPage() {
                   Sénégal — l'année suit le curseur de la section */}
               <div className="tdb-duo">
                 {(zonesSen.length ? zonesSen : ZONES_SEN.map((z) => ({ cle: z.cle, titre: z.titre, code: "", nomComplet: z.titre }))).map((z) => {
-                  const st = z.code ? zoneTops[z.code] : undefined;
+                  const st = ideAnnee != null ? classements[cleClass(z.code, ideAnnee)] : undefined;
                   const dir = zoneDir[z.code] ?? "entrant";
                   return (
                     <TableauZoneSenegal key={z.cle} titre={z.titre} nomComplet={z.nomComplet}
                       tag={ideAnnee != null ? String(ideAnnee) : undefined}
-                      rows={st?.tops?.[dir] ?? []} chargement={!st || st.annee !== ideAnnee}
+                      rows={st?.[dir] ?? []} chargement={!st}
                       dir={dir} onDir={(d) => setZoneDir((p) => ({ ...p, [z.code]: d }))} />
                   );
                 })}
