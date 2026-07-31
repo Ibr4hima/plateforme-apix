@@ -279,8 +279,13 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
   useEffect(() => { charger(); }, [charger]);
 
   const membreIds = new Set(membres.map(m=>m.id));
+  // Les codes ISO sont facultatifs dans ref_pays : un partenaire créé
+  // automatiquement à l'import n'en porte pas tant qu'il n'a pas été arbitré.
+  // Sans ce garde-fou, un seul de ces pays fait tomber tout le panneau.
+  const contient = (v: string|null|undefined, q: string) => (v ?? "").toLowerCase().includes(q);
+  const q = search.toLowerCase();
   const disponibles = allPays.filter((p:any) => !membreIds.has(p.id) &&
-    (search === "" || p.nom_fr.toLowerCase().includes(search.toLowerCase()) || p.code_iso3.toLowerCase().includes(search.toLowerCase()))
+    (search === "" || contient(p.nom_fr, q) || contient(p.code_iso3, q) || contient(p.code_iso2, q))
   );
 
   const handleAjouter = async (pays_id: number) => {
