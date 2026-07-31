@@ -16,11 +16,11 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, IconeCached, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
-import { drapeauEmoji } from "@/lib/drapeaux";
 import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 import { ACCENT_BLEU, AccentNace, accentDe, CurseurAnneeNace, CurseurPlageNace,
   StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
+import DrapeauPays from "@/components/shared/DrapeauPays";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -1961,17 +1961,6 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
 // Affichée par défaut dans la vue Monde : totaux mondiaux (séries + KPIs) et
 // top 10 des pays récepteurs / émetteurs avec curseur Cumul ⇆ année.
 
-// Drapeau emoji (liste validée), image locale (public/drapeaux) sinon, globe sans ISO2
-function DrapeauMonde({ iso, nom }: { iso?: string | null; nom: string }) {
-  if (iso) {
-    const emoji = drapeauEmoji(iso);
-    if (emoji) return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
-      style={{ width: 19, height: 13.5, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
-  }
-  return <span title={nom} style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
-}
 
 type TopPays = { pays: string; code_iso2?: string | null; valeur: number; rang?: number };
 
@@ -2041,7 +2030,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
                         background: sen ? "#004f91" : podium ? "#004f91" : "#EFEDEA", color: sen || podium ? "#fff" : "#9aa5b4", fontSize: 10, fontWeight: 800 }}>{rang}</span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
-                      <DrapeauMonde iso={r.code_iso2} nom={r.pays} />
+                      <DrapeauPays taille={15} iso={r.code_iso2} nom={r.pays} />
                       <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 700, color: sen ? "#004f91" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
                       {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "#004f91", background: "rgba(0,79,145,0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{rang}ᵉ DU CLASSEMENT</span>}
                     </span>

@@ -7,7 +7,8 @@ import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shar
 import { useDebounced } from "@/lib/useDebounced";
 import { PALETTE_COMPARAISON as PALETTE, badge_gris, badgeDe } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe } from "@/lib/format";
+import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe, fmtMFCFA, fmtTonnes } from "@/lib/format";
+import DrapeauPays from "@/components/shared/DrapeauPays";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
@@ -15,7 +16,6 @@ import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurs
   varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { useEtatUrl } from "@/lib/useEtatUrl";
-import { drapeauEmoji } from "@/lib/drapeaux";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
@@ -157,19 +157,6 @@ type NaceMesure = "valeur" | "poids";
 const NACE_BLEU = "#004f91";    // exportations
 const NACE_ORANGE = "#ca631f";  // importations
 
-// Montants NACE en millions de FCFA
-function fmtMFCFA(v: number | null | undefined): string {
-  if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md FCFA`;
-  return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} M FCFA`;
-}
-// Poids NACE en tonnes
-function fmtTonnes(v: number | null | undefined): string {
-  if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Mt`;
-  if (Math.abs(v) >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} kt`;
-  return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} t`;
-}
 // Cellule d'une statistique d'intervalle. L'année accompagne le minimum et le
 // maximum : sans elle, on saurait qu'un creux a eu lieu sans savoir quand,
 // ce qui est justement ce qu'on cherche en lisant plusieurs années.
@@ -2474,18 +2461,6 @@ function TableauPoidsRessources({ data, total, accent }: {
 // Matrice fixe pays × ressources : rang (top 3 en bleu), drapeau, lignes
 // zébrées, plus grande valeur de chaque pays en vert, colonne Total en bleu.
 
-// Drapeau emoji (liste validée), image locale (public/drapeaux) sinon, globe pour les
-// partenaires sans pays (« Bunkers », zones spéciales…)
-function DrapeauPays({ iso, nom }: { iso?: string | null; nom: string }) {
-  if (iso) {
-    const emoji = drapeauEmoji(iso);
-    if (emoji) return <span title={nom} style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
-      style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
-  }
-  return <span title={nom} style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>🌐</span>;
-}
 
 function TableauPartenairesRessources({ partenaires, ressources, accent }: {
   partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[];

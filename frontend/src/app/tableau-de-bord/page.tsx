@@ -12,38 +12,18 @@ import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
 import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
+import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
+import DrapeauPays from "@/components/shared/DrapeauPays";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const BLEU = "#004f91", ENCRE = "#101a2e";
 
-// ── Formatage ─────────────────────────────────────────────────────────────────
-const nf = (v: number | null | undefined, d = 0) => (v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—");
-const fmtMd = (fcfa?: number | null) => (fcfa == null ? "—" : `${nf(fcfa / 1e9, 1)} Md FCFA`);
-// La NACE compte en MILLIONS de FCFA : lui appliquer fmtMd, qui attend des
-// FCFA bruts, diviserait tous les montants par mille.
-const fmtMFCFA = (v?: number | null) => v == null || !isFinite(v) ? "—"
-  : Math.abs(v) >= 1000 ? `${nf(v / 1000, 1)} Md FCFA` : `${nf(v, 0)} M FCFA`;
-function fmtUSD(v?: number | null) {
-  if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1e9) return `${nf(v / 1e9, 1)} Md$`;
-  if (Math.abs(v) >= 1e6) return `${nf(v / 1e6, 0)} M$`;
-  if (Math.abs(v) >= 1e3) return `${nf(v / 1e3, 0)} k$`;
-  return `${nf(v)} $`;
-}
-// Montants IDE (CNUCED) déjà exprimés en millions USD
-function fmtMUSD(v?: number | null) {
-  if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1000) return `${nf(v / 1000, 1)} Md$`;
-  return `${nf(v, 0)} M$`;
-}
+// Formatage : lib/format est LA source — les copies locales qui vivaient ici
+// avaient déjà divergé de /statistiques (« Md$ » contre « Md $ », 0 contre 1
+// décimale sur les mêmes flux). fmtMd s'appelle désormais fmtFCFA, son unité
+// d'entrée (FCFA bruts) étant dans le nom.
 const getJSON = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-// Drapeau emoji depuis un code ISO2 ; 🌐 si absent / invalide (ex. « Bunkers »)
-const drapeau = (iso2?: string | null) => {
-  if (!iso2 || !/^[A-Za-z]{2}$/.test(iso2)) return "🌐";
-  const cc = iso2.toUpperCase();
-  return String.fromCodePoint(0x1f1e6 + cc.charCodeAt(0) - 65, 0x1f1e6 + cc.charCodeAt(1) - 65);
-};
 
 // Libellés de mois (les périodes BMCE sont datées « AAAA-MM-JJ »)
 
@@ -172,7 +152,7 @@ function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 999, background: i < 3 ? couleur : "#EEF1F6", color: i < 3 ? "#fff" : "#5c6675", fontSize: 10, fontWeight: 800 }}>{i + 1}</span>
             </td>
             <td style={{ padding: "6px 8px", fontWeight: 650, color: ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
-              {drapeaux && <span style={{ marginRight: 7, fontSize: 14 }}>{drapeau(r.iso2)}</span>}{r.nom}
+              {drapeaux && <span style={{ marginRight: 7, display: "inline-flex", verticalAlign: "middle" }}><DrapeauPays iso={r.iso2} nom={r.nom} taille={14} /></span>}{r.nom}
             </td>
             <td className="ds-donnee" style={{ padding: "6px 8px", textAlign: "right", fontWeight: 750, color: ENCRE, whiteSpace: "nowrap" }}>{fmt(r.valeur)}</td>
           </tr>
@@ -256,7 +236,7 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
                         background: sen || podium ? BLEU : "#EEF1F6", color: sen || podium ? "#fff" : "#5c6675", fontSize: 10, fontWeight: 800 }}>{rang}</span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 7 }}>
-                      <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{drapeau(r.code_iso2)}</span>
+                      <DrapeauPays iso={r.code_iso2} nom={r.pays} taille={14} />
                       <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 650, color: sen ? BLEU : ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.pays}</span>
                       {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: BLEU, background: "rgba(0,79,145,0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" }}>{rang}ᵉ DU CLASSEMENT</span>}
                     </span>
@@ -957,12 +937,12 @@ export default function TableauDeBordPage() {
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
                       <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={plage}>
                         {evoData.length > 1 ? (
-                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], evoData)]} />
                         ) : vide}
                       </Carte>
                       <Carte titre="Balance commerciale" tag={plage}>
                         {balData.length > 1 ? (
-                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtMd(v)} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
+                          <GrapheMultiPays height={220} type="line" fmt={(v) => fmtFCFA(v)} series={[serie("Balance", PALETTE_COMPARAISON[1], balData)]} />
                         ) : vide}
                       </Carte>
                     </div>

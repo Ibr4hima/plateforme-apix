@@ -5,9 +5,14 @@
 
 const nf1 = (v: number) => v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
 
+// Nombre nu en fr-FR, « — » si absent. C'est LE formateur de base : tout ce
+// qui affiche un nombre sans suffixe doit passer par lui.
+export const nf = (v: number | null | undefined, d = 0) =>
+  v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—";
+
 // Montant en USD (valeur brute en dollars)
-export function fmtUSD(v: number | null): string {
-  if (v == null) return "—";
+export function fmtUSD(v?: number | null): string {
+  if (v == null || !isFinite(v)) return "—";
   const a = Math.abs(v);
   if (a >= 1e9) return `${nf1(v / 1e9)} Md $`;
   if (a >= 1e6) return `${nf1(v / 1e6)} M $`;
@@ -16,16 +21,42 @@ export function fmtUSD(v: number | null): string {
 }
 
 // Montant dont la valeur d'entrée est déjà en MILLIONS d'USD (séries CNUCED)
-export function fmtMillionsUSD(v: number | null): string {
-  if (v === null || v === undefined) return "N/A";
+export function fmtMillionsUSD(v?: number | null): string {
+  if (v == null || !isFinite(v)) return "—";
   const a = Math.abs(v);
   if (a >= 1000) return `${nf1(v / 1000)} Md $`;
   return `${Math.round(v).toLocaleString("fr-FR")} M $`;
 }
 
+// ── FCFA ─────────────────────────────────────────────────────────────────────
+// Deux unités d'entrée coexistent selon la source, d'où deux noms explicites :
+// se tromper de formateur décale les montants d'un facteur mille sans que rien
+// ne le signale — c'est arrivé, le nom porte donc l'unité attendue.
+
+// Entrée en MILLIONS de FCFA (familles NACE).
+export function fmtMFCFA(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  if (Math.abs(v) >= 1000) return `${nf1(v / 1000)} Md FCFA`;
+  return `${nf(v)} M FCFA`;
+}
+
+// Entrée en FCFA bruts (séries des graphes du tableau de bord).
+export function fmtFCFA(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  return `${nf1(v / 1e9)} Md FCFA`;
+}
+
+// Poids en tonnes (NACE) : Mt / kt / t.
+export function fmtTonnes(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Mt`;
+  if (Math.abs(v) >= 1000) return `${nf(v / 1000)} kt`;
+  return `${nf(v)} t`;
+}
+
 // Grandeur sans devise (axes et tooltips multi-unités : population, USD, %…)
-export function fmtCompact(v: number | null): string {
-  if (v === null || v === undefined) return "N/A";
+export function fmtCompact(v?: number | null): string {
+  if (v == null || !isFinite(v)) return "—";
   const a = Math.abs(v);
   if (a >= 1e9) return `${nf1(v / 1e9)} Md`;
   if (a >= 1e6) return `${nf1(v / 1e6)} M`;

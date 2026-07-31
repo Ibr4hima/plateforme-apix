@@ -15,6 +15,7 @@ import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fond_bleu, badge_bleu, badgeSurvol } from "@/lib/couleurs";
+import DrapeauPays from "@/components/shared/DrapeauPays";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -40,14 +41,12 @@ function couleurMaxPour(code: string, categorie?: string): "vert" | "rouge" | nu
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
-function Drapeau({ iso, nom, taille = 17 }: { iso?: string | null; nom: string; taille?: number }) {
-  if (!iso) return null;
-  const emoji = drapeauEmoji(iso);
-  if (emoji) return <span title={nom} style={{ fontSize: taille, lineHeight: 1, flexShrink: 0 }}>{emoji}</span>;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
-    style={{ width: taille * 1.25, height: taille * 0.9, objectFit: "cover", borderRadius: 2.5, boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
-}
+// Le composant partagé rend le globe pour les lignes sans code ISO ; ici on
+// n'affiche rien du tout (sansIso="rien"), une fiche pays sans drapeau se
+// passant d'ornement.
+const Drapeau = ({ iso, nom, taille = 17 }: { iso?: string | null; nom: string; taille?: number }) => (
+  <DrapeauPays iso={iso} nom={nom} taille={taille} sansIso="rien" />
+);
 
 // Sélecteur de pays du bandeau (verre dépoli sur fond sombre)
 function SelectPays({ valeur, pays, exclure, onChange }: {
