@@ -6,7 +6,6 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import BarreTitre from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -552,7 +551,7 @@ export default function AdminAccords() {
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+      <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}

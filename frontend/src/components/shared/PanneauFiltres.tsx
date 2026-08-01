@@ -86,12 +86,20 @@ export function CompteurResultats({ n, singulier, pluriel }: { n: number; singul
   );
 }
 
-/** Props clavier d'une carte cliquable : Entrée et Espace équivalent au clic. */
-export function carteCliquable(ouvrir: () => void) {
+/**
+ * Props clavier d'une carte cliquable : Entrée et Espace équivalent au clic.
+ *
+ * `label` est vivement recommandé dès que la carte contient du texte : sans
+ * lui, le nom accessible du role="button" est TOUT le contenu de la carte —
+ * une carte d'événement s'annonce « Web Summit 7ème édition Date 30 juil.
+ * Lieu Madrid Modifier Retirer ». Avec, elle s'annonce d'une phrase.
+ */
+export function carteCliquable(ouvrir: () => void, label?: string) {
   return {
     onClick: ouvrir,
     role: "button" as const,
     tabIndex: 0,
+    ...(label ? { "aria-label": label } : {}),
     onKeyDown: (e: React.KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ouvrir(); }
     },

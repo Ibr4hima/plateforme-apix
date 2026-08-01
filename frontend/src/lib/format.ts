@@ -99,6 +99,27 @@ export function fmtDate(d?: string | null): string {
   return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
+/**
+ * Plage de dates au format le plus court qui reste sans ambiguïté : les
+ * parties communes aux deux bornes ne sont écrites qu'une fois.
+ *   6 → 10 juin 2026        (même mois)
+ *   28 févr. → 3 mars 2026  (même année)
+ *   28 déc. 2026 → 3 janv. 2027
+ * Une plage écrite en entier des deux côtés ne tient pas dans une colonne de
+ * carte et se retrouve tronquée : c'est la date, l'information principale.
+ */
+export function fmtPlageDates(debut?: string | null, fin?: string | null): string {
+  if (!debut) return fin ? fmtDate(fin) : "";
+  if (!fin || fin === debut) return fmtDate(debut);
+  const [ad, md, jd] = debut.split("-").map(Number);
+  const [af, mf, jf] = fin.split("-").map(Number);
+  const dDeb = new Date(ad, md - 1, jd);
+  const moisDe = (d: Date) => d.toLocaleDateString("fr-FR", { month: "short" });
+  if (ad === af && md === mf) return `${jd} → ${jf} ${moisDe(dDeb)} ${af}`;
+  if (ad === af) return `${jd} ${moisDe(dDeb)} → ${fmtDate(fin)}`;
+  return `${fmtDate(debut)} → ${fmtDate(fin)}`;
+}
+
 export function fmtDateLong(d?: string | null): string {
   if (!d) return "";
   const [y, m, j] = d.split("-").map(Number);

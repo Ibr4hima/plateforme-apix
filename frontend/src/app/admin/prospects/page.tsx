@@ -11,7 +11,6 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
 
@@ -1830,7 +1829,7 @@ export default function ProspectsPage() {
       `}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+      <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur
         droite={onglet!=="precedents" ? (
           <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
             style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#fff", color:"#ca631f", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgba(0,0,0,0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}

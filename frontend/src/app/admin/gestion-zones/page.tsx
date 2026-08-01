@@ -10,7 +10,6 @@ import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { badgePole, poleAccent } from "@/lib/couleurs";
@@ -996,7 +995,7 @@ export default function GestionZonesPage() {
 
       {/* ── Bandeau orange (espace d'administration) ── */}
       {/* La création se fait depuis la carte du type concerné (« Ajouter une ZES »…) */}
-      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}>
+      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur>
         <BarreTitreSegment
           options={[
             { v: "zones", l: "Zones d'investissement", count: zones.length },

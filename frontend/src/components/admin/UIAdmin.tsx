@@ -97,19 +97,26 @@ export function ChampRecherche({ value, onChange, placeholder, style }: {
 }
 
 // ── Bascule segmentée ─────────────────────────────────────────────────────────
-export function Segments<T extends string>({ options, value, onChange }: {
-  options: readonly { v: T; l: string }[]; value: T; onChange: (v: T) => void;
+// `n` affiche un compteur dans l'option : on voit ce que vaut un filtre avant
+// de le poser (« Passés 1 » évite de cliquer pour découvrir une liste vide).
+export function Segments<T extends string>({ options, value, onChange, accent = "#004f91" }: {
+  options: readonly { v: T; l: string; n?: number }[]; value: T; onChange: (v: T) => void; accent?: string;
 }) {
   return (
     <div style={{ display: "inline-flex", background: "#F2F0EF", borderRadius: 999, padding: 3, gap: 3 }}>
       {options.map(o => {
         const actif = value === o.v;
         return (
-          <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ padding: "6px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
-              background: actif ? "#fff" : "transparent", color: actif ? "#004f91" : "#9aa5b4",
+          <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: o.n != null ? "6px 11px 6px 14px" : "6px 15px",
+              borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+              background: actif ? "#fff" : "transparent", color: actif ? accent : "#9aa5b4",
               boxShadow: actif ? "0 1px 4px rgba(0,0,0,0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
             {o.l}
+            {o.n != null && (
+              <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, padding: "3px 6px", borderRadius: 999,
+                background: actif ? `${accent}14` : "rgba(154,165,180,0.16)", color: actif ? accent : "#9aa5b4" }}>{o.n}</span>
+            )}
           </button>
         );
       })}

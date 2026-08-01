@@ -1,5 +1,4 @@
-// Navigation de l'espace d'administration — source unique partagée par le menu
-// du bandeau bleu (AdminMenu) et l'ancienne barre latérale.
+// Navigation de l'espace d'administration — source unique de la barre latérale.
 
 export type NavItemAdmin =
   | { type: "link"; label: string; href: string; icon: string; disabled?: boolean }
@@ -32,9 +31,3 @@ export const MODULES_ADMIN: NavItemAdmin[] = [
 // jamais en local (où l'API pointe vers localhost).
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 export const IS_DEPLOYED = !!API_URL && !API_URL.includes("localhost") && !API_URL.includes("127.0.0.1");
-
-// Pages d'administration déjà passées au nouveau gabarit (bandeau bleu + menu) :
-// elles n'affichent plus la barre latérale héritée.
-export const PAGES_REFONDUES = ["/admin/evenements", "/admin/accords", "/admin/entreprises", "/admin/gestion-zones", "/admin/opportunites", "/admin/prospects", "/admin/statistiques", "/admin/ide"];
-export const estPageRefondue = (pathname: string) =>
-  PAGES_REFONDUES.some(p => pathname === p || pathname.startsWith(p + "/"));

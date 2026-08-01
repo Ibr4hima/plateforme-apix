@@ -10,7 +10,6 @@ import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_gris } from "@/lib/couleurs";
 
@@ -1129,7 +1128,7 @@ export default function OpportunitesAdminPage() {
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+      <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={actionOnglet.onClick}
             style={{display:"inline-flex",alignItems:"center",gap:8,background:"#fff",color:"#ca631f",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgba(0,0,0,0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}

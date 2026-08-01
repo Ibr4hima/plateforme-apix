@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import { CheckCircle, ChevronDown, Database, Link2, Loader2, Trash2, UploadCloud, X } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonRows } from "@/components/shared/Skeleton";
 import {
   Avis, Carte, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Tableau,
@@ -154,7 +153,7 @@ export default function AdminStatistiquesPage() {
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Données Statistiques" compact ton="orange" pleineLargeur actions={<AdminMenu />}>
+      <BarreTitre titre="Données Statistiques" compact ton="orange" pleineLargeur>
         <BarreTitreSegment
           options={[
             { v: "indicateurs",   l: "Indicateurs par pays" },

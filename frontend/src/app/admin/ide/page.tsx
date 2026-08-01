@@ -5,7 +5,6 @@ import { CheckCircle, Globe2, Link2, Loader2, Trash2, UploadCloud } from "lucide
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import { SkeletonRows } from "@/components/shared/Skeleton";
 import {
   Avis, Carte, Case, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Segments, Tableau,
@@ -256,7 +255,7 @@ export default function AdminIdePage() {
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Données IDE" compact ton="orange" pleineLargeur actions={<AdminMenu />} />
+      <BarreTitre titre="Données IDE" compact ton="orange" pleineLargeur />
 
       <div style={{ padding: "28px 40px 80px", maxWidth: 1400, display: "flex", flexDirection: "column", gap: 18 }}>
 

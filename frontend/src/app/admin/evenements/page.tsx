@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import BarreTitre from "@/components/shared/BarreTitre";
-import AdminMenu from "@/components/admin/AdminMenu";
 import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -17,7 +16,9 @@ import PaysSelect from "@/components/shared/PaysSelect";
 import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
 import { confirmer } from "@/components/shared/Confirmation";
-import { fmtDate } from "@/lib/format";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
+import { ChampRecherche, Segments } from "@/components/admin/UIAdmin";
+import { fmtPlageDates } from "@/lib/format";
 import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -38,7 +39,13 @@ const ROLES_APIX = [
 const MOIS_VIEW = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 const ROLES_APIX_LABELS: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
 
-const fmtDateFR = fmtDate;
+// Date de référence d'un événement : sa date de début, ou le prochain rendez-vous
+// annoncé pour les récurrents qui n'ont pas encore de date ferme.
+function dateDebutDe(e: any): Date | null {
+  if (e.date_debut) return new Date(e.date_debut + "T00:00:00");
+  if (e.prochain_annee) return new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1);
+  return null;
+}
 
 const EMPTY_FORM = {
   nom_event: "", edition: "" as string,
@@ -521,8 +528,7 @@ const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#00
 
 // Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
 function dansCombien(e: any): string | null {
-  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
-    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+  const d = dateDebutDe(e);
   if (!d) return null;
   const now = new Date();
   const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
@@ -549,8 +555,10 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
     : estEnCours
     ? { c: "#188038", grad: "linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label: "Événement en cours", b: "rgba(24,128,56,0.45)", b2: "rgba(24,128,56,0.6)", sh: "0 4px 18px rgba(24,128,56,0.15)" }
     : null;
+  // Plage compacte (« 6 → 10 juin 2026 ») : une plage écrite en entier des deux
+  // côtés déborde de la colonne et se fait tronquer.
   const dateStr = e.date_debut
-    ? (e.date_debut === e.date_fin || !e.date_fin ? fmtDateFR(e.date_debut) : `${fmtDateFR(e.date_debut)} → ${fmtDateFR(e.date_fin)}`)
+    ? fmtPlageDates(e.date_debut, e.date_fin)
     : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
   const txtC = estPasse ? "#4a5568" : "#1a1a2e";
@@ -570,7 +578,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   };
 
   return (
-    <div onClick={onVoir}
+    <div {...carteCliquable(onVoir, `Ouvrir la fiche : ${e.nom_event}`)}
       style={{ background: estPasse ? "#FBFAF9" : "#fff", border: accent ? `1.5px solid ${accent.b}` : "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
       onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; marquee(ev, false); }}
       onMouseLeave={ev => { ev.currentTarget.style.boxShadow = accent ? accent.sh : "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = accent ? accent.b : "rgba(16,26,46,0.12)"; marquee(ev, true); }}>
@@ -598,9 +606,12 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
 
         {/* Date · Lieu en rangée épurée */}
         <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          {/* La date prend un peu plus de place que le lieu, et rétrécit d'un
+              cran sur les plages à cheval sur deux années — la seule forme qui
+              ne tient pas dans la colonne (« 28 déc. 2026 → 3 janv. 2027 »). */}
+          <div style={{ flex: 1.15, minWidth: 0 }}>
             <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Date</p>
-            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: dateStr ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+            <p data-marquee style={{ fontSize: (dateStr?.length ?? 0) > 22 ? 11 : 12.5, fontWeight: 700, color: dateStr ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
               <span style={{ display: "inline-block" }}>{dateStr || "—"}</span>
             </p>
           </div>
@@ -614,8 +625,10 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
         </div>
       </div>
 
-      {/* Actions d'administration */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+      {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
+          Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }}
+        onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
           style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
           onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
@@ -651,6 +664,10 @@ export default function EvenementsAdminPage() {
   const [vue,        setVue]        = useState<any>(null);
   const [deleting,   setDeleting]   = useState<any>(null);
   const [togglingId, setTogglingId] = useState<any>(null);
+  // Filtres de la barre d'outils
+  const [q,       setQ]       = useState("");
+  const [statutF, setStatutF] = useState<"tous"|"a_venir"|"en_cours"|"termine">("tous");
+  const [pubF,    setPubF]    = useState<"tous"|"publies"|"prives">("tous");
 
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
@@ -687,12 +704,53 @@ export default function EvenementsAdminPage() {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     let best: any = null, bestD: Date | null = null;
     tous.forEach(e => {
-      const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
-        : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+      const d = dateDebutDe(e);
       if (d && d > today && (!bestD || d < bestD)) { bestD = d; best = e; }
     });
     return best?.id ?? null;
   }, [tous]);
+
+  // Statut affiché : les récurrents sans date ferme comptent comme « à venir »,
+  // c'est ce que dit leur carte.
+  const statutDe = (e: any) => computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
+
+  // Liste affichée : filtres de la barre d'outils puis ordre de travail —
+  // en cours d'abord, puis les prochains par échéance, les sans-date, et enfin
+  // les passés du plus récent au plus ancien. L'API rendait un ordre qui
+  // renvoyait le prochain événement en fin de grille.
+  const liste = useMemo(() => {
+    const texte = q.trim().toLowerCase();
+    const filtres = tous.filter(e => {
+      if (pubF === "publies" && e.est_publie === false) return false;
+      if (pubF === "prives"  && e.est_publie !== false) return false;
+      if (statutF !== "tous" && statutDe(e) !== statutF) return false;
+      if (!texte) return true;
+      return [e.nom_event, e.organisateur, e.ville, e.pays_hote_nom, e.role_apix]
+        .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte));
+    });
+    const rang = (e: any) => { const s = statutDe(e); return s === "en_cours" ? 0 : s === "a_venir" ? 1 : s === null ? 2 : 3; };
+    return filtres.sort((a, b) => {
+      const ra = rang(a), rb = rang(b);
+      if (ra !== rb) return ra - rb;
+      const da = dateDebutDe(a)?.getTime() ?? 0, db = dateDebutDe(b)?.getTime() ?? 0;
+      if (da !== db) return ra === 3 ? db - da : da - db;   // passés : du plus récent
+      return (a.nom_event || "").localeCompare(b.nom_event || "", "fr");
+    });
+  }, [tous, q, statutF, pubF]);
+
+  const nbFiltres = (q ? 1 : 0) + (statutF !== "tous" ? 1 : 0) + (pubF !== "tous" ? 1 : 0);
+  const reinit = () => { setQ(""); setStatutF("tous"); setPubF("tous"); };
+  // Compteurs des onglets de statut, calculés sur le seul filtre de publication
+  // (sinon « À venir (3) » afficherait 3 alors que l'onglet est déjà actif).
+  const parStatut = useMemo(() => {
+    const base = tous.filter(e => pubF === "tous" || (pubF === "publies" ? e.est_publie !== false : e.est_publie === false));
+    return {
+      tous: base.length,
+      a_venir:  base.filter(e => statutDe(e) === "a_venir").length,
+      en_cours: base.filter(e => statutDe(e) === "en_cours").length,
+      termine:  base.filter(e => statutDe(e) === "termine").length,
+    };
+  }, [tous, pubF]);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
@@ -701,7 +759,7 @@ export default function EvenementsAdminPage() {
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
 
       {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Événements" compact ton="orange" pleineLargeur actions={<AdminMenu />}
+      <BarreTitre titre="Événements" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
@@ -713,8 +771,40 @@ export default function EvenementsAdminPage() {
         <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tous.length}</span>
       </BarreTitre>
 
-      {/* ── Grille pleine largeur (3 colonnes) ── */}
-      <div style={{ padding: "28px 40px 80px" }}>
+      {/* ── Barre d'outils + grille ── */}
+      <div style={{ padding: "22px 32px 80px" }}>
+        {!loading && !erreur && tous.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, background: "#fff",
+            border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, padding: "11px 14px", marginBottom: 16 }}>
+            <ChampRecherche value={q} onChange={setQ} placeholder="Nom, organisateur, ville, pays…" style={{ width: 268 }} />
+            <Segments value={statutF} onChange={setStatutF} accent="#ca631f" options={[
+              { v: "tous",     l: "Tous",     n: parStatut.tous },
+              { v: "a_venir",  l: "À venir",  n: parStatut.a_venir },
+              { v: "en_cours", l: "En cours", n: parStatut.en_cours },
+              { v: "termine",  l: "Passés",   n: parStatut.termine },
+            ] as const} />
+            <span style={{ width: 1, height: 22, background: "#F2F0EF" }} />
+            <Segments value={pubF} onChange={setPubF} accent="#ca631f" options={[
+              { v: "tous",    l: "Tous" },
+              { v: "publies", l: "Publiés" },
+              { v: "prives",  l: "Non publiés" },
+            ] as const} />
+            {nbFiltres > 0 && (
+              <button onClick={reinit} title="Tout réinitialiser"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(220,38,38,0.07)",
+                  border: "1px solid rgba(220,38,38,0.20)", color: "#dc2626", borderRadius: 999, padding: "6px 13px",
+                  fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+                <X size={12} /> Réinitialiser
+              </button>
+            )}
+            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#9aa5b4", whiteSpace: "nowrap" as const }}>
+              {liste.length === tous.length
+                ? `${tous.length} événement${tous.length > 1 ? "s" : ""}`
+                : `${liste.length} sur ${tous.length}`}
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <SkeletonCards n={6} cols={3} height={220} />
         ) : erreur ? (
@@ -725,9 +815,19 @@ export default function EvenementsAdminPage() {
             <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement enregistré</p>
             <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un événement » pour commencer.</p>
           </div>
+        ) : liste.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "70px 24px", color: "#9aa5b4" }}>
+            <Search size={44} style={{ marginBottom: 16, opacity: 0.3 }} />
+            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement pour ces filtres</p>
+            <button onClick={reinit}
+              style={{ marginTop: 14, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                color: "#ca631f", fontFamily: "var(--font-google-sans)", textDecoration: "underline" }}>
+              Réinitialiser les filtres
+            </button>
+          </div>
         ) : (
-          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
-            {tous.map(e => (
+          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 14 }}>
+            {liste.map(e => (
               <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
                 onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
                 onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
