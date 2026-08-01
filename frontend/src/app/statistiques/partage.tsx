@@ -1,13 +1,13 @@
 "use client";
+import GrapheSignature from "@/components/shared/GrapheMultiPays";
+import { badge_gris } from "@/lib/couleurs";
+import { fmtCompact as fmtValGen } from "@/lib/format";
 /**
  * Symboles partagés par les trois onglets de la page Statistiques.
  * Chaque onglet vit dans son module (commerce-exterieur, flux-bilateraux,
  * page pour les indicateurs) ; ce fichier porte ce qu'ils partagent et rien
  * d'autre — un symbole utilisé par un seul onglet appartient à son module.
  */
-import GrapheSignature from "@/components/shared/GrapheMultiPays";
-import { badge_gris } from "@/lib/couleurs";
-import { fmtCompact as fmtValGen } from "@/lib/format";
 
 // Couleurs du sens des échanges, communes aux onglets Commerce extérieur et
 // Flux bilatéraux : bleu = exportations, orange = importations.
@@ -21,7 +21,7 @@ export type Pays = { id: number; nom: string; code_iso3: string; continent: stri
 export type Donnee = { pays_id: number; pays: string; annee: number; indicateur: string; valeur: number | null };
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
-export const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 export function sortContinents(conts: string[]) {
   return [...conts].sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);

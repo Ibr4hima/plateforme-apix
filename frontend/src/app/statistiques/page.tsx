@@ -1,30 +1,22 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
-
 import NavActions from "@/components/layout/NavActions";
-import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
-import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
-import { useDebounced } from "@/lib/useDebounced";
-import { PALETTE_COMPARAISON as PALETTE, badge_gris, badgeDe } from "@/lib/couleurs";
+import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
+import { PALETTE_COMPARAISON as PALETTE, badgeDe } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe, fmtMFCFA, fmtTonnes } from "@/lib/format";
-import DrapeauPays from "@/components/shared/DrapeauPays";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { fmtUnite as fmt } from "@/lib/format";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
-import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur,
-  varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { badge_bleu, badge_orange } from "@/lib/couleurs";
+import { ChevronDown, FileSpreadsheet, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
-import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
 import CommerceExterieurPanel from "./commerce-exterieur";
 import CommercePanel from "./flux-bilateraux";
-import { API, CONT_ORDER, sortContinents, BadgePeriode, GrapheMultiPays,
-  type Indicateur, type Pays, type Donnee } from "./partage";
+import { API, sortContinents, BadgePeriode, GrapheMultiPays, type Indicateur, type Pays, type Donnee } from "./partage";
+
 
 const MAX_KPI = 4;
 const KPI_DEFAUT = ["population", "superficie", "pib", "pib_hab"];
@@ -347,6 +339,8 @@ export default function StatistiquesPage() {
   const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
   const [donnees, setDonnees] = useState<Donnee[]>([]);
+  const [errDonnees, setErrDonnees] = useState(false);
+  const [tickDonnees, setTickDonnees] = useState(0);
   const [loading, setLoading] = useState(true);
   const [kpiActif, setKpiActif] = useState<{ ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null>(null);
   const [showTable, setShowTable] = useState(false);
@@ -400,10 +394,15 @@ export default function StatistiquesPage() {
     setKpisEpingles(def.length ? def : codes.slice(0, MAX_KPI));
   }, [indicateurs]);
 
+  // Un échec ici laisserait tous les graphes sur « aucune donnée » : on le
+  // signale et on offre la relance.
   useEffect(() => {
     if (!selection.length) { setDonnees([]); return; }
-    fetch(`${API}/statistiques/donnees?pays=${selection.join(",")}`).then(r => r.json()).then(setDonnees).catch(() => {});
-  }, [selection]);
+    setErrDonnees(false);
+    fetch(`${API}/statistiques/donnees?pays=${selection.join(",")}`)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(setDonnees).catch(() => setErrDonnees(true));
+  }, [selection, tickDonnees]);
 
   // Bornes d'années d'après les données réellement disponibles
   const anneesDispo = useMemo(() => [...new Set(donnees.map(d => d.annee))].filter(a => a > 0).sort((a, b) => a - b), [donnees]);
@@ -674,6 +673,8 @@ export default function StatistiquesPage() {
               <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Sélectionnez un pays</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
+          ) : errDonnees ? (
+            <ErreurChargement onRetry={() => setTickDonnees(t => t + 1)} />
           ) : (
             <div className="charge-in">
               {(() => {

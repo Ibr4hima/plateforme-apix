@@ -1,27 +1,17 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
-
-import NavActions from "@/components/layout/NavActions";
-import GrapheSignature from "@/components/shared/GrapheMultiPays";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
-import { PALETTE_COMPARAISON as PALETTE, badge_gris, badgeDe } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { fmtUnite as fmt, fmtUSD, fmtCompact as fmtValGen, fmtAxe, fmtMFCFA, fmtTonnes } from "@/lib/format";
+import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { d3, useD3Pret } from "@/lib/d3lazy";
-import { ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
-import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur,
-  varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { badge_bleu, badge_orange } from "@/lib/couleurs";
-import { useEtatUrl } from "@/lib/useEtatUrl";
-import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
-import { GrapheConcentration } from "@/components/charts/GrapheConcentration";
-import { API, CONT_ORDER, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORANGE } from "./partage";
+import { API, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORANGE } from "./partage";
+
 
 
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
