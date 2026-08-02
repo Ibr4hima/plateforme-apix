@@ -19,6 +19,7 @@ import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { fmtUnite } from "@/lib/format";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const ONGLETS = [
   { cle: "indicateurs", label: "Indicateurs éco." },
@@ -26,6 +27,7 @@ const ONGLETS = [
 ] as const;
 
 export default function StatistiquesEcran() {
+  const margeBas = useMargeBas();
   const [onglet, setOnglet] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const { defilY, onScroll } = useHeroDefilant();
@@ -120,7 +122,7 @@ export default function StatistiquesEcran() {
 
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
         <HeroModule titre="Échanges commerciaux"
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />

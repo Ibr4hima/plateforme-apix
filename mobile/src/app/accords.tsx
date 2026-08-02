@@ -19,6 +19,7 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const TYPES = [
   { cle: "tbi",   label: "Traités Bilatéraux" },
@@ -71,6 +72,7 @@ function CarteAccord({ a, onPress }: { a: any; onPress: () => void }) {
 }
 
 export default function Accords() {
+  const margeBas = useMargeBas();
   const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
@@ -205,7 +207,7 @@ export default function Accords() {
         data={isLoading || isError ? [] : filtres}
         keyExtractor={(a: any) => String(a.id)}
         renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></Apparition>}
-        contentContainerStyle={s.liste}
+        contentContainerStyle={[s.liste, { paddingBottom: margeBas }]}
         refreshing={isRefetching}
         onRefresh={refetch}
         keyboardShouldPersistTaps="handled"
@@ -228,7 +230,7 @@ export default function Accords() {
 
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  liste: { gap: 11, paddingBottom: 40 },
+  liste: { gap: 11 },
   rangee: { paddingHorizontal: 16 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },

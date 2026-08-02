@@ -15,6 +15,7 @@ import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule"
 import { fetchTous } from "@/lib/api";
 import { foncerPastel } from "@/lib/couleurs";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const STATUTS = [
   { cle: "tous",     label: "Tous" },
@@ -97,6 +98,7 @@ function CarteEvenement({ e, prochainId, onPress }: { e: any; prochainId: number
 }
 
 export default function Evenements() {
+  const margeBas = useMargeBas();
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
   const [selec, setSelec] = useState<any>(null);
@@ -223,7 +225,7 @@ export default function Evenements() {
             <Text style={s.anneeCompte}>{section.data.length}</Text>
           </View>
         )}
-        contentContainerStyle={s.liste}
+        contentContainerStyle={{ paddingBottom: margeBas }}
         stickySectionHeadersEnabled={false}
         refreshing={isRefetching}
         onRefresh={refetch}
@@ -249,7 +251,6 @@ export default function Evenements() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingLeft: 12, paddingRight: 16, flexDirection: "row" },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   annee: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, marginTop: 8, marginBottom: 12 },

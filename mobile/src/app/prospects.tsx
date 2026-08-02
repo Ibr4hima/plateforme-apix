@@ -16,6 +16,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const VUES = [
   { cle: "cibles",     label: "Ciblés" },
@@ -89,6 +90,7 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
 }
 
 export default function Prospects() {
+  const margeBas = useMargeBas();
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<any>(null);
@@ -148,7 +150,7 @@ export default function Prospects() {
         data={courante.isLoading || courante.isError ? [] : filtres}
         keyExtractor={(p: any) => String(p.id)}
         renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></Apparition>}
-        contentContainerStyle={s.liste}
+        contentContainerStyle={{ paddingBottom: margeBas }}
         refreshing={courante.isRefetching} onRefresh={courante.refetch}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
@@ -184,7 +186,6 @@ export default function Prospects() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {

@@ -232,21 +232,38 @@ export function Apparition({ index = 0, style, children }: {
 // ── ChiffreAnime : le nombre compte jusqu'à sa valeur ────────────────────────
 // Reçoit le texte déjà formaté (« 1 234,5 M $ ») : le premier nombre est
 // animé de 0 à sa valeur en conservant préfixe, suffixe et décimales.
+// Le contenu d'un <Text> ne peut venir que de React : impossible de le pousser
+// depuis le thread UI comme le reste de nos animations. L'écouteur tourne donc
+// sur le thread JS — mais à 60 Hz, avec plusieurs compteurs simultanés sur
+// l'accueil, cela faisait des centaines de rendus par seconde au moment précis
+// où l'utilisateur commence à faire défiler. Deux garde-fous : cadence
+// plafonnée (un nombre qui défile est parfaitement lisse à ~20 Hz, l'œil ne
+// distingue pas plus de valeurs dans du texte) et aucun rendu si la chaîne
+// formatée n'a pas bougé. La valeur finale, elle, est toujours posée exacte.
+const CADENCE_MS = 50;
+
 export function ChiffreAnime({ texte, style, duree = 750 }: {
   texte: string; style?: any; duree?: number;
 }) {
   const m = /-?\d[\d\u202F\u00A0 ]*(?:,\d+)?/.exec(texte);
   const [affiche, setAffiche] = useState(m ? texte.replace(m[0], "0") : texte);
+  const dernierRendu = useRef(0);
+  const derniereChaine = useRef("");
   useEffect(() => {
     if (!m) { setAffiche(texte); return; }
+    dernierRendu.current = 0; derniereChaine.current = "";
     const brut = m[0];
     const cible = parseFloat(brut.replace(/[\u202F\u00A0 ]/g, "").replace(",", "."));
     const decimales = brut.includes(",") ? brut.split(",")[1].length : 0;
     const anim = new Animated.Value(0);
     const id = anim.addListener(({ value }) => {
+      const maintenant = Date.now();
+      if (maintenant - dernierRendu.current < CADENCE_MS) return;
       const courant = (cible * value).toLocaleString("fr-FR", {
         minimumFractionDigits: decimales, maximumFractionDigits: decimales,
       });
+      if (courant === derniereChaine.current) return;
+      dernierRendu.current = maintenant; derniereChaine.current = courant;
       setAffiche(texte.replace(brut, courant));
     });
     Animated.timing(anim, { toValue: 1, duration: duree, useNativeDriver: false }).start(() => setAffiche(texte));

@@ -22,6 +22,7 @@ import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const ONGLETS = [
   { cle: "ide",       label: "Inv. Directs Étrangers" },
@@ -103,6 +104,7 @@ function indicatifDe(k: KpiResult): string | null {
 }
 
 export default function IdeEcran() {
+  const margeBas = useMargeBas();
   const [onglet, setOnglet] = useState("ide");
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
@@ -419,7 +421,7 @@ export default function IdeEcran() {
 
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }}>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
         <HeroModule titre="Investissements privés"
           segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />

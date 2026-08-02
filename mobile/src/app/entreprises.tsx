@@ -18,6 +18,7 @@ import { fetchTous } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const VUES = [
   { cle: "liste",      label: "Liste des entreprises" },
@@ -58,6 +59,7 @@ function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
 }
 
 export default function Entreprises() {
+  const margeBas = useMargeBas();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("liste");
   const [poleOuvert, setPoleOuvert] = useState<string | null>(null);
@@ -198,7 +200,7 @@ export default function Entreprises() {
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(e: any) => String(e.id)}
           renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteEntreprise e={item} onPress={() => setSelec(item)} /></Apparition>}
-          contentContainerStyle={s.liste}
+          contentContainerStyle={{ paddingBottom: margeBas }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -245,7 +247,7 @@ export default function Entreprises() {
               </View>
             );
           }}
-          contentContainerStyle={s.liste}
+          contentContainerStyle={{ paddingBottom: margeBas }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -288,7 +290,6 @@ export default function Entreprises() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {

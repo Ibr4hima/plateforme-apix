@@ -18,6 +18,7 @@ import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteShe
 import ProjetSheet from "@/components/ProjetSheet";
 import { fetchTous, getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const VUES = [
   { cle: "projets",       label: "Projets" },
@@ -132,6 +133,7 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
 }
 
 export default function Opportunites() {
+  const margeBas = useMargeBas();
   const [vue, setVue] = useState("projets");
   const [q, setQ] = useState("");
   const [niveauSel, setNiveauSel] = useState<string | null>(null);
@@ -375,7 +377,7 @@ export default function Opportunites() {
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
           renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></Apparition>}
-          contentContainerStyle={s.liste}
+          contentContainerStyle={{ paddingBottom: margeBas }}
           refreshing={projetsQ.isRefetching} onRefresh={projetsQ.refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -408,7 +410,7 @@ export default function Opportunites() {
     }
     return (
       <>
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
             <View style={{ paddingHorizontal: 16 }}>
@@ -468,7 +470,7 @@ export default function Opportunites() {
   branchesGroupes.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={s.liste} keyboardShouldPersistTaps="handled">
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
           <View style={{ paddingHorizontal: 16 }}>
@@ -513,7 +515,6 @@ export default function Opportunites() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   carte: {

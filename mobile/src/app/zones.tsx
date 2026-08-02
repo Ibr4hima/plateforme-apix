@@ -18,6 +18,7 @@ import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER, zoneTypeMeta } from "@/lib/zoneTypes";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const VUES = [
   { cle: "zones",      label: "Zones d'investissement" },
@@ -62,6 +63,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 }
 
 export default function Zones() {
+  const margeBas = useMargeBas();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
   const [type, setType] = useState("ZES");
@@ -157,7 +159,7 @@ export default function Zones() {
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(z: any) => String(z.id)}
           renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></Apparition>}
-          contentContainerStyle={s.liste}
+          contentContainerStyle={{ paddingBottom: margeBas }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -192,7 +194,7 @@ export default function Zones() {
               </View>
             );
           }}
-          contentContainerStyle={s.liste}
+          contentContainerStyle={{ paddingBottom: margeBas }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -207,7 +209,6 @@ export default function Zones() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 11 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },

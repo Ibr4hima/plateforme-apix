@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EvenementSheet from "@/components/EvenementSheet";
@@ -14,10 +15,12 @@ import { EtatVide } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
 import { T, POLICE } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const MAX_PAR_GROUPE = 6;
 
 export default function Recherche() {
+  const margeBas = useMargeBas();
   const [q, setQ] = useState("");
   const [fiche, setFiche] = useState<Resultat | null>(null);
 
@@ -45,6 +48,11 @@ export default function Recherche() {
 
   return (
     <View style={s.page}>
+      {/* La barre d'état est réglée en blanc pour toute l'app (heros bleus).
+          Cet écran est un modal à en-tête clair : sans cette bascule, l'heure
+          et les indicateurs système sont blancs sur blanc, donc invisibles.
+          expo-status-bar rétablit le style précédent en quittant l'écran. */}
+      <StatusBar style="dark" />
       <View style={s.barre}>
         <Ionicons name="search" size={17} color={T.gris} />
         <TextInput
@@ -65,7 +73,7 @@ export default function Recherche() {
         data={resultats}
         keyExtractor={(r, i) => `${r.type}-${r.nom}-${i}`}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: margeBas }}
         renderItem={({ item: r }) => {
           const entete = r.type !== dernierGroupe;
           dernierGroupe = r.type;

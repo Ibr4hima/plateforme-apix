@@ -18,6 +18,7 @@ import { Image as ImageCache } from "expo-image";
 import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { POLICE, T } from "@/theme";
+import { useMargeBas } from "@/lib/marges";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -25,6 +26,7 @@ type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | n
 type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
 
 export default function FichePaysIndex() {
+  const margeBas = useMargeBas();
   const [q, setQ] = useState("");
   const { defilY, onScroll } = useHeroDefilant();
   const [selec, setSelec] = useState<Pays | null>(null);
@@ -102,7 +104,7 @@ export default function FichePaysIndex() {
   if (modeFiche) {
     return (
       <>
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 44 }} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
@@ -120,7 +122,7 @@ export default function FichePaysIndex() {
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={s.liste}
+      contentContainerStyle={{ paddingBottom: margeBas }}
       ListHeaderComponent={
         <>
           {hero}
@@ -179,7 +181,6 @@ export default function FichePaysIndex() {
 }
 
 const s = StyleSheet.create({
-  liste: { paddingBottom: 40 },
   rangee: { paddingHorizontal: 16, marginBottom: 9 },
   slots: { flexDirection: "row", gap: 8, marginTop: 16 },
   slotSen: {
