@@ -136,22 +136,15 @@ export default function HeroModule({ titre, sousTitre, retour, recherche, segmen
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
 
-      {/* Écran empilé : rangée retour (le bouton d'action monte à côté) */}
+      {/* Écran empilé : retour ET titre sur la même ligne — le titre n'a pas
+          besoin d'une ligne à lui, et l'ensemble gagne une hauteur d'écran */}
       {retour && (
         <View style={s.ligneRetour}>
-          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Retour"
-            style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-            <Icone sf="chevron.left" materiel="arrow_back" taille={19} couleur="#fff" poids="semibold" />
+          <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Retour"
+            style={({ pressed }) => [s.retour, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+            <Icone sf="chevron.left" materiel="arrow_back" taille={17} couleur="#fff" poids="semibold" />
           </Pressable>
-          {bouton && (
-            <Pressable onPress={bouton.onPress} hitSlop={6}
-              style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-              <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
-              {bouton.badge ? (
-                <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
-              ) : null}
-            </Pressable>
-          )}
+          <Text style={s.titreCompact} numberOfLines={1}>{titre}</Text>
         </View>
       )}
 
@@ -169,29 +162,45 @@ export default function HeroModule({ titre, sousTitre, retour, recherche, segmen
         </View>
       )}
 
-      <View style={s.ligneTitre}>
-        <Text style={[s.titre, { flexShrink: 1 }]}>{titre}</Text>
-        {bouton && !retour && (
-          <Pressable onPress={bouton.onPress} hitSlop={6}
-            style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-            <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
-            {bouton.badge ? (
-              <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
-            ) : null}
-          </Pressable>
-        )}
-      </View>
+      {/* Sans retour (onglets), le titre garde sa ligne pleine largeur */}
+      {!retour && (
+        <View style={s.ligneTitre}>
+          <Text style={[s.titre, { flexShrink: 1 }]}>{titre}</Text>
+          {bouton && !recherche && (
+            <Pressable onPress={bouton.onPress} hitSlop={6}
+              style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+              <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
+              {bouton.badge ? (
+                <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
+              ) : null}
+            </Pressable>
+          )}
+        </View>
+      )}
       {sousTitre ? <Text style={s.sousTitre}>{sousTitre}</Text> : null}
 
+      {/* Recherche et filtres partagent leur rangée : deux commandes du même
+          geste (restreindre la liste), donc côte à côte */}
       {recherche && (
-        <View style={s.barre}>
-          <Ionicons name="search" size={16} color="rgba(255,255,255,0.65)" />
-          <TextInput
-            value={recherche.valeur} onChangeText={recherche.onChange}
-            placeholder={recherche.placeholder || "Rechercher…"}
-            placeholderTextColor="rgba(255,255,255,0.55)"
-            autoCorrect={false} clearButtonMode="while-editing"
-            style={s.champ} keyboardAppearance="dark" />
+        <View style={s.rangeeRecherche}>
+          <View style={s.barre}>
+            <Ionicons name="search" size={15} color="rgba(255,255,255,0.65)" />
+            <TextInput
+              value={recherche.valeur} onChangeText={recherche.onChange}
+              placeholder={recherche.placeholder || "Rechercher"}
+              placeholderTextColor="rgba(255,255,255,0.55)"
+              autoCorrect={false} clearButtonMode="while-editing"
+              style={s.champ} keyboardAppearance="dark" />
+          </View>
+          {bouton && (
+            <Pressable onPress={bouton.onPress} hitSlop={6}
+              style={({ pressed }) => [s.actionFiltre, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+              <Symbole nom={bouton.icone} taille={19} couleur="#fff" />
+              {bouton.badge ? (
+                <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
+              ) : null}
+            </Pressable>
+          )}
         </View>
       )}
       {children}
@@ -233,7 +242,14 @@ const s = StyleSheet.create({
   basculePiluleActive: { backgroundColor: "#fff", borderColor: "#fff" },
   basculeTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.80)" },
   basculeTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
-  ligneRetour: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  ligneRetour: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 4 },
+  retour: {
+    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.20)",
+  },
+  // Titre de la rangée retour : plus petit que le grand titre des onglets,
+  // il partage sa ligne avec le chevron
+  titreCompact: { flex: 1, color: "#fff", fontSize: 22, fontFamily: POLICE.gras, letterSpacing: -0.4 },
   ligneTitre: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
   action: {
@@ -246,8 +262,13 @@ const s = StyleSheet.create({
   },
   actionBadgeTexte: { fontSize: 10, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
   sousTitre: { color: "rgba(255,255,255,0.70)", fontSize: 12.5, fontFamily: POLICE.normal, marginTop: 6 },
+  rangeeRecherche: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 16 },
+  actionFiltre: {
+    width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", flexShrink: 0,
+    backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.20)",
+  },
   barre: {
-    flexDirection: "row", alignItems: "center", gap: 10, marginTop: 18,
+    flex: 1, flexDirection: "row", alignItems: "center", gap: 9,
     backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
     borderRadius: 999, paddingHorizontal: 17, height: 47,
   },

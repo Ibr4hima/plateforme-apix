@@ -21,7 +21,7 @@ import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, bascu
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
 import { fetchTous, getJson } from "@/lib/api";
-import { drapeauEmoji } from "@/lib/drapeaux";
+import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
@@ -32,42 +32,51 @@ const TYPES = [
   { cle: "inter", label: "Traités Internationaux" },
 ] as const;
 
-// ── La ligne d'accord ────────────────────────────────────────────────────────
-function LigneAccord({ a, partenaires, onPress }: {
+// ── La carte d'accord ────────────────────────────────────────────────────────
+// Retour au gabarit carte, affiné : un liseré de statut à gauche remplace le
+// badge (la couleur suffit, les segments nomment déjà le statut), le titre
+// mène, l'ancienneté suit, et la rangée basse ne porte que les deux dates qui
+// comptent — signature et échéance. Toutes les cartes ont ainsi la même
+// hauteur, ce que la version à badge ne garantissait pas.
+function CarteAccord({ a, partenaires, onPress }: {
   a: any; partenaires: { nom: string; code_iso2?: string }[]; onPress: () => void;
 }) {
   const statut = computeStatutAccord(a);
   const expire = statut === "expire";
-  const drapeau = partenaires.length === 1 ? drapeauEmoji(partenaires[0].code_iso2) : null;
-  const nom = partenaires.length
-    ? partenaires.map(p => p.nom).join(" · ")
+  const couleur = statut ? ST_COULEUR[statut] : (T.grisClair as string);
+  // Le partenaire donne le titre quand il est connu — sinon l'intitulé officiel
+  const titre = partenaires.length === 1 ? partenaires[0].nom
+    : partenaires.length > 1 ? partenaires.map(p => p.nom).join(", ")
     : a.titre;
+  const echeance = a.date_expiration
+    ? { label: "EXPIRATION", val: fmtDate(a.date_expiration) }
+    : { label: "EXPIRATION", val: "Sans terme" };
 
   return (
-    <Tapable onPress={onPress} echelle={0.98} style={[s.ligne, expire && { backgroundColor: T.carteDouce }]}>
-      {/* Bloc partenaire : drapeau ; à plusieurs, l'effectif */}
-      <View style={[s.bloc, expire && { backgroundColor: T.filet }]}>
-        {drapeau ? (
-          <Text style={s.blocDrapeau}>{drapeau}</Text>
-        ) : partenaires.length > 1 ? (
-          <>
-            <Text style={[s.blocNombre, expire && { color: T.gris }]}>{partenaires.length}</Text>
-            <Text style={[s.blocLabel, expire && { color: T.gris }]}>PAYS</Text>
-          </>
-        ) : (
-          <Text style={[s.blocNombre, expire && { color: T.gris }]}>
-            {(partenaires[0]?.nom || a.titre || "?").slice(0, 2).toUpperCase()}
-          </Text>
-        )}
+    <Tapable onPress={onPress} echelle={0.985} style={[s.carte, expire && { backgroundColor: T.carteDouce }]}>
+      {/* Liseré de statut — la couleur porte l'information, pas un badge */}
+      <View style={[s.liseré, { backgroundColor: couleur }]} />
+      <View style={s.carteCorps}>
+        <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={2}>{titre}</Text>
+        {sousTitreStatut(a) ? (
+          <Text style={s.sousTitre} numberOfLines={1}>{sousTitreStatut(a)}</Text>
+        ) : null}
+        <View style={s.dates}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.dateLabel}>SIGNATURE</Text>
+            <Text style={[s.dateVal, !a.date_signature && { color: T.grisClair }]} numberOfLines={1}>
+              {a.date_signature ? fmtDate(a.date_signature) : "—"}
+            </Text>
+          </View>
+          <View style={s.dateSep} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.dateLabel}>{echeance.label}</Text>
+            <Text style={[s.dateVal, !a.date_expiration && { color: T.grisClair }]} numberOfLines={1}>
+              {echeance.val}
+            </Text>
+          </View>
+        </View>
       </View>
-
-      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-        <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={1}>{nom}</Text>
-        {sousTitreStatut(a) ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitreStatut(a)}</Text> : null}
-      </View>
-
-      {/* Le statut en un point — son mot vit dans le sous-titre */}
-      <View style={[s.pointStatut, { backgroundColor: statut ? ST_COULEUR[statut] : T.grisClair }]} />
     </Tapable>
   );
 }
@@ -77,7 +86,7 @@ export default function Accords() {
   const { width } = useWindowDimensions();
   const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
-  const [statut, setStatut] = useState("tous");
+  const [statut, setStatut] = useState("en_vigueur");
   const [selec, setSelec] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
 
@@ -143,15 +152,13 @@ export default function Accords() {
   }, [data, q, paysSel, apixSel, secteursSel, branchesSel, activitesSel, paysRef, secteurs, branches, activites]);
 
   const parStatut = useMemo(() => ({
-    tous: communs.length,
     en_vigueur: communs.filter((a: any) => computeStatutAccord(a) === "en_vigueur").length,
     signe: communs.filter((a: any) => computeStatutAccord(a) === "signe").length,
     expire: communs.filter((a: any) => computeStatutAccord(a) === "expire").length,
   }), [communs]);
 
   const filtres = useMemo(() => {
-    let liste = communs;
-    if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
+    const liste = communs.filter((a: any) => computeStatutAccord(a) === statut);
     // Actifs par échéance croissante (sans-expiration à la fin), expirés
     // ensuite du plus récemment expiré au plus ancien
     return [...liste].sort((a: any, b: any) => {
@@ -190,8 +197,9 @@ export default function Accords() {
   );
 
   const pret = !isLoading && !isError;
+  // Pas de « Tous » : mêler en vigueur, signés et expirés ne répond à aucune
+  // question — on ouvre sur les traités actifs
   const segments = [
-    { cle: "tous",       label: "Tous",       compte: pret ? parStatut.tous : undefined },
     { cle: "en_vigueur", label: "En vigueur", compte: pret ? parStatut.en_vigueur : undefined },
     { cle: "signe",      label: "Signés",     compte: pret ? parStatut.signe : undefined },
     { cle: "expire",     label: "Expirés",    compte: pret ? parStatut.expire : undefined },
@@ -200,7 +208,7 @@ export default function Accords() {
   const hero = (
     <>
       <HeroModule retour titre="Accords & Traités"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Pays, titre, référence…" }}
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: segments, valeur: statut, onChange: setStatut }}
         bouton={boutonFiltres} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
@@ -240,7 +248,7 @@ export default function Accords() {
         keyExtractor={(a: any) => String(a.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <LigneAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
+            <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
           </Apparition>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}
@@ -270,22 +278,20 @@ const s = StyleSheet.create({
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
   chipFiltreTexteActif: { color: "#fff" },
 
-  ligne: {
-    flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: 18, padding: 12,
+  carte: {
+    flexDirection: "row", backgroundColor: T.carte, borderRadius: 18, overflow: "hidden",
     shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 }, elevation: 2,
   },
-  bloc: {
-    width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuVoile,
-  },
-  blocDrapeau: { fontSize: 26 },
-  blocNombre: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 21 },
-  blocLabel: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginTop: 1 },
-  titre: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
+  // Liseré de statut : 4 pt sur toute la hauteur de la carte
+  "liseré": { width: 4 },
+  carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
+  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
   sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
-  pointStatut: { width: 8, height: 8, borderRadius: 4, marginRight: 2 },
+  dates: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  dateSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
+  dateLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  dateVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },

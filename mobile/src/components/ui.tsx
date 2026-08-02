@@ -5,6 +5,7 @@
 // Feuille (échafaudage des bottom sheets) et les états de chargement /
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
@@ -187,6 +188,14 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
   return (
     <Modal visible transparent animationType="none" onRequestClose={fermer}>
       <GestureHandlerRootView style={{ flex: 1, justifyContent: "flex-end" }}>
+      {/* Le fond n'est pas qu'assombri : il est FLOUTÉ. Le contenu de l'écran
+          reste reconnaissable — on sait d'où l'on vient — mais devient
+          illisible, donc la feuille prend tout le regard. Le voile sombre
+          garde son rôle : garantir le contraste du texte de la feuille
+          quel que soit ce qui se trouve derrière. */}
+      <Reanime.View style={[StyleSheet.absoluteFill, styleFond]} pointerEvents="none">
+        <BlurView intensity={28} tint="dark" style={StyleSheet.absoluteFill} />
+      </Reanime.View>
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[sf.feuille, { maxHeight: hauteur }, styleFeuille]}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
@@ -352,7 +361,7 @@ const sr = StyleSheet.create({
 });
 
 const sf = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
+  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.28)" },
   feuille: {
     backgroundColor: T.carte, borderTopLeftRadius: 34, borderTopRightRadius: 34,
     // La courbe continue (« squircle ») : c'est elle qui fait les coins
