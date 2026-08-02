@@ -1,12 +1,21 @@
-// Fiche événement — feuille de détail fidèle au modal de la plateforme :
-// statut, édition, rôle APIX pastel, date, lieu, organisateur, récurrence,
-// description, participants (pays invités / entreprises invitées).
+// Fiche événement — une lecture, pas un formulaire.
+//
+// L'ancienne fiche empilait des boîtes bordées à étiquette (DATE, LIEU,
+// ORGANISATEUR…) : la mise en page d'un back-office. Celle-ci se lit de haut
+// en bas comme une page :
+//   1. l'identité — le nom en grand, puis une seule ligne de méta (statut
+//      coloré · édition · rôle APIX) ;
+//   2. l'essentiel — une carte unique : bloc date (la signature de l'app),
+//      plage compacte, lieu, échéance orange ou « En ce moment » vert ;
+//   3. le reste en sections plates — rangées clé-valeur, description,
+//      thématiques en hiérarchie monochrome, invités en chips.
 import { StyleSheet, Text, View } from "react-native";
 import { Feuille } from "@/components/ui";
+import Icone from "@/components/Icone";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { POLICE, T } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 
 export const ROLE_PASTEL: Record<string, string> = {
   "Organisateur":    "#B4DE9D",
@@ -39,12 +48,56 @@ export function dateEvenement(e: any): string | null {
   return null;
 }
 
-function Bloc({ label, valeur }: { label: string; valeur?: string | null }) {
+// « Dans 2 ans / 3 mois / 12 jours » — partagé avec la liste
+export function dansCombienEvenement(e: any): string | null {
+  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
+    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+  if (!d) return null;
+  const now = new Date();
+  const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
+  if (jours <= 0) return null;
+  let mois = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+  if (d.getDate() < now.getDate()) mois -= 1;
+  const ans = Math.floor(mois / 12);
+  if (ans >= 1) return `Dans ${ans} an${ans > 1 ? "s" : ""}`;
+  if (mois >= 1) return `Dans ${mois} mois`;
+  return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
+}
+
+// Plage en toutes lettres, sans répéter ce que les deux bornes partagent :
+// « vendredi 20 novembre 2026 », « 20 → 22 novembre 2026 »,
+// « 28 févr. → 3 mars 2026 », « 28 déc. 2026 → 3 janv. 2027 ».
+function plageComplete(e: any): string | null {
+  if (!e.date_debut) return dateEvenement(e);
+  const deb = new Date(e.date_debut + "T00:00:00");
+  const finBrute = e.date_fin && e.date_fin !== e.date_debut ? new Date(e.date_fin + "T00:00:00") : null;
+  if (!finBrute) return deb.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const fin = finBrute;
+  const moisLong = (d: Date) => d.toLocaleDateString("fr-FR", { month: "long" });
+  const moisCourt = (d: Date) => d.toLocaleDateString("fr-FR", { month: "short" });
+  if (deb.getFullYear() === fin.getFullYear() && deb.getMonth() === fin.getMonth())
+    return `${deb.getDate()} → ${fin.getDate()} ${moisLong(fin)} ${fin.getFullYear()}`;
+  if (deb.getFullYear() === fin.getFullYear())
+    return `${deb.getDate()} ${moisCourt(deb)} → ${fin.getDate()} ${moisCourt(fin)} ${fin.getFullYear()}`;
+  return `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`;
+}
+
+// ── Briques de la fiche ──────────────────────────────────────────────────────
+function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <View>
+      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
+      {children}
+    </View>
+  );
+}
+
+function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
   return (
-    <View style={s.bloc}>
-      <Text style={s.blocLabel}>{label.toUpperCase()}</Text>
-      <Text style={s.blocValeur}>{valeur}</Text>
+    <View style={s.rangee}>
+      <Text style={s.rangeeLabel}>{label}</Text>
+      <Text style={s.rangeeValeur} numberOfLines={2}>{valeur}</Text>
     </View>
   );
 }
@@ -52,9 +105,13 @@ function Bloc({ label, valeur }: { label: string; valeur?: string | null }) {
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
   const statut = statutEvenement(e);
   const st = statut ? ST_EVENT[statut] : null;
+  const enCours = statut === "en_cours";
   const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
-  // pays_invites_noms est une chaîne « Maroc, Canada » côté API ;
-  // entreprises_invitees peut être tableau ou chaîne selon les fiches
+  const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
+    : e.prochain_annee ? new Date(e.prochain_annee, (e.prochain_mois || 1) - 1, e.prochain_jour || 1) : null;
+  const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
+  const echeance = enCours ? "En ce moment" : dansCombienEvenement(e);
+
   const enListe = (v: any): string[] =>
     Array.isArray(v) ? v.filter(Boolean)
     : typeof v === "string" ? v.split(",").map(x => x.trim()).filter(Boolean)
@@ -62,101 +119,147 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   const paysInvites = enListe(e.pays_invites_noms);
   const entreprisesInvitees = enListe(e.entreprises_invitees);
 
+  const recurrence = e.frequence_valeur
+    ? `Tous les ${e.frequence_valeur} ${e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}`
+    : null;
+
   return (
-    <Feuille onClose={onClose} hauteur="78%" ecart={10}
-      titre={
-        <View style={s.pilules}>
-          {st && <View style={[s.pilule, { backgroundColor: st.bg }]}><Text style={[s.piluleTexte, { color: st.c }]}>{st.label}</Text></View>}
-          {e.edition != null && <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{ordinal(e.edition)}</Text></View>}
-          {roleP && (
-            <View style={[s.pilule, { backgroundColor: `${roleP}40`, borderWidth: 1, borderColor: `${roleP}90` }]}>
-              <Text style={[s.piluleTexte, { color: foncerPastel(roleP) }]}>{e.role_apix}</Text>
-            </View>
+    <Feuille onClose={onClose} hauteur="78%" ecart={22}
+      titre={<Text style={s.titre}>{e.nom_event}</Text>}
+      sousEntete={
+        // Une seule ligne de méta : statut coloré · édition · rôle APIX
+        <Text style={s.meta} numberOfLines={1}>
+          {st && <Text style={{ color: st.c, fontFamily: POLICE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
+          {st && e.edition != null ? "   ·   " : ""}
+          {e.edition != null ? ordinal(e.edition) : ""}
+          {(st || e.edition != null) && roleP ? "   ·   " : ""}
+          {roleP && <Text style={{ color: foncerPastel(roleP), fontFamily: POLICE.gras }}>{e.role_apix}</Text>}
+        </Text>
+      }>
+
+      {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}
+      <View style={s.essentiel}>
+        <View style={[s.bloc, enCours && { backgroundColor: T.vert }, statut === "termine" && { backgroundColor: T.filet }]}>
+          {d ? (
+            <>
+              <Text style={[s.blocJour, statut === "termine" && { color: T.gris }]}>{d.getDate()}</Text>
+              <Text style={[s.blocMois, statut === "termine" && { color: T.gris }]}>
+                {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
+              </Text>
+            </>
+          ) : (
+            <Icone sf="arrow.triangle.2.circlepath" materiel="autorenew" taille={18} couleur="#fff" />
           )}
         </View>
-      }
-      sousEntete={<Text style={s.titre}>{e.nom_event}</Text>}>
-          <Bloc label="Date" valeur={dateEvenement(e)} />
-          <Bloc label="Lieu" valeur={[e.ville, e.pays_hote_nom].filter(Boolean).join(", ") || null} />
-          <Bloc label="Organisateur" valeur={e.organisateur} />
-          {e.frequence_valeur ? (
-            <Bloc label="Récurrence" valeur={`Tous les ${e.frequence_valeur} ${e.frequence_type === "mois" ? "mois" : `an${e.frequence_valeur > 1 ? "s" : ""}`}`} />
-          ) : null}
-          {e.description ? (
-            <View style={s.bloc}>
-              <Text style={s.blocLabel}>DESCRIPTION</Text>
-              <Text style={s.description}>{e.description}</Text>
-            </View>
-          ) : null}
-          {Object.keys(e.thematiques_tree || {}).length > 0 && (
-            <View style={s.bloc}>
-              <Text style={s.blocLabel}>THÉMATIQUES</Text>
-              <View style={{ gap: 16 }}>
-                {Object.entries(e.thematiques_tree).map(([sec, branches]: any) => (
-                  <View key={sec} style={{ gap: 9 }}>
-                    <View style={s.themeLigne}>
-                      <View style={[s.themePoint, { width: 8, height: 8, backgroundColor: T.bleu, marginTop: 5 }]} />
-                      <Text style={s.themeSecteur}>{sec}</Text>
-                    </View>
-                    {Object.entries(branches).map(([bra, acts]: any) => (
-                      <View key={bra} style={s.themeBranche}>
-                        <View style={s.themeLigne}>
-                          <View style={[s.themePoint, { width: 6, height: 6, backgroundColor: T.orange, marginTop: 6 }]} />
-                          <Text style={s.themeBrancheTexte}>{bra}</Text>
-                        </View>
-                        {acts.length > 0 && (
-                          <View style={{ paddingLeft: 16, gap: 6, marginTop: 7 }}>
-                            {acts.map((act: string) => (
-                              <View key={act} style={s.themeLigne}>
-                                <View style={[s.themePoint, { width: 5, height: 5, backgroundColor: T.vert, marginTop: 6 }]} />
-                                <Text style={s.themeActivite}>{act}</Text>
-                              </View>
-                            ))}
-                          </View>
-                        )}
+        <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+          <Text style={s.essentielDate} numberOfLines={1} adjustsFontSizeToFit>
+            {plageComplete(e) || "Date à confirmer"}
+          </Text>
+          {lieu ? <Text style={s.essentielLieu} numberOfLines={1}>{lieu}</Text> : null}
+          {echeance && statut !== "termine" && (
+            <Text style={[s.essentielEcheance, enCours && { color: T.vert }]}>{echeance}</Text>
+          )}
+        </View>
+      </View>
+
+      {/* ── Organisation ── */}
+      {(e.organisateur || recurrence) && (
+        <Section titre="Organisation">
+          <View style={s.rangees}>
+            <Rangee label="Organisateur" valeur={e.organisateur} />
+            <Rangee label="Récurrence" valeur={recurrence} />
+          </View>
+        </Section>
+      )}
+
+      {/* ── Description ── */}
+      {e.description ? (
+        <Section titre="Description">
+          <Text style={s.description}>{e.description}</Text>
+        </Section>
+      ) : null}
+
+      {/* ── Thématiques : hiérarchie monochrome, sans arc-en-ciel ── */}
+      {Object.keys(e.thematiques_tree || {}).length > 0 && (
+        <Section titre="Thématiques">
+          <View style={{ gap: 14 }}>
+            {Object.entries(e.thematiques_tree).map(([sec, branches]: any) => (
+              <View key={sec} style={{ gap: 8 }}>
+                <View style={s.secteurLigne}>
+                  <View style={s.secteurPoint} />
+                  <Text style={s.secteurTexte}>{sec}</Text>
+                </View>
+                {Object.entries(branches).map(([bra, acts]: any) => (
+                  <View key={bra} style={s.branche}>
+                    <Text style={s.brancheTexte}>{bra}</Text>
+                    {acts.length > 0 && (
+                      <View style={s.chips}>
+                        {acts.map((act: string) => (
+                          <View key={act} style={s.chipVoile}><Text style={s.chipVoileTexte}>{act}</Text></View>
+                        ))}
                       </View>
-                    ))}
+                    )}
                   </View>
                 ))}
               </View>
-            </View>
-          )}
-          {paysInvites.length > 0 && (
-            <View style={s.bloc}>
-              <Text style={s.blocLabel}>PAYS INVITÉS</Text>
-              <View style={s.chips}>
-                {paysInvites.map(n => <View key={n} style={s.chip}><Text style={s.chipTexte}>{n}</Text></View>)}
-              </View>
-            </View>
-          )}
-          {entreprisesInvitees.length > 0 && (
-            <View style={s.bloc}>
-              <Text style={s.blocLabel}>ENTREPRISES INVITÉES</Text>
-              <View style={s.chips}>
-                {entreprisesInvitees.map(n => <View key={n} style={[s.chip, { backgroundColor: T.bleuVoile, borderColor: T.blocBord }]}><Text style={[s.chipTexte, { color: T.bleu }]}>{n}</Text></View>)}
-              </View>
-            </View>
-          )}
+            ))}
+          </View>
+        </Section>
+      )}
+
+      {/* ── Invités ── */}
+      {paysInvites.length > 0 && (
+        <Section titre="Pays invités">
+          <View style={s.chips}>
+            {paysInvites.map(n => <View key={n} style={s.chip}><Text style={s.chipTexte}>{n}</Text></View>)}
+          </View>
+        </Section>
+      )}
+      {entreprisesInvitees.length > 0 && (
+        <Section titre="Entreprises invitées">
+          <View style={s.chips}>
+            {entreprisesInvitees.map(n => <View key={n} style={s.chipVoile}><Text style={s.chipVoileTexte}>{n}</Text></View>)}
+          </View>
+        </Section>
+      )}
     </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, flex: 1 },
-  pilule: { borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4 },
-  piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 10, lineHeight: 25, letterSpacing: -0.3 },
-  bloc: { backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord, borderRadius: 14, padding: 13 },
-  blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2, marginBottom: 6 },
-  blocValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  description: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20 },
+  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
+  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+
+  essentiel: {
+    flexDirection: "row", alignItems: "center", gap: 14,
+    backgroundColor: T.blocFond, borderRadius: 18, padding: 14,
+  },
+  bloc: {
+    width: 50, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.bleuAction,
+  },
+  blocJour: { fontSize: 20, fontFamily: POLICE.gras, color: "#fff", lineHeight: 24, fontVariant: ["tabular-nums"] },
+  blocMois: { fontSize: 9, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.1, marginTop: 1 },
+  essentielDate: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
+  essentielLieu: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte },
+  essentielEcheance: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.orange, marginTop: 1 },
+
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
+  rangees: { gap: 9 },
+  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
+  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
+  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  description: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
+
+  secteurLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
+  secteurPoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu },
+  secteurTexte: { flex: 1, fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.1 },
+  branche: { marginLeft: 2.5, paddingLeft: 14, borderLeftWidth: 1.5, borderLeftColor: T.filet, gap: 7 },
+  brancheTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
+
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  themeLigne: { flexDirection: "row", alignItems: "flex-start", gap: 9 },
-  themePoint: { borderRadius: 99, flexShrink: 0 },
-  themeBranche: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: T.bleuVoile, marginLeft: 3.5 },
-  themeSecteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
-  themeBrancheTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
-  themeActivite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
-  chip: { backgroundColor: T.filet, borderWidth: 1, borderColor: "#E8E5E2", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
+  chipVoile: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chipVoileTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.bleu },
 });

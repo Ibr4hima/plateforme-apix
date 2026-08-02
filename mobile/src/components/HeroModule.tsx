@@ -10,7 +10,7 @@ import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
-export type SegmentOption = { cle: string; label: string };
+export type SegmentOption = { cle: string; label: string; compte?: number };
 
 // ── Hero réductible (pattern App Store) ──────────────────────────────────────
 // Le grand hero défile avec le contenu ; passé le seuil, une barre compacte
@@ -174,6 +174,11 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, basc
               <Tapable key={o.cle} onPress={() => { tick(); segments.onChange(o.cle); }} echelle={0.96}
                 style={[s.segment, actif && s.segmentActif]}>
                 <Text style={[s.segmentTexte, actif && s.segmentTexteActif]} numberOfLines={1}>{o.label}</Text>
+                {o.compte != null && (
+                  <View style={[s.segmentCompte, actif && s.segmentCompteActif]}>
+                    <Text style={[s.segmentCompteTexte, actif && s.segmentCompteTexteActif]}>{o.compte}</Text>
+                  </View>
+                )}
               </Tapable>
             );
           })}
@@ -221,8 +226,13 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.16)",
     borderRadius: 999,
   },
-  segment: { flex: 1, alignItems: "center", paddingVertical: 8.5, borderRadius: 999 },
+  segment: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8.5, borderRadius: 999 },
   segmentActif: { backgroundColor: "#fff" },
   segmentTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.85)" },
   segmentTexteActif: { color: T.bleu },
+  // Compteur du segment — pastille translucide sur le hero, voilée bleu sur le segment blanc actif
+  segmentCompte: { backgroundColor: "rgba(255,255,255,0.16)", borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
+  segmentCompteActif: { backgroundColor: "rgba(0,79,145,0.10)" },
+  segmentCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", fontVariant: ["tabular-nums"] },
+  segmentCompteTexteActif: { color: T.bleu },
 });

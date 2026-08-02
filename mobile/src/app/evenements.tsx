@@ -17,19 +17,14 @@ import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-nat
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { useNaemaArbre } from "@/components/ArbreNaema";
-import EvenementSheet, { ROLE_PASTEL, ordinal, statutEvenement } from "@/components/EvenementSheet";
+import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import { CascadeThema, FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Icone from "@/components/Icone";
 import { fetchTous } from "@/lib/api";
-import { foncerPastel } from "@/lib/couleurs";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 
-const LENTILLES = [
-  { cle: "a_venir", label: "À venir" },
-  { cle: "passes",  label: "Passés" },
-] as const;
 
 const dateDe = (e: any): Date | null => {
   if (e.date_debut) return new Date(e.date_debut + "T00:00:00");
@@ -37,26 +32,9 @@ const dateDe = (e: any): Date | null => {
   return null;
 };
 
-// « Dans 2 ans / 3 mois / 12 jours »
-function dansCombien(e: any): string | null {
-  const d = dateDe(e);
-  if (!d) return null;
-  const now = new Date();
-  const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
-  if (jours <= 0) return null;
-  let mois = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
-  if (d.getDate() < now.getDate()) mois -= 1;
-  const ans = Math.floor(mois / 12);
-  if (ans >= 1) return `Dans ${ans} an${ans > 1 ? "s" : ""}`;
-  if (mois >= 1) return `Dans ${mois} mois`;
-  return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
-}
-
-// Intitulé du groupe : le mois seul cette année, mois + année au-delà
-function moisDe(d: Date): string {
-  const memeAnnee = d.getFullYear() === new Date().getFullYear();
-  return d.toLocaleDateString("fr-FR", memeAnnee ? { month: "long" } : { month: "long", year: "numeric" }).toUpperCase();
-}
+// Intitulé du groupe : mois + année, toujours
+const moisDe = (d: Date): string =>
+  d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }).toUpperCase();
 
 // ── La ligne d'agenda ────────────────────────────────────────────────────────
 function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; onPress: () => void }) {
@@ -64,9 +42,8 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
   const enCours = statut === "en_cours";
   const passe = statut === "termine";
   const d = dateDe(e);
-  const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(" · ");
-  const echeance = enCours ? "En ce moment" : passe ? null : dansCombien(e);
+  const echeance = enCours ? "En ce moment" : passe ? null : dansCombienEvenement(e);
 
   return (
     <Tapable onPress={onPress} echelle={0.98} style={[s.ligne, passe && { backgroundColor: T.carteDouce }]}>
@@ -94,21 +71,11 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
             <Text style={[s.echeance, enCours && { color: T.vert }]} numberOfLines={1}>{echeance}</Text>
           )}
         </View>
-        <View style={s.ligneBas}>
-          {lieu ? (
-            <View style={s.lieu}>
-              <Icone sf="mappin" materiel="location_on" taille={11} couleur={T.gris} />
-              <Text style={s.lieuTexte} numberOfLines={1}>{lieu}</Text>
-            </View>
-          ) : e.edition != null ? (
-            <Text style={s.lieuTexte}>{ordinal(e.edition)}</Text>
-          ) : <View style={{ flex: 1 }} />}
-          {roleP && (
-            <View style={[s.role, { backgroundColor: `${roleP}40`, borderColor: `${roleP}90` }]}>
-              <Text style={[s.roleTexte, { color: foncerPastel(roleP) }]}>{e.role_apix}</Text>
-            </View>
-          )}
-        </View>
+        {/* Seconde ligne : le lieu, ou à défaut l'édition. Le rôle APIX vit
+            dans la fiche — la liste reste un agenda, pas un tableau. */}
+        {(lieu || e.edition != null) && (
+          <Text style={s.lieuTexte} numberOfLines={1}>{lieu || ordinal(e.edition)}</Text>
+        )}
       </View>
     </Tapable>
   );
@@ -193,27 +160,25 @@ export default function Evenements() {
   // sur 1 000 pt deviennent illisibles
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
+  // Les compteurs vivent dans les segments eux-mêmes (pastilles), pas en
+  // ligne de texte sous le hero
+  const lentilles = [
+    { cle: "a_venir", label: "À venir",  compte: isLoading || isError ? undefined : aVenir.length },
+    { cle: "passes",  label: "Terminés", compte: isLoading || isError ? undefined : passes.length },
+  ];
+
   const hero = (
-    <>
-      <HeroModule titre="Événements"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: LENTILLES, valeur: lentille, onChange: setLentille }}
-        bouton={boutonFiltres} />
-      {!isLoading && !isError && (
-        <Text style={[s.compte, cap]}>
-          {lentille === "a_venir"
-            ? `${aVenir.length} à venir · ${passes.length} passés`
-            : `${passes.length} passés · ${aVenir.length} à venir`}
-        </Text>
-      )}
-    </>
+    <HeroModule titre="Événements"
+      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+      segments={{ options: lentilles, valeur: lentille, onChange: setLentille }}
+      bouton={boutonFiltres} />
   );
 
   const vide = isLoading ? <SqueletteListe />
     : isError ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={lentille === "a_venir"
         ? "Aucun événement à venir ne correspond à ces filtres."
-        : "Aucun événement passé ne correspond à ces filtres."} />;
+        : "Aucun événement terminé ne correspond à ces filtres."} />;
 
   return (
     <>
@@ -261,7 +226,6 @@ export default function Evenements() {
 }
 
 const s = StyleSheet.create({
-  compte: { ...TYPO.micro, color: T.gris, marginTop: 14, marginBottom: 4, paddingHorizontal: 16 },
   mois: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginTop: 18, marginBottom: 10 },
   moisTexte: { ...TYPO.micro, color: T.bleu },
   moisFilet: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: T.bordure },
@@ -285,9 +249,5 @@ const s = StyleSheet.create({
   ligneHaut: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   titre: { flex: 1, minWidth: 0, fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 19, letterSpacing: -0.2 },
   echeance: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, marginTop: 1.5, maxWidth: 96, textAlign: "right" },
-  ligneBas: { flexDirection: "row", alignItems: "center", gap: 10 },
-  lieu: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 4 },
   lieuTexte: { flexShrink: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
-  role: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 9, paddingVertical: 2.5 },
-  roleTexte: { fontSize: 10, fontFamily: POLICE.gras },
 });
