@@ -1,23 +1,28 @@
 // Marge basse à réserver sous un contenu défilant.
 //
-// Elle ne vaut pas la même chose selon l'écran : dans un onglet, il faut
-// dégager la barre d'onglets (qui embarque déjà la marge système) ; sur un
-// écran empilé, il n'y a que l'indicateur d'accueil ou la barre de navigation
-// gestuelle. Une valeur figée — 40 ou 44 dans les écrans jusqu'ici — laissait
-// les dernières lignes sous la barre d'onglets sur tous les appareils.
+// Elle ne vaut pas la même chose selon l'écran : sous la barre d'onglets, il
+// faut dégager la barre ENTIÈRE ; sur un écran empilé, seule la zone système
+// compte (indicateur d'accueil, barre gestuelle). Les écrans posaient jusqu'ici
+// une valeur figée — 40 ou 44 — qui laissait les dernières lignes sous la
+// barre d'onglets sur tous les appareils.
 //
-// BottomTabBarHeightContext plutôt que useBottomTabBarHeight : le hook lève
-// une exception hors d'un navigateur d'onglets, le contexte rend simplement
-// undefined. Les écrans restent réutilisables des deux côtés.
-import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
-import { useContext } from "react";
+// Le drapeau est explicite plutôt que déduit d'un contexte de navigation :
+// BottomTabBarHeightContext viendrait de @react-navigation/bottom-tabs, que ce
+// projet ne déclare pas (il arrive par expo-router). Un second exemplaire
+// installé un jour dans l'arbre donnerait un contexte différent de celui du
+// navigateur, donc undefined, et la marge redeviendrait silencieusement fausse.
+// Ici, seuls trois écrans vivent sous les onglets : autant l'écrire.
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-/**
- * @param respiration Espace visuel souhaité EN PLUS de la zone système.
- */
-export function useMargeBas(respiration = 24): number {
-  const hauteurOnglets = useContext(BottomTabBarHeightContext);
+/** Hauteur du contenu de la barre d'onglets, hors marge système. */
+export const HAUTEUR_ONGLETS = 60;
+
+export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
+  /** L'écran est-il l'un des trois onglets ? (la barre le recouvre) */
+  sousOnglets?: boolean;
+  /** Espace visuel souhaité EN PLUS des zones réservées. */
+  respiration?: number;
+} = {}): number {
   const insets = useSafeAreaInsets();
-  return (hauteurOnglets ?? insets.bottom) + respiration;
+  return insets.bottom + (sousOnglets ? HAUTEUR_ONGLETS : 0) + respiration;
 }

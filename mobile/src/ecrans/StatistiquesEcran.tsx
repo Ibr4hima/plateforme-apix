@@ -27,7 +27,7 @@ const ONGLETS = [
 ] as const;
 
 export default function StatistiquesEcran() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const [onglet, setOnglet] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const { defilY, onScroll } = useHeroDefilant();

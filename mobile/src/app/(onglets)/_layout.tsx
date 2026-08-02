@@ -4,18 +4,10 @@
 import { Tabs, usePathname } from "expo-router";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HAUTEUR_ONGLETS } from "@/lib/marges";
 import Symbole from "@/components/Symbole";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
-
-// Hauteur du contenu de la barre (cadre + libellé), hors marge système. La
-// hauteur totale s'obtient en y ajoutant l'inset du bas : react-navigation
-// applique `paddingBottom: insets.bottom` au conteneur, mais notre
-// `tabBarStyle` passe APRÈS le style par défaut et en écrasait la hauteur.
-// Figée à 88, la barre gardait la même taille avec ou sans indicateur
-// d'accueil : trop haute sur iPhone SE et sur Android à navigation par
-// boutons, trop serrée là où l'indicateur mange 34 pt.
-const HAUTEUR_CONTENU = 60;
 
 const ONGLETS = [
   { nom: "index",           chemin: "/",                titre: "Accueil",                icone: "home" },
@@ -59,7 +51,7 @@ export default function OngletsLayout() {
           backgroundColor: T.carte,
           borderTopWidth: Platform.OS === "ios" ? StyleSheet.hairlineWidth : 1,
           borderTopColor: T.bordure,
-          height: HAUTEUR_CONTENU + insets.bottom,
+          height: HAUTEUR_ONGLETS + insets.bottom,
         },
         sceneStyle: { backgroundColor: T.fond },
       }}>

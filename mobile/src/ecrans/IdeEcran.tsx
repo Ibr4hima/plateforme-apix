@@ -104,7 +104,7 @@ function indicatifDe(k: KpiResult): string | null {
 }
 
 export default function IdeEcran() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const [onglet, setOnglet] = useState("ide");
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
