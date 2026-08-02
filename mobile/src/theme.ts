@@ -98,21 +98,23 @@ export const BADGE = {
   expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
 } as const;
 
-// Les 8 modules de la plateforme — mêmes intitulés et mêmes icônes
-// Material Symbols que le menu Modules du site.
+// Les 8 modules de la plateforme. `titre` est la forme courte des tuiles de
+// l'accueil (une ligne) ; `sous` la précision. Chaque module porte ses deux
+// icônes : `sf` (SF Symbols, iOS) et `icone` (ligature Material, ailleurs) —
+// voir components/Icone.tsx.
 export const MODULES = [
-  { cle: "ide",          titre: "Investissements privés",        sous: "Flux & stocks d'IDE",            icone: "finance_mode",      href: "/investissements" },
-  { cle: "statistiques", titre: "Échanges commerciaux",          sous: "Flux bilatéraux",                icone: "currency_exchange", href: "/flux" },
-  { cle: "prospects",    titre: "Prospects",                     sous: "Investisseurs suivis",           icone: "frame_inspect",     href: "/prospects" },
-  { cle: "entreprises",  titre: "Entreprises installées",        sous: "Registre des entreprises",       icone: "enterprise",        href: "/entreprises" },
-  { cle: "zones",        titre: "Zones d'investissement",        sous: "ZES, ZAI & pôles",               icone: "real_estate_agent", href: "/zones" },
-  { cle: "opportunites", titre: "Opportunités d'investissement", sous: "Projets & potentialités",        icone: "bookmark_stacks",   href: "/opportunites" },
-  { cle: "accords",      titre: "Accords & Traités",             sous: "TBI & traités internationaux",   icone: "signature",         href: "/accords" },
-  { cle: "evenements",   titre: "Événements",                    sous: "Agenda des investisseurs",       icone: "event",             href: "/evenements" },
+  { cle: "ide",          titre: "Investissements", sous: "Flux & stocks d'IDE",      icone: "finance_mode",      sf: "chart.line.uptrend.xyaxis", href: "/investissements" },
+  { cle: "statistiques", titre: "Échanges",        sous: "Flux commerciaux",         icone: "currency_exchange", sf: "arrow.left.arrow.right",    href: "/flux" },
+  { cle: "prospects",    titre: "Prospects",       sous: "Investisseurs suivis",     icone: "frame_inspect",     sf: "binoculars",                href: "/prospects" },
+  { cle: "entreprises",  titre: "Entreprises",     sous: "Registre des installées",  icone: "enterprise",        sf: "building.2",                href: "/entreprises" },
+  { cle: "zones",        titre: "Zones",           sous: "ZES, ZAI & pôles",         icone: "real_estate_agent", sf: "mappin.and.ellipse",        href: "/zones" },
+  { cle: "opportunites", titre: "Opportunités",    sous: "Projets & potentialités",  icone: "bookmark_stacks",   sf: "lightbulb",                 href: "/opportunites" },
+  { cle: "accords",      titre: "Accords",         sous: "TBI & traités",            icone: "signature",         sf: "signature",                 href: "/accords" },
+  { cle: "evenements",   titre: "Événements",      sous: "Agenda investisseurs",     icone: "event",             sf: "calendar",                  href: "/evenements" },
 ] as const;
 
 // Section « Plus » — les entrées transverses de la plateforme
 export const PLUS = [
-  { cle: "fiche-pays", titre: "Fiche Pays",               sous: "Relations bilatérales",           icone: "public", href: "/fiche-pays" },
-  { cle: "code",       titre: "Lois & Règlementations",    sous: "Code et modalités d'application", icone: "gavel",  href: "/code" },
+  { cle: "fiche-pays", titre: "Fiche Pays",             sous: "Relations bilatérales",           icone: "public", sf: "globe.europe.africa", href: "/fiche-pays" },
+  { cle: "code",       titre: "Lois & Règlementations", sous: "Code et modalités d'application", icone: "gavel",  sf: "text.book.closed",    href: "/code" },
 ] as const;

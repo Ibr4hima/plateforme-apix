@@ -5,28 +5,29 @@ import { Tabs, usePathname } from "expo-router";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HAUTEUR_ONGLETS } from "@/lib/marges";
-import Symbole from "@/components/Symbole";
+import Icone, { type NomsIcone } from "@/components/Icone";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
-const ONGLETS = [
-  { nom: "index",           chemin: "/",                titre: "Accueil",                icone: "home" },
-  { nom: "investissements", chemin: "/investissements", titre: "Investissements privés", icone: "finance_mode" },
-  { nom: "flux",            chemin: "/flux",            titre: "Flux commerciaux",       icone: "currency_exchange" },
+const ONGLETS: readonly ({ nom: string; chemin: string; titre: string } & NomsIcone)[] = [
+  { nom: "index",           chemin: "/",                titre: "Accueil",                sf: "house",                     materiel: "home" },
+  { nom: "investissements", chemin: "/investissements", titre: "Investissements privés", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
+  { nom: "flux",            chemin: "/flux",            titre: "Flux commerciaux",       sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
 ] as const;
 
 // Bouton d'onglet maison : cadre arrondi autour de l'icône ET du libellé.
 // Un tabBarButton personnalisé remplace celui de react-navigation, qui
 // portait le rôle et l'état de sélection : on les repose ici, sans quoi
 // VoiceOver et TalkBack annoncent trois boutons anonymes au lieu d'onglets.
-function BoutonOnglet({ actif, icone, titre, onPress }: {
-  actif: boolean; icone: string; titre: string; onPress?: (e: any) => void;
-}) {
+function BoutonOnglet({ actif, sf, materiel, titre, onPress }: {
+  actif: boolean; titre: string; onPress?: (e: any) => void;
+} & NomsIcone) {
   return (
     <Pressable onPress={e => { if (!actif) tick(); onPress?.(e); }} style={s.zone}
       accessibilityRole="tab" accessibilityLabel={titre} accessibilityState={{ selected: actif }}>
       <View style={[s.cadre, actif && s.cadreActif]}>
-        <Symbole nom={icone} taille={22} couleur={actif ? T.bleu : T.gris} />
+        <Icone sf={sf} materiel={materiel} taille={22} couleur={actif ? T.bleu : T.gris}
+          poids={actif ? "semibold" : "regular"} />
         {/* Le libellé tient sur une ligne dans un cadre de hauteur fixe :
             on borne son agrandissement pour qu'une police système très
             grande ne le rogne pas en plein milieu. */}
@@ -62,7 +63,7 @@ export default function OngletsLayout() {
             tabBarButton: props => (
               <BoutonOnglet
                 actif={o.chemin === "/" ? chemin === "/" : chemin.startsWith(o.chemin)}
-                icone={o.icone} titre={o.titre}
+                sf={o.sf} materiel={o.materiel} titre={o.titre}
                 onPress={props.onPress} />
             ),
           }} />
