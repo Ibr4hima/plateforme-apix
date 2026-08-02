@@ -76,8 +76,7 @@ const s = StyleSheet.create({
   carte: {
     width: (LARGEUR - 32 - 11) / 2, backgroundColor: T.carte, borderRadius: 18,
     paddingHorizontal: 15, paddingVertical: 13, overflow: "hidden",
-    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
+    borderWidth: 1, borderColor: T.carteBord,
   },
   filet: { position: "absolute", left: 15, right: 15, top: 0, height: 2.5, borderRadius: 2, backgroundColor: T.blocBord },
   label: { fontSize: 9, fontFamily: POLICE.gras, color: "#7d95ad", letterSpacing: 0.9, lineHeight: 12, marginTop: 4, minHeight: 24 },

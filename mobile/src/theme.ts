@@ -39,6 +39,9 @@ export const T = {
   // Surfaces
   fond:        dyn("#F6F5F3", "#0B1220"),
   carte:       dyn("#FFFFFF", "#151E2E"),
+  // Contour des cartes — le filet fin de la plateforme (rgba encre à 12 %) :
+  // c'est lui qui détache la carte du fond, pas une ombre
+  carteBord:   dyn("rgba(16,26,46,0.12)", "#263248"),
   carteDouce:  dyn("#FAFAF9", "#1B2536"),
   champ:       dyn("#F8F7F6", "#101927"),
   bordure:     dyn("#ECEAE7", "#263248"),

@@ -15,7 +15,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import AccordSheet, { ST_COULEUR, sousTitreStatut } from "@/components/AccordSheet";
+import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
@@ -33,29 +33,25 @@ const TYPES = [
 ] as const;
 
 // ── La carte d'accord ────────────────────────────────────────────────────────
-// Retour au gabarit carte, affiné : un liseré de statut à gauche remplace le
-// badge (la couleur suffit, les segments nomment déjà le statut), le titre
-// mène, l'ancienneté suit, et la rangée basse ne porte que les deux dates qui
-// comptent — signature et échéance. Toutes les cartes ont ainsi la même
-// hauteur, ce que la version à badge ne garantissait pas.
+// Le gabarit carte de la plateforme : contour fin (T.carteBord), sans ombre.
+// Le titre mène (le partenaire quand il est connu), l'ancienneté suit — elle
+// porte le mot du statut — et la rangée basse ne garde que les deux dates qui
+// comptent : signature et expiration. Toutes les cartes ont la même hauteur.
 function CarteAccord({ a, partenaires, onPress }: {
   a: any; partenaires: { nom: string; code_iso2?: string }[]; onPress: () => void;
 }) {
   const statut = computeStatutAccord(a);
   const expire = statut === "expire";
-  const couleur = statut ? ST_COULEUR[statut] : (T.grisClair as string);
   // Le partenaire donne le titre quand il est connu — sinon l'intitulé officiel
   const titre = partenaires.length === 1 ? partenaires[0].nom
     : partenaires.length > 1 ? partenaires.map(p => p.nom).join(", ")
     : a.titre;
   const echeance = a.date_expiration
     ? { label: "EXPIRATION", val: fmtDate(a.date_expiration) }
-    : { label: "EXPIRATION", val: "Sans terme" };
+    : { label: "EXPIRATION", val: "Non définie" };
 
   return (
     <Tapable onPress={onPress} echelle={0.985} style={[s.carte, expire && { backgroundColor: T.carteDouce }]}>
-      {/* Liseré de statut — la couleur porte l'information, pas un badge */}
-      <View style={[s.liseré, { backgroundColor: couleur }]} />
       <View style={s.carteCorps}>
         <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={2}>{titre}</Text>
         {sousTitreStatut(a) ? (
@@ -279,12 +275,9 @@ const s = StyleSheet.create({
   chipFiltreTexteActif: { color: "#fff" },
 
   carte: {
-    flexDirection: "row", backgroundColor: T.carte, borderRadius: 18, overflow: "hidden",
-    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 }, elevation: 2,
+    backgroundColor: T.carte, borderRadius: 18,
+    borderWidth: 1, borderColor: T.carteBord,
   },
-  // Liseré de statut : 4 pt sur toute la hauteur de la carte
-  "liseré": { width: 4 },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
   titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
   sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },

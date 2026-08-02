@@ -142,7 +142,7 @@ export default function HeroModule({ titre, sousTitre, retour, recherche, segmen
         <View style={s.ligneRetour}>
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Retour"
             style={({ pressed }) => [s.retour, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
-            <Icone sf="chevron.left" materiel="arrow_back" taille={17} couleur="#fff" poids="semibold" />
+            <Icone sf="chevron.left" materiel="arrow_back" taille={21} couleur="#fff" poids="semibold" />
           </Pressable>
           <Text style={s.titreCompact} numberOfLines={1}>{titre}</Text>
         </View>
@@ -244,12 +244,12 @@ const s = StyleSheet.create({
   basculeTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
   ligneRetour: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 4 },
   retour: {
-    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+    width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: "rgba(255,255,255,0.20)",
   },
   // Titre de la rangée retour : plus petit que le grand titre des onglets,
   // il partage sa ligne avec le chevron
-  titreCompact: { flex: 1, color: "#fff", fontSize: 22, fontFamily: POLICE.gras, letterSpacing: -0.4 },
+  titreCompact: { flex: 1, color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
   ligneTitre: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
   action: {
@@ -270,7 +270,7 @@ const s = StyleSheet.create({
   barre: {
     flex: 1, flexDirection: "row", alignItems: "center", gap: 9,
     backgroundColor: "rgba(255,255,255,0.10)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
-    borderRadius: 999, paddingHorizontal: 17, height: 47,
+    borderRadius: 999, paddingHorizontal: 15, height: 40,
   },
   champ: { flex: 1, fontSize: 14.5, fontFamily: POLICE.moyen, color: "#fff" },
   segments: {

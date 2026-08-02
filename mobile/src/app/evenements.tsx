@@ -234,8 +234,7 @@ const s = StyleSheet.create({
   ligne: {
     flexDirection: "row", alignItems: "center", gap: 13,
     backgroundColor: T.carte, borderRadius: 18, padding: 12,
-    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 }, elevation: 2,
+    borderWidth: 1, borderColor: T.carteBord,
   },
   bloc: {
     width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",

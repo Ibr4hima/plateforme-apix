@@ -147,7 +147,8 @@ export default function VedetteIde() {
 const s = StyleSheet.create({
   carte: {
     marginHorizontal: ESPACE.m, backgroundColor: T.carte, borderRadius: RAYON.grand,
-    paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden", ...OMBRE.n2,
+    paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
+    borderWidth: 1, borderColor: T.carteBord,
   },
   // Le filet des cartes KPI du site : liseré bleu en tête de carte
   filet: { position: "absolute", top: 0, left: 18, right: 18, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, backgroundColor: T.bleu },

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Reanime, {
-  runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+  runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
 import { foncerPastel } from "@/lib/couleurs";
@@ -23,6 +23,7 @@ import { origineRecente } from "@/lib/origineTap";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
+const FlouAnime = Reanime.createAnimatedComponent(BlurView);
 
 // ── Tapable : le retour tactile physique de toute l'app ──────────────────────
 // Ressort vif à l'appui (0.97), ressort standard au relâcher — la même
@@ -177,6 +178,10 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
     // Le voile s'éclaircit à mesure que la feuille est tirée vers le bas
     opacity: progres.value * Math.max(0, 1 - tirage.value / (H * 0.7)),
   }));
+  // Le flou suit la même courbe que le voile, mais via son intensité native
+  const propsFlou = useAnimatedProps(() => ({
+    intensity: 28 * progres.value * Math.max(0, 1 - tirage.value / (H * 0.7)),
+  }));
   const styleFeuille = useAnimatedStyle(() => ({
     opacity: Math.min(1, progres.value * 2.5),
     transform: [
@@ -191,11 +196,11 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
       {/* Le fond n'est pas qu'assombri : il est FLOUTÉ. Le contenu de l'écran
           reste reconnaissable — on sait d'où l'on vient — mais devient
           illisible, donc la feuille prend tout le regard. Le voile sombre
-          garde son rôle : garantir le contraste du texte de la feuille
-          quel que soit ce qui se trouve derrière. */}
-      <Reanime.View style={[StyleSheet.absoluteFill, styleFond]} pointerEvents="none">
-        <BlurView intensity={28} tint="dark" style={StyleSheet.absoluteFill} />
-      </Reanime.View>
+          garde son rôle : garantir le contraste du texte de la feuille.
+          IMPORTANT : c'est l'INTENSITÉ du flou qui est animée, pas l'opacité
+          de la vue — une BlurView iOS à l'opacité animée rend par bandes non
+          uniformes, visibles surtout à la fermeture. */}
+      <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[sf.feuille, { maxHeight: hauteur }, styleFeuille]}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
@@ -338,7 +343,7 @@ const sc = StyleSheet.create({
 const scarte = StyleSheet.create({
   carte: {
     backgroundColor: T.carte, borderRadius: RAYON.moyen,
-    borderWidth: 1, borderColor: T.bordure,
+    borderWidth: 1, borderColor: T.carteBord,
   },
 });
 

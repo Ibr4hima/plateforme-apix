@@ -152,14 +152,15 @@ const s = StyleSheet.create({
   },
   boutonRecherche: {
     width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.carte, marginBottom: 4, ...OMBRE.n1,
+    backgroundColor: T.carte, marginBottom: 4, borderWidth: 1, borderColor: T.carteBord,
   },
   // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
   titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenement: {
     flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: T.carte, borderRadius: RAYON.grand, padding: 14, ...OMBRE.n1,
+    backgroundColor: T.carte, borderRadius: RAYON.grand, padding: 14,
+    borderWidth: 1, borderColor: T.carteBord,
   },
   // Bloc date en bleu plein : l'ancre visuelle de la carte
   evenementDate: {

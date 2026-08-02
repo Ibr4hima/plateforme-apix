@@ -66,7 +66,8 @@ const s = StyleSheet.create({
   caseGrille: { flexBasis: "48%", flexGrow: 1 },
   tuile: {
     backgroundColor: T.carte, borderRadius: RAYON.moyen,
-    paddingHorizontal: 14, paddingVertical: 13, ...OMBRE.n1,
+    paddingHorizontal: 14, paddingVertical: 13,
+    borderWidth: 1, borderColor: T.carteBord,
   },
   pastille: {
     width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center",
@@ -78,7 +79,7 @@ const s = StyleSheet.create({
   tuileSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
   surfacePlus: {
     marginTop: 10, backgroundColor: T.carte, borderRadius: RAYON.moyen,
-    overflow: "hidden", ...OMBRE.n1,
+    overflow: "hidden", borderWidth: 1, borderColor: T.carteBord,
   },
   lignePlus: { flexDirection: "row", alignItems: "center", gap: 13, paddingVertical: 11, paddingHorizontal: 14 },
   separateur: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginLeft: 61 },
