@@ -96,7 +96,7 @@ export default function Accueil() {
   };
 
   const dateDuJour = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long", day: "numeric", month: "long",
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
   return (
@@ -111,14 +111,14 @@ export default function Accueil() {
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
-          {/* « Investissement » porte le dégradé orange — la signature du site */}
-          <MaskedView maskElement={<Text style={s.titre}>Investissement</Text>}>
+          {/* « Senegal » porte le dégradé orange — la marque Invest in Senegal */}
+          <Text style={s.titre}>Invest in</Text>
+          <MaskedView maskElement={<Text style={[s.titre, { marginTop: 0 }]}>Senegal</Text>}>
             <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-              <Text style={[s.titre, { opacity: 0 }]}>Investissement</Text>
+              <Text style={[s.titre, { marginTop: 0, opacity: 0 }]}>Senegal</Text>
             </LinearGradient>
           </MaskedView>
-          <Text style={s.titre}>au Sénégal</Text>
         </View>
         <Tapable onPress={() => router.push("/recherche")} echelle={0.92} hitSlop={8}
           style={s.boutonRecherche}>

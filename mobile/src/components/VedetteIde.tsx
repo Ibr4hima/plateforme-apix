@@ -101,7 +101,6 @@ export default function VedetteIde() {
   return (
     <Apparition index={0}>
       <Tapable onPress={() => router.push("/investissements")} echelle={0.98} style={s.carte}>
-        <View style={s.filet} />
         {/* Étiquette + signal de navigation */}
         <View style={s.enTete}>
           <Text style={s.etiquette}>FLUX D&apos;IDE ENTRANTS · {dernier.annee}</Text>
@@ -150,8 +149,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },
-  // Le filet des cartes KPI du site : liseré bleu en tête de carte
-  filet: { position: "absolute", top: 0, left: 18, right: 18, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, backgroundColor: T.bleu },
   carteErreur: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 18 },
   erreurTexte: { ...TYPO.legende, color: T.gris, flex: 1 },
   enTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
