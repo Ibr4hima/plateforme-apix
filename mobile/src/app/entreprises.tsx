@@ -1,13 +1,10 @@
-// Entreprises installées — un annuaire, pas un tableau.
+// Entreprises installées — un annuaire.
 //
-// Le patron de l'annuaire, c'est Contacts : sections alphabétiques que l'œil
-// descend, lignes à monogramme, sous-titre qui situe (« SARL · Dakar »). Les
-// colonnes étiquetées DATE DE CRÉATION | RÉGION disparaissent — la date de
-// création n'aide pas à retrouver une entreprise, elle vit dans la fiche.
-//
-// La seconde lentille, « Par région », est une lecture analytique : une carte
-// par région avec l'effectif et sa part (barre fine), dépliable sur ses
-// entreprises. Pastels arc-en-ciel remplacés par le bleu de la maison.
+// Sections alphabétiques que l'œil descend (l'idiome Contacts), cartes au
+// gabarit de la plateforme (titre, forme juridique, rangée Création | Région,
+// contour fin). La Vue régionale montre la FORME de chaque région — la
+// silhouette extraite du fond de carte du site — avec effectif, part et
+// accordéon d'entreprises.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -19,7 +16,9 @@ import EntrepriseSheet from "@/components/EntrepriseSheet";
 import { CascadeGeo, CascadeThema, Coche, FeuilleFiltres, PlageAnnees, SectionCoches, TitreSection, basculer, construireArbreGeo } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Icone from "@/components/Icone";
+import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { fetchTous } from "@/lib/api";
+import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
@@ -39,17 +38,26 @@ function lettreDe(nom: string): string {
   return /[A-Z]/.test(l) ? l : "#";
 }
 
-// ── La ligne d'annuaire ──────────────────────────────────────────────────────
-function LigneEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
-  const sous = [formeCourte(e.forme_juridique), e.region_nom].filter(Boolean).join(" · ");
+// ── La carte d'entreprise — le gabarit des accords ───────────────────────────
+function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.98} style={s.ligne}>
-      <View style={s.bloc}>
-        <Text style={s.blocTexte}>{monogramme(e.nom)}</Text>
-      </View>
-      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-        <Text style={s.nom} numberOfLines={1}>{e.nom}</Text>
-        {sous ? <Text style={s.sous} numberOfLines={1}>{sous}</Text> : null}
+    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+      <Text style={s.nom} numberOfLines={2}>{e.nom}</Text>
+      {e.forme_juridique ? <Text style={s.sous} numberOfLines={1}>{formeCourte(e.forme_juridique)}</Text> : null}
+      <View style={s.dates}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.dateLabel}>DATE DE CRÉATION</Text>
+          <Text style={[s.dateVal, !e.date_creation && { color: T.grisClair }]} numberOfLines={1}>
+            {e.date_creation ? fmtDate(e.date_creation) : "—"}
+          </Text>
+        </View>
+        <View style={s.dateSep} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.dateLabel}>RÉGION</Text>
+          <Text style={[s.dateVal, !e.region_nom && { color: T.grisClair }]} numberOfLines={1}>
+            {e.region_nom || "—"}
+          </Text>
+        </View>
       </View>
     </Tapable>
   );
@@ -172,8 +180,8 @@ export default function Entreprises() {
   const pret = !isLoading && !isError;
 
   const lentilles = [
-    { cle: "annuaire", label: "Annuaire",   compte: pret ? filtres.length : undefined },
-    { cle: "region",   label: "Par région", compte: pret ? regions.length : undefined },
+    { cle: "annuaire", label: "Liste des entreprises", compte: pret ? filtres.length : undefined },
+    { cle: "region",   label: "Vue régionale",         compte: pret ? regions.length : undefined },
   ];
 
   const hero = (
@@ -227,7 +235,7 @@ export default function Entreprises() {
           keyExtractor={(e: any) => String(e.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <LigneEntreprise e={item} onPress={() => setSelec(item)} />
+              <CarteEntreprise e={item} onPress={() => setSelec(item)} />
             </Apparition>
           )}
           renderSectionHeader={({ section }: any) => (
@@ -258,17 +266,19 @@ export default function Entreprises() {
               <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
                 <Tapable onPress={() => { tick(); setRegionOuverte(ouvert ? null : r.nom); }} echelle={0.98}
                   style={[s.region, ouvert && { borderColor: T.bleu }]}>
+                  {/* La forme réelle du territoire — un chiffre abstrait
+                      n'identifie pas une région, sa silhouette si */}
                   <View style={s.regionTuile}>
-                    <Text style={s.regionCompte}>{r.entreprises.length}</Text>
+                    {regionConnue(r.nom)
+                      ? <SilhouetteRegion nom={r.nom} taille={38} couleur={T.bleu as string} />
+                      : <Text style={s.regionCompte}>{r.entreprises.length}</Text>}
                   </View>
-                  <View style={{ flex: 1, minWidth: 0, gap: 5 }}>
+                  <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.regionNom} numberOfLines={1}>{r.nom}</Text>
-                    {/* La part de la région sur l'ensemble filtré */}
-                    <View style={s.partFond}>
-                      <View style={[s.partBarre, { width: `${Math.max(3, part * 100)}%` }]} />
-                    </View>
+                    <Text style={s.regionSous} numberOfLines={1}>
+                      {r.entreprises.length} entreprise{r.entreprises.length > 1 ? "s" : ""} · {Math.round(part * 100)} %
+                    </Text>
                   </View>
-                  <Text style={s.regionPart}>{Math.round(part * 100)} %</Text>
                   <Icone sf={ouvert ? "chevron.up" : "chevron.down"} materiel={ouvert ? "expand_less" : "expand_more"}
                     taille={16} couleur={T.grisClair} />
                 </Tapable>
@@ -315,18 +325,17 @@ const s = StyleSheet.create({
   lettreFilet: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: T.bordure },
   lettreCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
 
-  ligne: {
-    flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: 18, padding: 12,
+  carte: {
+    backgroundColor: T.carte, borderRadius: 18,
     borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3,
   },
-  bloc: {
-    width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuVoile,
-  },
-  blocTexte: { fontSize: 16, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.5 },
-  nom: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
+  nom: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
   sous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  dates: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  dateSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
+  dateLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  dateVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   region: {
     flexDirection: "row", alignItems: "center", gap: 13,
@@ -339,9 +348,7 @@ const s = StyleSheet.create({
   },
   regionCompte: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   regionNom: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
-  partFond: { height: 5, borderRadius: 99, backgroundColor: T.filet, overflow: "hidden" },
-  partBarre: { height: "100%", borderRadius: 99, backgroundColor: T.bleu },
-  regionPart: { fontSize: 12, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
+  regionSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   regionListe: {
     backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
     marginTop: 8, overflow: "hidden",

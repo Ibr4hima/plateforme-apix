@@ -8,7 +8,7 @@
 // Structure éditoriale, comme les autres fiches : identité (nom en grand,
 // une ligne de méta forme · pôle · région), actions, puis sections plates —
 // rangées clé-valeur, activités NAEMA, points focaux.
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
@@ -59,6 +59,23 @@ const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")
 const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
 const ouvrirSite = (u: string) => Linking.openURL(u.startsWith("http") ? u : `https://${u}`).catch(() => {});
 
+// À plusieurs numéros ou adresses, on PROPOSE au lieu de choisir à la place
+// de l'utilisateur : feuille d'action native sur iOS, alerte à boutons ailleurs.
+function proposer(titre: string, libelles: string[], agir: (index: number) => void) {
+  if (libelles.length === 1) { agir(0); return; }
+  if (Platform.OS === "ios") {
+    ActionSheetIOS.showActionSheetWithOptions(
+      { title: titre, options: [...libelles, "Annuler"], cancelButtonIndex: libelles.length },
+      i => { if (i < libelles.length) agir(i); },
+    );
+  } else {
+    Alert.alert(titre, undefined, [
+      ...libelles.map((l, i) => ({ text: l, onPress: () => agir(i) })),
+      { text: "Annuler", style: "cancel" as const },
+    ]);
+  }
+}
+
 export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise: any; onClose: () => void }) {
   const { secteurs } = useNaema();
 
@@ -87,10 +104,12 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
       {(telephones.length > 0 || mails.length > 0 || e.siteweb) && (
         <View style={s.actions}>
           {telephones.length > 0 && (
-            <Action sf="phone" materiel="call" label="Appeler" onPress={() => ouvrirTel(telephones[0])} />
+            <Action sf="phone" materiel="call" label="Appeler"
+              onPress={() => proposer("Appeler", telephones.map(fmtPhone), i => ouvrirTel(telephones[i]))} />
           )}
           {mails.length > 0 && (
-            <Action sf="envelope" materiel="mail" label="Email" onPress={() => ouvrirMail(mails[0])} />
+            <Action sf="envelope" materiel="mail" label="Email"
+              onPress={() => proposer("Écrire à", mails, i => ouvrirMail(mails[i]))} />
           )}
           {e.siteweb && (
             <Action sf="safari" materiel="language" label="Site web" onPress={() => ouvrirSite(e.siteweb)} />

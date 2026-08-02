@@ -111,14 +111,18 @@ export default function Accueil() {
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
-          {/* « Senegal » porte le dégradé orange — la marque Invest in Senegal */}
-          <Text style={s.titre}>Invest in</Text>
-          <MaskedView maskElement={<Text style={[s.titre, { marginTop: 0 }]}>Senegal</Text>}>
-            <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-              <Text style={[s.titre, { marginTop: 0, opacity: 0 }]}>Senegal</Text>
-            </LinearGradient>
-          </MaskedView>
+          {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
+              MaskedView est un bloc : la ligne est donc une rangée de deux
+              textes, le second masqué par le dégradé. */}
+          <View style={s.titreLigne}>
+            <Text style={s.titre}>Invest in </Text>
+            <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
+              <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                <Text style={[s.titre, { opacity: 0 }]}>Senegal</Text>
+              </LinearGradient>
+            </MaskedView>
+          </View>
         </View>
         <Tapable onPress={() => router.push("/recherche")} echelle={0.92} hitSlop={8}
           style={s.boutonRecherche}>
@@ -146,9 +150,11 @@ const s = StyleSheet.create({
     paddingHorizontal: ESPACE.m + 4, paddingBottom: ESPACE.m + 2,
   },
   date: { ...TYPO.micro, color: T.gris },
+  titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
+  // 28 pt : « Invest in Senegal » doit tenir sur UNE ligne, bouton recherche compris
   titre: {
-    fontSize: 31, lineHeight: 36, fontFamily: POLICE.gras, color: T.encre,
-    letterSpacing: -0.8, marginTop: 6,
+    fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
+    letterSpacing: -0.7,
   },
   boutonRecherche: {
     width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center",

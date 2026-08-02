@@ -247,7 +247,7 @@ export default function Accords() {
             <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
           </Apparition>
         )}
-        contentContainerStyle={{ paddingBottom: margeBas }}
+        contentContainerStyle={{ paddingTop: 2, paddingBottom: margeBas }}
         refreshing={isRefetching}
         onRefresh={refetch}
         keyboardShouldPersistTaps="handled"
