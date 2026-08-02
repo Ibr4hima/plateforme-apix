@@ -189,20 +189,26 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
       <GestureHandlerRootView style={{ flex: 1, justifyContent: "flex-end" }}>
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[sf.feuille, { maxHeight: hauteur }, styleFeuille]}>
+        {/* Tout l'en-tête est une zone de tirage : la seule bande de la
+            poignée (~20 pt) était trop étroite pour être trouvée au pouce.
+            Le Pan ne s'arme qu'après 4 pt de glissement vertical : les
+            touches (fermer, contenus du sous-en-tête) restent intactes. */}
         <GestureDetector gesture={geste}>
-          <View style={sf.zonePoignee}>
-            <View style={sf.poignee} />
+          <View>
+            <View style={sf.zonePoignee}>
+              <View style={sf.poignee} />
+            </View>
+            <View style={sf.entete}>
+              {typeof titre === "string"
+                ? <Text style={sf.titre}>{titre}</Text>
+                : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
+              <Tapable onPress={fermer} hitSlop={10} style={sf.fermer}>
+                <Ionicons name="close" size={17} color={T.texte} />
+              </Tapable>
+            </View>
+            {sousEntete}
           </View>
         </GestureDetector>
-        <View style={sf.entete}>
-          {typeof titre === "string"
-            ? <Text style={sf.titre}>{titre}</Text>
-            : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
-          <Tapable onPress={fermer} hitSlop={10} style={sf.fermer}>
-            <Ionicons name="close" size={17} color={T.texte} />
-          </Tapable>
-        </View>
-        {sousEntete}
         {sansDefilement ? children : (
           <ScrollView style={{ marginTop: ESPACE.m }} contentContainerStyle={{ gap: ecart, paddingBottom: pied ? ESPACE.m : 36 }}
             showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
@@ -348,7 +354,11 @@ const sr = StyleSheet.create({
 const sf = StyleSheet.create({
   fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.45)" },
   feuille: {
-    backgroundColor: T.carte, borderTopLeftRadius: 26, borderTopRightRadius: 26,
+    backgroundColor: T.carte, borderTopLeftRadius: 34, borderTopRightRadius: 34,
+    // La courbe continue (« squircle ») : c'est elle qui fait les coins
+    // d'une vraie feuille iOS — un rayon circulaire paraît toujours
+    // légèrement faux sans qu'on sache dire pourquoi.
+    borderCurve: "continuous", overflow: "hidden",
     paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
   },
   zonePoignee: { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 },

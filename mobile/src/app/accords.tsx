@@ -163,7 +163,7 @@ export default function Accords() {
 
   const hero = (
     <>
-      <HeroModule titre="Accords & Traités"
+      <HeroModule retour titre="Accords & Traités"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: STATUTS, valeur: statut, onChange: setStatut }}
         bouton={boutonFiltres} />
@@ -221,7 +221,7 @@ export default function Accords() {
           )
         }
       />
-      <BarreHero titre="Accords & Traités" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Accords & Traités" defilY={defilY} bouton={boutonFiltres} />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
       {feuille}
     </>

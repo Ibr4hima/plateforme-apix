@@ -169,7 +169,7 @@ export default function Entreprises() {
 
   const hero = (
     <>
-      <HeroModule titre="Entreprises installées"
+      <HeroModule retour titre="Entreprises installées"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setPoleOuvert(null); } }}
         bouton={boutonFiltres} />
@@ -254,7 +254,7 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       )}
-      <BarreHero titre="Entreprises installées" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Entreprises installées" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
       {filtresOuverts && (
         <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>

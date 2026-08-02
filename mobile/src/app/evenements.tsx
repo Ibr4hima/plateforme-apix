@@ -168,7 +168,7 @@ export default function Evenements() {
   ];
 
   const hero = (
-    <HeroModule titre="Événements"
+    <HeroModule retour titre="Événements"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
       segments={{ options: lentilles, valeur: lentille, onChange: setLentille }}
       bouton={boutonFiltres} />
@@ -208,7 +208,7 @@ export default function Evenements() {
         ListHeaderComponent={hero}
         ListEmptyComponent={vide}
       />
-      <BarreHero titre="Événements" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Événements" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
       {filtresOuverts && (
         <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>

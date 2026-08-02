@@ -155,7 +155,7 @@ export default function Prospects() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            <HeroModule titre="Prospects"
+            <HeroModule retour titre="Prospects"
               recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
               segments={{ options: VUES, valeur: vue, onChange: v => setVue(v as OngletProspect) }}
               bouton={boutonFiltres} />
@@ -171,7 +171,7 @@ export default function Prospects() {
           )
         }
       />
-      <BarreHero titre="Prospects" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Prospects" defilY={defilY} bouton={boutonFiltres} />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
       {filtresOuverts && (
         <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>

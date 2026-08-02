@@ -4,7 +4,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
@@ -46,13 +48,15 @@ function PointPulsant() {
   );
 }
 
-export function BarreHero({ titre, defilY, bouton, seuil = 118 }: {
+export function BarreHero({ titre, defilY, bouton, retour, seuil = 118 }: {
   titre: string;
   defilY: Animated.Value;
   bouton?: { icone: string; onPress: () => void; badge?: number };
+  retour?: boolean; // écran empilé : chevron de retour à gauche du titre
   seuil?: number; // défilement à partir duquel la barre est pleinement visible
 }) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   // La barre ne doit pas intercepter les touches tant qu'elle est invisible
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -67,7 +71,12 @@ export function BarreHero({ titre, defilY, bouton, seuil = 118 }: {
     <Animated.View pointerEvents={visible ? "box-none" : "none"}
       style={[sb.barre, { paddingTop: insets.top, height: insets.top + 54, opacity }]}>
       <Animated.View style={[sb.contenu, { transform: [{ translateY: glisse }] }]}>
-        <PointPulsant />
+        {retour ? (
+          <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Retour"
+            style={{ marginLeft: -6, padding: 4 }}>
+            <Icone sf="chevron.left" materiel="arrow_back" taille={19} couleur="#fff" poids="semibold" />
+          </Pressable>
+        ) : <PointPulsant />}
         <Text style={sb.titre} numberOfLines={1}>{titre}</Text>
         {bouton && (
           <Pressable onPress={bouton.onPress} hitSlop={8}
@@ -110,9 +119,10 @@ const sb = StyleSheet.create({
   badgeTexte: { fontSize: 9, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
 });
 
-export default function HeroModule({ titre, sousTitre, recherche, segments, bascule, bouton, children }: {
+export default function HeroModule({ titre, sousTitre, retour, recherche, segments, bascule, bouton, children }: {
   titre: string;
   sousTitre?: string;
+  retour?: boolean; // écran empilé : bouton de retour à la page précédente
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
   bascule?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void }; // sélecteur de module au-dessus du titre (onglet Données)
@@ -120,10 +130,30 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, basc
   children?: React.ReactNode; // contenu libre inséré sous la recherche
 }) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   return (
-    <View style={[s.hero, { paddingTop: insets.top + (bascule ? 14 : 22) }]}>
+    <View style={[s.hero, { paddingTop: insets.top + (bascule ? 14 : retour ? 8 : 22) }]}>
       <View style={s.haloHaut} />
       <View style={s.haloBas} />
+
+      {/* Écran empilé : rangée retour (le bouton d'action monte à côté) */}
+      {retour && (
+        <View style={s.ligneRetour}>
+          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Retour"
+            style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+            <Icone sf="chevron.left" materiel="arrow_back" taille={19} couleur="#fff" poids="semibold" />
+          </Pressable>
+          {bouton && (
+            <Pressable onPress={bouton.onPress} hitSlop={6}
+              style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
+              <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
+              {bouton.badge ? (
+                <View style={s.actionBadge}><Text style={s.actionBadgeTexte}>{bouton.badge}</Text></View>
+              ) : null}
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {bascule && (
         <View style={s.bascule}>
@@ -141,7 +171,7 @@ export default function HeroModule({ titre, sousTitre, recherche, segments, basc
 
       <View style={s.ligneTitre}>
         <Text style={[s.titre, { flexShrink: 1 }]}>{titre}</Text>
-        {bouton && (
+        {bouton && !retour && (
           <Pressable onPress={bouton.onPress} hitSlop={6}
             style={({ pressed }) => [s.action, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
             <Symbole nom={bouton.icone} taille={21} couleur="#fff" />
@@ -203,6 +233,7 @@ const s = StyleSheet.create({
   basculePiluleActive: { backgroundColor: "#fff", borderColor: "#fff" },
   basculeTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.80)" },
   basculeTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
+  ligneRetour: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
   ligneTitre: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   titre: { color: "#fff", fontSize: 29, fontFamily: POLICE.gras, lineHeight: 35, letterSpacing: -0.6 },
   action: {

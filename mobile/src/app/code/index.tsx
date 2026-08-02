@@ -60,7 +60,7 @@ export default function CodeSommaire() {
 
   return (
     <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 46 }} keyboardShouldPersistTaps="handled">
-      <HeroModule titre="Code des investissements"
+      <HeroModule retour titre="Code des investissements"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher dans le code…" }}
         segments={{
           options: [{ cle: "code-investissement", label: "Code des inv." }, { cle: "modalites-application", label: "Modalités d'app." }],

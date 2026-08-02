@@ -193,9 +193,9 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
                   <View key={bra} style={s.branche}>
                     <Text style={s.brancheTexte}>{bra}</Text>
                     {acts.length > 0 && (
-                      <View style={s.chips}>
+                      <View style={{ gap: 3 }}>
                         {acts.map((act: string) => (
-                          <View key={act} style={s.chipVoile}><Text style={s.chipVoileTexte}>{act}</Text></View>
+                          <Text key={act} style={s.activiteTexte}>{act}</Text>
                         ))}
                       </View>
                     )}
@@ -254,8 +254,9 @@ const s = StyleSheet.create({
   secteurLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
   secteurPoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu },
   secteurTexte: { flex: 1, fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.1 },
-  branche: { marginLeft: 2.5, paddingLeft: 14, borderLeftWidth: 1.5, borderLeftColor: T.filet, gap: 7 },
+  branche: { marginLeft: 2.5, paddingLeft: 14, borderLeftWidth: 1.5, borderLeftColor: T.filet, gap: 6 },
   brancheTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
+  activiteTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },

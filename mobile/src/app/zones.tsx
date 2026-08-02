@@ -107,7 +107,7 @@ export default function Zones() {
 
   const hero = (
     <>
-      <HeroModule titre="Zones d'investissement"
+      <HeroModule retour titre="Zones d'investissement"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: VUES, valeur: vue, onChange: setVue }} />
       {vue === "zones" && (
@@ -201,7 +201,7 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       )}
-      <BarreHero titre="Zones d'investissement" defilY={defilY} />
+      <BarreHero retour titre="Zones d'investissement" defilY={defilY} />
       {zoneSelec && <ZoneSheet zone={zoneSelec} onClose={() => setZoneSelec(null)} />}
       {poleSelec && <PoleSheet pole={poleSelec} zones={zones || []} onClose={() => setPoleSelec(null)} />}
     </>

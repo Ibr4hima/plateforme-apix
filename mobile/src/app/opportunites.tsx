@@ -345,7 +345,7 @@ export default function Opportunites() {
 
   const hero = (
     <>
-      <HeroModule titre={"Opportunités\nd'investissement"}
+      <HeroModule retour titre={"Opportunités\nd'investissement"}
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setNiveauSel(null); setSecteurSel(null); } }}
         bouton={boutonFiltres} />
@@ -383,7 +383,7 @@ export default function Opportunites() {
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
-        <BarreHero titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+        <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
         {feuille}
       </>
@@ -450,7 +450,7 @@ export default function Opportunites() {
             </View>
           )}
         </Animated.ScrollView>
-        <BarreHero titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+        <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
         {feuille}
       </>
@@ -507,7 +507,7 @@ export default function Opportunites() {
           </View>
         )}
       </Animated.ScrollView>
-      <BarreHero titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
       {feuille}
     </>

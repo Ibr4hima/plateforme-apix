@@ -72,7 +72,7 @@ export default function FichePaysIndex() {
   const choisir = (p: Pays) => { setSelec(p); setQ(""); };
 
   const hero = (
-    <HeroModule titre="Fiche Pays"
+    <HeroModule retour titre="Fiche Pays"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}>
       {/* Les deux emplacements de la comparaison */}
       <View style={s.slots}>
@@ -108,7 +108,7 @@ export default function FichePaysIndex() {
           {hero}
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
-        <BarreHero titre={selec!.nom} defilY={defilY} />
+        <BarreHero retour titre={selec!.nom} defilY={defilY} />
       </>
     );
   }
@@ -175,7 +175,7 @@ export default function FichePaysIndex() {
         )
       }
     />
-    <BarreHero titre="Fiche Pays" defilY={defilY} />
+    <BarreHero retour titre="Fiche Pays" defilY={defilY} />
     </>
   );
 }
