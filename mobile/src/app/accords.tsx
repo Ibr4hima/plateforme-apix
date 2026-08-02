@@ -1,85 +1,86 @@
-// Accords & Traités — adaptation fidèle de la page web : onglets TBI /
-// Traités internationaux (bientôt), recherche, filtres statut + pays
-// signataires, cards identiques au site (badge pastel, ancienneté,
-// rangée de dates), tri par échéance d'expiration.
+// Accords & Traités — le partenaire d'abord.
+//
+// Chaque carte répétait « TBI Sénégal – … » : l'identité réelle d'un traité
+// bilatéral, c'est le pays partenaire. La ligne le met en tête — drapeau en
+// bloc de gauche (l'ancre visuelle, comme le bloc date des événements), nom
+// du partenaire en titre, ancienneté en sous-titre, statut en point coloré à
+// droite (le mot vit déjà dans le sous-titre, et les segments filtrent).
+//
+// Tri : les actifs d'abord par échéance d'expiration croissante (ceux qui
+// tombent bientôt en tête), sans-expiration ensuite, puis les expirés du plus
+// récent au plus ancien — l'ordre d'un portefeuille, pas d'une archive.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
-import AccordSheet, { ST_PASTEL, sousTitreStatut } from "@/components/AccordSheet";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import AccordSheet, { ST_COULEUR, sousTitreStatut } from "@/components/AccordSheet";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
 import { fetchTous, getJson } from "@/lib/api";
-import { foncerPastel } from "@/lib/couleurs";
-import { fmtDate } from "@/lib/format";
+import { drapeauEmoji } from "@/lib/drapeaux";
 import { computeStatutAccord } from "@/lib/statuts";
 import { tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { POLICE, T } from "@/theme";
 
 const TYPES = [
   { cle: "tbi",   label: "Traités Bilatéraux" },
   { cle: "inter", label: "Traités Internationaux" },
 ] as const;
-const STATUTS = [
-  { cle: "tous",       label: "Tous" },
-  { cle: "en_vigueur", label: "En vigueur" },
-  { cle: "signe",      label: "Signés" },
-  { cle: "expire",     label: "Expirés" },
-] as const;
 
-function CarteAccord({ a, onPress }: { a: any; onPress: () => void }) {
+// ── La ligne d'accord ────────────────────────────────────────────────────────
+function LigneAccord({ a, partenaires, onPress }: {
+  a: any; partenaires: { nom: string; code_iso2?: string }[]; onPress: () => void;
+}) {
   const statut = computeStatutAccord(a);
-  const st = statut ? ST_PASTEL[statut] : null;
-  const estExpire = statut === "expire";
-  const txtC = estExpire ? T.texte : T.encre;
-  const sousTitre = sousTitreStatut(a);
-  // Date secondaire : expiration si renseignée, sinon entrée en vigueur (règle du site)
-  const dateSec = a.date_expiration
-    ? { label: "EXPIRATION", val: fmtDate(a.date_expiration), vide: false }
-    : { label: "ENTRÉE EN VIGUEUR", val: a.date_entree_vigueur ? fmtDate(a.date_entree_vigueur) : "Non définie", vide: !a.date_entree_vigueur };
+  const expire = statut === "expire";
+  const drapeau = partenaires.length === 1 ? drapeauEmoji(partenaires[0].code_iso2) : null;
+  const nom = partenaires.length
+    ? partenaires.map(p => p.nom).join(" · ")
+    : a.titre;
+
   return (
-    <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, estExpire && { backgroundColor: T.carteDouce }, pressed && { transform: [{ scale: 0.99 }], borderColor: st ? st.p : T.grisClair }]}>
-      <View style={s.ligneTitre}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.titre, { color: txtC }]} numberOfLines={2}>{a.titre}</Text>
-          {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
-        </View>
-        {st && (
-          <View style={[s.badge, { backgroundColor: `${st.p}40`, borderColor: `${st.p}90` }]}>
-            <Text style={[s.badgeTexte, { color: foncerPastel(st.p) }]}>{st.label}</Text>
-          </View>
+    <Tapable onPress={onPress} echelle={0.98} style={[s.ligne, expire && { backgroundColor: T.carteDouce }]}>
+      {/* Bloc partenaire : drapeau ; à plusieurs, l'effectif */}
+      <View style={[s.bloc, expire && { backgroundColor: T.filet }]}>
+        {drapeau ? (
+          <Text style={s.blocDrapeau}>{drapeau}</Text>
+        ) : partenaires.length > 1 ? (
+          <>
+            <Text style={[s.blocNombre, expire && { color: T.gris }]}>{partenaires.length}</Text>
+            <Text style={[s.blocLabel, expire && { color: T.gris }]}>PAYS</Text>
+          </>
+        ) : (
+          <Text style={[s.blocNombre, expire && { color: T.gris }]}>
+            {(partenaires[0]?.nom || a.titre || "?").slice(0, 2).toUpperCase()}
+          </Text>
         )}
       </View>
-      <View style={s.dates}>
-        <View style={{ flex: 1 }}>
-          <Text style={s.dateLabel}>SIGNATURE</Text>
-          <Text style={[s.dateVal, { color: a.date_signature ? txtC : T.grisClair }]}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</Text>
-        </View>
-        <View style={s.dateSep} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.dateLabel}>{dateSec.label}</Text>
-          <Text style={[s.dateVal, { color: dateSec.vide ? T.grisClair : txtC }]}>{dateSec.val}</Text>
-        </View>
+
+      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={1}>{nom}</Text>
+        {sousTitreStatut(a) ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitreStatut(a)}</Text> : null}
       </View>
-    </Pressable>
+
+      {/* Le statut en un point — son mot vit dans le sous-titre */}
+      <View style={[s.pointStatut, { backgroundColor: statut ? ST_COULEUR[statut] : T.grisClair }]} />
+    </Tapable>
   );
 }
 
 export default function Accords() {
   const margeBas = useMargeBas();
+  const { width } = useWindowDimensions();
   const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("tous");
   const [selec, setSelec] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
 
-  // Feuille de filtres — mêmes filtres que la barre latérale du site
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [apixSel, setApixSel] = useState(false);
   const [paysSel, setPaysSel] = useState<string[]>([]);
@@ -91,32 +92,40 @@ export default function Accords() {
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
   });
-  // Référentiel pays (même source et même cache que la fiche accord)
-  const pays = useQuery({ queryKey: ["ref-pays-stat"], queryFn: () => getJson<any[]>("/statistiques/pays"), staleTime: Infinity, gcTime: 24 * 3600 * 1000 });
+  // Le référentiel des parties porte les ISO2 (drapeaux) — même cache que la fiche
+  const parties = useQuery({
+    queryKey: ["accords-parties"], queryFn: () => getJson<any>("/accords/parties-distinctes"),
+    staleTime: Infinity, gcTime: 24 * 3600 * 1000,
+  });
+  const paysRef: any[] = parties.data?.pays || [];
+  const partenairesDe = (a: any) => (a.parties_pays_ids || [])
+    .map((id: number) => paysRef.find((p: any) => p.id === id))
+    .filter((p: any) => p && p.nom !== "Sénégal");
 
-  // Pays signataires présents dans au moins un accord (tri français)
   const paysOptions = useMemo(() => {
     const utilises = new Set<number>();
     (data || []).forEach((a: any) => (a.parties_pays_ids || []).forEach((id: number) => utilises.add(id)));
-    return (pays.data || []).filter((p: any) => utilises.has(p.id))
+    return paysRef.filter((p: any) => utilises.has(p.id))
       .map((p: any) => p.nom as string).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [data, pays.data]);
+  }, [data, paysRef]);
 
-  const filtres = useMemo(() => {
+  // Prédicats communs (recherche + feuille), avant le segment de statut :
+  // les compteurs des segments se calculent sur cette base
+  const communs = useMemo(() => {
     let liste = (data || []).filter((a: any) => (a.type_accord || "tbi") === "tbi");
-    if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
-      liste = liste.filter((a: any) => (a.titre || "").toLowerCase().includes(t) || (a.reference || "").toLowerCase().includes(t));
+      liste = liste.filter((a: any) =>
+        (a.titre || "").toLowerCase().includes(t) ||
+        (a.reference || "").toLowerCase().includes(t) ||
+        partenairesDe(a).some((p: any) => p.nom.toLowerCase().includes(t)));
     }
-    // Parties signataires — OR logique entre pays sélectionnés et APIX (règle du site)
     if (paysSel.length || apixSel) {
-      const paysIds = paysSel.map(n => (pays.data || []).find((p: any) => p.nom === n)?.id).filter(Boolean);
+      const paysIds = paysSel.map(n => paysRef.find((p: any) => p.nom === n)?.id).filter(Boolean);
       liste = liste.filter((a: any) =>
         paysIds.some((id: any) => (a.parties_pays_ids || []).includes(id)) ||
         (apixSel && String(a.parties_signataires || "").toLowerCase().includes("apix")));
     }
-    // Thématiques par ids (conversion noms → ids comme le site)
     if (secteursSel.length) {
       const ids = secteursSel.map(n => secteurs.find((x: any) => x.nom === n)?.id).filter(Boolean);
       liste = liste.filter((a: any) => ids.some((id: any) => (a.secteur_ids || []).includes(id)));
@@ -129,22 +138,41 @@ export default function Accords() {
       const ids = activitesSel.map(n => activites.find((x: any) => x.nom === n)?.id).filter(Boolean);
       liste = liste.filter((a: any) => ids.some((id: any) => (a.activite_ids || []).includes(id)));
     }
-    // Tri du site : échéance d'expiration croissante, sans expiration à la fin
+    return liste;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, q, paysSel, apixSel, secteursSel, branchesSel, activitesSel, paysRef, secteurs, branches, activites]);
+
+  const parStatut = useMemo(() => ({
+    tous: communs.length,
+    en_vigueur: communs.filter((a: any) => computeStatutAccord(a) === "en_vigueur").length,
+    signe: communs.filter((a: any) => computeStatutAccord(a) === "signe").length,
+    expire: communs.filter((a: any) => computeStatutAccord(a) === "expire").length,
+  }), [communs]);
+
+  const filtres = useMemo(() => {
+    let liste = communs;
+    if (statut !== "tous") liste = liste.filter((a: any) => computeStatutAccord(a) === statut);
+    // Actifs par échéance croissante (sans-expiration à la fin), expirés
+    // ensuite du plus récemment expiré au plus ancien
     return [...liste].sort((a: any, b: any) => {
+      const ea = computeStatutAccord(a) === "expire", eb = computeStatutAccord(b) === "expire";
+      if (ea !== eb) return ea ? 1 : -1;
+      if (ea && eb) return (b.date_expiration || "").localeCompare(a.date_expiration || "");
       if (!a.date_expiration && !b.date_expiration) return 0;
       if (!a.date_expiration) return 1;
       if (!b.date_expiration) return -1;
       return a.date_expiration.localeCompare(b.date_expiration);
     });
-  }, [data, q, statut, paysSel, apixSel, secteursSel, branchesSel, activitesSel, pays.data, secteurs, branches, activites]);
+  }, [communs, statut]);
 
   const nbFiltres = paysSel.length + (apixSel ? 1 : 0) + secteursSel.length + branchesSel.length + activitesSel.length;
   const reinitFiltres = () => { setApixSel(false); setPaysSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
   const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
 
-  // Toggles thématiques du site : secteur remet branches + activités, branche remet activités
   const surSecteur = (v: string) => { setSecteursSel(p => basculer(p, v)); setBranchesSel([]); setActivitesSel([]); };
   const surBranche = (v: string) => { setBranchesSel(p => basculer(p, v)); setActivitesSel([]); };
+
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
   const feuille = filtresOuverts && (
     <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
@@ -161,14 +189,21 @@ export default function Accords() {
     </FeuilleFiltres>
   );
 
+  const pret = !isLoading && !isError;
+  const segments = [
+    { cle: "tous",       label: "Tous",       compte: pret ? parStatut.tous : undefined },
+    { cle: "en_vigueur", label: "En vigueur", compte: pret ? parStatut.en_vigueur : undefined },
+    { cle: "signe",      label: "Signés",     compte: pret ? parStatut.signe : undefined },
+    { cle: "expire",     label: "Expirés",    compte: pret ? parStatut.expire : undefined },
+  ];
+
   const hero = (
     <>
       <HeroModule retour titre="Accords & Traités"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: STATUTS, valeur: statut, onChange: setStatut }}
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Pays, titre, référence…" }}
+        segments={{ options: segments, valeur: statut, onChange: setStatut }}
         bouton={boutonFiltres} />
-      {/* Types de traités — extensible */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
         {TYPES.map(o => {
           const actif = onglet === o.cle;
           return (
@@ -178,9 +213,6 @@ export default function Accords() {
           );
         })}
       </ScrollView>
-      {onglet === "tbi" && !isLoading && !isError && (
-        <Text style={s.compte}>{filtres.length} accord{filtres.length > 1 ? "s" : ""}</Text>
-      )}
     </>
   );
 
@@ -206,19 +238,20 @@ export default function Accords() {
         style={{ backgroundColor: T.fond }}
         data={isLoading || isError ? [] : filtres}
         keyExtractor={(a: any) => String(a.id)}
-        renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteAccord a={item} onPress={() => setSelec(item)} /></Apparition>}
-        contentContainerStyle={[s.liste, { paddingBottom: margeBas }]}
+        renderItem={({ item, index }: any) => (
+          <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
+            <LigneAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
+          </Apparition>
+        )}
+        contentContainerStyle={{ paddingBottom: margeBas }}
         refreshing={isRefetching}
         onRefresh={refetch}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={hero}
         ListEmptyComponent={
           isLoading ? <SqueletteListe />
-          : isError ? (
-            <EtatErreur onRetry={() => refetch()} />
-          ) : (
-            <EtatVide texte="Aucun accord ne correspond à ces filtres." />
-          )
+          : isError ? <EtatErreur onRetry={() => refetch()} />
+          : <EtatVide texte="Aucun accord ne correspond à ces filtres." />
         }
       />
       <BarreHero retour titre="Accords & Traités" defilY={defilY} bouton={boutonFiltres} />
@@ -230,27 +263,30 @@ export default function Accords() {
 
 const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
-  liste: { gap: 11 },
-  rangee: { paddingHorizontal: 16 },
-  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  rangee: { paddingHorizontal: 16, marginBottom: 10 },
+  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
   chipFiltreActif: { backgroundColor: T.bleuAction, borderColor: T.bleuAction },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
   chipFiltreTexteActif: { color: "#fff" },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 12, marginBottom: 4, paddingHorizontal: 16 },
-  carte: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
+
+  ligne: {
+    flexDirection: "row", alignItems: "center", gap: 13,
+    backgroundColor: T.carte, borderRadius: 18, padding: 12,
+    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }, elevation: 2,
   },
-  ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { fontSize: 15, fontFamily: POLICE.gras, lineHeight: 20, letterSpacing: -0.2 },
-  sousTitre: { fontSize: 11, fontFamily: POLICE.moyen, color: T.gris, marginTop: 3 },
-  badge: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 3 },
-  badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  dates: { flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
-  dateSep: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  dateLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  dateVal: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  bloc: {
+    width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.bleuVoile,
+  },
+  blocDrapeau: { fontSize: 26 },
+  blocNombre: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 21 },
+  blocLabel: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginTop: 1 },
+  titre: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
+  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  pointStatut: { width: 8, height: 8, borderRadius: 4, marginRight: 2 },
+
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },

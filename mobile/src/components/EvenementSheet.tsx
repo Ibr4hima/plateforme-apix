@@ -11,6 +11,7 @@
 //      thématiques en hiérarchie monochrome, invités en chips.
 import { StyleSheet, Text, View } from "react-native";
 import { Feuille } from "@/components/ui";
+import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
@@ -179,31 +180,10 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         </Section>
       ) : null}
 
-      {/* ── Thématiques : hiérarchie monochrome, sans arc-en-ciel ── */}
+      {/* ── Thématiques : hiérarchie monochrome partagée */}
       {Object.keys(e.thematiques_tree || {}).length > 0 && (
         <Section titre="Thématiques">
-          <View style={{ gap: 14 }}>
-            {Object.entries(e.thematiques_tree).map(([sec, branches]: any) => (
-              <View key={sec} style={{ gap: 8 }}>
-                <View style={s.secteurLigne}>
-                  <View style={s.secteurPoint} />
-                  <Text style={s.secteurTexte}>{sec}</Text>
-                </View>
-                {Object.entries(branches).map(([bra, acts]: any) => (
-                  <View key={bra} style={s.branche}>
-                    <Text style={s.brancheTexte}>{bra}</Text>
-                    {acts.length > 0 && (
-                      <View style={{ gap: 3 }}>
-                        {acts.map((act: string) => (
-                          <Text key={act} style={s.activiteTexte}>{act}</Text>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
+          <Thematiques arbre={e.thematiques_tree} />
         </Section>
       )}
 
@@ -250,13 +230,6 @@ const s = StyleSheet.create({
   rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
   rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   description: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
-
-  secteurLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
-  secteurPoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu },
-  secteurTexte: { flex: 1, fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.1 },
-  branche: { marginLeft: 2.5, paddingLeft: 14, borderLeftWidth: 1.5, borderLeftColor: T.filet, gap: 6 },
-  brancheTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
-  activiteTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
