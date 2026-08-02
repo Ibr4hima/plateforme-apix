@@ -101,6 +101,7 @@ export default function VedetteIde() {
   return (
     <Apparition index={0}>
       <Tapable onPress={() => router.push("/investissements")} echelle={0.98} style={s.carte}>
+        <View style={s.filet} />
         {/* Étiquette + signal de navigation */}
         <View style={s.enTete}>
           <Text style={s.etiquette}>FLUX D&apos;IDE ENTRANTS · {dernier.annee}</Text>
@@ -146,13 +147,16 @@ export default function VedetteIde() {
 const s = StyleSheet.create({
   carte: {
     marginHorizontal: ESPACE.m, backgroundColor: T.carte, borderRadius: RAYON.grand,
-    paddingHorizontal: 18, paddingVertical: 16, ...OMBRE.n2,
+    paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden", ...OMBRE.n2,
   },
+  // Le filet des cartes KPI du site : liseré bleu en tête de carte
+  filet: { position: "absolute", top: 0, left: 18, right: 18, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, backgroundColor: T.bleu },
   carteErreur: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 18 },
   erreurTexte: { ...TYPO.legende, color: T.gris, flex: 1 },
   enTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   etiquette: { ...TYPO.micro, color: T.gris },
-  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  // Le nombre en bleu APIX — la donnée EST la marque, comme les KPIs du site
+  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
   deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },

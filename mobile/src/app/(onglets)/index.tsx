@@ -6,6 +6,8 @@
 // Fond clair de bout en bout : le bleu APIX est un accent — chiffres, icônes,
 // pastilles — plus un décor. L'identité tient dans deux lignes de titre, pas
 // dans un panneau.
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
@@ -109,7 +111,14 @@ export default function Accueil() {
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
-          <Text style={s.titre}>Investissement{"\n"}au Sénégal</Text>
+          {/* « Investissement » porte le dégradé orange — la signature du site */}
+          <MaskedView maskElement={<Text style={s.titre}>Investissement</Text>}>
+            <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+              <Text style={[s.titre, { opacity: 0 }]}>Investissement</Text>
+            </LinearGradient>
+          </MaskedView>
+          <Text style={s.titre}>au Sénégal</Text>
         </View>
         <Tapable onPress={() => router.push("/recherche")} echelle={0.92} hitSlop={8}
           style={s.boutonRecherche}>
@@ -145,18 +154,20 @@ const s = StyleSheet.create({
     width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center",
     backgroundColor: T.carte, marginBottom: 4, ...OMBRE.n1,
   },
-  titreSection: { ...TYPO.micro, color: T.gris, marginBottom: ESPACE.s },
+  // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
+  titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenement: {
     flexDirection: "row", alignItems: "center", gap: 14,
     backgroundColor: T.carte, borderRadius: RAYON.grand, padding: 14, ...OMBRE.n1,
   },
+  // Bloc date en bleu plein : l'ancre visuelle de la carte
   evenementDate: {
     width: 52, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuVoile,
+    backgroundColor: T.bleuAction,
   },
-  evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 25, fontVariant: ["tabular-nums"] },
-  evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2, marginTop: 1 },
+  evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: "#fff", lineHeight: 25, fontVariant: ["tabular-nums"] },
+  evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.2, marginTop: 1 },
   evenementNom: { ...TYPO.sousTitre, color: T.encre },
   evenementLieu: { ...TYPO.legende, color: T.gris, marginTop: 2 },
   echeance: {

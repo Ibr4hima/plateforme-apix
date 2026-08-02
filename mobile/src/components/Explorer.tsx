@@ -24,8 +24,9 @@ export default function Explorer() {
         {MODULES.map((m, i) => (
           <Apparition key={m.cle} index={i} style={s.caseGrille}>
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.96} style={s.tuile}>
-              <View style={s.pastille}>
-                <Icone sf={m.sf} materiel={m.icone} taille={19} couleur={T.bleu} />
+              <View style={[s.pastille, m.accent === "orange" && s.pastilleOrange]}>
+                <Icone sf={m.sf} materiel={m.icone} taille={19}
+                  couleur={m.accent === "orange" ? T.orange : T.bleu} />
               </View>
               <Text style={s.tuileTitre} numberOfLines={1}>{m.titre}</Text>
               <Text style={s.tuileSous} numberOfLines={1}>{m.sous}</Text>
@@ -39,8 +40,9 @@ export default function Explorer() {
           <View key={m.cle}>
             {i > 0 && <View style={s.separateur} />}
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.lignePlus}>
-              <View style={s.pastille}>
-                <Icone sf={m.sf} materiel={m.icone} taille={19} couleur={T.bleu} />
+              <View style={[s.pastille, m.accent === "orange" && s.pastilleOrange]}>
+                <Icone sf={m.sf} materiel={m.icone} taille={19}
+                  couleur={m.accent === "orange" ? T.orange : T.bleu} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={s.ligneTitre} numberOfLines={1}>{m.titre}</Text>
@@ -57,7 +59,8 @@ export default function Explorer() {
 
 const s = StyleSheet.create({
   bloc: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
-  titreSection: { ...TYPO.micro, color: T.gris, marginBottom: ESPACE.s },
+  // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
+  titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   // 50 % moins la moitié du gap : deux colonnes exactes quel que soit l'écran
   caseGrille: { flexBasis: "48%", flexGrow: 1 },
@@ -69,6 +72,7 @@ const s = StyleSheet.create({
     width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuVoile,
   },
+  pastilleOrange: { backgroundColor: T.orangeVoile },
   tuileTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, marginTop: 9 },
   ligneTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   tuileSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
