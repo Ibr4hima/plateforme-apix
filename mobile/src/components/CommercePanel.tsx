@@ -5,11 +5,13 @@
 // commerciale — avec le glyphe de tendance teinté.
 //
 // Sous la carte, DEUX LECTURES du sens en vedette (rien en Balance) :
-//   · Les ressources — une liste à barres de part : le nom, la valeur, la
-//     part, et la barre qui la porte. Un classement se lit mieux qu'un
-//     camembert sur un écran de 390 pt.
+//   · Les ressources — une SECONDE VEDETTE, en orange : la même grammaire
+//     (nombre qui compte, variation fléchée, silhouette, repères un par
+//     ligne), une ressource en vedette — Combustibles fossiles par défaut —
+//     et les autres catégories en repères. Le curseur d'années du haut la
+//     pilote aussi.
 //   · Les partenaires — une rangée par pays, DÉPLIABLE : repliée elle montre
-//     la valeur, la part et une barre SEGMENTÉE aux couleurs des ressources ;
+//     la valeur, la part et une barre SEGMENTÉE en camaïeu de bleus ;
 //     dépliée, elle détaille la composition ressource par ressource. C'est le
 //     tableau croisé du site, mais lisible au pouce : jamais de défilement
 //     horizontal, jamais de colonne rognée.
@@ -32,10 +34,10 @@ const LABELS: Record<CleSerie, string> = {
 };
 const ORDRE: CleSerie[] = ["exports", "imports", "balance"];
 
-// Palette des ressources — les quatre teintes canoniques puis leurs
-// assorties ; l'ordre des ressources étant stable (décroissant), la couleur
-// d'une ressource l'est aussi d'un écran à l'autre
-const TEINTES = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0e7490", "#be185d", "#4d7c0f", "#a16207"];
+// Palette des ressources — un camaïeu de bleus, du plein au très clair :
+// l'ordre des ressources étant stable (décroissant), la première pèse le
+// plus foncé et la lecture reste calme, sans arc-en-ciel
+const TEINTES = ["#004f91", "#31699F", "#5C86B4", "#82A3C6", "#A5BDD8", "#C2D3E5", "#D9E4EF", "#EAF0F7"];
 
 type Point = { annee: number; valeur: number };
 
@@ -98,6 +100,39 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     queryFn: () => getJson<any>(`/statistiques/commerce/repartition?${paramsAnnee}`).catch(() => null),
   }).data;
 
+  // ── La ressource en vedette (seconde carte, en orange) ──
+  const [resChoisi, setResChoisi] = useState<string | null>(null);
+  const ressources: { nom: string; valeur: number }[] = useMemo(() =>
+    (tops?.ressources || []).slice(0, 8).map((r: any) => ({ nom: r.ressource, valeur: r.valeur })), [tops]);
+  const resDefaut = ressources.find(r => /combustible/i.test(r.nom))?.nom ?? ressources[0]?.nom ?? null;
+  const resActive = resChoisi && ressources.some(r => r.nom === resChoisi) ? resChoisi : resDefaut;
+
+  // La série de la ressource vedette — le filtre balance parle en codes nom_en
+  const codeRes = ((refs?.ressources || []) as any[])
+    .find(r => (r.libelle || r.nom_en) === resActive)?.nom_en ?? null;
+  const paramsRes = useMemo(() => {
+    if (paysId == null || !annees.length || !codeRes) return null;
+    return new URLSearchParams({
+      pays_id: String(paysId), direction, ressources: codeRes,
+      annee_min: String(annees[0]), annee_max: String(annees[annees.length - 1]),
+    }).toString();
+  }, [paysId, direction, annees, codeRes]);
+  const balRes: any[] = useQuery({
+    queryKey: ["commerce-balance", paramsRes], enabled: !!paramsRes && !enBalance,
+    queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${paramsRes}`).catch(() => []),
+  }).data || [];
+
+  // Les tops de l'année précédente servie — les variations des repères ressources
+  const anneePrec = anneeRef != null ? anneesSerie[anneesSerie.indexOf(anneeRef) - 1] ?? null : null;
+  const paramsPrec = useMemo(() => {
+    if (paysId == null || anneePrec == null) return null;
+    return new URLSearchParams({ pays_id: String(paysId), direction, annees: String(anneePrec) }).toString();
+  }, [paysId, direction, anneePrec]);
+  const topsPrec = useQuery({
+    queryKey: ["commerce-tops", paramsPrec], enabled: !!paramsPrec && !enBalance,
+    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsPrec}`).catch(() => null),
+  }).data;
+
   const selPays = pays.find((p: any) => p.id === paysId);
 
   if (isLoading) return <SqueletteDonnees />;
@@ -127,11 +162,19 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
     if (cle !== "balance") setSens(cle === "exports" ? "exportateur" : "importateur");
   };
 
-  // ── Les ressources, en barres de part ──
-  const totalRes: number = tops?.total || 0;
-  const ressources: { nom: string; valeur: number; part: number }[] = (tops?.ressources || [])
-    .slice(0, 8)
-    .map((r: any) => ({ nom: r.ressource, valeur: r.valeur, part: totalRes ? (r.valeur / totalRes) * 100 : 0 }));
+  // ── La ressource en vedette : sa série, sa dernière valeur, sa variation ──
+  const serieRes: Point[] = jusqu(balRes
+    .map((b: any) => ({ annee: b.annee, valeur: expDir ? b.exportations : b.importations }))
+    .filter((p: any): p is Point => p.valeur != null));
+  const dernierRes = serieRes.at(-1) ?? null;
+  const precRes = serieRes.length > 1 ? serieRes[serieRes.length - 2] : null;
+  const deltaRes = dernierRes && precRes && precRes.valeur !== 0
+    ? ((dernierRes.valeur - precRes.valeur) / Math.abs(precRes.valeur)) * 100 : null;
+  const hausseRes = (deltaRes ?? 0) >= 0;
+  // La variation d'un repère ressource : sa valeur vs l'année précédente
+  const valPrecDe = (nom: string): number | null =>
+    (topsPrec?.ressources || []).find((r: any) => r.ressource === nom)?.valeur ?? null;
+
   // Couleur d'une ressource : sa place dans l'ordre global (stable)
   const ordreRes: string[] = repart?.ressources || ressources.map(r => r.nom);
   const teinteRes = (nom: string) => TEINTES[Math.max(0, ordreRes.indexOf(nom)) % TEINTES.length];
@@ -218,26 +261,72 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         </View>
       </View>
 
-      {/* ── Les ressources du sens en vedette, en barres de part ── */}
-      {!enBalance && ressources.length > 0 && (
+      {/* ── La ressource en vedette — la même grammaire, en orange ── */}
+      {!enBalance && resActive != null && (
         <View style={s.rangee}>
           <Text style={s.sectionTitre}>
-            {expDir ? "Ressources exportées" : "Ressources importées"}
+            {expDir ? "RESSOURCES EXPORTÉES" : "RESSOURCES IMPORTÉES"}
             <Text style={s.sectionAnnee}>{anneeRef ? `   ${anneeRef}` : ""}</Text>
           </Text>
-          <View style={s.carteListe}>
-            {ressources.map((r, i) => (
-              <View key={r.nom} style={[s.ligneRes, i > 0 && s.ligneBord]}>
-                <View style={s.ligneHaut}>
-                  <Text style={s.resNom} numberOfLines={1}>{r.nom}</Text>
-                  <Text style={s.resValeur}>{fmtUSD(r.valeur)}</Text>
-                  <Text style={s.resPart}>{pct(r.part)}</Text>
-                </View>
-                <View style={s.barFond}>
-                  <View style={[s.barRempli, { width: `${Math.max(1.5, r.part)}%`, backgroundColor: teinteRes(r.nom) }]} />
-                </View>
+          <View style={s.vedette}>
+            <View style={s.vedetteEnTete}>
+              <Text style={s.etiquette} numberOfLines={1}>
+                {resActive.toUpperCase()}{dernierRes ? ` · ${dernierRes.annee}` : ""}
+              </Text>
+              <View style={s.badgeRes}>
+                <Text style={s.badgeResTexte} numberOfLines={1}>
+                  {expDir ? "Exportations" : "Importations"}
+                </Text>
               </View>
-            ))}
+            </View>
+
+            {dernierRes ? (
+              <View style={s.nombreLigne}>
+                <ChiffreAnime texte={fmtUSD(dernierRes.valeur)} style={[s.nombre, { color: T.orange }]} />
+                {deltaRes !== null && (
+                  <View style={s.deltaLigne}>
+                    <Icone sf={hausseRes ? "arrow.up.right" : "arrow.down.right"}
+                      materiel={hausseRes ? "north_east" : "south_east"}
+                      taille={12} couleur={hausseRes ? T.vert : "#dc2626"} poids="bold" />
+                    <Text style={[s.deltaTexte, { color: hausseRes ? T.vert : "#dc2626" }]}>
+                      {Math.abs(deltaRes).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                    </Text>
+                    <Text style={s.deltaContexte}>vs {precRes!.annee}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text style={s.indispo}>Donnée indisponible.</Text>
+            )}
+
+            <View style={{ marginTop: 10 }}>
+              {largeurTendance > 0 && serieRes.length > 1 && (
+                <MiniTendance valeurs={serieRes.map(x => x.valeur)} largeur={largeurTendance} couleur={T.orange as string} />
+              )}
+            </View>
+            {serieRes.length > 1 && (
+              <View style={s.bornes}>
+                <Text style={s.borne}>{serieRes[0].annee}</Text>
+                <Text style={s.borne}>{dernierRes!.annee}</Text>
+              </View>
+            )}
+
+            {/* Les autres catégories en repères, un par ligne */}
+            <View style={s.pied}>
+              {ressources.filter(r => r.nom !== resActive).map((r, i) => {
+                const vPrec = valPrecDe(r.nom);
+                const dpc = vPrec != null && vPrec !== 0 ? ((r.valeur - vPrec) / Math.abs(vPrec)) * 100 : null;
+                return (
+                  <Tapable key={r.nom} echelle={0.98}
+                    onPress={() => { tick(); setResChoisi(r.nom); }}
+                    style={[s.repere, i > 0 && s.repereBord]}>
+                    <Text style={s.repereLabel} numberOfLines={1}>{r.nom.toUpperCase()}</Text>
+                    <Text style={s.repereValeur} numberOfLines={1}>{fmtUSD(r.valeur)}</Text>
+                    <IconeTendance delta={dpc} />
+                  </Tapable>
+                );
+              })}
+            </View>
           </View>
         </View>
       )}
@@ -246,7 +335,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {!enBalance && partenaires.length > 0 && (
         <View style={s.rangee}>
           <Text style={s.sectionTitre}>
-            {expDir ? "Destinations" : "Origines"}
+            {expDir ? "DESTINATIONS" : "ORIGINES"}
             <Text style={s.sectionAnnee}>{anneeRef ? `   ${anneeRef}` : ""}</Text>
           </Text>
           <View style={s.carteListe}>
@@ -314,6 +403,11 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
+  badgeRes: {
+    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)", maxWidth: 150,
+  },
+  badgeResTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
@@ -339,15 +433,11 @@ const s = StyleSheet.create({
   ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   ligneHaut: { flexDirection: "row", alignItems: "baseline", gap: 10 },
 
-  ligneRes: { paddingVertical: 11 },
-  resNom: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   resValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  resPart: { minWidth: 46, textAlign: "right", fontSize: 11.5, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
   barFond: {
     flexDirection: "row", height: 5, borderRadius: 99, overflow: "hidden",
     backgroundColor: "rgba(16,26,46,0.07)", marginTop: 7,
   },
-  barRempli: { height: "100%" },
 
   lignePart: { paddingVertical: 11 },
   partNom: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
