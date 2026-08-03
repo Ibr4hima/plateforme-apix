@@ -1,21 +1,24 @@
-// Investissements nationaux (BDEF · ANSD) — version app de l'onglet
-// national du site. Analyse sectorielle (Global des secteurs, cascade
-// macro-secteur → groupe → secteur, sélection unique) ou comparative
-// (macro-secteurs, groupes ou secteurs entre eux, 4 au plus). TOUS les
-// indicateurs BDEF en carrousel de KPIs, huit courbes annuelles — la vue
-// globale compare les macro-secteurs sur chaque graphe, comme le site.
+// Investissements nationaux (BDEF · ANSD) — la même grammaire que l'onglet
+// IDE : UNE grande courbe en vedette (micro-étiquette, nombre en 38 pt qui
+// compte, variation fléchée à côté, graphe signature épuré, légende de
+// lecture en multi-séries), les sept autres indicateurs du site en rangées
+// commutables, et le reste des indicateurs BDEF listés à plat par catégorie
+// avec leur variation vs N-1 fléchée. Analyse sectorielle (Global, cascade
+// macro-secteur → groupe → secteur) ou comparative (4 cibles au plus) — la
+// vue globale compare les macro-secteurs sur chaque courbe, comme le site.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
-import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
+import { ChiffreAnime, EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
+import Icone from "@/components/Icone";
+import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 
 // ── Règles du site ──
 const BDEF_KPI_DEFAUT_ORDRE = true; // tous les indicateurs, dans l'ordre servi
@@ -59,9 +62,11 @@ const NIVEAU_LABEL: Record<string, string> = {
   macro_secteur: "Macro-secteurs", groupe: "Groupes", secteur: "Secteurs",
 };
 
-export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFiltres }: {
-  filtresOuverts: boolean; onFermerFiltres: () => void; onNbFiltres: (n: number) => void;
+export default function NationalPanel({ filtresOuverts, onFermerFiltres, onOuvrirFiltres, onNbFiltres }: {
+  filtresOuverts: boolean; onFermerFiltres: () => void; onOuvrirFiltres: () => void; onNbFiltres: (n: number) => void;
 }) {
+  const { width } = useWindowDimensions();
+  const [serieActive, setSerieActive] = useState(0);
   // Référentiel de la cascade
   const { data: refs } = useQuery({
     queryKey: ["bdef-secteurs"], queryFn: () => getJson<any>("/bdef/secteurs"), staleTime: Infinity,
@@ -126,17 +131,31 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
     return (liste || []).find((n: any) => n.id === id)?.libelle || "?";
   };
 
-  // ── KPIs : TOUS les indicateurs BDEF (analyse sectorielle) ──
-  const kpis: KpiCarrousel[] = useMemo(() => {
+  // La série vedette repart en tête quand la sélection change
+  useEffect(() => { setSerieActive(0); }, [f.sousVue, f.sel.niveau, f.sel.cible_id, f.compType]);
+
+  // ── Autres indicateurs : le reste des BDEF, à plat par catégorie, avec la
+  // variation vs N-1 fléchée (les 8 courbes vivent déjà à l'écran) ──
+  const autresIndics = useMemo(() => {
     if (comparative || !indicateurs.length || derniereAnnee === null) return [];
-    return indicateurs.map(ind => {
+    const groupes: { nom: string; lignes: { code: string; libelle: string; valeur: string; delta: number | null }[] }[] = [];
+    for (const ind of indicateurs) {
+      if (BDEF_GRAPHES_DEFAUT.includes(ind.code)) continue;
+      const as = anneesAffichees.filter(a => ind.valeurs[a] != null);
       const v = ind.valeurs[derniereAnnee] ?? null;
-      return {
-        cle: ind.code, label: ind.libelle, valeur: fmtBdef(v, ind.unite, true),
-        note: `en ${derniereAnnee}`, negatif: v !== null && v < 0 && ind.unite === "%",
-      };
-    });
-  }, [indicateurs, derniereAnnee, comparative]);
+      let delta: number | null = null;
+      if (as.length >= 2) {
+        const d = ind.valeurs[as[as.length - 1]]!, p = ind.valeurs[as[as.length - 2]]!;
+        if (p) { const pct = (d - p) / Math.abs(p) * 100; if (isFinite(pct)) delta = pct; }
+      }
+      const nom = ind.categorie || "Autres";
+      let g = groupes.find(x => x.nom === nom);
+      if (!g) { g = { nom, lignes: [] }; groupes.push(g); }
+      g.lignes.push({ code: ind.code, libelle: ind.libelle, valeur: fmtBdef(v, ind.unite, true), delta });
+    }
+    return groupes;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indicateurs, derniereAnnee, comparative, anneesAffichees.join(",")]);
 
   // ── Graphes : les 8 indicateurs du site ──
   const graphes = useMemo(() => {
@@ -176,18 +195,25 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indicateurs, macroData, compResultats, comparative, f.compSelec, f.compType, f.sel.niveau, anneesAffichees.join(","), couleurSel]);
 
-  const enTeteDe = (ind: BdefIndic, series: Serie[]) => {
-    if (series.length !== 1) return null;
-    const pts = series[0].data.filter(d => d.valeur !== null);
+  // Dernier point / précédent d'UNE série (vedette, rangées, légende)
+  const bilanSerie = (sr?: Serie) => {
+    const pts = (sr?.data || []).filter(d => d.valeur !== null);
     if (!pts.length) return null;
     const dernier = pts[pts.length - 1];
     const prec = pts.length > 1 ? pts[pts.length - 2] : null;
-    let delta: { texte: string; hausse: boolean } | null = null;
+    let delta: number | null = null;
     if (prec && prec.valeur) {
       const pct = (dernier.valeur! - prec.valeur!) / Math.abs(prec.valeur!) * 100;
-      if (isFinite(pct)) delta = { texte: `${pct >= 0 ? "+" : ""}${pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`, hausse: pct >= 0 };
+      if (isFinite(pct)) delta = pct;
     }
-    return { valeur: fmtBdef(dernier.valeur, ind.unite, true), delta };
+    return { dernier, prec, delta, valeurs: pts.map(p => p.valeur as number) };
+  };
+
+  // Retirer une cible comparée depuis sa pastille (✕)
+  const retirerComp = (id: string) => {
+    const ids = f.compSelec.filter(x => String(x) !== id);
+    if (!ids.length) return;
+    setFiltres({ ...f, compSelec: ids });
   };
 
   // ── Badge du hero ──
@@ -215,56 +241,185 @@ export default function NationalPanel({ filtresOuverts, onFermerFiltres, onNbFil
       ) : (comparative ? !compResultats?.some(r => r.inds.length) : indicateurs.length === 0) ? (
         <EtatVide texte="Aucune donnée pour cette sélection" sousTexte="Les données BDEF seront disponibles après import dans l'administration." />
       ) : (
-        <>
-          {/* Période puis sélection(s) */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
-            <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
-            {pastilles.map(pa => (
-              <View key={pa.cle} style={[s.selPastille, { borderColor: `${pa.couleur}2E`, backgroundColor: `${pa.couleur}0D` }]}>
-                <View style={[s.selPoint, { backgroundColor: pa.couleur }]} />
-                <Text style={[s.selPastilleTexte, { color: pa.couleur }]} numberOfLines={1}>{pa.nom}</Text>
-              </View>
-            ))}
-          </ScrollView>
+        (() => {
+          const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+          const idx = Math.min(serieActive, Math.max(0, graphes.length - 1));
+          const gActive = graphes[idx];
+          const multi = (gActive?.series.length ?? 0) > 1;
+          const bilan = gActive ? bilanSerie(gActive.series[0]) : null;
+          const hausse = (bilan?.delta ?? 0) >= 0;
+          const autres = graphes.map((g, i) => ({ ...g, i })).filter(x => x.i !== idx);
+          const fmtInd = (ind: BdefIndic) => (v: number | null) => fmtBdef(v, ind.unite, true);
+          return (
+            <View style={cap}>
+              {/* La sélection se lit et s'ouvre ICI : période → filtres,
+                  pastille comparée → retirer (✕), pastille simple → filtres */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
+                <Pressable onPress={onOuvrirFiltres} style={s.periodePastille}>
+                  <Text style={s.periodePastilleTexte}>{perLabel}</Text>
+                </Pressable>
+                {pastilles.map(pa => {
+                  const retirable = comparative && pastilles.length > 1;
+                  return (
+                    <Pressable key={pa.cle}
+                      onPress={retirable ? () => { tick(); retirerComp(pa.cle); } : onOuvrirFiltres}
+                      style={[s.selPastille, { borderColor: `${pa.couleur}33` }]}>
+                      <View style={[s.selPoint, { backgroundColor: pa.couleur }]} />
+                      <Text style={[s.selPastilleTexte, { color: pa.couleur }]} numberOfLines={1}>{pa.nom}</Text>
+                      {retirable && <Icone sf="xmark" materiel="close" taille={11} couleur={pa.couleur} />}
+                    </Pressable>
+                  );
+                })}
+                {comparative && (
+                  <Pressable onPress={() => { tick(); onOuvrirFiltres(); }} style={s.plusPastille}
+                    accessibilityLabel="Modifier les cibles comparées">
+                    <Icone sf="plus" materiel="add" taille={14} couleur={T.bleu} poids="semibold" />
+                  </Pressable>
+                )}
+              </ScrollView>
 
-          {/* TOUS les indicateurs BDEF en carrousel (analyse sectorielle) */}
-          {!comparative && kpis.length > 0 && (
-            <View style={{ marginTop: 14 }}>
-              <CarrouselKpis kpis={kpis} />
-            </View>
-          )}
-
-          {/* Les 8 courbes du site */}
-          <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
-            {graphes.map(({ ind, series }) => {
-              const entete = enTeteDe(ind, series);
-              return (
-                <View key={ind.code} style={s.graphe}>
-                  <View style={s.grapheEntete}>
-                    <View style={s.grapheTitreLigne}>
-                      <Text style={s.grapheTitre} numberOfLines={2}>{ind.libelle}</Text>
-                      <Text style={s.grapheSous} numberOfLines={1}>{ind.unite} · {perLabel.replace(" — ", "–")}</Text>
-                    </View>
-                    {entete && (
-                      <View style={{ alignItems: "flex-end", gap: 4 }}>
-                        <Text style={s.grapheValeur} numberOfLines={1}>{entete.valeur}</Text>
-                        {entete.delta && (
-                          <View style={[s.deltaChip, { backgroundColor: entete.delta.hausse ? "rgba(24,128,56,0.10)" : "rgba(220,38,38,0.09)" }]}>
-                            <Text style={[s.deltaTexte, { color: entete.delta.hausse ? T.vert : "#dc2626" }]}>
-                              {entete.delta.hausse ? "▲" : "▼"} {entete.delta.texte}
-                            </Text>
-                          </View>
-                        )}
+              {gActive && (
+                <>
+                  {/* ── La vedette : UN indicateur en grand ── */}
+                  <View style={s.rangee}>
+                    <View style={s.vedette}>
+                      <Text style={s.etiquette} numberOfLines={1}>
+                        {gActive.ind.libelle.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
+                      </Text>
+                      {!multi && bilan && (
+                        <View style={s.nombreLigne}>
+                          <ChiffreAnime texte={fmtBdef(bilan.dernier.valeur, gActive.ind.unite)} style={s.nombre} />
+                          {bilan.delta !== null && (
+                            <View style={s.deltaLigne}>
+                              <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
+                                materiel={hausse ? "north_east" : "south_east"}
+                                taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
+                              <Text style={[s.deltaTexteV, { color: hausse ? T.vert : "#dc2626" }]}>
+                                {Math.abs(bilan.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                              </Text>
+                              <Text style={s.deltaContexte}>vs {bilan.prec!.annee}</Text>
+                            </View>
+                          )}
+                        </View>
+                      )}
+                      <View style={{ marginTop: multi ? 4 : 10 }}>
+                        <GrapheLignes series={gActive.series} hauteur={multi ? 190 : 172}
+                          fmt={fmtInd(gActive.ind)} epure />
                       </View>
-                    )}
+                      {/* En multi-séries, la lecture vit sous la courbe */}
+                      {multi && (
+                        <View style={s.legende}>
+                          {gActive.series.map(sr => {
+                            const b = bilanSerie(sr);
+                            const bHausse = (b?.delta ?? 0) >= 0;
+                            return (
+                              <View key={sr.nom} style={s.legendeLigne}>
+                                <View style={[s.selPoint, { backgroundColor: sr.couleur }]} />
+                                <Text style={s.legendeNom} numberOfLines={1}>{sr.nom}</Text>
+                                {b?.dernier && <Text style={s.legendeAnnee}>{b.dernier.annee}</Text>}
+                                <Text style={s.legendeValeur}>{b ? fmtInd(gActive.ind)(b.dernier.valeur) : "—"}</Text>
+                                {b?.delta != null ? (
+                                  <View style={s.legendeDelta}>
+                                    <Icone sf={bHausse ? "arrow.up.right" : "arrow.down.right"}
+                                      materiel={bHausse ? "north_east" : "south_east"}
+                                      taille={10} couleur={bHausse ? T.vert : "#dc2626"} poids="bold" />
+                                    <Text style={[s.legendeDeltaTexte, { color: bHausse ? T.vert : "#dc2626" }]}>
+                                      {Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                    </Text>
+                                  </View>
+                                ) : <View style={s.legendeDelta} />}
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
+                    </View>
                   </View>
-                  <GrapheLignes series={series} hauteur={165} fmt={(v: number | null) => fmtBdef(v, ind.unite, true)} />
+
+                  {/* ── Les autres indicateurs graphés — rangées commutables ── */}
+                  {autres.length > 0 && (
+                    <View style={s.rangee}>
+                      <View style={s.carteListe}>
+                        {autres.map((g, pos) => {
+                          const b = bilanSerie(g.series[0]);
+                          const bHausse = (b?.delta ?? 0) >= 0;
+                          return (
+                            <Tapable key={g.ind.code} echelle={0.99}
+                              onPress={() => { tick(); setSerieActive(g.i); }}
+                              style={[s.serieLigne, pos > 0 && s.serieLigneBord]}>
+                              <View style={{ flex: 1, minWidth: 0 }}>
+                                <Text style={s.serieLabel} numberOfLines={1}>{g.ind.libelle}</Text>
+                                {multi ? (
+                                  <View style={s.serieSous}>
+                                    {g.series.map(sr => {
+                                      const bs = bilanSerie(sr);
+                                      return (
+                                        <Text key={sr.nom} style={[s.serieValeur, { color: sr.couleur }]}>
+                                          {bs ? fmtInd(g.ind)(bs.dernier.valeur) : "—"}
+                                        </Text>
+                                      );
+                                    })}
+                                  </View>
+                                ) : (
+                                  <View style={s.serieSous}>
+                                    <Text style={s.serieValeur}>{b ? fmtInd(g.ind)(b.dernier.valeur) : "—"}</Text>
+                                    {b?.delta != null && (
+                                      <Text style={[s.serieDelta, { color: bHausse ? T.vert : "#dc2626" }]}>
+                                        {bHausse ? "+" : "−"}{Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                      </Text>
+                                    )}
+                                  </View>
+                                )}
+                              </View>
+                              {!multi && b && b.valeurs.length > 1 && (
+                                <MiniTendance valeurs={b.valeurs} largeur={72} hauteur={30}
+                                  couleur={g.series[0]?.couleur || (T.bleu as string)} />
+                              )}
+                            </Tapable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </>
+              )}
+
+              {/* ── Le reste des indicateurs BDEF — à plat, variations fléchées ── */}
+              {autresIndics.length > 0 && (
+                <View style={s.rangee}>
+                  <Text style={s.sectionTitre}>AUTRES INDICATEURS</Text>
+                  <View style={[s.carteListe, { paddingVertical: 3 }]}>
+                    {autresIndics.map(g => (
+                      <View key={g.nom}>
+                        <Text style={s.groupeTitre}>{g.nom.toUpperCase()}</Text>
+                        {g.lignes.map(l => {
+                          const lHausse = (l.delta ?? 0) >= 0;
+                          return (
+                            <View key={l.code} style={[s.indicLigne, s.serieLigneBord]}>
+                              <Text style={s.indicLabel} numberOfLines={2}>{l.libelle}</Text>
+                              {l.delta != null && (
+                                <View style={s.legendeDelta}>
+                                  <Icone sf={lHausse ? "arrow.up.right" : "arrow.down.right"}
+                                    materiel={lHausse ? "north_east" : "south_east"}
+                                    taille={10} couleur={lHausse ? T.vert : "#dc2626"} poids="bold" />
+                                  <Text style={[s.legendeDeltaTexte, { color: lHausse ? T.vert : "#dc2626" }]}>
+                                    {Math.abs(l.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                  </Text>
+                                </View>
+                              )}
+                              <Text style={s.indicValeur}>{l.valeur}</Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    ))}
+                  </View>
                 </View>
-              );
-            })}
-          </View>
-          <Text style={s.source}>Source BDEF · ANSD</Text>
-        </>
+              )}
+              <Text style={s.source}>Source BDEF · ANSD</Text>
+            </View>
+          );
+        })()
       )}
 
       {filtresOuverts && refs && (
@@ -529,30 +684,65 @@ function NationalFiltres({ refs, anneesDispo, valeurs, onAppliquer, onClose }: {
 
 const s = StyleSheet.create({
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 14, paddingHorizontal: 16 },
+  // Les styles badge_* de la plateforme : pastille blanche translucide à
+  // bordure teintée, texte de la couleur (gris pour la période)
   periodePastille: {
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
-    backgroundColor: T.filet, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(108,117,125,0.28)",
   },
-  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#6b7280", fontVariant: ["tabular-nums"] },
   selPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.7)",
     paddingHorizontal: 12, paddingVertical: 5, maxWidth: 230,
   },
   selPoint: { width: 7, height: 7, borderRadius: 4 },
   selPastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, flexShrink: 1 },
-  graphe: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,
-    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+  plusPastille: {
+    width: 27, height: 27, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
-  grapheEntete: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 10 },
-  grapheTitreLigne: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "baseline", gap: 7, flexWrap: "wrap" },
-  grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, flexShrink: 1 },
-  grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
-  grapheValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, fontVariant: ["tabular-nums"] },
-  deltaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  rangee: { paddingHorizontal: 16, marginTop: 14 },
+  vedette: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, overflow: "hidden",
+  },
+  etiquette: { ...TYPO.micro, color: T.gris },
+  nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
+  nombre: { fontSize: 34, lineHeight: 40, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -0.8, marginTop: 8, fontVariant: ["tabular-nums"] },
+  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
+  deltaTexteV: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
+
+  legende: {
+    marginTop: 8, paddingTop: 4, paddingBottom: 6, gap: 7,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
+  },
+  legendeLigne: { flexDirection: "row", alignItems: "center", gap: 7, paddingTop: 4 },
+  legendeNom: { flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
+  legendeAnnee: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  legendeValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  legendeDelta: { flexDirection: "row", alignItems: "center", gap: 2, minWidth: 58, justifyContent: "flex-end" },
+  legendeDeltaTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  carteListe: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16,
+  },
+  serieLigne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 11 },
+  serieLigneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  serieLabel: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  serieSous: { flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2, flexWrap: "wrap" },
+  serieValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  serieDelta: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
+  groupeTitre: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginTop: 12, marginBottom: 2 },
+  indicLigne: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9.5 },
+  indicLabel: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  indicValeur: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+
   source: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 18 },
   // Feuille de filtres
   fSecLigne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },

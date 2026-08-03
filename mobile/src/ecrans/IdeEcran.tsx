@@ -559,6 +559,7 @@ export default function IdeEcran() {
           <NationalPanel
             filtresOuverts={filtresOuverts && onglet === "nationaux"}
             onFermerFiltres={() => setFiltresOuverts(false)}
+            onOuvrirFiltres={() => setFiltresOuverts(true)}
             onNbFiltres={setNbFiltresNat} />
         ) : (
           <>
