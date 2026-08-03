@@ -1,11 +1,11 @@
-// Accueil — le briefing du jour, pas une vitrine.
+// Accueil — le briefing du jour, ouvert par le hero bleu des débuts.
 //
 // Sur téléphone, l'écran d'ouverture répond à trois questions, dans l'ordre :
 // où en est l'investissement au Sénégal (chiffre vedette + tendance), qu'est-ce
 // qui arrive (prochain événement), où est-ce que je creuse (Explorer).
-// Fond clair de bout en bout : le bleu APIX est un accent — chiffres, icônes,
-// pastilles — plus un décor. L'identité tient dans deux lignes de titre, pas
-// dans un panneau.
+// L'identité s'affiche d'emblée : le panneau bleu institutionnel à halos,
+// « Investissement » en dégradé orange, la pilule de recherche à cheval —
+// puis le fond clair reprend et le bleu redevient un accent.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
 import Icone from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
-import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
+import { Apparition, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
@@ -90,13 +90,13 @@ export default function Accueil() {
     return n;
   });
 
-  // L'accueil est clair : barre d'état sombre tant qu'il a le focus, retour
-  // au blanc en le quittant (les deux autres onglets gardent leur hero bleu).
+  // Le hero est bleu : barre d'état blanche tant que l'accueil a le focus
+  // (les autres écrans, clairs, posent la leur via EnTetePage).
   // Impératif plutôt qu'un composant <StatusBar> : les trois onglets restent
   // montés simultanément, des composants par écran se disputeraient le style.
   useFocusEffect(useCallback(() => {
-    setStatusBarStyle("dark");
-    return () => setStatusBarStyle("light");
+    setStatusBarStyle("light");
+    return () => setStatusBarStyle("dark");
   }, []));
 
   const rafraichir = async () => {
@@ -104,47 +104,44 @@ export default function Accueil() {
     try { await qc.refetchQueries({ type: "active" }); } finally { setRafraichit(false); }
   };
 
-  const dateDuJour = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
-
   return (
     <ScrollView
       style={{ backgroundColor: T.fond }}
       contentContainerStyle={{ paddingBottom: margeBas }}
       refreshControl={<RefreshControl refreshing={rafraichit} onRefresh={rafraichir}
-        tintColor={T.bleu as string} progressViewOffset={insets.top} />}
+        tintColor="#fff" progressViewOffset={insets.top + 40} />}
       showsVerticalScrollIndicator={false}>
 
-      {/* ── En-tête : date, titre, recherche ── */}
-      <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
-          {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
-              MaskedView est un bloc : la ligne est donc une rangée de deux
-              textes, le second masqué par le dégradé. */}
-          <View style={s.titreLigne}>
-            <Text style={[s.titre, { color: T.bleu }]}>Invest in </Text>
-            <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
-              <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                <Text style={[s.titre, { opacity: 0 }]}>Senegal</Text>
-              </LinearGradient>
-            </MaskedView>
-          </View>
-        </View>
-        <View style={s.boutonsEnTete}>
-          <BoutonVerre onPress={basculerTheme} taille={40}
-            accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
-            <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-              taille={17} couleur={T.bleu} poids="semibold" />
-          </BoutonVerre>
-          <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
-            accessibilityLabel="Rechercher">
-            <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
-          </BoutonVerre>
-        </View>
+      {/* ── Hero — le panneau bleu des débuts, halos compris ── */}
+      <View style={[s.hero, { paddingTop: insets.top + 30 }]}>
+        <View style={s.haloHaut} />
+        <View style={s.haloBas} />
+
+        {/* Mode sombre / clair, posé sur le bleu */}
+        <Tapable onPress={basculerTheme} echelle={0.9} hitSlop={8}
+          style={[s.boutonMode, { top: insets.top + 58 }]}>
+          <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+            taille={16} couleur="#fff" poids="semibold" />
+        </Tapable>
+
+        <Text style={s.surtitre}>PLATEFORME DE GESTION DES INVESTISSEMENTS</Text>
+
+        {/* « Investissement » porte le dégradé orange de la marque */}
+        <Text style={s.titre}>Intelligence</Text>
+        <MaskedView maskElement={<Text style={[s.titre, s.titreMasque]}>Investissement</Text>}>
+          <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <Text style={[s.titre, s.titreMasque, { opacity: 0 }]}>Investissement</Text>
+          </LinearGradient>
+        </MaskedView>
+        <Text style={s.titre}>Sénégal</Text>
       </View>
+
+      {/* Recherche — la porte d'entrée principale, à cheval sur le hero */}
+      <Tapable onPress={() => router.push("/recherche")} echelle={0.98} style={s.recherche}>
+        <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
+        <Text style={s.rechercheTexte}>Rechercher</Text>
+      </Tapable>
 
       {/* ── La situation ── */}
       <VedetteIde />
@@ -161,18 +158,30 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  enTete: {
-    flexDirection: "row", alignItems: "flex-end", gap: ESPACE.s,
-    paddingHorizontal: ESPACE.m + 4, paddingBottom: ESPACE.m + 2,
+  // Le hero bleu des débuts — halos lumineux, coins bas arrondis
+  hero: {
+    backgroundColor: T.heroFond, paddingHorizontal: 24, paddingBottom: 64,
+    overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
   },
-  date: { ...TYPO.micro, color: T.gris },
-  boutonsEnTete: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
-  titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
-  // 28 pt : « Invest in Senegal » doit tenir sur UNE ligne, bouton recherche compris
-  titre: {
-    fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
-    letterSpacing: -0.7,
+  haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
+  haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
+  surtitre: { color: "rgba(255,255,255,0.75)", fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2, marginBottom: 22, textAlign: "center" },
+  titre: { color: "#fff", fontSize: 40, fontFamily: POLICE.gras, lineHeight: 47, letterSpacing: -1 },
+  titreMasque: { color: "#000" },
+  boutonMode: {
+    position: "absolute", right: 20, width: 38, height: 38, borderRadius: 19,
+    alignItems: "center", justifyContent: "center", zIndex: 2,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.25)",
   },
+  recherche: {
+    marginTop: -26, marginHorizontal: 22, height: 52, zIndex: 2,
+    backgroundColor: T.carte, borderRadius: 999, flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 20, gap: 11,
+    shadowColor: "#001e3c", shadowOpacity: 0.25, shadowRadius: 18, shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  rechercheTexte: { color: T.gris, fontSize: 14.5, fontFamily: POLICE.moyen, flex: 1 },
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
   titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },

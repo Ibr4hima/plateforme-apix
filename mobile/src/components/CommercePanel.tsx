@@ -4,17 +4,11 @@
 // silhouette Skia sans axes) et deux repères — Importations et Balance
 // commerciale — avec le glyphe de tendance teinté.
 //
-// Sous la carte, DEUX LECTURES du sens en vedette (rien en Balance) :
-//   · Les ressources — une SECONDE VEDETTE, en orange : la même grammaire
-//     (nombre qui compte, variation fléchée, silhouette, repères un par
-//     ligne), une ressource en vedette — Combustibles fossiles par défaut —
-//     et les autres catégories en repères. Le curseur d'années du haut la
-//     pilote aussi.
-//   · Les partenaires — une rangée par pays, DÉPLIABLE : repliée elle montre
-//     la valeur, la part et une barre SEGMENTÉE en camaïeu de bleus ;
-//     dépliée, elle détaille la composition ressource par ressource. C'est le
-//     tableau croisé du site, mais lisible au pouce : jamais de défilement
-//     horizontal, jamais de colonne rognée.
+// Sous la carte, LES RESSOURCES du sens en vedette (rien en Balance) :
+// une SECONDE VEDETTE, en orange — la même grammaire (nombre qui compte,
+// variation fléchée, silhouette, repères un par ligne), une ressource en
+// vedette — Combustibles fossiles par défaut — et les autres catégories en
+// repères. Le curseur d'années du haut la pilote aussi.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -34,11 +28,6 @@ const LABELS: Record<CleSerie, string> = {
 };
 const ORDRE: CleSerie[] = ["exports", "imports", "balance"];
 
-// Palette des ressources — un camaïeu de bleus, du plein au très clair :
-// l'ordre des ressources étant stable (décroissant), la première pèse le
-// plus foncé et la lecture reste calme, sans arc-en-ciel
-const TEINTES = ["#004f91", "#31699F", "#5C86B4", "#82A3C6", "#A5BDD8", "#C2D3E5", "#D9E4EF", "#EAF0F7"];
-
 type Point = { annee: number; valeur: number };
 
 export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
@@ -47,7 +36,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const [actif, setActif] = useState<CleSerie>("exports");
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
-  const [ouvert, setOuvert] = useState<string | null>(null);
 
   // Référentiel du commerce : années disponibles
   const { data: refs, isLoading, isError, refetch } = useQuery({
@@ -83,8 +71,8 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   }, [anneesSerie.join(",")]);
   const anneeRef = anneeSel ?? anneesSerie[anneesSerie.length - 1] ?? null;
 
-  // Les deux lectures portent sur l'ANNÉE de la vedette (pas un cumul) :
-  // le curseur pilote donc aussi les classements
+  // Les tops portent sur l'ANNÉE de la vedette (pas un cumul) :
+  // le curseur pilote donc aussi la carte des ressources
   const paramsAnnee = useMemo(() => {
     if (paysId == null || anneeRef == null) return null;
     return new URLSearchParams({ pays_id: String(paysId), direction, annees: String(anneeRef) }).toString();
@@ -94,10 +82,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const tops = useQuery({
     queryKey: ["commerce-tops", paramsAnnee], enabled: !!paramsAnnee && !enBalance,
     queryFn: () => getJson<any>(`/statistiques/commerce/tops?${paramsAnnee}`).catch(() => null),
-  }).data;
-  const repart = useQuery({
-    queryKey: ["commerce-repartition", paramsAnnee], enabled: !!paramsAnnee && !enBalance,
-    queryFn: () => getJson<any>(`/statistiques/commerce/repartition?${paramsAnnee}`).catch(() => null),
   }).data;
 
   // ── La ressource en vedette (seconde carte, en orange) ──
@@ -158,7 +142,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const choisir = (cle: CleSerie) => {
     tick();
     setActif(cle);
-    setOuvert(null);
     if (cle !== "balance") setSens(cle === "exports" ? "exportateur" : "importateur");
   };
 
@@ -174,23 +157,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   // La variation d'un repère ressource : sa valeur vs l'année précédente
   const valPrecDe = (nom: string): number | null =>
     (topsPrec?.ressources || []).find((r: any) => r.ressource === nom)?.valeur ?? null;
-
-  // Couleur d'une ressource : sa place dans l'ordre global (stable)
-  const ordreRes: string[] = repart?.ressources || ressources.map(r => r.nom);
-  const teinteRes = (nom: string) => TEINTES[Math.max(0, ordreRes.indexOf(nom)) % TEINTES.length];
-
-  // ── Les partenaires, avec leur composition ──
-  const partenaires: { nom: string; total: number; parts: { nom: string; valeur: number }[] }[] =
-    (repart?.partenaires || []).slice(0, 8).map((p: any) => ({
-      nom: p.nom, total: p.total,
-      parts: (repart?.ressources || [])
-        .map((nom: string, i: number) => ({ nom, valeur: p.valeurs?.[i] || 0 }))
-        .filter((x: any) => x.valeur > 0)
-        .sort((a: any, b: any) => b.valeur - a.valeur),
-    }));
-  const totalPart = partenaires.reduce((n, p) => n + p.total, 0);
-
-  const pct = (v: number) => `${v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
 
   return (
     <>
@@ -264,10 +230,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {/* ── La ressource en vedette — la même grammaire, en orange ── */}
       {!enBalance && resActive != null && (
         <View style={s.rangee}>
-          <Text style={s.sectionTitre}>
-            {expDir ? "RESSOURCES EXPORTÉES" : "RESSOURCES IMPORTÉES"}
-            <Text style={s.sectionAnnee}>{anneeRef ? `   ${anneeRef}` : ""}</Text>
-          </Text>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
               <Text style={s.etiquette} numberOfLines={1}>
@@ -331,58 +293,6 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         </View>
       )}
 
-      {/* ── Les partenaires : barre segmentée, dépliable ressource par ressource ── */}
-      {!enBalance && partenaires.length > 0 && (
-        <View style={s.rangee}>
-          <Text style={s.sectionTitre}>
-            {expDir ? "DESTINATIONS" : "ORIGINES"}
-            <Text style={s.sectionAnnee}>{anneeRef ? `   ${anneeRef}` : ""}</Text>
-          </Text>
-          <View style={s.carteListe}>
-            {partenaires.map((p, i) => {
-              const estOuvert = ouvert === p.nom;
-              const part = totalPart ? (p.total / totalPart) * 100 : 0;
-              return (
-                <View key={p.nom} style={i > 0 ? s.ligneBord : undefined}>
-                  <Tapable echelle={0.99}
-                    onPress={() => { tick(); setOuvert(estOuvert ? null : p.nom); }}
-                    style={s.lignePart}>
-                    <View style={s.ligneHaut}>
-                      <Text style={s.partNom} numberOfLines={1}>{p.nom}</Text>
-                      <Text style={s.resValeur}>{fmtUSD(p.total)}</Text>
-                      <Icone sf={estOuvert ? "chevron.up" : "chevron.down"}
-                        materiel={estOuvert ? "expand_less" : "expand_more"}
-                        taille={14} couleur={T.grisClair} />
-                    </View>
-                    {/* La barre SEGMENTÉE : la composition en un coup d'œil */}
-                    <View style={s.barFond}>
-                      {p.parts.map(x => (
-                        <View key={x.nom}
-                          style={{ flex: Math.max(0.001, x.valeur), backgroundColor: teinteRes(x.nom) }} />
-                      ))}
-                      {/* Le reste de la piste : la part du partenaire dans le total */}
-                      <View style={{ flex: Math.max(0.001, (totalPart - p.total) * (part < 100 ? 1 : 0) / Math.max(1, partenaires.length)) }} />
-                    </View>
-                    <Text style={s.partLegende}>{pct(part)} du total · {p.parts.length} ressource{p.parts.length > 1 ? "s" : ""}</Text>
-                  </Tapable>
-                  {estOuvert && (
-                    <View style={s.detail}>
-                      {p.parts.map(x => (
-                        <View key={x.nom} style={s.detailLigne}>
-                          <View style={[s.detailPoint, { backgroundColor: teinteRes(x.nom) }]} />
-                          <Text style={s.detailNom} numberOfLines={1}>{x.nom}</Text>
-                          <Text style={s.detailValeur}>{fmtUSD(x.valeur)}</Text>
-                          <Text style={s.detailPart}>{pct(p.total ? (x.valeur / p.total) * 100 : 0)}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -422,30 +332,4 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-
-  // Les deux lectures
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  sectionAnnee: { color: T.grisClair, fontVariant: ["tabular-nums"] },
-  carteListe: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
-    borderWidth: 1, borderColor: T.carteBord, paddingHorizontal: 16, overflow: "hidden",
-  },
-  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  ligneHaut: { flexDirection: "row", alignItems: "baseline", gap: 10 },
-
-  resValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  barFond: {
-    flexDirection: "row", height: 5, borderRadius: 99, overflow: "hidden",
-    backgroundColor: "rgba(16,26,46,0.07)", marginTop: 7,
-  },
-
-  lignePart: { paddingVertical: 11 },
-  partNom: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  partLegende: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 6 },
-  detail: { paddingBottom: 12, gap: 7 },
-  detailLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
-  detailPoint: { width: 7, height: 7, borderRadius: 4 },
-  detailNom: { flex: 1, minWidth: 0, fontSize: 12, fontFamily: POLICE.normal, color: T.texte },
-  detailValeur: { fontSize: 12, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
-  detailPart: { minWidth: 44, textAlign: "right", fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair, fontVariant: ["tabular-nums"] },
 });
