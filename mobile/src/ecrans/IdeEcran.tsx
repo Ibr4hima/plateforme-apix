@@ -4,21 +4,23 @@
 // Le principe : UNE grande courbe à la fois (le pattern d'une app de marchés),
 // pas quatre graphes empilés. La carte vedette reprend la grammaire de
 // l'accueil — micro-étiquette, le nombre en 38 pt qui compte jusqu'à sa
-// valeur, la variation vs N-1 fléchée — et la prolonge avec le graphe
-// signature Skia (scrubbing aimanté, pic historique). Les AUTRES séries de la
-// catégorie deviennent des rangées commutables : libellé, dernière valeur,
-// sparkline — toucher une rangée l'installe en vedette.
+// valeur, la variation vs N-1 fléchée à côté — et la prolonge avec le graphe
+// signature Skia en mode épuré (ni grille ni ordonnées : le scrubbing aimanté
+// et le pic suffisent). Les AUTRES séries de la catégorie sont des rangées
+// commutables : libellé, dernière valeur, sparkline — toucher une rangée
+// l'installe en vedette.
 //
-// Les 24 KPIs du site ne s'empilent plus : « L'essentiel » n'en garde que
-// quatre en tuiles, et la fiche « Tous les indicateurs » sert le reste, groupé
-// par thème, à la demande.
+// La sélection se manipule DANS la ligne de contexte, plus seulement dans la
+// feuille de filtres : chaque pastille de pays se retire d'un tap (✕), le
+// bouton + ouvre un sélecteur avec recherche (jusqu'à 4 pays, la comparaison
+// s'active toute seule), la pastille de période ouvre les filtres.
 //
-// Les règles de données du site sont inchangées : catégories Flux & Stocks /
-// Greenfield / M&A, vues Pays / Comparative / Monde / Secteurs via la feuille
-// de filtres, bornes de période au contexte.
+// Les 24 KPIs du site ne s'empilent plus en carrousel : « Autres
+// indicateurs » les liste à plat, groupés par thème, avec leur variation
+// fléchée quand elle s'applique.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
@@ -30,13 +32,13 @@ import NationalPanel from "@/components/NationalPanel";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
-import { tick } from "@/lib/haptique";
+import { cran, tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
 const ONGLETS = [
-  { cle: "ide",       label: "Inv. Directs Étrangers" },
-  { cle: "nationaux", label: "Inv. Nationaux" },
+  { cle: "ide",       label: "IDEs" },
+  { cle: "nationaux", label: "Investissements Nationaux" },
 ] as const;
 
 // Catégories d'analyse (mêmes séries que le site) — la vue Secteurs
@@ -79,22 +81,16 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
   ],
 };
 
-// L'ordre du site pour la fiche « Tous les indicateurs » (hors streak)
+// L'ordre du site pour la liste des indicateurs (hors streak). Les derniers
+// points des quatre séries n'y figurent pas : ils sont déjà à l'écran
+// (vedette + rangées de séries).
 const KPI_IDS = [
-  "fe_last", "fs_last", "fn_last", "se_last", "ss_last", "sn_last",
+  "fn_last", "sn_last",
   "g_fe", "g_se", "cagr_fe", "mom_fe",
   "moy_fe", "med_fe", "max_fe", "min_fe", "std_fe",
   "trend_fe", "accel_fe", "tv5_fe", "tv10_fe",
   "r_fe_fs", "dist_max_fe", "regularite_fe", "vs_moy_fe",
   "n_pos_fe",
-];
-
-// Les quatre qui résument tout — le reste vit dans la fiche
-const ESSENTIELS_FLUX = [
-  { id: "g_fe",   label: "CROISSANCE" },
-  { id: "cagr_fe", label: "CAGR" },
-  { id: "moy_fe", label: "MOYENNE" },
-  { id: "max_fe", label: "RECORD" },
 ];
 
 // Valeurs CNUCED en millions USD (règle d'affichage du site)
@@ -121,52 +117,92 @@ function indicatifDe(k: KpiResult): string | null {
   return null;
 }
 
-const kpiNegatif = (k: KpiResult) =>
-  k.valeur !== null && k.valeur < 0 && (k.format === "pourcentage" || k.format === "monnaie_signe");
+type Tendance = "hausse" | "baisse" | null;
+type LigneStat = { cle: string; label: string; valeur: string; note?: string | null; tendance?: Tendance };
 
-type Stat = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
+// Un KPI signé (croissance, solde…) porte sa flèche ; les autres restent neutres
+const tendanceDe = (k: KpiResult): Tendance =>
+  k.valeur !== null && (k.format === "pourcentage" || k.format === "monnaie_signe")
+    ? (k.valeur >= 0 ? "hausse" : "baisse") : null;
 
-// ── Fiche « Tous les indicateurs » — groupés par thème, à la demande ─────────
-function IndicateursSheet({ kpis, sousTitre, onClose }: { kpis: KpiResult[]; sousTitre: string; onClose: () => void }) {
-  const groupes: { nom: string; items: KpiResult[] }[] = [];
-  for (const k of kpis) {
-    let g = groupes.find(x => x.nom === k.categorie);
-    if (!g) { g = { nom: k.categorie, items: [] }; groupes.push(g); }
-    g.items.push(k);
-  }
+// ── Rangée d'indicateur : libellé + indicatif à gauche, valeur fléchée à droite ──
+function LigneIndic({ ligne, premier }: { ligne: LigneStat; premier: boolean }) {
+  const c = ligne.tendance === "hausse" ? T.vert : ligne.tendance === "baisse" ? "#dc2626" : T.encre;
   return (
-    <Feuille onClose={onClose} ecart={22}
-      titre={<Text style={si.titre}>Tous les indicateurs</Text>}
-      sousEntete={<Text style={si.meta} numberOfLines={1}>{sousTitre}</Text>}>
-      {groupes.map(g => (
-        <View key={g.nom}>
-          <Text style={si.sectionTitre}>{g.nom.toUpperCase()}</Text>
-          <View>
-            {g.items.map((k, i) => (
-              <View key={k.id} style={[si.ligne, i > 0 && si.ligneBord]}>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={si.label}>{k.label}</Text>
-                  {indicatifDe(k) ? <Text style={si.note}>{indicatifDe(k)}</Text> : null}
-                </View>
-                <Text style={[si.valeur, kpiNegatif(k) && { color: "#dc2626" }]}>{fmtKpi(k)}</Text>
-              </View>
-            ))}
-          </View>
+    <View style={[st.ligne, !premier && st.ligneBord]}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={st.label}>{ligne.label}</Text>
+        {ligne.note ? <Text style={st.note}>{ligne.note}</Text> : null}
+      </View>
+      {ligne.tendance && (
+        <Icone sf={ligne.tendance === "hausse" ? "arrow.up.right" : "arrow.down.right"}
+          materiel={ligne.tendance === "hausse" ? "north_east" : "south_east"}
+          taille={11} couleur={c} poids="bold" />
+      )}
+      <Text style={[st.valeur, { color: c }]}>{ligne.valeur}</Text>
+    </View>
+  );
+}
+
+const st = StyleSheet.create({
+  ligne: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 9.5 },
+  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  label: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  note: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  valeur: { fontSize: 13.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+});
+
+// ── Sélecteur de pays — recherche + liste, l'ajout ferme la feuille ──────────
+function PaysSheet({ pays, exclus, onChoisir, onClose }: {
+  pays: { id: number; nom: string; continent?: string }[];
+  exclus: number[]; onChoisir: (id: number) => void; onClose: () => void;
+}) {
+  const [q, setQ] = useState("");
+  const plier = (x: string) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const liste = useMemo(() => {
+    const t = plier(q.trim());
+    return pays
+      .filter(p => !exclus.includes(p.id) && (!t || plier(p.nom).includes(t)))
+      .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+  }, [pays, exclus, q]);
+  return (
+    <Feuille onClose={onClose} ecart={16} hauteur="76%"
+      titre={<Text style={sp.titre}>Ajouter un pays</Text>}
+      sousEntete={
+        <View style={sp.champ}>
+          <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
+          <TextInput value={q} onChangeText={setQ} placeholder="Rechercher un pays"
+            placeholderTextColor={T.grisClair as any} autoCorrect={false}
+            clearButtonMode="while-editing" style={sp.champTexte} />
         </View>
-      ))}
+      }>
+      <View>
+        {liste.map((p, i) => (
+          <Tapable key={p.id} echelle={0.99} onPress={() => { cran(); onChoisir(p.id); onClose(); }}
+            style={[sp.ligne, i > 0 && sp.ligneBord]}>
+            <Text style={sp.nom} numberOfLines={1}>{p.nom}</Text>
+            {p.continent ? <Text style={sp.continent}>{p.continent}</Text> : null}
+          </Tapable>
+        ))}
+        {!liste.length && <Text style={sp.vide}>Aucun pays ne correspond.</Text>}
+      </View>
     </Feuille>
   );
 }
 
-const si = StyleSheet.create({
+const sp = StyleSheet.create({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
-  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 6 },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 9 },
+  champ: {
+    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12,
+    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordure,
+    borderRadius: 12, paddingHorizontal: 12, height: 38,
+  },
+  champTexte: { flex: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
+  ligne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
   ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  label: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-  note: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-  valeur: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  nom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
+  continent: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
+  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
 });
 
 export default function IdeEcran() {
@@ -176,7 +212,7 @@ export default function IdeEcran() {
   const [sousType, setSousType] = useState<string>("fluxstock");
   const [serieActive, setSerieActive] = useState(0);
   const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [indicOuverts, setIndicOuverts] = useState(false);
+  const [paysOuvert, setPaysOuvert] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const { defilY, onScroll } = useHeroDefilant();
   const chipsRef = useRef<ScrollView>(null);
@@ -226,17 +262,17 @@ export default function IdeEcran() {
   const monde = !secteursVue && f.typeAnalyse === "monde";
   const comparative = f.typeAnalyse === "comparative";
   // La vue Secteurs n'existe pas en Flux & Stocks (règle du site)
-  const st = secteursVue && sousType === "fluxstock" ? "greenfield" : sousType;
+  const st_ = secteursVue && sousType === "fluxstock" ? "greenfield" : sousType;
   const sousTypesVisibles = secteursVue ? SOUS_TYPES.filter(x => x.cle !== "fluxstock") : SOUS_TYPES;
 
   // La série vedette repart en tête quand le contexte change
-  useEffect(() => { setSerieActive(0); }, [st, f.vue, f.typeAnalyse]);
+  useEffect(() => { setSerieActive(0); }, [st_, f.vue, f.typeAnalyse]);
 
   // ── Bornes de période du contexte ──
-  const catPays = bornesRef?.categories?.[st];
+  const catPays = bornesRef?.categories?.[st_];
   const bornesPays: [number, number] = [catPays?.annee_min ?? bornesRef?.annee_min ?? 1990, catPays?.annee_max ?? bornesRef?.annee_max ?? 2025];
   // Secteurs : bornes réelles du jeu de données de la catégorie
-  const prefixe = st === "fusion" ? "ma_" : "greenfield";
+  const prefixe = st_ === "fusion" ? "ma_" : "greenfield";
   const rowsCat = useMemo(() =>
     (donneesSecteurs || []).filter((d: any) => d.indicateur.startsWith(prefixe) && d.valeur !== null),
   [donneesSecteurs, prefixe]);
@@ -269,6 +305,17 @@ export default function IdeEcran() {
   const topIds = new Set((refSecteurs || []).map((sx: any) => sx.id));
   const accentSecteur = f.secteurSelection[0] !== 0 && !topIds.has(f.secteurSelection[0]) ? T.orange : T.bleu;
   const couleurSelSecteur = (i: number) => comparative ? COMP_PALETTE[i % COMP_PALETTE.length] : accentSecteur;
+
+  // ── Gestion directe des pays (pastilles ✕ et bouton +) ──
+  const ajouterPays = (id: number) => {
+    const sel = [...f.paysSelection.filter(x => x !== id), id].slice(0, 4);
+    setFiltres({ ...f, vue: "pays", typeAnalyse: sel.length > 1 ? "comparative" : "pays", paysSelection: sel });
+  };
+  const retirerPays = (nom: string) => {
+    const ids = f.paysSelection.filter(pid => paysListe.find((p: any) => p.id === pid)?.nom !== nom);
+    if (!ids.length) return;
+    setFiltres({ ...f, typeAnalyse: ids.length > 1 ? "comparative" : "pays", paysSelection: ids });
+  };
 
   // ── Données Pays / Comparative ──
   const paramsPays = useMemo(() => {
@@ -323,7 +370,7 @@ export default function IdeEcran() {
   // ── Graphes (une entrée par série de la catégorie) ──
   const graphes = useMemo(() => {
     if (secteursVue) {
-      const series = SERIES_TYPES[`secteur_${st === "fusion" ? "fusion" : "greenfield"}`];
+      const series = SERIES_TYPES[`secteur_${st_ === "fusion" ? "fusion" : "greenfield"}`];
       return series.map(sx => ({
         ...sx,
         series: f.secteurSelection.map((id, i) => ({
@@ -335,7 +382,7 @@ export default function IdeEcran() {
         })) as Serie[],
       }));
     }
-    const series = SERIES_TYPES[st] || SERIES_TYPES.fluxstock;
+    const series = SERIES_TYPES[st_] || SERIES_TYPES.fluxstock;
     if (monde) {
       return series.map(sx => ({
         ...sx,
@@ -360,7 +407,7 @@ export default function IdeEcran() {
       })) as Serie[],
     }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secteursVue, monde, comparative, st, donnees, rowsCat, f.secteurSelection, f.grpSelection.join(","), nomsPays.join(","), anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
+  }, [secteursVue, monde, comparative, st_, donnees, rowsCat, f.secteurSelection, f.grpSelection.join(","), nomsPays.join(","), anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
 
   const fmtDe = (unite: "musd" | "nombre") => (v: number | null) => unite === "nombre" ? fmtNombre(v) : fmtMusd(v);
 
@@ -378,26 +425,22 @@ export default function IdeEcran() {
     return { dernier, prec, delta, valeurs: pts.map(p => p.valeur as number) };
   };
 
-  // ── Tous les KPIs (mono-pays, Flux & Stocks) — l'essentiel + la fiche ──
-  const tousKpis = useMemo<KpiResult[]>(() => {
-    if (secteursVue || monde || comparative || st !== "fluxstock") return [];
-    const tous = calculerKpis((donnees || []) as any);
-    return KPI_IDS.map(id => tous.find(k => k.id === id)).filter(Boolean) as KpiResult[];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donnees, st, secteursVue, monde, comparative]);
-
-  const essentielsFlux: Stat[] = useMemo(() =>
-    ESSENTIELS_FLUX.map(e => {
-      const k = tousKpis.find(x => x.id === e.id);
-      if (!k) return null;
-      return { cle: k.id, label: e.label, valeur: fmtKpi(k), note: indicatifDe(k), negatif: kpiNegatif(k) };
-    }).filter(Boolean) as Stat[],
-  [tousKpis]);
-
-  // Greenfield / M&A (mono-pays) : solde, moyenne 5 ans, record, total période
-  const essentielsCat: Stat[] = useMemo(() => {
-    if (secteursVue || monde || comparative || st === "fluxstock") return [];
-    const series = SERIES_TYPES[st];
+  // ── Autres indicateurs — la liste à plat, groupée par thème ──
+  const groupesIndics = useMemo<{ nom: string; lignes: LigneStat[] }[]>(() => {
+    if (secteursVue || monde || comparative) return [];
+    if (st_ === "fluxstock") {
+      const tous = calculerKpis((donnees || []) as any);
+      const kpis = KPI_IDS.map(id => tous.find(k => k.id === id)).filter(Boolean) as KpiResult[];
+      const groupes: { nom: string; lignes: LigneStat[] }[] = [];
+      for (const k of kpis) {
+        let g = groupes.find(x => x.nom === k.categorie);
+        if (!g) { g = { nom: k.categorie, lignes: [] }; groupes.push(g); }
+        g.lignes.push({ cle: k.id, label: k.label, valeur: fmtKpi(k), note: indicatifDe(k), tendance: tendanceDe(k) });
+      }
+      return groupes;
+    }
+    // Greenfield / M&A : solde, moyenne 5 ans, record, total période
+    const series = SERIES_TYPES[st_];
     const serie = (dir: string) => (donnees || [])
       .filter((d: any) => d.direction === dir && d.indicateur === series[0].ind && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee);
@@ -409,21 +452,23 @@ export default function IdeEcran() {
     const moy5 = cinq.reduce((acc: number, r: any) => acc + r.valeur, 0) / cinq.length;
     const rec = sE.reduce((best: any, r: any) => r.valeur > best.valeur ? r : best, sE[0]);
     const total = sE.reduce((acc: number, r: any) => acc + r.valeur, 0);
-    return [
-      { cle: "solde", label: "SOLDE NET", valeur: solde !== null ? `${solde > 0 ? "+" : ""}${fmtMusd(solde)}` : "—", note: solde !== null ? `en ${vE.annee}` : "années décalées", negatif: solde !== null && solde < 0 },
-      { cle: "moy5",  label: "MOYENNE 5 ANS", valeur: fmtMusd(moy5), note: "valeur reçue" },
-      { cle: "record", label: "RECORD", valeur: fmtMusd(rec.valeur), note: `en ${rec.annee}` },
-      { cle: "total", label: "TOTAL PÉRIODE", valeur: fmtMusd(total), note: `${sE[0].annee} — ${vE.annee}` },
-    ];
+    return [{
+      nom: "", lignes: [
+        { cle: "solde", label: "Solde net · reçus − émis", valeur: solde !== null ? fmtMusd(Math.abs(solde)) : "—", note: solde !== null ? `en ${vE.annee}` : "années décalées", tendance: solde === null ? null : solde >= 0 ? "hausse" : "baisse" },
+        { cle: "moy5",  label: "Moyenne 5 ans", valeur: fmtMusd(moy5), note: "valeur reçue" },
+        { cle: "record", label: "Record historique", valeur: fmtMusd(rec.valeur), note: `en ${rec.annee}` },
+        { cle: "total", label: "Total sur la période", valeur: fmtMusd(total), note: `${sE[0].annee} — ${vE.annee}` },
+      ],
+    }];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donnees, st, secteursVue, monde, comparative]);
+  }, [donnees, st_, secteursVue, monde, comparative]);
 
-  // Vue Secteurs (analyse simple) : les repères du site, hors valeur vedette
-  const essentielsSecteur: Stat[] = useMemo(() => {
+  // Vue Secteurs (analyse simple) : les repères du site
+  const groupesIndicsSecteur = useMemo<{ nom: string; lignes: LigneStat[] }[]>(() => {
     if (!secteursVue || f.typeAnalyse !== "secteur" || !f.secteurSelection.length) return [];
     const sid = f.secteurSelection[0];
     const rows = rowsPourSecteur(sid);
-    const gf = st !== "fusion";
+    const gf = st_ !== "fusion";
     const dirV = gf ? "total" : "entrant";
     const indV = gf ? "greenfield_valeur" : "ma_valeur";
     const indN = gf ? "greenfield_nombre" : "ma_nombre";
@@ -433,9 +478,6 @@ export default function IdeEcran() {
     const sV = serie(dirV, indV);
     if (!sV.length) return [];
     const vD = sV[sV.length - 1];
-    const sN = serie(dirV, indN);
-    const nD = sN.length ? sN[sN.length - 1] : null;
-    const vSf = !gf ? (() => { const sx = serie("sortant", "ma_valeur"); return sx.length ? sx[sx.length - 1] : null; })() : null;
     const cinq = sV.slice(-5);
     const moy5 = cinq.reduce((acc: number, r: any) => acc + r.valeur, 0) / cinq.length;
     const part = (() => {
@@ -459,22 +501,17 @@ export default function IdeEcran() {
       const b = best as { id: number; v: number };
       return { nom: NOMS[b.id], part: total !== 0 ? (b.v / total) * 100 : null, annee: vD.annee };
     })();
-    return [
-      gf
-        ? { cle: "nombre", label: "PROJETS ANNONCÉS", valeur: nD ? fmtNombre(nD.valeur) : "—", note: nD ? `en ${nD.annee}` : null }
-        : { cle: "achats", label: "ACHATS NETS", valeur: vSf ? fmtMusd(vSf.valeur) : "—", note: vSf ? `en ${vSf.annee}` : null },
-      { cle: "moy5", label: "MOYENNE 5 ANS", valeur: fmtMusd(moy5), note: gf ? "valeur annoncée" : "ventes nettes" },
+    const lignes: LigneStat[] = [
+      { cle: "moy5", label: "Moyenne 5 ans", valeur: fmtMusd(moy5), note: gf ? "valeur annoncée" : "ventes nettes" },
       sid === 0
-        ? { cle: "dominant", label: "SECTEUR DOMINANT", valeur: dominant ? dominant.nom : "—", note: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
-        : { cle: "part", label: "PART DU TOTAL", valeur: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", note: `en ${vD.annee}` },
-      !gf && nD
-        ? { cle: "nventes", label: "NOMBRE DE VENTES", valeur: fmtNombre(nD.valeur), note: `en ${nD.annee}` }
-        : null,
-    ].filter(Boolean) as Stat[];
+        ? { cle: "dominant", label: "Secteur dominant", valeur: dominant ? dominant.nom : "—", note: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
+        : { cle: "part", label: "Part du total", valeur: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", note: `en ${vD.annee}` },
+    ];
+    return [{ nom: "", lignes }];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secteursVue, f.typeAnalyse, f.secteurSelection, rowsCat, st, anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
+  }, [secteursVue, f.typeAnalyse, f.secteurSelection, rowsCat, st_, anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
 
-  const essentiels = secteursVue ? essentielsSecteur : st === "fluxstock" ? essentielsFlux : essentielsCat;
+  const indicateurs = secteursVue ? groupesIndicsSecteur : groupesIndics;
 
   // ── En-tête et badge ──
   const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
@@ -485,6 +522,7 @@ export default function IdeEcran() {
     : monde
     ? grpInfos.map(g => ({ cle: g.code, nom: g.label, couleur: g.couleur }))
     : (comparative ? nomsPays : [paysSelec]).map((nom, i) => ({ cle: nom, nom, couleur: comparative ? COMP_PALETTE[i % COMP_PALETTE.length] : T.bleu }));
+  const paysGerable = !secteursVue && !monde; // pastilles ✕ et bouton + actifs
   const nbFiltres =
     (f.vue !== "pays" ? 1 : 0) +
     (!secteursVue && f.typeAnalyse !== "pays" ? 1 : 0) +
@@ -525,7 +563,7 @@ export default function IdeEcran() {
             {/* Catégories (la vue Secteurs n'a pas de Flux & Stocks) */}
             <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
               {sousTypesVisibles.map(o => {
-                const actif = st === o.cle;
+                const actif = st_ === o.cle;
                 return (
                   <Pressable key={o.cle}
                     onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[o.cle] = { x, largeur: la }; }}
@@ -545,15 +583,31 @@ export default function IdeEcran() {
               <EtatVide texte="Sélectionnez un groupement" sousTexte="Choisissez jusqu'à 4 groupements dans le filtre." />
             ) : !gActive ? null : (
               <View style={cap}>
-                {/* Période puis sélection — une seule ligne à défilement */}
+                {/* La sélection se manipule ICI : période → filtres, pastille → retirer, + → ajouter */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
-                  <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
-                  {pastilles.map(pa => (
-                    <View key={pa.cle} style={[s.paysPastille, { borderColor: `${pa.couleur}2E`, backgroundColor: `${pa.couleur}0D` }]}>
-                      <View style={[s.paysPoint, { backgroundColor: pa.couleur }]} />
-                      <Text style={[s.paysPastilleTexte, { color: pa.couleur }]} numberOfLines={1}>{pa.nom}</Text>
-                    </View>
-                  ))}
+                  <Pressable onPress={() => setFiltresOuverts(true)} style={s.periodePastille}>
+                    <Text style={s.periodePastilleTexte}>{perLabel}</Text>
+                  </Pressable>
+                  {pastilles.map(pa => {
+                    const retirable = paysGerable && pastilles.length > 1;
+                    return (
+                      <Pressable key={pa.cle}
+                        onPress={retirable ? () => { tick(); retirerPays(pa.nom); } : () => setFiltresOuverts(true)}
+                        style={[s.paysPastille, { borderColor: `${pa.couleur}2E`, backgroundColor: `${pa.couleur}0D` }]}>
+                        <View style={[s.paysPoint, { backgroundColor: pa.couleur }]} />
+                        <Text style={[s.paysPastilleTexte, { color: pa.couleur }]} numberOfLines={1}>{pa.nom}</Text>
+                        {retirable && (
+                          <Icone sf="xmark" materiel="close" taille={11} couleur={pa.couleur} />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                  {paysGerable && pastilles.length < 4 && (
+                    <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.plusPastille}
+                      accessibilityLabel="Ajouter un pays à comparer">
+                      <Icone sf="plus" materiel="add" taille={14} couleur={T.bleu} poids="semibold" />
+                    </Pressable>
+                  )}
                 </ScrollView>
 
                 {/* ── La vedette : UNE série en grand, la grammaire de l'accueil ── */}
@@ -563,7 +617,7 @@ export default function IdeEcran() {
                       {gActive.label.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
                     </Text>
                     {!multi && bilan && (
-                      <>
+                      <View style={s.nombreLigne}>
                         <ChiffreAnime texte={fmtDe(gActive.unite)(bilan.dernier.valeur)} style={s.nombre} />
                         {bilan.delta !== null && (
                           <View style={s.deltaLigne}>
@@ -576,10 +630,10 @@ export default function IdeEcran() {
                             <Text style={s.deltaContexte}>vs {bilan.prec!.annee}</Text>
                           </View>
                         )}
-                      </>
+                      </View>
                     )}
                     <View style={{ marginTop: multi ? 4 : 10 }}>
-                      <GrapheLignes series={gActive.series} hauteur={multi ? 200 : 176} fmt={fmtDe(gActive.unite)} />
+                      <GrapheLignes series={gActive.series} hauteur={multi ? 200 : 172} fmt={fmtDe(gActive.unite)} epure />
                     </View>
                   </View>
                 </View>
@@ -587,7 +641,7 @@ export default function IdeEcran() {
                 {/* ── Les autres séries — une rangée chacune, tap pour l'installer en vedette ── */}
                 {autres.length > 0 && (
                   <View style={s.rangee}>
-                    <View style={s.seriesCarte}>
+                    <View style={s.carteListe}>
                       {autres.map(({ g, i }, pos) => {
                         const b = bilanDe(g);
                         const bHausse = (b?.delta ?? 0) >= 0;
@@ -617,29 +671,20 @@ export default function IdeEcran() {
                   </View>
                 )}
 
-                {/* ── L'essentiel : quatre repères, pas un mur de KPIs ── */}
-                {essentiels.length > 0 && (
+                {/* ── Autres indicateurs — la liste à plat, variations fléchées ── */}
+                {indicateurs.length > 0 && (
                   <View style={s.rangee}>
-                    <Text style={s.sectionTitre}>L&apos;ESSENTIEL</Text>
-                    <View style={s.grille}>
-                      {essentiels.map(k => (
-                        <View key={k.cle} style={s.tuile}>
-                          <Text style={s.tuileLabel} numberOfLines={1}>{k.label}</Text>
-                          <Text style={[s.tuileValeur, k.negatif && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>
-                            {k.valeur}
-                          </Text>
-                          {k.note ? <Text style={s.tuileNote} numberOfLines={1}>{k.note}</Text> : null}
+                    <Text style={s.sectionTitre}>AUTRES INDICATEURS</Text>
+                    <View style={[s.carteListe, { paddingVertical: 3 }]}>
+                      {indicateurs.map((g, gi) => (
+                        <View key={g.nom || "seul"}>
+                          {g.nom ? <Text style={[s.groupeTitre, gi > 0 && { marginTop: 10 }]}>{g.nom.toUpperCase()}</Text> : null}
+                          {g.lignes.map((l, i) => (
+                            <LigneIndic key={l.cle} ligne={l} premier={i === 0 && !g.nom} />
+                          ))}
                         </View>
                       ))}
                     </View>
-                    {/* La profondeur du site, à la demande */}
-                    {!secteursVue && st === "fluxstock" && tousKpis.length > 0 && (
-                      <Tapable echelle={0.99} onPress={() => setIndicOuverts(true)} style={s.tousIndics}>
-                        <Text style={s.tousIndicsTexte}>Tous les indicateurs</Text>
-                        <View style={s.tousIndicsCompte}><Text style={s.tousIndicsCompteTexte}>{tousKpis.length}</Text></View>
-                        <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
-                      </Tapable>
-                    )}
                   </View>
                 )}
               </View>
@@ -650,8 +695,9 @@ export default function IdeEcran() {
       <BarreHero titre="Investissements privés" defilY={defilY}
         bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
 
-      {indicOuverts && (
-        <IndicateursSheet kpis={tousKpis} sousTitre={`${paysSelec}   ·   ${perLabel}`} onClose={() => setIndicOuverts(false)} />
+      {paysOuvert && (
+        <PaysSheet pays={paysListe} exclus={f.paysSelection}
+          onChoisir={ajouterPays} onClose={() => setPaysOuvert(false)} />
       )}
 
       {filtresOuverts && onglet === "ide" && (
@@ -685,6 +731,10 @@ const s = StyleSheet.create({
   },
   paysPoint: { width: 7, height: 7, borderRadius: 4 },
   paysPastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, flexShrink: 1 },
+  plusPastille: {
+    width: 27, height: 27, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
+  },
 
   rangee: { paddingHorizontal: 16, marginTop: 14 },
 
@@ -694,13 +744,14 @@ const s = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, overflow: "hidden",
   },
   etiquette: { ...TYPO.micro, color: T.gris },
+  nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
-  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
   deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
 
-  // Les autres séries — rangées commutables
-  seriesCarte: {
+  // Cartes-listes (séries commutables, indicateurs)
+  carteListe: {
     backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16,
   },
@@ -711,23 +762,6 @@ const s = StyleSheet.create({
   serieValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
   serieDelta: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
-  // L'essentiel — quatre tuiles, deux colonnes
   sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  tuile: {
-    flexGrow: 1, flexBasis: "45%",
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
-    paddingHorizontal: 14, paddingVertical: 11,
-  },
-  tuileLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris },
-  tuileValeur: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, marginTop: 5, letterSpacing: -0.3, fontVariant: ["tabular-nums"] },
-  tuileNote: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  tousIndics: {
-    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8,
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
-  tousIndicsTexte: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  tousIndicsCompte: { backgroundColor: T.bleuVoile, borderRadius: 999, minWidth: 24, paddingHorizontal: 7, paddingVertical: 2, alignItems: "center" },
-  tousIndicsCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  groupeTitre: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginTop: 12, marginBottom: 2 },
 });

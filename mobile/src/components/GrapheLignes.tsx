@@ -104,8 +104,11 @@ function CourbeSerie({ deCourbe, versCourbe, deAire, versAire, morphT, trace, co
   );
 }
 
-function GrapheLignes({ series, hauteur = 170, fmt }: {
+function GrapheLignes({ series, hauteur = 170, fmt, epure }: {
   series: Serie[]; hauteur?: number; fmt: (v: number | null) => string;
+  // Mode épuré : ni grille ni graduations d'ordonnées — la courbe seule,
+  // comme une sparkline qui aurait gardé le scrubbing, le pic et les années
+  epure?: boolean;
 }) {
   const [largeur, setLargeur] = useState(0);
   const [curseur, setCurseur] = useState<number | null>(null);
@@ -275,7 +278,7 @@ function GrapheLignes({ series, hauteur = 170, fmt }: {
       <View style={{ height: hauteur }} onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
         <Canvas style={{ width: largeur, height: hauteur }}>
           {/* Grille */}
-          {ticksGauche.map(t => (
+          {!epure && ticksGauche.map(t => (
             <LigneSkia key={`g${t}`} p1={vec(M.gauche, geo.yDe(0)(t))} p2={vec(largeur - M.droite, geo.yDe(0)(t))}
               color={t === 0 ? (T.grilleZero as string) : (T.grille as string)} strokeWidth={1} />
           ))}
@@ -336,12 +339,12 @@ function GrapheLignes({ series, hauteur = 170, fmt }: {
         </Canvas>
 
         {/* Graduations (texte RN — mêmes règles de couleur que le site) */}
-        {ticksGauche.map(t => (
+        {!epure && ticksGauche.map(t => (
           <TexteRN key={`tg${t}`} style={[s.tick, { left: M.gauche, top: geo.yDe(0)(t) - 13, color: geo.bi ? series[0].couleur : T.grisClair, opacity: geo.bi ? 0.75 : 1 }]}>
             {fmt(t)}
           </TexteRN>
         ))}
-        {ticksDroite && ticksDroite.map(t => (
+        {!epure && ticksDroite && ticksDroite.map(t => (
           <TexteRN key={`td${t}`} style={[s.tick, { right: M.droite, top: geo.yDe(1)(t) - 13, color: series[1].couleur, opacity: 0.75, textAlign: "right" }]}>
             {fmt(t)}
           </TexteRN>
