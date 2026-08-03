@@ -1,16 +1,32 @@
-// Fiche avantage — réplique du modal AvantageVueModal de la plateforme :
-// activité en titre, pilules secteur / branche, Avantages & incitations
-// (types sélectionnés avec commentaires), Description, Documents.
+// Fiche avantage — éditoriale, comme les autres fiches : identité (activité
+// en grand, méta « secteur · branche » avec le secteur dans sa couleur), puis
+// des sections plates : avantages & incitations en lignes à filets (le type
+// en vert, le commentaire dessous), description riche, documents.
 import { useQuery } from "@tanstack/react-query";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
-import { Feuille } from "@/components/ui";
-import { API, getJson } from "@/lib/api";
 import TexteRiche from "@/components/TexteRiche";
-import { POLICE, T } from "@/theme";
+import { Feuille, Tapable } from "@/components/ui";
+import { API, getJson } from "@/lib/api";
+import { POLICE, T, TYPO } from "@/theme";
 
-function SecTitle({ children }: { children: string }) {
-  return <Text style={s.secTitle}>{children.toUpperCase()}</Text>;
+// Couleur du secteur économique (celles du site : primaire vert,
+// secondaire orange, tertiaire bleu)
+const couleurSecteur = (nom?: string): string => {
+  const n = (nom || "").toLowerCase();
+  if (n.includes("primaire")) return "#188038";
+  if (n.includes("secondaire")) return "#ca631f";
+  if (n.includes("tertiaire")) return "#004f91";
+  return T.gris as string;
+};
+
+function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <View>
+      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
+      {children}
+    </View>
+  );
 }
 
 export default function AvantageSheet({ avantage: a, onClose }: { avantage: any; onClose: () => void }) {
@@ -24,74 +40,75 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
   const fichiers: any[] = Array.isArray(d.fichiers) ? d.fichiers : [];
 
   return (
-    <Feuille onClose={onClose} titre={d.activite_nom}
-      sousEntete={
-        <View style={s.pilules}>
-          {d.secteur_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{d.secteur_nom}</Text></View> : null}
-          {d.branche_nom ? <View style={[s.pilule, { backgroundColor: "rgba(202,99,31,0.08)", flexShrink: 1 }]}><Text style={[s.piluleTexte, { color: T.orange }]} numberOfLines={1}>{d.branche_nom}</Text></View> : null}
-        </View>
-      }>
-          {/* Avantages sélectionnés */}
-          {selections.length > 0 ? (
-            <View>
-              <SecTitle>Avantages & incitations</SecTitle>
-              <View style={{ gap: 8 }}>
-                {selections.map((sel: any) => (
-                  <View key={sel.id} style={s.selection}>
-                    <View style={s.selectionLigne}>
-                      <View style={s.selectionPoint} />
-                      <Text style={s.selectionType}>{sel.type_libelle}</Text>
-                    </View>
-                    {sel.commentaire ? <Text style={s.selectionCommentaire}>{sel.commentaire}</Text> : null}
-                  </View>
-                ))}
-              </View>
-            </View>
+    <Feuille onClose={onClose} ecart={22}
+      titre={<Text style={s.titre}>{d.activite_nom}</Text>}
+      sousEntete={(d.secteur_nom || d.branche_nom) ? (
+        <Text style={s.meta} numberOfLines={2}>
+          {d.secteur_nom ? (
+            <Text style={{ color: couleurSecteur(d.secteur_nom), fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
           ) : null}
+          {d.secteur_nom && d.branche_nom ? "   ·   " : ""}
+          {d.branche_nom || ""}
+        </Text>
+      ) : undefined}>
 
-          {/* Description */}
-          {d.avantages ? (
-            <View>
-              <SecTitle>Description</SecTitle>
-              <View style={s.description}><TexteRiche html={d.avantages} couleur={T.texte as any} fontSize={13} lineHeight={21} /></View>
-            </View>
-          ) : null}
-
-          {/* Documents */}
-          {fichiers.length > 0 ? (
-            <View>
-              <SecTitle>{fichiers.length > 1 ? "Documents" : "Document"}</SecTitle>
-              <View style={{ gap: 5 }}>
-                {fichiers.map((f: any) => (
-                  <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`)}
-                    style={({ pressed }) => [s.doc, pressed && { backgroundColor: "rgba(0,79,145,0.09)" }]}>
-                    <Symbole nom="description" taille={15} couleur={T.bleu} />
-                    <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
-                  </Pressable>
-                ))}
+      {/* ── Les avantages accordés — lignes à filets, le fond de la fiche ── */}
+      {selections.length > 0 ? (
+        <Section titre="Avantages & incitations">
+          <View>
+            {selections.map((sel: any, i: number) => (
+              <View key={sel.id} style={[s.selection, i > 0 && s.selectionBord]}>
+                <View style={s.selectionLigne}>
+                  <Symbole nom="check_circle" taille={15} couleur={T.vert} />
+                  <Text style={s.selectionType}>{sel.type_libelle}</Text>
+                </View>
+                {sel.commentaire ? <Text style={s.selectionCommentaire}>{sel.commentaire}</Text> : null}
               </View>
-            </View>
-          ) : null}
+            ))}
+          </View>
+        </Section>
+      ) : null}
+
+      {/* ── Description ── */}
+      {d.avantages ? (
+        <Section titre="Description">
+          <TexteRiche html={d.avantages} couleur={T.texte as any} fontSize={13} lineHeight={21} />
+        </Section>
+      ) : null}
+
+      {/* ── Documents ── */}
+      {fichiers.length > 0 ? (
+        <Section titre={fichiers.length > 1 ? "Documents" : "Document"}>
+          <View style={{ gap: 8 }}>
+            {fichiers.map((f: any) => (
+              <Tapable key={f.id} echelle={0.98} style={s.doc}
+                onPress={() => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`).catch(() => {})}>
+                <Symbole nom="description" taille={16} couleur={T.bleu} />
+                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
+              </Tapable>
+            ))}
+          </View>
+        </Section>
+      ) : null}
     </Feuille>
   );
 }
 
 const s = StyleSheet.create({
-  pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
-  pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
-  piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
-  selection: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  selectionLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
-  selectionPoint: { width: 8, height: 8, borderRadius: 4, backgroundColor: T.vert },
-  selectionType: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.vert, lineHeight: 18 },
-  selectionCommentaire: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21, marginLeft: 15, marginTop: 6 },
-  description: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 15, paddingVertical: 13 },
-  descriptionTexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
+  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
+  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
+
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
+
+  selection: { paddingVertical: 10 },
+  selectionBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  selectionLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
+  selectionType: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  selectionCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, marginLeft: 23, marginTop: 4 },
+
   doc: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: T.blocBord,
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
+    flexDirection: "row", alignItems: "center", gap: 9,
+    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
 });
