@@ -21,7 +21,7 @@ import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
-import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
+import { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -60,9 +60,7 @@ export default function StatistiquesEcran() {
   const [actif, setActif] = useState("pib");
   // Année de référence du curseur (null = la dernière connue, qui suit les données)
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [paysOuvert, setPaysOuvert] = useState(false);
-  const [nbFiltresCom, setNbFiltresCom] = useState(0);
   const [largeurTendance, setLargeurTendance] = useState(0);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
@@ -124,14 +122,11 @@ export default function StatistiquesEcran() {
   };
 
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
-  // Indicateurs : le bouton « … » ouvre le choix du pays (plus d'analyse
-  // comparative sur l'app) ; Flux bilatéraux garde ses filtres ; Commerce
-  // extérieur est Sénégal uniquement
-  const boutonHero = vue === "indicateurs"
-    ? { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } }
-    : vue === "commerce"
-    ? { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltresCom || undefined }
-    : undefined;
+  // Indicateurs et Flux bilatéraux : le bouton « … » ouvre le choix du pays
+  // (plus d'analyse comparative sur l'app) ; Commerce extérieur est Sénégal
+  // uniquement, sans bouton
+  const boutonHero = vue === "exterieur" ? undefined
+    : { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } };
 
   // ── La vedette (grammaire exacte de l'accueil) ──
   const rendreVedette = () => {
@@ -246,11 +241,8 @@ export default function StatistiquesEcran() {
 
         {vue === "commerce" ? (
           <View style={cap}>
-            <CommercePanel
-              filtresOuverts={filtresOuverts && vue === "commerce"}
-              onFermerFiltres={() => setFiltresOuverts(false)}
-              onOuvrirFiltres={() => setFiltresOuverts(true)}
-              onNbFiltres={setNbFiltresCom} />
+            <CommercePanel pays={pays || []} paysId={paysId}
+              onOuvrirPays={() => setPaysOuvert(true)} />
           </View>
         ) : vue === "exterieur" ? (
           <View style={cap}>
