@@ -1,37 +1,51 @@
-// Échanges commerciaux — étape 1 : onglet Indicateurs économiques,
-// version app de la page web. Filtres (vue, pays, période) dans une
-// feuille ouverte par le bouton filter_list du hero ; TOUS les
-// indicateurs en carrousel de KPIs (pages de 4, comme l'accueil) ;
-// courbes annuelles premium par indicateur (lissées, aire dégradée,
-// curseur tactile), valeur du moment et variation annuelle en en-tête,
-// multi-pays en comparaison. Flux bilatéraux : étape suivante.
+// Échanges commerciaux — trois lentilles en chips colorées (le pattern des
+// Zones et des Opportunités) : Indicateurs économiques, Flux bilatéraux,
+// Commerce extérieur.
+//
+// Les Indicateurs économiques suivent la grammaire des Investissements : UNE
+// grande courbe en vedette (nombre en 34 pt, variation fléchée, graphe
+// signature épuré, légende en comparaison), les autres indicateurs traçables
+// en rangées commutables, le reste (superficie, croissances) à plat avec sa
+// variation fléchée. La comparaison de pays se manipule dans la ligne de
+// contexte : pastilles ✕ et bouton + (jusqu'à 4 pays).
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { EtatErreur } from "@/components/ui";
-import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
+import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
-import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import Icone from "@/components/Icone";
+import PaysSheet from "@/components/PaysSheet";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
+import VedetteSeries, { GrapheVedette } from "@/components/VedetteSeries";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { fmtUnite } from "@/lib/format";
-import { POLICE, T } from "@/theme";
+import { tick } from "@/lib/haptique";
+import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
-const ONGLETS = [
-  { cle: "indicateurs", label: "Indicateurs éco." },
-  { cle: "commerce",    label: "Flux bilatéraux" },
+// Les trois lentilles — chips colorées comme les types de zones
+const LENTILLES = [
+  { cle: "indicateurs", label: "Indicateurs économiques", couleur: "#004f91" },
+  { cle: "commerce",    label: "Flux bilatéraux",         couleur: "#ca631f" },
+  { cle: "exterieur",   label: "Commerce extérieur",      couleur: "#188038" },
 ] as const;
+
+const fmtPct = (v: number) => Math.abs(v).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
 
 export default function StatistiquesEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
-  const [onglet, setOnglet] = useState("indicateurs");
+  const { width } = useWindowDimensions();
+  const [vue, setVue] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [paysOuvert, setPaysOuvert] = useState(false);
   const { defilY, onScroll } = useHeroDefilant();
   const [nbFiltresCom, setNbFiltresCom] = useState(0);
+  const chipsRef = useRef<ScrollView>(null);
+  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   const { data: pays } = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
   const { data: indicateurs } = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
@@ -62,12 +76,12 @@ export default function StatistiquesEcran() {
       ? anneesDispo.filter(a => f.anneesSpec.includes(a))
       : anneesDispo.filter(a => a >= anneeMin && a <= anneeMax)
   ), [anneesDispo, f.modeAnnees, f.anneesSpec, anneeMin, anneeMax]);
-  const refAnnee = anneesActives[anneesActives.length - 1] ?? anneeMax;
 
   const valeur = (paysId: number, code: string, annee: number) =>
     (donnees || []).find((d: any) => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
   const paysNom = (id: number) => (pays || []).find((p: any) => p.id === id)?.nom || "";
   const couleurPays = (id: number) => COMP_PALETTE[Math.max(0, f.selection.indexOf(id)) % COMP_PALETTE.length];
+  const multi = f.selection.length > 1;
 
   // Dernière valeur connue d'un indicateur sur la période (et son année)
   const derniereValeur = (paysId: number, code: string): { valeur: number; annee: number; precedente: number | null } | null => {
@@ -81,123 +95,184 @@ export default function StatistiquesEcran() {
     return null;
   };
 
-  // TOUS les indicateurs avec une valeur → carrousel de KPIs (vue Pays)
-  const kpis = useMemo(() => {
-    if (!f.selection.length) return [];
-    return (indicateurs || []).map((ind: any) => {
-      const d = derniereValeur(f.selection[0], ind.code);
-      return d ? {
-        cle: ind.code, label: ind.libelle, note: String(d.annee),
-        valeur: fmtUnite(d.valeur, ind.unite), negatif: ind.unite === "%" && d.valeur < 0,
-      } : null;
-    }).filter(Boolean) as KpiCarrousel[];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [indicateurs, donnees, anneesActives, f.selection]);
+  // ── Gestion directe des pays (pastilles ✕ et bouton +) ──
+  const ajouterPays = (id: number) => {
+    const sel = [...f.selection.filter(x => x !== id), id].slice(0, 4);
+    setFiltres({ ...f, vue: sel.length > 1 ? "comparative" : "pays", selection: sel });
+  };
+  const retirerPays = (id: number) => {
+    const sel = f.selection.filter(x => x !== id);
+    if (!sel.length) return;
+    setFiltres({ ...f, vue: sel.length > 1 ? "comparative" : "pays", selection: sel });
+  };
 
-  // Graphes : tous les indicateurs traçables avec des données
-  // (hors superficie et croissance du PIB, non pertinents en courbe)
-  const graphesIndics = useMemo(() =>
-    (indicateurs || []).filter((ind: any) => ind.code !== "superficie" &&
-      !(ind.code || "").includes("croissance") && !(ind.libelle || "").toLowerCase().includes("croissance") &&
-      f.selection.some(id => anneesActives.some(a => valeur(id, ind.code, a) !== null))),
+  // ── Les indicateurs traçables → vedette + rangées commutables ──
+  const estTracable = (ind: any) => ind.code !== "superficie" &&
+    !(ind.code || "").includes("croissance") && !(ind.libelle || "").toLowerCase().includes("croissance");
+  const graphes: GrapheVedette[] = useMemo(() =>
+    (indicateurs || [])
+      .filter((ind: any) => estTracable(ind) &&
+        f.selection.some(id => anneesActives.some(a => valeur(id, ind.code, a) !== null)))
+      .map((ind: any) => ({
+        cle: ind.code, label: ind.libelle,
+        fmt: (v: number | null) => fmtUnite(v, ind.unite),
+        series: f.selection.map(id => ({
+          nom: paysNom(id), couleur: couleurPays(id),
+          data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })),
+        })),
+      })),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [indicateurs, donnees, anneesActives, f.selection]);
+
+  // ── Le reste — à plat, variation vs N-1 fléchée quand elle existe ──
+  const autresIndics = useMemo(() =>
+    (indicateurs || [])
+      .filter((ind: any) => !estTracable(ind))
+      .map((ind: any) => {
+        const parPays = f.selection.map(id => ({ id, d: derniereValeur(id, ind.code) })).filter(x => x.d);
+        if (!parPays.length) return null;
+        const d = parPays[0].d!;
+        let delta: number | null = null;
+        if (d.precedente) { const pct = (d.valeur - d.precedente) / Math.abs(d.precedente) * 100; if (isFinite(pct)) delta = pct; }
+        return { ind, parPays, d, delta };
+      })
+      .filter(Boolean) as { ind: any; parPays: { id: number; d: any }[]; d: any; delta: number | null }[],
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [indicateurs, donnees, anneesActives, f.selection]);
 
   const nbFiltres =
-    (f.vue !== "pays" ? 1 : 0) +
-    (f.selection.length > 1 || (senId !== null && f.selection[0] !== senId) ? 1 : 0) +
     (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > bornes[0] || f.anneeMax < bornes[1]) ? 1 : 0));
 
   const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
     ? (f.anneesSpec.length === 1 ? `${f.anneesSpec[0]}` : `${f.anneesSpec[0]} — ${f.anneesSpec[f.anneesSpec.length - 1]}`)
     : `${anneeMin} — ${anneeMax}`;
 
-  // Variation annuelle (dernière valeur vs précédente) pour l'en-tête d'un graphe
-  const deltaDe = (d: { valeur: number; precedente: number | null } | null): { texte: string; hausse: boolean } | null => {
-    if (!d || d.precedente === null || d.precedente === 0) return null;
-    const pct = (d.valeur - d.precedente) / Math.abs(d.precedente) * 100;
-    if (!isFinite(pct)) return null;
-    return { texte: `${pct >= 0 ? "+" : ""}${pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`, hausse: pct >= 0 };
-  };
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const badgeHero = vue === "indicateurs" ? nbFiltres : vue === "commerce" ? nbFiltresCom : 0;
+  const boutonHero = vue === "exterieur" ? undefined
+    : { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: badgeHero || undefined };
 
   return (
     <>
       <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
-        <HeroModule titre="Échanges commerciaux"
-          segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
-          bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
+        <HeroModule titre="Échanges commerciaux" bouton={boutonHero} />
 
-        {onglet === "commerce" ? (
-          <CommercePanel
-            filtresOuverts={filtresOuverts && onglet === "commerce"}
-            onFermerFiltres={() => setFiltresOuverts(false)}
-            onNbFiltres={setNbFiltresCom} />
+        {/* Les trois lentilles en chips colorées */}
+        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+          {LENTILLES.map(l => {
+            const actif = vue === l.cle;
+            return (
+              <Pressable key={l.cle}
+                onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
+                onPress={() => {
+                  tick();
+                  setVue(l.cle);
+                  const p = chipsPos.current[l.cle];
+                  if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+                }}
+                style={[s.chipFiltre, actif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
+                <Text style={[s.chipFiltreTexte, { color: l.couleur }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        {vue === "commerce" ? (
+          <View style={cap}>
+            <CommercePanel
+              filtresOuverts={filtresOuverts && vue === "commerce"}
+              onFermerFiltres={() => setFiltresOuverts(false)}
+              onOuvrirFiltres={() => setFiltresOuverts(true)}
+              onNbFiltres={setNbFiltresCom} />
+          </View>
+        ) : vue === "exterieur" ? (
+          <View style={cap}>
+            <CommerceExterieurPanel />
+          </View>
         ) : isLoading || !indicateurs || !pays ? (
           <SqueletteDonnees />
         ) : isError ? (
           <EtatErreur onRetry={() => refetch()} />
         ) : (
-          <>
-            {/* Période puis pays — une seule ligne, défilement horizontal */}
+          <View style={cap}>
+            {/* La sélection se manipule ICI : période → filtres, pastille →
+                retirer (✕), + → ajouter un pays */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
-              <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
+              <Pressable onPress={() => setFiltresOuverts(true)} style={s.periodePastille}>
+                <Text style={s.periodePastilleTexte}>{perLabel}</Text>
+              </Pressable>
               {f.selection.map(id => (
-                <View key={id} style={[s.paysPastille, { backgroundColor: `${couleurPays(id)}0D`, borderColor: `${couleurPays(id)}2E` }]}>
+                <Pressable key={id}
+                  onPress={multi ? () => { tick(); retirerPays(id); } : () => setFiltresOuverts(true)}
+                  style={[s.paysPastille, { borderColor: `${couleurPays(id)}33` }]}>
                   <View style={[s.paysPoint, { backgroundColor: couleurPays(id) }]} />
                   <Text style={[s.paysPastilleTexte, { color: couleurPays(id) }]} numberOfLines={1}>{paysNom(id)}</Text>
-                </View>
+                  {multi && <Icone sf="xmark" materiel="close" taille={11} couleur={couleurPays(id)} />}
+                </Pressable>
               ))}
+              {f.selection.length < 4 && (
+                <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.plusPastille}
+                  accessibilityLabel="Ajouter un pays à comparer">
+                  <Icone sf="plus" materiel="add" taille={14} couleur={T.bleu} poids="semibold" />
+                </Pressable>
+              )}
             </ScrollView>
 
-            {/* Carrousel de KPIs — vue Pays (tous les indicateurs) */}
-            {f.vue === "pays" && kpis.length > 0 && (
-              <View style={{ marginTop: 14 }}>
-                <CarrouselKpis kpis={kpis} />
+            {/* Une courbe en vedette, les autres en rangées commutables */}
+            <VedetteSeries graphes={graphes} />
+
+            {/* Le reste des indicateurs — à plat */}
+            {autresIndics.length > 0 && (
+              <View style={s.rangee}>
+                <Text style={s.sectionTitre}>AUTRES INDICATEURS</Text>
+                <View style={s.carteListe}>
+                  {autresIndics.map((l, i) => {
+                    const hausse = (l.delta ?? 0) >= 0;
+                    return (
+                      <View key={l.ind.code} style={[s.ligne, i > 0 && s.ligneBord]}>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                          <Text style={s.ligneNom} numberOfLines={2}>{l.ind.libelle}</Text>
+                          <Text style={s.ligneNote}>en {l.d.annee}</Text>
+                        </View>
+                        {multi ? (
+                          <View style={s.ligneMulti}>
+                            {l.parPays.map(x => (
+                              <Text key={x.id} style={[s.ligneValeur, { color: couleurPays(x.id) }]}>
+                                {fmtUnite(x.d.valeur, l.ind.unite)}
+                              </Text>
+                            ))}
+                          </View>
+                        ) : (
+                          <>
+                            {l.delta != null && (
+                              <View style={s.delta}>
+                                <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
+                                  materiel={hausse ? "north_east" : "south_east"}
+                                  taille={10} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
+                                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>{fmtPct(l.delta)} %</Text>
+                              </View>
+                            )}
+                            <Text style={s.ligneValeur}>{fmtUnite(l.d.valeur, l.ind.unite)}</Text>
+                          </>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
             )}
-
-            {/* Graphes */}
-            <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
-              {graphesIndics.map((ind: any) => {
-                const series: Serie[] = f.selection.map(id => ({
-                  nom: paysNom(id), couleur: couleurPays(id),
-                  data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })),
-                }));
-                const dernier = f.vue === "pays" && f.selection.length ? derniereValeur(f.selection[0], ind.code) : null;
-                const delta = deltaDe(dernier);
-                return (
-                  <View key={ind.code} style={s.graphe}>
-                    <View style={s.grapheEntete}>
-                      {/* Titre + unité·période sur la même ligne de base */}
-                      <View style={s.grapheTitreLigne}>
-                        <Text style={s.grapheTitre} numberOfLines={1}>{ind.libelle}</Text>
-                        <Text style={s.grapheSous} numberOfLines={1}>{ind.unite} · {anneesActives[0] ?? anneeMin}–{refAnnee}</Text>
-                      </View>
-                      {dernier && (
-                        <View style={{ alignItems: "flex-end", gap: 4 }}>
-                          <Text style={s.grapheValeur} numberOfLines={1}>{fmtUnite(dernier.valeur, ind.unite)}</Text>
-                          {delta && (
-                            <View style={[s.deltaChip, { backgroundColor: delta.hausse ? "rgba(24,128,56,0.10)" : "rgba(220,38,38,0.09)" }]}>
-                              <Text style={[s.deltaTexte, { color: delta.hausse ? T.vert : "#dc2626" }]}>
-                                {delta.hausse ? "▲" : "▼"} {delta.texte}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                    <GrapheLignes series={series} hauteur={168} fmt={(v: number | null) => fmtUnite(v, ind.unite)} />
-                  </View>
-                );
-              })}
-            </View>
-          </>
+          </View>
         )}
       </Animated.ScrollView>
-      <BarreHero titre="Échanges commerciaux" defilY={defilY}
-        bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "indicateurs" ? nbFiltres : nbFiltresCom) || undefined }} />
+      <BarreHero titre="Échanges commerciaux" defilY={defilY} bouton={boutonHero} />
 
-      {filtresOuverts && onglet === "indicateurs" && (
+      {paysOuvert && (
+        <PaysSheet pays={pays || []} exclus={f.selection}
+          onChoisir={ajouterPays} onClose={() => setPaysOuvert(false)} />
+      )}
+
+      {filtresOuverts && vue === "indicateurs" && (
         <StatistiquesFiltres
           pays={pays || []} senId={senId}
           anneesDispo={anneesDispo}
@@ -209,29 +284,44 @@ export default function StatistiquesEcran() {
 }
 
 const s = StyleSheet.create({
-  pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 16, paddingHorizontal: 16 },
+  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipFiltre: {
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+
+  pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 14, paddingHorizontal: 16 },
+  // Les styles badge_* de la plateforme
+  periodePastille: {
+    borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(108,117,125,0.28)",
+  },
+  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#6b7280", fontVariant: ["tabular-nums"] },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.7)",
     paddingHorizontal: 12, paddingVertical: 5, maxWidth: 190,
   },
   paysPoint: { width: 7, height: 7, borderRadius: 4 },
   paysPastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, flexShrink: 1 },
-  periodePastille: {
-    borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
-    backgroundColor: T.filet, borderWidth: 1, borderColor: T.bordure,
+  plusPastille: {
+    width: 27, height: 27, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.bleuVoile, borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
-  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
-  graphe: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,
-    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+
+  rangee: { paddingHorizontal: 16, marginTop: 14 },
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
+  carteListe: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingVertical: 3,
   },
-  grapheEntete: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 10 },
-  grapheTitreLigne: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "baseline", gap: 7, flexWrap: "wrap" },
-  grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, flexShrink: 1 },
-  grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
-  grapheValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, fontVariant: ["tabular-nums"] },
-  deltaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  ligne: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 9.5 },
+  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  ligneNom: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  ligneNote: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  ligneValeur: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  ligneMulti: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 8, maxWidth: 200 },
+  delta: { flexDirection: "row", alignItems: "center", gap: 2 },
+  deltaTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 });

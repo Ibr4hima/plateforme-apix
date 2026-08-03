@@ -20,19 +20,20 @@
 // fléchée quand elle s'applique.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Icone from "@/components/Icone";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
 import MiniTendance from "@/components/MiniTendance";
 import NationalPanel from "@/components/NationalPanel";
+import PaysSheet from "@/components/PaysSheet";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
-import { cran, tick } from "@/lib/haptique";
+import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
@@ -150,59 +151,6 @@ const st = StyleSheet.create({
   label: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   note: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
   valeur: { fontSize: 13.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-});
-
-// ── Sélecteur de pays — recherche + liste, l'ajout ferme la feuille ──────────
-function PaysSheet({ pays, exclus, onChoisir, onClose }: {
-  pays: { id: number; nom: string; continent?: string }[];
-  exclus: number[]; onChoisir: (id: number) => void; onClose: () => void;
-}) {
-  const [q, setQ] = useState("");
-  const plier = (x: string) => x.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  const liste = useMemo(() => {
-    const t = plier(q.trim());
-    return pays
-      .filter(p => !exclus.includes(p.id) && (!t || plier(p.nom).includes(t)))
-      .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
-  }, [pays, exclus, q]);
-  return (
-    <Feuille onClose={onClose} ecart={16} hauteur="76%"
-      titre={<Text style={sp.titre}>Ajouter un pays</Text>}
-      sousEntete={
-        <View style={sp.champ}>
-          <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
-          <TextInput value={q} onChangeText={setQ} placeholder="Rechercher un pays"
-            placeholderTextColor={T.grisClair as any} autoCorrect={false}
-            clearButtonMode="while-editing" style={sp.champTexte} />
-        </View>
-      }>
-      <View>
-        {liste.map((p, i) => (
-          <Tapable key={p.id} echelle={0.99} onPress={() => { cran(); onChoisir(p.id); onClose(); }}
-            style={[sp.ligne, i > 0 && sp.ligneBord]}>
-            <Text style={sp.nom} numberOfLines={1}>{p.nom}</Text>
-            {p.continent ? <Text style={sp.continent}>{p.continent}</Text> : null}
-          </Tapable>
-        ))}
-        {!liste.length && <Text style={sp.vide}>Aucun pays ne correspond.</Text>}
-      </View>
-    </Feuille>
-  );
-}
-
-const sp = StyleSheet.create({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
-  champ: {
-    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12,
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordure,
-    borderRadius: 12, paddingHorizontal: 12, height: 38,
-  },
-  champTexte: { flex: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
-  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  nom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
-  continent: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
 });
 
 export default function IdeEcran() {

@@ -73,3 +73,11 @@ export function fmtDateLong(d?: string | null): string {
   const [y, m, j] = d.split("-").map(Number);
   return new Date(y, m - 1, j).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
+
+// Montant dont la valeur d'entrée est en MILLIONS de FCFA (familles NACE) —
+// même règle que le site : « Md FCFA » au-delà du millier de millions
+export function fmtMFCFA(v: number | null | undefined): string {
+  if (v == null || !isFinite(v)) return "—";
+  if (Math.abs(v) >= 1000) return `${nf1(v / 1000)} Md FCFA`;
+  return `${Math.round(v).toLocaleString("fr-FR")} M FCFA`;
+}
