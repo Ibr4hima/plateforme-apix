@@ -26,11 +26,11 @@ import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
-// Les trois lentilles — chips colorées comme les types de zones
+// Les trois lentilles — chips bleues, la teinte unique du module
 const LENTILLES = [
   { cle: "indicateurs", label: "Indicateurs économiques", couleur: "#004f91" },
-  { cle: "commerce",    label: "Flux bilatéraux",         couleur: "#ca631f" },
-  { cle: "exterieur",   label: "Commerce extérieur",      couleur: "#188038" },
+  { cle: "commerce",    label: "Flux bilatéraux",         couleur: "#004f91" },
+  { cle: "exterieur",   label: "Commerce extérieur",      couleur: "#004f91" },
 ] as const;
 
 // La rotation de la vedette — le PIB en tête, puis les huit repères.
