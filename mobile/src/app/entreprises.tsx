@@ -18,6 +18,7 @@ import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule"
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { fetchTous } from "@/lib/api";
+import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
@@ -149,7 +150,11 @@ export default function Entreprises() {
     return Array.from(groupes.entries()).map(([titre, donnees]) => ({ title: titre, data: donnees }));
   }, [filtres]);
 
-  // Par région : effectifs décroissants, part sur le total filtré
+  // Par région : effectifs décroissants, part sur le total filtré.
+  // La couleur d'une région est celle de SON PÔLE TERRITOIRE — la même
+  // palette que la carte territoriale de la plateforme. Le pôle se lit dans
+  // les entreprises de la région (pole_territoire_nom) : aucune requête de
+  // plus, et la couleur reste stable quel que soit le tri.
   const regions = useMemo(() => {
     const groupes = new Map<string, any[]>();
     for (const e of filtres) {
@@ -158,7 +163,11 @@ export default function Entreprises() {
       groupes.get(cle)!.push(e);
     }
     return Array.from(groupes.entries())
-      .map(([nom, entreprises]) => ({ nom, entreprises }))
+      .map(([nom, entreprises]) => {
+        const pole = entreprises.find((e: any) => e.pole_territoire_nom)?.pole_territoire_nom;
+        const pastel = (pole && POLE_COULEURS[normPole(pole)]) || "#9DC3E6";
+        return { nom, entreprises, pastel };
+      })
       .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"));
   }, [filtres]);
 
@@ -267,11 +276,13 @@ export default function Entreprises() {
                 <Tapable onPress={() => { tick(); setRegionOuverte(ouvert ? null : r.nom); }} echelle={0.98}
                   style={[s.region, ouvert && { borderColor: T.bleu }]}>
                   {/* La forme réelle du territoire — un chiffre abstrait
-                      n'identifie pas une région, sa silhouette si */}
-                  <View style={s.regionTuile}>
+                      n'identifie pas une région, sa silhouette si. Silhouette
+                      dans la couleur de son pôle, tuile dans la même teinte
+                      très diluée : les deux s'accordent. */}
+                  <View style={[s.regionTuile, { backgroundColor: `${r.pastel}33` }]}>
                     {regionConnue(r.nom)
-                      ? <SilhouetteRegion nom={r.nom} taille={38} couleur={T.bleu as string} />
-                      : <Text style={s.regionCompte}>{r.entreprises.length}</Text>}
+                      ? <SilhouetteRegion nom={r.nom} taille={38} couleur={foncerPastel(r.pastel)} />
+                      : <Text style={[s.regionCompte, { color: foncerPastel(r.pastel) }]}>{r.entreprises.length}</Text>}
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.regionNom} numberOfLines={1}>{r.nom}</Text>
@@ -303,7 +314,8 @@ export default function Entreprises() {
               </Apparition>
             );
           }}
-          contentContainerStyle={{ paddingTop: 14, paddingBottom: margeBas }}
+          contentContainerStyle={{ paddingBottom: margeBas }}
+          ListHeaderComponentStyle={{ marginBottom: 14 }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -342,10 +354,7 @@ const s = StyleSheet.create({
     backgroundColor: T.carte, borderRadius: 18, padding: 12,
     borderWidth: 1, borderColor: T.carteBord,
   },
-  regionTuile: {
-    width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuVoile,
-  },
+  regionTuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   regionCompte: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   regionNom: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   regionSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },

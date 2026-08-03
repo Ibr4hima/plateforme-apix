@@ -201,6 +201,7 @@ export default function Evenements() {
           </View>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}
+        ListHeaderComponentStyle={{ marginBottom: 4 }}
         stickySectionHeadersEnabled={false}
         refreshing={isRefetching}
         onRefresh={refetch}
