@@ -2,19 +2,13 @@
 // les Exportations en vedette (micro-étiquette, badge pays bleu sans point,
 // nombre en 38 pt qui compte, variation vs N-1 fléchée, silhouette Skia sans
 // axes, bornes d'années) et DEUX repères en grille — Importations et Balance
-// commerciale — chacun avec sa mini-courbe teintée vert ou rouge selon la
-// dernière variation. Toucher un repère l'installe en vedette.
-//
-// Les classements suivent le sens de la vedette (la Balance garde le dernier
-// sens choisi) : top 5 partenaires et ressources en barres, poids des
-// ressources en anneau, répartition partenaires × ressources en empilées.
+// commerciale — la tendance en glyphe trending_up / down / flat teinté.
+// Toucher un repère l'installe en vedette ; la carte porte tout l'écran.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { BarresEmpilees, BarresH } from "@/components/GrapheBarres";
-import GrapheDonut from "@/components/GrapheDonut";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
@@ -39,7 +33,6 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
 }) {
   const [actif, setActif] = useState<CleSerie>("exports");
   const [largeurTendance, setLargeurTendance] = useState(0);
-  const [largeurRepere, setLargeurRepere] = useState(0);
 
   // Référentiel du commerce : années disponibles, ressources, pays
   const { data: refs, isLoading, isError, refetch } = useQuery({
@@ -59,9 +52,9 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
   const anneeMin = Math.max(f.anneeMin, bornes[0]) || bornes[0];
   const anneeMax = Math.min(f.anneeMax, bornes[1]) || bornes[1];
 
-  // Le sens des classements suit la vedette (la Balance garde le sens filtré)
+  // Le sens (exportateur / importateur) suit la vedette, la Balance garde
+  // le dernier sens choisi — il pilote la feuille de filtres
   const direction = actif === "imports" ? "importateur" : actif === "exports" ? "exportateur" : f.vue;
-  const expDir = direction === "exportateur";
 
   // Paramètres communs des endpoints commerce (mêmes règles que le site)
   const params = useMemo(() => {
@@ -76,14 +69,6 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
     queryKey: ["commerce-balance", params], enabled: !!params,
     queryFn: () => getJson<any[]>(`/statistiques/commerce/balance?${params}`).catch(() => []),
   }).data || [];
-  const tops = useQuery({
-    queryKey: ["commerce-tops", params], enabled: !!params,
-    queryFn: () => getJson<any>(`/statistiques/commerce/tops?${params}`).catch(() => null),
-  }).data;
-  const repart = useQuery({
-    queryKey: ["commerce-repartition", params], enabled: !!params,
-    queryFn: () => getJson<any>(`/statistiques/commerce/repartition?${params}`).catch(() => null),
-  }).data;
 
   // Badge du bouton filtre du hero
   const nbFiltres =
@@ -92,9 +77,6 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
   useEffect(() => { onNbFiltres(nbFiltres); }, [nbFiltres, onNbFiltres]);
 
   const selPays = paysOpts.find((p: any) => p.id === selId);
-  const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
-    ? (f.anneesSpec.length === 1 ? `${f.anneesSpec[0]}` : `${f.anneesSpec[0]} — ${f.anneesSpec[f.anneesSpec.length - 1]}`)
-    : `${anneeMin} — ${anneeMax}`;
 
   if (isLoading) return <SqueletteDonnees />;
   if (isError) return <EtatErreur onRetry={() => refetch()} />;
@@ -121,25 +103,6 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
     // Le sens des filtres suit la vedette Exportations / Importations
     if (cle !== "balance") setFiltres({ ...f, vue: cle === "exports" ? "exportateur" : "importateur" });
   };
-
-  // ── Poids des ressources : top 8 + « Autres » ──
-  let donut: { label: string; valeur: number }[] = [];
-  if (tops?.ressources?.length) {
-    const top8 = tops.ressources.slice(0, 8);
-    donut = top8.map((r: any) => ({ label: r.ressource, valeur: r.valeur }));
-    const autres = (tops.total || 0) - top8.reduce((somme: number, r: any) => somme + r.valeur, 0);
-    if (autres > 0.0001 && tops.ressources.length > 8) donut.push({ label: "Autres", valeur: autres });
-  }
-
-  const Carte = ({ titre, sous, children }: { titre: string; sous?: string; children: React.ReactNode }) => (
-    <View style={s.carte}>
-      <View style={s.carteTitreLigne}>
-        <Text style={s.carteTitre} numberOfLines={2}>{titre}</Text>
-        {sous ? <Text style={s.carteSous} numberOfLines={1}>{sous}</Text> : null}
-      </View>
-      {children}
-    </View>
-  );
 
   return (
     <>
@@ -188,59 +151,30 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
             </View>
           )}
 
-          {/* Deux repères, chacun avec sa mini-courbe teintée par la tendance */}
+          {/* Deux repères, la tendance en glyphe teinté */}
           <View style={s.pied}>
             {reperes.map((cle, i) => {
               const sx = serieDe(cle);
               const d = sx.at(-1) ?? null;
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
-              const rHausse = d && p ? d.valeur >= p.valeur : true;
-              const teinte = (rHausse ? T.vert : "#dc2626") as string;
+              const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               return (
                 <Tapable key={cle} echelle={0.96}
                   onPress={() => choisir(cle)}
                   style={[s.repere, i % 2 === 1 && s.repereDroit]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{COURTS[cle]}</Text>
-                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
-                    {d ? fmtUSD(d.valeur) : "—"}
-                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
-                  </Text>
-                  <View style={{ marginTop: 6 }} onLayout={e => setLargeurRepere(e.nativeEvent.layout.width)}>
-                    {largeurRepere > 0 && sx.length > 1 && (
-                      <MiniTendance valeurs={sx.map(x => x.valeur)} largeur={largeurRepere} hauteur={30} couleur={teinte} />
-                    )}
+                  <View style={s.repereLigne}>
+                    <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
+                      {d ? fmtUSD(d.valeur) : "—"}
+                      {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                    </Text>
+                    <IconeTendance delta={dpc} />
                   </View>
                 </Tapable>
               );
             })}
           </View>
         </View>
-      </View>
-
-      {/* ── Classements et répartitions — le sens de la vedette ── */}
-      <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
-        {tops?.partenaires?.length > 0 && (
-          <Carte titre={expDir ? "Répartition par pays de destination" : "Répartition par pays d'origine"} sous={`Top 5 · cumul ${perLabel}`}>
-            <BarresH data={tops.partenaires.slice(0, 5).map((p: any) => ({ label: p.nom, valeur: p.valeur }))} fmt={v => fmtUSD(v)} />
-          </Carte>
-        )}
-        {tops?.ressources?.length > 0 && (
-          <Carte titre={expDir ? "Classement des ressources exportées" : "Classement des ressources importées"} sous={`Top 5 · cumul ${perLabel}`}>
-            <BarresH data={tops.ressources.slice(0, 5).map((r: any) => ({ label: r.ressource, valeur: r.valeur }))} fmt={v => fmtUSD(v)} />
-          </Carte>
-        )}
-        {donut.length > 0 && (
-          <Carte titre={expDir ? "Poids des ressources exportées" : "Poids des ressources importées"} sous={`USD · cumul ${perLabel}`}>
-            {/* Au centre : le nombre seul, l'unité est portée par le sous-titre */}
-            <GrapheDonut data={donut} fmt={v => fmtUSD(v)}
-              centre={fmtUSD(donut.reduce((somme, d) => somme + d.valeur, 0)).replace(/\s*\$\s*$/, "")} />
-          </Carte>
-        )}
-        {repart?.partenaires?.length > 0 && (
-          <Carte titre={expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"} sous={`Top 5 · cumul ${perLabel}`}>
-            <BarresEmpilees partenaires={repart.partenaires.slice(0, 5)} ressources={repart.ressources || []} fmt={v => fmtUSD(v)} />
-          </Carte>
-        )}
       </View>
 
       {filtresOuverts && (
@@ -290,14 +224,7 @@ const s = StyleSheet.create({
   repere: { flex: 1, paddingTop: 10, paddingBottom: 2, paddingRight: 10 },
   repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
   repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  repereValeur: { ...TYPO.sousTitre, color: T.encre, marginTop: 3, fontVariant: ["tabular-nums"] },
+  repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
+  repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
-
-  carte: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
-    paddingHorizontal: 15, paddingTop: 13, paddingBottom: 12,
-  },
-  carteTitreLigne: { flexDirection: "row", alignItems: "baseline", gap: 7, flexWrap: "wrap", marginBottom: 10 },
-  carteTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, flexShrink: 1 },
-  carteSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
 });

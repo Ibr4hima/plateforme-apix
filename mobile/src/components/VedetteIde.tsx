@@ -17,7 +17,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
-import { Apparition, ChiffreAnime, Tapable } from "@/components/ui";
+import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -187,15 +187,20 @@ export default function VedetteIde() {
           {reperes.map((cle, i) => {
             const sx = series[cle];
             const d = sx.at(-1) ?? null;
+            const p = sx.length > 1 ? sx[sx.length - 2] : null;
+            const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
               <Tapable key={cle} echelle={0.96}
                 onPress={() => { tick(); setActif(cle); }}
                 style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
                 <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle].court}</Text>
-                <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
-                  {d ? fmtDe(cle)(d.valeur) : "—"}
-                  {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
-                </Text>
+                <View style={s.repereLigne}>
+                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
+                    {d ? fmtDe(cle)(d.valeur) : "—"}
+                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                  </Text>
+                  <IconeTendance delta={dpc} />
+                </View>
               </Tapable>
             );
           })}
@@ -234,6 +239,7 @@ const s = StyleSheet.create({
   repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
   repereBas: { marginTop: 8 },
   repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  repereValeur: { ...TYPO.sousTitre, color: T.encre, marginTop: 3, fontVariant: ["tabular-nums"] },
+  repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
+  repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 });

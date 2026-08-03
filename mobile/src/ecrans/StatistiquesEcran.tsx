@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, IconeTendance, Tapable } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
 import EnTetePage from "@/components/EnTetePage";
@@ -179,15 +179,20 @@ export default function StatistiquesEcran() {
             {autres.map((r, i) => {
               const sx = serieDe(r.ind.code);
               const d = sx.at(-1) ?? null;
+              const p = sx.length > 1 ? sx[sx.length - 2] : null;
+              const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               return (
                 <Tapable key={r.cle} echelle={0.96}
                   onPress={() => { tick(); setActif(r.cle); }}
                   style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
-                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
-                    {d ? fmtUnite(d.valeur, r.ind.unite) : "—"}
-                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
-                  </Text>
+                  <View style={s.repereLigne}>
+                    <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
+                      {d ? fmtUnite(d.valeur, r.ind.unite) : "—"}
+                      {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                    </Text>
+                    <IconeTendance delta={dpc} />
+                  </View>
                 </Tapable>
               );
             })}
@@ -297,6 +302,7 @@ const s = StyleSheet.create({
   repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
   repereBas: { marginTop: 8 },
   repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  repereValeur: { ...TYPO.sousTitre, color: T.encre, marginTop: 3, fontVariant: ["tabular-nums"] },
+  repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
+  repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 });

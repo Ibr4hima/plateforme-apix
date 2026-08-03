@@ -75,6 +75,17 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
   );
 }
 
+// ── IconeTendance : la direction d'une série en un glyphe ────────────────────
+// trending_up / trending_down / trending_flat, teinté vert / rouge / gris
+// selon la dernière variation — le langage des repères des cartes vedettes.
+export function IconeTendance({ delta, taille = 18 }: { delta: number | null; taille?: number }) {
+  if (delta == null || !isFinite(delta)) return null;
+  const plat = Math.abs(delta) < 0.05;
+  const nom = plat ? "trending_flat" : delta > 0 ? "trending_up" : "trending_down";
+  const couleur = plat ? (T.gris as string) : delta > 0 ? (T.vert as string) : "#dc2626";
+  return <Symbole nom={nom} taille={taille} couleur={couleur} />;
+}
+
 // ── Bouton ───────────────────────────────────────────────────────────────────
 export function Bouton({ label, onPress, variante = "primaire", taille = "moyenne", icone, disabled, style }: {
   label: string; onPress: () => void;
