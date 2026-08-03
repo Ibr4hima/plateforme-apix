@@ -123,14 +123,8 @@ export default function FichePaysIndex() {
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingBottom: margeBas }}
-      ListHeaderComponent={
-        <>
-          {hero}
-          {!isLoading && !isError && (
-            <Text style={s.compte}>{sections.reduce((n, c) => n + c.nb, 0)} pays</Text>
-          )}
-        </>
-      }
+      ListHeaderComponent={hero}
+      ListHeaderComponentStyle={{ marginBottom: 14 }}
       renderItem={({ item: c }: any) => {
         const ouvert = recherche || ouverts.has(c.continent);
         return (
@@ -149,7 +143,7 @@ export default function FichePaysIndex() {
               <View style={s.surface}>
                 {c.zones.map((z: any, zi: number) => (
                   <View key={z.zone}>
-                    <Text style={[s.zone, zi > 0 && { borderTopWidth: 1, borderTopColor: T.filet }]}>{z.zone.toUpperCase()}</Text>
+                    <Text style={[s.zone, zi > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure }]}>{z.zone.toUpperCase()}</Text>
                     {z.pays.map((p: any) => (
                       <Pressable key={p.id} onPress={() => choisir(p)}
                         style={({ pressed }) => [s.pays, pressed && { backgroundColor: T.blocFond }]}>
@@ -199,7 +193,6 @@ const s = StyleSheet.create({
     paddingVertical: 9.5, paddingHorizontal: 14,
   },
   slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.85)" },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
   continent: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
@@ -207,7 +200,7 @@ const s = StyleSheet.create({
   continentTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
   continentDroite: { flexDirection: "row", alignItems: "center", gap: 7 },
   continentCompte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 1.5, overflow: "hidden", fontVariant: ["tabular-nums"] },
-  surface: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, marginTop: 8, overflow: "hidden" },
+  surface: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, marginTop: 8, overflow: "hidden" },
   zone: { fontSize: 9, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.1, paddingHorizontal: 16, paddingTop: 11, paddingBottom: 3 },
   pays: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10.5 },
   paysNom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
