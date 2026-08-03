@@ -6,14 +6,14 @@
 // Fond clair de bout en bout : le bleu APIX est un accent — chiffres, icônes,
 // pastilles — plus un décor. L'identité tient dans deux lignes de titre, pas
 // dans un panneau.
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
-import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
-import { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
 import Icone from "@/components/Icone";
@@ -23,19 +23,7 @@ import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
-function dansCombien(dstr: string): string {
-  const d = new Date(dstr.slice(0, 10) + "T00:00:00");
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const jours = Math.round((d.getTime() - now.getTime()) / 86400000);
-  if (jours <= 0) return "Aujourd'hui";
-  if (jours === 1) return "Demain";
-  if (jours < 31) return `Dans ${jours} jours`;
-  const mois = Math.round(jours / 30.44);
-  if (mois < 12) return `Dans ${mois} mois`;
-  return `Dans ${Math.floor(mois / 12)} an${mois >= 24 ? "s" : ""}`;
-}
-
-// ── Prochain événement — une carte claire, tappable ──────────────────────────
+// ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 function ProchainEvenement() {
   const router = useRouter();
   const { data: ev } = useQuery({
@@ -53,28 +41,27 @@ function ProchainEvenement() {
   return (
     <Apparition index={1} style={s.blocEvenement}>
       <Text style={s.titreSection}>À venir</Text>
-      {/* Verre subtil : flou natif sous un voile laiteux — la carte se fond
-          dans le fond au lieu de poser un aplat blanc de plus */}
+      {/* Bleu plein en dégradé profond — le bloc de couleur qui ancre la
+          page (l'idiome du bandeau « reprendre » des grandes apps) */}
       <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
-        <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.55)" }]} />
+        <LinearGradient colors={["#063C6E", "#004f91", "#1465AC"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+        {/* Halo discret, comme le hero */}
+        <View style={s.evenementHalo} />
         <View style={s.evenement}>
-        <View style={s.evenementDate}>
-          <Text style={s.evenementJour}>{d.getDate()}</Text>
-          <Text style={s.evenementMois}>
-            {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
-          </Text>
-        </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.evenementNom} numberOfLines={2}>{ev.nom_event}</Text>
-          <Text style={s.evenementLieu} numberOfLines={1}>
-            {[ev.ville, ev.pays_hote_nom].filter(Boolean).join(" · ") || "Lieu à confirmer"}
-          </Text>
-          <View style={s.echeance}>
-            <Text style={s.echeanceTexte}>{dansCombien(ev.date_debut)}</Text>
+          <View style={s.evenementDate}>
+            <Text style={s.evenementJour}>{d.getDate()}</Text>
+            <Text style={s.evenementMois}>
+              {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
+            </Text>
           </View>
-        </View>
-        <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.evenementNom} numberOfLines={2}>{ev.nom_event}</Text>
+            <Text style={s.evenementLieu} numberOfLines={1}>
+              {[ev.ville, ev.pays_hote_nom].filter(Boolean).join(" · ") || "Lieu à confirmer"}
+            </Text>
+          </View>
+          <Icone sf="chevron.right" materiel="chevron_right" taille={14} couleur="rgba(255,255,255,0.7)" poids="semibold" />
         </View>
       </Tapable>
     </Apparition>
@@ -87,6 +74,21 @@ export default function Accueil() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const qc = useQueryClient();
   const [rafraichit, setRafraichit] = useState(false);
+
+  // Mode sombre / clair : préférence mémorisée, appliquée au schéma système
+  // (le lecteur du Code la suit déjà ; la peau sombre des écrans arrive)
+  const [sombre, setSombre] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem("apix.theme").then(v => {
+      if (v === "sombre") { setSombre(true); Appearance.setColorScheme("dark"); }
+    }).catch(() => {});
+  }, []);
+  const basculerTheme = () => setSombre(v => {
+    const n = !v;
+    AsyncStorage.setItem("apix.theme", n ? "sombre" : "clair").catch(() => {});
+    Appearance.setColorScheme(n ? "dark" : "light");
+    return n;
+  });
 
   // L'accueil est clair : barre d'état sombre tant qu'il a le focus, retour
   // au blanc en le quittant (les deux autres onglets gardent leur hero bleu).
@@ -131,10 +133,17 @@ export default function Accueil() {
             </MaskedView>
           </View>
         </View>
-        <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
-          accessibilityLabel="Rechercher" style={{ marginBottom: 4 }}>
-          <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
-        </BoutonVerre>
+        <View style={s.boutonsEnTete}>
+          <BoutonVerre onPress={basculerTheme} taille={40}
+            accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
+            <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+              taille={17} couleur={T.bleu} poids="semibold" />
+          </BoutonVerre>
+          <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
+            accessibilityLabel="Rechercher">
+            <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
+          </BoutonVerre>
+        </View>
       </View>
 
       {/* ── La situation ── */}
@@ -157,6 +166,7 @@ const s = StyleSheet.create({
     paddingHorizontal: ESPACE.m + 4, paddingBottom: ESPACE.m + 2,
   },
   date: { ...TYPO.micro, color: T.gris },
+  boutonsEnTete: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
   // 28 pt : « Invest in Senegal » doit tenir sur UNE ligne, bouton recherche compris
   titre: {
@@ -168,23 +178,23 @@ const s = StyleSheet.create({
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
-    borderWidth: 1, borderColor: T.carteBord,
   },
-  evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
-  // Bloc date en bleu plein : l'ancre visuelle de la carte
+  evenementHalo: {
+    position: "absolute", top: -70, right: -50, width: 190, height: 190, borderRadius: 95,
+    backgroundColor: "rgba(255,255,255,0.07)",
+  },
+  evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
+  // Bloc date en verre clair sur le bleu
   evenementDate: {
-    width: 52, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuAction,
+    width: 52, height: 56, borderRadius: 14, borderCurve: "continuous",
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.24)",
   },
   evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: "#fff", lineHeight: 25, fontVariant: ["tabular-nums"] },
   evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.2, marginTop: 1 },
-  evenementNom: { ...TYPO.sousTitre, color: T.encre },
-  evenementLieu: { ...TYPO.legende, color: T.gris, marginTop: 2 },
-  echeance: {
-    alignSelf: "flex-start", backgroundColor: "rgba(202,99,31,0.10)",
-    borderRadius: RAYON.pilule, paddingHorizontal: 9, paddingVertical: 2.5, marginTop: 7,
-  },
-  echeanceTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.orange },
+  evenementNom: { ...TYPO.sousTitre, color: "#fff" },
+  evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.72)", marginTop: 3 },
   pied: {
     textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
     color: T.grisClair, marginTop: ESPACE.xl,

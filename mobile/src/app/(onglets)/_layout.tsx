@@ -11,9 +11,9 @@ import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
-  { nom: "index",           titre: "Accueil",                court: "Accueil",   sf: "house",                     materiel: "home" },
-  { nom: "investissements", titre: "Investissements privés", court: "Investir",  sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
-  { nom: "flux",            titre: "Flux commerciaux",       court: "Échanges",  sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
+  { nom: "index",           titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
+  { nom: "investissements", titre: "Investissements privés", court: "Investissements", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
+  { nom: "flux",            titre: "Flux commerciaux",       court: "Économie",        sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
 ] as const;
 
 function BarreOnglets({ state, navigation }: any) {
