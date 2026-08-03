@@ -411,9 +411,9 @@ export default function IdeEcran() {
 
   const fmtDe = (unite: "musd" | "nombre") => (v: number | null) => unite === "nombre" ? fmtNombre(v) : fmtMusd(v);
 
-  // Dernier point / précédent d'une série (pour vedette et rangées)
-  const bilanDe = (g: { unite: "musd" | "nombre"; series: Serie[] }) => {
-    const pts = (g.series[0]?.data || []).filter(d => d.valeur !== null);
+  // Dernier point / précédent d'UNE série (vedette, rangées, légende)
+  const bilanSerie = (sr?: Serie) => {
+    const pts = (sr?.data || []).filter(d => d.valeur !== null);
     if (!pts.length) return null;
     const dernier = pts[pts.length - 1];
     const prec = pts.length > 1 ? pts[pts.length - 2] : null;
@@ -424,6 +424,7 @@ export default function IdeEcran() {
     }
     return { dernier, prec, delta, valeurs: pts.map(p => p.valeur as number) };
   };
+  const bilanDe = (g: { series: Serie[] }) => bilanSerie(g.series[0]);
 
   // ── Autres indicateurs — la liste à plat, groupée par thème ──
   const groupesIndics = useMemo<{ nom: string; lignes: LigneStat[] }[]>(() => {
@@ -523,11 +524,12 @@ export default function IdeEcran() {
     ? grpInfos.map(g => ({ cle: g.code, nom: g.label, couleur: g.couleur }))
     : (comparative ? nomsPays : [paysSelec]).map((nom, i) => ({ cle: nom, nom, couleur: comparative ? COMP_PALETTE[i % COMP_PALETTE.length] : T.bleu }));
   const paysGerable = !secteursVue && !monde; // pastilles ✕ et bouton + actifs
+  // Logique du site : la comparaison de pays n'est plus un « filtre » (elle se
+  // fait au « + », dans le contexte) — le badge ne compte que la vue, le
+  // secteur et la période
   const nbFiltres =
-    (f.vue !== "pays" ? 1 : 0) +
-    (!secteursVue && f.typeAnalyse !== "pays" ? 1 : 0) +
+    (secteursVue || monde ? 1 : 0) +
     (secteursVue && f.typeAnalyse !== "secteur" ? 1 : 0) +
-    (!secteursVue && !monde && senId !== null && (f.paysSelection.length > 1 || f.paysSelection[0] !== senId) ? 1 : 0) +
     (secteursVue && f.typeAnalyse === "secteur" && f.secteurSelection[0] !== 0 ? 1 : 0) +
     (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > bornes[0] || f.anneeMax < bornes[1]) ? 1 : 0));
 
@@ -593,7 +595,7 @@ export default function IdeEcran() {
                     return (
                       <Pressable key={pa.cle}
                         onPress={retirable ? () => { tick(); retirerPays(pa.nom); } : () => setFiltresOuverts(true)}
-                        style={[s.paysPastille, { borderColor: `${pa.couleur}2E`, backgroundColor: `${pa.couleur}0D` }]}>
+                        style={[s.paysPastille, { borderColor: `${pa.couleur}33` }]}>
                         <View style={[s.paysPoint, { backgroundColor: pa.couleur }]} />
                         <Text style={[s.paysPastilleTexte, { color: pa.couleur }]} numberOfLines={1}>{pa.nom}</Text>
                         {retirable && (
@@ -633,8 +635,36 @@ export default function IdeEcran() {
                       </View>
                     )}
                     <View style={{ marginTop: multi ? 4 : 10 }}>
-                      <GrapheLignes series={gActive.series} hauteur={multi ? 200 : 172} fmt={fmtDe(gActive.unite)} epure />
+                      <GrapheLignes series={gActive.series} hauteur={multi ? 190 : 172} fmt={fmtDe(gActive.unite)} epure />
                     </View>
+                    {/* En comparaison, la lecture vit sous la courbe : une
+                        ligne par série — dernière valeur, année, variation */}
+                    {multi && (
+                      <View style={s.legende}>
+                        {gActive.series.map(sr => {
+                          const b = bilanSerie(sr);
+                          const bHausse = (b?.delta ?? 0) >= 0;
+                          return (
+                            <View key={sr.nom} style={s.legendeLigne}>
+                              <View style={[s.paysPoint, { backgroundColor: sr.couleur }]} />
+                              <Text style={s.legendeNom} numberOfLines={1}>{sr.nom}</Text>
+                              {b?.dernier && <Text style={s.legendeAnnee}>{b.dernier.annee}</Text>}
+                              <Text style={s.legendeValeur}>{b ? fmtDe(gActive.unite)(b.dernier.valeur) : "—"}</Text>
+                              {b?.delta != null ? (
+                                <View style={s.legendeDelta}>
+                                  <Icone sf={bHausse ? "arrow.up.right" : "arrow.down.right"}
+                                    materiel={bHausse ? "north_east" : "south_east"}
+                                    taille={10} couleur={bHausse ? T.vert : "#dc2626"} poids="bold" />
+                                  <Text style={[s.legendeDeltaTexte, { color: bHausse ? T.vert : "#dc2626" }]}>
+                                    {Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                  </Text>
+                                </View>
+                              ) : <View style={s.legendeDelta} />}
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
                   </View>
                 </View>
 
@@ -651,16 +681,31 @@ export default function IdeEcran() {
                             style={[s.serieLigne, pos > 0 && s.serieLigneBord]}>
                             <View style={{ flex: 1, minWidth: 0 }}>
                               <Text style={s.serieLabel} numberOfLines={1}>{g.label}</Text>
-                              <View style={s.serieSous}>
-                                <Text style={s.serieValeur}>{b ? fmtDe(g.unite)(b.dernier.valeur) : "—"}</Text>
-                                {b?.delta != null && (
-                                  <Text style={[s.serieDelta, { color: bHausse ? T.vert : "#dc2626" }]}>
-                                    {bHausse ? "+" : "−"}{Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                                  </Text>
-                                )}
-                              </View>
+                              {multi ? (
+                                // En comparaison : la dernière valeur de CHAQUE
+                                // série, dans sa couleur — l'ordre des pastilles
+                                <View style={s.serieSous}>
+                                  {g.series.map(sr => {
+                                    const bs = bilanSerie(sr);
+                                    return (
+                                      <Text key={sr.nom} style={[s.serieValeur, { color: sr.couleur }]}>
+                                        {bs ? fmtDe(g.unite)(bs.dernier.valeur) : "—"}
+                                      </Text>
+                                    );
+                                  })}
+                                </View>
+                              ) : (
+                                <View style={s.serieSous}>
+                                  <Text style={s.serieValeur}>{b ? fmtDe(g.unite)(b.dernier.valeur) : "—"}</Text>
+                                  {b?.delta != null && (
+                                    <Text style={[s.serieDelta, { color: bHausse ? T.vert : "#dc2626" }]}>
+                                      {bHausse ? "+" : "−"}{Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                    </Text>
+                                  )}
+                                </View>
+                              )}
                             </View>
-                            {b && b.valeurs.length > 1 && (
+                            {!multi && b && b.valeurs.length > 1 && (
                               <MiniTendance valeurs={b.valeurs} largeur={72} hauteur={30}
                                 couleur={g.series[0]?.couleur || (T.bleu as string)} />
                             )}
@@ -720,13 +765,16 @@ const s = StyleSheet.create({
   chipFiltreTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
 
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 14, paddingHorizontal: 16 },
+  // Les styles badge_* de la plateforme : pastille blanche translucide à
+  // bordure teintée, texte de la couleur (gris pour la période)
   periodePastille: {
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
-    backgroundColor: T.filet, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(108,117,125,0.28)",
   },
-  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  periodePastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, color: "#6b7280", fontVariant: ["tabular-nums"] },
   paysPastille: {
     flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.7)",
     paddingHorizontal: 12, paddingVertical: 5, maxWidth: 220,
   },
   paysPoint: { width: 7, height: 7, borderRadius: 4 },
@@ -749,6 +797,18 @@ const s = StyleSheet.create({
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
   deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
+
+  // Légende de lecture sous la courbe (comparaisons)
+  legende: {
+    marginTop: 8, paddingTop: 4, paddingBottom: 6, gap: 7,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
+  },
+  legendeLigne: { flexDirection: "row", alignItems: "center", gap: 7, paddingTop: 4 },
+  legendeNom: { flex: 1, minWidth: 0, fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
+  legendeAnnee: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  legendeValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  legendeDelta: { flexDirection: "row", alignItems: "center", gap: 2, minWidth: 62, justifyContent: "flex-end" },
+  legendeDeltaTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
   // Cartes-listes (séries commutables, indicateurs)
   carteListe: {
