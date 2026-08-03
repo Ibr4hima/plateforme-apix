@@ -9,7 +9,7 @@
 // incitations par secteur économique (3 cartes compteur puis activités
 // groupées par branche).
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
@@ -17,7 +17,7 @@ import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
 import { CascadeGeo, CascadeThema, FeuilleFiltres, SectionCoches, basculer, construireArbreGeo } from "@/components/FiltresListe";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { fetchTous, getJson } from "@/lib/api";
@@ -148,8 +148,6 @@ export default function Opportunites() {
   const [projetOuvert, setProjetOuvert] = useState<any>(null);
   const [potOuverte, setPotOuverte] = useState<any>(null);
   const [avgOuvert, setAvgOuvert] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
-  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -360,7 +358,7 @@ export default function Opportunites() {
 
   const hero = (
     <>
-      <HeroModule retour titre="Opportunités"
+      <EnTetePage titre="Opportunités d'investissement"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         bouton={boutonFiltres} />
       {/* Les trois lentilles en chips colorées, compteur en pastille */}
@@ -401,8 +399,6 @@ export default function Opportunites() {
     return (
       <>
         <ListeRapide
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
@@ -418,7 +414,6 @@ export default function Opportunites() {
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
-        <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
         {feuille}
       </>
@@ -445,7 +440,7 @@ export default function Opportunites() {
     }
     return (
       <>
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
             <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
@@ -485,7 +480,6 @@ export default function Opportunites() {
             </View>
           )}
         </Animated.ScrollView>
-        <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
         {feuille}
       </>
@@ -505,7 +499,7 @@ export default function Opportunites() {
   branchesGroupes.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+      <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
           <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
@@ -542,7 +536,6 @@ export default function Opportunites() {
           </View>
         )}
       </Animated.ScrollView>
-      <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
       {feuille}
     </>

@@ -11,8 +11,8 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide } from "@/components/ui";
+import EnTetePage from "@/components/EnTetePage";
 import FichePaysContenu from "@/components/FichePaysContenu";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import TexteDefilant from "@/components/TexteDefilant";
 import { Image as ImageCache } from "expo-image";
 import { getJson } from "@/lib/api";
@@ -28,9 +28,7 @@ type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb:
 export default function FichePaysIndex() {
   const margeBas = useMargeBas();
   const [q, setQ] = useState("");
-  const { defilY, onScroll } = useHeroDefilant();
   const [selec, setSelec] = useState<Pays | null>(null);
-  useEffect(() => { defilY.setValue(0); }, [selec, defilY]);
   const [ouverts, setOuverts] = useState<Set<string>>(new Set(["Afrique"]));
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -72,7 +70,7 @@ export default function FichePaysIndex() {
   const choisir = (p: Pays) => { setSelec(p); setQ(""); };
 
   const hero = (
-    <HeroModule retour titre="Fiche Pays"
+    <EnTetePage titre="Fiche Pays"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}>
       {/* Les deux emplacements de la comparaison */}
       <View style={s.slots}>
@@ -93,22 +91,21 @@ export default function FichePaysIndex() {
           </Pressable>
         ) : (
           <View style={s.slotAjout}>
-            <Ionicons name="add" size={15} color="rgba(255,255,255,0.85)" />
+            <Ionicons name="add" size={15} color={T.gris} />
             <Text style={s.slotAjoutTexte}>Ajouter un pays</Text>
           </View>
         )}
       </View>
-    </HeroModule>
+    </EnTetePage>
   );
 
   if (modeFiche) {
     return (
       <>
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
-        <BarreHero retour titre={selec!.nom} defilY={defilY} />
       </>
     );
   }
@@ -116,8 +113,6 @@ export default function FichePaysIndex() {
   return (
     <>
     <ListeRapide
-      onScroll={onScroll}
-      scrollEventThrottle={16}
       style={{ backgroundColor: T.fond }}
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}
@@ -169,17 +164,17 @@ export default function FichePaysIndex() {
         )
       }
     />
-    <BarreHero retour titre="Fiche Pays" defilY={defilY} />
     </>
   );
 }
 
 const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 9 },
-  slots: { flexDirection: "row", gap: 8, marginTop: 16 },
+  slots: { flexDirection: "row", gap: 8, marginTop: 14 },
   slotSen: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     backgroundColor: "#fff", borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
+    borderWidth: 1, borderColor: T.carteBord,
   },
   drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
   drapeauEmoji: { fontSize: 16, lineHeight: 20 },
@@ -189,10 +184,10 @@ const s = StyleSheet.create({
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   slotAjout: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
-    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(255,255,255,0.45)",
+    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(16,26,46,0.22)",
     paddingVertical: 9.5, paddingHorizontal: 14,
   },
-  slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.85)" },
+  slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },
   continent: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,

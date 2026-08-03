@@ -11,12 +11,12 @@
 // zone les résultats se trouvent.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -73,8 +73,6 @@ export default function Zones() {
   const [type, setType] = useState("ZES");
   const [zoneSelec, setZoneSelec] = useState<any>(null);
   const [poleSelec, setPoleSelec] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
-  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -133,7 +131,7 @@ export default function Zones() {
 
   const hero = (
     <>
-      <HeroModule retour titre="Zones d'investissement"
+      <EnTetePage titre="Zones d'investissement"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: segments, valeur: vue, onChange: setVue }} />
 
@@ -176,8 +174,6 @@ export default function Zones() {
     <>
       {vue === "zones" ? (
         <ListeRapide
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(z: any) => String(z.id)}
@@ -195,8 +191,6 @@ export default function Zones() {
         />
       ) : (
         <ListeRapide
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : polesFiltres}
           keyExtractor={(p: any) => String(p.id)}
@@ -232,7 +226,6 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       )}
-      <BarreHero retour titre="Zones d'investissement" defilY={defilY} />
       {zoneSelec && <ZoneSheet zone={zoneSelec} onClose={() => setZoneSelec(null)} />}
       {poleSelec && <PoleSheet pole={poleSelec} zones={zones || []} onClose={() => setPoleSelec(null)} />}
     </>

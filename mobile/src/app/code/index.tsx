@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import EnTetePage from "@/components/EnTetePage";
 import { getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
@@ -51,7 +51,6 @@ export default function CodeSommaire() {
   const router = useRouter();
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
-  const { defilY, onScroll } = useHeroDefilant();
   const [base, setBase] = useState<BaseCode>("code-investissement");
   const [q, setQ] = useState("");
   const [qDebounce, setQDebounce] = useState("");
@@ -90,10 +89,10 @@ export default function CodeSommaire() {
 
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}
+      <Animated.ScrollView
         style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
         keyboardShouldPersistTaps="handled">
-        <HeroModule retour titre="Lois & Règlementations"
+        <EnTetePage titre="Lois & Règlementations"
           recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
 
         {/* Les deux bases en chips colorées à compteur */}
@@ -178,7 +177,6 @@ export default function CodeSommaire() {
           </View>
         )}
       </Animated.ScrollView>
-      <BarreHero retour titre="Lois & Règlementations" defilY={defilY} />
     </>
   );
 }
