@@ -12,7 +12,27 @@ import { Apparition, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
 
-const TOUS = [...MODULES, ...PLUS];
+function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: string) => void }) {
+  return (
+    <View style={s.surface}>
+      {items.map((m, i) => (
+        <View key={m.cle}>
+          {i > 0 && <View style={s.separateur} />}
+          <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.ligne}>
+            <View style={s.pastille}>
+              <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={s.titre} numberOfLines={1}>{m.titre}</Text>
+              <Text style={s.sous} numberOfLines={1}>{m.sous}</Text>
+            </View>
+            <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
+          </Tapable>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function Explorer() {
   const router = useRouter();
@@ -22,23 +42,11 @@ export default function Explorer() {
     <View style={s.bloc}>
       <Text style={s.titreSection}>Explorer</Text>
       <Apparition index={2}>
-        <View style={s.surface}>
-          {TOUS.map((m, i) => (
-            <View key={m.cle}>
-              {i > 0 && <View style={s.separateur} />}
-              <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.ligne}>
-                <View style={s.pastille}>
-                  <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
-                </View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={s.titre} numberOfLines={1}>{m.titre}</Text>
-                  <Text style={s.sous} numberOfLines={1}>{m.sous}</Text>
-                </View>
-                <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
-              </Tapable>
-            </View>
-          ))}
-        </View>
+        {/* Les modules, puis — détachées — les deux entrées transverses
+            (Fiche Pays, Lois) : des documents, pas des espaces */}
+        <Surface items={MODULES} ouvrir={ouvrir} />
+        <View style={{ height: 12 }} />
+        <Surface items={PLUS} ouvrir={ouvrir} />
       </Apparition>
     </View>
   );

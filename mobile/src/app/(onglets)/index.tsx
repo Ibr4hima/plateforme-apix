@@ -124,7 +124,7 @@ export default function Accueil() {
               MaskedView est un bloc : la ligne est donc une rangée de deux
               textes, le second masqué par le dégradé. */}
           <View style={s.titreLigne}>
-            <Text style={s.titre}>Invest in </Text>
+            <Text style={[s.titre, { color: T.bleu }]}>Invest in </Text>
             <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
               <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>

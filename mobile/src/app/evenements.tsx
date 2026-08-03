@@ -17,9 +17,9 @@ import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-nat
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { useNaemaArbre } from "@/components/ArbreNaema";
+import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import { CascadeThema, FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Icone from "@/components/Icone";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
@@ -87,7 +87,6 @@ export default function Evenements() {
   const [q, setQ] = useState("");
   const [lentille, setLentille] = useState("a_venir");
   const [selec, setSelec] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
 
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [paysSel, setPaysSel] = useState<string[]>([]);
@@ -168,7 +167,7 @@ export default function Evenements() {
   ];
 
   const hero = (
-    <HeroModule retour titre="Événements"
+    <EnTetePage titre="Événements"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
       segments={{ options: lentilles, valeur: lentille, onChange: setLentille }}
       bouton={boutonFiltres} />
@@ -183,8 +182,6 @@ export default function Evenements() {
   return (
     <>
       <Animated.SectionList
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         sections={isLoading || isError ? [] : sections}
         keyExtractor={(e: any) => String(e.id)}
@@ -209,7 +206,6 @@ export default function Evenements() {
         ListHeaderComponent={hero}
         ListEmptyComponent={vide}
       />
-      <BarreHero retour titre="Événements" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
       {filtresOuverts && (
         <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
