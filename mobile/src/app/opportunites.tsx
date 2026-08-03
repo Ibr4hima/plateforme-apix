@@ -1,15 +1,19 @@
-// Opportunités d'investissement — adaptation fidèle de la page web :
-// vues Projets / Potentialités / Avantages dans le hero. Banque de
-// projets en cards (titre, pôle, Région | Département), potentialités
-// par niveau territorial (4 cards compteur puis fiches groupées par
-// rattachement), avantages & incitations par secteur économique
-// (3 cards compteur puis activités groupées par branche).
+// Opportunités d'investissement — trois lentilles sur le même sujet, en chips
+// colorées (le pattern des types de zones) : Banque de projets, Potentialités
+// par zone, Avantages & incitations. Chaque chip porte son compteur — la
+// recherche montre immédiatement où se trouvent les résultats.
+//
+// Banque de projets en cartes au gabarit de la plateforme (contour fin, rangée
+// Région | Département sous filet) ; potentialités par niveau territorial
+// (4 cartes compteur puis fiches groupées par rattachement) ; avantages &
+// incitations par secteur économique (3 cartes compteur puis activités
+// groupées par branche).
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Animated, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
 import { CascadeGeo, CascadeThema, FeuilleFiltres, SectionCoches, basculer, construireArbreGeo } from "@/components/FiltresListe";
@@ -17,13 +21,15 @@ import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule"
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { fetchTous, getJson } from "@/lib/api";
-import { POLICE, T } from "@/theme";
+import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
+import { POLICE, T } from "@/theme";
 
-const VUES = [
-  { cle: "projets",       label: "Projets" },
-  { cle: "potentialites", label: "Potentialités" },
-  { cle: "avantages",     label: "Avantages" },
+// Les trois lentilles — chips colorées comme les types de zones
+const LENTILLES = [
+  { cle: "projets",       label: "Banque de projets",       couleur: "#004f91" },
+  { cle: "potentialites", label: "Potentialités par zone",   couleur: "#ca631f" },
+  { cle: "avantages",     label: "Avantages & incitations",  couleur: "#188038" },
 ] as const;
 
 // Niveaux de découpage territorial des potentialités (libellés du site)
@@ -58,26 +64,26 @@ const potTitre = (p: any) => (p.titre || "")
   .replace(/^[Pp]otentialités?\s+(de\s+l['’]|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
   .replace(/^(.)/, (_: string, c: string) => c.toUpperCase());
 
+// ── La carte de projet — le gabarit de la plateforme ─────────────────────────
 function CarteProjet({ p, onPress }: { p: any; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, pressed && { transform: [{ scale: 0.99 }], borderColor: "rgba(0,79,145,0.33)" }]}>
-      <View style={{ minWidth: 0 }}>
+    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+      <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{p.titre_projet}</Text>
         {p.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{p.pole_nom}</Text> : null}
-      </View>
-      <View style={s.bas}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.basLabel}>RÉGION</Text>
-          <Text style={[s.basVal, { color: p.region_nom ? T.encre : T.grisClair }]} numberOfLines={1}>{p.region_nom || "—"}</Text>
+        <View style={s.faits}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>RÉGION</Text>
+            <Text style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} numberOfLines={1}>{p.region_nom || "—"}</Text>
+          </View>
+          <View style={s.faitSep} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>DÉPARTEMENT</Text>
+            <Text style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} numberOfLines={1}>{p.departement_nom || "—"}</Text>
+          </View>
         </View>
-        <View style={s.basSep} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.basLabel}>DÉPARTEMENT</Text>
-          <Text style={[s.basVal, { color: p.departement_nom ? T.encre : T.grisClair }]} numberOfLines={1}>{p.departement_nom || "—"}</Text>
-        </View>
       </View>
-    </Pressable>
+    </Tapable>
   );
 }
 
@@ -134,6 +140,7 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
 
 export default function Opportunites() {
   const margeBas = useMargeBas();
+  const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
   const [q, setQ] = useState("");
   const [niveauSel, setNiveauSel] = useState<string | null>(null);
@@ -143,6 +150,8 @@ export default function Opportunites() {
   const [avgOuvert, setAvgOuvert] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
   useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
+  const chipsRef = useRef<ScrollView>(null);
+  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   // Feuille de filtres — mêmes filtres que la barre latérale du site, par vue
   const [filtresOuverts, setFiltresOuverts] = useState(false);
@@ -342,31 +351,52 @@ export default function Opportunites() {
   const chargement = vue === "projets" ? projetsQ.isLoading : vue === "potentialites" ? potsQ.isLoading : avgsQ.isLoading;
   const enErreur = vue === "projets" ? projetsQ.isError : vue === "potentialites" ? potsQ.isError : avgsQ.isError;
   const recharger = vue === "projets" ? projetsQ.refetch : vue === "potentialites" ? potsQ.refetch : avgsQ.refetch;
+  const pret = !chargement && !enErreur;
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+
+  const comptes: Record<string, number> = {
+    projets: projetsFiltres.length, potentialites: potsFiltres.length, avantages: avgsFiltres.length,
+  };
 
   const hero = (
     <>
-      <HeroModule retour titre={"Opportunités\nd'investissement"}
+      <HeroModule retour titre="Opportunités"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: VUES, valeur: vue, onChange: v => { setVue(v); setNiveauSel(null); setSecteurSel(null); } }}
         bouton={boutonFiltres} />
-      {!chargement && !enErreur && (
-        <Text style={s.compte}>
-          {vue === "projets" ? `${projetsFiltres.length} projet${projetsFiltres.length > 1 ? "s" : ""}`
-            : vue === "potentialites" ? `${potsFiltres.length} fiche${potsFiltres.length > 1 ? "s" : ""} de potentialités`
-            : `${avgsFiltres.length} avantage${avgsFiltres.length > 1 ? "s" : ""}`}
-        </Text>
-      )}
+      {/* Les trois lentilles en chips colorées, compteur en pastille */}
+      <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+        {LENTILLES.map(l => {
+          const actif = vue === l.cle;
+          return (
+            <Pressable key={l.cle}
+              onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
+              onPress={() => {
+                tick();
+                setVue(l.cle); setNiveauSel(null); setSecteurSel(null);
+                // Centre la chip choisie : les voisines restent visibles des deux côtés
+                const p = chipsPos.current[l.cle];
+                if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+              }}
+              style={[s.chipFiltre, actif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
+              <Text style={[s.chipFiltreTexte, { color: l.couleur }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+              {pret && (
+                <View style={[s.chipCompte, actif && { backgroundColor: `${l.couleur}18` }]}>
+                  <Text style={[s.chipCompteTexte, { color: l.couleur }]}>{comptes[l.cle]}</Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </>
   );
 
   const vide = chargement ? <SqueletteListe />
-    : enErreur ? (
-      <EtatErreur onRetry={() => recharger()} />
-    ) : (
-      <EtatVide texte="Aucun résultat ne correspond." />
-    );
+    : enErreur ? <EtatErreur onRetry={() => recharger()} />
+    : <EtatVide texte="Aucun résultat ne correspond." />;
 
-  // ── Vue Projets : liste de cards ──
+  // ── Banque de projets : liste de cartes ──
   if (vue === "projets") {
     return (
       <>
@@ -376,21 +406,26 @@ export default function Opportunites() {
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
-          renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProjet p={item} onPress={() => setProjetOuvert(item)} /></Apparition>}
+          renderItem={({ item, index }: any) => (
+            <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
+              <CarteProjet p={item} onPress={() => setProjetOuvert(item)} />
+            </Apparition>
+          )}
           contentContainerStyle={{ paddingBottom: margeBas }}
+          ListHeaderComponentStyle={{ marginBottom: 14 }}
           refreshing={projetsQ.isRefetching} onRefresh={projetsQ.refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
-        <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+        <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
         {feuille}
       </>
     );
   }
 
-  // ── Vue Potentialités : cards de niveau + fiches groupées ──
+  // ── Potentialités par zone : cards de niveau + fiches groupées ──
   if (vue === "potentialites") {
     const fichesNiveau = niveauSel ? potsFiltres.filter((p: any) => p.niveau === niveauSel) : [];
     const meta = NIVEAUX.find(n => n.cle === niveauSel);
@@ -413,7 +448,7 @@ export default function Opportunites() {
         <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
-            <View style={{ paddingHorizontal: 16 }}>
+            <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
               <View style={s.grilleCompteurs}>
                 {NIVEAUX.map(n => {
                   const count = pots.filter((p: any) => p.niveau === n.cle).length;
@@ -424,7 +459,7 @@ export default function Opportunites() {
                       valeur={total} unite={n.unite} pct={pct}
                       sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
                       actif={niveauSel === n.cle} largeur={s.compteurDemi}
-                      onPress={count > 0 ? () => setNiveauSel(niveauSel === n.cle ? null : n.cle) : undefined} />
+                      onPress={count > 0 ? () => { tick(); setNiveauSel(niveauSel === n.cle ? null : n.cle); } : undefined} />
                   );
                 })}
               </View>
@@ -450,14 +485,14 @@ export default function Opportunites() {
             </View>
           )}
         </Animated.ScrollView>
-        <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+        <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
         {feuille}
       </>
     );
   }
 
-  // ── Vue Avantages : cards de secteur + activités groupées par branche ──
+  // ── Avantages & incitations : cards de secteur + activités groupées par branche ──
   const metaSect = SECTEURS_AVGS.find(x => x.cle === secteurSel);
   const itemsSect = secteurSel ? avgsFiltres.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(secteurSel)) : [];
   const branchesGroupes: { id: number; nom: string; items: any[] }[] = [];
@@ -473,7 +508,7 @@ export default function Opportunites() {
       <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
-          <View style={{ paddingHorizontal: 16 }}>
+          <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
             <View style={{ gap: 10 }}>
               {SECTEURS_AVGS.map(sec => {
                 const count = avgs.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(sec.cle)).length;
@@ -486,7 +521,7 @@ export default function Opportunites() {
                     valeur={nbActs} unite="activité" pct={pct}
                     sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
                     actif={secteurSel === sec.cle}
-                    onPress={count > 0 ? () => setSecteurSel(secteurSel === sec.cle ? null : sec.cle) : undefined} />
+                    onPress={count > 0 ? () => { tick(); setSecteurSel(secteurSel === sec.cle ? null : sec.cle); } : undefined} />
                 );
               })}
             </View>
@@ -507,7 +542,7 @@ export default function Opportunites() {
           </View>
         )}
       </Animated.ScrollView>
-      <BarreHero retour titre="Opportunités d'investissement" defilY={defilY} bouton={boutonFiltres} />
+      <BarreHero retour titre="Opportunités" defilY={defilY} bouton={boutonFiltres} />
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
       {feuille}
     </>
@@ -515,21 +550,32 @@ export default function Opportunites() {
 }
 
 const s = StyleSheet.create({
-  rangee: { paddingHorizontal: 16, marginBottom: 11 },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
-  carte: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
+  rangee: { paddingHorizontal: 16, marginBottom: 10 },
+  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipFiltre: {
+    flexDirection: "row", alignItems: "center", gap: 7,
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
-  titre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
-  sousTitre: { fontSize: 11, fontFamily: POLICE.moyen, color: T.gris, marginTop: 3 },
-  bas: { flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
-  basSep: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  basLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  basVal: { fontSize: 12.5, fontFamily: POLICE.gras },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
+  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  carte: {
+    backgroundColor: T.carte, borderRadius: 18,
+    borderWidth: 1, borderColor: T.carteBord,
+  },
+  carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
+  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
+  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
+
   grilleCompteurs: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   compteur: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 15, paddingTop: 14, paddingBottom: 13, gap: 10,
   },
   compteurDemi: { flexGrow: 1, flexBasis: "45%" },
@@ -539,12 +585,13 @@ const s = StyleSheet.create({
   compteurValeurs: { flexDirection: "row", alignItems: "baseline", gap: 7 },
   compteurValeur: { fontSize: 27, fontFamily: POLICE.gras, lineHeight: 31, letterSpacing: -0.5, fontVariant: ["tabular-nums"] },
   compteurUnite: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
-  compteurBarFond: { height: 6, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
+  compteurBarFond: { height: 5, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
   compteurBar: { height: "100%", borderRadius: 99 },
   compteurSous: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.texte },
+
   bandeau: {
     flexDirection: "row", alignItems: "center", gap: 13,
-    borderWidth: 1, borderRadius: 16, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 10,
+    borderWidth: 1, borderRadius: 18, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 10,
   },
   bandeauTuile: {
     width: 42, height: 42, borderRadius: 12, backgroundColor: T.carte, borderWidth: 1,
@@ -553,9 +600,9 @@ const s = StyleSheet.create({
   bandeauCompte: { fontSize: 14, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   bandeauSur: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.2, marginBottom: 3 },
   bandeauTitre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre },
-  groupe: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, overflow: "hidden" },
+  groupe: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
   tuile: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
-  tuileBord: { borderBottomWidth: 1, borderBottomColor: T.filet },
+  tuileBord: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: T.bordure },
   tuilePoint: { width: 6, height: 6, borderRadius: 3 },
   tuileTitre: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   tuileDroite: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris },
