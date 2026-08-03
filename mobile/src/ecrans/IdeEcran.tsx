@@ -23,8 +23,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import EnTetePage from "@/components/EnTetePage";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Icone from "@/components/Icone";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
 import MiniTendance from "@/components/MiniTendance";
@@ -37,9 +37,10 @@ import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
+// Les deux familles — chips colorées, libellés complets
 const ONGLETS = [
-  { cle: "ide",       label: "IDEs" },
-  { cle: "nationaux", label: "Investissements Nationaux" },
+  { cle: "ide",       label: "Investissements Directs Étrangers", couleur: "#004f91" },
+  { cle: "nationaux", label: "Investissements nationaux",         couleur: "#ca631f" },
 ] as const;
 
 // Catégories d'analyse (mêmes séries que le site) — la vue Secteurs
@@ -162,9 +163,10 @@ export default function IdeEcran() {
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [paysOuvert, setPaysOuvert] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
-  const { defilY, onScroll } = useHeroDefilant();
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
+  const ongletsRef = useRef<ScrollView>(null);
+  const ongletsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   // ── Référentiels ──
   const { data: paysDispo } = useQuery({
@@ -498,10 +500,30 @@ export default function IdeEcran() {
 
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
-        <HeroModule titre="Investissements privés"
-          segments={{ options: ONGLETS, valeur: onglet, onChange: setOnglet }}
+      <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+        <EnTetePage retour={false} titre="Investissements privés"
           bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
+
+        {/* Les deux familles en chips colorées */}
+        <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }} contentContainerStyle={[s.ongletsRangee, cap]}>
+          {ONGLETS.map(o => {
+            const actif = onglet === o.cle;
+            return (
+              <Pressable key={o.cle}
+                onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; ongletsPos.current[o.cle] = { x, largeur: la }; }}
+                onPress={() => {
+                  tick();
+                  setOnglet(o.cle);
+                  const p = ongletsPos.current[o.cle];
+                  if (p) ongletsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+                }}
+                style={[s.chipLentille, actif && { backgroundColor: `${o.couleur}14`, borderColor: `${o.couleur}66` }]}>
+                <Text style={[s.chipLentilleTexte, { color: o.couleur }, actif && { fontFamily: POLICE.gras }]}>{o.label}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
         {onglet === "nationaux" ? (
           <NationalPanel
@@ -686,8 +708,6 @@ export default function IdeEcran() {
           </>
         )}
       </Animated.ScrollView>
-      <BarreHero titre="Investissements privés" defilY={defilY}
-        bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
 
       {paysOuvert && (
         <PaysSheet pays={paysListe} exclus={f.paysSelection}
@@ -707,7 +727,13 @@ export default function IdeEcran() {
 }
 
 const s = StyleSheet.create({
-  chipsRangee: { flexGrow: 1, justifyContent: "center", gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  ongletsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipLentille: {
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  chipLentilleTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+  chipsRangee: { flexGrow: 1, justifyContent: "center", gap: 8, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 2 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
   chipFiltreActif: { backgroundColor: T.blocFond, borderColor: T.blocBord },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },

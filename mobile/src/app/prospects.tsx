@@ -7,20 +7,28 @@
 // ancienneté contextuelle, statut en badge pastel doux, rangée Pays | info
 // contextuelle sous filets. Fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import EnTetePage from "@/components/EnTetePage";
 import { FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
+import { tick } from "@/lib/haptique";
 import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+
+// Les trois étapes du pipeline — chips colorées, libellés complets
+const LENTILLES = [
+  { cle: "cibles",     label: "Investisseurs ciblés",      couleur: "#004f91" },
+  { cle: "historique", label: "Investisseurs en contact",  couleur: "#ca631f" },
+  { cle: "termines",   label: "Investisseurs transformés", couleur: "#188038" },
+] as const;
 
 // Sous-titre relatif de la card (règles du site)
 function sousTitreDe(p: any, onglet: OngletProspect): string | null {
@@ -95,7 +103,8 @@ export default function Prospects() {
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
+  const chipsRef = useRef<ScrollView>(null);
+  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   const cibles = useQuery({ queryKey: ["prospects", "cibles"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=false") });
   const contact = useQuery({ queryKey: ["prospects", "contact"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=true") });
@@ -146,17 +155,9 @@ export default function Prospects() {
   const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
-  const segments = [
-    { cle: "cibles",     label: "Ciblés",      compte: parVue.cibles?.length },
-    { cle: "historique", label: "En contact",  compte: parVue.historique?.length },
-    { cle: "termines",   label: "Transformés", compte: parVue.termines?.length },
-  ];
-
   return (
     <>
       <ListeRapide
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         data={courante.isLoading || courante.isError ? [] : filtres}
         keyExtractor={(p: any) => String(p.id)}
@@ -170,10 +171,36 @@ export default function Prospects() {
         refreshing={courante.isRefetching} onRefresh={courante.refetch}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <HeroModule retour titre="Prospects"
-            recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-            segments={{ options: segments, valeur: vue, onChange: v => setVue(v as OngletProspect) }}
-            bouton={boutonFiltres} />
+          <>
+            <EnTetePage titre="Prospects"
+              recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+              bouton={boutonFiltres} />
+            <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
+              style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+              {LENTILLES.map(l => {
+                const actif = vue === l.cle;
+                const compte = parVue[l.cle]?.length;
+                return (
+                  <Pressable key={l.cle}
+                    onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
+                    onPress={() => {
+                      tick();
+                      setVue(l.cle);
+                      const p = chipsPos.current[l.cle];
+                      if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+                    }}
+                    style={[s.chipFiltre, actif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
+                    <Text style={[s.chipFiltreTexte, { color: l.couleur }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+                    {compte != null && (
+                      <View style={[s.chipCompte, actif && { backgroundColor: `${l.couleur}18` }]}>
+                        <Text style={[s.chipCompteTexte, { color: l.couleur }]}>{compte}</Text>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </>
         }
         ListEmptyComponent={
           courante.isLoading ? <SqueletteListe />
@@ -181,7 +208,6 @@ export default function Prospects() {
           : <EtatVide texte="Aucun prospect ne correspond." />
         }
       />
-      <BarreHero retour titre="Prospects" defilY={defilY} bouton={boutonFiltres} />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
       {filtresOuverts && (
         <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
@@ -197,6 +223,15 @@ export default function Prospects() {
 
 const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
+  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipFiltre: {
+    flexDirection: "row", alignItems: "center", gap: 7,
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
+  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   carte: {
     backgroundColor: T.carte, borderRadius: 18,
     borderWidth: 1, borderColor: T.carteBord,

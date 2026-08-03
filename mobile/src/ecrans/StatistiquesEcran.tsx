@@ -15,7 +15,7 @@ import { SqueletteDonnees } from "@/components/Squelette";
 import { EtatErreur } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import PaysSheet from "@/components/PaysSheet";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
@@ -42,7 +42,6 @@ export default function StatistiquesEcran() {
   const [vue, setVue] = useState("indicateurs");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [paysOuvert, setPaysOuvert] = useState(false);
-  const { defilY, onScroll } = useHeroDefilant();
   const [nbFiltresCom, setNbFiltresCom] = useState(0);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
@@ -154,8 +153,8 @@ export default function StatistiquesEcran() {
 
   return (
     <>
-      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
-        <HeroModule titre="Échanges commerciaux" bouton={boutonHero} />
+      <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+        <EnTetePage retour={false} titre="Échanges commerciaux" bouton={boutonHero} />
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -265,7 +264,6 @@ export default function StatistiquesEcran() {
           </View>
         )}
       </Animated.ScrollView>
-      <BarreHero titre="Échanges commerciaux" defilY={defilY} bouton={boutonHero} />
 
       {paysOuvert && (
         <PaysSheet pays={pays || []} exclus={f.selection}
