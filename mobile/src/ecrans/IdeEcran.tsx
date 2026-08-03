@@ -1,27 +1,37 @@
-// Investissements privés — onglet Investissements Directs Étrangers,
-// version app de la page web. VUE Pays (analyse par pays, comparative
-// jusqu'à 4 pays, Monde par groupements CNUCED) et VUE Secteurs
-// (par secteur ou comparative, secteurs / branches CNUCED, catégories
-// Greenfield / M&A uniquement). Catégories Flux & Stocks / Greenfield /
-// Fusion & Acquisition, période aux bornes du contexte, TOUS les KPIs
-// du site en carrousel, courbes annuelles premium.
-// L'onglet Investissements nationaux arrive à l'étape suivante.
+// Investissements privés — la refonte mobile, pensée écran par écran et non
+// plus comme une réduction de la page web.
+//
+// Le principe : UNE grande courbe à la fois (le pattern d'une app de marchés),
+// pas quatre graphes empilés. La carte vedette reprend la grammaire de
+// l'accueil — micro-étiquette, le nombre en 38 pt qui compte jusqu'à sa
+// valeur, la variation vs N-1 fléchée — et la prolonge avec le graphe
+// signature Skia (scrubbing aimanté, pic historique). Les AUTRES séries de la
+// catégorie deviennent des rangées commutables : libellé, dernière valeur,
+// sparkline — toucher une rangée l'installe en vedette.
+//
+// Les 24 KPIs du site ne s'empilent plus : « L'essentiel » n'en garde que
+// quatre en tuiles, et la fiche « Tous les indicateurs » sert le reste, groupé
+// par thème, à la demande.
+//
+// Les règles de données du site sont inchangées : catégories Flux & Stocks /
+// Greenfield / M&A, vues Pays / Comparative / Monde / Secteurs via la feuille
+// de filtres, bornes de période au contexte.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { EtatErreur, EtatVide } from "@/components/ui";
-import CarrouselKpis, { KpiCarrousel } from "@/components/CarrouselKpis";
+import { ChiffreAnime, EtatErreur, EtatVide, Feuille, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import Icone from "@/components/Icone";
 import IdeFiltres, { FiltresIde } from "@/components/IdeFiltres";
+import MiniTendance from "@/components/MiniTendance";
 import NationalPanel from "@/components/NationalPanel";
-import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { KpiResult, calculerKpis, fmtKpi } from "@/lib/ideKpis";
 import { tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 
 const ONGLETS = [
@@ -45,16 +55,16 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
     { dir: "sortant", ind: "stock", label: "Stock sortant", unite: "musd" },
   ],
   greenfield: [
-    { dir: "entrant", ind: "greenfield_valeur", label: "Valeur des investissements greenfield reçus",    unite: "musd" },
-    { dir: "sortant", ind: "greenfield_valeur", label: "Investissements greenfield émis à l'étranger",   unite: "musd" },
-    { dir: "entrant", ind: "greenfield_nombre", label: "Nombre de projets greenfield reçus",             unite: "nombre" },
-    { dir: "sortant", ind: "greenfield_nombre", label: "Nombre de projets greenfield émis à l'étranger", unite: "nombre" },
+    { dir: "entrant", ind: "greenfield_valeur", label: "Investissements greenfield reçus",  unite: "musd" },
+    { dir: "sortant", ind: "greenfield_valeur", label: "Greenfield émis à l'étranger",      unite: "musd" },
+    { dir: "entrant", ind: "greenfield_nombre", label: "Projets greenfield reçus",          unite: "nombre" },
+    { dir: "sortant", ind: "greenfield_nombre", label: "Projets émis à l'étranger",         unite: "nombre" },
   ],
   fusion: [
-    { dir: "entrant", ind: "ma_valeur", label: "Valeur des rachats d'entreprises locales", unite: "musd" },
-    { dir: "sortant", ind: "ma_valeur", label: "Valeur des acquisitions à l'étranger",     unite: "musd" },
-    { dir: "entrant", ind: "ma_nombre", label: "Nombre de rachats d'entreprises locales",  unite: "nombre" },
-    { dir: "sortant", ind: "ma_nombre", label: "Nombre d'acquisitions à l'étranger",       unite: "nombre" },
+    { dir: "entrant", ind: "ma_valeur", label: "Rachats d'entreprises locales",  unite: "musd" },
+    { dir: "sortant", ind: "ma_valeur", label: "Acquisitions à l'étranger",      unite: "musd" },
+    { dir: "entrant", ind: "ma_nombre", label: "Nombre de rachats locaux",       unite: "nombre" },
+    { dir: "sortant", ind: "ma_nombre", label: "Nombre d'acquisitions",          unite: "nombre" },
   ],
   // Vue Secteurs — greenfield sans direction (« total »), M&A ventes / achats
   secteur_greenfield: [
@@ -69,7 +79,7 @@ const SERIES_TYPES: Record<string, { dir: string; ind: string; label: string; un
   ],
 };
 
-// Les KPIs affichés du site (ordre de la barre latérale, hors streak)
+// L'ordre du site pour la fiche « Tous les indicateurs » (hors streak)
 const KPI_IDS = [
   "fe_last", "fs_last", "fn_last", "se_last", "ss_last", "sn_last",
   "g_fe", "g_se", "cagr_fe", "mom_fe",
@@ -77,6 +87,14 @@ const KPI_IDS = [
   "trend_fe", "accel_fe", "tv5_fe", "tv10_fe",
   "r_fe_fs", "dist_max_fe", "regularite_fe", "vs_moy_fe",
   "n_pos_fe",
+];
+
+// Les quatre qui résument tout — le reste vit dans la fiche
+const ESSENTIELS_FLUX = [
+  { id: "g_fe",   label: "CROISSANCE" },
+  { id: "cagr_fe", label: "CAGR" },
+  { id: "moy_fe", label: "MOYENNE" },
+  { id: "max_fe", label: "RECORD" },
 ];
 
 // Valeurs CNUCED en millions USD (règle d'affichage du site)
@@ -103,11 +121,62 @@ function indicatifDe(k: KpiResult): string | null {
   return null;
 }
 
+const kpiNegatif = (k: KpiResult) =>
+  k.valeur !== null && k.valeur < 0 && (k.format === "pourcentage" || k.format === "monnaie_signe");
+
+type Stat = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
+
+// ── Fiche « Tous les indicateurs » — groupés par thème, à la demande ─────────
+function IndicateursSheet({ kpis, sousTitre, onClose }: { kpis: KpiResult[]; sousTitre: string; onClose: () => void }) {
+  const groupes: { nom: string; items: KpiResult[] }[] = [];
+  for (const k of kpis) {
+    let g = groupes.find(x => x.nom === k.categorie);
+    if (!g) { g = { nom: k.categorie, items: [] }; groupes.push(g); }
+    g.items.push(k);
+  }
+  return (
+    <Feuille onClose={onClose} ecart={22}
+      titre={<Text style={si.titre}>Tous les indicateurs</Text>}
+      sousEntete={<Text style={si.meta} numberOfLines={1}>{sousTitre}</Text>}>
+      {groupes.map(g => (
+        <View key={g.nom}>
+          <Text style={si.sectionTitre}>{g.nom.toUpperCase()}</Text>
+          <View>
+            {g.items.map((k, i) => (
+              <View key={k.id} style={[si.ligne, i > 0 && si.ligneBord]}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={si.label}>{k.label}</Text>
+                  {indicatifDe(k) ? <Text style={si.note}>{indicatifDe(k)}</Text> : null}
+                </View>
+                <Text style={[si.valeur, kpiNegatif(k) && { color: "#dc2626" }]}>{fmtKpi(k)}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ))}
+    </Feuille>
+  );
+}
+
+const si = StyleSheet.create({
+  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
+  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 6 },
+  ligne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 9 },
+  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  label: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+  note: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  valeur: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+});
+
 export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
+  const { width } = useWindowDimensions();
   const [onglet, setOnglet] = useState("ide");
   const [sousType, setSousType] = useState<string>("fluxstock");
+  const [serieActive, setSerieActive] = useState(0);
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [indicOuverts, setIndicOuverts] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const { defilY, onScroll } = useHeroDefilant();
   const chipsRef = useRef<ScrollView>(null);
@@ -159,6 +228,9 @@ export default function IdeEcran() {
   // La vue Secteurs n'existe pas en Flux & Stocks (règle du site)
   const st = secteursVue && sousType === "fluxstock" ? "greenfield" : sousType;
   const sousTypesVisibles = secteursVue ? SOUS_TYPES.filter(x => x.cle !== "fluxstock") : SOUS_TYPES;
+
+  // La série vedette repart en tête quand le contexte change
+  useEffect(() => { setSerieActive(0); }, [st, f.vue, f.typeAnalyse]);
 
   // ── Bornes de période du contexte ──
   const catPays = bornesRef?.categories?.[st];
@@ -248,99 +320,7 @@ export default function IdeEcran() {
     return [...agg.values()];
   };
 
-  // ── KPIs ──
-  const kpisFluxStock: KpiCarrousel[] = useMemo(() => {
-    if (secteursVue || monde || st !== "fluxstock") return [];
-    const tous = calculerKpis((donnees || []).filter((d: any) => !comparative || d.pays === paysSelec));
-    return KPI_IDS
-      .map(id => tous.find(k => k.id === id)).filter(Boolean)
-      .map(k => ({
-        cle: k!.id, label: k!.label, valeur: fmtKpi(k!), note: indicatifDe(k!),
-        negatif: k!.valeur !== null && k!.valeur < 0 && (k!.format === "pourcentage" || k!.format === "monnaie_signe"),
-      }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donnees, st, secteursVue, monde, comparative, paysSelec]);
-
-  const kpisCategoriePays: KpiCarrousel[] = useMemo(() => {
-    const series = SERIES_TYPES[st];
-    if (secteursVue || monde || st === "fluxstock" || !series) return [];
-    const serie = (dir: string, ind: string) => (donnees || [])
-      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null && (!comparative || d.pays === paysSelec))
-      .sort((a: any, b: any) => a.annee - b.annee);
-    const dernier = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
-    const vE = dernier(serie("entrant", series[0].ind));
-    const vS = dernier(serie("sortant", series[1].ind));
-    const nE = dernier(serie("entrant", series[2].ind));
-    const solde = vE && vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
-    const gf = st === "greenfield";
-    return [
-      { cle: "recus", label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", valeur: vE ? fmtMusd(vE.valeur) : "N/A", note: vE ? `en ${vE.annee}` : null },
-      { cle: "emis", label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", valeur: vS ? fmtMusd(vS.valeur) : "N/A", note: vS ? `en ${vS.annee}` : null },
-      { cle: "nombre", label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", valeur: nE ? fmtNombre(nE.valeur) : "N/A", note: nE ? `en ${nE.annee}` : null },
-      { cle: "solde", label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", valeur: solde !== null ? `${solde > 0 ? "+" : ""}${fmtMusd(solde)}` : "N/A", note: vE && solde !== null ? `en ${vE.annee}` : null, negatif: solde !== null && solde < 0 },
-    ];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [donnees, st, secteursVue, monde, comparative, paysSelec]);
-
-  // KPIs de l'analyse par secteur (règles du site, sans l'année record)
-  const kpisSecteur: KpiCarrousel[] = useMemo(() => {
-    if (!secteursVue || f.typeAnalyse !== "secteur" || !f.secteurSelection.length) return [];
-    const sid = f.secteurSelection[0];
-    const rows = rowsPourSecteur(sid);
-    const serie = (dir: string, ind: string) => rows
-      .filter((d: any) => d.direction === dir && d.indicateur === ind)
-      .sort((a: any, b: any) => a.annee - b.annee);
-    const dernier = (rs: any[]) => rs.length ? rs[rs.length - 1] : null;
-    const gf = st === "greenfield";
-    const dirV = gf ? "total" : "entrant";
-    const indV = gf ? "greenfield_valeur" : "ma_valeur";
-    const indN = gf ? "greenfield_nombre" : "ma_nombre";
-    const sV = serie(dirV, indV);
-    const vD = dernier(sV);
-    const nD = dernier(serie(dirV, indN));
-    const vSf = !gf ? dernier(serie("sortant", "ma_valeur")) : null;
-    const moy5 = sV.length ? sV.slice(-5).reduce((acc: number, r: any) => acc + r.valeur, 0) / Math.min(5, sV.length) : null;
-    // Part du total des 3 grands secteurs la même année (ou secteur dominant en global)
-    const part = (() => {
-      if (!vD || sid === 0) return null;
-      let total = 0, trouve = false;
-      rowsCat.forEach((d: any) => {
-        if ([1, 2, 3].includes(d.secteur_id) && d.annee === vD.annee && d.direction === dirV && d.indicateur === indV) { total += d.valeur; trouve = true; }
-      });
-      return trouve && total !== 0 ? (vD.valeur / total) * 100 : null;
-    })();
-    const dominant = (() => {
-      if (sid !== 0 || !vD) return null;
-      const NOMS: Record<number, string> = { 1: "Primaire", 2: "Manufacturier", 3: "Services" };
-      let best: { id: number; v: number } | null = null, total = 0;
-      rowsCat.forEach((d: any) => {
-        if (![1, 2, 3].includes(d.secteur_id) || d.annee !== vD.annee || d.direction !== dirV || d.indicateur !== indV) return;
-        total += d.valeur;
-        if (!best || d.valeur > best.v) best = { id: d.secteur_id, v: d.valeur };
-      });
-      if (!best) return null;
-      const b = best as { id: number; v: number };
-      return { nom: NOMS[b.id], part: total !== 0 ? (b.v / total) * 100 : null, annee: vD.annee };
-    })();
-    return [
-      { cle: "valeur", label: gf ? "Valeur des projets annoncés" : "Ventes nettes", valeur: vD ? fmtMusd(vD.valeur) : "N/A", note: vD ? `en ${vD.annee}` : null },
-      gf
-        ? { cle: "nombre", label: "Nombre de projets annoncés", valeur: nD ? fmtNombre(nD.valeur) : "N/A", note: nD ? `en ${nD.annee}` : null }
-        : { cle: "achats", label: "Achats nets", valeur: vSf ? fmtMusd(vSf.valeur) : "N/A", note: vSf ? `en ${vSf.annee}` : null },
-      gf
-        ? { cle: "moy5", label: "Moyenne 5 ans · valeur", valeur: moy5 !== null ? fmtMusd(moy5) : "N/A", note: "5 dernières années" }
-        : { cle: "nombre", label: "Nombre de ventes", valeur: nD ? fmtNombre(nD.valeur) : "N/A", note: nD ? `en ${nD.annee}` : null },
-      sid === 0
-        ? { cle: "dominant", label: "Secteur dominant", valeur: dominant ? dominant.nom : "N/A", note: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
-        : { cle: "part", label: gf ? "Part du total · valeur" : "Part du total · ventes", valeur: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "N/A", note: vD ? `en ${vD.annee}` : null },
-    ];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secteursVue, f.typeAnalyse, f.secteurSelection, rowsCat, st, anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
-
-  const kpis = secteursVue ? kpisSecteur : st === "fluxstock" ? kpisFluxStock : kpisCategoriePays;
-  const kpisVisibles = !monde && !comparative && kpis.length > 0;
-
-  // ── Graphes ──
+  // ── Graphes (une entrée par série de la catégorie) ──
   const graphes = useMemo(() => {
     if (secteursVue) {
       const series = SERIES_TYPES[`secteur_${st === "fusion" ? "fusion" : "greenfield"}`];
@@ -383,19 +363,118 @@ export default function IdeEcran() {
   }, [secteursVue, monde, comparative, st, donnees, rowsCat, f.secteurSelection, f.grpSelection.join(","), nomsPays.join(","), anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
 
   const fmtDe = (unite: "musd" | "nombre") => (v: number | null) => unite === "nombre" ? fmtNombre(v) : fmtMusd(v);
-  const enTeteDe = (g: { unite: "musd" | "nombre"; series: Serie[] }) => {
-    if (g.series.length !== 1) return null;
-    const pts = g.series[0].data.filter(d => d.valeur !== null);
+
+  // Dernier point / précédent d'une série (pour vedette et rangées)
+  const bilanDe = (g: { unite: "musd" | "nombre"; series: Serie[] }) => {
+    const pts = (g.series[0]?.data || []).filter(d => d.valeur !== null);
     if (!pts.length) return null;
     const dernier = pts[pts.length - 1];
     const prec = pts.length > 1 ? pts[pts.length - 2] : null;
-    let delta: { texte: string; hausse: boolean } | null = null;
+    let delta: number | null = null;
     if (prec && prec.valeur) {
       const pct = (dernier.valeur! - prec.valeur!) / Math.abs(prec.valeur!) * 100;
-      if (isFinite(pct)) delta = { texte: `${pct >= 0 ? "+" : ""}${pct.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`, hausse: pct >= 0 };
+      if (isFinite(pct)) delta = pct;
     }
-    return { valeur: fmtDe(g.unite)(dernier.valeur), delta };
+    return { dernier, prec, delta, valeurs: pts.map(p => p.valeur as number) };
   };
+
+  // ── Tous les KPIs (mono-pays, Flux & Stocks) — l'essentiel + la fiche ──
+  const tousKpis = useMemo<KpiResult[]>(() => {
+    if (secteursVue || monde || comparative || st !== "fluxstock") return [];
+    const tous = calculerKpis((donnees || []) as any);
+    return KPI_IDS.map(id => tous.find(k => k.id === id)).filter(Boolean) as KpiResult[];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [donnees, st, secteursVue, monde, comparative]);
+
+  const essentielsFlux: Stat[] = useMemo(() =>
+    ESSENTIELS_FLUX.map(e => {
+      const k = tousKpis.find(x => x.id === e.id);
+      if (!k) return null;
+      return { cle: k.id, label: e.label, valeur: fmtKpi(k), note: indicatifDe(k), negatif: kpiNegatif(k) };
+    }).filter(Boolean) as Stat[],
+  [tousKpis]);
+
+  // Greenfield / M&A (mono-pays) : solde, moyenne 5 ans, record, total période
+  const essentielsCat: Stat[] = useMemo(() => {
+    if (secteursVue || monde || comparative || st === "fluxstock") return [];
+    const series = SERIES_TYPES[st];
+    const serie = (dir: string) => (donnees || [])
+      .filter((d: any) => d.direction === dir && d.indicateur === series[0].ind && d.valeur !== null)
+      .sort((a: any, b: any) => a.annee - b.annee);
+    const sE = serie("entrant"), sS = serie("sortant");
+    if (!sE.length) return [];
+    const vE = sE[sE.length - 1], vS = sS.length ? sS[sS.length - 1] : null;
+    const solde = vS && vE.annee === vS.annee ? vE.valeur - vS.valeur : null;
+    const cinq = sE.slice(-5);
+    const moy5 = cinq.reduce((acc: number, r: any) => acc + r.valeur, 0) / cinq.length;
+    const rec = sE.reduce((best: any, r: any) => r.valeur > best.valeur ? r : best, sE[0]);
+    const total = sE.reduce((acc: number, r: any) => acc + r.valeur, 0);
+    return [
+      { cle: "solde", label: "SOLDE NET", valeur: solde !== null ? `${solde > 0 ? "+" : ""}${fmtMusd(solde)}` : "—", note: solde !== null ? `en ${vE.annee}` : "années décalées", negatif: solde !== null && solde < 0 },
+      { cle: "moy5",  label: "MOYENNE 5 ANS", valeur: fmtMusd(moy5), note: "valeur reçue" },
+      { cle: "record", label: "RECORD", valeur: fmtMusd(rec.valeur), note: `en ${rec.annee}` },
+      { cle: "total", label: "TOTAL PÉRIODE", valeur: fmtMusd(total), note: `${sE[0].annee} — ${vE.annee}` },
+    ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [donnees, st, secteursVue, monde, comparative]);
+
+  // Vue Secteurs (analyse simple) : les repères du site, hors valeur vedette
+  const essentielsSecteur: Stat[] = useMemo(() => {
+    if (!secteursVue || f.typeAnalyse !== "secteur" || !f.secteurSelection.length) return [];
+    const sid = f.secteurSelection[0];
+    const rows = rowsPourSecteur(sid);
+    const gf = st !== "fusion";
+    const dirV = gf ? "total" : "entrant";
+    const indV = gf ? "greenfield_valeur" : "ma_valeur";
+    const indN = gf ? "greenfield_nombre" : "ma_nombre";
+    const serie = (dir: string, ind: string) => rows
+      .filter((d: any) => d.direction === dir && d.indicateur === ind)
+      .sort((a: any, b: any) => a.annee - b.annee);
+    const sV = serie(dirV, indV);
+    if (!sV.length) return [];
+    const vD = sV[sV.length - 1];
+    const sN = serie(dirV, indN);
+    const nD = sN.length ? sN[sN.length - 1] : null;
+    const vSf = !gf ? (() => { const sx = serie("sortant", "ma_valeur"); return sx.length ? sx[sx.length - 1] : null; })() : null;
+    const cinq = sV.slice(-5);
+    const moy5 = cinq.reduce((acc: number, r: any) => acc + r.valeur, 0) / cinq.length;
+    const part = (() => {
+      if (sid === 0) return null;
+      let total = 0, trouve = false;
+      rowsCat.forEach((d: any) => {
+        if ([1, 2, 3].includes(d.secteur_id) && d.annee === vD.annee && d.direction === dirV && d.indicateur === indV) { total += d.valeur; trouve = true; }
+      });
+      return trouve && total !== 0 ? (vD.valeur / total) * 100 : null;
+    })();
+    const dominant = (() => {
+      if (sid !== 0) return null;
+      const NOMS: Record<number, string> = { 1: "Primaire", 2: "Manufacturier", 3: "Services" };
+      let best: { id: number; v: number } | null = null, total = 0;
+      rowsCat.forEach((d: any) => {
+        if (![1, 2, 3].includes(d.secteur_id) || d.annee !== vD.annee || d.direction !== dirV || d.indicateur !== indV) return;
+        total += d.valeur;
+        if (!best || d.valeur > best.v) best = { id: d.secteur_id, v: d.valeur };
+      });
+      if (!best) return null;
+      const b = best as { id: number; v: number };
+      return { nom: NOMS[b.id], part: total !== 0 ? (b.v / total) * 100 : null, annee: vD.annee };
+    })();
+    return [
+      gf
+        ? { cle: "nombre", label: "PROJETS ANNONCÉS", valeur: nD ? fmtNombre(nD.valeur) : "—", note: nD ? `en ${nD.annee}` : null }
+        : { cle: "achats", label: "ACHATS NETS", valeur: vSf ? fmtMusd(vSf.valeur) : "—", note: vSf ? `en ${vSf.annee}` : null },
+      { cle: "moy5", label: "MOYENNE 5 ANS", valeur: fmtMusd(moy5), note: gf ? "valeur annoncée" : "ventes nettes" },
+      sid === 0
+        ? { cle: "dominant", label: "SECTEUR DOMINANT", valeur: dominant ? dominant.nom : "—", note: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % en ${dominant.annee}` : null }
+        : { cle: "part", label: "PART DU TOTAL", valeur: part !== null ? `${part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", note: `en ${vD.annee}` },
+      !gf && nD
+        ? { cle: "nventes", label: "NOMBRE DE VENTES", valeur: fmtNombre(nD.valeur), note: `en ${nD.annee}` }
+        : null,
+    ].filter(Boolean) as Stat[];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secteursVue, f.typeAnalyse, f.secteurSelection, rowsCat, st, anneeMin, anneeMax, f.anneesSpec, f.modeAnnees]);
+
+  const essentiels = secteursVue ? essentielsSecteur : st === "fluxstock" ? essentielsFlux : essentielsCat;
 
   // ── En-tête et badge ──
   const perLabel = f.modeAnnees === "specifiques" && f.anneesSpec.length
@@ -419,6 +498,16 @@ export default function IdeEcran() {
     if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
   };
 
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+
+  // ── La vedette et les autres séries ──
+  const idx = Math.min(serieActive, graphes.length - 1);
+  const gActive = graphes[idx];
+  const multi = (gActive?.series.length ?? 0) > 1;
+  const bilan = gActive ? bilanDe(gActive) : null;
+  const hausse = (bilan?.delta ?? 0) >= 0;
+  const autres = graphes.map((g, i) => ({ g, i })).filter(x => x.i !== idx);
+
   return (
     <>
       <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
@@ -434,12 +523,12 @@ export default function IdeEcran() {
         ) : (
           <>
             {/* Catégories (la vue Secteurs n'a pas de Flux & Stocks) */}
-            <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
+            <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
               {sousTypesVisibles.map(o => {
                 const actif = st === o.cle;
                 return (
                   <Pressable key={o.cle}
-                    onLayout={ev => { const { x, width } = ev.nativeEvent.layout; chipsPos.current[o.cle] = { x, largeur: width }; }}
+                    onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[o.cle] = { x, largeur: la }; }}
                     onPress={() => { tick(); setSousType(o.cle); centrerChip(o.cle); }}
                     style={[s.chipFiltre, actif && s.chipFiltreActif]}>
                     <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
@@ -454,8 +543,8 @@ export default function IdeEcran() {
               <EtatErreur onRetry={() => recharger()} />
             ) : monde && !f.grpSelection.length ? (
               <EtatVide texte="Sélectionnez un groupement" sousTexte="Choisissez jusqu'à 4 groupements dans le filtre." />
-            ) : (
-              <>
+            ) : !gActive ? null : (
+              <View style={cap}>
                 {/* Période puis sélection — une seule ligne à défilement */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.pastilles}>
                   <View style={s.periodePastille}><Text style={s.periodePastilleTexte}>{perLabel}</Text></View>
@@ -467,49 +556,103 @@ export default function IdeEcran() {
                   ))}
                 </ScrollView>
 
-                {/* KPIs (analyses mono-sélection) */}
-                {kpisVisibles && (
-                  <View style={{ marginTop: 14 }}>
-                    <CarrouselKpis kpis={kpis} />
+                {/* ── La vedette : UNE série en grand, la grammaire de l'accueil ── */}
+                <View style={s.rangee}>
+                  <View style={s.vedette}>
+                    <Text style={s.etiquette} numberOfLines={1}>
+                      {gActive.label.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
+                    </Text>
+                    {!multi && bilan && (
+                      <>
+                        <ChiffreAnime texte={fmtDe(gActive.unite)(bilan.dernier.valeur)} style={s.nombre} />
+                        {bilan.delta !== null && (
+                          <View style={s.deltaLigne}>
+                            <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
+                              materiel={hausse ? "north_east" : "south_east"}
+                              taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
+                            <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
+                              {Math.abs(bilan.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                            </Text>
+                            <Text style={s.deltaContexte}>vs {bilan.prec!.annee}</Text>
+                          </View>
+                        )}
+                      </>
+                    )}
+                    <View style={{ marginTop: multi ? 4 : 10 }}>
+                      <GrapheLignes series={gActive.series} hauteur={multi ? 200 : 176} fmt={fmtDe(gActive.unite)} />
+                    </View>
+                  </View>
+                </View>
+
+                {/* ── Les autres séries — une rangée chacune, tap pour l'installer en vedette ── */}
+                {autres.length > 0 && (
+                  <View style={s.rangee}>
+                    <View style={s.seriesCarte}>
+                      {autres.map(({ g, i }, pos) => {
+                        const b = bilanDe(g);
+                        const bHausse = (b?.delta ?? 0) >= 0;
+                        return (
+                          <Tapable key={`${g.dir}-${g.ind}`} echelle={0.99}
+                            onPress={() => { tick(); setSerieActive(i); }}
+                            style={[s.serieLigne, pos > 0 && s.serieLigneBord]}>
+                            <View style={{ flex: 1, minWidth: 0 }}>
+                              <Text style={s.serieLabel} numberOfLines={1}>{g.label}</Text>
+                              <View style={s.serieSous}>
+                                <Text style={s.serieValeur}>{b ? fmtDe(g.unite)(b.dernier.valeur) : "—"}</Text>
+                                {b?.delta != null && (
+                                  <Text style={[s.serieDelta, { color: bHausse ? T.vert : "#dc2626" }]}>
+                                    {bHausse ? "+" : "−"}{Math.abs(b.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                            {b && b.valeurs.length > 1 && (
+                              <MiniTendance valeurs={b.valeurs} largeur={72} hauteur={30}
+                                couleur={g.series[0]?.couleur || (T.bleu as string)} />
+                            )}
+                          </Tapable>
+                        );
+                      })}
+                    </View>
                   </View>
                 )}
 
-                {/* Courbes */}
-                <View style={{ gap: 12, marginTop: 16, paddingHorizontal: 16 }}>
-                  {graphes.map(g => {
-                    const entete = enTeteDe(g);
-                    return (
-                      <View key={`${g.dir}-${g.ind}`} style={s.graphe}>
-                        <View style={s.grapheEntete}>
-                          <View style={s.grapheTitreLigne}>
-                            <Text style={s.grapheTitre} numberOfLines={2}>{g.label}</Text>
-                            <Text style={s.grapheSous} numberOfLines={1}>{g.unite === "nombre" ? "projets" : "USD"} · {perLabel.replace(" — ", "–")}</Text>
-                          </View>
-                          {entete && (
-                            <View style={{ alignItems: "flex-end", gap: 4 }}>
-                              <Text style={s.grapheValeur} numberOfLines={1}>{entete.valeur}</Text>
-                              {entete.delta && (
-                                <View style={[s.deltaChip, { backgroundColor: entete.delta.hausse ? "rgba(24,128,56,0.10)" : "rgba(220,38,38,0.09)" }]}>
-                                  <Text style={[s.deltaTexte, { color: entete.delta.hausse ? T.vert : "#dc2626" }]}>
-                                    {entete.delta.hausse ? "▲" : "▼"} {entete.delta.texte}
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                          )}
+                {/* ── L'essentiel : quatre repères, pas un mur de KPIs ── */}
+                {essentiels.length > 0 && (
+                  <View style={s.rangee}>
+                    <Text style={s.sectionTitre}>L&apos;ESSENTIEL</Text>
+                    <View style={s.grille}>
+                      {essentiels.map(k => (
+                        <View key={k.cle} style={s.tuile}>
+                          <Text style={s.tuileLabel} numberOfLines={1}>{k.label}</Text>
+                          <Text style={[s.tuileValeur, k.negatif && { color: "#dc2626" }]} numberOfLines={1} adjustsFontSizeToFit>
+                            {k.valeur}
+                          </Text>
+                          {k.note ? <Text style={s.tuileNote} numberOfLines={1}>{k.note}</Text> : null}
                         </View>
-                        <GrapheLignes series={g.series} hauteur={168} fmt={fmtDe(g.unite)} />
-                      </View>
-                    );
-                  })}
-                </View>
-              </>
+                      ))}
+                    </View>
+                    {/* La profondeur du site, à la demande */}
+                    {!secteursVue && st === "fluxstock" && tousKpis.length > 0 && (
+                      <Tapable echelle={0.99} onPress={() => setIndicOuverts(true)} style={s.tousIndics}>
+                        <Text style={s.tousIndicsTexte}>Tous les indicateurs</Text>
+                        <View style={s.tousIndicsCompte}><Text style={s.tousIndicsCompteTexte}>{tousKpis.length}</Text></View>
+                        <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
+                      </Tapable>
+                    )}
+                  </View>
+                )}
+              </View>
             )}
           </>
         )}
       </Animated.ScrollView>
       <BarreHero titre="Investissements privés" defilY={defilY}
         bouton={{ icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: (onglet === "ide" ? nbFiltres : nbFiltresNat) || undefined }} />
+
+      {indicOuverts && (
+        <IndicateursSheet kpis={tousKpis} sousTitre={`${paysSelec}   ·   ${perLabel}`} onClose={() => setIndicOuverts(false)} />
+      )}
 
       {filtresOuverts && onglet === "ide" && (
         <IdeFiltres
@@ -529,6 +672,7 @@ const s = StyleSheet.create({
   chipFiltreActif: { backgroundColor: T.blocFond, borderColor: T.blocBord },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
   chipFiltreTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
+
   pastilles: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 14, paddingHorizontal: 16 },
   periodePastille: {
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5,
@@ -541,17 +685,49 @@ const s = StyleSheet.create({
   },
   paysPoint: { width: 7, height: 7, borderRadius: 4 },
   paysPastilleTexte: { fontSize: 12, fontFamily: POLICE.gras, flexShrink: 1 },
-  graphe: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 15, paddingTop: 13, paddingBottom: 10,
-    shadowColor: "#001e3c", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+
+  rangee: { paddingHorizontal: 16, marginTop: 14 },
+
+  // La vedette — la grammaire de la carte de l'accueil, prolongée du graphe signature
+  vedette: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, overflow: "hidden",
   },
-  grapheEntete: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginBottom: 10 },
-  grapheTitreLigne: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "baseline", gap: 7, flexWrap: "wrap" },
-  grapheTitre: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, flexShrink: 1 },
-  grapheSous: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris },
-  grapheValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2, fontVariant: ["tabular-nums"] },
-  deltaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  deltaTexte: { fontSize: 10, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  etiquette: { ...TYPO.micro, color: T.gris },
+  nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
+  deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
+  deltaTexte: { fontSize: 13, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
+
+  // Les autres séries — rangées commutables
+  seriesCarte: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16,
+  },
+  serieLigne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 11 },
+  serieLigneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  serieLabel: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  serieSous: { flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2 },
+  serieValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
+  serieDelta: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  // L'essentiel — quatre tuiles, deux colonnes
+  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
+  grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tuile: {
+    flexGrow: 1, flexBasis: "45%",
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 14, paddingVertical: 11,
+  },
+  tuileLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris },
+  tuileValeur: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, marginTop: 5, letterSpacing: -0.3, fontVariant: ["tabular-nums"] },
+  tuileNote: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  tousIndics: {
+    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8,
+    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingVertical: 12,
+  },
+  tousIndicsTexte: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  tousIndicsCompte: { backgroundColor: T.bleuVoile, borderRadius: 999, minWidth: 24, paddingHorizontal: 7, paddingVertical: 2, alignItems: "center" },
+  tousIndicsCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
 });
