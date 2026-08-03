@@ -19,7 +19,7 @@ export default function Explorer() {
 
   return (
     <View style={s.bloc}>
-      <Text style={s.titreSection}>EXPLORER</Text>
+      <Text style={s.titreSection}>Explorer</Text>
 
       <View style={s.grille}>
         {MODULES.map((m, i) => (
@@ -27,7 +27,7 @@ export default function Explorer() {
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.96} style={s.tuile}>
               <View style={s.tuileEntete}>
                 <View style={s.pastille}>
-                  <Icone sf={m.sf} materiel={m.icone} taille={17} couleur={T.bleu} />
+                  <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
                 </View>
                 <Text style={s.tuileTitre} numberOfLines={1}>{m.titre}</Text>
               </View>
@@ -43,7 +43,7 @@ export default function Explorer() {
             {i > 0 && <View style={s.separateur} />}
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.lignePlus}>
               <View style={s.pastille}>
-                <Icone sf={m.sf} materiel={m.icone} taille={17} couleur={T.bleu} />
+                <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={s.ligneTitre} numberOfLines={1}>{m.titre}</Text>
@@ -60,8 +60,8 @@ export default function Explorer() {
 
 const s = StyleSheet.create({
   bloc: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
-  // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
-  titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
+  // Titres de section affirmés — la hiérarchie se voit avant de se lire
+  titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   grille: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   // 50 % moins la moitié du gap : deux colonnes exactes quel que soit l'écran
   caseGrille: { flexBasis: "48%", flexGrow: 1 },
@@ -71,15 +71,16 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: T.carteBord,
   },
   tuileEntete: { flexDirection: "row", alignItems: "center", gap: 9 },
+  // Carré bleu plein, icône blanche — la couleur qui ancre chaque tuile
   pastille: {
-    width: 30, height: 30, borderRadius: 9, borderCurve: "continuous",
-    alignItems: "center", justifyContent: "center", backgroundColor: T.bleuVoile,
+    width: 32, height: 32, borderRadius: 10, borderCurve: "continuous",
+    alignItems: "center", justifyContent: "center", backgroundColor: T.bleuAction,
   },
   tuileTitre: { flex: 1, minWidth: 0, fontSize: 14, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   ligneTitre: { fontSize: 14, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   tuileSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   // Dans la tuile, le sous-titre s'aligne sous le titre (pas sous la pastille)
-  tuileSousDecale: { marginLeft: 39, marginTop: 4 },
+  tuileSousDecale: { marginLeft: 41, marginTop: 4 },
   surfacePlus: {
     marginTop: 10, backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous",
     overflow: "hidden", borderWidth: 1, borderColor: T.carteBord,

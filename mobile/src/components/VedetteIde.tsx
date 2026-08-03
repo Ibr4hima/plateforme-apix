@@ -10,6 +10,7 @@
 // Investissements : quand l'utilisateur y navigue ensuite, ses données par
 // défaut sont déjà en cache.
 import { useQuery } from "@tanstack/react-query";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -101,6 +102,10 @@ export default function VedetteIde() {
   return (
     <Apparition index={0}>
       <Tapable onPress={() => router.push("/investissements")} echelle={0.98} style={s.carte}>
+        {/* Lavis bleu très doux du haut vers le blanc : la carte se détache
+            du fond sans peser — le blanc pur est réservé au bas de carte */}
+        <LinearGradient colors={["#E9F1F8", "#FDFDFD"]} start={{ x: 0.2, y: 0 }} end={{ x: 0.5, y: 0.7 }}
+          style={StyleSheet.absoluteFill} />
         {/* Étiquette + signal de navigation */}
         <View style={s.enTete}>
           <Text style={s.etiquette}>FLUX D&apos;IDE ENTRANTS · {dernier.annee}</Text>

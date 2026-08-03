@@ -1,10 +1,7 @@
-// Barre d'onglets — reconstruite à la main (composant tabBar custom) pour
-// maîtriser chaque pixel : ancrée au bord, VERRE DÉPOLI natif sur toute la
-// largeur (flou + voile clair, filet supérieur), et l'état actif lisible d'un
-// coup d'œil : l'icône se pose dans une capsule bleu voilé, le libellé passe
-// en bleu gras. Libellés complets, retour tactile physique, rôles d'onglet
-// posés pour VoiceOver / TalkBack.
-import { BlurView } from "expo-blur";
+// Barre d'onglets — capsule blanche FLOTTANTE, rendue entièrement à la main :
+// décollée du bord, ombre douce, trois onglets. L'actif est une pilule bleu
+// voilé qui enveloppe icône ET libellé (filet fin, libellé bleu gras) — le
+// signal se voit d'un coup d'œil, les autres restent en gris calme.
 import { Tabs } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,39 +10,33 @@ import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
-const ONGLETS: readonly ({ nom: string; titre: string } & NomsIcone)[] = [
-  { nom: "index",           titre: "Accueil",                sf: "house",                     materiel: "home" },
-  { nom: "investissements", titre: "Investissements privés", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
-  { nom: "flux",            titre: "Flux commerciaux",       sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
+const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
+  { nom: "index",           titre: "Accueil",                court: "Accueil",   sf: "house",                     materiel: "home" },
+  { nom: "investissements", titre: "Investissements privés", court: "Investir",  sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
+  { nom: "flux",            titre: "Flux commerciaux",       court: "Échanges",  sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
 ] as const;
 
 function BarreOnglets({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[s.barre, { paddingBottom: Math.max(insets.bottom - 2, 8) }]}>
-      <BlurView intensity={70} tint="light" style={StyleSheet.absoluteFill} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(250,249,248,0.82)" }]} />
-      <View style={s.rangee}>
+    <View pointerEvents="box-none" style={[s.zoneBarre, { bottom: Math.max(insets.bottom - 4, 12) }]}>
+      <View style={s.capsule}>
         {state.routes.map((route: any, i: number) => {
           const o = ONGLETS.find(x => x.nom === route.name);
           if (!o) return null;
           const actif = state.index === i;
           return (
-            <Tapable key={route.key} echelle={0.94} surbrillance={false} style={s.zone}
-              onPress={() => {
-                if (!actif) { tick(); navigation.navigate(route.name); }
-              }}>
+            <Tapable key={route.key} echelle={0.94} surbrillance={false} style={{ flex: 1 }}
+              onPress={() => { if (!actif) { tick(); navigation.navigate(route.name); } }}>
               <View accessible accessibilityRole="tab" accessibilityLabel={o.titre}
-                accessibilityState={{ selected: actif }} style={s.bouton}>
-                {/* La capsule bleu voilé n'entoure que l'icône : le signal
-                    actif est net sans transformer la barre en boutons */}
-                <View style={[s.capsule, actif && s.capsuleActive]}>
+                accessibilityState={{ selected: actif }} style={s.zoneOnglet}>
+                <View style={[s.pilule, actif && s.piluleActive]}>
                   <Icone sf={o.sf} materiel={o.materiel} taille={21}
                     couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
+                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                    {o.court}
+                  </Text>
                 </View>
-                <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
-                  {o.titre}
-                </Text>
               </View>
             </Tapable>
           );
@@ -68,19 +59,21 @@ export default function OngletsLayout() {
 }
 
 const s = StyleSheet.create({
-  barre: {
-    position: "absolute", left: 0, right: 0, bottom: 0,
-    paddingTop: 7, overflow: "hidden",
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
-  },
-  rangee: { flexDirection: "row", alignItems: "flex-start" },
-  zone: { flex: 1 },
-  bouton: { alignItems: "center", justifyContent: "center", gap: 3 },
+  zoneBarre: { position: "absolute", left: 14, right: 14 },
   capsule: {
-    width: 56, height: 29, borderRadius: 15, alignItems: "center", justifyContent: "center",
-    borderCurve: "continuous",
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#fff", borderRadius: 34, borderCurve: "continuous",
+    paddingHorizontal: 8, paddingVertical: 7,
+    shadowColor: "#001e3c", shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
-  capsuleActive: { backgroundColor: T.bleuVoile },
-  libelle: { fontSize: 9.5, fontFamily: POLICE.demi, color: T.gris },
+  zoneOnglet: { alignItems: "center", justifyContent: "center" },
+  pilule: {
+    alignItems: "center", justifyContent: "center", gap: 2, alignSelf: "stretch",
+    marginHorizontal: 2, paddingVertical: 7, borderRadius: 24, borderCurve: "continuous",
+    borderWidth: 1, borderColor: "transparent",
+  },
+  piluleActive: { backgroundColor: T.bleuVoile, borderColor: T.blocBord },
+  libelle: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris },
   libelleActif: { color: T.bleu, fontFamily: POLICE.gras },
 });

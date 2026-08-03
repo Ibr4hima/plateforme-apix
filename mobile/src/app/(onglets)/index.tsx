@@ -52,7 +52,7 @@ function ProchainEvenement() {
   const d = new Date(ev.date_debut.slice(0, 10) + "T00:00:00");
   return (
     <Apparition index={1} style={s.blocEvenement}>
-      <Text style={s.titreSection}>À VENIR</Text>
+      <Text style={s.titreSection}>À venir</Text>
       {/* Verre subtil : flou natif sous un voile laiteux — la carte se fond
           dans le fond au lieu de poser un aplat blanc de plus */}
       <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
@@ -163,8 +163,8 @@ const s = StyleSheet.create({
     fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
     letterSpacing: -0.7,
   },
-  // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
-  titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
+  // Titres de section affirmés — la hiérarchie se voit avant de se lire
+  titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
