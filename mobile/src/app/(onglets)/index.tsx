@@ -7,6 +7,7 @@
 // pastilles — plus un décor. L'identité tient dans deux lignes de titre, pas
 // dans un panneau.
 import MaskedView from "@react-native-masked-view/masked-view";
+import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -52,7 +53,12 @@ function ProchainEvenement() {
   return (
     <Apparition index={1} style={s.blocEvenement}>
       <Text style={s.titreSection}>À VENIR</Text>
-      <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenement}>
+      {/* Verre subtil : flou natif sous un voile laiteux — la carte se fond
+          dans le fond au lieu de poser un aplat blanc de plus */}
+      <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
+        <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.55)" }]} />
+        <View style={s.evenement}>
         <View style={s.evenementDate}>
           <Text style={s.evenementJour}>{d.getDate()}</Text>
           <Text style={s.evenementMois}>
@@ -69,6 +75,7 @@ function ProchainEvenement() {
           </View>
         </View>
         <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
+        </View>
       </Tapable>
     </Apparition>
   );
@@ -159,11 +166,11 @@ const s = StyleSheet.create({
   // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
   titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
-  evenement: {
-    flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: T.carte, borderRadius: RAYON.grand, padding: 14,
+  evenementCoquille: {
+    borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },
+  evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
   // Bloc date en bleu plein : l'ancre visuelle de la carte
   evenementDate: {
     width: 52, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
