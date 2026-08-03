@@ -20,6 +20,7 @@ import CurseurAnnees from "@/components/CurseurAnnees";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
+import PaysSheet from "@/components/PaysSheet";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
@@ -60,6 +61,7 @@ export default function StatistiquesEcran() {
   // Année de référence du curseur (null = la dernière connue, qui suit les données)
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [paysOuvert, setPaysOuvert] = useState(false);
   const [nbFiltresCom, setNbFiltresCom] = useState(0);
   const [largeurTendance, setLargeurTendance] = useState(0);
   const chipsRef = useRef<ScrollView>(null);
@@ -121,14 +123,15 @@ export default function StatistiquesEcran() {
       .filter((p): p is Point => p.valeur != null);
   };
 
-  const nbFiltres =
-    (senId !== null && paysId !== senId ? 1 : 0) +
-    (f.modeAnnees === "specifiques" ? (f.anneesSpec.length ? 1 : 0) : (filtres && (f.anneeMin > bornes[0] || f.anneeMax < bornes[1]) ? 1 : 0));
-
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
-  const badgeHero = vue === "indicateurs" ? nbFiltres : vue === "commerce" ? nbFiltresCom : 0;
-  const boutonHero = vue === "exterieur" ? undefined
-    : { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: badgeHero || undefined };
+  // Indicateurs : le bouton « … » ouvre le choix du pays (plus d'analyse
+  // comparative sur l'app) ; Flux bilatéraux garde ses filtres ; Commerce
+  // extérieur est Sénégal uniquement
+  const boutonHero = vue === "indicateurs"
+    ? { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } }
+    : vue === "commerce"
+    ? { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltresCom || undefined }
+    : undefined;
 
   // ── La vedette (grammaire exacte de l'accueil) ──
   const rendreVedette = () => {
@@ -153,7 +156,7 @@ export default function StatistiquesEcran() {
             <Text style={s.etiquette} numberOfLines={1}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
             </Text>
-            <Pressable onPress={() => setFiltresOuverts(true)} style={s.badgePays}>
+            <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.badgePays}>
               <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>
             </Pressable>
           </View>
@@ -204,7 +207,6 @@ export default function StatistiquesEcran() {
                   <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
                     {d ? fmtUnite(d.valeur, r.ind.unite) : "—"}
-                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
                   </Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>
@@ -263,12 +265,10 @@ export default function StatistiquesEcran() {
         )}
       </Animated.ScrollView>
 
-      {filtresOuverts && vue === "indicateurs" && (
-        <StatistiquesFiltres
-          pays={pays || []} senId={senId}
-          anneesDispo={anneesDispo}
-          valeurs={{ ...f, anneeMin, anneeMax }}
-          onAppliquer={setFiltres} onClose={() => setFiltresOuverts(false)} />
+      {paysOuvert && (
+        <PaysSheet pays={pays || []} choisi={paysId}
+          onChoisir={id => setFiltres({ ...f, vue: "pays", selection: [id] })}
+          onClose={() => setPaysOuvert(false)} />
       )}
     </>
   );
@@ -313,5 +313,4 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-  repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 });

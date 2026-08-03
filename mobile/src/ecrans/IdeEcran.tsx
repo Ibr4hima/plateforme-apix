@@ -710,7 +710,7 @@ export default function IdeEcran() {
       </Animated.ScrollView>
 
       {paysOuvert && (
-        <PaysSheet pays={paysListe} exclus={f.paysSelection}
+        <PaysSheet pays={paysListe} titre="Ajouter un pays"
           onChoisir={ajouterPays} onClose={() => setPaysOuvert(false)} />
       )}
 

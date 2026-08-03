@@ -150,7 +150,6 @@ export default function CommerceExterieurPanel() {
                 <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
                 <Text style={s.repereValeur} numberOfLines={1}>
                   {d ? fmtMFCFA(d.valeur) : "—"}
-                  {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
                 </Text>
                 <IconeTendance delta={dpc} />
               </Tapable>
@@ -195,7 +194,6 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-  repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 
   source: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 16 },
 });
