@@ -5,11 +5,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import CarteSenegal from "@/components/CarteSenegal";
 import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
 import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
+import { plier } from "@/lib/senegal";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T } from "@/theme";
 
@@ -51,13 +53,18 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
   return (
     <Feuille onClose={onClose}
       titre={
-        <>
-          <View style={s.surtitreLigne}>
-            <View style={[s.carre, { backgroundColor: couleur }]} />
-            <Text style={s.surtitre}>PÔLE TERRITORIAL</Text>
+        <View style={s.entete}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={s.surtitreLigne}>
+              <View style={[s.carre, { backgroundColor: couleur }]} />
+              <Text style={s.surtitre}>PÔLE TERRITORIAL</Text>
+            </View>
+            <Text style={s.titre}>{pole.pole_territoire}</Text>
           </View>
-          <Text style={s.titre}>{pole.pole_territoire}</Text>
-        </>
+          {/* Le pôle allumé dans le pays — on situe avant de lire */}
+          <CarteSenegal largeur={62} epaisseur={0.8}
+            couleurPour={nom => regions.some(r => plier(r) === plier(nom)) ? couleur : "rgba(16,26,46,0.05)"} />
+        </View>
       }
       sousEntete={regions.length > 0 ? (
         <View style={s.pilules}>
@@ -137,6 +144,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 }
 
 const s = StyleSheet.create({
+  entete: { flexDirection: "row", alignItems: "center", gap: 14 },
   surtitreLigne: { flexDirection: "row", alignItems: "center", gap: 7, marginBottom: 5 },
   carre: { width: 12, height: 12, borderRadius: 3, borderWidth: 1, borderColor: "rgba(0,0,0,0.08)" },
   surtitre: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4 },

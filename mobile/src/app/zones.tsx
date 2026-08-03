@@ -1,76 +1,87 @@
-// Zones d'investissement — adaptation fidèle de la page web : vues
-// Zones d'investissement / Pôles territoires dans le hero, chips de type
-// colorées (noms complets ZES / ZAI / ZFI), cards du site
-// (nom, superficie, badge pôle pastel, rangée Localisation | Entreprises),
-// pôles territoires en cards pastel (fiche pôle au tap).
+// Zones d'investissement — le territoire d'abord.
+//
+// Deux lectures du même sujet, en segments : les ZONES (le catalogue — cartes
+// au gabarit de la plateforme, une rangée Localisation | Superficie |
+// Entreprises sous filet) et les PÔLES TERRITOIRES, où la carte du Sénégal
+// prend tout son sens : les 14 régions colorées par pôle, TAPPABLES — le doigt
+// touche un pôle, sa fiche s'ouvre. Chaque rangée de pôle porte sa propre
+// mini-carte, le pôle allumé dans le pays en grisé.
+//
+// Les compteurs vivent dans les commandes (segments et chips de type), pas en
+// ligne de texte : chercher « mbour » montre immédiatement dans quel type de
+// zone les résultats se trouvent.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import CarteSenegal from "@/components/CarteSenegal";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
-import { ZONE_TYPE_META, ZONE_TYPE_ORDER, zoneTypeMeta } from "@/lib/zoneTypes";
+import { plier } from "@/lib/senegal";
+import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { POLICE, T } from "@/theme";
 
-const VUES = [
-  { cle: "zones",      label: "Zones d'investissement" },
-  { cle: "territoire", label: "Pôles territoires" },
-] as const;
+const pastelPole = (nom?: string | null) =>
+  (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
 
+// ── La carte de zone ─────────────────────────────────────────────────────────
+// Gabarit de la plateforme : contour fin, sans ombre. Le nom mène, le pôle en
+// point pastel dessous, et la rangée basse aligne les trois faits qui
+// comptent : où, quelle taille, combien d'entreprises.
 function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
-  const tc = zoneTypeMeta(z.type_zone).color;
   const entreprises = (z.entreprises || []).length;
-  const cPole = (z.pole_nom && POLE_COULEURS[normPole(z.pole_nom)]) || "#C5BFBB";
   const locStr = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
   return (
-    <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, pressed && { transform: [{ scale: 0.99 }], borderColor: z.pole_nom ? cPole : `${tc}55` }]}>
-      <View style={s.ligneTitre}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.titre} numberOfLines={2}>{z.nom_zone}</Text>
+    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+      <View style={s.carteCorps}>
+        <Text style={s.titre} numberOfLines={2}>{z.nom_zone}</Text>
+        {z.pole_nom ? (
           <View style={s.sousLigne}>
-            <Text style={[s.typeAcronyme, { color: tc }]}>{z.type_zone}</Text>
-            {z.superficie ? <Text style={s.sousTitre}>· {Number(z.superficie).toLocaleString("fr-FR")} ha</Text> : null}
+            <View style={[s.point, { backgroundColor: foncerPastel(pastelPole(z.pole_nom)) }]} />
+            <Text style={s.sousTitre} numberOfLines={1}>{z.pole_nom}</Text>
+          </View>
+        ) : null}
+        <View style={s.faits}>
+          <View style={{ flex: 1.5, minWidth: 0 }}>
+            <Text style={s.faitLabel}>LOCALISATION</Text>
+            <Text style={[s.faitVal, !locStr && { color: T.grisClair }]} numberOfLines={1}>{locStr || "—"}</Text>
+          </View>
+          <View style={s.faitSep} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>SUPERFICIE</Text>
+            <Text style={[s.faitVal, !z.superficie && { color: T.grisClair }]} numberOfLines={1}>
+              {z.superficie ? `${Number(z.superficie).toLocaleString("fr-FR")} ha` : "—"}
+            </Text>
+          </View>
+          <View style={s.faitSep} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>ENTREPRISE{entreprises > 1 ? "S" : ""}</Text>
+            <Text style={[s.faitVal, entreprises === 0 && { color: T.grisClair }]}>{entreprises}</Text>
           </View>
         </View>
-        {z.pole_nom && (
-          <View style={[s.badge, { backgroundColor: `${cPole}40`, borderColor: `${cPole}90` }]}>
-            <Text style={[s.badgeTexte, { color: foncerPastel(cPole) }]} numberOfLines={1}>{z.pole_nom}</Text>
-          </View>
-        )}
       </View>
-      <View style={s.bas}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.basLabel}>LOCALISATION</Text>
-          <Text style={[s.basVal, { color: locStr ? T.encre : T.grisClair }]} numberOfLines={1}>{locStr || "—"}</Text>
-        </View>
-        <View style={s.basSep} />
-        <View style={{ flex: 1 }}>
-          <Text style={s.basLabel}>ENTREPRISE{entreprises > 1 ? "S" : ""}</Text>
-          <Text style={[s.basVal, { color: entreprises > 0 ? T.encre : T.grisClair }]}>{entreprises}</Text>
-        </View>
-      </View>
-    </Pressable>
+    </Tapable>
   );
 }
 
 export default function Zones() {
   const margeBas = useMargeBas();
+  const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
   const [type, setType] = useState("ZES");
   const [zoneSelec, setZoneSelec] = useState<any>(null);
+  const [poleSelec, setPoleSelec] = useState<any>(null);
   const { defilY, onScroll } = useHeroDefilant();
   useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
-  const [poleSelec, setPoleSelec] = useState<any>(null);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -81,8 +92,10 @@ export default function Zones() {
     queryKey: ["zones-poles"], queryFn: () => getJson<any[]>("/zones-types/poles"),
   });
 
-  const filtres = useMemo(() => {
-    let liste = (zones || []).filter((z: any) => z.type_zone === type);
+  // Base commune : la recherche, avant le filtre de type — les compteurs des
+  // chips se calculent dessus
+  const communes = useMemo(() => {
+    let liste = zones || [];
     if (q.trim()) {
       const t = q.trim().toLowerCase();
       liste = liste.filter((z: any) =>
@@ -92,7 +105,19 @@ export default function Zones() {
         (z.pole_nom || "").toLowerCase().includes(t));
     }
     return liste;
-  }, [zones, q, type]);
+  }, [zones, q]);
+
+  const parType = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const t of ZONE_TYPE_ORDER) m[t] = 0;
+    for (const z of communes) if (m[z.type_zone] != null) m[z.type_zone]++;
+    return m;
+  }, [communes]);
+
+  const filtres = useMemo(() =>
+    communes.filter((z: any) => z.type_zone === type)
+      .sort((a: any, b: any) => (a.nom_zone || "").localeCompare(b.nom_zone || "", "fr")),
+  [communes, type]);
 
   const polesFiltres = useMemo(() => {
     let liste = poles || [];
@@ -105,19 +130,38 @@ export default function Zones() {
     return [...liste].sort((a: any, b: any) => (a.pole_territoire || "").localeCompare(b.pole_territoire || "", "fr"));
   }, [poles, q]);
 
+  // région (repliée) → pôle : la clé de la carte tappable et des mini-cartes
+  const poleParRegion = useMemo(() => {
+    const m = new Map<string, any>();
+    for (const p of poles || []) for (const r of splitLocalisation(p.localisation)) m.set(plier(r), p);
+    return m;
+  }, [poles]);
+
+  const pret = !isLoading && !isError;
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+  const largeurListe = Math.min(width, 680);
+  const largeurCarte = largeurListe - 32 - 32; // rangée 16×2, carte blanche 16×2
+
+  const segments = [
+    { cle: "zones",      label: "Zones",             compte: pret ? communes.length : undefined },
+    { cle: "territoire", label: "Pôles territoires", compte: pret && poles ? polesFiltres.length : undefined },
+  ];
+
   const hero = (
     <>
       <HeroModule retour titre="Zones d'investissement"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: VUES, valeur: vue, onChange: setVue }} />
+        segments={{ options: segments, valeur: vue, onChange: setVue }} />
+
       {vue === "zones" && (
-        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={s.chipsRangee}>
+        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
             const couleur = ZONE_TYPE_META[t].color;
             return (
               <Pressable key={t}
-                onLayout={ev => { const { x, width } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: width }; }}
+                onLayout={ev => { const { x, width: l } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: l }; }}
                 onPress={() => {
                   tick();
                   setType(t);
@@ -127,27 +171,40 @@ export default function Zones() {
                 }}
                 style={[s.chipFiltre, actif && { backgroundColor: `${couleur}14`, borderColor: `${couleur}66` }]}>
                 <Text style={[s.chipFiltreTexte, { color: couleur }, actif && { fontFamily: POLICE.gras }]}>{ZONE_TYPE_META[t].label}</Text>
+                {pret && (
+                  <View style={[s.chipCompte, actif && { backgroundColor: `${couleur}18` }]}>
+                    <Text style={[s.chipCompteTexte, { color: couleur }]}>{parType[t]}</Text>
+                  </View>
+                )}
               </Pressable>
             );
           })}
         </ScrollView>
       )}
-      {!isLoading && !isError && (
-        <Text style={s.compte}>
-          {vue === "zones"
-            ? `${filtres.length} zone${filtres.length > 1 ? "s" : ""}`
-            : `${polesFiltres.length} pôle${polesFiltres.length > 1 ? "s" : ""} territoire${polesFiltres.length > 1 ? "s" : ""}`}
-        </Text>
+
+      {/* La carte nationale : les 8 pôles en couleurs, chaque région tappable */}
+      {vue === "territoire" && pret && (poles || []).length > 0 && (
+        <View style={[s.rangee, cap, { marginTop: 14 }]}>
+          <View style={s.carteMap}>
+            <CarteSenegal largeur={largeurCarte}
+              couleurPour={nom => {
+                const p = poleParRegion.get(plier(nom));
+                return p ? pastelPole(p.pole_territoire) : (T.filet as string);
+              }}
+              onRegion={nom => {
+                const p = poleParRegion.get(plier(nom));
+                if (p) { tick(); setPoleSelec(p); }
+              }} />
+            <Text style={s.carteLegende}>Touchez un pôle pour ouvrir sa fiche</Text>
+          </View>
+        </View>
       )}
     </>
   );
 
   const vide = isLoading ? <SqueletteListe />
-    : isError ? (
-      <EtatErreur onRetry={() => refetch()} />
-    ) : (
-      <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />
-    );
+    : isError ? <EtatErreur onRetry={() => refetch()} />
+    : <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />;
 
   return (
     <>
@@ -158,8 +215,13 @@ export default function Zones() {
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : filtres}
           keyExtractor={(z: any) => String(z.id)}
-          renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteZone z={item} onPress={() => setZoneSelec(item)} /></Apparition>}
+          renderItem={({ item, index }: any) => (
+            <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
+              <CarteZone z={item} onPress={() => setZoneSelec(item)} />
+            </Apparition>
+          )}
           contentContainerStyle={{ paddingBottom: margeBas }}
+          ListHeaderComponentStyle={{ marginBottom: 14 }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -172,29 +234,34 @@ export default function Zones() {
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : polesFiltres}
           keyExtractor={(p: any) => String(p.id)}
-          renderItem={({ item: p }: any) => {
-            const couleur = POLE_COULEURS[normPole(p.pole_territoire)] || "#C5BFBB";
+          renderItem={({ item: p, index }: any) => {
+            const pastel = pastelPole(p.pole_territoire);
+            const regionsPole = new Set(splitLocalisation(p.localisation).map(plier));
             const nbZones = (zones || []).filter((z: any) => z.pole_id === p.id).length;
             const regions = splitLocalisation(p.localisation);
             return (
-              <View style={s.rangee}>
-                <Pressable onPress={() => setPoleSelec(p)}
-                  style={({ pressed }) => [s.pole, pressed && { transform: [{ scale: 0.99 }], borderColor: couleur }]}>
-                  <View style={[s.poleTuile, { backgroundColor: `${couleur}40`, borderColor: `${couleur}90` }]}>
-                    <Text style={[s.poleCompte, { color: foncerPastel(couleur) }]}>{nbZones}</Text>
-                  </View>
+              <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
+                <Tapable onPress={() => setPoleSelec(p)} echelle={0.985} style={[s.carte, s.pole]}>
+                  {/* Le pôle allumé dans le pays : on sait immédiatement OÙ */}
+                  <CarteSenegal largeur={58} epaisseur={0.8}
+                    couleurPour={nom => regionsPole.has(plier(nom)) ? pastel : "rgba(16,26,46,0.05)"} />
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.poleNom} numberOfLines={1}>{p.pole_territoire}</Text>
-                    <Text style={s.poleSous} numberOfLines={1}>
-                      {regions.length ? regions.join(" · ") : `${nbZones} zone${nbZones > 1 ? "s" : ""}`}
+                    <Text style={s.poleSous} numberOfLines={2}>
+                      {regions.length ? regions.join(" · ") : "—"}
                     </Text>
                   </View>
+                  <View style={s.poleDroite}>
+                    <Text style={[s.poleCompte, nbZones === 0 && { color: T.grisClair }]}>{nbZones}</Text>
+                    <Text style={s.poleCompteLabel}>ZONE{nbZones > 1 ? "S" : ""}</Text>
+                  </View>
                   <Ionicons name="chevron-forward" size={15} color={T.grisClair} />
-                </Pressable>
-              </View>
+                </Tapable>
+              </Apparition>
             );
           }}
           contentContainerStyle={{ paddingBottom: margeBas }}
+          ListHeaderComponentStyle={{ marginBottom: 4 }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={hero}
@@ -209,33 +276,38 @@ export default function Zones() {
 }
 
 const s = StyleSheet.create({
-  rangee: { paddingHorizontal: 16, marginBottom: 11 },
+  rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
+  chipFiltre: {
+    flexDirection: "row", alignItems: "center", gap: 7,
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
+  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
   carte: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
+    backgroundColor: T.carte, borderRadius: 18,
+    borderWidth: 1, borderColor: T.carteBord,
   },
-  ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
-  sousLigne: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 3 },
-  typeAcronyme: { fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 0.4 },
-  sousTitre: { fontSize: 11, fontFamily: POLICE.moyen, color: T.gris },
-  badge: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 3, flexShrink: 1, maxWidth: 150 },
-  badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  bas: { flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
-  basSep: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  basLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  basVal: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  pole: {
-    flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 15, paddingVertical: 13,
-  },
-  poleTuile: { width: 46, height: 46, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  poleCompte: { fontSize: 17, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-  poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre },
-  poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
+  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, lineHeight: 20 },
+  sousLigne: { flexDirection: "row", alignItems: "center", gap: 6 },
+  point: { width: 7, height: 7, borderRadius: 4 },
+  sousTitre: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
+  faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 12 },
+  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
+
+  carteMap: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, padding: 16, paddingBottom: 12 },
+  carteLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair, textAlign: "center", marginTop: 10 },
+
+  pole: { flexDirection: "row", alignItems: "center", gap: 13, paddingHorizontal: 15, paddingVertical: 12 },
+  poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
+  poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2, lineHeight: 15 },
+  poleDroite: { alignItems: "center", minWidth: 34 },
+  poleCompte: { fontSize: 16, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  poleCompteLabel: { fontSize: 7.5, fontFamily: POLICE.gras, letterSpacing: 0.8, color: T.gris, marginTop: 1 },
 });
