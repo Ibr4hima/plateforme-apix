@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import StatistiquesFiltres, { FiltresStatistiques } from "@/components/StatistiquesFiltres";
@@ -32,6 +33,7 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
   filtresOuverts: boolean; onFermerFiltres: () => void; onOuvrirFiltres: () => void; onNbFiltres: (n: number) => void;
 }) {
   const [actif, setActif] = useState<CleSerie>("exports");
+  const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
   // Référentiel du commerce : années disponibles, ressources, pays
@@ -77,6 +79,12 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
   useEffect(() => { onNbFiltres(nbFiltres); }, [nbFiltres, onNbFiltres]);
 
   const selPays = paysOpts.find((p: any) => p.id === selId);
+  // Années servies par la réponse balance ; le curseur ne pointe que dedans
+  const anneesSerie = useMemo(() => balance.map((b: any) => b.annee).sort((a: number, b: number) => a - b), [balance]);
+  useEffect(() => {
+    if (anneeSel != null && !anneesSerie.includes(anneeSel)) setAnneeSel(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anneesSerie.join(",")]);
 
   if (isLoading) return <SqueletteDonnees />;
   if (isError) return <EtatErreur onRetry={() => refetch()} />;
@@ -89,7 +97,8 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
     .map((b: any) => ({ annee: b.annee, valeur: cle === "exports" ? b.exportations : cle === "imports" ? b.importations : b.balance }))
     .filter((p: any): p is Point => p.valeur != null);
 
-  const serie = serieDe(actif);
+  const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  const serie = jusqu(serieDe(actif));
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
   const delta = dernier && precedent && precedent.valeur !== 0
@@ -108,6 +117,10 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
     <>
       {/* ── La vedette (grammaire exacte de l'accueil) ── */}
       <View style={s.rangee}>
+        {/* Le curseur d'années — le doigt remonte le temps */}
+        <CurseurAnnees annees={anneesSerie}
+          valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
+          onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
         <View style={s.vedette}>
           <View style={s.vedetteEnTete}>
             <Text style={s.etiquette} numberOfLines={1}>
@@ -151,25 +164,23 @@ export default function CommercePanel({ filtresOuverts, onFermerFiltres, onOuvri
             </View>
           )}
 
-          {/* Deux repères, la tendance en glyphe teinté */}
+          {/* Les repères, un par ligne — la tendance en glyphe teinté */}
           <View style={s.pied}>
             {reperes.map((cle, i) => {
-              const sx = serieDe(cle);
+              const sx = jusqu(serieDe(cle));
               const d = sx.at(-1) ?? null;
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
               const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               return (
-                <Tapable key={cle} echelle={0.96}
+                <Tapable key={cle} echelle={0.98}
                   onPress={() => choisir(cle)}
-                  style={[s.repere, i % 2 === 1 && s.repereDroit]}>
+                  style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{COURTS[cle]}</Text>
-                  <View style={s.repereLigne}>
-                    <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
-                      {d ? fmtUSD(d.valeur) : "—"}
-                      {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
-                    </Text>
-                    <IconeTendance delta={dpc} />
-                  </View>
+                  <Text style={s.repereValeur} numberOfLines={1}>
+                    {d ? fmtUSD(d.valeur) : "—"}
+                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                  </Text>
+                  <IconeTendance delta={dpc} />
                 </Tapable>
               );
             })}
@@ -216,15 +227,11 @@ const s = StyleSheet.create({
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.grisClair, fontVariant: ["tabular-nums"] },
 
-  pied: {
-    flexDirection: "row",
-    marginTop: 14, paddingTop: 2,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
-  },
-  repere: { flex: 1, paddingTop: 10, paddingBottom: 2, paddingRight: 10 },
-  repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
-  repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
+  // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
+  pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  repere: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
+  repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 });

@@ -51,7 +51,10 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
       {/* Rangée de commandes : retour à gauche, actions à droite */}
       <View style={s.commandes}>
         {retour ? (
-          <BoutonVerre onPress={() => router.back()} taille={40} accessibilityLabel="Retour">
+          // Depuis un onglet ouvert directement, il n'y a pas d'historique :
+          // le retour ramène alors à l'accueil plutôt que de ne rien faire
+          <BoutonVerre onPress={() => (router.canGoBack() ? router.back() : router.navigate("/" as any))}
+            taille={40} accessibilityLabel="Retour">
             <Icone sf="chevron.left" materiel="arrow_back" taille={17} couleur={T.bleu} poids="semibold" />
           </BoutonVerre>
         ) : <View />}

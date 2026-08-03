@@ -9,10 +9,11 @@
 // Totaux annuels par sens : la somme des groupes d'utilisation, exhaustifs
 // par construction (même règle que le site). Valeurs en millions de FCFA.
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
@@ -34,6 +35,7 @@ const somme = (a: number | null, b: number | null) => a == null && b == null ? n
 
 export default function CommerceExterieurPanel() {
   const [actif, setActif] = useState<CleSerie>("exports");
+  const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
 
   const gu = useQuery({
@@ -62,6 +64,13 @@ export default function CommerceExterieurPanel() {
     return { exports, imports, balance };
   }, [gu.data]);
 
+  // Années couvertes ; le curseur ne pointe que dedans
+  const anneesSerie = useMemo(() => series.exports.map(pt => pt.annee), [series]);
+  useEffect(() => {
+    if (anneeSel != null && !anneesSerie.includes(anneeSel)) setAnneeSel(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anneesSerie.join(",")]);
+
   if (gu.isLoading) return <SqueletteDonnees />;
   if (gu.isError) return <EtatErreur onRetry={() => gu.refetch()} />;
   if (!gu.data?.disponible || series.exports.length === 0) return (
@@ -69,7 +78,8 @@ export default function CommerceExterieurPanel() {
       sousTexte="Les indicateurs NACE seront disponibles après l'import des rapports annuels dans l'administration." />
   );
 
-  const serie = series[actif];
+  const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
+  const serie = jusqu(series[actif]);
   const dernier = serie.at(-1) ?? null;
   const precedent = serie.length > 1 ? serie[serie.length - 2] : null;
   const delta = dernier && precedent && precedent.valeur !== 0
@@ -79,6 +89,10 @@ export default function CommerceExterieurPanel() {
 
   return (
     <View style={s.rangee}>
+      {/* Le curseur d'années — le doigt remonte le temps */}
+      <CurseurAnnees annees={anneesSerie}
+        valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
+        onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
@@ -122,25 +136,23 @@ export default function CommerceExterieurPanel() {
           </View>
         )}
 
-        {/* Deux repères, la tendance en glyphe teinté */}
+        {/* Les repères, un par ligne — la tendance en glyphe teinté */}
         <View style={s.pied}>
           {reperes.map((cle, i) => {
-            const sx = series[cle];
+            const sx = jusqu(series[cle]);
             const d = sx.at(-1) ?? null;
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <Tapable key={cle} echelle={0.96}
+              <Tapable key={cle} echelle={0.98}
                 onPress={() => { tick(); setActif(cle); }}
-                style={[s.repere, i % 2 === 1 && s.repereDroit]}>
+                style={[s.repere, i > 0 && s.repereBord]}>
                 <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
-                <View style={s.repereLigne}>
-                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
-                    {d ? fmtMFCFA(d.valeur) : "—"}
-                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
-                  </Text>
-                  <IconeTendance delta={dpc} />
-                </View>
+                <Text style={s.repereValeur} numberOfLines={1}>
+                  {d ? fmtMFCFA(d.valeur) : "—"}
+                  {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                </Text>
+                <IconeTendance delta={dpc} />
               </Tapable>
             );
           })}
@@ -177,15 +189,11 @@ const s = StyleSheet.create({
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
   borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.grisClair, fontVariant: ["tabular-nums"] },
 
-  pied: {
-    flexDirection: "row",
-    marginTop: 14, paddingTop: 2,
-    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
-  },
-  repere: { flex: 1, paddingTop: 10, paddingBottom: 2, paddingRight: 10 },
-  repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
-  repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
-  repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
+  // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
+  pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  repere: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10.5 },
+  repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
 
