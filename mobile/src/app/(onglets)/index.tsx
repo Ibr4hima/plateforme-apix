@@ -148,7 +148,8 @@ export default function Accueil() {
         </View>
       </View>
 
-      {/* ── La situation ── */}
+      {/* ── La situation — la carte respire sous le bandeau ── */}
+      <View style={{ height: ESPACE.m }} />
       <VedetteIde />
 
       {/* ── À venir ── */}
@@ -163,12 +164,11 @@ export default function Accueil() {
 }
 
 const s = StyleSheet.create({
-  // Le bandeau bleu compact — la composition ne bouge pas, le fond si
+  // Le bandeau bleu compact — bord droit, d'une rive à l'autre
   enTete: {
     flexDirection: "row", alignItems: "flex-end", gap: ESPACE.s,
     paddingHorizontal: ESPACE.m + 4, paddingBottom: ESPACE.m + 6,
     backgroundColor: T.heroFond, overflow: "hidden",
-    borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
   },
   enTeteHalo: {
     position: "absolute", top: -150, right: -100, width: 300, height: 300,
