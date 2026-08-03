@@ -53,8 +53,7 @@ const largeurPays = (maxX - minX) * cosLat;
 /** Hauteur du pays pour une largeur de 1 (≈ 0.73 : le Sénégal est plus large que haut) */
 export const RATIO = (maxY - minY) / largeurPays;
 
-function tracer(anneaux: number[][][], px: (x: number) => number, py: (y: number) => number): SkPath {
-  const chemin = Skia.Path.Make();
+function tracer(anneaux: number[][][], px: (x: number) => number, py: (y: number) => number, chemin = Skia.Path.Make()): SkPath {
   for (const anneau of anneaux) {
     anneau.forEach(([x, y], i) => {
       if (i === 0) chemin.moveTo(px(x), py(y)); else chemin.lineTo(px(x), py(y));
@@ -102,5 +101,32 @@ export function cheminSeul(nom: string): SkPath | null {
     y => dy + (mxY - y) * echelle,
   );
   CHEMINS_SEULS.set(cle, chemin);
+  return chemin;
+}
+
+// ── Un groupe de régions (un pôle), normalisé dans son carré unité ───────────
+const CHEMINS_GROUPES = new Map<string, SkPath | null>();
+export function cheminGroupe(noms: string[]): SkPath | null {
+  const cles = [...new Set(noms.map(plier))].filter(c => REGIONS.has(c)).sort();
+  if (!cles.length) return null;
+  const cle = cles.join("|");
+  if (CHEMINS_GROUPES.has(cle)) return CHEMINS_GROUPES.get(cle)!;
+
+  let mnX = Infinity, mxX = -Infinity, mnY = Infinity, mxY = -Infinity;
+  for (const c of cles) for (const anneau of REGIONS.get(c)!.anneaux) for (const [x, y] of anneau) {
+    if (x < mnX) mnX = x; if (x > mxX) mxX = x;
+    if (y < mnY) mnY = y; if (y > mxY) mxY = y;
+  }
+  const cos = Math.cos(((mnY + mxY) / 2) * Math.PI / 180);
+  const l = (mxX - mnX) * cos, h = mxY - mnY;
+  const echelle = 1 / Math.max(l, h);
+  const dx = (1 - l * echelle) / 2, dy = (1 - h * echelle) / 2;
+
+  const chemin = Skia.Path.Make();
+  for (const c of cles) tracer(REGIONS.get(c)!.anneaux,
+    x => dx + (x - mnX) * cos * echelle,
+    y => dy + (mxY - y) * echelle,
+    chemin);
+  CHEMINS_GROUPES.set(cle, chemin);
   return chemin;
 }
