@@ -1,13 +1,17 @@
-// Prospects — adaptation fidèle de la page web : vues Ciblés / En
-// contact / Transformés dans le hero, recherche, cards du gabarit de
-// l'app (dénomination, ancienneté contextuelle, badge de statut pastel,
-// rangée Pays | info contextuelle), fiche ProspectSheet.
+// Prospects — le pipeline de prospection en trois lentilles : Ciblés /
+// En contact / Transformés, en segments à compteurs (le pattern des
+// Événements). Les compteurs suivent la recherche et les filtres : on voit
+// où se trouvent les résultats sans changer de segment.
+//
+// Cartes au gabarit de la plateforme (contour fin, sans ombre) : dénomination,
+// ancienneté contextuelle, statut en badge pastel doux, rangée Pays | info
+// contextuelle sous filets. Fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Animated, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
 import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
@@ -17,12 +21,6 @@ import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
-
-const VUES = [
-  { cle: "cibles",     label: "Ciblés" },
-  { cle: "historique", label: "En contact" },
-  { cle: "termines",   label: "Transformés" },
-] as const;
 
 // Sous-titre relatif de la card (règles du site)
 function sousTitreDe(p: any, onglet: OngletProspect): string | null {
@@ -55,42 +53,45 @@ function info2De(p: any, onglet: OngletProspect): { label: string; valeur: strin
   return { label: "CONCLUSION", valeur: null };
 }
 
+// ── La carte de prospect — le gabarit de la plateforme ───────────────────────
 function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect; onPress: () => void }) {
   const badge = onglet !== "cibles" ? badgeProspect(p) : null;
   const pastel = badge ? PROSPECT_PASTELS[badge.label] || "#C5BFBB" : null;
   const sousTitre = sousTitreDe(p, onglet);
   const info2 = info2De(p, onglet);
   return (
-    <Pressable onPress={onPress}
-      style={({ pressed }) => [s.carte, pressed && { transform: [{ scale: 0.99 }], borderColor: pastel || "rgba(0,79,145,0.33)" }]}>
-      <View style={s.ligneTitre}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.titre} numberOfLines={1}>{p.nom}</Text>
-          {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
-        </View>
-        {badge && pastel && (
-          <View style={[s.badge, { backgroundColor: `${pastel}40`, borderColor: `${pastel}90` }]}>
-            <Text style={[s.badgeTexte, { color: foncerPastel(pastel) }]} numberOfLines={1}>{badge.label}</Text>
+    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+      <View style={s.carteCorps}>
+        <View style={s.ligneTitre}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.titre} numberOfLines={1}>{p.nom}</Text>
+            {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
           </View>
-        )}
-      </View>
-      <View style={s.bas}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.basLabel}>PAYS</Text>
-          <Text style={[s.basVal, { color: p.siege_nom ? T.encre : T.grisClair }]} numberOfLines={1}>{p.siege_nom || "—"}</Text>
+          {badge && pastel && (
+            <View style={[s.badge, { backgroundColor: `${pastel}33` }]}>
+              <Text style={[s.badgeTexte, { color: foncerPastel(pastel) }]} numberOfLines={1}>{badge.label}</Text>
+            </View>
+          )}
         </View>
-        <View style={s.basSep} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.basLabel}>{info2.label}</Text>
-          <Text style={[s.basVal, { color: info2.valeur ? T.encre : T.grisClair }]} numberOfLines={1}>{info2.valeur || "—"}</Text>
+        <View style={s.faits}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>PAYS</Text>
+            <Text style={[s.faitVal, !p.siege_nom && { color: T.grisClair }]} numberOfLines={1}>{p.siege_nom || "—"}</Text>
+          </View>
+          <View style={s.faitSep} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.faitLabel}>{info2.label}</Text>
+            <Text style={[s.faitVal, !info2.valeur && { color: T.grisClair }]} numberOfLines={1}>{info2.valeur || "—"}</Text>
+          </View>
         </View>
       </View>
-    </Pressable>
+    </Tapable>
   );
 }
 
 export default function Prospects() {
   const margeBas = useMargeBas();
+  const { width } = useWindowDimensions();
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<any>(null);
@@ -118,28 +119,38 @@ export default function Prospects() {
       .sort((a, b) => a.localeCompare(b, "fr")),
   [tousProspects]);
 
-  const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
-  const filtres = useMemo(() => {
-    let liste = courante.data || [];
+  // Prédicats communs (recherche + feuille) — les compteurs des segments se
+  // calculent sur cette base, pour chacune des trois listes
+  const filtrer = (liste: any[]) => {
+    let res = liste;
     if (q.trim()) {
       const t = q.trim().toLowerCase();
-      liste = liste.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
+      res = res.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
     }
-    // Prédicats de la barre latérale du site
-    if (paysSel.length) liste = liste.filter((p: any) => paysSel.includes(p.siege_nom || ""));
-    if (secteursSel.length) liste = liste.filter((p: any) => secteursSel.some(s => (p.secteur_noms || []).includes(s)));
-    return liste;
-  }, [courante.data, q, paysSel, secteursSel]);
+    if (paysSel.length) res = res.filter((p: any) => paysSel.includes(p.siege_nom || ""));
+    if (secteursSel.length) res = res.filter((p: any) => secteursSel.some(sx => (p.secteur_noms || []).includes(sx)));
+    return res;
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const parVue = useMemo(() => ({
+    cibles: cibles.data ? filtrer(cibles.data) : null,
+    historique: contact.data ? filtrer(contact.data) : null,
+    termines: termines.data ? filtrer(termines.data) : null,
+  }), [cibles.data, contact.data, termines.data, q, paysSel, secteursSel]);
+
+  const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
+  const filtres = parVue[vue] || [];
 
   const nbFiltres = paysSel.length + secteursSel.length;
   const reinitFiltres = () => { setPaysSel([]); setSecteursSel([]); };
   const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
-  const compteLabel = vue === "cibles"
-    ? `${filtres.length} investisseur${filtres.length > 1 ? "s" : ""} ciblé${filtres.length > 1 ? "s" : ""}`
-    : vue === "historique"
-    ? `${filtres.length} investisseur${filtres.length > 1 ? "s" : ""} en contact`
-    : `${filtres.length} investisseur${filtres.length > 1 ? "s" : ""} transformé${filtres.length > 1 ? "s" : ""}`;
+  const segments = [
+    { cle: "cibles",     label: "Ciblés",      compte: parVue.cibles?.length },
+    { cle: "historique", label: "En contact",  compte: parVue.historique?.length },
+    { cle: "termines",   label: "Transformés", compte: parVue.termines?.length },
+  ];
 
   return (
     <>
@@ -149,26 +160,25 @@ export default function Prospects() {
         style={{ backgroundColor: T.fond }}
         data={courante.isLoading || courante.isError ? [] : filtres}
         keyExtractor={(p: any) => String(p.id)}
-        renderItem={({ item, index }: any) => <Apparition index={index} style={s.rangee}><CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} /></Apparition>}
+        renderItem={({ item, index }: any) => (
+          <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
+            <CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} />
+          </Apparition>
+        )}
         contentContainerStyle={{ paddingBottom: margeBas }}
+        ListHeaderComponentStyle={{ marginBottom: 14 }}
         refreshing={courante.isRefetching} onRefresh={courante.refetch}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <>
-            <HeroModule retour titre="Prospects"
-              recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-              segments={{ options: VUES, valeur: vue, onChange: v => setVue(v as OngletProspect) }}
-              bouton={boutonFiltres} />
-            {!courante.isLoading && !courante.isError && <Text style={s.compte}>{compteLabel.toUpperCase()}</Text>}
-          </>
+          <HeroModule retour titre="Prospects"
+            recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+            segments={{ options: segments, valeur: vue, onChange: v => setVue(v as OngletProspect) }}
+            bouton={boutonFiltres} />
         }
         ListEmptyComponent={
           courante.isLoading ? <SqueletteListe />
-          : courante.isError ? (
-            <EtatErreur onRetry={() => courante.refetch()} />
-          ) : (
-            <EtatVide texte="Aucun prospect ne correspond." />
-          )
+          : courante.isError ? <EtatErreur onRetry={() => courante.refetch()} />
+          : <EtatVide texte="Aucun prospect ne correspond." />
         }
       />
       <BarreHero retour titre="Prospects" defilY={defilY} bouton={boutonFiltres} />
@@ -186,19 +196,19 @@ export default function Prospects() {
 }
 
 const s = StyleSheet.create({
-  rangee: { paddingHorizontal: 16, marginBottom: 11 },
-  compte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginTop: 14, marginBottom: 8, paddingHorizontal: 16 },
+  rangee: { paddingHorizontal: 16, marginBottom: 10 },
   carte: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure,
-    paddingHorizontal: 18, paddingTop: 16, paddingBottom: 14, gap: 13,
+    backgroundColor: T.carte, borderRadius: 18,
+    borderWidth: 1, borderColor: T.carteBord,
   },
+  carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  titre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
-  sousTitre: { fontSize: 11, fontFamily: POLICE.moyen, color: T.gris, marginTop: 3 },
-  badge: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 3, flexShrink: 1, maxWidth: 160 },
+  titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
+  sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
+  badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, flexShrink: 1, maxWidth: 160 },
   badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
-  bas: { flexDirection: "row", alignItems: "center", borderTopWidth: 1, borderTopColor: T.filet, paddingTop: 12 },
-  basSep: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
-  basLabel: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
-  basVal: { fontSize: 12.5, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+  faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
+  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
+  faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
+  faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 });

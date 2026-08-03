@@ -91,7 +91,7 @@ export default function CodeInvestissementsPage() {
     : [], [activeChap]);
   const articlesFiltres = activeSecId ? articlesActifs.filter((a: any) => a.section_id === activeSecId) : articlesActifs;
 
-  const titre = pdfInfo?.titre || (loi === "code" ? "Code des investissements" : "Modalités d'application");
+  const titreDoc = pdfInfo?.titre || (loi === "code" ? "Code des investissements" : "Modalités d'application");
   const nbArticles = chapitres.reduce((s, c) => s + c.articles.length + c.sections.reduce((n: number, x: any) => n + x.articles.length, 0), 0);
 
   return (
@@ -113,16 +113,20 @@ export default function CodeInvestissementsPage() {
       `}</style>
 
       {/* ── Bandeau ── */}
-      <BandeauDocument surtitre="République du Sénégal · Lois & Règlementations" titre={titre}
-        sousTitre={loading ? "Chargement…" : erreur ? "—" : `${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
+      <BandeauDocument surtitre="République du Sénégal" titre="Lois & Règlementations"
+        sousTitre={loading ? "Chargement…" : erreur ? "—" : `${titreDoc} · ${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
         outils={<>
-          <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 3, padding: 3, background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 999 }}>
-            {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => {
+          {/* Les deux textes en chips séparées (le pattern des lentilles),
+              teintées bleu / orange sur le bandeau */}
+          <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 8 }}>
+            {([["code", "Code des investissements", BLEU], ["modalites", "Modalités d'application", ORANGE]] as const).map(([key, label, couleur]) => {
               const actif = loi === key;
               return (
                 <button key={key} role="tab" aria-selected={actif} onClick={() => setLoi(key)}
-                  style={{ padding: "6px 16px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 800,
-                    background: actif ? "#fff" : "transparent", color: actif ? BLEU : "rgba(255,255,255,0.75)", transition: "background 0.16s, color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                  style={{ padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: actif ? 800 : 600,
+                    border: `1px solid ${actif ? "#fff" : "rgba(255,255,255,0.30)"}`,
+                    background: actif ? "#fff" : "rgba(255,255,255,0.08)", color: actif ? couleur : "rgba(255,255,255,0.80)",
+                    transition: "background 0.16s, color 0.16s, border-color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                   {label}
                 </button>
               );

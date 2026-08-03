@@ -1,20 +1,23 @@
-// Fiche prospect — réplique du modal ProspectVueModal de la plateforme,
-// adaptée à l'app : pilules statut / siège, bascule Échanges ⇄ Infos pour
-// les prospects en contact ou transformés. Infos : contact, activités
-// spécialisées (NAEMA), points focaux. Échanges : frise du cycle courant
-// (canal, interlocuteur, commentaire, fichiers), contraintes exprimées,
-// cycles archivés repliables.
+// Fiche prospect — éditoriale, comme les autres fiches : identité (nom en
+// grand, méta « statut · siège » avec le statut dans sa teinte), une rangée
+// d'actions Appeler · Email · Site web (l'atout du téléphone), puis la
+// bascule Échanges ⇄ Infos pour les prospects en contact ou transformés.
+// Infos : coordonnées en rangées clé-valeur TAPPABLES, activités NAEMA,
+// points focaux. Échanges : frise du cycle courant (canal, interlocuteur,
+// commentaire, fichiers), contraintes exprimées, cycles archivés repliables.
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
-import { Feuille } from "@/components/ui";
+import Icone from "@/components/Icone";
+import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
+import { foncerPastel } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
 
@@ -94,13 +97,47 @@ const CANAL_ICONES: Record<string, string> = {
 function SecTitle({ children }: { children: string }) {
   return <Text style={s.secTitle}>{children.toUpperCase()}</Text>;
 }
-function Bloc({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View style={s.bloc}>
-      <Text style={s.blocLabel}>{label.toUpperCase()}</Text>
-      {children}
+
+// Rangée clé-valeur, tappable quand la valeur agit (tel:, mailto:, https:)
+function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | null; onPress?: () => void }) {
+  if (!valeur) return null;
+  const contenu = (
+    <View style={s.rangee}>
+      <Text style={s.rangeeLabel}>{label}</Text>
+      <Text style={[s.rangeeValeur, onPress && { color: T.bleu }]} numberOfLines={2}>{valeur}</Text>
     </View>
   );
+  return onPress ? <Tapable onPress={onPress} echelle={0.99}>{contenu}</Tapable> : contenu;
+}
+
+// Bouton de la rangée d'actions — n'apparaît que si la donnée existe
+function Action({ sf, materiel, label, onPress }: { sf: string; materiel: string; label: string; onPress: () => void }) {
+  return (
+    <Tapable onPress={onPress} echelle={0.95} style={s.action}>
+      <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
+      <Text style={s.actionLabel}>{label}</Text>
+    </Tapable>
+  );
+}
+
+const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
+const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
+
+// À plusieurs numéros ou adresses, on PROPOSE au lieu de choisir à la place
+// de l'utilisateur (l'idiome de la fiche entreprise)
+function proposer(titre: string, libelles: string[], agir: (index: number) => void) {
+  if (libelles.length === 1) { agir(0); return; }
+  if (Platform.OS === "ios") {
+    ActionSheetIOS.showActionSheetWithOptions(
+      { title: titre, options: [...libelles, "Annuler"], cancelButtonIndex: libelles.length },
+      i => { if (i < libelles.length) agir(i); },
+    );
+  } else {
+    Alert.alert(titre, undefined, [
+      ...libelles.map((l, i) => ({ text: l, onPress: () => agir(i) })),
+      { text: "Annuler", style: "cancel" as const },
+    ]);
+  }
 }
 
 export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
@@ -228,20 +265,27 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
     );
   };
 
-  const lien = (url: string) => Linking.openURL(url.startsWith("http") ? url : `https://${url}`);
+  const lien = (url: string) => Linking.openURL(url.startsWith("http") ? url : `https://${url}`).catch(() => {});
+
+  const meta = [
+    onglet !== "cibles" && badge ? badge.label : null,
+    p.siege_nom || null,
+  ].filter(Boolean);
 
   return (
-    <Feuille onClose={onClose} titre={p.nom} hauteur="84%"
+    <Feuille onClose={onClose} hauteur="84%" ecart={22}
+      titre={<Text style={s.titreFiche}>{p.nom}</Text>}
       sousEntete={
         <>
-          <View style={s.pilules}>
-            {onglet !== "cibles" && badge && pastel ? (
-              <View style={[s.pilule, { backgroundColor: `${pastel}40`, borderWidth: 1, borderColor: `${pastel}90` }]}>
-                <Text style={[s.piluleTexte, { color: "#3d4450" }]}>{badge.label}</Text>
-              </View>
-            ) : null}
-            {p.siege_nom ? <View style={[s.pilule, { backgroundColor: T.bleuVoile }]}><Text style={[s.piluleTexte, { color: T.bleu }]}>{p.siege_nom}</Text></View> : null}
-          </View>
+          {meta.length > 0 && (
+            <Text style={s.meta} numberOfLines={1}>
+              {onglet !== "cibles" && badge && pastel ? (
+                <Text style={{ color: foncerPastel(pastel), fontFamily: POLICE.gras }}>{badge.label}</Text>
+              ) : null}
+              {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
+              {p.siege_nom || ""}
+            </Text>
+          )}
 
           {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
           {onglet !== "cibles" && (
@@ -258,30 +302,37 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {/* ── Infos investisseur ── */}
           {vue === "infos" && (
             <>
+              {/* Agir : appeler, écrire, visiter — l'atout du téléphone */}
+              {(tels.length > 0 || mails.length > 0 || p.siteweb) && (
+                <View style={s.actions}>
+                  {tels.length > 0 && (
+                    <Action sf="phone" materiel="call" label="Appeler"
+                      onPress={() => proposer("Appeler", tels.map(fmtPhone), i => ouvrirTel(tels[i]))} />
+                  )}
+                  {mails.length > 0 && (
+                    <Action sf="envelope" materiel="mail" label="Email"
+                      onPress={() => proposer("Écrire à", mails, i => ouvrirMail(mails[i]))} />
+                  )}
+                  {p.siteweb && (
+                    <Action sf="safari" materiel="language" label="Site web" onPress={() => lien(p.siteweb)} />
+                  )}
+                </View>
+              )}
+
               {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) ? (
                 <View>
                   <SecTitle>Contact</SecTitle>
-                  <View style={s.grille}>
-                    {tels.length > 0 ? (
-                      <Bloc label={tels.length > 1 ? "Téléphones" : "Téléphone"}>
-                        {tels.map((t, i) => <Text key={i} style={s.blocValeur}>{fmtPhone(t)}</Text>)}
-                      </Bloc>
-                    ) : null}
-                    {mails.length > 0 ? (
-                      <Bloc label={mails.length > 1 ? "Emails" : "Email"}>
-                        {mails.map((m, i) => <Text key={i} style={s.blocValeur}>{m}</Text>)}
-                      </Bloc>
-                    ) : null}
-                    {p.siteweb ? (
-                      <Pressable style={{ width: "100%" }} onPress={() => lien(p.siteweb)}>
-                        <Bloc label="Site web"><Text style={[s.blocValeur, { color: T.bleu }]}>{p.siteweb}</Text></Bloc>
-                      </Pressable>
-                    ) : null}
-                    {p.linkedin ? (
-                      <Pressable style={{ width: "100%" }} onPress={() => lien(p.linkedin)}>
-                        <Bloc label="LinkedIn"><Text style={[s.blocValeur, { color: T.bleu }]}>{p.linkedin}</Text></Bloc>
-                      </Pressable>
-                    ) : null}
+                  <View style={s.rangees}>
+                    {tels.map((t, i) => (
+                      <Rangee key={`t${i}`} label={i === 0 ? (tels.length > 1 ? "Téléphones" : "Téléphone") : ""}
+                        valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
+                    ))}
+                    {mails.map((m, i) => (
+                      <Rangee key={`m${i}`} label={i === 0 ? (mails.length > 1 ? "Emails" : "Email") : ""}
+                        valeur={m} onPress={() => ouvrirMail(m)} />
+                    ))}
+                    <Rangee label="Site web" valeur={p.siteweb} onPress={p.siteweb ? () => lien(p.siteweb) : undefined} />
+                    <Rangee label="LinkedIn" valeur={p.linkedin} onPress={p.linkedin ? () => lien(p.linkedin) : undefined} />
                   </View>
                 </View>
               ) : null}
@@ -346,9 +397,21 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
 }
 
 const s = StyleSheet.create({
-  pilules: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 9 },
-  pilule: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5 },
-  piluleTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
+  titreFiche: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
+  meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
+
+  actions: { flexDirection: "row", gap: 8 },
+  action: {
+    flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
+    backgroundColor: T.bleuVoile, borderRadius: 14,
+  },
+  actionLabel: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu },
+
+  rangees: { gap: 9 },
+  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
+  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
+  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
+
   bascule: {
     flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
     backgroundColor: T.filet, borderRadius: 999,
@@ -357,15 +420,8 @@ const s = StyleSheet.create({
   basculeActif: { backgroundColor: T.carte, shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   basculeTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
   basculeTexteActif: { color: T.bleu },
-  secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginBottom: 10 },
+  secTitle: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   sousTitreGris: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
-  grille: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  bloc: {
-    backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord,
-    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexGrow: 1, flexBasis: "45%",
-  },
-  blocLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1, marginBottom: 4 },
-  blocValeur: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   frise: { position: "relative" },
   friseRail: { position: "absolute", left: 4, top: 10, bottom: 10, width: 2, borderRadius: 2, backgroundColor: T.bordureDouce },
   echangeRangee: { paddingLeft: 18, position: "relative" },
