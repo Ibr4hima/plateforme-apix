@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
 import Icone from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
-import { Apparition, Tapable } from "@/components/ui";
+import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
@@ -124,10 +124,10 @@ export default function Accueil() {
             </MaskedView>
           </View>
         </View>
-        <Tapable onPress={() => router.push("/recherche")} echelle={0.92} hitSlop={8}
-          style={s.boutonRecherche}>
+        <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
+          accessibilityLabel="Rechercher" style={{ marginBottom: 4 }}>
           <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
-        </Tapable>
+        </BoutonVerre>
       </View>
 
       {/* ── La situation ── */}
@@ -155,10 +155,6 @@ const s = StyleSheet.create({
   titre: {
     fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
     letterSpacing: -0.7,
-  },
-  boutonRecherche: {
-    width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.carte, marginBottom: 4, borderWidth: 1, borderColor: T.carteBord,
   },
   // Micro-titres de section en bleu : le langage du site (TITRE_SEC)
   titreSection: { ...TYPO.micro, color: T.bleu, marginBottom: ESPACE.s },

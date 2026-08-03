@@ -12,6 +12,13 @@ import { Apparition, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { ESPACE, MODULES, OMBRE, PLUS, POLICE, RAYON, T, TYPO } from "@/theme";
 
+// Chaque module a SA couleur — les quatre teintes canoniques de la
+// plateforme en rotation (bleu, orange, vert, violet), stables puisque
+// l'ordre des modules l'est : on reconnaît un module à sa teinte, comme
+// les apps d'un écran d'accueil.
+const TEINTES = ["#004f91", "#ca631f", "#188038", "#6A1B9A"];
+const teinteDe = (i: number) => TEINTES[i % TEINTES.length];
+
 export default function Explorer() {
   const router = useRouter();
   const ouvrir = (href: string) => { tick(); router.push(href as any); };
@@ -24,9 +31,8 @@ export default function Explorer() {
         {MODULES.map((m, i) => (
           <Apparition key={m.cle} index={i} style={s.caseGrille}>
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.96} style={s.tuile}>
-              <View style={[s.pastille, m.accent === "orange" && s.pastilleOrange]}>
-                <Icone sf={m.sf} materiel={m.icone} taille={19}
-                  couleur={m.accent === "orange" ? T.orange : T.bleu} />
+              <View style={[s.pastille, { backgroundColor: `${teinteDe(i)}12` }]}>
+                <Icone sf={m.sf} materiel={m.icone} taille={19} couleur={teinteDe(i)} />
               </View>
               <Text style={s.tuileTitre} numberOfLines={1}>{m.titre}</Text>
               <Text style={s.tuileSous} numberOfLines={1}>{m.sous}</Text>
@@ -40,9 +46,8 @@ export default function Explorer() {
           <View key={m.cle}>
             {i > 0 && <View style={s.separateur} />}
             <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.lignePlus}>
-              <View style={[s.pastille, m.accent === "orange" && s.pastilleOrange]}>
-                <Icone sf={m.sf} materiel={m.icone} taille={19}
-                  couleur={m.accent === "orange" ? T.orange : T.bleu} />
+              <View style={[s.pastille, { backgroundColor: `${teinteDe(MODULES.length + i)}12` }]}>
+                <Icone sf={m.sf} materiel={m.icone} taille={19} couleur={teinteDe(MODULES.length + i)} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={s.ligneTitre} numberOfLines={1}>{m.titre}</Text>
@@ -69,11 +74,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 13,
     borderWidth: 1, borderColor: T.carteBord,
   },
-  pastille: {
-    width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center",
-    backgroundColor: T.bleuVoile,
-  },
-  pastilleOrange: { backgroundColor: T.orangeVoile },
+  pastille: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   tuileTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2, marginTop: 9 },
   ligneTitre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   tuileSous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },

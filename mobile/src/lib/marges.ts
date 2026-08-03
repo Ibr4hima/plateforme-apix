@@ -15,7 +15,8 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /** Hauteur du contenu de la barre d'onglets, hors marge système. */
-export const HAUTEUR_ONGLETS = 60;
+// Barre flottante : 62 pt de capsule + 10 pt de décollement du bord
+export const HAUTEUR_ONGLETS = 72;
 
 export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
   /** L'écran est-il l'un des trois onglets ? (la barre le recouvre) */

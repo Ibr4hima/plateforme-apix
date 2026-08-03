@@ -26,23 +26,52 @@ const PressableReanime = Reanime.createAnimatedComponent(Pressable);
 const FlouAnime = Reanime.createAnimatedComponent(BlurView);
 
 // ── Tapable : le retour tactile physique de toute l'app ──────────────────────
-// Ressort vif à l'appui (0.97), ressort standard au relâcher — la même
-// physique (lib/motion) partout. Toute surface cliquable passe par lui.
-export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97, hitSlop, children }: {
+// La grammaire d'un bouton iOS : à l'appui le contenu se resserre (échelle)
+// ET s'assombrit très légèrement — c'est la surbrillance d'UIButton, pas un
+// simple zoom. Une seule valeur partagée pilote les deux, exécutée sur le fil
+// UI : entrée courte et nette (90 ms), relâcher au ressort standard, pour que
+// le doigt sente la surface répondre puis respirer.
+export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97, surbrillance = true, hitSlop, children }: {
   onPress?: () => void; onLongPress?: () => void; disabled?: boolean;
-  style?: StyleProp<ViewStyle>; echelle?: number; hitSlop?: number;
+  style?: StyleProp<ViewStyle>; echelle?: number; surbrillance?: boolean; hitSlop?: number;
   children: React.ReactNode;
 }) {
-  const zoom = useSharedValue(1);
-  const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: zoom.value }] }));
+  const appui = useSharedValue(0);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + (echelle - 1) * appui.value }],
+    opacity: (disabled ? 0.45 : 1) * (1 - (surbrillance ? 0.14 : 0) * appui.value),
+  }));
   return (
     <PressableReanime
       onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
-      onPressIn={() => { zoom.value = withSpring(echelle, RESSORT.vif); }}
-      onPressOut={() => { zoom.value = withSpring(1, RESSORT.standard); }}
-      style={[animStyle, disabled && { opacity: 0.45 }, style]}>
+      onPressIn={() => { appui.value = withTiming(1, { duration: 90 }); }}
+      onPressOut={() => { appui.value = withSpring(0, RESSORT.standard); }}
+      style={[animStyle, style]}>
       {children}
     </PressableReanime>
+  );
+}
+
+// ── BoutonVerre : le bouton icône en verre dépoli (liquid glass) ─────────────
+// Un vrai flou natif derrière une teinte laiteuse, filet de contour froid,
+// ombre douce — la coquille externe porte l'ombre (un overflow:hidden la
+// couperait), la coquille interne rogne le flou au cercle.
+export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibilityLabel, children }: {
+  onPress: () => void; taille?: number; teinte?: string;
+  style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tapable onPress={onPress} echelle={0.9} hitSlop={6}
+      style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
+      <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
+        style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
+          borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(16,26,46,0.16)" }}>
+        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: teinte || "rgba(255,255,255,0.62)" }]} />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
+      </View>
+    </Tapable>
   );
 }
 

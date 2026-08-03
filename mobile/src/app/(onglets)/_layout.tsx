@@ -1,41 +1,44 @@
-// Barre d'onglets native — Accueil · Investissements privés · Flux
-// commerciaux. L'onglet actif est posé sur un beau cadre bleu voilé
-// arrondi (icône + libellé), les autres restent en gris discret.
+// Barre d'onglets — flottante, en verre dépoli, détachée du bord (l'idiome
+// des barres iOS récentes) : une capsule de flou natif posée à 8 pt du bas,
+// filet froid, ombre douce. L'onglet ACTIF est une pilule bleu plein — icône
+// et libellé blancs — qu'on repère d'un coup d'œil ; les autres restent en
+// gris discret. Chaque bouton a le retour tactile physique de l'app.
+import { BlurView } from "expo-blur";
 import { Tabs, usePathname } from "expo-router";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HAUTEUR_ONGLETS } from "@/lib/marges";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 
-const ONGLETS: readonly ({ nom: string; chemin: string; titre: string } & NomsIcone)[] = [
-  { nom: "index",           chemin: "/",                titre: "Accueil",                sf: "house",                     materiel: "home" },
-  { nom: "investissements", chemin: "/investissements", titre: "Investissements privés", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
-  { nom: "flux",            chemin: "/flux",            titre: "Flux commerciaux",       sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
+const ONGLETS: readonly ({ nom: string; chemin: string; titre: string; court: string } & NomsIcone)[] = [
+  { nom: "index",           chemin: "/",                titre: "Accueil",                court: "Accueil",     sf: "house",                     materiel: "home" },
+  { nom: "investissements", chemin: "/investissements", titre: "Investissements privés", court: "Investir",    sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
+  { nom: "flux",            chemin: "/flux",            titre: "Flux commerciaux",       court: "Échanges",    sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
 ] as const;
 
-// Bouton d'onglet maison : cadre arrondi autour de l'icône ET du libellé.
+const BARRE = 62;
+
+// Bouton d'onglet maison : pilule pleine quand actif, retour physique au tap.
 // Un tabBarButton personnalisé remplace celui de react-navigation, qui
 // portait le rôle et l'état de sélection : on les repose ici, sans quoi
 // VoiceOver et TalkBack annoncent trois boutons anonymes au lieu d'onglets.
-function BoutonOnglet({ actif, sf, materiel, titre, onPress }: {
-  actif: boolean; titre: string; onPress?: (e: any) => void;
+function BoutonOnglet({ actif, sf, materiel, titre, court, onPress }: {
+  actif: boolean; titre: string; court: string; onPress?: (e: any) => void;
 } & NomsIcone) {
   return (
-    <Pressable onPress={e => { if (!actif) tick(); onPress?.(e); }} style={s.zone}
-      accessibilityRole="tab" accessibilityLabel={titre} accessibilityState={{ selected: actif }}>
-      <View style={[s.cadre, actif && s.cadreActif]}>
-        <Icone sf={sf} materiel={materiel} taille={22} couleur={actif ? T.bleu : T.gris}
+    <Tapable onPress={(e?: any) => { if (!actif) tick(); onPress?.(e); }} echelle={0.93} style={s.zone}>
+      <View accessible accessibilityRole="tab" accessibilityLabel={titre}
+        accessibilityState={{ selected: actif }}
+        style={[s.pilule, actif && s.piluleActive]}>
+        <Icone sf={sf} materiel={materiel} taille={20} couleur={actif ? "#fff" : T.gris}
           poids={actif ? "semibold" : "regular"} />
-        {/* Le libellé tient sur une ligne dans un cadre de hauteur fixe :
-            on borne son agrandissement pour qu'une police système très
-            grande ne le rogne pas en plein milieu. */}
         <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
-          {titre}
+          {court}
         </Text>
       </View>
-    </Pressable>
+    </Tapable>
   );
 }
 
@@ -49,11 +52,20 @@ export default function OngletsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: T.carte,
-          borderTopWidth: Platform.OS === "ios" ? StyleSheet.hairlineWidth : 1,
-          borderTopColor: T.bordure,
-          height: HAUTEUR_ONGLETS + insets.bottom,
+          position: "absolute",
+          left: 16, right: 16, bottom: Math.max(insets.bottom, 10),
+          height: BARRE, borderRadius: BARRE / 2,
+          backgroundColor: "transparent", borderTopWidth: 0,
+          shadowColor: "#001e3c", shadowOpacity: 0.14, shadowRadius: 18, shadowOffset: { width: 0, height: 8 },
+          elevation: 10,
         },
+        // La capsule de verre : flou natif + voile laiteux + filet froid
+        tabBarBackground: () => (
+          <View style={s.verre}>
+            <BlurView intensity={60} tint="light" style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.66)" }]} />
+          </View>
+        ),
         sceneStyle: { backgroundColor: T.fond },
       }}>
       {ONGLETS.map(o => (
@@ -63,7 +75,7 @@ export default function OngletsLayout() {
             tabBarButton: props => (
               <BoutonOnglet
                 actif={o.chemin === "/" ? chemin === "/" : chemin.startsWith(o.chemin)}
-                sf={o.sf} materiel={o.materiel} titre={o.titre}
+                sf={o.sf} materiel={o.materiel} titre={o.titre} court={o.court}
                 onPress={props.onPress} />
             ),
           }} />
@@ -73,18 +85,16 @@ export default function OngletsLayout() {
 }
 
 const s = StyleSheet.create({
-  // Le cadre fait ~51 pt : centré dans les 60 pt de contenu, il reste 4 pt de
-  // part et d'autre. Le décalage vers le bas d'avant supposait les 88 pt figés.
-  zone: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 4 },
-  cadre: {
-    alignItems: "center", justifyContent: "center", gap: 3,
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 17,
-    borderWidth: 1, borderColor: "transparent", minWidth: 92,
+  verre: {
+    flex: 1, borderRadius: BARRE / 2, overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(16,26,46,0.14)",
   },
-  cadreActif: {
-    backgroundColor: T.bleuVoile,
-    borderColor: T.blocBord,
+  zone: { flex: 1, alignItems: "center", justifyContent: "center" },
+  pilule: {
+    alignItems: "center", justifyContent: "center", gap: 2,
+    paddingHorizontal: 16, paddingVertical: 7, borderRadius: 21, minWidth: 96,
   },
-  libelle: { fontSize: 9.5, fontFamily: POLICE.demi, color: T.gris },
-  libelleActif: { color: T.bleu, fontFamily: POLICE.gras },
+  piluleActive: { backgroundColor: T.bleuAction },
+  libelle: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris },
+  libelleActif: { color: "#fff", fontFamily: POLICE.gras },
 });
