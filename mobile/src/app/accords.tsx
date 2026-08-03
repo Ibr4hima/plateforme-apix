@@ -17,8 +17,8 @@ import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import { useNaemaArbre } from "@/components/ArbreNaema";
+import EnTetePage from "@/components/EnTetePage";
 import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, basculer } from "@/components/FiltresListe";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import Symbole from "@/components/Symbole";
 import { fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
@@ -84,7 +84,6 @@ export default function Accords() {
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("en_vigueur");
   const [selec, setSelec] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
 
   const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [apixSel, setApixSel] = useState(false);
@@ -203,7 +202,7 @@ export default function Accords() {
 
   const hero = (
     <>
-      <HeroModule retour titre="Accords & Traités"
+      <EnTetePage titre="Accords & Traités"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
         segments={{ options: segments, valeur: statut, onChange: setStatut }}
         bouton={boutonFiltres} />
@@ -237,8 +236,6 @@ export default function Accords() {
   return (
     <>
       <ListeRapide
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         style={{ backgroundColor: T.fond }}
         data={isLoading || isError ? [] : filtres}
         keyExtractor={(a: any) => String(a.id)}
@@ -259,7 +256,6 @@ export default function Accords() {
           : <EtatVide texte="Aucun accord ne correspond à ces filtres." />
         }
       />
-      <BarreHero retour titre="Accords & Traités" defilY={defilY} bouton={boutonFiltres} />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
       {feuille}
     </>

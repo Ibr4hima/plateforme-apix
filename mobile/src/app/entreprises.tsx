@@ -6,7 +6,7 @@
 // silhouette extraite du fond de carte du site — avec effectif, part et
 // accordéon d'entreprises.
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
@@ -14,7 +14,7 @@ import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import { CascadeGeo, CascadeThema, Coche, FeuilleFiltres, PlageAnnees, SectionCoches, TitreSection, basculer, construireArbreGeo } from "@/components/FiltresListe";
-import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
+import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { fetchTous } from "@/lib/api";
@@ -71,8 +71,6 @@ export default function Entreprises() {
   const [vue, setVue] = useState("annuaire");
   const [regionOuverte, setRegionOuverte] = useState<string | null>(null);
   const [selec, setSelec] = useState<any>(null);
-  const { defilY, onScroll } = useHeroDefilant();
-  useEffect(() => { defilY.setValue(0); }, [vue, defilY]);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["entreprises"], queryFn: () => fetchTous("/entreprises"),
@@ -194,7 +192,7 @@ export default function Entreprises() {
   ];
 
   const hero = (
-    <HeroModule retour titre="Entreprises installées"
+    <EnTetePage titre="Entreprises installées"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
       segments={{ options: lentilles, valeur: vue, onChange: v => { setVue(v); setRegionOuverte(null); } }}
       bouton={boutonFiltres} />
@@ -237,8 +235,6 @@ export default function Entreprises() {
     <>
       {vue === "annuaire" ? (
         <Animated.SectionList
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           sections={isLoading || isError ? [] : sections}
           keyExtractor={(e: any) => String(e.id)}
@@ -263,8 +259,6 @@ export default function Entreprises() {
         />
       ) : (
         <ListeRapide
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : regions}
           keyExtractor={(r: any) => r.nom}
@@ -322,7 +316,6 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       )}
-      <BarreHero retour titre="Entreprises installées" defilY={defilY} bouton={boutonFiltres} />
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
       {feuille}
     </>
