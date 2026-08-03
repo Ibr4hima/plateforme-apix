@@ -1,17 +1,32 @@
-// Code des investissements — sommaire façon table des matières d'un
-// livre : bascule Code / Modalités, recherche full-text avec extraits
-// surlignés, chapitres en rangées typographiques (numéro romain en
-// colonne, titre, compte d'articles).
+// Lois & Règlementations — sommaire façon table des matières d'un livre.
+//
+// Les deux bases (Code des investissements, Modalités d'application) sont des
+// chips colorées à compteur — le pattern des lentilles de l'app — et les deux
+// se chargent d'emblée : la bascule est instantanée et chaque chip porte son
+// nombre de chapitres. La recherche full-text sert ses extraits surlignés ;
+// les chapitres restent des rangées typographiques (numéro romain en colonne,
+// titre, compte d'articles), dans une surface au gabarit de la plateforme.
+// Le lecteur immersif (page suivante) ne change pas.
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import HeroModule from "@/components/HeroModule";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { SqueletteListe } from "@/components/Squelette";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import HeroModule, { BarreHero, useHeroDefilant } from "@/components/HeroModule";
 import { getJson } from "@/lib/api";
+import { tick } from "@/lib/haptique";
+import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 
 export type BaseCode = "code-investissement" | "modalites-application";
+
+// Les deux bases — chips colorées comme les lentilles des autres modules
+const BASES = [
+  { cle: "code-investissement" as BaseCode,   label: "Code des investissements", couleur: "#004f91" },
+  { cle: "modalites-application" as BaseCode, label: "Modalités d'application",  couleur: "#ca631f" },
+];
 
 // Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés
 function Extrait({ html }: { html: string }) {
@@ -34,20 +49,34 @@ export const romainDe = (c: any) => (c.numero === 1 ? "I" : String(c.num_display
 
 export default function CodeSommaire() {
   const router = useRouter();
+  const margeBas = useMargeBas();
+  const { width } = useWindowDimensions();
+  const { defilY, onScroll } = useHeroDefilant();
   const [base, setBase] = useState<BaseCode>("code-investissement");
   const [q, setQ] = useState("");
   const [qDebounce, setQDebounce] = useState("");
+  const chipsRef = useRef<ScrollView>(null);
+  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   useEffect(() => {
     const t = setTimeout(() => setQDebounce(q.trim()), 350);
     return () => clearTimeout(t);
   }, [q]);
 
-  const chapitres = useQuery({
-    queryKey: ["code", base],
-    queryFn: () => getJson<any[]>(`/${base}`),
-    staleTime: 30 * 60 * 1000,
+  // Les deux bases chargées d'emblée : bascule instantanée, compteurs sur les chips
+  const codeQ = useQuery({
+    queryKey: ["code", "code-investissement"],
+    queryFn: () => getJson<any[]>("/code-investissement"), staleTime: 30 * 60 * 1000,
   });
+  const modQ = useQuery({
+    queryKey: ["code", "modalites-application"],
+    queryFn: () => getJson<any[]>("/modalites-application"), staleTime: 30 * 60 * 1000,
+  });
+  const parBase: Record<BaseCode, typeof codeQ> = {
+    "code-investissement": codeQ, "modalites-application": modQ,
+  };
+  const requete = parBase[base];
+
   const recherche = useQuery({
     queryKey: ["code-recherche", base, qDebounce],
     queryFn: () => getJson<any[]>(`/${base}/search?q=${encodeURIComponent(qDebounce)}`),
@@ -55,88 +84,131 @@ export default function CodeSommaire() {
   });
 
   const enRecherche = qDebounce.length >= 2;
-  const liste = chapitres.data || [];
+  const liste = requete.data || [];
   const totalArticles = liste.reduce((n: number, c: any) => n + nbArticlesDe(c), 0);
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
   return (
-    <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: 46 }} keyboardShouldPersistTaps="handled">
-      <HeroModule retour titre="Code des investissements"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher dans le code…" }}
-        segments={{
-          options: [{ cle: "code-investissement", label: "Code des inv." }, { cle: "modalites-application", label: "Modalités d'app." }],
-          valeur: base, onChange: cle => setBase(cle as BaseCode),
-        }} />
+    <>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}
+        style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
+        keyboardShouldPersistTaps="handled">
+        <HeroModule retour titre="Lois & Règlementations"
+          recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
 
-      {/* Résultats de recherche */}
-      {enRecherche ? (
-        <View style={s.liste}>
-          {recherche.isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />}
-          {recherche.data?.length === 0 && <Text style={s.vide}>Aucun article pour « {qDebounce} »</Text>}
-          {(recherche.data || []).map((r: any) => (
-            <Pressable key={r.id} onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
-              style={({ pressed }) => [s.resultat, pressed && { borderColor: "rgba(0,79,145,0.35)" }]}>
-              <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
-              {r.titre ? <Text style={s.resTitre} numberOfLines={1}>{r.titre}</Text> : null}
-              <Extrait html={r.extrait} />
-            </Pressable>
-          ))}
-        </View>
-      ) : (
-        /* Table des matières */
-        <View style={s.liste}>
-          {chapitres.isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />}
-          {liste.length > 0 && (
-            <>
-              <Text style={s.meta}>
-                {liste.length} CHAPITRE{liste.length > 1 ? "S" : ""} · {totalArticles} ARTICLE{totalArticles > 1 ? "S" : ""}
-              </Text>
-              <View style={s.surface}>
-                {liste.map((c: any, i: number) => {
-                  const nb = nbArticlesDe(c);
-                  return (
-                    <View key={c.id}>
-                      {i > 0 && <View style={s.separateur} />}
-                      <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
-                        style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
-                        <View style={s.numeroColonne}>
-                          <Text style={s.numeroRomain}>{romainDe(c)}</Text>
-                          <Text style={s.numeroLegende}>CHAP.</Text>
-                        </View>
-                        <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
-                          <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
-                      </Pressable>
-                    </View>
-                  );
-                })}
-              </View>
-            </>
-          )}
-        </View>
-      )}
-    </ScrollView>
+        {/* Les deux bases en chips colorées à compteur */}
+        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
+          {BASES.map(b => {
+            const actif = base === b.cle;
+            const nb = parBase[b.cle].data?.length;
+            return (
+              <Pressable key={b.cle}
+                onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[b.cle] = { x, largeur: la }; }}
+                onPress={() => {
+                  tick();
+                  setBase(b.cle);
+                  const p = chipsPos.current[b.cle];
+                  if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
+                }}
+                style={[s.chipFiltre, actif && { backgroundColor: `${b.couleur}14`, borderColor: `${b.couleur}66` }]}>
+                <Text style={[s.chipFiltreTexte, { color: b.couleur }, actif && { fontFamily: POLICE.gras }]}>{b.label}</Text>
+                {nb != null && (
+                  <View style={[s.chipCompte, actif && { backgroundColor: `${b.couleur}18` }]}>
+                    <Text style={[s.chipCompteTexte, { color: b.couleur }]}>{nb}</Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        {/* Résultats de recherche */}
+        {enRecherche ? (
+          <View style={[s.liste, cap]}>
+            {recherche.isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 24 }} />}
+            {recherche.data?.length === 0 && <EtatVide texte={`Aucun article pour « ${qDebounce} »`} />}
+            {(recherche.data || []).map((r: any, i: number) => (
+              <Apparition key={r.id} index={Math.min(i, 8)}>
+                <Tapable echelle={0.985}
+                  onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
+                  style={s.resultat}>
+                  <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
+                  {r.titre ? <Text style={s.resTitre} numberOfLines={1}>{r.titre}</Text> : null}
+                  <Extrait html={r.extrait} />
+                </Tapable>
+              </Apparition>
+            ))}
+          </View>
+        ) : (
+          /* Table des matières */
+          <View style={[s.liste, cap]}>
+            {requete.isLoading ? <SqueletteListe />
+            : requete.isError ? <EtatErreur onRetry={() => requete.refetch()} />
+            : liste.length === 0 ? <EtatVide texte="Aucun chapitre disponible." />
+            : (
+              <Apparition index={0}>
+                <Text style={s.meta}>
+                  {liste.length} CHAPITRE{liste.length > 1 ? "S" : ""} · {totalArticles} ARTICLE{totalArticles > 1 ? "S" : ""}
+                </Text>
+                <View style={s.surface}>
+                  {liste.map((c: any, i: number) => {
+                    const nb = nbArticlesDe(c);
+                    return (
+                      <View key={c.id}>
+                        {i > 0 && <View style={s.separateur} />}
+                        <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
+                          style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
+                          <View style={s.numeroColonne}>
+                            <Text style={s.numeroRomain}>{romainDe(c)}</Text>
+                            <Text style={s.numeroLegende}>CHAP.</Text>
+                          </View>
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
+                            <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </View>
+              </Apparition>
+            )}
+          </View>
+        )}
+      </Animated.ScrollView>
+      <BarreHero retour titre="Lois & Règlementations" defilY={defilY} />
+    </>
   );
 }
 
 const s = StyleSheet.create({
-  liste: { paddingHorizontal: 18, marginTop: 16 },
-  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 24 },
-  meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
-  surface: {
-    backgroundColor: T.carte, borderRadius: 22, overflow: "hidden",
-    shadowColor: "#001e3c", shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 7 },
-    elevation: 3,
+  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  chipFiltre: {
+    flexDirection: "row", alignItems: "center", gap: 7,
+    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
-  separateur: { height: 1, backgroundColor: T.filet, marginLeft: 74 },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 16, paddingVertical: 15, paddingHorizontal: 18 },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
+  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
+  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
+
+  liste: { paddingHorizontal: 16, marginTop: 14 },
+  meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
+  surface: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
+  separateur: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginLeft: 72 },
+  ligne: { flexDirection: "row", alignItems: "center", gap: 16, paddingVertical: 15, paddingHorizontal: 16 },
   numeroColonne: { width: 40, alignItems: "center" },
   numeroRomain: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.3, lineHeight: 21 },
   numeroLegende: { fontSize: 7.5, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.2, marginTop: 2 },
   ligneTitre: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
   ligneSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
-  resultat: { backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.bordure, padding: 15, marginBottom: 10 },
+
+  resultat: {
+    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingVertical: 13, marginBottom: 10,
+  },
   resNumero: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
   resTitre: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 5 },
   resExtrait: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19, marginTop: 6 },
