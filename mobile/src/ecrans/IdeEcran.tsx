@@ -11,6 +11,7 @@ import { useMemo, useRef, useState } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
+import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
 import PaysSheet from "@/components/PaysSheet";
@@ -89,7 +90,8 @@ export default function IdeEcran() {
           {/* ── Section 2 : Greenfield ── */}
           <IdeGreenfieldPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
 
-          {/* La section Fusion & Acquisition arrive ici */}
+          {/* ── Section 3 : Fusion & Acquisition ── */}
+          <IdeFusionPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
         </>
       )}
     </ScrollView>
