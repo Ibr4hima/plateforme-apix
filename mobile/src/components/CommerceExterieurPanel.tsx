@@ -57,8 +57,11 @@ export default function CommerceExterieurPanel() {
   });
   // Le sens suit la vedette du haut : export ou import (rien en Balance)
   const sensPr = actif === "imports" ? "import" : "export";
-  const lignesPr: any[] = useMemo(
-    () => (pr.data?.donnees?.[sensPr] || []).filter((r: any) => r.valeur != null), [pr.data, sensPr]);
+  // Toutes les lignes du sens — certains postes paraissent SANS valeur une
+  // année donnée (Tourteaux d'arachide à l'export 2024) : ils restent listés,
+  // seules les séries et le calendrier se limitent aux lignes chiffrées
+  const brutPr: any[] = useMemo(() => pr.data?.donnees?.[sensPr] || [], [pr.data, sensPr]);
+  const lignesPr: any[] = useMemo(() => brutPr.filter((r: any) => r.valeur != null), [brutPr]);
   // Le calendrier des produits — distinct de celui des totaux, d'où son curseur
   const anneesPr = useMemo(() =>
     [...new Set(lignesPr.map((r: any) => r.annee as number))].sort((a, b) => a - b), [lignesPr]);
@@ -120,18 +123,20 @@ export default function CommerceExterieurPanel() {
       .sort((a: Point, b: Point) => a.annee - b.annee);
     return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
   };
-  // Le classement COMPLET de l'année de référence, par valeur décroissante :
-  // le premier en vedette, tous les autres en repères. Le fourre-tout
-  // « Autres produits » sort du classement et FERME la liste, comme sur le
-  // site : ce n'est pas une modalité, mais il reste lisible en dernier.
-  // Plafond à 32 postes, par précaution.
-  const lignesAnnee = lignesPr
+  // Le classement COMPLET de l'année de référence, par valeur décroissante —
+  // TOUS les postes du rapport, y compris ceux sans valeur cette année-là
+  // (affichés « — », relégués en fin). Le fourre-tout « Autres produits »
+  // sort du classement et FERME la liste, comme sur le site : ce n'est pas
+  // une modalité, mais il reste lisible en dernier. Plafond à 60 postes,
+  // par précaution (31 à l'export, 56 à l'import).
+  const lignesAnnee = brutPr
     .filter((r: any) => r.annee === anneeRefPr)
-    .map((r: any) => ({ produit: r.produit as string, valeur: r.valeur as number }));
-  const classement: { produit: string; valeur: number }[] = [
-    ...lignesAnnee.filter(x => x.produit !== "Autres produits").sort((a, b) => b.valeur - a.valeur),
+    .map((r: any) => ({ produit: r.produit as string, valeur: (r.valeur ?? null) as number | null }));
+  const classement: { produit: string; valeur: number | null }[] = [
+    ...lignesAnnee.filter(x => x.produit !== "Autres produits")
+      .sort((a, b) => (b.valeur ?? -Infinity) - (a.valeur ?? -Infinity)),
     ...lignesAnnee.filter(x => x.produit === "Autres produits"),
-  ].slice(0, 32);
+  ].slice(0, 60);
   const produitActif = produitChoisi && classement.some(x => x.produit === produitChoisi)
     ? produitChoisi : classement[0]?.produit ?? null;
   const seriePr = produitActif ? seriePrDe(produitActif) : [];
@@ -283,7 +288,9 @@ export default function CommerceExterieurPanel() {
                           onPress={() => { tick(); setProduitChoisi(x.produit); }}
                           style={[s.repere, i > 0 && s.repereBord]}>
                           <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
-                          <Text style={s.repereValeur} numberOfLines={1}>{fmtMFCFA(x.valeur)}</Text>
+                          <Text style={s.repereValeur} numberOfLines={1}>
+                            {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
+                          </Text>
                           <IconeTendance delta={dpc} />
                         </Tapable>
                       );
