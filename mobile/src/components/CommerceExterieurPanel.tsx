@@ -117,15 +117,14 @@ export default function CommerceExterieurPanel() {
       .sort((a: Point, b: Point) => a.annee - b.annee);
     return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
   };
-  // Le classement de l'année de référence : le premier en vedette, les
-  // suivants en repères — huit postes lisibles plutôt que trente. Le
-  // fourre-tout « Autres produits » sort du classement, comme sur le site :
-  // ce n'est pas une modalité et lui donner le rang 1 fausserait la lecture.
+  // Le classement COMPLET de l'année de référence : le premier en vedette,
+  // tous les autres en repères, par valeur décroissante. Le fourre-tout
+  // « Autres produits » sort du classement, comme sur le site : ce n'est pas
+  // une modalité et lui donner le rang 1 fausserait la lecture.
   const classement: { produit: string; valeur: number }[] = exportsPr
     .filter((r: any) => r.annee === anneeRefPr && r.produit !== "Autres produits")
     .map((r: any) => ({ produit: r.produit, valeur: r.valeur }))
-    .sort((a, b) => b.valeur - a.valeur)
-    .slice(0, 8);
+    .sort((a, b) => b.valeur - a.valeur);
   const produitActif = produitChoisi && classement.some(x => x.produit === produitChoisi)
     ? produitChoisi : classement[0]?.produit ?? null;
   const seriePr = produitActif ? seriePrDe(produitActif) : [];
