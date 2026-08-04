@@ -53,6 +53,7 @@ export const T = {
   // Voiles bleus (blocs d'information, chips)
   bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
   orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(232,147,90,0.14)"),
+  vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(87,184,125,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
   blocBord:    dyn("rgba(0,79,145,0.10)", "rgba(133,185,236,0.16)"),
   rayonCarte:  18,

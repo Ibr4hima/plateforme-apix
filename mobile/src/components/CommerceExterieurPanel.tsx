@@ -70,6 +70,33 @@ export default function CommerceExterieurPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesPr.join(",")]);
 
+  // ── Les zones géographiques (troisième module, en vert) ──
+  const [zone, setZone] = useState<"continent" | "region">("continent");
+  const [zoneChoisie, setZoneChoisie] = useState<string | null>(null);
+  const [anneeSelZg, setAnneeSelZg] = useState<number | null>(null);
+  const co = useQuery({
+    queryKey: ["nace-continents"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/continents"),
+  });
+  const rg = useQuery({
+    queryKey: ["nace-regions"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/regions"),
+  });
+  // Les lignes du découpage choisi, normalisées { nom, annee, valeur }
+  const brutZg: { nom: string; annee: number; valeur: number | null }[] = useMemo(() => {
+    const source = zone === "continent" ? co.data : rg.data;
+    const cle = zone === "continent" ? "continent" : "region";
+    return (source?.donnees?.[sensPr] || [])
+      .map((r: any) => ({ nom: r[cle] as string, annee: r.annee as number, valeur: (r.valeur ?? null) as number | null }));
+  }, [co.data, rg.data, zone, sensPr]);
+  const lignesZg = useMemo(() => brutZg.filter(r => r.valeur != null), [brutZg]);
+  const anneesZg = useMemo(() =>
+    [...new Set(lignesZg.map(r => r.annee))].sort((a, b) => a - b), [lignesZg]);
+  useEffect(() => {
+    if (anneeSelZg != null && !anneesZg.includes(anneeSelZg)) setAnneeSelZg(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anneesZg.join(",")]);
+
   // Totaux annuels par sens — les groupes d'utilisation couvrent tout
   const series = useMemo<Record<CleSerie, Point[]>>(() => {
     const totaux = { export: new Map<number, number | null>(), import: new Map<number, number | null>() };
@@ -145,6 +172,30 @@ export default function CommerceExterieurPanel() {
   const deltaPr = dernierPr && precPr && precPr.valeur !== 0
     ? ((dernierPr.valeur - precPr.valeur) / Math.abs(precPr.valeur)) * 100 : null;
   const haussePr = (deltaPr ?? 0) >= 0;
+
+  // ── Le troisième module : la zone géographique en vedette ──
+  const anneeRefZg = anneeSelZg ?? anneesZg[anneesZg.length - 1] ?? null;
+  const serieZgDe = (nom: string): Point[] => {
+    const sx = lignesZg.filter(r => r.nom === nom)
+      .map(r => ({ annee: r.annee, valeur: r.valeur! }))
+      .sort((a, b) => a.annee - b.annee);
+    return anneeSelZg == null ? sx : sx.filter(pt => pt.annee <= anneeSelZg);
+  };
+  // Le classement de l'année — 6 continents ou 12 régions, tous listés,
+  // « Divers » rangé à sa place comme sur le site
+  const classementZg: { nom: string; valeur: number | null }[] = brutZg
+    .filter(r => r.annee === anneeRefZg)
+    .map(r => ({ nom: r.nom, valeur: r.valeur }))
+    .sort((a, b) => (b.valeur ?? -Infinity) - (a.valeur ?? -Infinity))
+    .slice(0, 20);
+  const zoneActive = zoneChoisie && classementZg.some(x => x.nom === zoneChoisie)
+    ? zoneChoisie : classementZg[0]?.nom ?? null;
+  const serieZg = zoneActive ? serieZgDe(zoneActive) : [];
+  const dernierZg = serieZg.at(-1) ?? null;
+  const precZg = serieZg.length > 1 ? serieZg[serieZg.length - 2] : null;
+  const deltaZg = dernierZg && precZg && precZg.valeur !== 0
+    ? ((dernierZg.valeur - precZg.valeur) / Math.abs(precZg.valeur)) * 100 : null;
+  const hausseZg = (deltaZg ?? 0) >= 0;
 
   return (
     <View style={s.rangee}>
@@ -314,6 +365,100 @@ export default function CommerceExterieurPanel() {
           </View>
         </>
       )}
+
+      {/* ── Les zones géographiques du sens en vedette — en vert ── */}
+      {actif !== "balance" && zoneActive != null && (
+        <>
+          {/* Son propre curseur, en vert */}
+          <View style={{ marginTop: 18 }}>
+            <CurseurAnnees annees={anneesZg}
+              valeur={anneeRefZg ?? 0}
+              couleur={T.vert as string} voile={T.vertVoile as string}
+              onChange={a => setAnneeSelZg(a === anneesZg[anneesZg.length - 1] ? null : a)} />
+          </View>
+
+          {/* Le découpage : continent ou région */}
+          <View style={s.chipsZone}>
+            {(["continent", "region"] as const).map(z => {
+              const actifZ = zone === z;
+              return (
+                <Tapable key={z} echelle={0.96}
+                  onPress={() => { tick(); setZone(z); setZoneChoisie(null); }}
+                  style={[s.chipZone, actifZ && s.chipZoneActif]}>
+                  <Text style={[s.chipZoneTexte, actifZ && { color: T.vert }]}>
+                    {z === "continent" ? "Continent" : "Région"}
+                  </Text>
+                </Tapable>
+              );
+            })}
+          </View>
+
+          <View style={s.vedette}>
+            <View style={s.vedetteEnTete}>
+              <Text style={s.etiquette} numberOfLines={1}>
+                {zoneActive.toUpperCase()}{dernierZg ? ` · ${dernierZg.annee}` : ""}
+              </Text>
+              <View style={s.badgeZone}>
+                <Text style={s.badgeZoneTexte} numberOfLines={1}>
+                  {sensPr === "export" ? "Exportations" : "Importations"}
+                </Text>
+              </View>
+            </View>
+
+            {dernierZg ? (
+              <View style={s.nombreLigne}>
+                <ChiffreAnime texte={fmtMFCFA(dernierZg.valeur)} style={[s.nombre, { color: T.vert }]} />
+                {deltaZg !== null && (
+                  <View style={s.deltaLigne}>
+                    <Icone sf={hausseZg ? "arrow.up.right" : "arrow.down.right"}
+                      materiel={hausseZg ? "north_east" : "south_east"}
+                      taille={12} couleur={hausseZg ? T.vert : "#dc2626"} poids="bold" />
+                    <Text style={[s.deltaTexte, { color: hausseZg ? T.vert : "#dc2626" }]}>
+                      {Math.abs(deltaZg).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                    </Text>
+                    <Text style={s.deltaContexte}>vs {precZg!.annee}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text style={s.indispo}>Donnée indisponible.</Text>
+            )}
+
+            <View style={{ marginTop: 10 }}>
+              {largeurTendance > 0 && serieZg.length > 1 && (
+                <MiniTendance valeurs={serieZg.map(x => x.valeur)} largeur={largeurTendance} couleur={T.vert as string} />
+              )}
+            </View>
+            {serieZg.length > 1 && (
+              <View style={s.bornes}>
+                <Text style={s.borne}>{serieZg[0].annee}</Text>
+                <Text style={s.borne}>{dernierZg!.annee}</Text>
+              </View>
+            )}
+
+            {/* Les autres zones du classement, une par ligne */}
+            <View style={s.pied}>
+              {classementZg.filter(x => x.nom !== zoneActive).map((x, i) => {
+                const sx = serieZgDe(x.nom);
+                const d = sx.at(-1) ?? null;
+                const p = sx.length > 1 ? sx[sx.length - 2] : null;
+                const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+                return (
+                  <Tapable key={x.nom} echelle={0.98}
+                    onPress={() => { tick(); setZoneChoisie(x.nom); }}
+                    style={[s.repere, i > 0 && s.repereBord]}>
+                    <Text style={s.repereLabel} numberOfLines={1}>{x.nom.toUpperCase()}</Text>
+                    <Text style={s.repereValeur} numberOfLines={1}>
+                      {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
+                    </Text>
+                    <IconeTendance delta={dpc} />
+                  </Tapable>
+                );
+              })}
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -341,6 +486,18 @@ const s = StyleSheet.create({
   badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.orange },
+  badgeZone: {
+    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    borderWidth: 1, borderColor: "rgba(24,128,56,0.30)",
+  },
+  badgeZoneTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.vert },
+  chipsZone: { flexDirection: "row", gap: 8, marginBottom: 10 },
+  chipZone: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  chipZoneActif: { backgroundColor: T.vertVoile, borderColor: "rgba(24,128,56,0.40)" },
+  chipZoneTexte: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.gris },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
