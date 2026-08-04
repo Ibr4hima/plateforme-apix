@@ -6,12 +6,15 @@
 // L'onglet IDE se lit en trois sections — Flux & Stocks, Greenfield,
 // Fusion & Acquisition — chacune une carte vedette à curseur d'années.
 // L'analyse comparative a quitté l'app : un pays, une lecture au pouce.
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useRef, useState } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text } from "react-native";
-import { useRef } from "react";
 import EnTetePage from "@/components/EnTetePage";
 import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
+import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
+import PaysSheet from "@/components/PaysSheet";
+import { getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
@@ -26,16 +29,28 @@ export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const [onglet, setOnglet] = useState("ide");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [paysOuvert, setPaysOuvert] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const ongletsRef = useRef<ScrollView>(null);
   const ongletsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
-  // Le bouton filtres ne sert que les Investissements nationaux
+  // Le référentiel des pays servis par la CNUCED — le sélecteur hiérarchique
+  const { data: paysDispo } = useQuery({
+    queryKey: ["ide-pays"], queryFn: () => getJson<any[]>("/ide/cnuced/pays-disponibles"), staleTime: Infinity,
+  });
+  const paysListe = useMemo(() => (paysDispo || []).map((p: any, i: number) => ({
+    id: i, nom: p.nom, code_iso3: p.code_iso3, continent: p.continent, region_geo: p.region_geo,
+  })), [paysDispo]);
+  const [paysSel, setPaysSel] = useState<string>("Sénégal");
+  const paysId = paysListe.find((p: any) => p.nom === paysSel)?.id ?? null;
+
+  // Le bouton de l'en-tête : le sélecteur de pays en IDE, les filtres en national
   const boutonHero = onglet === "nationaux"
     ? { icone: "filter_list", onPress: () => { tick(); setFiltresOuverts(true); }, badge: nbFiltresNat || undefined }
-    : undefined;
+    : { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } };
 
   return (
+    <>
     <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
       <EnTetePage titre="Investissements privés" bouton={boutonHero} />
 
@@ -69,12 +84,25 @@ export default function IdeEcran() {
       ) : (
         <>
           {/* ── Section 1 : Flux & Stocks ── */}
-          <IdeFluxStocksPanel />
+          <IdeFluxStocksPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
 
-          {/* Les sections Greenfield et Fusion & Acquisition arrivent ici */}
+          {/* ── Section 2 : Greenfield ── */}
+          <IdeGreenfieldPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
+
+          {/* La section Fusion & Acquisition arrive ici */}
         </>
       )}
     </ScrollView>
+
+    {paysOuvert && (
+      <PaysSheet pays={paysListe} choisi={paysId}
+        onChoisir={id => {
+          const p = paysListe.find((x: any) => x.id === id);
+          if (p) setPaysSel(p.nom);
+        }}
+        onClose={() => setPaysOuvert(false)} />
+    )}
+    </>
   );
 }
 

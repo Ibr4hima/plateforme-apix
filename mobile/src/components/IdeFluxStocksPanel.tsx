@@ -10,7 +10,7 @@
 // année, sur les couples complets. Valeurs CNUCED en millions USD.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
 import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
@@ -38,7 +38,9 @@ const fmtMusd = (v: number | null): string => {
   return `${Math.round(v).toLocaleString("fr-FR")} M $`;
 };
 
-export default function IdeFluxStocksPanel() {
+export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
+  pays: string; onOuvrirPays: () => void;
+}) {
   const [actif, setActif] = useState<CleSerie>("flux_e");
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
@@ -51,8 +53,8 @@ export default function IdeFluxStocksPanel() {
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
   const params = useMemo(() => new URLSearchParams({
-    pays_list: "Sénégal", annee_min: String(bornes[0]), annee_max: String(bornes[1]),
-  }).toString(), [bornes[0], bornes[1]]);
+    pays_list: pays, annee_min: String(bornes[0]), annee_max: String(bornes[1]),
+  }).toString(), [pays, bornes[0], bornes[1]]);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["ide-cnuced", params], enabled: !!bornesRef,
     queryFn: () => getJson<any[]>(`/ide/cnuced?${params}`),
@@ -112,9 +114,10 @@ export default function IdeFluxStocksPanel() {
           <Text style={s.etiquette} numberOfLines={1}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          <View style={s.badgePays}>
-            <Text style={s.badgePaysTexte}>Sénégal</Text>
-          </View>
+          {/* Le pays en badge, sans point — le tap ouvre le sélecteur */}
+          <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
+            <Text style={s.badgePaysTexte} numberOfLines={1}>{pays}</Text>
+          </Pressable>
         </View>
 
         {dernier ? (
@@ -185,7 +188,7 @@ const s = StyleSheet.create({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {
     backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
+    borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
