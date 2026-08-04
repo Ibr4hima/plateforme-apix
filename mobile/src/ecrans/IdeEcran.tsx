@@ -14,8 +14,9 @@ import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
 import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
-import PaysSheet from "@/components/PaysSheet";
+import SourceIdeSheet from "@/components/SourceIdeSheet";
 import { getJson } from "@/lib/api";
+import type { SourceIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
@@ -30,25 +31,34 @@ export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const [onglet, setOnglet] = useState("ide");
   const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [paysOuvert, setPaysOuvert] = useState(false);
+  const [sourceOuverte, setSourceOuverte] = useState(false);
   const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const ongletsRef = useRef<ScrollView>(null);
   const ongletsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
-  // Le référentiel des pays servis par la CNUCED — le sélecteur hiérarchique
+  // Les trois référentiels de la VUE : pays, zones du monde, secteurs
   const { data: paysDispo } = useQuery({
     queryKey: ["ide-pays"], queryFn: () => getJson<any[]>("/ide/cnuced/pays-disponibles"), staleTime: Infinity,
+  });
+  const { data: groupements } = useQuery({
+    queryKey: ["ide-groupements"], queryFn: () => getJson<any[]>("/ide/monde/groupements"), staleTime: Infinity,
+  });
+  const { data: secteurs } = useQuery({
+    queryKey: ["ide-secteurs"], queryFn: () => getJson<any[]>("/ide/secteurs"), staleTime: Infinity,
   });
   const paysListe = useMemo(() => (paysDispo || []).map((p: any, i: number) => ({
     id: i, nom: p.nom, code_iso3: p.code_iso3, continent: p.continent, region_geo: p.region_geo,
   })), [paysDispo]);
-  const [paysSel, setPaysSel] = useState<string>("Sénégal");
-  const paysId = paysListe.find((p: any) => p.nom === paysSel)?.id ?? null;
 
-  // Le bouton de l'en-tête : le sélecteur de pays en IDE, les filtres en national
+  // La source de lecture — un pays par défaut, le Sénégal
+  const [source, setSource] = useState<SourceIde>({ type: "pays", nom: "Sénégal" });
+  // Flux & Stocks n'existe pas en vue Secteurs (règle du site)
+  const secteurVue = source.type === "secteur";
+
+  // Le bouton de l'en-tête : le sélecteur de vue en IDE, les filtres en national
   const boutonHero = onglet === "nationaux"
     ? { icone: "filter_list", onPress: () => { tick(); setFiltresOuverts(true); }, badge: nbFiltresNat || undefined }
-    : { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } };
+    : { icone: "more_horiz", onPress: () => { tick(); setSourceOuverte(true); } };
 
   return (
     <>
@@ -84,25 +94,23 @@ export default function IdeEcran() {
           onNbFiltres={setNbFiltresNat} />
       ) : (
         <>
-          {/* ── Section 1 : Flux & Stocks ── */}
-          <IdeFluxStocksPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
+          {/* ── Section 1 : Flux & Stocks (pas en vue Secteurs) ── */}
+          {!secteurVue && (
+            <IdeFluxStocksPanel source={source} onOuvrirSource={() => setSourceOuverte(true)} />
+          )}
 
           {/* ── Section 2 : Greenfield ── */}
-          <IdeGreenfieldPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
+          <IdeGreenfieldPanel source={source} onOuvrirSource={() => setSourceOuverte(true)} />
 
           {/* ── Section 3 : Fusion & Acquisition ── */}
-          <IdeFusionPanel pays={paysSel} onOuvrirPays={() => setPaysOuvert(true)} />
+          <IdeFusionPanel source={source} onOuvrirSource={() => setSourceOuverte(true)} />
         </>
       )}
     </ScrollView>
 
-    {paysOuvert && (
-      <PaysSheet pays={paysListe} choisi={paysId}
-        onChoisir={id => {
-          const p = paysListe.find((x: any) => x.id === id);
-          if (p) setPaysSel(p.nom);
-        }}
-        onClose={() => setPaysOuvert(false)} />
+    {sourceOuverte && (
+      <SourceIdeSheet pays={paysListe} groupements={groupements || []} secteurs={secteurs || []}
+        source={source} onChoisir={setSource} onClose={() => setSourceOuverte(false)} />
     )}
     </>
   );

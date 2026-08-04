@@ -15,6 +15,7 @@ import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
+import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 
@@ -39,8 +40,10 @@ const fmtMusd = (v: number | null): string => {
 const fmtNombre = (v: number | null): string =>
   v === null || v === undefined || isNaN(v) ? "—" : Math.round(v).toLocaleString("fr-FR");
 
-export default function IdeGreenfieldPanel({ pays, onOuvrirPays }: {
-  pays: string; onOuvrirPays: () => void;
+const INDICATEURS = ["greenfield_valeur", "greenfield_nombre"];
+
+export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
+  source: SourceIde; onOuvrirSource: () => void;
 }) {
   const [actif, setActif] = useState<Sens>("entrant");
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
@@ -54,25 +57,23 @@ export default function IdeGreenfieldPanel({ pays, onOuvrirPays }: {
   const cat = bornesRef?.categories?.greenfield;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 2003, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const params = useMemo(() => new URLSearchParams({
-    pays_list: pays, annee_min: String(bornes[0]), annee_max: String(bornes[1]),
-  }).toString(), [pays, bornes[0], bornes[1]]);
-  const { data } = useQuery({
-    queryKey: ["ide-cnuced", params], enabled: !!bornesRef,
-    queryFn: () => getJson<any[]>(`/ide/cnuced?${params}`),
-  });
+  const { rows } = useSeriesIde(source, INDICATEURS, bornes);
 
-  // Les quatre séries : valeur et nombre, par sens
+  // Les quatre séries : valeur et nombre, par sens. En vue Secteurs le
+  // greenfield n'a pas de direction (« total ») : les deux sens pointent
+  // alors la même série et le repère s'efface.
+  const secteur = source.type === "secteur";
   const series = useMemo(() => {
-    const de = (dir: string, ind: string): Point[] => (data || [])
-      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur != null)
-      .map((d: any) => ({ annee: d.annee, valeur: d.valeur }))
+    const de = (dir: string, ind: string): Point[] => rows
+      .filter(d => d.direction === dir && d.indicateur === ind)
+      .map(d => ({ annee: d.annee, valeur: d.valeur }))
       .sort((a: Point, b: Point) => a.annee - b.annee);
+    const dirE = secteur ? "total" : "entrant", dirS = secteur ? "total" : "sortant";
     return {
-      valeur: { entrant: de("entrant", "greenfield_valeur"), sortant: de("sortant", "greenfield_valeur") },
-      nombre: { entrant: de("entrant", "greenfield_nombre"), sortant: de("sortant", "greenfield_nombre") },
+      valeur: { entrant: de(dirE, "greenfield_valeur"), sortant: de(dirS, "greenfield_valeur") },
+      nombre: { entrant: de(dirE, "greenfield_nombre"), sortant: de(dirS, "greenfield_nombre") },
     };
-  }, [data]);
+  }, [rows, secteur]);
 
   const anneesSerie = useMemo(() => series.valeur.entrant.map(pt => pt.annee), [series]);
   useEffect(() => {
@@ -111,10 +112,10 @@ export default function IdeGreenfieldPanel({ pays, onOuvrirPays }: {
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
           <Text style={s.etiquette} numberOfLines={1}>
-            {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
+            {(secteur ? "VALEUR DES PROJETS ANNONCÉS" : LABELS[actif])}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{pays}</Text>
+          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
+            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
           </Pressable>
         </View>
 
@@ -149,21 +150,25 @@ export default function IdeGreenfieldPanel({ pays, onOuvrirPays }: {
           </View>
         )}
 
-        {/* Le sens opposé en repère */}
-        <View style={s.pied}>
-          <Tapable echelle={0.98} onPress={() => { tick(); setActif(repere); setListeDepliee(false); }}
-            style={s.repere}>
-            <Text style={s.repereLabel} numberOfLines={1}>{LABELS[repere]}</Text>
-            <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
-            <IconeTendance delta={dpcRep} />
-          </Tapable>
-        </View>
+        {/* Le sens opposé en repère (la vue Secteurs n'en a pas) */}
+        {!secteur && (
+          <View style={s.pied}>
+            <Tapable echelle={0.98} onPress={() => { tick(); setActif(repere); setListeDepliee(false); }}
+              style={s.repere}>
+              <Text style={s.repereLabel} numberOfLines={1}>{LABELS[repere]}</Text>
+              <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
+              <IconeTendance delta={dpcRep} />
+            </Tapable>
+          </View>
+        )}
       </View>
 
       {/* Le compte de projets du sens en vedette, année par année */}
       {projets.length > 0 && (
         <View style={s.carteProjets}>
-          <Text style={s.projetsTitre}>{LABELS_NOMBRE[actif]}</Text>
+          <Text style={s.projetsTitre}>
+            {secteur ? "NOMBRE DE PROJETS ANNONCÉS" : LABELS_NOMBRE[actif]}
+          </Text>
           {visibles.map((pt, i) => {
             const idx = projets.indexOf(pt);
             const prec = projets[idx + 1] ?? null;   // la liste descend : le suivant est l'année d'avant

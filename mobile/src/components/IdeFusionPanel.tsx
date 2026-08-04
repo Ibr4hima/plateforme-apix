@@ -18,6 +18,7 @@ import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
+import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 
@@ -42,8 +43,10 @@ const fmtMusd = (v: number | null): string => {
 const fmtNombre = (v: number | null): string =>
   v === null || v === undefined || isNaN(v) ? "—" : Math.round(v).toLocaleString("fr-FR");
 
-export default function IdeFusionPanel({ pays, onOuvrirPays }: {
-  pays: string; onOuvrirPays: () => void;
+const INDICATEURS = ["ma_valeur", "ma_nombre"];
+
+export default function IdeFusionPanel({ source, onOuvrirSource }: {
+  source: SourceIde; onOuvrirSource: () => void;
 }) {
   const [actif, setActif] = useState<Sens>("entrant");
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
@@ -57,25 +60,19 @@ export default function IdeFusionPanel({ pays, onOuvrirPays }: {
   const cat = bornesRef?.categories?.fusion;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const params = useMemo(() => new URLSearchParams({
-    pays_list: pays, annee_min: String(bornes[0]), annee_max: String(bornes[1]),
-  }).toString(), [pays, bornes[0], bornes[1]]);
-  const { data } = useQuery({
-    queryKey: ["ide-cnuced", params], enabled: !!bornesRef,
-    queryFn: () => getJson<any[]>(`/ide/cnuced?${params}`),
-  });
+  const { rows } = useSeriesIde(source, INDICATEURS, bornes);
 
   // Les quatre séries : valeur et nombre, par sens
   const series = useMemo(() => {
-    const de = (dir: string, ind: string): Point[] => (data || [])
-      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur != null)
-      .map((d: any) => ({ annee: d.annee, valeur: d.valeur }))
+    const de = (dir: string, ind: string): Point[] => rows
+      .filter(d => d.direction === dir && d.indicateur === ind)
+      .map(d => ({ annee: d.annee, valeur: d.valeur }))
       .sort((a: Point, b: Point) => a.annee - b.annee);
     return {
       valeur: { entrant: de("entrant", "ma_valeur"), sortant: de("sortant", "ma_valeur") },
       nombre: { entrant: de("entrant", "ma_nombre"), sortant: de("sortant", "ma_nombre") },
     };
-  }, [data]);
+  }, [rows]);
 
   const anneesSerie = useMemo(() => series.valeur.entrant.map(pt => pt.annee), [series]);
   useEffect(() => {
@@ -116,8 +113,8 @@ export default function IdeFusionPanel({ pays, onOuvrirPays }: {
           <Text style={s.etiquette} numberOfLines={1}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{pays}</Text>
+          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
+            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
           </Pressable>
         </View>
 

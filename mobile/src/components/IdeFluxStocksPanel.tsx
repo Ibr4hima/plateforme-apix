@@ -12,11 +12,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
+import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 
@@ -27,6 +28,7 @@ const LABELS: Record<CleSerie, string> = {
   flux_net: "FLUX NET", stock_net: "STOCK NET",
 };
 const ORDRE: CleSerie[] = ["flux_e", "flux_s", "stock_e", "stock_s", "flux_net", "stock_net"];
+const INDICATEURS = ["flux", "stock"];
 
 type Point = { annee: number; valeur: number };
 
@@ -38,8 +40,8 @@ const fmtMusd = (v: number | null): string => {
   return `${Math.round(v).toLocaleString("fr-FR")} M $`;
 };
 
-export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
-  pays: string; onOuvrirPays: () => void;
+export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
+  source: SourceIde; onOuvrirSource: () => void;
 }) {
   const [actif, setActif] = useState<CleSerie>("flux_e");
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
@@ -52,18 +54,12 @@ export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
   const cat = bornesRef?.categories?.fluxstock;
   const bornes: [number, number] = [cat?.annee_min ?? bornesRef?.annee_min ?? 1990, cat?.annee_max ?? bornesRef?.annee_max ?? 2025];
 
-  const params = useMemo(() => new URLSearchParams({
-    pays_list: pays, annee_min: String(bornes[0]), annee_max: String(bornes[1]),
-  }).toString(), [pays, bornes[0], bornes[1]]);
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["ide-cnuced", params], enabled: !!bornesRef,
-    queryFn: () => getJson<any[]>(`/ide/cnuced?${params}`),
-  });
+  const { rows, chargement } = useSeriesIde(source, INDICATEURS, bornes);
 
   // ── Les six séries — les quatre servies, les deux nettes calculées ──
   const series = useMemo<Record<CleSerie, Point[]>>(() => {
-    const de = (dir: string, ind: string): Point[] => (data || [])
-      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur != null)
+    const de = (dir: string, ind: string): Point[] => rows
+      .filter(d => d.direction === dir && d.indicateur === ind)
       .map((d: any) => ({ annee: d.annee, valeur: d.valeur }))
       .sort((a: Point, b: Point) => a.annee - b.annee);
     const net = (e: Point[], sx: Point[]): Point[] => e
@@ -75,7 +71,7 @@ export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
     const flux_e = de("entrant", "flux"), flux_s = de("sortant", "flux");
     const stock_e = de("entrant", "stock"), stock_s = de("sortant", "stock");
     return { flux_e, flux_s, stock_e, stock_s, flux_net: net(flux_e, flux_s), stock_net: net(stock_e, stock_s) };
-  }, [data]);
+  }, [rows]);
 
   // Le calendrier du curseur : les années de la série vedette par défaut
   const anneesSerie = useMemo(() => series.flux_e.map(pt => pt.annee), [series]);
@@ -84,11 +80,10 @@ export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
 
-  if (isLoading || !bornesRef) return <SqueletteDonnees />;
-  if (isError) return <EtatErreur onRetry={() => refetch()} />;
+  if (chargement || !bornesRef) return <SqueletteDonnees />;
   if (!series.flux_e.length) return (
     <EtatVide texte="Flux & Stocks d'IDE"
-      sousTexte="Les séries CNUCED seront disponibles après leur import dans l'administration." />
+      sousTexte="Aucune série pour cette sélection." />
   );
 
   const jusqu = (sx: Point[]) => anneeSel == null ? sx : sx.filter(pt => pt.annee <= anneeSel);
@@ -114,9 +109,9 @@ export default function IdeFluxStocksPanel({ pays, onOuvrirPays }: {
           <Text style={s.etiquette} numberOfLines={1}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          {/* Le pays en badge, sans point — le tap ouvre le sélecteur */}
-          <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{pays}</Text>
+          {/* La source en badge, sans point — le tap ouvre le sélecteur */}
+          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
+            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
           </Pressable>
         </View>
 
