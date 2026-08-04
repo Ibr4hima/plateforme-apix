@@ -2,9 +2,13 @@
 // carte vedette de l'accueil : les Exportations en vedette (micro-étiquette,
 // badge « Sénégal » bleu sans point, nombre en 38 pt qui compte, variation
 // vs N-1 fléchée, silhouette Skia sans axes, bornes d'années) et DEUX repères
-// en grille — Importations et Balance commerciale — la tendance en glyphe
-// trending_up / down / flat teinté. Toucher un repère l'installe en vedette ;
-// la carte porte tout l'écran.
+// — Importations et Balance commerciale — la tendance en glyphe
+// trending_up / down / flat teinté. Toucher un repère l'installe en vedette.
+//
+// Quand les Exportations sont en vedette, un SECOND module suit, en orange :
+// les exportations par produits regroupés — même grammaire, le premier
+// produit de l'année en vedette, les suivants en repères, et son PROPRE
+// curseur d'années (le calendrier des produits n'est pas celui des totaux).
 //
 // Totaux annuels par sens : la somme des groupes d'utilisation, exhaustifs
 // par construction (même règle que le site). Valeurs en millions de FCFA.
@@ -42,6 +46,23 @@ export default function CommerceExterieurPanel() {
     queryKey: ["nace-gu"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<DonneesNace>("/nace/groupes-utilisation"),
   });
+
+  // ── Les exportations par produits regroupés (second module, en orange) ──
+  const [produitChoisi, setProduitChoisi] = useState<string | null>(null);
+  const [anneeSelPr, setAnneeSelPr] = useState<number | null>(null);
+  const pr = useQuery({
+    queryKey: ["nace-regroupes"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/produits-regroupes"),
+  });
+  const exportsPr: any[] = useMemo(
+    () => (pr.data?.donnees?.export || []).filter((r: any) => r.valeur != null), [pr.data]);
+  // Le calendrier des produits — distinct de celui des totaux, d'où son curseur
+  const anneesPr = useMemo(() =>
+    [...new Set(exportsPr.map((r: any) => r.annee as number))].sort((a, b) => a - b), [exportsPr]);
+  useEffect(() => {
+    if (anneeSelPr != null && !anneesPr.includes(anneeSelPr)) setAnneeSelPr(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anneesPr.join(",")]);
 
   // Totaux annuels par sens — les groupes d'utilisation couvrent tout
   const series = useMemo<Record<CleSerie, Point[]>>(() => {
@@ -86,6 +107,31 @@ export default function CommerceExterieurPanel() {
     ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
   const hausse = (delta ?? 0) >= 0;
   const reperes = ORDRE.filter(c => c !== actif);
+
+  // ── Le second module : la vedette produit et son classement ──
+  const anneeRefPr = anneeSelPr ?? anneesPr[anneesPr.length - 1] ?? null;
+  const seriePrDe = (produit: string): Point[] => {
+    const sx = exportsPr
+      .filter((r: any) => r.produit === produit)
+      .map((r: any) => ({ annee: r.annee, valeur: r.valeur }))
+      .sort((a: Point, b: Point) => a.annee - b.annee);
+    return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
+  };
+  // Le classement de l'année de référence : le premier en vedette, les
+  // suivants en repères — huit postes lisibles plutôt que trente
+  const classement: { produit: string; valeur: number }[] = exportsPr
+    .filter((r: any) => r.annee === anneeRefPr)
+    .map((r: any) => ({ produit: r.produit, valeur: r.valeur }))
+    .sort((a, b) => b.valeur - a.valeur)
+    .slice(0, 8);
+  const produitActif = produitChoisi && classement.some(x => x.produit === produitChoisi)
+    ? produitChoisi : classement[0]?.produit ?? null;
+  const seriePr = produitActif ? seriePrDe(produitActif) : [];
+  const dernierPr = seriePr.at(-1) ?? null;
+  const precPr = seriePr.length > 1 ? seriePr[seriePr.length - 2] : null;
+  const deltaPr = dernierPr && precPr && precPr.valeur !== 0
+    ? ((dernierPr.valeur - precPr.valeur) / Math.abs(precPr.valeur)) * 100 : null;
+  const haussePr = (deltaPr ?? 0) >= 0;
 
   return (
     <View style={s.rangee}>
@@ -158,7 +204,77 @@ export default function CommerceExterieurPanel() {
         </View>
       </View>
 
-      <Text style={s.source}>Source NACE · ANSD</Text>
+      {/* ── Les exportations par produits regroupés — en orange ── */}
+      {actif === "exports" && produitActif != null && (
+        <>
+          {/* Son propre curseur : le calendrier des produits */}
+          <View style={{ marginTop: 18 }}>
+            <CurseurAnnees annees={anneesPr}
+              valeur={anneeRefPr ?? 0}
+              onChange={a => setAnneeSelPr(a === anneesPr[anneesPr.length - 1] ? null : a)} />
+          </View>
+          <View style={s.vedette}>
+            <View style={s.vedetteEnTete}>
+              <Text style={s.etiquette} numberOfLines={1}>
+                {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
+              </Text>
+              <View style={s.badgeProduit}>
+                <Text style={s.badgeProduitTexte} numberOfLines={1}>Exportations</Text>
+              </View>
+            </View>
+
+            {dernierPr ? (
+              <View style={s.nombreLigne}>
+                <ChiffreAnime texte={fmtMFCFA(dernierPr.valeur)} style={[s.nombre, { color: T.orange }]} />
+                {deltaPr !== null && (
+                  <View style={s.deltaLigne}>
+                    <Icone sf={haussePr ? "arrow.up.right" : "arrow.down.right"}
+                      materiel={haussePr ? "north_east" : "south_east"}
+                      taille={12} couleur={haussePr ? T.vert : "#dc2626"} poids="bold" />
+                    <Text style={[s.deltaTexte, { color: haussePr ? T.vert : "#dc2626" }]}>
+                      {Math.abs(deltaPr).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                    </Text>
+                    <Text style={s.deltaContexte}>vs {precPr!.annee}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text style={s.indispo}>Donnée indisponible.</Text>
+            )}
+
+            <View style={{ marginTop: 10 }}>
+              {largeurTendance > 0 && seriePr.length > 1 && (
+                <MiniTendance valeurs={seriePr.map(x => x.valeur)} largeur={largeurTendance} couleur={T.orange as string} />
+              )}
+            </View>
+            {seriePr.length > 1 && (
+              <View style={s.bornes}>
+                <Text style={s.borne}>{seriePr[0].annee}</Text>
+                <Text style={s.borne}>{dernierPr!.annee}</Text>
+              </View>
+            )}
+
+            {/* Les autres produits du classement, un par ligne */}
+            <View style={s.pied}>
+              {classement.filter(x => x.produit !== produitActif).map((x, i) => {
+                const sx = seriePrDe(x.produit);
+                const d = sx.at(-1) ?? null;
+                const p = sx.length > 1 ? sx[sx.length - 2] : null;
+                const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+                return (
+                  <Tapable key={x.produit} echelle={0.98}
+                    onPress={() => { tick(); setProduitChoisi(x.produit); }}
+                    style={[s.repere, i > 0 && s.repereBord]}>
+                    <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
+                    <Text style={s.repereValeur} numberOfLines={1}>{fmtMFCFA(x.valeur)}</Text>
+                    <IconeTendance delta={dpc} />
+                  </Tapable>
+                );
+              })}
+            </View>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -179,6 +295,11 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
+  badgeProduit: {
+    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
+  },
+  badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
@@ -194,6 +315,4 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-
-  source: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 16 },
 });
