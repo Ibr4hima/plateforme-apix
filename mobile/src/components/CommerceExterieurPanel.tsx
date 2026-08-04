@@ -549,7 +549,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(24,128,56,0.30)",
   },
   badgeZoneTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.vert },
-  chipsZone: { flexDirection: "row", gap: 8, marginBottom: 10 },
+  chipsZone: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 10 },
   chipZone: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,

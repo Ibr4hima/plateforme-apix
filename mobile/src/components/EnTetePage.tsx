@@ -1,15 +1,18 @@
-// En-tête de page CLAIR — le gabarit hérité de l'accueil, qui remplace les
-// heros bleus des pages intérieures : plus d'aplat, la page respire.
+// En-tête de page — le gabarit de l'accueil : un BANDEAU BLEU qui part du
+// haut de l'écran (barre d'état comprise) et englobe les commandes et le
+// titre ; la page reprend en clair juste dessous.
 //
-//   [← retour]                                [🔍 recherche] [≡ filtres]
-//   Titre en grand
-//   (champ de recherche, s'il est ouvert)
+//   ┌ bandeau bleu ─────────────────────────────────────┐
+//   │ [← retour]                  [🔍 recherche] [≡ …]  │
+//   │ Titre en grand                                    │
+//   │ (champ de recherche, s'il est ouvert)             │
+//   └───────────────────────────────────────────────────┘
 //   [segments à compteurs]
 //
 // Les boutons sont en verre dépoli (BoutonVerre). La recherche ne monopolise
 // plus une barre : la loupe ouvre le champ à la demande, la croix le referme.
-// La barre d'état passe en sombre tant que la page a le focus (les pages à
-// hero bleu la gardent claire).
+// La barre d'état passe en blanc tant que la page a le focus — le bandeau est
+// bleu jusqu'en haut.
 import { useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useState } from "react";
@@ -35,10 +38,10 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
   const router = useRouter();
   const [rechercheOuverte, setRechercheOuverte] = useState(false);
 
-  // Page claire : barre d'état sombre tant qu'elle a le focus
+  // Bandeau bleu jusqu'en haut : barre d'état blanche tant que la page a le focus
   useFocusEffect(useCallback(() => {
-    setStatusBarStyle("dark");
-    return () => setStatusBarStyle("light");
+    setStatusBarStyle("light");
+    return () => setStatusBarStyle("dark");
   }, []));
 
   const basculerRecherche = () => {
@@ -47,7 +50,11 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
   };
 
   return (
-    <View style={[s.entete, { paddingTop: insets.top + 8 }]}>
+    <View>
+      {/* ── Le bandeau bleu : du haut de l'écran jusque sous le titre ── */}
+      <View style={[s.bandeau, { paddingTop: insets.top + 8 }]}>
+        {/* Halo discret, l'écho de l'accueil */}
+        <View style={s.halo} />
       {/* Rangée de commandes : retour à gauche, actions à droite */}
       <View style={s.commandes}>
         {retour ? (
@@ -95,9 +102,11 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
         </View>
       )}
 
-      {/* Segments clairs à compteurs */}
+      </View>
+
+      {/* Segments clairs à compteurs — la page a repris son fond clair */}
       {segments && (
-        <View style={s.segments}>
+        <View style={[s.segments, s.sousBandeau]}>
           {segments.options.map(o => {
             const actif = segments.valeur === o.cle;
             return (
@@ -115,13 +124,21 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
         </View>
       )}
 
-      {children}
+      {children ? <View style={s.sousBandeau}>{children}</View> : null}
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  entete: { paddingHorizontal: 20, paddingBottom: 4 },
+  bandeau: {
+    paddingHorizontal: 20, paddingBottom: 18,
+    backgroundColor: T.heroFond, overflow: "hidden",
+  },
+  halo: {
+    position: "absolute", top: -150, right: -100, width: 300, height: 300,
+    borderRadius: 150, backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  sousBandeau: { marginHorizontal: 20 },
   commandes: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   actions: { flexDirection: "row", alignItems: "center", gap: 8 },
   badge: {
@@ -130,17 +147,17 @@ const s = StyleSheet.create({
   },
   badgeTexte: { fontSize: 10, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
   titre: {
-    fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
+    fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: "#fff",
     letterSpacing: -0.7, marginTop: 12,
   },
   champ: {
     flexDirection: "row", alignItems: "center", gap: 9, marginTop: 12,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: "#fff", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
     borderRadius: 999, paddingHorizontal: 15, height: 40,
   },
   champTexte: { flex: 1, fontSize: 14.5, fontFamily: POLICE.moyen, color: T.encre },
   segments: {
-    flexDirection: "row", marginTop: 14, padding: 3.5, gap: 4,
+    flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
     backgroundColor: "rgba(16,26,46,0.055)", borderRadius: 999,
   },
   segment: {
