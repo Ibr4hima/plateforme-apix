@@ -47,18 +47,21 @@ export default function CommerceExterieurPanel() {
     queryFn: () => getJson<DonneesNace>("/nace/groupes-utilisation"),
   });
 
-  // ── Les exportations par produits regroupés (second module, en orange) ──
+  // ── Les produits regroupés du sens en vedette (second module, en orange) ──
   const [produitChoisi, setProduitChoisi] = useState<string | null>(null);
   const [anneeSelPr, setAnneeSelPr] = useState<number | null>(null);
+  const [listeDepliee, setListeDepliee] = useState(false);
   const pr = useQuery({
     queryKey: ["nace-regroupes"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<any>("/nace/produits-regroupes"),
   });
-  const exportsPr: any[] = useMemo(
-    () => (pr.data?.donnees?.export || []).filter((r: any) => r.valeur != null), [pr.data]);
+  // Le sens suit la vedette du haut : export ou import (rien en Balance)
+  const sensPr = actif === "imports" ? "import" : "export";
+  const lignesPr: any[] = useMemo(
+    () => (pr.data?.donnees?.[sensPr] || []).filter((r: any) => r.valeur != null), [pr.data, sensPr]);
   // Le calendrier des produits — distinct de celui des totaux, d'où son curseur
   const anneesPr = useMemo(() =>
-    [...new Set(exportsPr.map((r: any) => r.annee as number))].sort((a, b) => a - b), [exportsPr]);
+    [...new Set(lignesPr.map((r: any) => r.annee as number))].sort((a, b) => a - b), [lignesPr]);
   useEffect(() => {
     if (anneeSelPr != null && !anneesPr.includes(anneeSelPr)) setAnneeSelPr(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,20 +114,24 @@ export default function CommerceExterieurPanel() {
   // ── Le second module : la vedette produit et son classement ──
   const anneeRefPr = anneeSelPr ?? anneesPr[anneesPr.length - 1] ?? null;
   const seriePrDe = (produit: string): Point[] => {
-    const sx = exportsPr
+    const sx = lignesPr
       .filter((r: any) => r.produit === produit)
       .map((r: any) => ({ annee: r.annee, valeur: r.valeur }))
       .sort((a: Point, b: Point) => a.annee - b.annee);
     return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
   };
-  // Le classement COMPLET de l'année de référence : le premier en vedette,
-  // tous les autres en repères, par valeur décroissante. Le fourre-tout
-  // « Autres produits » sort du classement, comme sur le site : ce n'est pas
-  // une modalité et lui donner le rang 1 fausserait la lecture.
-  const classement: { produit: string; valeur: number }[] = exportsPr
-    .filter((r: any) => r.annee === anneeRefPr && r.produit !== "Autres produits")
-    .map((r: any) => ({ produit: r.produit, valeur: r.valeur }))
-    .sort((a, b) => b.valeur - a.valeur);
+  // Le classement COMPLET de l'année de référence, par valeur décroissante :
+  // le premier en vedette, tous les autres en repères. Le fourre-tout
+  // « Autres produits » sort du classement et FERME la liste, comme sur le
+  // site : ce n'est pas une modalité, mais il reste lisible en dernier.
+  // Plafond à 32 postes, par précaution.
+  const lignesAnnee = lignesPr
+    .filter((r: any) => r.annee === anneeRefPr)
+    .map((r: any) => ({ produit: r.produit as string, valeur: r.valeur as number }));
+  const classement: { produit: string; valeur: number }[] = [
+    ...lignesAnnee.filter(x => x.produit !== "Autres produits").sort((a, b) => b.valeur - a.valeur),
+    ...lignesAnnee.filter(x => x.produit === "Autres produits"),
+  ].slice(0, 32);
   const produitActif = produitChoisi && classement.some(x => x.produit === produitChoisi)
     ? produitChoisi : classement[0]?.produit ?? null;
   const seriePr = produitActif ? seriePrDe(produitActif) : [];
@@ -205,8 +212,8 @@ export default function CommerceExterieurPanel() {
         </View>
       </View>
 
-      {/* ── Les exportations par produits regroupés — en orange ── */}
-      {actif === "exports" && produitActif != null && (
+      {/* ── Les produits regroupés du sens en vedette — en orange ── */}
+      {actif !== "balance" && produitActif != null && (
         <>
           {/* Son propre curseur, en orange : le calendrier des produits */}
           <View style={{ marginTop: 18 }}>
@@ -221,7 +228,9 @@ export default function CommerceExterieurPanel() {
                 {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
               </Text>
               <View style={s.badgeProduit}>
-                <Text style={s.badgeProduitTexte} numberOfLines={1}>Exportations</Text>
+                <Text style={s.badgeProduitTexte} numberOfLines={1}>
+                  {sensPr === "export" ? "Exportations" : "Importations"}
+                </Text>
               </View>
             </View>
 
@@ -256,23 +265,44 @@ export default function CommerceExterieurPanel() {
               </View>
             )}
 
-            {/* Les autres produits du classement, un par ligne */}
+            {/* Les autres produits du classement, un par ligne — cinq
+                d'abord, la liste entière à la demande */}
             <View style={s.pied}>
-              {classement.filter(x => x.produit !== produitActif).map((x, i) => {
-                const sx = seriePrDe(x.produit);
-                const d = sx.at(-1) ?? null;
-                const p = sx.length > 1 ? sx[sx.length - 2] : null;
-                const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+              {(() => {
+                const autres = classement.filter(x => x.produit !== produitActif);
+                const visibles = listeDepliee ? autres : autres.slice(0, 5);
                 return (
-                  <Tapable key={x.produit} echelle={0.98}
-                    onPress={() => { tick(); setProduitChoisi(x.produit); }}
-                    style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
-                    <Text style={s.repereValeur} numberOfLines={1}>{fmtMFCFA(x.valeur)}</Text>
-                    <IconeTendance delta={dpc} />
-                  </Tapable>
+                  <>
+                    {visibles.map((x, i) => {
+                      const sx = seriePrDe(x.produit);
+                      const d = sx.at(-1) ?? null;
+                      const p = sx.length > 1 ? sx[sx.length - 2] : null;
+                      const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+                      return (
+                        <Tapable key={x.produit} echelle={0.98}
+                          onPress={() => { tick(); setProduitChoisi(x.produit); }}
+                          style={[s.repere, i > 0 && s.repereBord]}>
+                          <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
+                          <Text style={s.repereValeur} numberOfLines={1}>{fmtMFCFA(x.valeur)}</Text>
+                          <IconeTendance delta={dpc} />
+                        </Tapable>
+                      );
+                    })}
+                    {autres.length > 5 && (
+                      <Tapable echelle={0.98}
+                        onPress={() => { tick(); setListeDepliee(v => !v); }}
+                        style={[s.repere, s.repereBord, s.deplier]}>
+                        <Text style={s.deplierTexte}>
+                          {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres produits`}
+                        </Text>
+                        <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
+                          materiel={listeDepliee ? "expand_less" : "expand_more"}
+                          taille={14} couleur={T.orange} />
+                      </Tapable>
+                    )}
+                  </>
                 );
-              })}
+              })()}
             </View>
           </View>
         </>
@@ -302,6 +332,8 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
   },
   badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
+  deplier: { justifyContent: "center" },
+  deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.orange },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
