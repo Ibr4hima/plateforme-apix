@@ -21,6 +21,7 @@ import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
+import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
@@ -81,6 +82,11 @@ export default function CommerceExterieurPanel() {
   const rg = useQuery({
     queryKey: ["nace-regions"], staleTime: 30 * 60 * 1000,
     queryFn: () => getJson<any>("/nace/regions"),
+  });
+  // Les pays partenaires — pour le top 10 de la zone en vedette
+  const py = useQuery({
+    queryKey: ["nace-pays"], staleTime: 30 * 60 * 1000,
+    queryFn: () => getJson<any>("/nace/pays"),
   });
   // Les lignes du découpage choisi, normalisées { nom, annee, valeur }
   const brutZg: { nom: string; annee: number; valeur: number | null }[] = useMemo(() => {
@@ -196,6 +202,19 @@ export default function CommerceExterieurPanel() {
   const deltaZg = dernierZg && precZg && precZg.valeur !== 0
     ? ((dernierZg.valeur - precZg.valeur) / Math.abs(precZg.valeur)) * 100 : null;
   const hausseZg = (deltaZg ?? 0) >= 0;
+
+  // ── Le top 10 des pays de la zone en vedette ──
+  // Un continent se choisit par le rattachement région → continent que sert
+  // le backend ; une région, directement. « Autres pays » — l'agrégat des
+  // partenaires hors référentiel — sort du top, comme sur le site.
+  const versContinent: Record<string, string> = py.data?.continents || rg.data?.continents || {};
+  const paysZone: any[] = (py.data?.donnees?.[sensPr] || [])
+    .filter((r: any) => r.annee === anneeRefZg && r.valeur != null && r.pays !== "Autres pays" &&
+      (zone === "continent" ? versContinent[r.region] === zoneActive : r.region === zoneActive))
+    .sort((a: any, b: any) => b.valeur - a.valeur)
+    .slice(0, 10);
+  // La part se lit sur le TOTAL de la zone (« Autres pays » compris)
+  const totalZone = classementZg.find(x => x.nom === zoneActive)?.valeur ?? null;
 
   return (
     <View style={s.rangee}>
@@ -457,6 +476,45 @@ export default function CommerceExterieurPanel() {
               })}
             </View>
           </View>
+
+          {/* Le top 10 des pays de la zone — clients ou fournisseurs */}
+          {paysZone.length > 0 && (
+            <View style={s.cartePays}>
+              <View style={s.paysEnTete}>
+                <Text style={s.paysTitre}>
+                  {sensPr === "export" ? "CLIENTS" : "FOURNISSEURS"}
+                  <Text style={s.paysTitreZone}>  ·  {zoneActive.toUpperCase()}</Text>
+                </Text>
+                {totalZone != null && <Text style={s.paysTotal}>{fmtMFCFA(totalZone)}</Text>}
+              </View>
+              {paysZone.map((r: any, i: number) => {
+                const part = totalZone ? (r.valeur / totalZone) * 100 : null;
+                const drapeau = drapeauEmoji(r.code_iso2);
+                return (
+                  <View key={r.pays} style={[s.paysLigne, i > 0 && s.repereBord]}>
+                    <View style={[s.paysRang, i < 3 && s.paysRangTop]}>
+                      <Text style={[s.paysRangTexte, i < 3 && s.paysRangTexteTop]}>{i + 1}</Text>
+                    </View>
+                    {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={s.paysNom} numberOfLines={1}>{r.pays}</Text>
+                      {zone === "continent" && (
+                        <Text style={s.paysRegion} numberOfLines={1}>{r.region}</Text>
+                      )}
+                    </View>
+                    <View style={{ alignItems: "flex-end" }}>
+                      <Text style={s.paysValeur} numberOfLines={1}>{fmtMFCFA(r.valeur)}</Text>
+                      {part != null && (
+                        <Text style={s.paysPart}>
+                          {part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </>
       )}
     </View>
@@ -498,6 +556,33 @@ const s = StyleSheet.create({
   },
   chipZoneActif: { backgroundColor: T.vertVoile, borderColor: "rgba(24,128,56,0.40)" },
   chipZoneTexte: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.gris },
+
+  // Le top 10 des pays de la zone
+  cartePays: {
+    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    paddingHorizontal: 18, paddingVertical: 14, overflow: "hidden",
+    borderWidth: 1, borderColor: T.carteBord, marginTop: 12,
+  },
+  paysEnTete: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    gap: 10, paddingBottom: 8,
+  },
+  paysTitre: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
+  paysTitreZone: { color: T.grisClair },
+  paysTotal: { fontSize: 13, fontFamily: POLICE.gras, color: T.vert, fontVariant: ["tabular-nums"] },
+  paysLigne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
+  paysRang: {
+    width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(16,26,46,0.06)",
+  },
+  paysRangTop: { backgroundColor: T.vert },
+  paysRangTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
+  paysRangTexteTop: { color: "#fff" },
+  paysDrapeau: { fontSize: 16 },
+  paysNom: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
+  paysRegion: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  paysValeur: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
+  paysPart: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.grisClair, marginTop: 1, fontVariant: ["tabular-nums"] },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
