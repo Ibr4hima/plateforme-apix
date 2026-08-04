@@ -16,8 +16,11 @@ import { POLICE, T } from "@/theme";
 const POUCE = 24;      // diamètre du pouce
 const PAD = POUCE / 2; // demi-pouce de marge : il ne sort jamais de la piste
 
-export default function CurseurAnnees({ annees, valeur, onChange }: {
+export default function CurseurAnnees({ annees, valeur, onChange, couleur, voile }: {
   annees: number[]; valeur: number; onChange: (annee: number) => void;
+  // Teinte d'accent (portion parcourue, année) et son voile (fond de la
+  // pilule) — bleu par défaut, orange sous les modules orange
+  couleur?: string; voile?: string;
 }) {
   const [largeur, setLargeur] = useState(0);
   const tx = useSharedValue(PAD);
@@ -58,12 +61,12 @@ export default function CurseurAnnees({ annees, valeur, onChange }: {
       <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}
         accessible accessibilityRole="adjustable" accessibilityLabel={`Année : ${valeur}`}>
         {/* L'année choisie suit le pouce */}
-        <Reanime.View style={[s.pilule, stylePilule]}>
-          <Text style={s.piluleTexte}>{valeur}</Text>
+        <Reanime.View style={[s.pilule, voile != null && { backgroundColor: voile }, stylePilule]}>
+          <Text style={[s.piluleTexte, couleur != null && { color: couleur }]}>{valeur}</Text>
         </Reanime.View>
         {/* Piste, portion parcourue, pouce */}
         <View style={s.piste} />
-        <Reanime.View style={[s.rempli, styleRempli]} />
+        <Reanime.View style={[s.rempli, couleur != null && { backgroundColor: couleur }, styleRempli]} />
         <Reanime.View style={[s.pouce, stylePouce]} />
       </View>
     </GestureDetector>

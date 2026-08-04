@@ -118,9 +118,11 @@ export default function CommerceExterieurPanel() {
     return anneeSelPr == null ? sx : sx.filter(pt => pt.annee <= anneeSelPr);
   };
   // Le classement de l'année de référence : le premier en vedette, les
-  // suivants en repères — huit postes lisibles plutôt que trente
+  // suivants en repères — huit postes lisibles plutôt que trente. Le
+  // fourre-tout « Autres produits » sort du classement, comme sur le site :
+  // ce n'est pas une modalité et lui donner le rang 1 fausserait la lecture.
   const classement: { produit: string; valeur: number }[] = exportsPr
-    .filter((r: any) => r.annee === anneeRefPr)
+    .filter((r: any) => r.annee === anneeRefPr && r.produit !== "Autres produits")
     .map((r: any) => ({ produit: r.produit, valeur: r.valeur }))
     .sort((a, b) => b.valeur - a.valeur)
     .slice(0, 8);
@@ -207,10 +209,11 @@ export default function CommerceExterieurPanel() {
       {/* ── Les exportations par produits regroupés — en orange ── */}
       {actif === "exports" && produitActif != null && (
         <>
-          {/* Son propre curseur : le calendrier des produits */}
+          {/* Son propre curseur, en orange : le calendrier des produits */}
           <View style={{ marginTop: 18 }}>
             <CurseurAnnees annees={anneesPr}
               valeur={anneeRefPr ?? 0}
+              couleur={T.orange as string} voile={T.orangeVoile as string}
               onChange={a => setAnneeSelPr(a === anneesPr[anneesPr.length - 1] ? null : a)} />
           </View>
           <View style={s.vedette}>
