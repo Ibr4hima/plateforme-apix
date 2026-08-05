@@ -45,6 +45,9 @@ export const T = {
   // L'encre des boutons de verre du hero : bleu profond sur le verre laiteux
   // du jour, bleu clair sur le verre sombre de la nuit
   encreHero:   dyn("#004f91", "#85B9EC"),
+  // L'aplat de la chip choisie — la nuit, la borne haute du dégradé du hero :
+  // la barre d'onglets appartient au même bandeau que lui
+  chipActif:   dyn("#004f91", "#22406A"),
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
   // Encres

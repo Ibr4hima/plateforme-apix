@@ -249,8 +249,8 @@ const scf = StyleSheet.create({
     paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
-  // L'aplat plein : le bleu d'action, qui porte du blanc dans les deux schémas
-  chipActif: { backgroundColor: T.bleuAction, borderColor: "transparent", ...OMBRE.n1 },
+  // L'aplat plein : porte du blanc dans les deux schémas
+  chipActif: { backgroundColor: T.chipActif, borderColor: "transparent", ...OMBRE.n1 },
   texte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
   texteActif: { color: "#fff", fontFamily: POLICE.gras },
   compte: { backgroundColor: T.bleuVoile, borderRadius: RAYON.pilule, minWidth: 20, paddingHorizontal: 5.5, paddingVertical: 1, alignItems: "center" },
