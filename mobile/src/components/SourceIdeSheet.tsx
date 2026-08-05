@@ -250,11 +250,11 @@ const s = StyleSheet.create({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   segments: {
     flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
-    backgroundColor: "rgba(16,26,46,0.055)", borderRadius: 999,
+    backgroundColor: T.voile, borderRadius: 999,
   },
   segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 999 },
   segmentActif: {
-    backgroundColor: "#fff",
+    backgroundColor: T.carte,
     shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },

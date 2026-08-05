@@ -82,7 +82,7 @@ const s = StyleSheet.create({
   piluleTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   piste: {
     position: "absolute", left: PAD, right: PAD, bottom: 20, height: 4,
-    borderRadius: 99, backgroundColor: "rgba(16,26,46,0.10)",
+    borderRadius: 99, backgroundColor: T.voileFort,
   },
   rempli: {
     position: "absolute", left: PAD, bottom: 20, height: 4,
@@ -91,7 +91,7 @@ const s = StyleSheet.create({
   pouce: {
     position: "absolute", left: 0, bottom: 20 - (POUCE - 4) / 2,
     width: POUCE, height: POUCE, borderRadius: POUCE / 2,
-    backgroundColor: "#fff", borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(16,26,46,0.20)",
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort,
     shadowColor: "#001e3c", shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },

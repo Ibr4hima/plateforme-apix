@@ -66,7 +66,7 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
       style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
-          borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(16,26,46,0.16)" }}>
+          borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
         <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, { backgroundColor: teinte || "rgba(255,255,255,0.62)" }]} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>

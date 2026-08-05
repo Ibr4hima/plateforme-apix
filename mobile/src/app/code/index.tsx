@@ -10,13 +10,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { getJson } from "@/lib/api";
-import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 
@@ -24,8 +23,8 @@ export type BaseCode = "code-investissement" | "modalites-application";
 
 // Les deux bases — chips colorées comme les lentilles des autres modules
 const BASES = [
-  { cle: "code-investissement" as BaseCode,   label: "Code des investissements", couleur: "#004f91" },
-  { cle: "modalites-application" as BaseCode, label: "Modalités d'application",  couleur: "#004f91" },
+  { cle: "code-investissement" as BaseCode,   label: "Code des investissements" },
+  { cle: "modalites-application" as BaseCode, label: "Modalités d'application" },
 ];
 
 // Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés
@@ -54,8 +53,6 @@ export default function CodeSommaire() {
   const [base, setBase] = useState<BaseCode>("code-investissement");
   const [q, setQ] = useState("");
   const [qDebounce, setQDebounce] = useState("");
-  const chipsRef = useRef<ScrollView>(null);
-  const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   useEffect(() => {
     const t = setTimeout(() => setQDebounce(q.trim()), 350);
@@ -92,29 +89,14 @@ export default function CodeSommaire() {
       <Animated.ScrollView
         style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
         keyboardShouldPersistTaps="handled">
+        {/* Les deux bases en segments — le pattern des Événements */}
         <EnTetePage titre="Lois & Règlementations"
-          recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
-
-        {/* Les deux bases en chips colorées à compteur */}
-        <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
-          {BASES.map(b => {
-            const actif = base === b.cle;
-            return (
-              <Pressable key={b.cle}
-                onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[b.cle] = { x, largeur: la }; }}
-                onPress={() => {
-                  tick();
-                  setBase(b.cle);
-                  const p = chipsPos.current[b.cle];
-                  if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
-                }}
-                style={[s.chipFiltre, actif && { backgroundColor: `${b.couleur}14`, borderColor: `${b.couleur}66` }]}>
-                <Text style={[s.chipFiltreTexte, { color: b.couleur }, actif && { fontFamily: POLICE.gras }]}>{b.label}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+          recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+          segments={{
+            options: BASES.map(b => ({ cle: b.cle, label: b.label })),
+            valeur: base,
+            onChange: cle => setBase(cle as BaseCode),
+          }} />
 
         {/* Résultats de recherche */}
         {enRecherche ? (
@@ -176,15 +158,6 @@ export default function CodeSommaire() {
 }
 
 const s = StyleSheet.create({
-  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: {
-    flexDirection: "row", alignItems: "center", gap: 7,
-    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
-  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
-  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
   liste: { paddingHorizontal: 16, marginTop: 14 },
   meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },

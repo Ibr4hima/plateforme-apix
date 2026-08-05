@@ -173,7 +173,7 @@ const s = StyleSheet.create({
   slots: { flexDirection: "row", gap: 8, marginTop: 14 },
   slotSen: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: "#fff", borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
+    backgroundColor: T.carte, borderRadius: 999, paddingVertical: 9.5, paddingHorizontal: 14,
     borderWidth: 1, borderColor: T.carteBord,
   },
   drapeau: { width: 21, height: 15, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.12)" },
@@ -184,7 +184,7 @@ const s = StyleSheet.create({
   slotSenRefTexte: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   slotAjout: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
-    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(16,26,46,0.22)",
+    borderRadius: 999, borderWidth: 1.5, borderStyle: "dashed", borderColor: T.voileFort,
     paddingVertical: 9.5, paddingHorizontal: 14,
   },
   slotAjoutTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },

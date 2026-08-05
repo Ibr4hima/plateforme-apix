@@ -16,10 +16,8 @@ import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { useNaemaArbre } from "@/components/ArbreNaema";
 import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
-import { CascadeThema, FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
 import Icone from "@/components/Icone";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
@@ -88,23 +86,13 @@ export default function Evenements() {
   const [lentille, setLentille] = useState("a_venir");
   const [selec, setSelec] = useState<any>(null);
 
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [paysSel, setPaysSel] = useState<string[]>([]);
-  const [secteursSel, setSecteursSel] = useState<string[]>([]);
-  const [branchesSel, setBranchesSel] = useState<string[]>([]);
-  const [activitesSel, setActivitesSel] = useState<string[]>([]);
-  const { arbre } = useNaemaArbre();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["evenements"], queryFn: () => fetchTous("/evenements"),
   });
 
-  const paysOptions = useMemo(() =>
-    ([...new Set((data || []).map((e: any) => e.pays_hote_nom).filter(Boolean))] as string[])
-      .sort((a, b) => a.localeCompare(b, "fr")),
-  [data]);
-
-  // Prédicats communs (recherche + feuille de filtres), avant la lentille
+  // La recherche seule, avant la lentille : les compteurs des segments
+  // se calculent sur cette base
   const communs = useMemo(() => {
     let liste = data || [];
     if (q.trim()) {
@@ -114,12 +102,8 @@ export default function Evenements() {
         (e.ville || "").toLowerCase().includes(t) ||
         (e.pays_hote_nom || "").toLowerCase().includes(t));
     }
-    if (paysSel.length) liste = liste.filter((e: any) => paysSel.includes(e.pays_hote_nom || ""));
-    if (secteursSel.length) liste = liste.filter((e: any) => secteursSel.some(s => (e.secteur_noms || []).includes(s)));
-    if (branchesSel.length) liste = liste.filter((e: any) => branchesSel.some(b => (e.branche_noms || []).includes(b)));
-    if (activitesSel.length) liste = liste.filter((e: any) => activitesSel.some(a => (e.activite_noms || []).includes(a)));
     return liste;
-  }, [data, q, paysSel, secteursSel, branchesSel, activitesSel]);
+  }, [data, q]);
 
   const aVenir = useMemo(() => communs
     .filter((e: any) => statutEvenement(e) !== "termine")
@@ -151,10 +135,6 @@ export default function Evenements() {
     return Array.from(groupes.entries()).map(([titre, donnees]) => ({ title: titre, data: donnees }));
   }, [liste]);
 
-  const nbFiltres = paysSel.length + secteursSel.length + branchesSel.length + activitesSel.length;
-  const reinitFiltres = () => { setPaysSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
-  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
-
   // Tablette : la liste se centre et se plafonne — les lignes pleine largeur
   // sur 1 000 pt deviennent illisibles
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
@@ -169,15 +149,14 @@ export default function Evenements() {
   const hero = (
     <EnTetePage titre="Événements"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-      segments={{ options: lentilles, valeur: lentille, onChange: setLentille }}
-      bouton={boutonFiltres} />
+      segments={{ options: lentilles, valeur: lentille, onChange: setLentille }} />
   );
 
   const vide = isLoading ? <SqueletteListe />
     : isError ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={lentille === "a_venir"
-        ? "Aucun événement à venir ne correspond à ces filtres."
-        : "Aucun événement terminé ne correspond à ces filtres."} />;
+        ? "Aucun événement à venir ne correspond."
+        : "Aucun événement terminé ne correspond."} />;
 
   return (
     <>
@@ -207,17 +186,6 @@ export default function Evenements() {
         ListEmptyComponent={vide}
       />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
-      {filtresOuverts && (
-        <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
-          <SectionCoches titre="Pays hôte" options={paysOptions} sel={paysSel}
-            onBascule={v => setPaysSel(p => basculer(p, v))} />
-          <CascadeThema secteurs={arbre}
-            secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
-            onSecteur={v => setSecteursSel(p => basculer(p, v))}
-            onBranche={v => setBranchesSel(p => basculer(p, v))}
-            onActivite={v => setActivitesSel(p => basculer(p, v))} />
-        </FeuilleFiltres>
-      )}
     </>
   );
 }

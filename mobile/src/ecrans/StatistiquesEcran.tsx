@@ -286,7 +286,7 @@ const s = StyleSheet.create({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   // Badge blanc du pays, sans point — le tap ouvre les filtres pour en changer
   badgePays: {
-    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },

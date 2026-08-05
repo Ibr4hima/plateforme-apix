@@ -204,7 +204,7 @@ const s = StyleSheet.create({
   sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   badge: {
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, flexShrink: 1, maxWidth: 160,
-    backgroundColor: "#fff", borderWidth: 1,
+    backgroundColor: T.carte, borderWidth: 1,
   },
   badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
   faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },

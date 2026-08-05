@@ -186,7 +186,7 @@ const s = StyleSheet.create({
   vedetteEnTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgeVue: {
-    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)", maxWidth: 160,
   },
   badgeVueTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },

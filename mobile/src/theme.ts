@@ -12,11 +12,10 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
-// Couleur dynamique clair/sombre (repli clair hors iOS).
-// ⏸ MODE SOMBRE EN PAUSE : l'app reste en clair quel que soit le système.
-// Pour le réactiver : décommenter la ligne dynamique et remettre
-// "userInterfaceStyle": "automatic" dans app.json.
-const SOMBRE_ACTIF = false;
+// Couleur dynamique clair/sombre (repli clair hors iOS) : l'app suit
+// l'apparence du système, et le bouton lune/soleil de l'accueil la force via
+// Appearance.setColorScheme.
+const SOMBRE_ACTIF = true;
 const dyn = (clair: string, sombre: string): any =>
   SOMBRE_ACTIF && Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
 
@@ -55,6 +54,9 @@ export const T = {
   orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(232,147,90,0.14)"),
   vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(87,184,125,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
+  // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
+  voile:       dyn("rgba(16,26,46,0.055)", "rgba(255,255,255,0.07)"),
+  voileFort:   dyn("rgba(16,26,46,0.10)", "rgba(255,255,255,0.13)"),
   blocBord:    dyn("rgba(0,79,145,0.10)", "rgba(133,185,236,0.16)"),
   rayonCarte:  18,
 } as const;

@@ -62,7 +62,7 @@ const s = StyleSheet.create({
   zoneBarre: { position: "absolute", left: 14, right: 14 },
   capsule: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: "#fff", borderRadius: 34, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: 34, borderCurve: "continuous",
     paddingHorizontal: 8, paddingVertical: 7,
     shadowColor: "#001e3c", shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
     elevation: 8,

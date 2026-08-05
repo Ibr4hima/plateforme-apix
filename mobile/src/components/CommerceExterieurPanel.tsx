@@ -533,19 +533,19 @@ const s = StyleSheet.create({
   vedetteEnTete: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {
-    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(0,79,145,0.22)",
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
   badgeProduit: {
-    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
   },
   badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   deplier: { justifyContent: "center" },
   deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.orange },
   badgeZone: {
-    backgroundColor: "#fff", borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
+    backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
     borderWidth: 1, borderColor: "rgba(24,128,56,0.30)",
   },
   badgeZoneTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.vert },
@@ -573,7 +573,7 @@ const s = StyleSheet.create({
   paysLigne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
   paysRang: {
     width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(16,26,46,0.06)",
+    backgroundColor: T.voile,
   },
   paysRangTop: { backgroundColor: T.vert },
   paysRangTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
