@@ -13,7 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
 import Icone from "@/components/Icone";
@@ -71,6 +71,7 @@ function ProchainEvenement() {
 export default function Accueil() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const margeBas = useMargeBas({ sousOnglets: true });
   const qc = useQueryClient();
   const [rafraichit, setRafraichit] = useState(false);
@@ -108,6 +109,9 @@ export default function Accueil() {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
+  // Tablette : le contenu se plafonne et se centre, comme les autres écrans
+  const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
+
   return (
     <ScrollView
       style={{ backgroundColor: T.fond }}
@@ -118,63 +122,74 @@ export default function Accueil() {
 
       {/* ── En-tête : le bandeau bleu, du haut de l'écran au titre ── */}
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
-        {/* Halo discret, l'écho du hero des débuts */}
-        <View style={s.enTeteHalo} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
-          {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
-              MaskedView est un bloc : la ligne est donc une rangée de deux
-              textes, le second masqué par le dégradé. */}
-          <View style={s.titreLigne}>
-            <Text style={[s.titre, { color: "#fff" }]}>Invest in </Text>
-            <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
-              <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                <Text style={[s.titre, { opacity: 0 }]}>Senegal</Text>
-              </LinearGradient>
-            </MaskedView>
+        {/* La lumière du bandeau : un dégradé en diagonale, du coin haut droit
+            vers le bas gauche. Un cercle translucide se serait coupé net sur
+            la bordure basse — le dégradé s'éteint de lui-même. */}
+        <LinearGradient
+          colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
+          locations={[0, 0.45, 1]}
+          start={{ x: 1, y: -0.1 }} end={{ x: 0.15, y: 1 }}
+          pointerEvents="none" style={StyleSheet.absoluteFill} />
+
+        <View style={[s.enTeteContenu, cap]}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
+            {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
+                MaskedView est un bloc : la ligne est donc une rangée de deux
+                textes, le second masqué par le dégradé. */}
+            <View style={s.titreLigne}>
+              <Text style={[s.titre, { color: "#fff" }]}>Invest in </Text>
+              <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
+                <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                  <Text style={[s.titre, { opacity: 0 }]}>Senegal</Text>
+                </LinearGradient>
+              </MaskedView>
+            </View>
           </View>
-        </View>
-        <View style={s.boutonsEnTete}>
-          <BoutonVerre onPress={basculerTheme} taille={40}
-            accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
-            <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-              taille={17} couleur={T.bleu} poids="semibold" />
-          </BoutonVerre>
-          <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
-            accessibilityLabel="Rechercher">
-            <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
-          </BoutonVerre>
+          <View style={s.boutonsEnTete}>
+            <BoutonVerre onPress={basculerTheme} taille={40}
+              accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
+              <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+                taille={17} couleur={T.bleu} poids="semibold" />
+            </BoutonVerre>
+            <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
+              accessibilityLabel="Rechercher">
+              <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
+            </BoutonVerre>
+          </View>
         </View>
       </View>
 
-      {/* ── La situation — la carte respire sous le bandeau ── */}
-      <View style={{ height: ESPACE.m }} />
-      <VedetteIde />
+      {/* Sur tablette, le contenu se plafonne et se centre : une carte de
+          1 000 pt de large aplatit la courbe et rend les lignes illisibles */}
+      <View style={cap}>
+        {/* ── La situation — la carte respire sous le bandeau ── */}
+        <View style={{ height: ESPACE.m }} />
+        <VedetteIde />
 
-      {/* ── À venir ── */}
-      <ProchainEvenement />
+        {/* ── À venir ── */}
+        <ProchainEvenement />
 
-      {/* ── Explorer ── */}
-      <Explorer />
+        {/* ── Explorer ── */}
+        <Explorer />
 
-      <Text style={s.pied}>Direction de l&apos;Intelligence et des Perspectives Économiques</Text>
+        <Text style={s.pied}>Direction de l&apos;Intelligence et des Perspectives Économiques</Text>
+      </View>
     </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  // Le bandeau bleu compact — bord droit, d'une rive à l'autre
-  enTete: {
+  // Le bandeau bleu compact — bord droit, d'une rive à l'autre. L'aplat va
+  // d'un bord à l'autre de l'écran ; seul son CONTENU se plafonne (cap).
+  enTete: { backgroundColor: T.heroFond, overflow: "hidden", paddingBottom: ESPACE.m + 6 },
+  enTeteContenu: {
     flexDirection: "row", alignItems: "flex-end", gap: ESPACE.s,
-    paddingHorizontal: ESPACE.m + 4, paddingBottom: ESPACE.m + 6,
-    backgroundColor: T.heroFond, overflow: "hidden",
+    paddingHorizontal: ESPACE.m + 4,
   },
-  enTeteHalo: {
-    position: "absolute", top: -150, right: -100, width: 300, height: 300,
-    borderRadius: 150, backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  date: { ...TYPO.micro, color: "rgba(255,255,255,0.72)" },
+  // Blanc à 86 % sur le bleu : 6,6:1, au-dessus du seuil AA (4,5:1)
+  date: { ...TYPO.micro, color: "rgba(255,255,255,0.86)" },
   boutonsEnTete: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
   // 28 pt : « Invest in Senegal » doit tenir sur UNE ligne, bouton recherche compris
@@ -203,7 +218,9 @@ const s = StyleSheet.create({
   evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: "#fff", lineHeight: 25, fontVariant: ["tabular-nums"] },
   evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.2, marginTop: 1 },
   evenementNom: { ...TYPO.sousTitre, color: "#fff" },
-  evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.72)", marginTop: 3 },
+  // 4,9:1 sur la partie claire du dégradé — le seuil AA, alors que 72 %
+  // n'y arrivait qu'à 3,9:1
+  evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.86)", marginTop: 3 },
   pied: {
     textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
     color: T.grisClair, marginTop: ESPACE.xl,

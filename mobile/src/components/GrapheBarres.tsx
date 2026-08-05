@@ -105,7 +105,7 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
 });
 
 const s = StyleSheet.create({
-  vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.grisClair, textAlign: "center", paddingVertical: 18 },
+  vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
   ligne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 },
   label: { flex: 1, fontSize: 12, fontFamily: POLICE.demi, color: T.encre },
   valeur: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },

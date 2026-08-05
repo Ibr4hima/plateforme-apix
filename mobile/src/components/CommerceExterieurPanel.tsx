@@ -582,7 +582,7 @@ const s = StyleSheet.create({
   paysNom: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   paysRegion: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
   paysValeur: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-  paysPart: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.grisClair, marginTop: 1, fontVariant: ["tabular-nums"] },
+  paysPart: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 1, fontVariant: ["tabular-nums"] },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },
   nombre: { fontSize: 38, lineHeight: 44, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: -1, marginTop: 8, fontVariant: ["tabular-nums"] },
   deltaLigne: { flexDirection: "row", alignItems: "center", gap: 4 },
@@ -590,7 +590,7 @@ const s = StyleSheet.create({
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
   pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },

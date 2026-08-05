@@ -227,7 +227,7 @@ const s = StyleSheet.create({
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // La grille 2 × 2 des repères — filets fins, comme les rangées de faits
   pied: {
@@ -241,5 +241,5 @@ const s = StyleSheet.create({
   repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-  repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.grisClair },
+  repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
 });

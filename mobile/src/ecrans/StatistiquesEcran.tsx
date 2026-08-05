@@ -297,7 +297,7 @@ const s = StyleSheet.create({
   deltaContexte: { fontSize: 13, fontFamily: POLICE.normal, color: T.gris, marginLeft: 2 },
   indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 10 },
   bornes: { flexDirection: "row", justifyContent: "space-between", marginTop: 2 },
-  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.grisClair, fontVariant: ["tabular-nums"] },
+  borne: { fontSize: 10, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
 
   // Les repères, un par ligne — le label à gauche, la valeur et sa tendance à droite
   pied: { marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },

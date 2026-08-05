@@ -44,8 +44,11 @@ export const T = {
   // Encres
   encre:       dyn("#1a1a2e", "#EDF1F7"),
   texte:       dyn("#4a5568", "#B9C2CF"),
-  gris:        dyn("#9aa5b4", "#8291A3"),
-  grisClair:   dyn("#C5BFBB", "#5B6B7E"),
+  // Gris de TEXTE — 4,8:1 sur blanc : le seuil AA des petites tailles
+  gris:        dyn("#6b7280", "#9AA7B8"),
+  // Gris décoratif — chevrons, filets, glyphes : 3,1:1, le seuil des
+  // éléments non textuels. Aucun texte ne doit le porter.
+  grisClair:   dyn("#8b93a1", "#6B7A8D"),
   // Surfaces
   fond:        dyn("#F6F5F3", "#0B1220"),
   carte:       dyn("#FFFFFF", "#151E2E"),
