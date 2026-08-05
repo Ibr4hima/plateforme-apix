@@ -21,6 +21,7 @@ import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
 
@@ -63,6 +64,7 @@ function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
 }
 
 export default function Entreprises() {
+  const bleuBord = useCouleur(T.bleu);
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
@@ -175,7 +177,7 @@ export default function Entreprises() {
             return (
               <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
                 <Tapable onPress={() => { tick(); setRegionOuverte(ouvert ? null : r.nom); }} echelle={0.98}
-                  style={[s.region, ouvert && { borderColor: T.bleu }]}>
+                  style={[s.region, ouvert && { borderColor: bleuBord }]}>
                   {/* La forme réelle du territoire — un chiffre abstrait
                       n'identifie pas une région, sa silhouette si. Silhouette
                       dans la couleur de son pôle, tuile dans la même teinte

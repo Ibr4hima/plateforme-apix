@@ -51,14 +51,21 @@ export const T = {
   // Surfaces
   fond:        dyn("#F6F5F3", "#0B1220"),
   carte:       dyn("#FFFFFF", "#151E2E"),
-  // Contour des cartes — le filet fin de la plateforme (rgba encre à 12 %) :
-  // c'est lui qui détache la carte du fond, pas une ombre
-  carteBord:   dyn("rgba(16,26,46,0.12)", "#263248"),
+  // ── Bordures : des gris ALPHA, jamais des couleurs dynamiques ──
+  //
+  // Une bordure vit sur le CALayer, qui ne réévalue pas sa CGColor quand
+  // l'apparence change : un liseré dynamique restait en nuit sur fond clair.
+  // Un gris translucide, lui, se COMPOSE avec ce qu'il y a dessous — il
+  // s'éclaircit sur blanc, il s'assombrit sur la nuit — et vaut donc pour
+  // les deux schémas sans rien résoudre. Contrastes mesurés : 1,3:1 sur
+  // blanc, 1,5:1 sur une carte de nuit, soit l'équivalent des valeurs
+  // qu'ils remplacent.
+  carteBord:   "rgba(122,138,164,0.26)",
   carteDouce:  dyn("#FAFAF9", "#1B2536"),
   champ:       dyn("#F8F7F6", "#101927"),
-  bordure:     dyn("#ECEAE7", "#263248"),
-  bordureDouce: dyn("#F0EEEC", "#222D40"),
-  filet:       dyn("#F2F0EF", "#1E293B"),
+  bordure:     "rgba(122,138,164,0.16)",
+  bordureDouce: "rgba(122,138,164,0.11)",
+  filet:       "rgba(122,138,164,0.10)",
   // Graphes
   grille:      dyn("#F0EEEB", "#243044"),
   grilleZero:  dyn("#DDD9D4", "#33415A"),
@@ -75,9 +82,9 @@ export const T = {
   // blanche sur le bleu profond du jour, sombre sur le bleu clair de la nuit
   surBleu:     dyn("#FFFFFF", "#0B1220"),
   // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
-  voile:       dyn("rgba(16,26,46,0.055)", "rgba(255,255,255,0.07)"),
-  voileFort:   dyn("rgba(16,26,46,0.10)", "rgba(255,255,255,0.13)"),
-  blocBord:    dyn("rgba(0,79,145,0.10)", "rgba(133,185,236,0.16)"),
+  voile:       "rgba(122,138,164,0.13)",
+  voileFort:   "rgba(130,148,176,0.30)",
+  blocBord:    "rgba(90,145,205,0.30)",
   rayonCarte:  18,
 } as const;
 

@@ -17,6 +17,7 @@ import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 export const ST_PASTEL: Record<string, { label: string; p: string }> = {
   en_vigueur: { label: "En vigueur",           p: "#B4DE9D" },
@@ -80,10 +81,11 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 function Etape({ label, date, couleur, atteinte, premiere }: {
   label: string; date?: string | null; couleur: string; atteinte: boolean; premiere?: boolean;
 }) {
+  const grisPoint = useCouleur(T.grisClair);
   return (
     <View style={s.etape}>
       {!premiere && <View style={[s.connecteur, atteinte && { backgroundColor: couleur }]} />}
-      <View style={[s.point, atteinte ? { backgroundColor: couleur, borderColor: couleur } : { borderColor: T.grisClair }]} />
+      <View style={[s.point, atteinte ? { backgroundColor: couleur, borderColor: couleur } : { borderColor: grisPoint }]} />
       <Text style={s.etapeLabel}>{label.toUpperCase()}</Text>
       <Text style={[s.etapeDate, !date && { color: T.grisClair }]}>{date ? fmtDate(date) : "—"}</Text>
     </View>

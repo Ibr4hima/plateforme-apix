@@ -8,6 +8,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 export const basculer = (liste: string[], v: string) =>
   liste.includes(v) ? liste.filter(x => x !== v) : [...liste, v];
@@ -27,10 +28,13 @@ export function TitreSection({ titre, nb }: { titre: string; nb?: number }) {
 export function Coche({ label, sel, onPress, retrait = 0 }: {
   label: string; sel: boolean; onPress: () => void; retrait?: number;
 }) {
+  // Les bordures sont résolues en JS : une CGColor dynamique reste figée
+  const bleuPoint = useCouleur(T.bleu);
+  const grisPoint = useCouleur(T.grisClair);
   return (
     <Pressable onPress={() => { tick(); onPress(); }}
       style={({ pressed }) => [s.coche, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }]}>
-      <View style={[s.point, sel && { borderColor: T.bleu, backgroundColor: T.bleu }]} />
+      <View style={[s.point, { borderColor: grisPoint }, sel && { borderColor: bleuPoint, backgroundColor: bleuPoint }]} />
       <Text style={[s.cocheTexte, sel && { fontFamily: POLICE.gras, color: T.encre }]} numberOfLines={1}>{label}</Text>
     </Pressable>
   );
@@ -248,7 +252,7 @@ const s = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 6, paddingVertical: 4, overflow: "hidden",
   },
   coche: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9, paddingRight: 8, borderRadius: 8 },
-  point: { width: 11, height: 11, borderRadius: 6, borderWidth: 2, borderColor: T.grisClair },
+  point: { width: 11, height: 11, borderRadius: 6, borderWidth: 2 },
   cocheTexte: { flex: 1, fontSize: 13, fontFamily: POLICE.normal, color: T.texte },
   rangeePliable: { flexDirection: "row", alignItems: "center" },
   chevron: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", backgroundColor: T.filet },

@@ -297,7 +297,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6.5, borderRadius: 9,
     backgroundColor: T.champ, borderWidth: 1, borderColor: T.bordure,
   },
-  anneeChipActif: { backgroundColor: T.bleuAction, borderColor: T.bleuAction },
+  // Bordure transparente : elle a la couleur du fond, seule sa taille compte
+  anneeChipActif: { backgroundColor: T.bleuAction, borderColor: "transparent" },
   anneeChipTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.texte, fontVariant: ["tabular-nums"] },
   plageResume: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.gris, textAlign: "center" },
   pied: {

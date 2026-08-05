@@ -131,13 +131,13 @@ export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, v
   const voile = useCouleur(voileBrut);
   return (
     <View style={[ss.rangee, style]} accessibilityRole="header">
-      <LinearGradient colors={["rgba(16,26,46,0)", "rgba(16,26,46,0.16)"]}
+      <LinearGradient colors={["rgba(122,138,164,0)", "rgba(122,138,164,0.42)"]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
       <View style={[ss.tag, { backgroundColor: voile, borderColor: `${couleur}33` }]}>
         <Text style={[ss.texte, { color: couleur }]} numberOfLines={1}
           maxFontSizeMultiplier={ECHELLE.compact}>{titre}</Text>
       </View>
-      <LinearGradient colors={["rgba(16,26,46,0.16)", "rgba(16,26,46,0)"]}
+      <LinearGradient colors={["rgba(122,138,164,0.42)", "rgba(122,138,164,0)"]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
     </View>
   );
@@ -197,7 +197,7 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
   // La teinte part en concaténation (`${c}14`) : jamais un jeton dynamique
   const c = useCouleur(couleur) || "#004f91";
   const fondActif = variante === "pleine"
-    ? { backgroundColor: T.bleuAction, borderColor: T.bleuAction }
+    ? { backgroundColor: T.bleuAction, borderColor: "transparent" }
     : { backgroundColor: `${c}14`, borderColor: `${c}66` };
   const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, fontFamily: POLICE.gras };
   return (

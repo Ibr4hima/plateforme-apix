@@ -11,7 +11,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { View, useColorScheme } from "react-native";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
@@ -46,18 +46,6 @@ export default function RacineLayout() {
   });
   useEffect(() => { if (polices) SplashScreen.hideAsync(); }, [polices]);
 
-  // ── Le changement d'apparence remonte l'arbre ──
-  //
-  // Les couleurs dynamiques sont résolues par le natif, sauf pour les
-  // propriétés portées par le CALayer — bordures et ombres en tête. Une
-  // couche ne réévalue PAS sa CGColor quand l'apparence change : en quittant
-  // le sombre, les cartes gardaient un liseré de nuit sur fond clair, de
-  // façon intermittente selon ce qui avait été redessiné. Recréer les vues
-  // au changement de schéma les fait toutes naître avec la bonne teinte.
-  // C'est un geste rare (une bascule manuelle, un coucher de soleil) et il
-  // évite d'aller résoudre à la main les bordures de cent composants.
-  const schema = useColorScheme();
-
   if (!polices) return null;
 
   return (
@@ -66,7 +54,7 @@ export default function RacineLayout() {
       <StatusBar style="light" />
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
-      <GestureHandlerRootView style={{ flex: 1 }} key={schema ?? "clair"}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}
         onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
       <Stack

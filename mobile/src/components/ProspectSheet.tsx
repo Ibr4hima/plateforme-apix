@@ -438,7 +438,7 @@ const s = StyleSheet.create({
   echangeRangee: { paddingLeft: 18, position: "relative" },
   echangePoint: {
     position: "absolute", left: 0, top: 15, width: 10, height: 10, borderRadius: 5,
-    backgroundColor: T.bleu, borderWidth: 2, borderColor: T.carte,
+    backgroundColor: T.bleu, borderWidth: 2, borderColor: "rgba(122,138,164,0.26)",
   },
   echange: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
