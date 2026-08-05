@@ -10,7 +10,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Apparition, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
+import { ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
 
 function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: string) => void }) {
   return (
@@ -23,8 +23,8 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
               <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={s.titre} numberOfLines={1}>{m.titre}</Text>
-              <Text style={s.sous} numberOfLines={1}>{m.sous}</Text>
+              <Text style={s.titre} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{m.titre}</Text>
+              <Text style={s.sous} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{m.sous}</Text>
             </View>
             <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
           </Tapable>
@@ -40,8 +40,8 @@ export default function Explorer() {
 
   return (
     <View style={s.bloc}>
-      <Text style={s.titreSection}>Explorer</Text>
-      <Apparition index={2}>
+      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>Explorer</Text>
+      <Apparition index={2} cle="accueil-explorer">
         {/* Les modules, puis — détachées — les deux entrées transverses
             (Fiche Pays, Lois) : des documents, pas des espaces */}
         <Surface items={MODULES} ouvrir={ouvrir} />
@@ -60,7 +60,8 @@ const s = StyleSheet.create({
     backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
     overflow: "hidden", borderWidth: 1, borderColor: T.carteBord,
   },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 11, paddingHorizontal: 14 },
+  // 44 pt au minimum : la cible tactile d'Apple, même en gros texte
+  ligne: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 11, paddingHorizontal: 14, minHeight: 56 },
   // Carré bleu plein, icône blanche — la couleur qui ancre chaque rangée
   pastille: {
     width: 34, height: 34, borderRadius: 10.5, borderCurve: "continuous",

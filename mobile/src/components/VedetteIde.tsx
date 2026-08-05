@@ -21,7 +21,7 @@ import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/u
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
-import { ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 type Point = { annee: number; valeur: number };
 type Cle = "entrants" | "sortants" | "pib" | "imports" | "exports";
@@ -122,7 +122,7 @@ export default function VedetteIde() {
     return (
       <Tapable onPress={() => cnuced.refetch()} style={[s.carte, s.carteErreur]}>
         <Icone sf="arrow.clockwise" materiel="refresh" taille={15} couleur={T.gris} />
-        <Text style={s.erreurTexte}>
+        <Text style={s.erreurTexte} maxFontSizeMultiplier={ECHELLE.texte}>
           {cnuced.isError ? "Chiffres indisponibles — toucher pour réessayer" : "Aucune donnée d'IDE disponible"}
         </Text>
       </Tapable>
@@ -138,12 +138,12 @@ export default function VedetteIde() {
   const reperes = ORDRE.filter(c => c !== actif);
 
   return (
-    <Apparition index={0}>
+    <Apparition index={0} cle="accueil-vedette">
       <View style={s.carte}>
         {/* En-tête : la série vedette, la flèche mène à son module */}
         <Tapable onPress={() => router.push(LABELS[actif].route as any)} echelle={0.99} surbrillance={false}
           style={s.enTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <Text style={s.etiquette} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
           <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
@@ -158,15 +158,16 @@ export default function VedetteIde() {
                 <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
                   materiel={hausse ? "north_east" : "south_east"}
                   taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
+                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}
+                  maxFontSizeMultiplier={ECHELLE.chiffre}>
                   {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
                 </Text>
-                <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
+                <Text style={s.deltaContexte} maxFontSizeMultiplier={ECHELLE.chiffre}>vs {precedent!.annee}</Text>
               </View>
             )}
           </>
         ) : (
-          <Text style={s.indispo}>Données non importées pour cette série.</Text>
+          <Text style={s.indispo} maxFontSizeMultiplier={ECHELLE.texte}>Données non importées pour cette série.</Text>
         )}
 
         {/* La silhouette de la série entière */}
@@ -177,8 +178,8 @@ export default function VedetteIde() {
         </View>
         {serie.length > 1 && (
           <View style={s.bornes}>
-            <Text style={s.borne}>{serie[0].annee}</Text>
-            <Text style={s.borne}>{dernier!.annee}</Text>
+            <Text style={s.borne} maxFontSizeMultiplier={ECHELLE.compact}>{serie[0].annee}</Text>
+            <Text style={s.borne} maxFontSizeMultiplier={ECHELLE.compact}>{dernier!.annee}</Text>
           </View>
         )}
 
@@ -193,9 +194,10 @@ export default function VedetteIde() {
               <Tapable key={cle} echelle={0.96}
                 onPress={() => { tick(); setActif(cle); }}
                 style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
-                <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle].court}</Text>
+                <Text style={s.repereLabel} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{LABELS[cle].court}</Text>
                 <View style={s.repereLigne}>
-                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit>
+                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit
+                    maxFontSizeMultiplier={ECHELLE.chiffre}>
                     {d ? fmtDe(cle)(d.valeur) : "—"}
                     {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
                   </Text>
@@ -235,7 +237,7 @@ const s = StyleSheet.create({
     marginTop: ESPACE.m, paddingTop: 2,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
   },
-  repere: { width: "50%", paddingTop: 10, paddingBottom: 2, paddingRight: 10 },
+  repere: { width: "50%", paddingTop: 11, paddingBottom: 5, paddingRight: 10, minHeight: 44, justifyContent: "center" },
   repereDroit: { paddingRight: 0, paddingLeft: 10, borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: T.bordure },
   repereBas: { marginTop: 8 },
   repereLabel: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },

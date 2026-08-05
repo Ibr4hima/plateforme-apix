@@ -20,7 +20,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
-import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
 const FlouAnime = Reanime.createAnimatedComponent(BlurView);
@@ -279,11 +279,19 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
 // ── Apparition : entrée en cascade (fondu + 12 px de translation) ────────────
 // À poser autour des cards de liste et des KPIs : `index` décale chaque
 // entrée de 40 ms pour l'effet de cascade. Ressort standard (lib/motion).
-export function Apparition({ index = 0, style, children }: {
-  index?: number; style?: StyleProp<ViewStyle>; children: React.ReactNode;
+// Les blocs qui portent une `cle` ne s'animent qu'UNE FOIS par session : sur
+// un écran d'onglet, revenir dix fois dans la journée ne doit pas rejouer dix
+// fois la cascade. Les listes, elles, gardent l'animation à chaque montage —
+// c'est leur façon d'accuser réception d'un nouveau contenu.
+const dejaJoue = new Set<string>();
+
+export function Apparition({ index = 0, cle, style, children }: {
+  index?: number; cle?: string; style?: StyleProp<ViewStyle>; children: React.ReactNode;
 }) {
+  const rejoue = useRef(cle != null && dejaJoue.has(cle));
+  useEffect(() => { if (cle != null) dejaJoue.add(cle); }, [cle]);
   return (
-    <Reanime.View entering={apparition(index)} style={style}>
+    <Reanime.View entering={rejoue.current ? undefined : apparition(index)} style={style}>
       {children}
     </Reanime.View>
   );
@@ -302,8 +310,8 @@ export function Apparition({ index = 0, style, children }: {
 // formatée n'a pas bougé. La valeur finale, elle, est toujours posée exacte.
 const CADENCE_MS = 50;
 
-export function ChiffreAnime({ texte, style, duree = 750 }: {
-  texte: string; style?: any; duree?: number;
+export function ChiffreAnime({ texte, style, duree = 750, echelleMax = ECHELLE.chiffre }: {
+  texte: string; style?: any; duree?: number; echelleMax?: number;
 }) {
   const m = /-?\d[\d\u202F\u00A0 ]*(?:,\d+)?/.exec(texte);
   const [affiche, setAffiche] = useState(m ? texte.replace(m[0], "0") : texte);
@@ -330,7 +338,12 @@ export function ChiffreAnime({ texte, style, duree = 750 }: {
     return () => { anim.removeListener(id); anim.stopAnimation(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [texte]);
-  return <Text style={style} numberOfLines={1} adjustsFontSizeToFit>{affiche}</Text>;
+  // Le gabarit est contraint : le chiffre se réduit pour tenir sur une ligne,
+  // et son agrandissement système est plafonné
+  return (
+    <Text style={style} numberOfLines={1} adjustsFontSizeToFit
+      maxFontSizeMultiplier={echelleMax}>{affiche}</Text>
+  );
 }
 
 // ── États : chargement / erreur / vide ───────────────────────────────────────

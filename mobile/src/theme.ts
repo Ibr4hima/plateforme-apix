@@ -88,6 +88,20 @@ export const TYPO = {
   micro:   { fontSize: 10.5, lineHeight: 14, fontFamily: POLICE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
 } as const;
 
+// ── Dynamic Type : jusqu'où le texte a le droit de grossir ───────────────────
+// iOS laisse l'utilisateur agrandir le texte jusqu'à ×3,5 en accessibilité.
+// Sans plafond, un nombre de 38 pt en occupe 133 et fait éclater la carte.
+// Trois plafonds selon le rôle : le texte courant respire, les chiffres et
+// les étiquettes serrées se retiennent (ils vivent dans des gabarits fixes).
+export const ECHELLE = {
+  /** Texte courant : titres, corps, libellés de liste. */
+  texte: 1.5,
+  /** Chiffres vedettes et valeurs alignées — gabarit contraint. */
+  chiffre: 1.2,
+  /** Étiquettes capitales, badges, pastilles — très peu de place. */
+  compact: 1.3,
+} as const;
+
 // ── Échelle d'espacement ─────────────────────────────────────────────────────
 export const ESPACE = { xxs: 4, xs: 8, s: 12, m: 16, l: 24, xl: 32 } as const;
 

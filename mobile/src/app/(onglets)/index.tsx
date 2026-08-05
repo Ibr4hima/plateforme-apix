@@ -21,7 +21,7 @@ import VedetteIde from "@/components/VedetteIde";
 import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
-import { ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 function ProchainEvenement() {
@@ -39,8 +39,8 @@ function ProchainEvenement() {
   if (!ev) return null;
   const d = new Date(ev.date_debut.slice(0, 10) + "T00:00:00");
   return (
-    <Apparition index={1} style={s.blocEvenement}>
-      <Text style={s.titreSection}>À venir</Text>
+    <Apparition index={1} cle="accueil-evenement" style={s.blocEvenement}>
+      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>À venir</Text>
       {/* Bleu plein en dégradé profond — le bloc de couleur qui ancre la
           page (l'idiome du bandeau « reprendre » des grandes apps) */}
       <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
@@ -50,14 +50,14 @@ function ProchainEvenement() {
         <View style={s.evenementHalo} />
         <View style={s.evenement}>
           <View style={s.evenementDate}>
-            <Text style={s.evenementJour}>{d.getDate()}</Text>
-            <Text style={s.evenementMois}>
+            <Text style={s.evenementJour} maxFontSizeMultiplier={ECHELLE.chiffre}>{d.getDate()}</Text>
+            <Text style={s.evenementMois} maxFontSizeMultiplier={ECHELLE.compact}>
               {d.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "").toUpperCase()}
             </Text>
           </View>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.evenementNom} numberOfLines={2}>{ev.nom_event}</Text>
-            <Text style={s.evenementLieu} numberOfLines={1}>
+            <Text style={s.evenementNom} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{ev.nom_event}</Text>
+            <Text style={s.evenementLieu} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.texte}>
               {[ev.ville, ev.pays_hote_nom].filter(Boolean).join(" · ") || "Lieu à confirmer"}
             </Text>
           </View>
@@ -133,16 +133,16 @@ export default function Accueil() {
 
         <View style={[s.enTeteContenu, cap]}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.date}>{dateDuJour.toUpperCase()}</Text>
+            <Text style={s.date} maxFontSizeMultiplier={ECHELLE.compact}>{dateDuJour.toUpperCase()}</Text>
             {/* Une seule ligne ; « Senegal » porte le dégradé orange de la marque.
                 MaskedView est un bloc : la ligne est donc une rangée de deux
                 textes, le second masqué par le dégradé. */}
             <View style={s.titreLigne}>
-              <Text style={[s.titre, { color: "#fff" }]}>Invest in </Text>
-              <MaskedView maskElement={<Text style={s.titre}>Senegal</Text>}>
+              <Text style={[s.titre, { color: "#fff" }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Invest in </Text>
+              <MaskedView maskElement={<Text style={s.titre} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>}>
                 <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Text style={[s.titre, { opacity: 0 }]}>Senegal</Text>
+                  <Text style={[s.titre, { opacity: 0 }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>
                 </LinearGradient>
               </MaskedView>
             </View>
@@ -174,7 +174,17 @@ export default function Accueil() {
         {/* ── Explorer ── */}
         <Explorer />
 
-        <Text style={s.pied}>Direction de l&apos;Intelligence et des Perspectives Économiques</Text>
+        {/* Le pied signe la page et NOMME LES SOURCES des chiffres du haut —
+            un ourlet centré en gris pâle ne servait personne */}
+        <View style={s.pied}>
+          <View style={s.piedFilet} />
+          <Text style={s.piedSources} maxFontSizeMultiplier={ECHELLE.compact}>
+            SOURCES · CNUCED · BANQUE MONDIALE · ANSD
+          </Text>
+          <Text style={s.piedTexte} maxFontSizeMultiplier={ECHELLE.texte}>
+            Direction de l&apos;Intelligence et des Perspectives Économiques
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -210,7 +220,8 @@ const s = StyleSheet.create({
   evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
   // Bloc date en verre clair sur le bleu
   evenementDate: {
-    width: 52, height: 56, borderRadius: 14, borderCurve: "continuous",
+    minWidth: 52, minHeight: 56, paddingHorizontal: 8, paddingVertical: 6,
+    borderRadius: 14, borderCurve: "continuous",
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.16)",
     borderWidth: 1, borderColor: "rgba(255,255,255,0.24)",
@@ -221,8 +232,10 @@ const s = StyleSheet.create({
   // 4,9:1 sur la partie claire du dégradé — le seuil AA, alors que 72 %
   // n'y arrivait qu'à 3,9:1
   evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.86)", marginTop: 3 },
-  pied: {
-    textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
-    color: T.grisClair, marginTop: ESPACE.xl,
-  },
+  // Le pied : un filet court, les sources, la signature — aligné à gauche
+  // comme le reste de la page, pas centré comme un ourlet de site web
+  pied: { marginTop: ESPACE.l + 4, paddingHorizontal: ESPACE.m, gap: 6 },
+  piedFilet: { width: 44, height: StyleSheet.hairlineWidth, backgroundColor: T.carteBord, marginBottom: 6 },
+  piedSources: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.1 },
+  piedTexte: { fontSize: 12, lineHeight: 17, fontFamily: POLICE.normal, color: T.gris },
 });

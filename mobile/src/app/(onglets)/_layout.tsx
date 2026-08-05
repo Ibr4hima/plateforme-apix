@@ -1,14 +1,21 @@
-// Barre d'onglets — capsule blanche FLOTTANTE, rendue entièrement à la main :
-// décollée du bord, ombre douce, trois onglets. L'actif est une pilule bleu
-// voilé qui enveloppe icône ET libellé (filet fin, libellé bleu gras) — le
-// signal se voit d'un coup d'œil, les autres restent en gris calme.
+// Barre d'onglets — capsule FLOTTANTE EN VERRE, rendue entièrement à la main :
+// décollée du bord, flou natif, ombre douce, trois onglets. L'actif est une
+// pilule bleu voilé qui enveloppe icône ET libellé (filet fin, libellé bleu
+// gras) — le signal se voit d'un coup d'œil, les autres restent en gris calme.
+//
+// La matière est celle de BoutonVerre : un vrai flou derrière une teinte
+// laiteuse, pour que le contenu TRANSPARAISSE en défilant dessous au lieu de
+// se couper net sur un aplat. La coquille externe porte l'ombre (un
+// overflow:hidden la couperait), l'interne rogne le flou à la capsule.
+// Android ne floute pas de façon fiable : il garde l'aplat opaque.
+import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { ECHELLE, POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
   { nom: "index",           titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
@@ -20,7 +27,14 @@ function BarreOnglets({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   return (
     <View pointerEvents="box-none" style={[s.zoneBarre, { bottom: Math.max(insets.bottom - 4, 12) }]}>
+      <View style={s.coquille}>
       <View style={s.capsule}>
+        {VERRE ? (
+          <>
+            <BlurView intensity={64} tint="light" style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.68)" }]} />
+          </>
+        ) : null}
         {state.routes.map((route: any, i: number) => {
           const o = ONGLETS.find(x => x.nom === route.name);
           if (!o) return null;
@@ -33,7 +47,8 @@ function BarreOnglets({ state, navigation }: any) {
                 <View style={[s.pilule, actif && s.piluleActive]}>
                   <Icone sf={o.sf} materiel={o.materiel} taille={21}
                     couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
-                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
+                    maxFontSizeMultiplier={ECHELLE.compact}>
                     {o.court}
                   </Text>
                 </View>
@@ -41,6 +56,7 @@ function BarreOnglets({ state, navigation }: any) {
             </Tapable>
           );
         })}
+      </View>
       </View>
     </View>
   );
@@ -58,14 +74,23 @@ export default function OngletsLayout() {
   );
 }
 
+// Le flou natif n'est fidèle que sur iOS ; ailleurs, l'aplat reste opaque
+const VERRE = Platform.OS === "ios";
+
 const s = StyleSheet.create({
   zoneBarre: { position: "absolute", left: 14, right: 14 },
-  capsule: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderRadius: 34, borderCurve: "continuous",
-    paddingHorizontal: 8, paddingVertical: 7,
+  // Coquille : elle seule porte l'ombre, que l'overflow de la capsule couperait
+  coquille: {
+    borderRadius: 34, borderCurve: "continuous",
     shadowColor: "#001e3c", shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
     elevation: 8,
+  },
+  capsule: {
+    flexDirection: "row", alignItems: "center", overflow: "hidden",
+    backgroundColor: VERRE ? "transparent" : T.carte,
+    borderRadius: 34, borderCurve: "continuous",
+    borderWidth: VERRE ? StyleSheet.hairlineWidth : 0, borderColor: "rgba(255,255,255,0.55)",
+    paddingHorizontal: 8, paddingVertical: 7,
   },
   zoneOnglet: { alignItems: "center", justifyContent: "center" },
   pilule: {
