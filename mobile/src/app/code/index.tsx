@@ -25,7 +25,7 @@ export type BaseCode = "code-investissement" | "modalites-application";
 // Les deux bases — chips colorées comme les lentilles des autres modules
 const BASES = [
   { cle: "code-investissement" as BaseCode,   label: "Code des investissements", couleur: "#004f91" },
-  { cle: "modalites-application" as BaseCode, label: "Modalités d'application",  couleur: "#ca631f" },
+  { cle: "modalites-application" as BaseCode, label: "Modalités d'application",  couleur: "#004f91" },
 ];
 
 // Extrait de recherche : « … <mark>investisseur</mark> … » → segments stylés
@@ -100,7 +100,6 @@ export default function CodeSommaire() {
           style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
           {BASES.map(b => {
             const actif = base === b.cle;
-            const nb = parBase[b.cle].data?.length;
             return (
               <Pressable key={b.cle}
                 onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[b.cle] = { x, largeur: la }; }}
@@ -112,11 +111,6 @@ export default function CodeSommaire() {
                 }}
                 style={[s.chipFiltre, actif && { backgroundColor: `${b.couleur}14`, borderColor: `${b.couleur}66` }]}>
                 <Text style={[s.chipFiltreTexte, { color: b.couleur }, actif && { fontFamily: POLICE.gras }]}>{b.label}</Text>
-                {nb != null && (
-                  <View style={[s.chipCompte, actif && { backgroundColor: `${b.couleur}18` }]}>
-                    <Text style={[s.chipCompteTexte, { color: b.couleur }]}>{nb}</Text>
-                  </View>
-                )}
               </Pressable>
             );
           })}

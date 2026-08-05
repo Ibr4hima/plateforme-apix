@@ -11,9 +11,7 @@ import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-nat
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { useNaemaArbre } from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
-import { CascadeGeo, CascadeThema, Coche, FeuilleFiltres, PlageAnnees, SectionCoches, TitreSection, basculer, construireArbreGeo } from "@/components/FiltresListe";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
@@ -76,32 +74,6 @@ export default function Entreprises() {
     queryKey: ["entreprises"], queryFn: () => fetchTous("/entreprises"),
   });
 
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [formesSel, setFormesSel] = useState<string[]>([]);
-  const [secteursSel, setSecteursSel] = useState<string[]>([]);
-  const [branchesSel, setBranchesSel] = useState<string[]>([]);
-  const [activitesSel, setActivitesSel] = useState<string[]>([]);
-  const [regionsSel, setRegionsSel] = useState<string[]>([]);
-  const [deptsSel, setDeptsSel] = useState<string[]>([]);
-  const [arrsSel, setArrsSel] = useState<string[]>([]);
-  const [polesSel, setPolesSel] = useState<string[]>([]);
-  const [anneeDebut, setAnneeDebut] = useState(0);
-  const [anneeFin, setAnneeFin] = useState(0);
-  const { secteurs, branches, activites, arbre } = useNaemaArbre();
-
-  const triFr = (a: string, b: string) => a.localeCompare(b, "fr");
-  const formesOptions = useMemo(() =>
-    ([...new Set((data || []).map((e: any) => e.forme_juridique).filter(Boolean))] as string[]).sort(triFr), [data]);
-  const polesOptions = useMemo(() =>
-    ([...new Set((data || []).map((e: any) => e.pole_territoire_nom).filter(Boolean))] as string[]).sort(triFr), [data]);
-  const regionsArbre = useMemo(() => construireArbreGeo(data || []), [data]);
-  const bornesAnnees = useMemo<[number, number]>(() => {
-    const annees = (data || []).map((e: any) => parseInt((e.date_creation || "").split("-")[0], 10)).filter((y: number) => !isNaN(y));
-    return annees.length ? [Math.min(...annees), Math.max(...annees)] : [0, 0];
-  }, [data]);
-  const debutEff = anneeDebut || bornesAnnees[0];
-  const finEff = anneeFin || bornesAnnees[1];
-  const plageActive = bornesAnnees[0] < bornesAnnees[1] && (debutEff > bornesAnnees[0] || finEff < bornesAnnees[1]);
 
   const filtres = useMemo(() => {
     let liste = data || [];
@@ -112,30 +84,8 @@ export default function Entreprises() {
         (e.region_nom || "").toLowerCase().includes(t) ||
         (e.pole_territoire_nom || "").toLowerCase().includes(t));
     }
-    if (formesSel.length) liste = liste.filter((e: any) => formesSel.includes(e.forme_juridique || ""));
-    if (secteursSel.length) {
-      const ids = secteursSel.map(n => secteurs.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((e: any) => ids.some((id: any) => (e.secteur_ids || []).includes(id)));
-    }
-    if (branchesSel.length) {
-      const ids = branchesSel.map(n => branches.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((e: any) => ids.some((id: any) => (e.branche_ids || []).includes(id)));
-    }
-    if (activitesSel.length) {
-      const ids = activitesSel.map(n => activites.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((e: any) => ids.some((id: any) => (e.activite_ids || []).includes(id)));
-    }
-    if (regionsSel.length) liste = liste.filter((e: any) => regionsSel.includes(e.region_nom || ""));
-    if (deptsSel.length) liste = liste.filter((e: any) => deptsSel.includes(e.departement_nom || ""));
-    if (arrsSel.length) liste = liste.filter((e: any) => arrsSel.includes(e.arrondissement_nom || ""));
-    if (polesSel.length) liste = liste.filter((e: any) => polesSel.includes(e.pole_territoire_nom || ""));
-    if (plageActive) liste = liste.filter((e: any) => {
-      if (!e.date_creation) return true;
-      const y = parseInt(e.date_creation.split("-")[0], 10);
-      return isNaN(y) || (y >= debutEff && y <= finEff);
-    });
     return [...liste].sort((a: any, b: any) => (a.nom || "").localeCompare(b.nom || "", "fr"));
-  }, [data, q, formesSel, secteursSel, branchesSel, activitesSel, regionsSel, deptsSel, arrsSel, polesSel, plageActive, debutEff, finEff, secteurs, branches, activites]);
+  }, [data, q]);
 
   // Annuaire : sections alphabétiques (l'idiome Contacts)
   const sections = useMemo(() => {
@@ -169,20 +119,6 @@ export default function Entreprises() {
       .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"));
   }, [filtres]);
 
-  const nbFiltres = formesSel.length + secteursSel.length + branchesSel.length + activitesSel.length +
-    regionsSel.length + deptsSel.length + arrsSel.length + polesSel.length + (plageActive ? 1 : 0);
-  const reinitFiltres = () => {
-    setFormesSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]);
-    setRegionsSel([]); setDeptsSel([]); setArrsSel([]); setPolesSel([]);
-    setAnneeDebut(0); setAnneeFin(0);
-  };
-  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
-
-  const surSecteur = (v: string) => { setSecteursSel(p => basculer(p, v)); setBranchesSel([]); setActivitesSel([]); };
-  const surBranche = (v: string) => { setBranchesSel(p => basculer(p, v)); setActivitesSel([]); };
-  const surRegion = (v: string) => { setRegionsSel(p => basculer(p, v)); setDeptsSel([]); setArrsSel([]); };
-  const surDept = (v: string) => { setDeptsSel(p => basculer(p, v)); setArrsSel([]); };
-
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
   const pret = !isLoading && !isError;
 
@@ -194,42 +130,12 @@ export default function Entreprises() {
   const hero = (
     <EnTetePage titre="Entreprises installées"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-      segments={{ options: lentilles, valeur: vue, onChange: v => { setVue(v); setRegionOuverte(null); } }}
-      bouton={boutonFiltres} />
+      segments={{ options: lentilles, valeur: vue, onChange: v => { setVue(v); setRegionOuverte(null); } }} />
   );
 
   const vide = isLoading ? <SqueletteListe />
     : isError ? <EtatErreur onRetry={() => refetch()} />
-    : <EtatVide texte="Aucune entreprise ne correspond à ces filtres." />;
-
-  const feuille = filtresOuverts && (
-    <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
-      <View>
-        <TitreSection titre="Forme juridique" nb={formesSel.length} />
-        {formesOptions.map(f => (
-          <Coche key={f} label={formeCourte(f)} sel={formesSel.includes(f)}
-            onPress={() => setFormesSel(p => basculer(p, f))} />
-        ))}
-      </View>
-      {bornesAnnees[0] < bornesAnnees[1] && (
-        <PlageAnnees key={`${debutEff}-${finEff}`} titre="Période de création"
-          min={bornesAnnees[0]} max={bornesAnnees[1]} debut={debutEff} fin={finEff}
-          onChange={(d, f) => { setAnneeDebut(d); setAnneeFin(f); }} />
-      )}
-      <CascadeThema secteurs={arbre}
-        secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
-        onSecteur={surSecteur} onBranche={surBranche}
-        onActivite={v => setActivitesSel(p => basculer(p, v))} />
-      <CascadeGeo regions={regionsArbre}
-        regionsSel={regionsSel} deptsSel={deptsSel} arrsSel={arrsSel}
-        onRegion={surRegion} onDept={surDept}
-        onArr={v => setArrsSel(p => basculer(p, v))} />
-      {polesOptions.length > 0 && (
-        <SectionCoches titre="Pôle territoire" options={polesOptions} sel={polesSel}
-          onBascule={v => setPolesSel(p => basculer(p, v))} />
-      )}
-    </FeuilleFiltres>
-  );
+    : <EtatVide texte="Aucune entreprise ne correspond." />;
 
   return (
     <>
@@ -317,7 +223,6 @@ export default function Entreprises() {
         />
       )}
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
-      {feuille}
     </>
   );
 }

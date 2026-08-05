@@ -140,7 +140,8 @@ export default function Zones() {
           style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
-            const couleur = ZONE_TYPE_META[t].color;
+            // Chips au bleu de la maison — la teinte du type vit dans les cartes
+            const couleur = "#004f91";
             return (
               <Pressable key={t}
                 onLayout={ev => { const { x, width: l } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: l }; }}

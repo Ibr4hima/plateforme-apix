@@ -158,7 +158,7 @@ export default function Accueil() {
       {/* ── Explorer ── */}
       <Explorer />
 
-      <Text style={s.pied}>APIX · Direction de l&apos;Intelligence et des Perspectives Économiques</Text>
+      <Text style={s.pied}>Direction de l&apos;Intelligence et des Perspectives Économiques</Text>
     </ScrollView>
   );
 }
