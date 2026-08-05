@@ -16,9 +16,7 @@ import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
-import { useNaemaArbre } from "@/components/ArbreNaema";
 import EnTetePage from "@/components/EnTetePage";
-import { CascadeThema, Coche, FeuilleFiltres, SectionCoches, TitreSection, basculer } from "@/components/FiltresListe";
 import Symbole from "@/components/Symbole";
 import { fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
@@ -85,13 +83,6 @@ export default function Accords() {
   const [statut, setStatut] = useState("en_vigueur");
   const [selec, setSelec] = useState<any>(null);
 
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [apixSel, setApixSel] = useState(false);
-  const [paysSel, setPaysSel] = useState<string[]>([]);
-  const [secteursSel, setSecteursSel] = useState<string[]>([]);
-  const [branchesSel, setBranchesSel] = useState<string[]>([]);
-  const [activitesSel, setActivitesSel] = useState<string[]>([]);
-  const { secteurs, branches, activites, arbre } = useNaemaArbre();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["accords"], queryFn: () => fetchTous("/accords"),
@@ -106,15 +97,8 @@ export default function Accords() {
     .map((id: number) => paysRef.find((p: any) => p.id === id))
     .filter((p: any) => p && p.nom !== "Sénégal");
 
-  const paysOptions = useMemo(() => {
-    const utilises = new Set<number>();
-    (data || []).forEach((a: any) => (a.parties_pays_ids || []).forEach((id: number) => utilises.add(id)));
-    return paysRef.filter((p: any) => utilises.has(p.id))
-      .map((p: any) => p.nom as string).sort((a, b) => a.localeCompare(b, "fr"));
-  }, [data, paysRef]);
-
-  // Prédicats communs (recherche + feuille), avant le segment de statut :
-  // les compteurs des segments se calculent sur cette base
+  // La recherche seule, avant le segment de statut : les compteurs des
+  // segments se calculent sur cette base
   const communs = useMemo(() => {
     let liste = (data || []).filter((a: any) => (a.type_accord || "tbi") === "tbi");
     if (q.trim()) {
@@ -124,27 +108,9 @@ export default function Accords() {
         (a.reference || "").toLowerCase().includes(t) ||
         partenairesDe(a).some((p: any) => p.nom.toLowerCase().includes(t)));
     }
-    if (paysSel.length || apixSel) {
-      const paysIds = paysSel.map(n => paysRef.find((p: any) => p.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((a: any) =>
-        paysIds.some((id: any) => (a.parties_pays_ids || []).includes(id)) ||
-        (apixSel && String(a.parties_signataires || "").toLowerCase().includes("apix")));
-    }
-    if (secteursSel.length) {
-      const ids = secteursSel.map(n => secteurs.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((a: any) => ids.some((id: any) => (a.secteur_ids || []).includes(id)));
-    }
-    if (branchesSel.length) {
-      const ids = branchesSel.map(n => branches.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((a: any) => ids.some((id: any) => (a.branche_ids || []).includes(id)));
-    }
-    if (activitesSel.length) {
-      const ids = activitesSel.map(n => activites.find((x: any) => x.nom === n)?.id).filter(Boolean);
-      liste = liste.filter((a: any) => ids.some((id: any) => (a.activite_ids || []).includes(id)));
-    }
     return liste;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, q, paysSel, apixSel, secteursSel, branchesSel, activitesSel, paysRef, secteurs, branches, activites]);
+  }, [data, q, paysRef]);
 
   const parStatut = useMemo(() => ({
     en_vigueur: communs.filter((a: any) => computeStatutAccord(a) === "en_vigueur").length,
@@ -167,29 +133,7 @@ export default function Accords() {
     });
   }, [communs, statut]);
 
-  const nbFiltres = paysSel.length + (apixSel ? 1 : 0) + secteursSel.length + branchesSel.length + activitesSel.length;
-  const reinitFiltres = () => { setApixSel(false); setPaysSel([]); setSecteursSel([]); setBranchesSel([]); setActivitesSel([]); };
-  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
-
-  const surSecteur = (v: string) => { setSecteursSel(p => basculer(p, v)); setBranchesSel([]); setActivitesSel([]); };
-  const surBranche = (v: string) => { setBranchesSel(p => basculer(p, v)); setActivitesSel([]); };
-
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
-
-  const feuille = filtresOuverts && (
-    <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
-      <View>
-        <TitreSection titre="Parties signataires" nb={paysSel.length + (apixSel ? 1 : 0)} />
-        <Coche label="APIX S.A" sel={apixSel} onPress={() => setApixSel(a => !a)} />
-      </View>
-      <SectionCoches titre="Pays" options={paysOptions} sel={paysSel}
-        onBascule={v => setPaysSel(p => basculer(p, v))} />
-      <CascadeThema secteurs={arbre}
-        secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
-        onSecteur={surSecteur} onBranche={surBranche}
-        onActivite={v => setActivitesSel(p => basculer(p, v))} />
-    </FeuilleFiltres>
-  );
 
   const pret = !isLoading && !isError;
   // Pas de « Tous » : mêler en vigueur, signés et expirés ne répond à aucune
@@ -204,8 +148,7 @@ export default function Accords() {
     <>
       <EnTetePage titre="Accords & Traités"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: segments, valeur: statut, onChange: setStatut }}
-        bouton={boutonFiltres} />
+        segments={{ options: segments, valeur: statut, onChange: setStatut }} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
         {TYPES.map(o => {
           const actif = onglet === o.cle;
@@ -228,7 +171,6 @@ export default function Accords() {
           <Text style={s.bientotTitre}>Traités Internationaux</Text>
           <Text style={s.bientotTexte}>Cette section arrive prochainement.{"\n"}Les traités bilatéraux d'investissement restent disponibles.</Text>
         </View>
-        {feuille}
       </View>
     );
   }
@@ -253,11 +195,10 @@ export default function Accords() {
         ListEmptyComponent={
           isLoading ? <SqueletteListe />
           : isError ? <EtatErreur onRetry={() => refetch()} />
-          : <EtatVide texte="Aucun accord ne correspond à ces filtres." />
+          : <EtatVide texte="Aucun accord ne correspond." />
         }
       />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
-      {feuille}
     </>
   );
 }
@@ -267,9 +208,9 @@ const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
-  chipFiltreActif: { backgroundColor: T.bleuAction, borderColor: T.bleuAction },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.texte },
-  chipFiltreTexteActif: { color: "#fff" },
+  chipFiltreActif: { backgroundColor: "rgba(0,79,145,0.08)", borderColor: "rgba(0,79,145,0.40)" },
+  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
+  chipFiltreTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
 
   carte: {
     backgroundColor: T.carte, borderRadius: 18,

@@ -11,12 +11,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { useNaemaArbre } from "@/components/ArbreNaema";
 import AvantageSheet from "@/components/AvantageSheet";
-import { CascadeGeo, CascadeThema, FeuilleFiltres, SectionCoches, basculer, construireArbreGeo } from "@/components/FiltresListe";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
@@ -28,8 +27,8 @@ import { POLICE, T } from "@/theme";
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
   { cle: "projets",       label: "Banque de projets",       couleur: "#004f91" },
-  { cle: "potentialites", label: "Potentialités par zone",   couleur: "#ca631f" },
-  { cle: "avantages",     label: "Avantages & incitations",  couleur: "#188038" },
+  { cle: "potentialites", label: "Potentialités par zone",   couleur: "#004f91" },
+  { cle: "avantages",     label: "Avantages & incitations",  couleur: "#004f91" },
 ] as const;
 
 // Niveaux de découpage territorial des potentialités (libellés du site)
@@ -47,17 +46,6 @@ const SECTEURS_AVGS = [
   { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#004f91" },
 ] as const;
 
-// Libellés de la feuille de filtres pour le niveau territorial des potentialités
-const NIVEAU_LIBELLES = [
-  { label: "Pôle",           valeur: "pole" },
-  { label: "Région",         valeur: "region" },
-  { label: "Département",    valeur: "departement" },
-  { label: "Arrondissement", valeur: "arrondissement" },
-] as const;
-
-// Conversion noms sélectionnés → ids d'un référentiel (comme le site)
-const idsDe = (noms: string[], ref: any[]) =>
-  noms.map(n => ref.find((x: any) => x.nom === n)?.id).filter(Boolean) as number[];
 
 // « Potentialités de la région de… » → « Région de… » (règle du site)
 const potTitre = (p: any) => (p.titre || "")
@@ -150,29 +138,9 @@ export default function Opportunites() {
   const [avgOuvert, setAvgOuvert] = useState<any>(null);
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
+  // Le référentiel NAEMA nourrit les compteurs d'activités des avantages
+  const { secteurs, branches, activites } = useNaemaArbre();
 
-  // Feuille de filtres — mêmes filtres que la barre latérale du site, par vue
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
-  // Projets
-  const [projPoles, setProjPoles] = useState<string[]>([]);
-  const [projSects, setProjSects] = useState<string[]>([]);
-  const [projBranches, setProjBranches] = useState<string[]>([]);
-  const [projActivites, setProjActivites] = useState<string[]>([]);
-  const [projRegions, setProjRegions] = useState<string[]>([]);
-  const [projDepts, setProjDepts] = useState<string[]>([]);
-  const [projArrs, setProjArrs] = useState<string[]>([]);
-  // Potentialités
-  const [potsNiveaux, setPotsNiveaux] = useState<string[]>([]);
-  const [potsPoles, setPotsPoles] = useState<string[]>([]);
-  const [potsSects, setPotsSects] = useState<string[]>([]);
-  const [potsBranches, setPotsBranches] = useState<string[]>([]);
-  const [potsActivites, setPotsActivites] = useState<string[]>([]);
-  const [potsAtouts, setPotsAtouts] = useState<string[]>([]);
-  // Avantages
-  const [avgSects, setAvgSects] = useState<string[]>([]);
-  const [avgBranches, setAvgBranches] = useState<string[]>([]);
-  const [avgActivites, setAvgActivites] = useState<string[]>([]);
-  const [avgTypes, setAvgTypes] = useState<string[]>([]);
 
   const projetsQ = useQuery({ queryKey: ["projets"], queryFn: () => fetchTous("/projets") });
   const potsQ    = useQuery({ queryKey: ["potentialites"], queryFn: () => fetchTous("/opportunites/potentialites") });
@@ -183,7 +151,6 @@ export default function Opportunites() {
   const { data: departements } = useQuery({ queryKey: ["ref", "departements"], queryFn: () => getJson<any[]>("/entreprises/ref/departements"), staleTime: Infinity });
   const { data: arrondissements } = useQuery({ queryKey: ["ref", "arrondissements"], queryFn: () => getJson<any[]>("/entreprises/ref/arrondissements"), staleTime: Infinity });
   const { data: refAvgTypes } = useQuery({ queryKey: ["ref-avg-types"], queryFn: () => getJson<any[]>("/ref-avantages"), staleTime: Infinity });
-  const { secteurs, branches, activites, arbre } = useNaemaArbre();
 
   const projets: any[] = projetsQ.data || [];
   const pots: any[]    = potsQ.data || [];
@@ -196,15 +163,8 @@ export default function Opportunites() {
     if (requete) liste = liste.filter((p: any) =>
       (p.titre_projet || "").toLowerCase().includes(requete) ||
       (p.porteur_projet || "").toLowerCase().includes(requete));
-    if (projPoles.length) liste = liste.filter((p: any) => projPoles.includes(p.pole_nom || ""));
-    if (projSects.length) { const ids = idsDe(projSects, secteurs); liste = liste.filter((p: any) => ids.some(id => (p.secteur_ids || []).includes(id))); }
-    if (projBranches.length) { const ids = idsDe(projBranches, branches); liste = liste.filter((p: any) => ids.some(id => (p.branche_ids || []).includes(id))); }
-    if (projActivites.length) { const ids = idsDe(projActivites, activites); liste = liste.filter((p: any) => ids.some(id => (p.activite_ids || []).includes(id))); }
-    if (projRegions.length) liste = liste.filter((p: any) => projRegions.includes(p.region_nom || ""));
-    if (projDepts.length) liste = liste.filter((p: any) => projDepts.includes(p.departement_nom || ""));
-    if (projArrs.length) liste = liste.filter((p: any) => projArrs.includes(p.arrondissement_nom || ""));
     return liste;
-  }, [projets, requete, projPoles, projSects, projBranches, projActivites, projRegions, projDepts, projArrs, secteurs, branches, activites]);
+  }, [projets, requete]);
 
   // ── Potentialités filtrées (titre, zone, description + barre latérale) ──
   const potsFiltres = useMemo(() => {
@@ -212,20 +172,8 @@ export default function Opportunites() {
     if (requete) liste = liste.filter((p: any) =>
       [p.titre, p.description, p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
         .some(x => (x || "").toLowerCase().includes(requete)));
-    if (potsNiveaux.length) {
-      const vals = NIVEAU_LIBELLES.filter(n => potsNiveaux.includes(n.label)).map(n => n.valeur as string);
-      liste = liste.filter((p: any) => vals.includes(p.niveau));
-    }
-    if (potsPoles.length) liste = liste.filter((p: any) => potsPoles.includes(p.pole_nom || ""));
-    if (potsSects.length) { const ids = idsDe(potsSects, secteurs); liste = liste.filter((p: any) => ids.some(id => (p.secteur_ids || []).includes(id))); }
-    if (potsBranches.length) { const ids = idsDe(potsBranches, branches); liste = liste.filter((p: any) => ids.some(id => (p.branche_ids || []).includes(id))); }
-    if (potsActivites.length) { const ids = idsDe(potsActivites, activites); liste = liste.filter((p: any) => ids.some(id => (p.activite_ids || []).includes(id))); }
-    if (potsAtouts.length) {
-      const ids = (refAvantages || []).filter((a: any) => potsAtouts.includes(a.libelle)).map((a: any) => a.id);
-      liste = liste.filter((p: any) => ids.some((id: number) => (p.avantage_ids || []).includes(id)));
-    }
     return liste;
-  }, [pots, requete, potsNiveaux, potsPoles, potsSects, potsBranches, potsActivites, potsAtouts, secteurs, branches, activites, refAvantages]);
+  }, [pots, requete]);
 
   // ── Avantages filtrés (règle du site : tous les mots + barre latérale) ──
   const avgsFiltres = useMemo(() => {
@@ -239,91 +187,8 @@ export default function Opportunites() {
       });
     }
     // Matching par ids au singulier (a.secteur_id / branche_id / activite_id), règle du site
-    if (avgSects.length) { const ids = idsDe(avgSects, secteurs); liste = liste.filter((a: any) => ids.includes(a.secteur_id)); }
-    if (avgBranches.length) { const ids = idsDe(avgBranches, branches); liste = liste.filter((a: any) => ids.includes(a.branche_id)); }
-    if (avgActivites.length) { const ids = idsDe(avgActivites, activites); liste = liste.filter((a: any) => ids.includes(a.activite_id)); }
-    if (avgTypes.length) liste = liste.filter((a: any) => (a.selections || []).some((x: any) => avgTypes.includes(x.type_libelle)));
     return liste;
-  }, [avgs, requete, avgSects, avgBranches, avgActivites, avgTypes, secteurs, branches, activites]);
-
-  // ── Options des feuilles de filtres (depuis les données) ──
-  const triFr = (a: string, b: string) => a.localeCompare(b, "fr");
-  const projPolesOptions = useMemo(() =>
-    ([...new Set(projets.map((p: any) => p.pole_nom).filter(Boolean))] as string[]).sort(triFr), [projets]);
-  const projGeoArbre = useMemo(() => construireArbreGeo(projets), [projets]);
-  const potsPolesOptions = useMemo(() =>
-    ([...new Set(pots.map((p: any) => p.pole_nom).filter(Boolean))] as string[]).sort(triFr), [pots]);
-  // Atouts proposés : libellés du référentiel réellement portés par une fiche
-  const atoutsOptions = useMemo(() => {
-    const utilises = new Set<number>();
-    pots.forEach((p: any) => (p.avantage_ids || []).forEach((id: number) => utilises.add(id)));
-    return [...new Set((refAvantages || []).filter((a: any) => utilises.has(a.id)).map((a: any) => a.libelle))] as string[];
-  }, [pots, refAvantages]);
-  // Types d'avantage proposés : libellés du référentiel réellement utilisés
-  const typesOptions = useMemo(() => {
-    const utilises = new Set(avgs.flatMap((a: any) => (a.selections || []).map((x: any) => x.type_libelle)));
-    return (refAvgTypes || []).map((t: any) => t.libelle as string).filter(l => utilises.has(l));
-  }, [avgs, refAvgTypes]);
-
-  const nbFiltres = vue === "projets"
-    ? projPoles.length + projSects.length + projBranches.length + projActivites.length + projRegions.length + projDepts.length + projArrs.length
-    : vue === "potentialites"
-    ? potsNiveaux.length + potsPoles.length + potsSects.length + potsBranches.length + potsActivites.length + potsAtouts.length
-    : avgSects.length + avgBranches.length + avgActivites.length + avgTypes.length;
-  const reinitFiltres = () => {
-    if (vue === "projets") { setProjPoles([]); setProjSects([]); setProjBranches([]); setProjActivites([]); setProjRegions([]); setProjDepts([]); setProjArrs([]); }
-    else if (vue === "potentialites") { setPotsNiveaux([]); setPotsPoles([]); setPotsSects([]); setPotsBranches([]); setPotsActivites([]); setPotsAtouts([]); }
-    else { setAvgSects([]); setAvgBranches([]); setAvgActivites([]); setAvgTypes([]); }
-  };
-  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
-
-  const feuille = filtresOuverts && (
-    <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
-      {vue === "projets" ? (
-        <>
-          <SectionCoches titre="Pôle territoire" options={projPolesOptions} sel={projPoles}
-            onBascule={v => setProjPoles(p => basculer(p, v))} />
-          {/* Toggles en cascade du site : secteur remet branches + activités, région remet depts + arrs… */}
-          <CascadeThema secteurs={arbre}
-            secteursSel={projSects} branchesSel={projBranches} activitesSel={projActivites}
-            onSecteur={v => { setProjSects(p => basculer(p, v)); setProjBranches([]); setProjActivites([]); }}
-            onBranche={v => { setProjBranches(p => basculer(p, v)); setProjActivites([]); }}
-            onActivite={v => setProjActivites(p => basculer(p, v))} />
-          <CascadeGeo regions={projGeoArbre}
-            regionsSel={projRegions} deptsSel={projDepts} arrsSel={projArrs}
-            onRegion={v => { setProjRegions(p => basculer(p, v)); setProjDepts([]); setProjArrs([]); }}
-            onDept={v => { setProjDepts(p => basculer(p, v)); setProjArrs([]); }}
-            onArr={v => setProjArrs(p => basculer(p, v))} />
-        </>
-      ) : vue === "potentialites" ? (
-        <>
-          <SectionCoches titre="Niveau" options={NIVEAU_LIBELLES.map(n => n.label)} sel={potsNiveaux}
-            onBascule={v => setPotsNiveaux(p => basculer(p, v))} />
-          <SectionCoches titre="Pôle territoire" options={potsPolesOptions} sel={potsPoles}
-            onBascule={v => setPotsPoles(p => basculer(p, v))} />
-          <CascadeThema secteurs={arbre}
-            secteursSel={potsSects} branchesSel={potsBranches} activitesSel={potsActivites}
-            onSecteur={v => setPotsSects(p => basculer(p, v))}
-            onBranche={v => setPotsBranches(p => basculer(p, v))}
-            onActivite={v => setPotsActivites(p => basculer(p, v))} />
-          <SectionCoches titre="Atouts" options={atoutsOptions} sel={potsAtouts}
-            onBascule={v => setPotsAtouts(p => basculer(p, v))} />
-        </>
-      ) : (
-        <>
-          <CascadeThema secteurs={arbre}
-            secteursSel={avgSects} branchesSel={avgBranches} activitesSel={avgActivites}
-            onSecteur={v => setAvgSects(p => basculer(p, v))}
-            onBranche={v => setAvgBranches(p => basculer(p, v))}
-            onActivite={v => setAvgActivites(p => basculer(p, v))} />
-          {typesOptions.length > 0 && (
-            <SectionCoches titre="Type d'avantage" options={typesOptions} sel={avgTypes}
-              onBascule={v => setAvgTypes(p => basculer(p, v))} />
-          )}
-        </>
-      )}
-    </FeuilleFiltres>
-  );
+  }, [avgs, requete]);
 
   // Totaux territoriaux des cards de niveau
   const totauxNiveaux: Record<string, number> = {
@@ -360,7 +225,7 @@ export default function Opportunites() {
     <>
       <EnTetePage titre="Opportunités d'investissement"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        bouton={boutonFiltres} />
+        />
       {/* Les trois lentilles en chips colorées, compteur en pastille */}
       <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
         style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
@@ -415,8 +280,7 @@ export default function Opportunites() {
           ListEmptyComponent={vide}
         />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
-        {feuille}
-      </>
+        </>
     );
   }
 
@@ -481,8 +345,7 @@ export default function Opportunites() {
           )}
         </Animated.ScrollView>
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
-        {feuille}
-      </>
+        </>
     );
   }
 
@@ -537,7 +400,6 @@ export default function Opportunites() {
         )}
       </Animated.ScrollView>
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
-      {feuille}
     </>
   );
 }

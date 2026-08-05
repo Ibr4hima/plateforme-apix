@@ -1,11 +1,12 @@
 // Prospects — le pipeline de prospection en trois lentilles : Ciblés /
-// En contact / Transformés, en segments à compteurs (le pattern des
-// Événements). Les compteurs suivent la recherche et les filtres : on voit
-// où se trouvent les résultats sans changer de segment.
+// En contact / Transformés, en chips bleues à compteurs. Les compteurs
+// suivent la recherche : on voit où se trouvent les résultats sans changer
+// de chip.
 //
 // Cartes au gabarit de la plateforme (contour fin, sans ombre) : dénomination,
-// ancienneté contextuelle, statut en badge pastel doux, rangée Pays | info
-// contextuelle sous filets. Fiche ProspectSheet.
+// ancienneté contextuelle, statut en badge de la maison — fond blanc, liseré
+// et texte teintés par le sens —, rangée Pays | info contextuelle sous
+// filets. Fiche ProspectSheet.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -13,11 +14,9 @@ import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
-import { FeuilleFiltres, SectionCoches, basculer } from "@/components/FiltresListe";
-import ProspectSheet, { OngletProspect, PROSPECT_PASTELS, badgeProspect, ilYa } from "@/components/ProspectSheet";
+import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } from "@/components/ProspectSheet";
 import { fetchTous } from "@/lib/api";
 import { tick } from "@/lib/haptique";
-import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
@@ -26,8 +25,8 @@ import { useMargeBas } from "@/lib/marges";
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
   { cle: "cibles",     label: "Investisseurs ciblés",      couleur: "#004f91" },
-  { cle: "historique", label: "Investisseurs en contact",  couleur: "#ca631f" },
-  { cle: "termines",   label: "Investisseurs transformés", couleur: "#188038" },
+  { cle: "historique", label: "Investisseurs en contact",  couleur: "#004f91" },
+  { cle: "termines",   label: "Investisseurs transformés", couleur: "#004f91" },
 ] as const;
 
 // Sous-titre relatif de la card (règles du site)
@@ -64,7 +63,6 @@ function info2De(p: any, onglet: OngletProspect): { label: string; valeur: strin
 // ── La carte de prospect — le gabarit de la plateforme ───────────────────────
 function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect; onPress: () => void }) {
   const badge = onglet !== "cibles" ? badgeProspect(p) : null;
-  const pastel = badge ? PROSPECT_PASTELS[badge.label] || "#C5BFBB" : null;
   const sousTitre = sousTitreDe(p, onglet);
   const info2 = info2De(p, onglet);
   return (
@@ -75,9 +73,9 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
             <Text style={s.titre} numberOfLines={1}>{p.nom}</Text>
             {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
           </View>
-          {badge && pastel && (
-            <View style={[s.badge, { backgroundColor: `${pastel}33` }]}>
-              <Text style={[s.badgeTexte, { color: foncerPastel(pastel) }]} numberOfLines={1}>{badge.label}</Text>
+          {badge && (
+            <View style={[s.badge, { borderColor: `${couleurProspect(badge.label)}3D` }]}>
+              <Text style={[s.badgeTexte, { color: couleurProspect(badge.label) }]} numberOfLines={1}>{badge.label}</Text>
             </View>
           )}
         </View>
@@ -110,49 +108,22 @@ export default function Prospects() {
   const contact = useQuery({ queryKey: ["prospects", "contact"], queryFn: () => fetchTous("/prospects?conclu=false&contactes=true") });
   const termines = useQuery({ queryKey: ["prospects", "termines"], queryFn: () => fetchTous("/prospects?conclu=true") });
 
-  // Feuille de filtres — mêmes filtres que la barre latérale du site
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
-  const [paysSel, setPaysSel] = useState<string[]>([]);
-  const [secteursSel, setSecteursSel] = useState<string[]>([]);
-
-  // Options construites sur l'ensemble des trois listes (comme le site)
-  const tousProspects = useMemo(() =>
-    [...(cibles.data || []), ...(contact.data || []), ...(termines.data || [])],
-  [cibles.data, contact.data, termines.data]);
-  const paysOptions = useMemo(() =>
-    ([...new Set(tousProspects.map((p: any) => p.siege_nom).filter(Boolean))] as string[])
-      .sort((a, b) => a.localeCompare(b, "fr")),
-  [tousProspects]);
-  const secteurOptions = useMemo(() =>
-    ([...new Set(tousProspects.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[])
-      .sort((a, b) => a.localeCompare(b, "fr")),
-  [tousProspects]);
-
-  // Prédicats communs (recherche + feuille) — les compteurs des segments se
-  // calculent sur cette base, pour chacune des trois listes
+  // La recherche seule filtre les listes ; les compteurs des chips se
+  // calculent sur la même base, pour chacune des trois
   const filtrer = (liste: any[]) => {
-    let res = liste;
-    if (q.trim()) {
-      const t = q.trim().toLowerCase();
-      res = res.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
-    }
-    if (paysSel.length) res = res.filter((p: any) => paysSel.includes(p.siege_nom || ""));
-    if (secteursSel.length) res = res.filter((p: any) => secteursSel.some(sx => (p.secteur_noms || []).includes(sx)));
-    return res;
+    if (!q.trim()) return liste;
+    const t = q.trim().toLowerCase();
+    return liste.filter((p: any) => (p.nom || "").toLowerCase().includes(t));
   };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const parVue = useMemo(() => ({
     cibles: cibles.data ? filtrer(cibles.data) : null,
     historique: contact.data ? filtrer(contact.data) : null,
     termines: termines.data ? filtrer(termines.data) : null,
-  }), [cibles.data, contact.data, termines.data, q, paysSel, secteursSel]);
+  }), [cibles.data, contact.data, termines.data, q]);
 
   const courante = vue === "cibles" ? cibles : vue === "historique" ? contact : termines;
   const filtres = parVue[vue] || [];
-
-  const nbFiltres = paysSel.length + secteursSel.length;
-  const reinitFiltres = () => { setPaysSel([]); setSecteursSel([]); };
-  const boutonFiltres = { icone: "filter_list", onPress: () => setFiltresOuverts(true), badge: nbFiltres || undefined };
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
   return (
@@ -173,8 +144,7 @@ export default function Prospects() {
         ListHeaderComponent={
           <>
             <EnTetePage titre="Prospects"
-              recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-              bouton={boutonFiltres} />
+              recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
             <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
               style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
               {LENTILLES.map(l => {
@@ -209,14 +179,6 @@ export default function Prospects() {
         }
       />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
-      {filtresOuverts && (
-        <FeuilleFiltres onClose={() => setFiltresOuverts(false)} onReinitialiser={reinitFiltres}>
-          <SectionCoches titre="Pays" options={paysOptions} sel={paysSel}
-            onBascule={v => setPaysSel(p => basculer(p, v))} />
-          <SectionCoches titre="Secteurs" options={secteurOptions} sel={secteursSel}
-            onBascule={v => setSecteursSel(p => basculer(p, v))} />
-        </FeuilleFiltres>
-      )}
     </>
   );
 }
@@ -240,7 +202,10 @@ const s = StyleSheet.create({
   ligneTitre: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   titre: { fontSize: 15.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 20, letterSpacing: -0.2 },
   sousTitre: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, flexShrink: 1, maxWidth: 160 },
+  badge: {
+    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3.5, flexShrink: 1, maxWidth: 160,
+    backgroundColor: "#fff", borderWidth: 1,
+  },
   badgeTexte: { fontSize: 10.5, fontFamily: POLICE.gras },
   faits: { flexDirection: "row", alignItems: "center", marginTop: 11, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },

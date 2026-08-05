@@ -68,6 +68,17 @@ export const PROSPECT_PASTELS: Record<string, string> = {
   "À recontacter": "#9DC3E6", "Installation à venir": "#B4DE9D", "Décliné": "#D5D2CE",
 };
 
+// Les statuts en BADGE de la maison — fond blanc, liseré et texte teintés,
+// la couleur portant le sens : vert ce qui avance, bleu ce qui attend une
+// action, rouge ce qui décroche, gris ce qui s'est arrêté.
+export const PROSPECT_COULEURS: Record<string, string> = {
+  "En cours": "#188038", "Installation à venir": "#188038",
+  "À recontacter": "#004f91", "En attente": "#004f91",
+  "Inactif": "#c0392b", "Décliné": "#6b7280",
+};
+export const couleurProspect = (label?: string | null) =>
+  (label && PROSPECT_COULEURS[label]) || "#6b7280";
+
 // Contraintes / échanges rattachés à un cycle donné (null = cycle courant)
 export function contraintesDuCycle(p: any, cy: any): any[] {
   const nbCycles = (p?.cycles || []).length;
@@ -279,8 +290,8 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
         <>
           {meta.length > 0 && (
             <Text style={s.meta} numberOfLines={1}>
-              {onglet !== "cibles" && badge && pastel ? (
-                <Text style={{ color: foncerPastel(pastel), fontFamily: POLICE.gras }}>{badge.label}</Text>
+              {onglet !== "cibles" && badge ? (
+                <Text style={{ color: couleurProspect(badge.label), fontFamily: POLICE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}
