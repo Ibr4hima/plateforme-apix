@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TexteDefilant from "@/components/TexteDefilant";
 import TexteRiche from "@/components/TexteRiche";
 import { getJson } from "@/lib/api";
+import { useSombre } from "@/lib/apparence";
 import { useCap } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { romainDe } from "./index";
@@ -31,11 +32,13 @@ const PALETTES = {
     bleu: "#004f91", filet: "#F2F0EF", surligne: "#FFF6EB",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
   },
-  // Nuit bleue : le bleu du hero poussé vers la nuit, encres claires contrastées
+  // Nuit : EXACTEMENT le fond de nuit de l'app (T.fond), pour que le lecteur
+  // ne soit pas une île bleue au milieu d'une app bleu-nuit. Les encres
+  // reprennent les jetons du thème — encre, texte, bleu éclairci.
   nuit: {
-    fond: "#04294A", titre: "#F2F6FA", corps: "#C9D8E6", intro: "#A9BFD2",
-    bleu: "#8FC4F2", filet: "rgba(255,255,255,0.13)", surligne: "rgba(255,223,194,0.13)",
-    neutreFond: "rgba(255,255,255,0.10)", neutreTexte: "#BFD3E4", neutreSep: "rgba(255,255,255,0.22)",
+    fond: "#0B1220", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
+    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(232,147,90,0.14)",
+    neutreFond: "rgba(122,138,164,0.16)", neutreTexte: "#B9C2CF", neutreSep: "rgba(122,138,164,0.34)",
   },
 } as const;
 
@@ -60,10 +63,17 @@ export default function Lecteur() {
     AsyncStorage.setItem(CLE_TAILLE, String(n)).catch(() => {});
     return n;
   });
-  // Mode sombre de lecture : mémorisé lui aussi
-  const [sombre, setSombre] = useState(false);
+  // Mode sombre de lecture : il SUIT l'apparence de l'app par défaut — une
+  // app en nuit qui ouvre un lecteur en plein jour éblouit — et la bascule
+  // du lecteur ne fait que trancher pour cette lecture-ci, mémorisée.
+  const appSombre = useSombre();
+  const [sombre, setSombre] = useState(appSombre);
+  useEffect(() => { setSombre(appSombre); }, [appSombre]);
   useEffect(() => {
-    AsyncStorage.getItem(CLE_SOMBRE).then(v => { if (v === "1") setSombre(true); }).catch(() => {});
+    AsyncStorage.getItem(CLE_SOMBRE).then(v => {
+      if (v === "1") setSombre(true);
+      else if (v === "0") setSombre(false);
+    }).catch(() => {});
   }, []);
   const basculerSombre = () => setSombre(v => {
     AsyncStorage.setItem(CLE_SOMBRE, v ? "0" : "1").catch(() => {});
