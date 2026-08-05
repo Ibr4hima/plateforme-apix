@@ -37,7 +37,7 @@ export const T = {
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
-  heroFond:    dyn("#004f91", "#13293F"),
+  heroFond:    dyn("#004f91", "#4A7298"),
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
   // Encres
@@ -78,9 +78,11 @@ export const T = {
   // le jour, blanc bleuté la nuit — surtout pas la couleur des cartes, qui
   // le faisait disparaître dans le fond.
   pouce:       dyn("#FFFFFF", "#DCE6F3"),
-  // L'encre posée SUR un aplat bleu (pastilles d'Explorer, boutons pleins) :
-  // blanche sur le bleu profond du jour, sombre sur le bleu clair de la nuit
-  surBleu:     dyn("#FFFFFF", "#0B1220"),
+  // Les pastilles d'Explorer : un aplat bleu plein — le bleu APIX le jour,
+  // un bleu ardoise la nuit, accordé au hero et au bloc « À venir ».
+  pastilleFond: dyn("#004f91", "#47668A"),
+  // Le glyphe posé dessus : blanc dans les deux schémas (5,8:1 la nuit)
+  surBleu:     "#FFFFFF",
   // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
   voile:       "rgba(122,138,164,0.13)",
   voileFort:   "rgba(130,148,176,0.30)",
@@ -145,7 +147,7 @@ export const OMBRE = {
 // du fond, sans quoi il vibrait comme une pièce rapportée.
 export const DEGRADE_EVENEMENT = {
   clair: ["#063C6E", "#004f91", "#1465AC"] as const,
-  sombre: ["#10243A", "#173A5C", "#1D4A72"] as const,
+  sombre: ["#47668A", "#4A7298"] as const,
 };
 
 export const BADGE = {

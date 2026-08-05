@@ -65,8 +65,8 @@ const s = StyleSheet.create({
   // Carré bleu plein, icône blanche — la couleur qui ancre chaque rangée
   pastille: {
     width: 34, height: 34, borderRadius: 10.5, borderCurve: "continuous",
-    // Le bleu du thème : profond le jour, clair la nuit — le glyphe s'inverse
-    alignItems: "center", justifyContent: "center", backgroundColor: T.bleu,
+    // Aplat bleu plein : le bleu APIX le jour, le bleu ardoise la nuit
+    alignItems: "center", justifyContent: "center", backgroundColor: T.pastilleFond,
   },
   titre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   sous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
