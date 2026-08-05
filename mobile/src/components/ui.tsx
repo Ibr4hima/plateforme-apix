@@ -19,7 +19,7 @@ import Reanime, {
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
-import { useCouleur, useStyleResolu } from "@/lib/apparence";
+import { useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
@@ -73,18 +73,20 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
   style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
   children: React.ReactNode;
 }) {
-  // Le verre NE suit PAS l'apparence : il ne se pose que sur un hero, et le
-  // hero est bleu jour ET nuit. Un verre assombri s'y fondait au point de
-  // devenir invisible ; laiteux, il s'en détache de la même façon partout.
+  // Le verre suit l'apparence du bandeau qui le porte : laiteux sur le bleu
+  // APIX du jour, sombre sur le bleu de minuit de la nuit — un voile blanc à
+  // 62 % y ferait un projecteur. Il reste lisible parce que le voile de nuit
+  // est assez marqué (13 %) et que le glyphe, lui, passe au bleu clair.
+  const sombre = useSombre();
   return (
     <Tapable onPress={onPress} echelle={0.9} hitSlop={6}
       style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
           borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, {
-          backgroundColor: teinte || "rgba(255,255,255,0.62)",
+          backgroundColor: teinte || (sombre ? "rgba(255,255,255,0.13)" : "rgba(255,255,255,0.62)"),
         }]} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>

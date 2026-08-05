@@ -37,11 +37,14 @@ export const T = {
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
-  heroFond:    dyn("#004f91", "#1A2335"),
-  // Le hero est bleu dans les DEUX schémas : ses boutons de verre gardent donc
-  // le même traitement laiteux et la même encre profonde, jour et nuit. Une
-  // encre qui aurait suivi l'apparence se serait effacée sur ce bleu moyen.
-  encreHero:   "#004f91",
+  // Le hero : le bleu APIX de jour ; la nuit un bleu de minuit un cran
+  // au-dessus des cartes (#151E2E) et du fond (#0B1220) — même famille de
+  // teinte, une simple marche d'élévation. Le bandeau se signale alors par
+  // sa forme et sa lumière, et la couleur reste au contenu.
+  heroFond:    dyn("#004f91", "#16213A"),
+  // L'encre des boutons de verre du hero : bleu profond sur le verre laiteux
+  // du jour, bleu clair sur le verre sombre de la nuit
+  encreHero:   dyn("#004f91", "#85B9EC"),
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
   // Encres
@@ -151,7 +154,7 @@ export const OMBRE = {
 // du fond, sans quoi il vibrait comme une pièce rapportée.
 export const DEGRADE_EVENEMENT = {
   clair: ["#063C6E", "#004f91", "#1465AC"] as const,
-  sombre: ["#1A3B6A", "#204B7E"] as const,
+  sombre: ["#16213A", "#22406A"] as const,
 };
 
 export const BADGE = {
