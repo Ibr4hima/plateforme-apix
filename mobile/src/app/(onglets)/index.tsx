@@ -50,8 +50,15 @@ function ProchainEvenement() {
       <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
         <LinearGradient colors={[...(sombre ? DEGRADE_EVENEMENT.sombre : DEGRADE_EVENEMENT.clair)]}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-        {/* Halo discret, comme le hero */}
-        <View style={s.evenementHalo} />
+        {/* La lumière du bloc — exactement celle du hero : un dégradé en
+            diagonale qui s'éteint de lui-même. Le disque translucide qui
+            tenait ce rôle se coupait net sur le bord droit et sur le
+            chevron : on voyait le cercle, pas la lumière. */}
+        <LinearGradient
+          colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
+          locations={[0, 0.45, 1]}
+          start={{ x: 1, y: -0.1 }} end={{ x: 0.15, y: 1 }}
+          pointerEvents="none" style={StyleSheet.absoluteFill} />
         <View style={s.evenement}>
           <View style={s.evenementDate}>
             <Text style={s.evenementJour} maxFontSizeMultiplier={ECHELLE.chiffre}>{d.getDate()}</Text>
@@ -222,10 +229,6 @@ const s = StyleSheet.create({
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
-  },
-  evenementHalo: {
-    position: "absolute", top: -70, right: -50, width: 190, height: 190, borderRadius: 95,
-    backgroundColor: "rgba(255,255,255,0.07)",
   },
   evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
   // Bloc date en verre clair sur le bleu

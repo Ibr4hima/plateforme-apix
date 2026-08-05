@@ -90,7 +90,7 @@ export const T = {
   pouce:       dyn("#FFFFFF", "#DCE6F3"),
   // Les pastilles d'Explorer : un aplat bleu plein — le bleu APIX le jour,
   // un bleu ardoise la nuit, accordé au hero et au bloc « À venir ».
-  pastilleFond: dyn("#004f91", "#47668A"),
+  pastilleFond: dyn("#004f91", "#22406A"),
   // Le glyphe posé dessus : blanc dans les deux schémas (5,8:1 la nuit)
   surBleu:     "#FFFFFF",
   // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
