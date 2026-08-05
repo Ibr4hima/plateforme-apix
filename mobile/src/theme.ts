@@ -37,7 +37,7 @@ export const T = {
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
-  heroFond:    dyn("#004f91", "#0E3355"),
+  heroFond:    dyn("#004f91", "#13293F"),
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
   // Encres
@@ -125,6 +125,14 @@ export const OMBRE = {
     shadowOffset: { width: 0, height: 12 }, elevation: 8,
   },
 } as const;
+
+// Le bloc « À venir » de l'accueil — le seul aplat de couleur de la page.
+// De jour il assume le bleu APIX ; de nuit il descend vers le bleu de minuit
+// du fond, sans quoi il vibrait comme une pièce rapportée.
+export const DEGRADE_EVENEMENT = {
+  clair: ["#063C6E", "#004f91", "#1465AC"] as const,
+  sombre: ["#10243A", "#173A5C", "#1D4A72"] as const,
+};
 
 export const BADGE = {
   en_vigueur: { label: "En vigueur",            c: "#188038", bg: "rgba(24,128,56,0.08)" },

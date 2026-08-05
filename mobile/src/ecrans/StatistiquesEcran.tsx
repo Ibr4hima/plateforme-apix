@@ -28,12 +28,13 @@ import { fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { useCouleur } from "@/lib/apparence";
 
 // Les trois lentilles — chips bleues, la teinte unique du module
 const LENTILLES = [
-  { cle: "indicateurs", label: "Indicateurs économiques", couleur: "#004f91" },
-  { cle: "commerce",    label: "Flux bilatéraux",         couleur: "#004f91" },
-  { cle: "exterieur",   label: "Commerce extérieur",      couleur: "#004f91" },
+  { cle: "indicateurs", label: "Indicateurs économiques", couleur: "bleu" },
+  { cle: "commerce",    label: "Flux bilatéraux",         couleur: "bleu" },
+  { cle: "exterieur",   label: "Commerce extérieur",      couleur: "bleu" },
 ] as const;
 
 // La rotation de la vedette — le PIB en tête, puis les huit repères.
@@ -55,6 +56,8 @@ const VOULUS: { cle: string; court: string; test: (ind: any) => boolean }[] = [
 type Point = { annee: number; valeur: number };
 
 export default function StatistiquesEcran() {
+  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
+  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("indicateurs");
@@ -236,8 +239,8 @@ export default function StatistiquesEcran() {
                   const p = chipsPos.current[l.cle];
                   if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
                 }}
-                style={[s.chipFiltre, lActif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
-                <Text style={[s.chipFiltreTexte, { color: l.couleur }, lActif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+                style={[s.chipFiltre, lActif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
+                <Text style={[s.chipFiltreTexte, { color: bleuChip }, lActif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
               </Pressable>
             );
           })}

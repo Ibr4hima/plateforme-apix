@@ -21,12 +21,13 @@ import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { useCouleur } from "@/lib/apparence";
 
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
-  { cle: "cibles",     label: "Investisseurs ciblés",      couleur: "#004f91" },
-  { cle: "historique", label: "Investisseurs en contact",  couleur: "#004f91" },
-  { cle: "termines",   label: "Investisseurs transformés", couleur: "#004f91" },
+  { cle: "cibles",     label: "Investisseurs ciblés",      couleur: "bleu" },
+  { cle: "historique", label: "Investisseurs en contact",  couleur: "bleu" },
+  { cle: "termines",   label: "Investisseurs transformés", couleur: "bleu" },
 ] as const;
 
 // Sous-titre relatif de la card (règles du site)
@@ -96,6 +97,8 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
 }
 
 export default function Prospects() {
+  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
+  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState<OngletProspect>("cibles");
@@ -159,11 +162,11 @@ export default function Prospects() {
                       const p = chipsPos.current[l.cle];
                       if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
                     }}
-                    style={[s.chipFiltre, actif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
-                    <Text style={[s.chipFiltreTexte, { color: l.couleur }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+                    style={[s.chipFiltre, actif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
+                    <Text style={[s.chipFiltreTexte, { color: bleuChip }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
                     {compte != null && (
-                      <View style={[s.chipCompte, actif && { backgroundColor: `${l.couleur}18` }]}>
-                        <Text style={[s.chipCompteTexte, { color: l.couleur }]}>{compte}</Text>
+                      <View style={[s.chipCompte, actif && { backgroundColor: `${bleuChip}18` }]}>
+                        <Text style={[s.chipCompteTexte, { color: bleuChip }]}>{compte}</Text>
                       </View>
                     )}
                   </Pressable>

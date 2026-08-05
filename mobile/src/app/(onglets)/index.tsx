@@ -6,13 +6,14 @@
 // L'en-tête garde sa composition (date, « Invest in Senegal », recherche)
 // mais se pose sur un bandeau bleu institutionnel qui part du haut de
 // l'écran — compact : le reste de la page reste clair, le bleu en accent.
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
-import { useCallback, useRef, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
@@ -20,13 +21,15 @@ import Icone from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
 import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
-import { useStyleBarreParDefaut } from "@/lib/apparence";
+import { useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
-import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { DEGRADE_EVENEMENT, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 function ProchainEvenement() {
   const router = useRouter();
+  const sombre = useSombre();
   const { data: ev } = useQuery({
     queryKey: ["prochain-evenement"],
     queryFn: async () => {
@@ -45,7 +48,7 @@ function ProchainEvenement() {
       {/* Bleu plein en dégradé profond — le bloc de couleur qui ancre la
           page (l'idiome du bandeau « reprendre » des grandes apps) */}
       <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
-        <LinearGradient colors={["#063C6E", "#004f91", "#1465AC"]}
+        <LinearGradient colors={[...(sombre ? DEGRADE_EVENEMENT.sombre : DEGRADE_EVENEMENT.clair)]}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
         {/* Halo discret, comme le hero */}
         <View style={s.evenementHalo} />
@@ -79,6 +82,22 @@ export default function Accueil() {
   // Retoucher l'onglet Accueil déjà actif remonte la page en haut
   const defilement = useRef<ScrollView>(null);
   useScrollToTop(defilement);
+
+  // Apparence : le système décide par défaut, le bouton lune/soleil tranche
+  // et la préférence est mémorisée d'une session à l'autre
+  const sombre = useSombre();
+  useEffect(() => {
+    AsyncStorage.getItem("apix.theme").then(v => {
+      if (v === "sombre") Appearance.setColorScheme("dark");
+      else if (v === "clair") Appearance.setColorScheme("light");
+    }).catch(() => {});
+  }, []);
+  const basculerTheme = () => {
+    tick();
+    const suivant = sombre ? "clair" : "sombre";
+    Appearance.setColorScheme(suivant === "sombre" ? "dark" : "light");
+    AsyncStorage.setItem("apix.theme", suivant).catch(() => {});
+  };
 
   // Le bandeau d'en-tête est bleu : barre d'état blanche tant que l'accueil
   // a le focus (les autres écrans, clairs, posent la leur via EnTetePage).
@@ -139,6 +158,11 @@ export default function Accueil() {
             </View>
           </View>
           <View style={s.boutonsEnTete}>
+            <BoutonVerre onPress={basculerTheme} taille={40}
+              accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
+              <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+                taille={17} couleur={T.bleu} poids="semibold" />
+            </BoutonVerre>
             <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
               accessibilityLabel="Rechercher">
               <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />

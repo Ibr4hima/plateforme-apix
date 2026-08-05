@@ -23,12 +23,13 @@ import { fetchTous, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
-  { cle: "projets",       label: "Banque de projets",       couleur: "#004f91" },
-  { cle: "potentialites", label: "Potentialités par zone",   couleur: "#004f91" },
-  { cle: "avantages",     label: "Avantages & incitations",  couleur: "#004f91" },
+  { cle: "projets",       label: "Banque de projets",       couleur: "bleu" },
+  { cle: "potentialites", label: "Potentialités par zone",   couleur: "bleu" },
+  { cle: "avantages",     label: "Avantages & incitations",  couleur: "bleu" },
 ] as const;
 
 // Niveaux de découpage territorial des potentialités (libellés du site)
@@ -43,7 +44,7 @@ const NIVEAUX = [
 const SECTEURS_AVGS = [
   { cle: "primaire",   label: "Secteur Primaire",   couleur: "#188038" },
   { cle: "secondaire", label: "Secteur Secondaire", couleur: "#ca631f" },
-  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#004f91" },
+  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "bleu" },
 ] as const;
 
 
@@ -127,6 +128,8 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
 }
 
 export default function Opportunites() {
+  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
+  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
@@ -241,11 +244,11 @@ export default function Opportunites() {
                 const p = chipsPos.current[l.cle];
                 if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
               }}
-              style={[s.chipFiltre, actif && { backgroundColor: `${l.couleur}14`, borderColor: `${l.couleur}66` }]}>
-              <Text style={[s.chipFiltreTexte, { color: l.couleur }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
+              style={[s.chipFiltre, actif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
+              <Text style={[s.chipFiltreTexte, { color: bleuChip }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
               {pret && (
-                <View style={[s.chipCompte, actif && { backgroundColor: `${l.couleur}18` }]}>
-                  <Text style={[s.chipCompteTexte, { color: l.couleur }]}>{comptes[l.cle]}</Text>
+                <View style={[s.chipCompte, actif && { backgroundColor: `${bleuChip}18` }]}>
+                  <Text style={[s.chipCompteTexte, { color: bleuChip }]}>{comptes[l.cle]}</Text>
                 </View>
               )}
             </Pressable>

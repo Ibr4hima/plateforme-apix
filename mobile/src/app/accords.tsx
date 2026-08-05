@@ -208,7 +208,7 @@ const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
   chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
-  chipFiltreActif: { backgroundColor: "rgba(0,79,145,0.08)", borderColor: "rgba(0,79,145,0.40)" },
+  chipFiltreActif: { backgroundColor: T.bleuVoile, borderColor: T.blocBord },
   chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
   chipFiltreTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
 

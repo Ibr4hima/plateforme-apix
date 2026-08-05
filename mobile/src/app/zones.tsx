@@ -26,6 +26,7 @@ import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 const pastelPole = (nom?: string | null) =>
   (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
@@ -66,6 +67,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 }
 
 export default function Zones() {
+  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
@@ -140,8 +142,9 @@ export default function Zones() {
           style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
-            // Chips au bleu de la maison — la teinte du type vit dans les cartes
-            const couleur = "#004f91";
+            // Chips au bleu de la maison — la teinte du type vit dans les
+            // cartes ; celle-ci suit l'apparence pour rester lisible la nuit
+            const couleur = bleuChip;
             return (
               <Pressable key={t}
                 onLayout={ev => { const { x, width: l } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: l }; }}
