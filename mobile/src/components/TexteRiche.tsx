@@ -13,6 +13,7 @@ type Noeud =
 
 const VIDES = new Set(["br", "hr", "img"]);
 const BLOCS = new Set(["p", "div", "blockquote", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6"]);
+const LISTES = new Set(["ul", "ol"]);
 
 function decoder(t: string): string {
   return t
@@ -20,7 +21,26 @@ function decoder(t: string): string {
     .replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, "\"");
 }
 
-// Parseur minimal à pile — suffisant pour le HTML de l'éditeur maison
+// Parseur minimal à pile.
+//
+// HTML autorise à ne PAS refermer un <li> ni un <p> : les textes importés
+// dans la plateforme en profitent largement. Sans règle de fermeture
+// implicite, chaque item s'imbriquait dans le précédent — la liste entière
+// se réduisait à un seul point, et ses items repartaient en texte courant,
+// collés bout à bout (« … présent Code ;agrément d'extension : … »).
+// Un <li> ferme donc le <li> ouvert du MÊME niveau de liste, un <p> ferme
+// le <p> ouvert, exactement comme un navigateur.
+function fermerImplicites(pile: Extract<Noeud, { type: "el" }>[], tag: string) {
+  if (tag === "li") {
+    for (let i = pile.length - 1; i > 0; i--) {
+      if (LISTES.has(pile[i].tag)) return;      // on est déjà dans la bonne liste
+      if (pile[i].tag === "li") { pile.length = i; return; }
+    }
+    return;
+  }
+  if (BLOCS.has(tag) && !LISTES.has(tag) && pile[pile.length - 1].tag === "p") pile.pop();
+}
+
 function parser(html: string): Noeud[] {
   const racine: Noeud = { type: "el", tag: "racine", classe: "", enfants: [] };
   const pile: Extract<Noeud, { type: "el" }>[] = [racine];
@@ -42,6 +62,7 @@ function parser(html: string): Noeud[] {
         if (pile[i].tag === tag) { pile.length = i; break; }
       }
     } else {
+      fermerImplicites(pile, tag);
       const classe = tok.match(/class\s*=\s*["']([^"']*)["']/i)?.[1] || "";
       const el: Noeud = { type: "el", tag, classe, enfants: [] };
       pile[pile.length - 1].enfants.push(el);
@@ -132,24 +153,32 @@ function Liste({ el, ctx, dernier, profondeur = 0 }: {
         num += 1;
         const marqueur = nume ? `${num}.` : tirets ? "—" : "•";
         // Sous-listes imbriquées dans l'item (indentation de liste)
-        const sousListes = li.enfants.filter(n => n.type === "el" && (n.tag === "ul" || n.tag === "ol"));
-        const contenu = li.enfants.filter(n => !(n.type === "el" && (n.tag === "ul" || n.tag === "ol")));
+        const sousListes = li.enfants.filter(n => n.type === "el" && LISTES.has(n.tag));
+        const contenu = li.enfants.filter(n => !(n.type === "el" && LISTES.has(n.tag)));
+        // Un item peut porter plusieurs paragraphes : ils gardent alors leurs
+        // sauts de ligne au lieu d'être recollés en une seule phrase
+        const enBlocs = contenu.some(n => n.type === "el" && BLOCS.has(n.tag));
+        const retrait = nume ? ctx.fontSize * 1.5 : ctx.fontSize * 1.15;
         return (
           <View key={i}>
             <View style={{ flexDirection: "row" }}>
               <Text style={{
                 fontFamily: POLICE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
-                lineHeight: ctx.lineHeight, width: nume ? ctx.fontSize * 1.5 : ctx.fontSize * 1.15,
+                lineHeight: ctx.lineHeight, width: retrait,
               }}>{marqueur}</Text>
-              <Text style={{
-                flex: 1, fontFamily: POLICE.normal, color: ctx.couleur,
-                fontSize: ctx.fontSize, lineHeight: ctx.lineHeight,
-              }}>
-                {rendreInline(contenu, ctx, {})}
-              </Text>
+              {enBlocs ? (
+                <View style={{ flex: 1 }}>{rendreBlocs(contenu, ctx, `l${i}`)}</View>
+              ) : (
+                <Text style={{
+                  flex: 1, fontFamily: POLICE.normal, color: ctx.couleur,
+                  fontSize: ctx.fontSize, lineHeight: ctx.lineHeight,
+                }}>
+                  {rendreInline(contenu, ctx, {})}
+                </Text>
+              )}
             </View>
             {sousListes.map((sl, si) => (
-              <View key={si} style={{ marginLeft: 18, marginTop: ctx.fontSize * 0.22 }}>
+              <View key={si} style={{ marginLeft: retrait, marginTop: ctx.fontSize * 0.22 }}>
                 <Liste el={sl as any} ctx={ctx} dernier profondeur={profondeur + 1} />
               </View>
             ))}
