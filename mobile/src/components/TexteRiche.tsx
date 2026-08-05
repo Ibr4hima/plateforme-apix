@@ -79,7 +79,7 @@ const estVide = (n: Noeud) =>
   : n.enfants.every(estVide);
 
 // ── Rendu ────────────────────────────────────────────────────────────────────
-type Ctx = { couleur: string; fontSize: number; lineHeight: number };
+type Ctx = { couleur: string; fontSize: number; lineHeight: number; aligne: "auto" | "justify" };
 
 function rendreInline(noeuds: Noeud[], ctx: Ctx, herite: TextStyle, cle = "i"): React.ReactNode[] {
   return noeuds.map((n, i) => {
@@ -98,6 +98,7 @@ function Paragraphe({ noeuds, ctx, dernier }: { noeuds: Noeud[]; ctx: Ctx; derni
     <Text style={{
       fontFamily: POLICE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
       lineHeight: ctx.lineHeight, marginBottom: dernier ? 0 : ctx.fontSize * 0.55,
+      textAlign: ctx.aligne,
     }}>
       {rendreInline(noeuds, ctx, {})}
     </Text>
@@ -188,7 +189,7 @@ function Liste({ el, ctx, dernier, profondeur = 0 }: {
               ) : (
                 <Text style={{
                   flex: 1, fontFamily: POLICE.normal, color: ctx.couleur,
-                  fontSize: ctx.fontSize, lineHeight: ctx.lineHeight,
+                  fontSize: ctx.fontSize, lineHeight: ctx.lineHeight, textAlign: ctx.aligne,
                 }}>
                   {rendreInline(contenu, ctx, {})}
                 </Text>
@@ -206,11 +207,14 @@ function Liste({ el, ctx, dernier, profondeur = 0 }: {
   );
 }
 
-function TexteRiche({ html, couleur, fontSize, lineHeight, style }: {
-  html: string; couleur: string; fontSize: number; lineHeight: number; style?: any;
+function TexteRiche({ html, couleur, fontSize, lineHeight, justifie, style }: {
+  html: string; couleur: string; fontSize: number; lineHeight: number;
+  /** Texte justifié — la mise en page d'un texte de loi, bord à bord. */
+  justifie?: boolean;
+  style?: any;
 }) {
   const noeuds = useMemo(() => parser(html), [html]);
-  const ctx: Ctx = { couleur, fontSize, lineHeight };
+  const ctx: Ctx = { couleur, fontSize, lineHeight, aligne: justifie ? "justify" : "auto" };
   return <View style={style}>{rendreBlocs(noeuds, ctx)}</View>;
 }
 
