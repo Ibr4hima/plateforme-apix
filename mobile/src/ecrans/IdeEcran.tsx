@@ -15,6 +15,7 @@ import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
 import SourceIdeSheet from "@/components/SourceIdeSheet";
+import SourceNationalSheet, { SelNational } from "@/components/SourceNationalSheet";
 import { getJson } from "@/lib/api";
 import type { SourceIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
@@ -30,9 +31,7 @@ const ONGLETS = [
 export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const [onglet, setOnglet] = useState("ide");
-  const [filtresOuverts, setFiltresOuverts] = useState(false);
   const [sourceOuverte, setSourceOuverte] = useState(false);
-  const [nbFiltresNat, setNbFiltresNat] = useState(0);
   const ongletsRef = useRef<ScrollView>(null);
   const ongletsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
@@ -50,15 +49,20 @@ export default function IdeEcran() {
     id: i, nom: p.nom, code_iso3: p.code_iso3, continent: p.continent, region_geo: p.region_geo,
   })), [paysDispo]);
 
+  // Le référentiel de la cascade BDEF — les Investissements nationaux
+  const { data: refsBdef } = useQuery({
+    queryKey: ["bdef-secteurs"], queryFn: () => getJson<any>("/bdef/secteurs"), staleTime: Infinity,
+  });
+
   // La source de lecture — un pays par défaut, le Sénégal
   const [source, setSource] = useState<SourceIde>({ type: "pays", nom: "Sénégal" });
+  // La vue des Investissements nationaux — le global des secteurs par défaut
+  const [selNat, setSelNat] = useState<SelNational>({ niveau: "global", cible_id: null, libelle: "Global des secteurs" });
   // Flux & Stocks n'existe pas en vue Secteurs (règle du site)
   const secteurVue = source.type === "secteur";
 
-  // Le bouton de l'en-tête : le sélecteur de vue en IDE, les filtres en national
-  const boutonHero = onglet === "nationaux"
-    ? { icone: "filter_list", onPress: () => { tick(); setFiltresOuverts(true); }, badge: nbFiltresNat || undefined }
-    : { icone: "more_horiz", onPress: () => { tick(); setSourceOuverte(true); } };
+  // Le bouton de l'en-tête ouvre le sélecteur de vue, dans les deux familles
+  const boutonHero = { icone: "more_horiz", onPress: () => { tick(); setSourceOuverte(true); } };
 
   return (
     <>
@@ -87,11 +91,7 @@ export default function IdeEcran() {
       </ScrollView>
 
       {onglet === "nationaux" ? (
-        <NationalPanel
-          filtresOuverts={filtresOuverts && onglet === "nationaux"}
-          onFermerFiltres={() => setFiltresOuverts(false)}
-          onOuvrirFiltres={() => setFiltresOuverts(true)}
-          onNbFiltres={setNbFiltresNat} />
+        <NationalPanel sel={selNat} onOuvrirSource={() => setSourceOuverte(true)} />
       ) : (
         <>
           {/* ── Section 1 : Flux & Stocks (pas en vue Secteurs) ── */}
@@ -108,10 +108,13 @@ export default function IdeEcran() {
       )}
     </ScrollView>
 
-    {sourceOuverte && (
+    {sourceOuverte && (onglet === "nationaux" ? (
+      <SourceNationalSheet refs={refsBdef} sel={selNat}
+        onChoisir={setSelNat} onClose={() => setSourceOuverte(false)} />
+    ) : (
       <SourceIdeSheet pays={paysListe} groupements={groupements || []} secteurs={secteurs || []}
         source={source} onChoisir={setSource} onClose={() => setSourceOuverte(false)} />
-    )}
+    ))}
     </>
   );
 }
