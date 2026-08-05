@@ -4,10 +4,13 @@
 import { Canvas, Path as CheminSkia, Skia, type SkPath } from "@shopify/react-native-skia";
 import { View } from "react-native";
 import { cheminGroupe, cheminSeul } from "@/lib/senegal";
+import { useCouleur } from "@/lib/apparence";
 
 export { regionConnue } from "@/lib/senegal";
 
-function Silhouette({ base, taille, couleur }: { base: SkPath | null; taille: number; couleur: string }) {
+function Silhouette({ base, taille, couleur: teinte }: { base: SkPath | null; taille: number; couleur: string }) {
+  // Skia n'accepte que des chaînes : le jeton dynamique est résolu ici
+  const couleur = useCouleur(teinte);
   if (!base) return <View style={{ width: taille, height: taille }} />;
   const chemin = base.copy();
   chemin.transform(Skia.Matrix().scale(taille, taille));

@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
+import { useSombre } from "@/lib/apparence";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
@@ -28,6 +29,7 @@ const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIco
 function BarreOnglets({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const sombre = useSombre();
   // Sur tablette, la capsule ne s'étire pas d'un bord à l'autre : elle se
   // plafonne et se centre, comme le contenu des écrans
   const capBarre = width >= 700 ? { maxWidth: 520, alignSelf: "center" as const, width: "100%" as const } : null;
@@ -37,8 +39,10 @@ function BarreOnglets({ state, navigation }: any) {
       <View style={s.capsule}>
         {VERRE ? (
           <>
-            <BlurView intensity={64} tint="light" style={StyleSheet.absoluteFill} />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.68)" }]} />
+            <BlurView intensity={64} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, {
+              backgroundColor: sombre ? "rgba(21,30,46,0.72)" : "rgba(255,255,255,0.68)",
+            }]} />
           </>
         ) : null}
         {state.routes.map((route: any, i: number) => {
@@ -102,7 +106,7 @@ const s = StyleSheet.create({
     flexDirection: "row", alignItems: "center", overflow: "hidden",
     backgroundColor: VERRE ? "transparent" : T.carte,
     borderRadius: 34, borderCurve: "continuous",
-    borderWidth: VERRE ? StyleSheet.hairlineWidth : 0, borderColor: "rgba(255,255,255,0.55)",
+    borderWidth: VERRE ? StyleSheet.hairlineWidth : 0, borderColor: T.voileFort,
     paddingHorizontal: 8, paddingVertical: 7,
   },
   zoneOnglet: { alignItems: "center", justifyContent: "center" },

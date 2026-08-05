@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { useStyleResolu } from "@/lib/apparence";
 import { cran } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
@@ -23,6 +24,12 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur, voile
   couleur?: string; voile?: string;
 }) {
   const [largeur, setLargeur] = useState(0);
+  // Reanimated exige des couleurs simples : les styles teintés sont résolus
+  const pilule = useStyleResolu(s.pilule);
+  const rempli = useStyleResolu(s.rempli);
+  const pouce = useStyleResolu(s.pouce);
+  const piluleTexte = useStyleResolu(s.piluleTexte);
+  const piste = useStyleResolu(s.piste);
   const tx = useSharedValue(PAD);
 
   const n = annees.length;
@@ -61,13 +68,13 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur, voile
       <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}
         accessible accessibilityRole="adjustable" accessibilityLabel={`Année : ${valeur}`}>
         {/* L'année choisie suit le pouce */}
-        <Reanime.View style={[s.pilule, voile != null && { backgroundColor: voile }, stylePilule]}>
-          <Text style={[s.piluleTexte, couleur != null && { color: couleur }]}>{valeur}</Text>
+        <Reanime.View style={[pilule, voile != null && { backgroundColor: voile }, stylePilule]}>
+          <Text style={[piluleTexte, couleur != null && { color: couleur }]}>{valeur}</Text>
         </Reanime.View>
         {/* Piste, portion parcourue, pouce */}
-        <View style={s.piste} />
-        <Reanime.View style={[s.rempli, couleur != null && { backgroundColor: couleur }, styleRempli]} />
-        <Reanime.View style={[s.pouce, stylePouce]} />
+        <View style={piste} />
+        <Reanime.View style={[rempli, couleur != null && { backgroundColor: couleur }, styleRempli]} />
+        <Reanime.View style={[pouce, stylePouce]} />
       </View>
     </GestureDetector>
   );

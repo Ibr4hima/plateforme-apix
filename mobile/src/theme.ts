@@ -12,21 +12,20 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
-// Couleur clair/sombre.
+// Couleur clair/sombre — ACTIF.
 //
-// ⏸ MODE SOMBRE EN PAUSE — techniquement bloqué, pas oublié : Reanimated
-// refuse les valeurs DynamicColorIOS dans le style d'un composant animé
-// (« Invalid color value: [object Object] »), et Tapable — le retour tactile
-// de toute l'app, 177 emplois — en est un. Basculer ce drapeau fait donc
-// planter l'accueil au premier rendu.
+// Chaque jeton porte ses deux valeurs et iOS choisit lui-même la bonne, en
+// direct, sans qu'aucun composant ne re-rende : c'est le mécanisme le plus
+// fidèle et le moins coûteux.
 //
-// La sortie n'est pas un drapeau mais une résolution des couleurs en chaînes
-// simples : palette claire / sombre choisie à l'exécution et diffusée par un
-// contexte, les StyleSheet.create statiques cédant la place à des styles
-// dérivés du thème. C'est un chantier à part entière, à mener écran par
-// écran ; en attendant, l'app reste claire et les jetons ci-dessous portent
-// déjà leurs deux valeurs, prêtes pour ce jour-là.
-const SOMBRE_ACTIF = false;
+// Deux consommateurs ne parlent pas au natif et refusent l'objet dynamique :
+// Reanimated (qui valide les couleurs du style de tout composant animé) et
+// Skia (qui dessine sur son propre canevas). Ils sont servis par
+// lib/apparence : la résolution se fait DANS les composants concernés —
+// Tapable, Apparition, Permutation, RangeeMouvante, Feuille, CurseurAnnees,
+// MiniTendance, GrapheLignes, SilhouetteRegion, SeparateurSection — et non
+// aux centaines de points d'appel, où un oubli serait invisible.
+const SOMBRE_ACTIF = true;
 const dyn = (clair: string, sombre: string): any =>
   SOMBRE_ACTIF && Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
 

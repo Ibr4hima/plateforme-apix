@@ -20,6 +20,7 @@ import {
 import { cran } from "@/lib/haptique";
 import { DUREE, RESSORT, SORTIE } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
+import { resoudre, useSombre } from "@/lib/apparence";
 
 export type Serie = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
 
@@ -104,12 +105,18 @@ function CourbeSerie({ deCourbe, versCourbe, deAire, versAire, morphT, trace, co
   );
 }
 
-function GrapheLignes({ series, hauteur = 170, fmt, epure }: {
+function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
   series: Serie[]; hauteur?: number; fmt: (v: number | null) => string;
   // Mode épuré : ni grille ni graduations d'ordonnées — la courbe seule,
   // comme une sparkline qui aurait gardé le scrubbing, le pic et les années
   epure?: boolean;
 }) {
+  // Skia n'accepte que des chaînes : les teintes des séries, qui peuvent
+  // venir des jetons dynamiques du thème, sont résolues en entrée
+  const sombre = useSombre();
+  const series = useMemo(
+    () => seriesBrutes.map(sr => ({ ...sr, couleur: resoudre(sr.couleur, sombre) })),
+    [seriesBrutes, sombre]);
   const [largeur, setLargeur] = useState(0);
   const [curseur, setCurseur] = useState<number | null>(null);
 

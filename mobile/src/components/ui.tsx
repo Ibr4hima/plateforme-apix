@@ -18,6 +18,7 @@ import Reanime, {
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
+import { useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
@@ -43,12 +44,15 @@ export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97,
     transform: [{ scale: 1 + (echelle - 1) * appui.value }],
     opacity: (disabled ? 0.45 : 1) * (1 - (surbrillance ? 0.14 : 0) * appui.value),
   }));
+  // Reanimated ne sait pas lire une couleur dynamique : le style reçu est
+  // résolu ici, une fois, pour les 177 emplois de Tapable dans l'app
+  const styleResolu = useStyleResolu(style);
   return (
     <PressableReanime
       onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
       onPressIn={() => { appui.value = withTiming(1, { duration: 90 }); }}
       onPressOut={() => { appui.value = withSpring(0, RESSORT.standard); }}
-      style={[animStyle, style]}>
+      style={[animStyle, styleResolu]}>
       {children}
     </PressableReanime>
   );
@@ -63,14 +67,19 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
   style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
   children: React.ReactNode;
 }) {
+  // Le verre suit l'apparence : un voile blanc à 62 % sur un bandeau de nuit
+  // ferait un projecteur — la nuit, le flou s'assombrit et le voile s'allège
+  const sombre = useSombre();
   return (
     <Tapable onPress={onPress} echelle={0.9} hitSlop={6}
       style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
           borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: teinte || "rgba(255,255,255,0.62)" }]} />
+        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+        <View style={[StyleSheet.absoluteFill, {
+          backgroundColor: teinte || (sombre ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.62)"),
+        }]} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>
     </Tapable>
@@ -86,8 +95,9 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
 export function Permutation({ cle, children, style }: {
   cle: string; children: React.ReactNode; style?: StyleProp<ViewStyle>;
 }) {
+  const styleResolu = useStyleResolu(style);
   return (
-    <Reanime.View key={cle} style={style}
+    <Reanime.View key={cle} style={styleResolu}
       entering={FadeInDown.duration(230).easing(Easing.out(Easing.cubic))
         .withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] })}>
       {children}
@@ -99,8 +109,9 @@ export function Permutation({ cle, children, style }: {
 export function RangeeMouvante({ children, style }: {
   children: React.ReactNode; style?: StyleProp<ViewStyle>;
 }) {
+  const styleResolu = useStyleResolu(style);
   return (
-    <Reanime.View layout={LinearTransition.springify().damping(20).stiffness(180)} style={style}>
+    <Reanime.View layout={LinearTransition.springify().damping(20).stiffness(180)} style={styleResolu}>
       {children}
     </Reanime.View>
   );
@@ -112,9 +123,12 @@ export function RangeeMouvante({ children, style }: {
 // sections d'une page longue (Flux & Stocks, Greenfield, Fusion & Acquisition)
 // se confondaient ; ici la coupure se voit avant même d'être lue, et la teinte
 // annonce celle des cartes qui suivent.
-export function SeparateurSection({ titre, couleur = T.bleu as string, voile = T.bleuVoile as string, style }: {
+export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, voile: voileBrut = T.bleuVoile as string, style }: {
   titre: string; couleur?: string; voile?: string; style?: StyleProp<ViewStyle>;
 }) {
+  // La teinte part en concaténation (`${couleur}33`) : il lui faut une chaîne
+  const couleur = useCouleur(teinte);
+  const voile = useCouleur(voileBrut);
   return (
     <View style={[ss.rangee, style]} accessibilityRole="header">
       <LinearGradient colors={["rgba(16,26,46,0)", "rgba(16,26,46,0.16)"]}
@@ -254,6 +268,7 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
   // Deux grandeurs pilotent tout : l'ouverture (0→1, ressort doux) et le
   // tirage du doigt. Fond, échelle et position en dérivent en continu —
   // pendant le geste, c'est l'écran entier qui suit la main.
+  const feuilleResolue = useStyleResolu(sf.feuille);
   const progres = useSharedValue(0);
   const tirage = useSharedValue(0);
   useEffect(() => { progres.value = withSpring(1, RESSORT.doux); }, [progres]);
@@ -306,7 +321,7 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
           uniformes, visibles surtout à la fermeture. */}
       <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
-      <Reanime.View style={[sf.feuille, { maxHeight: hauteur }, styleFeuille]}>
+      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, styleFeuille]}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
             poignée (~20 pt) était trop étroite pour être trouvée au pouce.
             Le Pan ne s'arme qu'après 4 pt de glissement vertical : les
@@ -354,8 +369,9 @@ export function Apparition({ index = 0, cle, style, children }: {
 }) {
   const rejoue = useRef(cle != null && dejaJoue.has(cle));
   useEffect(() => { if (cle != null) dejaJoue.add(cle); }, [cle]);
+  const styleResolu = useStyleResolu(style);
   return (
-    <Reanime.View entering={rejoue.current ? undefined : apparition(index)} style={style}>
+    <Reanime.View entering={rejoue.current ? undefined : apparition(index)} style={styleResolu}>
       {children}
     </Reanime.View>
   );

@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone from "@/components/Icone";
 import { BoutonVerre, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
+import { useStyleBarreParDefaut } from "@/lib/apparence";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
@@ -42,11 +43,13 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
   const router = useRouter();
   const [rechercheOuverte, setRechercheOuverte] = useState(false);
 
-  // Bandeau bleu jusqu'en haut : barre d'état blanche tant que la page a le focus
+  // Bandeau bleu jusqu'en haut : barre d'état blanche tant que la page a le
+  // focus, puis retour au style ordinaire — qui suit l'apparence du système
+  const styleParDefaut = useStyleBarreParDefaut();
   useFocusEffect(useCallback(() => {
     setStatusBarStyle("light");
-    return () => setStatusBarStyle("dark");
-  }, []));
+    return () => setStatusBarStyle(styleParDefaut);
+  }, [styleParDefaut]));
 
   const basculerRecherche = () => {
     if (rechercheOuverte) recherche?.onChange("");

@@ -20,6 +20,7 @@ import Icone from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
 import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
+import { useStyleBarreParDefaut } from "@/lib/apparence";
 import { useMargeBas } from "@/lib/marges";
 import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
@@ -83,10 +84,11 @@ export default function Accueil() {
   // a le focus (les autres écrans, clairs, posent la leur via EnTetePage).
   // Impératif plutôt qu'un composant <StatusBar> : les trois onglets restent
   // montés simultanément, des composants par écran se disputeraient le style.
+  const styleParDefaut = useStyleBarreParDefaut();
   useFocusEffect(useCallback(() => {
     setStatusBarStyle("light");
-    return () => setStatusBarStyle("dark");
-  }, []));
+    return () => setStatusBarStyle(styleParDefaut);
+  }, [styleParDefaut]));
 
   const rafraichir = async () => {
     setRafraichit(true);

@@ -9,6 +9,7 @@ import {
   Path as CheminSkia, Skia, vec,
 } from "@shopify/react-native-skia";
 import { useMemo } from "react";
+import { useCouleur } from "@/lib/apparence";
 
 // Catmull-Rom → Béziers cubiques, même lissage que les grands graphes
 function lisser(pts: { x: number; y: number }[]): string {
@@ -22,9 +23,12 @@ function lisser(pts: { x: number; y: number }[]): string {
   return d;
 }
 
-export default function MiniTendance({ valeurs, largeur, hauteur = 56, couleur = "#004f91" }: {
+export default function MiniTendance({ valeurs, largeur, hauteur = 56, couleur: teinte = "#004f91" }: {
   valeurs: number[]; largeur: number; hauteur?: number; couleur?: string;
 }) {
+  // Skia dessine hors du pipeline natif : il lui faut une chaîne, pas un
+  // jeton dynamique (sans quoi `${couleur}2E` donnerait « [object Object]2E »)
+  const couleur = useCouleur(teinte);
   const { trace, aire, fin } = useMemo(() => {
     if (valeurs.length < 2 || largeur <= 0) return { trace: null, aire: null, fin: null };
     // Marges internes : le point terminal (r=3) ne doit pas être rogné
