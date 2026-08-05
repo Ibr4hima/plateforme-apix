@@ -132,8 +132,13 @@ function rendreBlocs(noeuds: Noeud[], ctx: Ctx, cle = "b"): React.ReactNode[] {
       );
     } else if (el.tag === "li") {
       sortie.push(...rendreBlocs(el.enfants, ctx, k));
+    } else if (el.enfants.some(estBloc)) {
+      // p / div qui ENVELOPPE des blocs : un conteneur, pas un paragraphe.
+      // L'éditeur enferme les listes dans un <div> ; le rendre à plat comme
+      // du texte écrasait la liste entière en une seule phrase.
+      sortie.push(<View key={k}>{rendreBlocs(el.enfants, ctx, k)}</View>);
     } else {
-      // p / div / h* : un paragraphe
+      // p / div / h* de contenu simple : un paragraphe
       sortie.push(<Paragraphe key={k} noeuds={el.enfants} ctx={ctx} dernier={dernierNoeud} />);
     }
   });
@@ -145,11 +150,23 @@ function Liste({ el, ctx, dernier, profondeur = 0 }: {
 }) {
   const tirets = /\bdash-list\b/.test(el.classe);
   const nume = el.tag === "ol";
-  const items = el.enfants.filter((n): n is Extract<Noeud, { type: "el" }> => n.type === "el" && n.tag === "li" && !estVide(n));
+  // On parcourt les enfants DANS L'ORDRE : l'éditeur pose parfois la
+  // sous-liste en FRÈRE de l'item qu'elle prolonge (<ul> enfant direct de
+  // <ul>) plutôt qu'à l'intérieur. Ne garder que les <li> faisait alors
+  // disparaître ses items ; ici elle s'indente sous l'item qui précède.
+  const enfants = el.enfants.filter((n): n is Extract<Noeud, { type: "el" }> =>
+    n.type === "el" && (n.tag === "li" || LISTES.has(n.tag)) && !estVide(n));
   let num = 0;
   return (
     <View style={{ marginBottom: dernier ? 0 : ctx.fontSize * 0.55, gap: ctx.fontSize * 0.22 }}>
-      {items.map((li, i) => {
+      {enfants.map((li, i) => {
+        if (LISTES.has(li.tag)) {
+          return (
+            <View key={i} style={{ marginLeft: (nume ? ctx.fontSize * 1.5 : ctx.fontSize * 1.15) }}>
+              <Liste el={li} ctx={ctx} dernier profondeur={profondeur + 1} />
+            </View>
+          );
+        }
         num += 1;
         const marqueur = nume ? `${num}.` : tirets ? "—" : "•";
         // Sous-listes imbriquées dans l'item (indentation de liste)
