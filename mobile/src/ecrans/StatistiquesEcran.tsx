@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Tapable } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
 import CurseurAnnees from "@/components/CurseurAnnees";
@@ -28,7 +28,6 @@ import { fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
-import { useCouleur } from "@/lib/apparence";
 
 // Les trois lentilles — chips bleues, la teinte unique du module
 const LENTILLES = [
@@ -56,8 +55,6 @@ const VOULUS: { cle: string; court: string; test: (ind: any) => boolean }[] = [
 type Point = { annee: number; valeur: number };
 
 export default function StatistiquesEcran() {
-  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
-  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("indicateurs");
@@ -233,17 +230,13 @@ export default function StatistiquesEcran() {
           {LENTILLES.map(l => {
             const lActif = vue === l.cle;
             return (
-              <Pressable key={l.cle}
+              <ChipFiltre key={l.cle} label={l.label} actif={lActif}
                 onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
                 onPress={() => {
-                  tick();
                   setVue(l.cle);
                   const p = chipsPos.current[l.cle];
                   if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
-                }}
-                style={[s.chipFiltre, lActif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
-                <Text style={[s.chipFiltreTexte, { color: bleuChip }, lActif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
-              </Pressable>
+                }} />
             );
           })}
         </ScrollView>
@@ -278,11 +271,6 @@ export default function StatistiquesEcran() {
 
 const s = StyleSheet.create({
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: {
-    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
 
   rangee: { paddingHorizontal: 16, marginTop: 14 },
 

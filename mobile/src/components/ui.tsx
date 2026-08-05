@@ -9,7 +9,8 @@ import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
+  AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
+  LayoutChangeEvent, Modal, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
@@ -34,9 +35,12 @@ const FlouAnime = Reanime.createAnimatedComponent(BlurView);
 // simple zoom. Une seule valeur partagée pilote les deux, exécutée sur le fil
 // UI : entrée courte et nette (90 ms), relâcher au ressort standard, pour que
 // le doigt sente la surface répondre puis respirer.
-export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97, surbrillance = true, hitSlop, children }: {
+export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97, surbrillance = true, hitSlop, onLayout, accessibilityRole, accessibilityState, accessibilityLabel, children }: {
   onPress?: () => void; onLongPress?: () => void; disabled?: boolean;
   style?: StyleProp<ViewStyle>; echelle?: number; surbrillance?: boolean; hitSlop?: number;
+  onLayout?: (e: LayoutChangeEvent) => void;
+  accessibilityRole?: AccessibilityRole; accessibilityState?: AccessibilityState;
+  accessibilityLabel?: string;
   children: React.ReactNode;
 }) {
   const appui = useSharedValue(0);
@@ -50,6 +54,8 @@ export function Tapable({ onPress, onLongPress, disabled, style, echelle = 0.97,
   return (
     <PressableReanime
       onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
+      onLayout={onLayout} accessibilityRole={accessibilityRole}
+      accessibilityState={accessibilityState} accessibilityLabel={accessibilityLabel}
       onPressIn={() => { appui.value = withTiming(1, { duration: 90 }); }}
       onPressOut={() => { appui.value = withSpring(0, RESSORT.standard); }}
       style={[animStyle, styleResolu]}>
@@ -206,6 +212,50 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
     </Tapable>
   );
 }
+
+// ── ChipFiltre : la barre d'onglets en pilules, en haut des écrans ───────────
+// L'actif était signalé par un voile de bleu à 8 % et un liseré : sur une
+// carte de nuit, ce voile ne se voyait pas — et comme tous les libellés
+// étaient déjà bleus, plus rien ne disait lequel était choisi. L'actif prend
+// donc un APLAT PLEIN et une encre blanche : l'écart ne tient plus à une
+// nuance, il se lit d'un coup d'œil et il vaut dans les deux apparences.
+// Défini ici une seule fois — six écrans en recopiaient la mise en forme.
+export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
+  label: string; actif: boolean; compte?: number | null;
+  onPress: () => void; onLayout?: (e: LayoutChangeEvent) => void;
+}) {
+  return (
+    <Tapable onPress={() => { tick(); onPress(); }} onLayout={onLayout} echelle={0.97}
+      accessibilityRole="tab" accessibilityState={{ selected: actif }}
+      style={[scf.chip, actif && scf.chipActif]}>
+      <Text style={[scf.texte, actif && scf.texteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
+        {label}
+      </Text>
+      {compte != null && (
+        <View style={[scf.compte, actif && scf.compteActif]}>
+          <Text style={[scf.compteTexte, actif && scf.compteTexteActif]}
+            maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text>
+        </View>
+      )}
+    </Tapable>
+  );
+}
+
+const scf = StyleSheet.create({
+  chip: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
+    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  },
+  // L'aplat plein : le bleu d'action, qui porte du blanc dans les deux schémas
+  chipActif: { backgroundColor: T.bleuAction, borderColor: "transparent", ...OMBRE.n1 },
+  texte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
+  texteActif: { color: "#fff", fontFamily: POLICE.gras },
+  compte: { backgroundColor: T.bleuVoile, borderRadius: RAYON.pilule, minWidth: 20, paddingHorizontal: 5.5, paddingVertical: 1, alignItems: "center" },
+  compteActif: { backgroundColor: "rgba(255,255,255,0.22)" },
+  compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
+  compteTexteActif: { color: "#fff" },
+});
 
 // ── Carte : la surface de base ───────────────────────────────────────────────
 export function Carte({ onPress, elevation = 1, style, children }: {

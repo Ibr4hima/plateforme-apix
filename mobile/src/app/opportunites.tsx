@@ -14,7 +14,7 @@ import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, us
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
@@ -23,7 +23,6 @@ import { fetchTous, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -128,8 +127,6 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
 }
 
 export default function Opportunites() {
-  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
-  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
@@ -238,23 +235,14 @@ export default function Opportunites() {
         {LENTILLES.map(l => {
           const actif = vue === l.cle;
           return (
-            <Pressable key={l.cle}
+            <ChipFiltre key={l.cle} label={l.label} actif={actif} compte={pret ? comptes[l.cle] : null}
               onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
               onPress={() => {
-                tick();
                 setVue(l.cle); setNiveauSel(null); setSecteurSel(null);
                 // Centre la chip choisie : les voisines restent visibles des deux côtés
                 const p = chipsPos.current[l.cle];
                 if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
-              }}
-              style={[s.chipFiltre, actif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
-              <Text style={[s.chipFiltreTexte, { color: bleuChip }, actif && { fontFamily: POLICE.gras }]}>{l.label}</Text>
-              {pret && (
-                <View style={[s.chipCompte, actif && { backgroundColor: `${bleuChip}18` }]}>
-                  <Text style={[s.chipCompteTexte, { color: bleuChip }]}>{comptes[l.cle]}</Text>
-                </View>
-              )}
-            </Pressable>
+              }} />
           );
         })}
       </ScrollView>
@@ -416,14 +404,6 @@ export default function Opportunites() {
 const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: {
-    flexDirection: "row", alignItems: "center", gap: 7,
-    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
-  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
-  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
   carte: {
     backgroundColor: T.carte, borderRadius: 18,

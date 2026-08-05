@@ -12,10 +12,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
@@ -23,10 +23,8 @@ import ZoneSheet from "@/components/ZoneSheet";
 import { getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
-import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
 
 const pastelPole = (nom?: string | null) =>
   (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
@@ -67,7 +65,6 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 }
 
 export default function Zones() {
-  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
@@ -146,27 +143,17 @@ export default function Zones() {
           style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
           {ZONE_TYPE_ORDER.map(t => {
             const actif = type === t;
-            // Chips au bleu de la maison — la teinte du type vit dans les
-            // cartes ; celle-ci suit l'apparence pour rester lisible la nuit
-            const couleur = bleuChip;
+            // Chips au bleu de la maison — la teinte du type vit dans les cartes
             return (
-              <Pressable key={t}
+              <ChipFiltre key={t} label={ZONE_TYPE_META[t].label} actif={actif}
+                compte={pret ? parType[t] : null}
                 onLayout={ev => { const { x, width: l } = ev.nativeEvent.layout; chipsPos.current[t] = { x, largeur: l }; }}
                 onPress={() => {
-                  tick();
                   setType(t);
                   // Centre la chip choisie : les voisines restent visibles des deux côtés
                   const p = chipsPos.current[t];
                   if (p) chipsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
-                }}
-                style={[s.chipFiltre, actif && { backgroundColor: `${couleur}14`, borderColor: `${couleur}66` }]}>
-                <Text style={[s.chipFiltreTexte, { color: couleur }, actif && { fontFamily: POLICE.gras }]}>{ZONE_TYPE_META[t].label}</Text>
-                {pret && (
-                  <View style={[s.chipCompte, actif && { backgroundColor: `${couleur}18` }]}>
-                    <Text style={[s.chipCompteTexte, { color: couleur }]}>{parType[t]}</Text>
-                  </View>
-                )}
-              </Pressable>
+                }} />
             );
           })}
         </ScrollView>
@@ -245,14 +232,6 @@ export default function Zones() {
 const s = StyleSheet.create({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipFiltre: {
-    flexDirection: "row", alignItems: "center", gap: 7,
-    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
-  chipCompte: { backgroundColor: T.fond, borderRadius: 999, minWidth: 21, paddingHorizontal: 6, paddingVertical: 1.5, alignItems: "center" },
-  chipCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
   carte: {
     backgroundColor: T.carte, borderRadius: 18,

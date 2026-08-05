@@ -9,8 +9,10 @@
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
+import { ChipFiltre } from "@/components/ui";
+import { tick } from "@/lib/haptique";
 import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
 import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
@@ -19,10 +21,8 @@ import SourceIdeSheet from "@/components/SourceIdeSheet";
 import SourceNationalSheet, { SelNational } from "@/components/SourceNationalSheet";
 import { getJson } from "@/lib/api";
 import type { SourceIde } from "@/lib/ideSource";
-import { tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
-import { useCouleur } from "@/lib/apparence";
 
 // Les deux familles — chips bleues, la teinte unique du module
 const ONGLETS = [
@@ -31,8 +31,6 @@ const ONGLETS = [
 ] as const;
 
 export default function IdeEcran() {
-  // La teinte des chips suit l'apparence : un bleu figé disparaîtrait la nuit
-  const bleuChip = useCouleur(T.bleu) as string;
   const margeBas = useMargeBas({ sousOnglets: true });
   const cap = useCap();
   const [onglet, setOnglet] = useState("ide");
@@ -86,17 +84,13 @@ export default function IdeEcran() {
         {ONGLETS.map(o => {
           const actif = onglet === o.cle;
           return (
-            <Pressable key={o.cle}
+            <ChipFiltre key={o.cle} label={o.label} actif={actif}
               onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; ongletsPos.current[o.cle] = { x, largeur: la }; }}
               onPress={() => {
-                tick();
                 setOnglet(o.cle);
                 const p = ongletsPos.current[o.cle];
                 if (p) ongletsRef.current?.scrollTo({ x: Math.max(0, p.x + p.largeur / 2 - Dimensions.get("window").width / 2), animated: true });
-              }}
-              style={[s.chipLentille, actif && { backgroundColor: `${bleuChip}14`, borderColor: `${bleuChip}66` }]}>
-              <Text style={[s.chipLentilleTexte, { color: bleuChip }, actif && { fontFamily: POLICE.gras }]}>{o.label}</Text>
-            </Pressable>
+              }} />
           );
         })}
       </ScrollView>
@@ -133,9 +127,4 @@ export default function IdeEcran() {
 
 const s = StyleSheet.create({
   ongletsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  chipLentille: {
-    paddingHorizontal: 14, paddingVertical: 7.5, borderRadius: 999,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  chipLentilleTexte: { fontSize: 12.5, fontFamily: POLICE.demi },
 });

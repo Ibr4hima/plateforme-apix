@@ -11,17 +11,16 @@
 // récent au plus ancien — l'ordre d'un portefeuille, pas d'une archive.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Symbole from "@/components/Symbole";
 import { fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 
@@ -158,9 +157,7 @@ export default function Accords() {
         {TYPES.map(o => {
           const actif = onglet === o.cle;
           return (
-            <Pressable key={o.cle} onPress={() => { tick(); setOnglet(o.cle); }} style={[s.chipFiltre, actif && s.chipFiltreActif]}>
-              <Text style={[s.chipFiltreTexte, actif && s.chipFiltreTexteActif]}>{o.label}</Text>
-            </Pressable>
+            <ChipFiltre key={o.cle} label={o.label} actif={actif} onPress={() => setOnglet(o.cle)} />
           );
         })}
       </ScrollView>
@@ -214,10 +211,6 @@ const s = StyleSheet.create({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
-  chipFiltre: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999, backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure },
-  chipFiltreActif: { backgroundColor: T.bleuVoile, borderColor: T.blocBord },
-  chipFiltreTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-  chipFiltreTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
 
   carte: {
     backgroundColor: T.carte, borderRadius: 18,
