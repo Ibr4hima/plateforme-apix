@@ -222,8 +222,10 @@ export default function StatistiquesEcran() {
 
   return (
     <>
-      <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+      {/* L'en-tête est ancré hors du défilement */}
+      <View style={{ flex: 1, backgroundColor: T.fond }}>
         <EnTetePage titre="Échanges commerciaux" bouton={boutonHero} />
+        <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -262,7 +264,8 @@ export default function StatistiquesEcran() {
         ) : (
           rendreVedette()
         )}
-      </Animated.ScrollView>
+        </Animated.ScrollView>
+      </View>
 
       {paysOuvert && (
         <PaysSheet pays={pays || []} choisi={paysId}

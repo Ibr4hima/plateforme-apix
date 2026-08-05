@@ -86,10 +86,9 @@ export default function CodeSommaire() {
 
   return (
     <>
-      <Animated.ScrollView
-        style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
-        keyboardShouldPersistTaps="handled">
-        {/* Les deux bases en segments — le pattern des Événements */}
+      {/* L'en-tête est ancré hors du défilement : la recherche et les deux
+          bases restent accessibles au fil de la lecture */}
+      <View style={{ flex: 1, backgroundColor: T.fond }}>
         <EnTetePage titre="Lois & Règlementations"
           recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
           segments={{
@@ -98,6 +97,9 @@ export default function CodeSommaire() {
             onChange: cle => setBase(cle as BaseCode),
           }} />
 
+        <Animated.ScrollView
+          style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
+          keyboardShouldPersistTaps="handled">
         {/* Résultats de recherche */}
         {enRecherche ? (
           <View style={[s.liste, cap]}>
@@ -152,7 +154,8 @@ export default function CodeSommaire() {
             )}
           </View>
         )}
-      </Animated.ScrollView>
+        </Animated.ScrollView>
+      </View>
     </>
   );
 }

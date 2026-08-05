@@ -159,7 +159,10 @@ export default function Evenements() {
         : "Aucun événement terminé ne correspond."} />;
 
   return (
-    <>
+    // L'en-tête est ANCRÉ hors du défilement : retour, recherche et segments
+    // restent sous le pouce, quelle que soit la position dans la liste
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {hero}
       <Animated.SectionList
         style={{ backgroundColor: T.fond }}
         sections={isLoading || isError ? [] : sections}
@@ -182,11 +185,10 @@ export default function Evenements() {
         refreshing={isRefetching}
         onRefresh={refetch}
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={hero}
         ListEmptyComponent={vide}
       />
       {selec && <EvenementSheet ev={selec} onClose={() => setSelec(null)} />}
-    </>
+    </View>
   );
 }
 

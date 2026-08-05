@@ -102,24 +102,26 @@ export default function FichePaysIndex() {
 
   if (modeFiche) {
     return (
-      <>
+      // L'en-tête est ancré hors du défilement : le retour et le choix du pays
+      // restent accessibles au fil de la comparaison
+      <View style={{ flex: 1, backgroundColor: T.fond }}>
+        {hero}
         <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
-          {hero}
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
-      </>
+      </View>
     );
   }
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+    {hero}
     <ListeRapide
       style={{ backgroundColor: T.fond }}
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[{ paddingBottom: margeBas }, cap]}
-      ListHeaderComponent={hero}
       ListHeaderComponentStyle={{ marginBottom: 14 }}
       renderItem={({ item: c }: any) => {
         const ouvert = recherche || ouverts.has(c.continent);
@@ -165,7 +167,7 @@ export default function FichePaysIndex() {
         )
       }
     />
-    </>
+    </View>
   );
 }
 

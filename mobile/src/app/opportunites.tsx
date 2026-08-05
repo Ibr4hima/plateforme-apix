@@ -224,11 +224,14 @@ export default function Opportunites() {
     projets: projetsFiltres.length, potentialites: potsFiltres.length, avantages: avgsFiltres.length,
   };
 
+  // L'en-tête est ancré hors du défilement ; les chips suivent le contenu
+  const entete = (
+    <EnTetePage titre="Opportunités d'investissement"
+      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
+  );
+
   const hero = (
     <>
-      <EnTetePage titre="Opportunités d'investissement"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        />
       {/* Les trois lentilles en chips colorées, compteur en pastille */}
       <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
         style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
@@ -265,7 +268,8 @@ export default function Opportunites() {
   // ── Banque de projets : liste de cartes ──
   if (vue === "projets") {
     return (
-      <>
+      <View style={{ flex: 1, backgroundColor: T.fond }}>
+        {entete}
         <ListeRapide
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
@@ -283,7 +287,7 @@ export default function Opportunites() {
           ListEmptyComponent={vide}
         />
         {projetOuvert && <ProjetSheet projet={projetOuvert} onClose={() => setProjetOuvert(null)} />}
-        </>
+      </View>
     );
   }
 
@@ -306,7 +310,8 @@ export default function Opportunites() {
       groupes.sort((a, b) => a.cle.localeCompare(b.cle, "fr"));
     }
     return (
-      <>
+      <View style={{ flex: 1, backgroundColor: T.fond }}>
+        {entete}
         <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
@@ -348,7 +353,7 @@ export default function Opportunites() {
           )}
         </Animated.ScrollView>
         {potOuverte && <PotentialiteSheet pot={potOuverte} refAvantages={refAvantages || []} onClose={() => setPotOuverte(null)} />}
-        </>
+      </View>
     );
   }
 
@@ -364,7 +369,8 @@ export default function Opportunites() {
   }
   branchesGroupes.sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {entete}
       <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
@@ -403,7 +409,7 @@ export default function Opportunites() {
         )}
       </Animated.ScrollView>
       {avgOuvert && <AvantageSheet avantage={avgOuvert} onClose={() => setAvgOuvert(null)} />}
-    </>
+    </View>
   );
 }
 

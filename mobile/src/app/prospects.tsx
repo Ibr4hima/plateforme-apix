@@ -130,7 +130,10 @@ export default function Prospects() {
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
   return (
-    <>
+    // L'en-tête est ancré hors du défilement ; les chips suivent le contenu
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      <EnTetePage titre="Prospects"
+        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
       <ListeRapide
         style={{ backgroundColor: T.fond }}
         data={courante.isLoading || courante.isError ? [] : filtres}
@@ -146,8 +149,6 @@ export default function Prospects() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            <EnTetePage titre="Prospects"
-              recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
             <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
               style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
               {LENTILLES.map(l => {
@@ -182,7 +183,7 @@ export default function Prospects() {
         }
       />
       {selec && <ProspectSheet prospect={selec} onglet={vue} onClose={() => setSelec(null)} />}
-    </>
+    </View>
   );
 }
 

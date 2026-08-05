@@ -131,11 +131,15 @@ export default function Zones() {
     { cle: "territoire", label: "Pôles territoires",      compte: pret && poles ? polesFiltres.length : undefined },
   ];
 
+  // L'en-tête est ancré hors du défilement ; les chips suivent le contenu
+  const entete = (
+    <EnTetePage titre="Zones d'investissement"
+      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+      segments={{ options: segments, valeur: vue, onChange: setVue }} />
+  );
+
   const hero = (
     <>
-      <EnTetePage titre="Zones d'investissement"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: segments, valeur: vue, onChange: setVue }} />
 
       {vue === "zones" && (
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -175,7 +179,9 @@ export default function Zones() {
     : <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />;
 
   return (
-    <>
+    // L'en-tête est ancré hors du défilement
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {entete}
       {vue === "zones" ? (
         <ListeRapide
           style={{ backgroundColor: T.fond }}
@@ -232,7 +238,7 @@ export default function Zones() {
       )}
       {zoneSelec && <ZoneSheet zone={zoneSelec} onClose={() => setZoneSelec(null)} />}
       {poleSelec && <PoleSheet pole={poleSelec} zones={zones || []} onClose={() => setPoleSelec(null)} />}
-    </>
+    </View>
   );
 }
 

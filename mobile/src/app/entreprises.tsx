@@ -138,7 +138,9 @@ export default function Entreprises() {
     : <EtatVide texte="Aucune entreprise ne correspond." />;
 
   return (
-    <>
+    // L'en-tête est ancré hors du défilement
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {hero}
       {vue === "annuaire" ? (
         <Animated.SectionList
           style={{ backgroundColor: T.fond }}
@@ -160,7 +162,6 @@ export default function Entreprises() {
           stickySectionHeadersEnabled={false}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
       ) : (
@@ -218,12 +219,11 @@ export default function Entreprises() {
           ListHeaderComponentStyle={{ marginBottom: 14 }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={hero}
           ListEmptyComponent={vide}
         />
       )}
       {selec && <EntrepriseSheet entreprise={selec} onClose={() => setSelec(null)} />}
-    </>
+    </View>
   );
 }
 

@@ -144,11 +144,16 @@ export default function Accords() {
     { cle: "expire",     label: "Expirés",    compte: pret ? parStatut.expire : undefined },
   ];
 
+  // L'en-tête est ANCRÉ hors du défilement — retour, recherche et segments
+  // restent sous le pouce ; les chips, elles, suivent le contenu
+  const entete = (
+    <EnTetePage titre="Accords & Traités"
+      recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
+      segments={{ options: segments, valeur: statut, onChange: setStatut }} />
+  );
+
   const hero = (
     <>
-      <EnTetePage titre="Accords & Traités"
-        recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-        segments={{ options: segments, valeur: statut, onChange: setStatut }} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
         {TYPES.map(o => {
           const actif = onglet === o.cle;
@@ -165,6 +170,7 @@ export default function Accords() {
   if (onglet === "inter") {
     return (
       <View style={{ flex: 1, backgroundColor: T.fond }}>
+        {entete}
         {hero}
         <View style={s.centre}>
           <View style={s.bientotPastille}><Symbole nom="signature" taille={26} couleur={T.bleu} /></View>
@@ -176,7 +182,8 @@ export default function Accords() {
   }
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {entete}
       <ListeRapide
         style={{ backgroundColor: T.fond }}
         data={isLoading || isError ? [] : filtres}
@@ -199,7 +206,7 @@ export default function Accords() {
         }
       />
       {selec && <AccordSheet accord={selec} onClose={() => setSelec(null)} />}
-    </>
+    </View>
   );
 }
 

@@ -9,7 +9,7 @@
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
 import IdeFusionPanel from "@/components/IdeFusionPanel";
@@ -74,8 +74,11 @@ export default function IdeEcran() {
 
   return (
     <>
-    <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
+    {/* L'en-tête est ANCRÉ hors du défilement : le retour et le sélecteur de
+        vue restent sous le pouce, même au bas d'une page de trois sections */}
+    <View style={{ flex: 1, backgroundColor: T.fond }}>
       <EnTetePage titre="Investissements privés" bouton={boutonHero} />
+      <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
 
       {/* Les deux familles en chips */}
       <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -114,7 +117,8 @@ export default function IdeEcran() {
           <IdeFusionPanel source={source} onOuvrirSource={() => setSourceOuverte(true)} />
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
 
     {sourceOuverte && (onglet === "nationaux" ? (
       <SourceNationalSheet refs={refsBdef} sel={selNat}
