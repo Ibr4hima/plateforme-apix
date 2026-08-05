@@ -37,7 +37,7 @@ export const T = {
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
-  heroFond:    dyn("#004f91", "#204B7E"),
+  heroFond:    dyn("#004f91", "#1A2335"),
   // Le hero est bleu dans les DEUX schémas : ses boutons de verre gardent donc
   // le même traitement laiteux et la même encre profonde, jour et nuit. Une
   // encre qui aurait suivi l'apparence se serait effacée sur ce bleu moyen.
