@@ -10,7 +10,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -102,7 +102,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
 
   return (
     <View style={s.rangee}>
-      <Text style={s.sectionTitre}>GREENFIELD</Text>
+      <SeparateurSection titre="GREENFIELD" couleur={T.orange as string} voile={T.orangeVoile as string} />
 
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
@@ -201,8 +201,8 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
 }
 
 const s = StyleSheet.create({
-  rangee: { paddingHorizontal: 16, marginTop: 22 },
-  sectionTitre: { ...TYPO.micro, color: T.orange, textAlign: "center", marginBottom: 4 },
+  // La césure porte la respiration : la section suivante s'écarte franchement
+  rangee: { paddingHorizontal: 16, marginTop: 30 },
 
   vedette: {
     backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",

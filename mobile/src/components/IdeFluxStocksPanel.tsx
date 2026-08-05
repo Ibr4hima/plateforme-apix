@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -97,7 +97,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
 
   return (
     <View style={s.rangee}>
-      <Text style={s.sectionTitre}>FLUX & STOCKS</Text>
+      <SeparateurSection titre="FLUX & STOCKS" couleur={T.bleu as string} voile={T.bleuVoile as string} />
 
       {/* Le curseur d'années — le doigt remonte le temps */}
       <CurseurAnnees annees={anneesSerie}
@@ -170,8 +170,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
 }
 
 const s = StyleSheet.create({
-  rangee: { paddingHorizontal: 16, marginTop: 14 },
-  sectionTitre: { ...TYPO.micro, color: T.bleu, textAlign: "center", marginBottom: 4 },
+  rangee: { paddingHorizontal: 16, marginTop: 18 },
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {

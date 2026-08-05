@@ -6,6 +6,7 @@
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator, Animated, Dimensions, Modal, Pressable, ScrollView,
@@ -74,6 +75,39 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
     </Tapable>
   );
 }
+
+// ── SeparateurSection : la césure entre deux blocs d'une même page ───────────
+// Deux filets qui s'éteignent vers les bords de l'écran et, au centre, le nom
+// de la section dans un tag teinté à sa couleur. Empilées sans marque, les
+// sections d'une page longue (Flux & Stocks, Greenfield, Fusion & Acquisition)
+// se confondaient ; ici la coupure se voit avant même d'être lue, et la teinte
+// annonce celle des cartes qui suivent.
+export function SeparateurSection({ titre, couleur = T.bleu as string, voile = T.bleuVoile as string, style }: {
+  titre: string; couleur?: string; voile?: string; style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <View style={[ss.rangee, style]} accessibilityRole="header">
+      <LinearGradient colors={["rgba(16,26,46,0)", "rgba(16,26,46,0.16)"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
+      <View style={[ss.tag, { backgroundColor: voile, borderColor: `${couleur}33` }]}>
+        <Text style={[ss.texte, { color: couleur }]} numberOfLines={1}
+          maxFontSizeMultiplier={ECHELLE.compact}>{titre}</Text>
+      </View>
+      <LinearGradient colors={["rgba(16,26,46,0.16)", "rgba(16,26,46,0)"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
+    </View>
+  );
+}
+
+const ss = StyleSheet.create({
+  rangee: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
+  filet: { flex: 1, height: 1, borderRadius: 1 },
+  tag: {
+    paddingHorizontal: 13, paddingVertical: 5.5, borderRadius: 999,
+    borderCurve: "continuous", borderWidth: 1, flexShrink: 1,
+  },
+  texte: { fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 1.3 },
+});
 
 // ── IconeTendance : la direction d'une série en un glyphe ────────────────────
 // trending_up / trending_down / trending_flat, teinté vert / rouge / gris
