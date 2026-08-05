@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Permutation, RangeeMouvante, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -107,6 +107,9 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
           </Pressable>
         </View>
 
+        {/* Le mesureur reste monté ; la Permutation rejoue à chaque bascule */}
+        <View onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
+        <Permutation cle={indActif.code}>
         {dernier ? (
           <View style={s.nombreLigne}>
             <ChiffreAnime texte={fmtBdef(dernier.valeur, indActif.unite)} style={s.nombre} />
@@ -126,7 +129,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
           <Text style={s.indispo}>Donnée indisponible.</Text>
         )}
 
-        <View style={{ marginTop: 10 }} onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
+        <View style={{ marginTop: 10 }}>
           {largeurTendance > 0 && serie.length > 1 && (
             <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
           )}
@@ -137,8 +140,11 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             <Text style={s.borne}>{dernier!.annee}</Text>
           </View>
         )}
+        </Permutation>
+        </View>
 
-        {/* Les autres indicateurs, un par ligne — cinq d'abord, tous à la demande */}
+        {/* Les autres indicateurs, un par ligne — ils glissent quand l'un
+            d'eux monte en vedette ; cinq d'abord, tous à la demande */}
         <View style={s.pied}>
           {visibles.map((ind, i) => {
             const sx = serieDe(ind);
@@ -146,15 +152,17 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <Tapable key={ind.code} echelle={0.98}
-                onPress={() => { tick(); setActif(ind.code); }}
-                style={[s.repere, i > 0 && s.repereBord]}>
-                <Text style={s.repereLabel} numberOfLines={2}>{ind.libelle.toUpperCase()}</Text>
-                <Text style={s.repereValeur} numberOfLines={1}>
-                  {d ? fmtBdef(d.valeur, ind.unite, true) : "—"}
-                </Text>
-                <IconeTendance delta={dpc} />
-              </Tapable>
+              <RangeeMouvante key={ind.code}>
+                <Tapable echelle={0.98}
+                  onPress={() => { tick(); setActif(ind.code); }}
+                  style={[s.repere, i > 0 && s.repereBord]}>
+                  <Text style={s.repereLabel} numberOfLines={2}>{ind.libelle.toUpperCase()}</Text>
+                  <Text style={s.repereValeur} numberOfLines={1}>
+                    {d ? fmtBdef(d.valeur, ind.unite, true) : "—"}
+                  </Text>
+                  <IconeTendance delta={dpc} />
+                </Tapable>
+              </RangeeMouvante>
             );
           })}
           {autres.length > 5 && (

@@ -15,12 +15,13 @@ import { EtatVide } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
 import { T, POLICE } from "@/theme";
-import { useMargeBas } from "@/lib/marges";
+import { useCap, useMargeBas } from "@/lib/marges";
 
 const MAX_PAR_GROUPE = 6;
 
 export default function Recherche() {
   const margeBas = useMargeBas();
+  const cap = useCap();
   const [q, setQ] = useState("");
   const [fiche, setFiche] = useState<Resultat | null>(null);
 
@@ -73,7 +74,7 @@ export default function Recherche() {
         data={resultats}
         keyExtractor={(r, i) => `${r.type}-${r.nom}-${i}`}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: margeBas }}
+        contentContainerStyle={[{ paddingHorizontal: 16, paddingBottom: margeBas }, cap]}
         renderItem={({ item: r }) => {
           const entete = r.type !== dernierGroupe;
           dernierGroupe = r.type;

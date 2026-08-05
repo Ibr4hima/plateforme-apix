@@ -21,7 +21,7 @@ import { getJson } from "@/lib/api";
 import type { SourceIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
-import { useMargeBas } from "@/lib/marges";
+import { useCap, useMargeBas } from "@/lib/marges";
 
 // Les deux familles — chips bleues, la teinte unique du module
 const ONGLETS = [
@@ -31,6 +31,7 @@ const ONGLETS = [
 
 export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
+  const cap = useCap();
   const [onglet, setOnglet] = useState("ide");
   const [sourceOuverte, setSourceOuverte] = useState(false);
   const ongletsRef = useRef<ScrollView>(null);
@@ -70,7 +71,7 @@ export default function IdeEcran() {
 
   return (
     <>
-    <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+    <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
       <EnTetePage titre="Investissements privés" bouton={boutonHero} />
 
       {/* Les deux familles en chips */}

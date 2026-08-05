@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TexteDefilant from "@/components/TexteDefilant";
 import TexteRiche from "@/components/TexteRiche";
 import { getJson } from "@/lib/api";
+import { useCap } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { romainDe } from "./index";
 
@@ -42,6 +43,7 @@ export default function Lecteur() {
   const { chapitre, base = "code-investissement", art } = useLocalSearchParams<{ chapitre: string; base?: string; art?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const cap = useCap();
   const defileur = useRef<ScrollView>(null);
   const positions = useRef<Record<string, number>>({});
   const [surligneId, setSurligneId] = useState<string | null>(art || null);
@@ -134,7 +136,7 @@ export default function Lecteur() {
       <Animated.ScrollView
         ref={defileur as any}
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: insets.top + 62, paddingBottom: 60 }}
+        contentContainerStyle={[{ paddingTop: insets.top + 62, paddingBottom: 60 }, cap]}
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: defilementY } } }], { useNativeDriver: false })}
         onLayout={e => { hauteurEcran.current = e.nativeEvent.layout.height; majMax(); }}

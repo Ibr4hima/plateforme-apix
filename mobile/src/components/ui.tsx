@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Reanime, {
+  Easing, FadeInDown, LinearTransition,
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
@@ -73,6 +74,35 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>
     </Tapable>
+  );
+}
+
+// ── Permutation : l'accusé de réception d'un changement de vedette ───────────
+// Toucher un repère installe sa série en vedette. Sans transition, le nombre
+// se substituait d'un coup et l'ancienne série réapparaissait plus bas sans
+// mouvement : on doutait d'avoir cliqué. Ici le bloc vedette se rejoue —
+// fondu et légère montée — à chaque changement de clé, et les repères
+// glissent à leur nouvelle place (LinearTransition) au lieu de sauter.
+export function Permutation({ cle, children, style }: {
+  cle: string; children: React.ReactNode; style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <Reanime.View key={cle} style={style}
+      entering={FadeInDown.duration(230).easing(Easing.out(Easing.cubic))
+        .withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] })}>
+      {children}
+    </Reanime.View>
+  );
+}
+
+/** Rangée qui glisse à sa nouvelle place quand l'ordre de la liste change. */
+export function RangeeMouvante({ children, style }: {
+  children: React.ReactNode; style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <Reanime.View layout={LinearTransition.springify().damping(20).stiffness(180)} style={style}>
+      {children}
+    </Reanime.View>
   );
 }
 

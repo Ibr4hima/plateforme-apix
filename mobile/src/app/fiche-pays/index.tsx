@@ -18,7 +18,7 @@ import { Image as ImageCache } from "expo-image";
 import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { POLICE, T } from "@/theme";
-import { useMargeBas } from "@/lib/marges";
+import { useCap, useMargeBas } from "@/lib/marges";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -27,6 +27,7 @@ type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb:
 
 export default function FichePaysIndex() {
   const margeBas = useMargeBas();
+  const cap = useCap();
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<Pays | null>(null);
   const [ouverts, setOuverts] = useState<Set<string>>(new Set(["Afrique"]));
@@ -102,7 +103,7 @@ export default function FichePaysIndex() {
   if (modeFiche) {
     return (
       <>
-        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
           {hero}
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
@@ -117,7 +118,7 @@ export default function FichePaysIndex() {
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ paddingBottom: margeBas }}
+      contentContainerStyle={[{ paddingBottom: margeBas }, cap]}
       ListHeaderComponent={hero}
       ListHeaderComponentStyle={{ marginBottom: 14 }}
       renderItem={({ item: c }: any) => {

@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatVide, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, Permutation, RangeeMouvante, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -115,38 +115,45 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
           </Pressable>
         </View>
 
-        {dernier ? (
-          <View style={s.nombreLigne}>
-            <ChiffreAnime texte={fmtMusd(dernier.valeur)} style={s.nombre} />
-            {delta !== null && (
-              <View style={s.deltaLigne}>
-                <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
-                  materiel={hausse ? "north_east" : "south_east"}
-                  taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
-                <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
-                  {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                </Text>
-                <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
+        {/* Le mesureur reste monté : la Permutation rejoue à chaque
+            changement de vedette, la largeur de la courbe ne se remesure pas */}
+        <View onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
+          <Permutation cle={actif}>
+            {dernier ? (
+              <View style={s.nombreLigne}>
+                <ChiffreAnime texte={fmtMusd(dernier.valeur)} style={s.nombre} />
+                {delta !== null && (
+                  <View style={s.deltaLigne}>
+                    <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
+                      materiel={hausse ? "north_east" : "south_east"}
+                      taille={12} couleur={hausse ? T.vert : "#dc2626"} poids="bold" />
+                    <Text style={[s.deltaTexte, { color: hausse ? T.vert : "#dc2626" }]}>
+                      {Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
+                    </Text>
+                    <Text style={s.deltaContexte}>vs {precedent!.annee}</Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text style={s.indispo}>Donnée indisponible.</Text>
+            )}
+
+            <View style={{ marginTop: 10 }}>
+              {largeurTendance > 0 && serie.length > 1 && (
+                <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
+              )}
+            </View>
+            {serie.length > 1 && (
+              <View style={s.bornes}>
+                <Text style={s.borne}>{serie[0].annee}</Text>
+                <Text style={s.borne}>{dernier!.annee}</Text>
               </View>
             )}
-          </View>
-        ) : (
-          <Text style={s.indispo}>Donnée indisponible.</Text>
-        )}
-
-        <View style={{ marginTop: 10 }} onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
-          {largeurTendance > 0 && serie.length > 1 && (
-            <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
-          )}
+          </Permutation>
         </View>
-        {serie.length > 1 && (
-          <View style={s.bornes}>
-            <Text style={s.borne}>{serie[0].annee}</Text>
-            <Text style={s.borne}>{dernier!.annee}</Text>
-          </View>
-        )}
 
-        {/* Les cinq repères, un par ligne — la tendance en glyphe teinté */}
+        {/* Les cinq repères, un par ligne — ils GLISSENT à leur nouvelle place
+            quand l'un d'eux monte en vedette */}
         <View style={s.pied}>
           {reperes.map((cle, i) => {
             const sx = jusqu(series[cle]);
@@ -154,13 +161,15 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <Tapable key={cle} echelle={0.98}
-                onPress={() => { tick(); setActif(cle); }}
-                style={[s.repere, i > 0 && s.repereBord]}>
-                <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
-                <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>
-                <IconeTendance delta={dpc} />
-              </Tapable>
+              <RangeeMouvante key={cle}>
+                <Tapable echelle={0.98}
+                  onPress={() => { tick(); setActif(cle); }}
+                  style={[s.repere, i > 0 && s.repereBord]}>
+                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                  <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>
+                  <IconeTendance delta={dpc} />
+                </Tapable>
+              </RangeeMouvante>
             );
           })}
         </View>

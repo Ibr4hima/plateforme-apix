@@ -17,7 +17,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
-import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
+import { Apparition, ChiffreAnime, IconeTendance, Permutation, RangeeMouvante, Tapable } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -149,7 +149,10 @@ export default function VedetteIde() {
           <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
         </Tapable>
 
-        {/* Le nombre, puis sa variation */}
+        {/* Le nombre, puis sa variation — le mesureur reste monté, la
+            Permutation rejoue à chaque changement de vedette */}
+        <View onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
+        <Permutation cle={actif}>
         {dernier ? (
           <>
             <ChiffreAnime texte={fmtDe(actif)(dernier.valeur)} style={s.nombre} />
@@ -171,7 +174,7 @@ export default function VedetteIde() {
         )}
 
         {/* La silhouette de la série entière */}
-        <View style={{ marginTop: ESPACE.s }} onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
+        <View style={{ marginTop: ESPACE.s }}>
           {largeur > 0 && serie.length > 1 && (
             <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeur} couleur={T.bleu as string} />
           )}
@@ -182,8 +185,11 @@ export default function VedetteIde() {
             <Text style={s.borne} maxFontSizeMultiplier={ECHELLE.compact}>{dernier!.annee}</Text>
           </View>
         )}
+        </Permutation>
+        </View>
 
-        {/* Quatre repères (2 × 2) — toucher installe en vedette */}
+        {/* Quatre repères (2 × 2) — ils glissent à leur nouvelle place quand
+            l'un d'eux monte en vedette */}
         <View style={s.pied}>
           {reperes.map((cle, i) => {
             const sx = series[cle];
@@ -191,9 +197,10 @@ export default function VedetteIde() {
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <Tapable key={cle} echelle={0.96}
+              <RangeeMouvante key={cle} style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
+              <Tapable echelle={0.96}
                 onPress={() => { tick(); setActif(cle); }}
-                style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
+                style={{ flex: 1 }}>
                 <Text style={s.repereLabel} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{LABELS[cle].court}</Text>
                 <View style={s.repereLigne}>
                   <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit
@@ -204,6 +211,7 @@ export default function VedetteIde() {
                   <IconeTendance delta={dpc} />
                 </View>
               </Tapable>
+              </RangeeMouvante>
             );
           })}
         </View>

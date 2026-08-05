@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Permutation, RangeeMouvante, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -176,6 +176,9 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
             </Pressable>
           </View>
 
+          {/* Le mesureur reste monté ; la Permutation rejoue à chaque bascule */}
+          <View onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
+          <Permutation cle={actif}>
           {dernier ? (
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={fmtUSD(dernier.valeur)} style={s.nombre} />
@@ -195,7 +198,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
             <Text style={s.indispo}>Donnée indisponible.</Text>
           )}
 
-          <View style={{ marginTop: 10 }} onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
+          <View style={{ marginTop: 10 }}>
             {largeurTendance > 0 && serie.length > 1 && (
               <MiniTendance valeurs={serie.map(x => x.valeur)} largeur={largeurTendance} couleur={T.bleu as string} />
             )}
@@ -206,8 +209,10 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
               <Text style={s.borne}>{dernier!.annee}</Text>
             </View>
           )}
+          </Permutation>
+          </View>
 
-          {/* Les repères, un par ligne */}
+          {/* Les repères, un par ligne — ils glissent quand l'un monte en vedette */}
           <View style={s.pied}>
             {reperes.map((cle, i) => {
               const sx = jusqu(serieDe(cle));
@@ -215,12 +220,14 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
               const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               return (
-                <Tapable key={cle} echelle={0.98} onPress={() => choisir(cle)}
-                  style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
-                  <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
-                  <IconeTendance delta={dpc} />
-                </Tapable>
+                <RangeeMouvante key={cle}>
+                  <Tapable echelle={0.98} onPress={() => choisir(cle)}
+                    style={[s.repere, i > 0 && s.repereBord]}>
+                    <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                    <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
+                    <IconeTendance delta={dpc} />
+                  </Tapable>
+                </RangeeMouvante>
               );
             })}
           </View>

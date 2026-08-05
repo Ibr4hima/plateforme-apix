@@ -12,7 +12,7 @@
 // Android ne floute pas de façon fiable : il garde l'aplat opaque.
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Tapable } from "@/components/ui";
@@ -27,9 +27,13 @@ const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIco
 
 function BarreOnglets({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  // Sur tablette, la capsule ne s'étire pas d'un bord à l'autre : elle se
+  // plafonne et se centre, comme le contenu des écrans
+  const capBarre = width >= 700 ? { maxWidth: 520, alignSelf: "center" as const, width: "100%" as const } : null;
   return (
     <View pointerEvents="box-none" style={[s.zoneBarre, { bottom: Math.max(insets.bottom - 4, 12) }]}>
-      <View style={s.coquille}>
+      <View style={[s.coquille, capBarre]}>
       <View style={s.capsule}>
         {VERRE ? (
           <>

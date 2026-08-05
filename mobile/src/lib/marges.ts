@@ -12,6 +12,7 @@
 // installé un jour dans l'arbre donnerait un contexte différent de celui du
 // navigateur, donc undefined, et la marge redeviendrait silencieusement fausse.
 // Ici, seuls trois écrans vivent sous les onglets : autant l'écrire.
+import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /** Hauteur du contenu de la barre d'onglets, hors marge système. */
@@ -27,4 +28,19 @@ export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
 } = {}): number {
   const insets = useSafeAreaInsets();
   return insets.bottom + (sousOnglets ? HAUTEUR_ONGLETS : 0) + respiration;
+}
+
+/**
+ * Plafond de largeur du contenu sur grand écran.
+ *
+ * Une colonne de texte ou une carte de 1 000 pt de large ne se lit pas : la
+ * ligne devient trop longue pour l'œil et les courbes s'aplatissent. Au-delà
+ * de 700 pt, le contenu se plafonne à 680 et se centre — la valeur employée
+ * par tous les écrans de l'app.
+ */
+export function useCap() {
+  const { width } = useWindowDimensions();
+  return width >= 700
+    ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const }
+    : null;
 }
