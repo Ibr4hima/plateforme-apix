@@ -24,7 +24,7 @@ import { fetchTous } from "@/lib/api";
 import { useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
-import { DEGRADE_EVENEMENT, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { DEGRADE_EVENEMENT, DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 function ProchainEvenement() {
@@ -132,6 +132,10 @@ export default function Accueil() {
 
       {/* ── En-tête : le bandeau bleu, du haut de l'écran au titre ── */}
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
+        {/* La matière du bandeau — la même que le bloc « À venir » */}
+        <LinearGradient colors={[...(sombre ? DEGRADE_HERO.sombre : DEGRADE_HERO.clair)]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          pointerEvents="none" style={StyleSheet.absoluteFill} />
         {/* La lumière du bandeau : un dégradé en diagonale, du coin haut droit
             vers le bas gauche. Un cercle translucide se serait coupé net sur
             la bordure basse — le dégradé s'éteint de lui-même. */}

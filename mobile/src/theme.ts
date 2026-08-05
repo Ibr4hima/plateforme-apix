@@ -152,6 +152,15 @@ export const OMBRE = {
 // Le bloc « À venir » de l'accueil — le seul aplat de couleur de la page.
 // De jour il assume le bleu APIX ; de nuit il descend vers le bleu de minuit
 // du fond, sans quoi il vibrait comme une pièce rapportée.
+// Le bandeau de hero — le même dégradé que le bloc « À venir » de l'accueil :
+// les deux grandes surfaces bleues de l'app partagent leur matière. De jour
+// il reste l'aplat plein du bleu APIX (deux bornes identiques), la nuit il
+// monte du bleu de minuit du hero vers le bleu de la maison.
+export const DEGRADE_HERO = {
+  clair: ["#004f91", "#004f91"] as const,
+  sombre: ["#16213A", "#22406A"] as const,
+};
+
 export const DEGRADE_EVENEMENT = {
   clair: ["#063C6E", "#004f91", "#1465AC"] as const,
   sombre: ["#16213A", "#22406A"] as const,

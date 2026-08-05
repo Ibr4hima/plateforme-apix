@@ -26,8 +26,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone from "@/components/Icone";
 import { BoutonVerre, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { useStyleBarreParDefaut } from "@/lib/apparence";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { DEGRADE_HERO, ECHELLE, POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
@@ -41,6 +41,7 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
 }) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const sombre = useSombre();
   const [rechercheOuverte, setRechercheOuverte] = useState(false);
 
   // Bandeau bleu jusqu'en haut : barre d'état blanche tant que la page a le
@@ -66,6 +67,10 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
     <View>
       {/* ── Le bandeau bleu : du haut de l'écran jusque sous le titre ── */}
       <View style={[s.bandeau, { paddingTop: insets.top + 8 }]}>
+        {/* La matière du bandeau — la même que le hero de l'accueil */}
+        <LinearGradient colors={[...(sombre ? DEGRADE_HERO.sombre : DEGRADE_HERO.clair)]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          pointerEvents="none" style={StyleSheet.absoluteFill} />
         {/* La lumière du bandeau — un dégradé en diagonale, qui s'éteint de
             lui-même au lieu de se couper sur la bordure */}
         <LinearGradient
