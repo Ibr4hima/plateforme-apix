@@ -419,7 +419,13 @@ const sr = StyleSheet.create({
 });
 
 const sf = StyleSheet.create({
-  fond: { flex: 1, backgroundColor: "rgba(2,20,38,0.28)" },
+  // Le voile couvre TOUT l'écran, pas seulement la place laissée au-dessus de
+  // la feuille : en `flex: 1` il s'arrêtait à la hauteur calculée à la mise en
+  // page, alors que la feuille se déplace ensuite par transform. Deux coutures
+  // en découlaient — les coins arrondis laissaient voir un flou non voilé, et
+  // le glissement vers le bas découvrait une bande plus claire à l'ancienne
+  // position. La feuille étant opaque, la voiler dessous ne coûte rien.
+  fond: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2,20,38,0.28)" },
   feuille: {
     backgroundColor: T.carte, borderTopLeftRadius: 34, borderTopRightRadius: 34,
     // La courbe continue (« squircle ») : c'est elle qui fait les coins
