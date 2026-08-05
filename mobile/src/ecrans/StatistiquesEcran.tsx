@@ -9,6 +9,7 @@
 // Population, PIB par habitant, imports / exports de marchandises et de
 // services et les deux balances commerciales tournent dessous. Superficie et
 // croissances ne sont pas embarquées sur l'app.
+import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -63,6 +64,9 @@ export default function StatistiquesEcran() {
   const [paysOuvert, setPaysOuvert] = useState(false);
   const [largeurTendance, setLargeurTendance] = useState(0);
   const chipsRef = useRef<ScrollView>(null);
+  // Retoucher l'onglet déjà actif remonte la page en haut
+  const defilement = useRef<any>(null);
+  useScrollToTop(defilement);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   const { data: pays } = useQuery({ queryKey: ["stat-pays"], queryFn: () => getJson<any[]>("/statistiques/pays") });
@@ -215,7 +219,7 @@ export default function StatistiquesEcran() {
 
   return (
     <>
-      <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+      <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
         <EnTetePage titre="Échanges commerciaux" bouton={boutonHero} />
 
         {/* Les trois lentilles en chips colorées */}

@@ -3,17 +3,17 @@
 // Sur téléphone, l'écran d'ouverture répond à trois questions, dans l'ordre :
 // où en est l'investissement au Sénégal (chiffre vedette + tendance), qu'est-ce
 // qui arrive (prochain événement), où est-ce que je creuse (Explorer).
-// L'en-tête garde sa composition (date, « Invest in Senegal », mode sombre,
-// recherche) mais se pose sur un bandeau bleu institutionnel qui part du haut
-// de l'écran — compact : le reste de la page reste clair, le bleu en accent.
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// L'en-tête garde sa composition (date, « Invest in Senegal », recherche)
+// mais se pose sur un bandeau bleu institutionnel qui part du haut de
+// l'écran — compact : le reste de la page reste clair, le bleu en accent.
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
-import { useCallback, useEffect, useState } from "react";
-import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
 import Icone from "@/components/Icone";
@@ -75,21 +75,9 @@ export default function Accueil() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const qc = useQueryClient();
   const [rafraichit, setRafraichit] = useState(false);
-
-  // Mode sombre / clair : préférence mémorisée, appliquée au schéma système
-  // (le lecteur du Code la suit déjà ; la peau sombre des écrans arrive)
-  const [sombre, setSombre] = useState(false);
-  useEffect(() => {
-    AsyncStorage.getItem("apix.theme").then(v => {
-      if (v === "sombre") { setSombre(true); Appearance.setColorScheme("dark"); }
-    }).catch(() => {});
-  }, []);
-  const basculerTheme = () => setSombre(v => {
-    const n = !v;
-    AsyncStorage.setItem("apix.theme", n ? "sombre" : "clair").catch(() => {});
-    Appearance.setColorScheme(n ? "dark" : "light");
-    return n;
-  });
+  // Retoucher l'onglet Accueil déjà actif remonte la page en haut
+  const defilement = useRef<ScrollView>(null);
+  useScrollToTop(defilement);
 
   // Le bandeau d'en-tête est bleu : barre d'état blanche tant que l'accueil
   // a le focus (les autres écrans, clairs, posent la leur via EnTetePage).
@@ -114,6 +102,7 @@ export default function Accueil() {
 
   return (
     <ScrollView
+      ref={defilement}
       style={{ backgroundColor: T.fond }}
       contentContainerStyle={{ paddingBottom: margeBas }}
       refreshControl={<RefreshControl refreshing={rafraichit} onRefresh={rafraichir}
@@ -148,11 +137,6 @@ export default function Accueil() {
             </View>
           </View>
           <View style={s.boutonsEnTete}>
-            <BoutonVerre onPress={basculerTheme} taille={40}
-              accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
-              <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-                taille={17} couleur={T.bleu} poids="semibold" />
-            </BoutonVerre>
             <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
               accessibilityLabel="Rechercher">
               <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />

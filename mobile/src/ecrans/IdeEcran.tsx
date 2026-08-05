@@ -6,6 +6,7 @@
 // L'onglet IDE se lit en trois sections — Flux & Stocks, Greenfield,
 // Fusion & Acquisition — chacune une carte vedette à curseur d'années.
 // L'analyse comparative a quitté l'app : un pays, une lecture au pouce.
+import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text } from "react-native";
@@ -33,6 +34,9 @@ export default function IdeEcran() {
   const [onglet, setOnglet] = useState("ide");
   const [sourceOuverte, setSourceOuverte] = useState(false);
   const ongletsRef = useRef<ScrollView>(null);
+  // Retoucher l'onglet déjà actif remonte la page en haut
+  const defilement = useRef<ScrollView>(null);
+  useScrollToTop(defilement);
   const ongletsPos = useRef<Record<string, { x: number; largeur: number }>>({});
 
   // Les trois référentiels de la VUE : pays, zones du monde, secteurs
@@ -66,7 +70,7 @@ export default function IdeEcran() {
 
   return (
     <>
-    <ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+    <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
       <EnTetePage titre="Investissements privés" bouton={boutonHero} />
 
       {/* Les deux familles en chips */}

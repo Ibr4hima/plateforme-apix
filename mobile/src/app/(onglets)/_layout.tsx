@@ -1,4 +1,6 @@
 // Barre d'onglets — capsule FLOTTANTE EN VERRE, rendue entièrement à la main :
+// retoucher l'onglet actif remonte l'écran en haut (émission de « tabPress »,
+// que useScrollToTop écoute dans chaque écran d'onglet).
 // décollée du bord, flou natif, ombre douce, trois onglets. L'actif est une
 // pilule bleu voilé qui enveloppe icône ET libellé (filet fin, libellé bleu
 // gras) — le signal se voit d'un coup d'œil, les autres restent en gris calme.
@@ -41,7 +43,14 @@ function BarreOnglets({ state, navigation }: any) {
           const actif = state.index === i;
           return (
             <Tapable key={route.key} echelle={0.94} surbrillance={false} style={{ flex: 1 }}
-              onPress={() => { if (!actif) { tick(); navigation.navigate(route.name); } }}>
+              onPress={() => {
+                tick();
+                // L'événement standard de react-navigation : les écrans qui
+                // enregistrent leur liste (useScrollToTop) remontent en haut
+                // quand on retouche l'onglet DÉJÀ actif — le réflexe iOS.
+                const ev = navigation.emit({ type: "tabPress", target: route.key, canPreventDefault: true });
+                if (!actif && !ev.defaultPrevented) navigation.navigate(route.name);
+              }}>
               <View accessible accessibilityRole="tab" accessibilityLabel={o.titre}
                 accessibilityState={{ selected: actif }} style={s.zoneOnglet}>
                 <View style={[s.pilule, actif && s.piluleActive]}>
