@@ -161,11 +161,11 @@ export default function Accueil() {
             <BoutonVerre onPress={basculerTheme} taille={40}
               accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
               <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
-                taille={17} couleur={T.bleu} poids="semibold" />
+                taille={17} couleur={T.encreHero} poids="semibold" />
             </BoutonVerre>
             <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
               accessibilityLabel="Rechercher">
-              <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.bleu} poids="semibold" />
+              <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.encreHero} poids="semibold" />
             </BoutonVerre>
           </View>
         </View>

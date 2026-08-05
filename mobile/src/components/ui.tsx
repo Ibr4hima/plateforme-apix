@@ -18,7 +18,7 @@ import Reanime, {
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
-import { useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
+import { useCouleur, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
@@ -67,18 +67,18 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
   style?: StyleProp<ViewStyle>; accessibilityLabel?: string;
   children: React.ReactNode;
 }) {
-  // Le verre suit l'apparence : un voile blanc à 62 % sur un bandeau de nuit
-  // ferait un projecteur — la nuit, le flou s'assombrit et le voile s'allège
-  const sombre = useSombre();
+  // Le verre NE suit PAS l'apparence : il ne se pose que sur un hero, et le
+  // hero est bleu jour ET nuit. Un verre assombri s'y fondait au point de
+  // devenir invisible ; laiteux, il s'en détache de la même façon partout.
   return (
     <Tapable onPress={onPress} echelle={0.9} hitSlop={6}
       style={[{ width: taille, height: taille, borderRadius: taille / 2 }, OMBRE.n1, style]}>
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
           borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, {
-          backgroundColor: teinte || (sombre ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.62)"),
+          backgroundColor: teinte || "rgba(255,255,255,0.62)",
         }]} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>

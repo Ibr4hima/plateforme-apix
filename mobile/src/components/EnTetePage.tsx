@@ -82,7 +82,7 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
             // le retour ramène alors à l'accueil plutôt que de ne rien faire
             <BoutonVerre onPress={() => (router.canGoBack() ? router.back() : router.navigate("/" as any))}
               taille={40} accessibilityLabel="Retour">
-              <Icone sf="chevron.left" materiel="arrow_back" taille={17} couleur={T.bleu} poids="semibold" />
+              <Icone sf="chevron.left" materiel="arrow_back" taille={17} couleur={T.encreHero} poids="semibold" />
             </BoutonVerre>
           ) : null}
         </View>
@@ -100,13 +100,13 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
             <BoutonVerre onPress={basculerRecherche} taille={40}
               accessibilityLabel={rechercheOuverte ? "Fermer la recherche" : "Rechercher"}>
               <Icone sf={rechercheOuverte ? "xmark" : "magnifyingglass"}
-                materiel={rechercheOuverte ? "close" : "search"} taille={17} couleur={T.bleu} poids="semibold" />
+                materiel={rechercheOuverte ? "close" : "search"} taille={17} couleur={T.encreHero} poids="semibold" />
             </BoutonVerre>
           )}
           {bouton && (
             <View>
               <BoutonVerre onPress={bouton.onPress} taille={40} accessibilityLabel="Filtres">
-                <Icone sf="line.3.horizontal.decrease" materiel={bouton.icone} taille={17} couleur={T.bleu} poids="semibold" />
+                <Icone sf="line.3.horizontal.decrease" materiel={bouton.icone} taille={17} couleur={T.encreHero} poids="semibold" />
               </BoutonVerre>
               {bouton.badge ? (
                 <View style={s.badge}><Text style={s.badgeTexte}>{bouton.badge}</Text></View>

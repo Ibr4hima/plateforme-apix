@@ -37,7 +37,11 @@ export const T = {
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
-  heroFond:    dyn("#004f91", "#4A7298"),
+  heroFond:    dyn("#004f91", "#3D6796"),
+  // Le hero est bleu dans les DEUX schémas : ses boutons de verre gardent donc
+  // le même traitement laiteux et la même encre profonde, jour et nuit. Une
+  // encre qui aurait suivi l'apparence se serait effacée sur ce bleu moyen.
+  encreHero:   "#004f91",
   bleuNuit:    "#003a6e",
   bleuClair:   "#1a6ab0",
   // Encres
@@ -147,7 +151,7 @@ export const OMBRE = {
 // du fond, sans quoi il vibrait comme une pièce rapportée.
 export const DEGRADE_EVENEMENT = {
   clair: ["#063C6E", "#004f91", "#1465AC"] as const,
-  sombre: ["#47668A", "#4A7298"] as const,
+  sombre: ["#37587D", "#3D6796"] as const,
 };
 
 export const BADGE = {
