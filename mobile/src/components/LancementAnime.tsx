@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Animated, Dimensions, Easing, Image, StyleSheet, View } from "react-native";
+import { creerStyles } from "@/lib/apparence";
 
 const { width: ECRAN } = Dimensions.get("window");
 const LOGO_L = Math.min(ECRAN * 0.62, 300);
@@ -56,7 +57,7 @@ export default function LancementAnime({ onFini }: { onFini: () => void }) {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   fond: {
     ...StyleSheet.absoluteFillObject, zIndex: 100, backgroundColor: "#004f91",
     alignItems: "center", justifyContent: "center", overflow: "hidden",
@@ -69,4 +70,4 @@ const s = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.9)",
     shadowColor: "#fff", shadowOpacity: 0.9, shadowRadius: 8, shadowOffset: { width: 0, height: 0 },
   },
-});
+}));

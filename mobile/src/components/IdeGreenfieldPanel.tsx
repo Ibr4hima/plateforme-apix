@@ -18,6 +18,7 @@ import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 type Sens = "entrant" | "sortant";
 const LABELS: Record<Sens, string> = {
@@ -200,7 +201,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   // La césure porte la respiration : la section suivante s'écarte franchement
   rangee: { paddingHorizontal: 16, marginTop: 30 },
 
@@ -242,4 +243,4 @@ const s = StyleSheet.create({
   projetAnnee: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
   projetValeur: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
   deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.orange },
-});
+}));

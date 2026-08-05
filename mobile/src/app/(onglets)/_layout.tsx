@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { useSombre } from "@/lib/apparence";
+import { creerStyles, useSombre } from "@/lib/apparence";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
@@ -94,7 +94,7 @@ export default function OngletsLayout() {
 // Le flou natif n'est fidèle que sur iOS ; ailleurs, l'aplat reste opaque
 const VERRE = Platform.OS === "ios";
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   zoneBarre: { position: "absolute", left: 14, right: 14 },
   // Coquille : elle seule porte l'ombre, que l'overflow de la capsule couperait
   coquille: {
@@ -118,4 +118,4 @@ const s = StyleSheet.create({
   piluleActive: { backgroundColor: T.bleuVoile, borderColor: T.blocBord },
   libelle: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.gris },
   libelleActif: { color: T.bleu, fontFamily: POLICE.gras },
-});
+}));

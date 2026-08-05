@@ -20,7 +20,7 @@ import {
 import { cran } from "@/lib/haptique";
 import { DUREE, RESSORT, SORTIE } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
-import { resoudre, useSombre } from "@/lib/apparence";
+import { creerStyles, resoudre, useSombre } from "@/lib/apparence";
 
 export type Serie = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
 
@@ -398,7 +398,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   tick: { position: "absolute", fontSize: 9, fontFamily: POLICE.normal },
   annee: { position: "absolute", bottom: 2, fontSize: 9.5, fontFamily: POLICE.normal, color: T.gris },
   picChip: {
@@ -409,6 +409,6 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   picTexte: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 0.8, fontVariant: ["tabular-nums"] },
-});
+}));
 
 export default memo(GrapheLignes);

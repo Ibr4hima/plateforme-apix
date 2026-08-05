@@ -15,12 +15,15 @@ import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
 export const splitLocalisation = (loc: string): string[] =>
   (loc || "").split(/,\s*|\s+et\s+/).map(x => x.trim()).filter(Boolean);
 
-const SECTEURS_REPARTITION = [
+// Une FONCTION, pas une constante de module : sur Android un jeton se lit au
+// rendu — figé à l'import, il resterait au schéma du lancement.
+const secteursRepartition = () => [
   { label: "Secteur primaire",   cle: "primaire",   couleur: T.bleu },
   { label: "Secteur secondaire", cle: "secondaire", couleur: T.orange },
   { label: "Secteur tertiaire",  cle: "tertiaire",  couleur: T.vert },
@@ -122,7 +125,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
       {totalSect > 0 && (
         <Section titre="Répartition sectorielle">
           <View style={{ gap: 12 }}>
-            {SECTEURS_REPARTITION.map(r => {
+            {secteursRepartition().map(r => {
               const pct = Math.round(compte[r.cle] / totalSect * 100);
               return (
                 <View key={r.cle}>
@@ -158,7 +161,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   entete: { flexDirection: "row", alignItems: "center", gap: 13 },
   tuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   surtitre: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 3 },
@@ -192,4 +195,4 @@ const s = StyleSheet.create({
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

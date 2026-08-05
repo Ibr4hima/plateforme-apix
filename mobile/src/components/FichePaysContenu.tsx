@@ -17,8 +17,10 @@ import Symbole from "@/components/Symbole";
 import { getJson } from "@/lib/api";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
-const COL_SEN = T.bleu;
+// Lu au rendu (voir PoleSheet) : sur Android un jeton fige a l'import.
+const COL_SEN_ = () => T.bleu;
 const COL_AUTRE = "#d97a2e";
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
@@ -96,7 +98,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           <Text style={s.duelUnite}>{ind.unite}</Text>
         </View>
         <View style={s.duelValeurs}>
-          <Text style={[s.duelVal, { color: a != null ? COL_SEN : T.grisClair }]} numberOfLines={1}>
+          <Text style={[s.duelVal, { color: a != null ? COL_SEN_() : T.grisClair }]} numberOfLines={1}>
             {fmtUnite(a, ind.unite)}{cSen?.annee ? <Text style={s.duelAnnee}>  {cSen.annee}</Text> : null}
           </Text>
           <Text style={[s.duelVal, { color: b != null ? COL_AUTRE : T.grisClair, textAlign: "right" }]} numberOfLines={1}>
@@ -104,7 +106,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           </Text>
         </View>
         <View style={s.duelPiste}>
-          <View style={{ flex: Math.max(pa, 0.02), backgroundColor: ra > 0 ? COL_SEN : T.filet, borderRadius: 99 }} />
+          <View style={{ flex: Math.max(pa, 0.02), backgroundColor: ra > 0 ? COL_SEN_() : T.filet, borderRadius: 99 }} />
           <View style={{ flex: Math.max(1 - pa, 0.02), backgroundColor: rb > 0 ? COL_AUTRE : T.filet, borderRadius: 99 }} />
         </View>
       </View>
@@ -171,8 +173,8 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
               {diff === 0
                 ? <>Échanges <Text style={{ fontFamily: POLICE.gras, color: T.encre }}>équilibrés</Text> sur la période.</>
                 : <>Balance excédentaire en faveur {diff >= 0 ? "du " : "de "}
-                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN : COL_AUTRE }}>{diff >= 0 ? "Sénégal" : autreNom}</Text>
-                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN : COL_AUTRE }}>  +{fmtUSD(Math.abs(diff))}</Text>
+                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>{diff >= 0 ? "Sénégal" : autreNom}</Text>
+                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>  +{fmtUSD(Math.abs(diff))}</Text>
                   </>}
             </Text>
           </>
@@ -258,7 +260,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
         <View style={s.indicEntete}>
           <Text style={[s.secTitle, { marginBottom: 0 }]}>INDICATEURS</Text>
           <View style={s.legendeCouleurs}>
-            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_SEN }]} /><Text style={s.legendeTexte}>Sénégal</Text></View>
+            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_SEN_() }]} /><Text style={s.legendeTexte}>Sénégal</Text></View>
             <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_AUTRE }]} /><Text style={s.legendeTexte} numberOfLines={1}>{colAutre?.nom || autreNom}</Text></View>
           </View>
         </View>
@@ -281,7 +283,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
         <View style={{ marginTop: 22 }}>
           <Text style={s.secTitle}>{`DÉTAIL DES ÉCHANGES${bilat.annee_min ? ` · ${bilat.annee_min}–${bilat.annee_max}` : ""}`}</Text>
           <View style={{ gap: 8 }}>
-            <BlocDir de="Sénégal" vers={autreNom} couleur={COL_SEN} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
+            <BlocDir de="Sénégal" vers={autreNom} couleur={COL_SEN_()} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
             <BlocDir de={autreNom} vers="Sénégal" couleur={COL_AUTRE} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
           </View>
         </View>
@@ -295,7 +297,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   // La vedette — le gabarit des cartes vedettes de l'app
   vedette: {
     backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
@@ -360,4 +362,4 @@ const s = StyleSheet.create({
   resBar: { height: "100%", borderRadius: 99 },
 
   note: { fontSize: 10.5, fontFamily: POLICE.normal, color: T.gris, lineHeight: 16, marginTop: 20, textAlign: "center" },
-});
+}));

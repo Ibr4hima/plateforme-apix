@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { SecteurArbre } from "@/components/FiltresListe";
 import { getJson } from "@/lib/api";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const OPTS = { staleTime: Infinity, gcTime: 24 * 3600 * 1000 } as const;
 
@@ -78,11 +79,11 @@ export default function ArbreNaema({ secIds, braIds, actIds }: { secIds: number[
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   ligne: { flexDirection: "row", alignItems: "flex-start", gap: 9 },
   point: { borderRadius: 99, flexShrink: 0 },
   indent: { paddingLeft: 17, borderLeftWidth: 1.5, borderLeftColor: "rgba(90,145,205,0.22)", marginLeft: 3.5, gap: 8 },
   secteur: { flex: 1, fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, lineHeight: 18 },
   branche: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: "#b5722f", lineHeight: 18 },
   activite: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: "#4d8a63", lineHeight: 17 },
-});
+}));

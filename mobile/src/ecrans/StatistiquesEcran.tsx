@@ -28,6 +28,7 @@ import { fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { creerStyles } from "@/lib/apparence";
 
 // Les trois lentilles — chips bleues, la teinte unique du module
 const LENTILLES = [
@@ -269,7 +270,7 @@ export default function StatistiquesEcran() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
 
   rangee: { paddingHorizontal: 16, marginTop: 14 },
@@ -303,4 +304,4 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-});
+}));

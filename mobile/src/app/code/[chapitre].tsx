@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TexteDefilant from "@/components/TexteDefilant";
 import TexteRiche from "@/components/TexteRiche";
 import { getJson } from "@/lib/api";
-import { useSombre } from "@/lib/apparence";
+import { creerStyles, useSombre } from "@/lib/apparence";
 import { useCap } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { romainDe } from "./index";
@@ -255,7 +255,7 @@ export default function Lecteur() {
 
 const MARGE = 26;
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   barre: { position: "absolute", top: 0, left: 0, right: 0 },
   barreContenu: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: MARGE, paddingBottom: 8 },
   barreEtiquette: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 1.6 },
@@ -301,4 +301,4 @@ const s = StyleSheet.create({
     borderRadius: 999, paddingVertical: 13, paddingHorizontal: 14, minWidth: 0,
   },
   navTexte: { fontSize: 13, fontFamily: POLICE.demi, color: T.orange, letterSpacing: -0.2, flexShrink: 1 },
-});
+}));

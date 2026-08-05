@@ -13,6 +13,7 @@ import { API } from "@/lib/api";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
 const devSym = (code?: string, sym?: string) => sym || (code ? DEVISE_SYM[code] || code : "");
@@ -159,7 +160,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
 
@@ -187,4 +188,4 @@ const s = StyleSheet.create({
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

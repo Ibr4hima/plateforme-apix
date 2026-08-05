@@ -14,7 +14,69 @@
 // (Tapable, Feuille, curseur, silhouettes) plutôt qu'aux centaines de points
 // d'appel — une couleur oubliée redeviendrait invisible ou ferait planter.
 import { useMemo } from "react";
-import { StyleSheet, useColorScheme, type StyleProp } from "react-native";
+import {
+  Appearance, Platform, StyleSheet, useColorScheme,
+  type ImageStyle, type StyleProp, type TextStyle, type ViewStyle,
+} from "react-native";
+
+// ── Android : le schéma courant, lisible hors React ──────────────────────────
+//
+// DynamicColorIOS n'existe que sur iOS. Sur Android, un jeton garde ses deux
+// valeurs et c'est la LECTURE qui tranche (voir le Proxy de T dans theme.ts).
+// Cette lecture arrive des centaines de fois par rendu : elle doit être une
+// simple variable, jamais un appel au natif.
+const ANDROID = Platform.OS === "android";
+let sombreSysteme = Appearance.getColorScheme() === "dark";
+let forcage: boolean | null = null;
+Appearance.addChangeListener(({ colorScheme }) => { sombreSysteme = colorScheme === "dark"; });
+
+/** Le schéma en vigueur — la préférence de l'app, sinon celle du système. */
+export const estSombreCourant = (): boolean => forcage ?? sombreSysteme;
+
+/**
+ * Recale le cache sur ce que React voit.
+ *
+ * Appelé au rendu de la racine, AVANT celui des enfants : on ne dépend plus
+ * de l'ordre dans lequel les abonnés d'Appearance sont notifiés, qui pourrait
+ * laisser un arbre se redessiner avec le schéma précédent.
+ */
+export const majSchema = (sombre: boolean) => { sombreSysteme = sombre; };
+
+/** Bascule l'apparence de l'app (et tient le cache ci-dessus à jour). */
+export function appliquerSchema(sombre: boolean | null) {
+  Appearance.setColorScheme(sombre == null ? null : sombre ? "dark" : "light");
+  if (sombre != null) sombreSysteme = sombre;
+}
+
+/**
+ * Une feuille de style qui suit l'apparence.
+ *
+ * Sur iOS : rien ne change — les jetons dynamiques descendent au natif tels
+ * quels et la feuille reste construite une seule fois.
+ *
+ * Sur Android : la fabrique est appelée DEUX fois, une fois chaque schéma
+ * forcé, et l'objet rendu expose chaque style en accesseur — le rendu lit
+ * donc toujours la bonne variante. Il fallait passer par une fabrique : un
+ * StyleSheet.create ordinaire fige ses couleurs à l'import du module, bien
+ * avant que l'apparence puisse changer, et RN gèle même l'objet en dev.
+ */
+type Styles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
+export function creerStyles<S extends Styles<S> | Styles<any>>(
+  fabrique: () => S & Styles<any>,
+): S {
+  if (!ANDROID) return StyleSheet.create(fabrique());
+  forcage = false; const clair: any = StyleSheet.create(fabrique());
+  forcage = true;  const sombre: any = StyleSheet.create(fabrique());
+  forcage = null;
+  const feuille = {} as S;
+  for (const cle of Object.keys(clair)) {
+    Object.defineProperty(feuille, cle, {
+      enumerable: true,
+      get: () => (estSombreCourant() ? sombre[cle] : clair[cle]),
+    });
+  }
+  return feuille;
+}
 
 /** Un jeton dynamique se reconnaît à sa forme : { dynamic: { light, dark } }. */
 export const estDynamique = (c: any): boolean =>

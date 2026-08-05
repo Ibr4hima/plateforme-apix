@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Svg, { G, Path, Text as TexteSvg } from "react-native-svg";
 import { degradeBleu } from "@/components/GrapheBarres";
 import { POLICE, T } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
+import { creerStyles, useCouleur } from "@/lib/apparence";
 
 function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
   // Secteur d'anneau entre les angles a0 → a1 (radians, 0 en haut, horaire)
@@ -65,13 +65,13 @@ function GrapheDonut({ data, fmt, centre }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.grisClair, textAlign: "center", paddingVertical: 18 },
   legende: { alignSelf: "stretch", gap: 6 },
   legendeLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
   carre: { width: 10, height: 10, borderRadius: 2.5, borderWidth: StyleSheet.hairlineWidth, borderColor: "rgba(0,0,0,0.15)" },
   legendeTexte: { flex: 1, fontSize: 11.5, fontFamily: POLICE.normal, color: T.texte },
   legendePct: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-});
+}));
 
 export default memo(GrapheDonut);

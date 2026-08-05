@@ -25,6 +25,7 @@ import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const pastelPole = (nom?: string | null) =>
   (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
@@ -229,7 +230,7 @@ export default function Zones() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
 
@@ -249,4 +250,4 @@ const s = StyleSheet.create({
   poleTuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
   poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-});
+}));

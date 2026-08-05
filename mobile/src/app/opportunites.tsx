@@ -23,6 +23,7 @@ import { fetchTous, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -401,7 +402,7 @@ export default function Opportunites() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
 
@@ -450,4 +451,4 @@ const s = StyleSheet.create({
   tuilePoint: { width: 6, height: 6, borderRadius: 3 },
   tuileTitre: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
   tuileDroite: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.gris },
-});
+}));

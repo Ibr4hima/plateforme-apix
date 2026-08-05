@@ -15,6 +15,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
@@ -177,7 +178,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
@@ -204,4 +205,4 @@ const s = StyleSheet.create({
   focalPrincipal: { backgroundColor: "rgba(202,99,31,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   focalPrincipalTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.orange },
   focalChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-});
+}));

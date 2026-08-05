@@ -5,6 +5,7 @@
 import { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // Barre qui croît de 0 à sa largeur à l'apparition (stagger de 55 ms)
 function BarreCroissante({ pct, index, style, children }: {
@@ -104,7 +105,7 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
   );
 });
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   vide: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 18 },
   ligne: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 },
   label: { flex: 1, fontSize: 12, fontFamily: POLICE.demi, color: T.encre },
@@ -117,4 +118,4 @@ const s = StyleSheet.create({
   repartitionLigne: { flexDirection: "row", alignItems: "center", gap: 7 },
   repartitionNom: { flex: 1, fontSize: 11, fontFamily: POLICE.normal, color: T.texte },
   repartitionPct: { fontSize: 11, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-});
+}));

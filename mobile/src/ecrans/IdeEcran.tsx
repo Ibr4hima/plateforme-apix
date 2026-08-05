@@ -23,6 +23,7 @@ import { getJson } from "@/lib/api";
 import type { SourceIde } from "@/lib/ideSource";
 import { T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
+import { creerStyles } from "@/lib/apparence";
 
 // Les deux familles — chips bleues, la teinte unique du module
 const ONGLETS = [
@@ -125,6 +126,6 @@ export default function IdeEcran() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   ongletsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-});
+}));

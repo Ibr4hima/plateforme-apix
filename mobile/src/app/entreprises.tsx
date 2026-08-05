@@ -21,7 +21,7 @@ import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
+import { creerStyles, useCouleur } from "@/lib/apparence";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
 
@@ -229,7 +229,7 @@ export default function Entreprises() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   // Sections alphabétiques — le même langage que les groupes par mois
   lettre: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginTop: 16, marginBottom: 10 },
@@ -271,4 +271,4 @@ const s = StyleSheet.create({
   blocPetitTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   regionEntNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
   regionEntSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
-});
+}));

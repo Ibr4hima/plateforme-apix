@@ -13,6 +13,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export const MAX_SEL_IDE = 4;
 
@@ -446,7 +447,7 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   secLigne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
   secTitle: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
   compteBadge: {
@@ -501,4 +502,4 @@ const s = StyleSheet.create({
   boutonSecondaireTexte: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.texte },
   boutonPrincipal: { flex: 1.4, alignItems: "center", paddingVertical: 12, borderRadius: 12, backgroundColor: T.bleuAction },
   boutonPrincipalTexte: { fontSize: 13.5, fontFamily: POLICE.gras, color: "#fff" },
-});
+}));

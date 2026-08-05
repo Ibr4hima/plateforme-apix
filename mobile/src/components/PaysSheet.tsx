@@ -12,6 +12,7 @@ import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -143,7 +144,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   champ: {
     flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12,
@@ -175,4 +176,4 @@ const s = StyleSheet.create({
   paysNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
   paysLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
-});
+}));

@@ -18,6 +18,7 @@ import EnTetePage from "@/components/EnTetePage";
 import { getJson } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type BaseCode = "code-investissement" | "modalites-application";
 
@@ -160,7 +161,7 @@ export default function CodeSommaire() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
 
   liste: { paddingHorizontal: 16, marginTop: 14 },
   meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
@@ -181,4 +182,4 @@ const s = StyleSheet.create({
   resTitre: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 5 },
   resExtrait: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19, marginTop: 6 },
   resSurligne: { backgroundColor: "rgba(202,99,31,0.18)", color: "#8a4514", fontFamily: POLICE.demi },
-});
+}));

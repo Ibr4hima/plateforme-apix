@@ -11,6 +11,7 @@ import Symbole from "@/components/Symbole";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
@@ -92,7 +93,7 @@ export function BarreHero({ titre, defilY, bouton, retour, seuil = 118 }: {
   );
 }
 
-const sb = StyleSheet.create({
+const sb = creerStyles(() => ({
   barre: {
     position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
     backgroundColor: T.heroFond,
@@ -117,7 +118,7 @@ const sb = StyleSheet.create({
     backgroundColor: T.orange, alignItems: "center", justifyContent: "center", paddingHorizontal: 3.5,
   },
   badgeTexte: { fontSize: 9, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
-});
+}));
 
 export default function HeroModule({ titre, sousTitre, retour, recherche, segments, bascule, bouton, children }: {
   titre: string;
@@ -227,7 +228,7 @@ export default function HeroModule({ titre, sousTitre, retour, recherche, segmen
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   hero: {
     backgroundColor: T.heroFond, paddingHorizontal: 22, paddingBottom: 24,
     borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: "hidden",
@@ -287,4 +288,4 @@ const s = StyleSheet.create({
   segmentCompteActif: { backgroundColor: "rgba(0,79,145,0.10)" },
   segmentCompteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", fontVariant: ["tabular-nums"] },
   segmentCompteTexteActif: { color: T.bleu },
-});
+}));

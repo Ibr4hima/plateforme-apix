@@ -20,6 +20,7 @@ import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 type CleSerie = "flux_e" | "flux_s" | "stock_e" | "stock_s" | "flux_net" | "stock_net";
 const LABELS: Record<CleSerie, string> = {
@@ -178,7 +179,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 18 },
 
   // La carte vedette — les styles exacts de l'accueil
@@ -208,4 +209,4 @@ const s = StyleSheet.create({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-});
+}));

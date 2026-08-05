@@ -11,6 +11,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // Couleurs des niveaux territoriaux (palette du site)
 export const NIVEAU_COULEURS: Record<string, string> = {
@@ -119,7 +120,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
@@ -135,4 +136,4 @@ const s = StyleSheet.create({
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

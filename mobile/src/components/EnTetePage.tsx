@@ -26,7 +26,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone from "@/components/Icone";
 import { BoutonVerre, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { DEGRADE_HERO, ECHELLE, POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
@@ -161,7 +161,7 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   // Mêmes coins bas que le bandeau de l'accueil : 18 pt, franc mais posé
   bandeau: {
     paddingHorizontal: 20, paddingBottom: 14,
@@ -209,4 +209,4 @@ const s = StyleSheet.create({
   compteActif: { backgroundColor: T.bleuVoile },
   compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.gris, fontVariant: ["tabular-nums"] },
   compteTexteActif: { color: T.bleu },
-});
+}));

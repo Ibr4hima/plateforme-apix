@@ -19,6 +19,7 @@ import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { POLICE, T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
+import { creerStyles } from "@/lib/apparence";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -171,7 +172,7 @@ export default function FichePaysIndex() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 9 },
   slots: { flexDirection: "row", gap: 8, marginTop: 14 },
   slotSen: {
@@ -203,4 +204,4 @@ const s = StyleSheet.create({
   pays: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10.5 },
   paysNom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
   paysIso: { fontSize: 10.5, fontFamily: POLICE.moyen, color: T.grisClair, letterSpacing: 0.5 },
-});
+}));

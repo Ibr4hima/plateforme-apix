@@ -9,6 +9,7 @@ import TexteRiche from "@/components/TexteRiche";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // Couleur du secteur économique (celles du site : primaire vert,
 // secondaire orange, tertiaire bleu)
@@ -94,7 +95,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
 
@@ -111,4 +112,4 @@ const s = StyleSheet.create({
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

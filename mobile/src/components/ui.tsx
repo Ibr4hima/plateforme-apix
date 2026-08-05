@@ -19,7 +19,7 @@ import Reanime, {
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import Symbole from "@/components/Symbole";
-import { useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
+import { creerStyles, useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
@@ -151,7 +151,7 @@ export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, v
   );
 }
 
-const ss = StyleSheet.create({
+const ss = creerStyles(() => ({
   rangee: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
   filet: { flex: 1, height: 1, borderRadius: 1 },
   tag: {
@@ -159,7 +159,7 @@ const ss = StyleSheet.create({
     borderCurve: "continuous", borderWidth: 1, flexShrink: 1,
   },
   texte: { fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 1.3 },
-});
+}));
 
 // ── IconeTendance : la direction d'une série en un glyphe ────────────────────
 // trending_up / trending_down / trending_flat, teinté vert / rouge / gris
@@ -243,7 +243,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   );
 }
 
-const scf = StyleSheet.create({
+const scf = creerStyles(() => ({
   chip: {
     flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
@@ -257,7 +257,7 @@ const scf = StyleSheet.create({
   compteActif: { backgroundColor: "rgba(255,255,255,0.22)" },
   compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   compteTexteActif: { color: "#fff" },
-});
+}));
 
 // ── Carte : la surface de base ───────────────────────────────────────────────
 export function Carte({ onPress, elevation = 1, style, children }: {
@@ -511,37 +511,37 @@ export function EtatVide({ texte, icone = "search_off", sousTexte, action }: {
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
-const sb = StyleSheet.create({
+const sb = creerStyles(() => ({
   base: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
     borderRadius: RAYON.petit, alignSelf: "center",
   },
-});
+}));
 
-const sc = StyleSheet.create({
+const sc = creerStyles(() => ({
   chip: {
     paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
     backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
   },
   texte: { ...TYPO.legende, fontFamily: POLICE.demi, color: T.texte },
-});
+}));
 
-const scarte = StyleSheet.create({
+const scarte = creerStyles(() => ({
   carte: {
     backgroundColor: T.carte, borderRadius: RAYON.moyen,
     borderWidth: 1, borderColor: T.carteBord,
   },
-});
+}));
 
-const sbadge = StyleSheet.create({
+const sbadge = creerStyles(() => ({
   badge: {
     borderRadius: RAYON.pilule, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 3,
     flexShrink: 1, maxWidth: 170,
   },
   texte: { ...TYPO.micro, letterSpacing: 0, fontSize: 10.5 },
-});
+}));
 
-const sr = StyleSheet.create({
+const sr = creerStyles(() => ({
   rangee: {
     flexDirection: "row", alignItems: "center",
     borderTopWidth: 1, borderTopColor: T.filet, paddingTop: ESPACE.s,
@@ -549,9 +549,9 @@ const sr = StyleSheet.create({
   separateur: { width: 1, alignSelf: "stretch", backgroundColor: T.filet, marginHorizontal: 18 },
   label: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.gris, marginBottom: 4 },
   valeur: { fontSize: 12.5, fontFamily: POLICE.gras },
-});
+}));
 
-const sf = StyleSheet.create({
+const sf = creerStyles(() => ({
   // Le voile couvre TOUT l'écran, pas seulement la place laissée au-dessus de
   // la feuille : en `flex: 1` il s'arrêtait à la hauteur calculée à la mise en
   // page, alors que la feuille se déplace ensuite par transform. Deux coutures
@@ -572,9 +572,9 @@ const sf = StyleSheet.create({
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
   titre: { ...TYPO.titre, flex: 1, color: T.encre },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
-});
+}));
 
-const se = StyleSheet.create({
+const se = creerStyles(() => ({
   centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: ESPACE.xs },
   pastille: {
     width: 52, height: 52, borderRadius: RAYON.moyen, backgroundColor: T.filet,
@@ -582,4 +582,4 @@ const se = StyleSheet.create({
   },
   titre: { ...TYPO.sousTitre, color: T.encre, textAlign: "center" },
   sous: { ...TYPO.legende, color: T.gris, textAlign: "center" },
-});
+}));

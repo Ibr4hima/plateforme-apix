@@ -20,6 +20,7 @@ import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
+import { creerStyles } from "@/lib/apparence";
 
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
@@ -174,7 +175,7 @@ export default function Prospects() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   carte: {
@@ -194,4 +195,4 @@ const s = StyleSheet.create({
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 16 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
-});
+}));

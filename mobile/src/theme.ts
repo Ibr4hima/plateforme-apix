@@ -1,8 +1,10 @@
 // Jetons de design APIX — l'identité du site, adaptée aux codes du mobile.
-// Chaque couleur est dynamique (DynamicColorIOS) : l'app suit l'apparence
-// du système et bascule nativement en mode sombre — nuit bleutée
-// institutionnelle, accents éclaircis pour rester lisibles.
+// Chaque couleur porte ses deux valeurs : l'app suit l'apparence du système
+// et bascule en mode sombre — nuit bleutée institutionnelle, accents
+// éclaircis pour rester lisibles. iOS tranche nativement (DynamicColorIOS),
+// Android au moment de la lecture (Proxy + creerStyles) ; même rendu.
 import { DynamicColorIOS, Platform } from "react-native";
+import { estSombreCourant } from "@/lib/apparence";
 
 // Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
 export const POLICE = {
@@ -25,11 +27,20 @@ export const POLICE = {
 // Tapable, Apparition, Permutation, RangeeMouvante, Feuille, CurseurAnnees,
 // MiniTendance, GrapheLignes, SilhouetteRegion, SeparateurSection — et non
 // aux centaines de points d'appel, où un oubli serait invisible.
+// Android n'a pas d'équivalent de DynamicColorIOS : le jeton y garde ses deux
+// valeurs, et c'est le Proxy plus bas qui tranche AU MOMENT DE LA LECTURE.
+// Les feuilles de style, elles, passent par creerStyles (lib/apparence), qui
+// les construit dans les deux schémas. Rendu identique à celui d'iOS.
 const SOMBRE_ACTIF = true;
+const IOS = Platform.OS === "ios";
+const ANDROID = Platform.OS === "android";
 const dyn = (clair: string, sombre: string): any =>
-  SOMBRE_ACTIF && Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
+  !SOMBRE_ACTIF ? clair
+  : IOS ? DynamicColorIOS({ light: clair, dark: sombre })
+  : ANDROID ? { __dyn: [clair, sombre] }
+  : clair;
 
-export const T = {
+const JETONS = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
   bleu:        dyn("#004f91", "#85B9EC"),
   orange:      dyn("#ca631f", "#E8935A"),
@@ -99,6 +110,19 @@ export const T = {
   blocBord:    "rgba(90,145,205,0.30)",
   rayonCarte:  18,
 } as const;
+
+// Sur iOS, T est la table telle quelle : les jetons dynamiques descendent au
+// natif. Sur Android, chaque lecture d'un jeton rend la variante du schéma
+// courant — d'où le Proxy, qui laisse les 1 000 emplois de `T.x` de l'app
+// inchangés au lieu de les convertir un à un.
+export const T: typeof JETONS = ANDROID && SOMBRE_ACTIF
+  ? new Proxy(JETONS, {
+      get: (table, cle) => {
+        const v: any = (table as any)[cle];
+        return v && v.__dyn ? v.__dyn[estSombreCourant() ? 1 : 0] : v;
+      },
+    })
+  : JETONS;
 
 // ── Échelle typographique unique ─────────────────────────────────────────────
 // Cinq crans, interlignes fixés. Toute taille de texte de l'app doit venir

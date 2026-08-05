@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { RAYON, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const LARGEUR = Dimensions.get("window").width;
 
@@ -97,7 +98,7 @@ export function SqueletteDonnees() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   os: { backgroundColor: T.filet, borderRadius: 6, overflow: "hidden" },
   carte: {
     backgroundColor: T.carte, borderRadius: RAYON.moyen, borderWidth: 1, borderColor: T.bordure,
@@ -108,4 +109,4 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: T.bordure,
   },
   filet: { height: 1, backgroundColor: T.filet, marginVertical: 12 },
-});
+}));

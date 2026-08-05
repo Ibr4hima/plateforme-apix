@@ -18,6 +18,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
 
@@ -407,7 +408,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titreFiche: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
@@ -471,4 +472,4 @@ const s = StyleSheet.create({
   cycleCorps: { borderTopWidth: 1, borderTopColor: T.bordureDouce, paddingHorizontal: 15, paddingVertical: 14, gap: 14 },
   cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },
   videTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 12 },
-});
+}));

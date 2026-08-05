@@ -22,6 +22,7 @@ import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 type Point = { annee: number; valeur: number };
 type Cle = "entrants" | "sortants" | "pib" | "imports" | "exports";
@@ -220,7 +221,7 @@ export default function VedetteIde() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   carte: {
     marginHorizontal: ESPACE.m, backgroundColor: T.carte, borderRadius: RAYON.grand,
     borderCurve: "continuous", paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
@@ -252,4 +253,4 @@ const s = StyleSheet.create({
   repereLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 3 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   repereAnnee: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-});
+}));

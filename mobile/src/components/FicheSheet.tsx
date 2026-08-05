@@ -6,6 +6,7 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutAccord, computeStatutEvenement } from "@/lib/statuts";
 import type { Resultat } from "@/lib/indexRecherche";
 import { BADGE, T, POLICE } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 function Champ({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
@@ -87,7 +88,7 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   type: { fontSize: 10, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6, marginTop: 8 },
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 10 },
@@ -96,4 +97,4 @@ const s = StyleSheet.create({
   champLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
   champValeur: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 3 },
   vide: { fontSize: 12.5, color: T.gris, textAlign: "center", paddingVertical: 18 },
-});
+}));

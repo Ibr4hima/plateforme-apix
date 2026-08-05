@@ -17,7 +17,7 @@ import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
+import { creerStyles, useCouleur } from "@/lib/apparence";
 
 export const ST_PASTEL: Record<string, { label: string; p: string }> = {
   en_vigueur: { label: "En vigueur",           p: "#B4DE9D" },
@@ -216,7 +216,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   legende: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 5 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 6 },
@@ -240,4 +240,4 @@ const s = StyleSheet.create({
   chipDrapeau: { fontSize: 13 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   commentaires: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
-});
+}));

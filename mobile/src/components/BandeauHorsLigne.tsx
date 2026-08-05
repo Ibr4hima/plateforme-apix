@@ -8,6 +8,7 @@ import { Animated, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Symbole from "@/components/Symbole";
 import { POLICE } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export default function BandeauHorsLigne() {
   const insets = useSafeAreaInsets();
@@ -42,7 +43,7 @@ export default function BandeauHorsLigne() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   zone: { position: "absolute", left: 0, right: 0, alignItems: "center", zIndex: 60 },
   pilule: {
     flexDirection: "row", alignItems: "center", gap: 6,
@@ -51,4 +52,4 @@ const s = StyleSheet.create({
     elevation: 6,
   },
   texte: { fontSize: 11, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.92)" },
-});
+}));

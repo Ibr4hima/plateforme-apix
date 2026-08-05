@@ -8,7 +8,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
-import { useCouleur } from "@/lib/apparence";
+import { creerStyles, useCouleur } from "@/lib/apparence";
 
 export const basculer = (liste: string[], v: string) =>
   liste.includes(v) ? liste.filter(x => x !== v) : [...liste, v];
@@ -240,7 +240,7 @@ export function FeuilleFiltres({ onClose, onReinitialiser, children }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   secLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   secTitre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
   secBadge: {
@@ -270,4 +270,4 @@ const s = StyleSheet.create({
   boutonSecondaireTexte: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.texte },
   boutonPrincipal: { flex: 1.4, alignItems: "center", paddingVertical: 12, borderRadius: 12, backgroundColor: T.bleuAction },
   boutonPrincipalTexte: { fontSize: 13.5, fontFamily: POLICE.gras, color: "#fff" },
-});
+}));

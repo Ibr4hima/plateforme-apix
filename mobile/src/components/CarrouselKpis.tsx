@@ -6,6 +6,7 @@ import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
 
@@ -71,7 +72,7 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   page: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 },
   carte: {
     width: (LARGEUR - 32 - 11) / 2, backgroundColor: T.carte, borderRadius: 18,
@@ -86,6 +87,6 @@ const s = StyleSheet.create({
   points: { flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 12 },
   point: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.blocBord },
   pointActif: { width: 18, backgroundColor: T.bleu },
-});
+}));
 
 export default memo(CarrouselKpis);

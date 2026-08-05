@@ -17,6 +17,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export const ROLE_PASTEL: Record<string, string> = {
   "Organisateur":    "#B4DE9D",
@@ -206,7 +207,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
@@ -236,4 +237,4 @@ const s = StyleSheet.create({
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   chipVoile: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipVoileTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

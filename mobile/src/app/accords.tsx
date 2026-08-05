@@ -23,6 +23,7 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 const TYPES = [
   { cle: "tbi",   label: "Traités Bilatéraux" },
@@ -207,7 +208,7 @@ export default function Accords() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
@@ -227,4 +228,4 @@ const s = StyleSheet.create({
   bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
   bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
-});
+}));

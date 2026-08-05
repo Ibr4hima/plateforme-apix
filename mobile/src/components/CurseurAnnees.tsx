@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { useCouleur, useStyleResolu } from "@/lib/apparence";
+import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { cran } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
@@ -84,7 +84,7 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   zone: { height: 54, justifyContent: "flex-end", paddingBottom: 10 },
   pilule: {
     position: "absolute", top: 0, width: 48, alignItems: "center",
@@ -106,4 +106,4 @@ const s = StyleSheet.create({
     shadowColor: "#001e3c", shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
-});
+}));

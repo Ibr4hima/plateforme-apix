@@ -19,6 +19,7 @@ import type { SelNational } from "@/components/SourceNationalSheet";
 import { getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 
@@ -182,7 +183,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
 
   // La carte vedette — les styles exacts de l'accueil
@@ -213,4 +214,4 @@ const s = StyleSheet.create({
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8, lineHeight: 13 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
   deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu },
-});
+}));

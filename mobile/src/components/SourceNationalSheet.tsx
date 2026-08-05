@@ -12,6 +12,7 @@ import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type SelNational = {
   niveau: "global" | "macro_secteur" | "groupe" | "secteur";
@@ -177,7 +178,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   );
 }
 
-const st = StyleSheet.create({
+const st = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   segments: {
     flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
@@ -216,4 +217,4 @@ const st = StyleSheet.create({
   ligneNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   ligneLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
-});
+}));

@@ -16,6 +16,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 export type GrapheVedette = {
   cle: string;
@@ -158,7 +159,7 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
   vedette: {
     backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
@@ -193,4 +194,4 @@ const s = StyleSheet.create({
   serieSous: { flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2, flexWrap: "wrap" },
   serieValeur: { fontSize: 12.5, fontFamily: POLICE.gras, color: T.texte, fontVariant: ["tabular-nums"] },
   serieDelta: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
-});
+}));

@@ -22,6 +22,7 @@ import Icone from "@/components/Icone";
 import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 
 const dateDe = (e: any): Date | null => {
@@ -192,7 +193,7 @@ export default function Evenements() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   mois: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginTop: 18, marginBottom: 10 },
   moisTexte: { ...TYPO.micro, color: T.bleu },
   moisFilet: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: T.bordure },
@@ -216,4 +217,4 @@ const s = StyleSheet.create({
   titre: { flex: 1, minWidth: 0, fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 19, letterSpacing: -0.2 },
   echeance: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange, marginTop: 1.5, maxWidth: 96, textAlign: "right" },
   lieuTexte: { flexShrink: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
-});
+}));

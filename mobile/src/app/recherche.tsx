@@ -16,6 +16,7 @@ import { getJson } from "@/lib/api";
 import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRecherche";
 import { T, POLICE } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
+import { creerStyles } from "@/lib/apparence";
 
 const MAX_PAR_GROUPE = 6;
 
@@ -101,7 +102,7 @@ export default function Recherche() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   page: { flex: 1, backgroundColor: T.fond },
   barre: {
     flexDirection: "row", alignItems: "center", gap: 10,
@@ -115,4 +116,4 @@ const s = StyleSheet.create({
   ligne: { backgroundColor: T.carte, borderRadius: 13, borderWidth: 1, borderColor: T.bordure, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 7 },
   nom: { fontSize: 13.5, fontFamily: POLICE.gras, color: T.encre },
   sous: { fontSize: 11.5, color: T.gris, marginTop: 3 },
-});
+}));

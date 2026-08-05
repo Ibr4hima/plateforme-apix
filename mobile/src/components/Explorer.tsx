@@ -11,6 +11,7 @@ import Icone from "@/components/Icone";
 import { Apparition, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: string) => void }) {
   return (
@@ -52,7 +53,7 @@ export default function Explorer() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   bloc: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
   titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
@@ -71,4 +72,4 @@ const s = StyleSheet.create({
   titre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   sous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },
   separateur: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginLeft: 60 },
-});
+}));

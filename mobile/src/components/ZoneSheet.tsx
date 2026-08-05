@@ -18,6 +18,7 @@ import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
+import { creerStyles } from "@/lib/apparence";
 
 // La description est stockée en HTML riche (site) : on la ramène à du texte
 // avec puces et sauts de ligne pour l'app.
@@ -182,7 +183,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
@@ -211,4 +212,4 @@ const s = StyleSheet.create({
     backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
   },
   docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-});
+}));

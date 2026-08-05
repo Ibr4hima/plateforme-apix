@@ -13,7 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Appearance, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
@@ -21,7 +21,7 @@ import Icone from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
 import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
-import { useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { appliquerSchema, creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { DEGRADE_EVENEMENT, DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
@@ -93,16 +93,18 @@ export default function Accueil() {
   // Apparence : le système décide par défaut, le bouton lune/soleil tranche
   // et la préférence est mémorisée d'une session à l'autre
   const sombre = useSombre();
+  // appliquerSchema plutôt qu'Appearance.setColorScheme : Android lit le
+  // schéma hors de React (lib/apparence) et ce cache doit suivre la bascule
   useEffect(() => {
     AsyncStorage.getItem("apix.theme").then(v => {
-      if (v === "sombre") Appearance.setColorScheme("dark");
-      else if (v === "clair") Appearance.setColorScheme("light");
+      if (v === "sombre") appliquerSchema(true);
+      else if (v === "clair") appliquerSchema(false);
     }).catch(() => {});
   }, []);
   const basculerTheme = () => {
     tick();
     const suivant = sombre ? "clair" : "sombre";
-    Appearance.setColorScheme(suivant === "sombre" ? "dark" : "light");
+    appliquerSchema(suivant === "sombre");
     AsyncStorage.setItem("apix.theme", suivant).catch(() => {});
   };
 
@@ -203,7 +205,7 @@ export default function Accueil() {
   );
 }
 
-const s = StyleSheet.create({
+const s = creerStyles(() => ({
   // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,
   // moitié moins que les 28 du grand hero d'origine). L'aplat va d'un bord à
   // l'autre de l'écran ; seul son CONTENU se plafonne (cap).
@@ -249,4 +251,4 @@ const s = StyleSheet.create({
     textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
     color: T.grisClair, marginTop: ESPACE.xl,
   },
-});
+}));

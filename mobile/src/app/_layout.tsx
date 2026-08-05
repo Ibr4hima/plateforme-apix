@@ -11,8 +11,9 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { majSchema, useSombre } from "@/lib/apparence";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { marquerOrigine } from "@/lib/origineTap";
@@ -46,6 +47,14 @@ export default function RacineLayout() {
   });
   useEffect(() => { if (polices) SplashScreen.hideAsync(); }, [polices]);
 
+  // Android : les feuilles de style lisent leur variante AU RENDU (creerStyles)
+  // — encore faut-il que tout l'arbre re-rende quand l'apparence change. iOS
+  // n'en a pas besoin, le natif rebascule seul ; on garde donc une clé stable
+  // pour ne rien y remonter.
+  const sombre = useSombre();
+  majSchema(sombre);
+  const cleApparence = Platform.OS === "android" ? (sombre ? "nuit" : "jour") : "app";
+
   if (!polices) return null;
 
   return (
@@ -55,7 +64,7 @@ export default function RacineLayout() {
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}
+      <View key={cleApparence} style={{ flex: 1 }}
         onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
       <Stack
         screenOptions={{
