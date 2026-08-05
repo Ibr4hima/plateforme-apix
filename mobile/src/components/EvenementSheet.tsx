@@ -154,7 +154,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
           )}
         </View>
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
-          <Text style={s.essentielDate} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={s.essentielDate} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             {plageComplete(e) || "Date à confirmer"}
           </Text>
           {lieu ? <Text style={s.essentielLieu} numberOfLines={1}>{lieu}</Text> : null}

@@ -204,8 +204,11 @@ export default function VedetteIde() {
                 style={{ flex: 1 }}>
                 <Text style={s.repereLabel} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{LABELS[cle].court}</Text>
                 <View style={s.repereLigne}>
+                  {/* minimumFontScale : sans plancher, Android rétrécit le
+                      texte bien au-delà du nécessaire — « 7 161,4 Md FCFA »
+                      finissait deux fois plus petit que son voisin */}
                   <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit
-                    maxFontSizeMultiplier={ECHELLE.chiffre}>
+                    minimumFontScale={0.82} maxFontSizeMultiplier={ECHELLE.chiffre}>
                     {d ? fmtDe(cle)(d.valeur) : "—"}
                     {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
                   </Text>

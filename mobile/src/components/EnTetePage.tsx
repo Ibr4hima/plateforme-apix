@@ -76,7 +76,10 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
         <LinearGradient
           colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
           locations={[0, 0.45, 1]}
-          start={{ x: 1, y: -0.1 }} end={{ x: 0.15, y: 1 }}
+          // Coordonnées toutes dans [0,1] : un départ hors du cadre (y négatif)
+          // n'est pas interprété pareil par CAGradientLayer et par le shader
+          // d'Android — le bandeau y perdait sa parité entre les deux
+          start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
           pointerEvents="none" style={StyleSheet.absoluteFill} />
 
       {/* Une seule rangée : retour à gauche, TITRE au centre, actions à droite */}

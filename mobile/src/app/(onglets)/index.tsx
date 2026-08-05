@@ -57,7 +57,10 @@ function ProchainEvenement() {
         <LinearGradient
           colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
           locations={[0, 0.45, 1]}
-          start={{ x: 1, y: -0.1 }} end={{ x: 0.15, y: 1 }}
+          // Coordonnées toutes dans [0,1] : un départ hors du cadre (y négatif)
+          // n'est pas interprété pareil par CAGradientLayer et par le shader
+          // d'Android — le bandeau y perdait sa parité entre les deux
+          start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
           pointerEvents="none" style={StyleSheet.absoluteFill} />
         <View style={s.evenement}>
           <View style={s.evenementDate}>
@@ -130,6 +133,15 @@ export default function Accueil() {
   // Tablette : le contenu se plafonne et se centre, comme les autres écrans
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
+  // Le titre se mesure à la place qui reste, pas à un chiffre écrit d'avance.
+  // « Invest in Senegal » tenait à 28 pt sur un iPhone large ; sur un écran
+  // plus étroit il venait buter contre les deux boutons. On retire du total
+  // les marges, l'écart et les deux boutons, et on en déduit la taille — un
+  // caractère de Google Sans gras pèse ~0,52 em, dix-sept caractères ~8,8.
+  const largeurTitre = Math.min(width, cap ? 680 : width) - (ESPACE.m + 4) * 2 - ESPACE.s - 88;
+  const tailleTitre = Math.max(19, Math.min(28, largeurTitre / 8.8));
+  const titre = { fontSize: tailleTitre, lineHeight: Math.round(tailleTitre * 1.21) };
+
   return (
     <ScrollView
       ref={defilement}
@@ -151,7 +163,10 @@ export default function Accueil() {
         <LinearGradient
           colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
           locations={[0, 0.45, 1]}
-          start={{ x: 1, y: -0.1 }} end={{ x: 0.15, y: 1 }}
+          // Coordonnées toutes dans [0,1] : un départ hors du cadre (y négatif)
+          // n'est pas interprété pareil par CAGradientLayer et par le shader
+          // d'Android — le bandeau y perdait sa parité entre les deux
+          start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
           pointerEvents="none" style={StyleSheet.absoluteFill} />
 
         <View style={[s.enTeteContenu, cap]}>
@@ -161,11 +176,11 @@ export default function Accueil() {
                 MaskedView est un bloc : la ligne est donc une rangée de deux
                 textes, le second masqué par le dégradé. */}
             <View style={s.titreLigne}>
-              <Text style={[s.titre, { color: "#fff" }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Invest in </Text>
-              <MaskedView maskElement={<Text style={s.titre} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>}>
+              <Text style={[s.titre, titre, { color: "#fff" }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Invest in </Text>
+              <MaskedView maskElement={<Text style={[s.titre, titre]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>}>
                 <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                  <Text style={[s.titre, { opacity: 0 }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>
+                  <Text style={[s.titre, titre, { opacity: 0 }]} maxFontSizeMultiplier={ECHELLE.chiffre}>Senegal</Text>
                 </LinearGradient>
               </MaskedView>
             </View>
@@ -221,7 +236,8 @@ const s = creerStyles(() => ({
   date: { ...TYPO.micro, color: "rgba(255,255,255,0.86)" },
   boutonsEnTete: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   titreLigne: { flexDirection: "row", alignItems: "baseline", marginTop: 6 },
-  // 28 pt : « Invest in Senegal » doit tenir sur UNE ligne, bouton recherche compris
+  // « Invest in Senegal » doit tenir sur UNE ligne, boutons compris : la
+  // taille se calcule au rendu (voir tailleTitre), celle-ci n'est qu'un socle
   titre: {
     fontSize: 28, lineHeight: 34, fontFamily: POLICE.gras, color: T.encre,
     letterSpacing: -0.7,

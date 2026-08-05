@@ -39,7 +39,10 @@ function BarreOnglets({ state, navigation }: any) {
       <View style={s.capsule}>
         {VERRE ? (
           <>
-            <BlurView intensity={64} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+            {/* Voir BoutonVerre : sur Android le flou doit être demandé */}
+            <BlurView intensity={64} tint={sombre ? "dark" : "light"}
+              experimentalBlurMethod={Platform.OS === "android" ? "dimezisBlurView" : undefined}
+              style={StyleSheet.absoluteFill} />
             <View style={[StyleSheet.absoluteFill, {
               backgroundColor: sombre ? "rgba(21,30,46,0.72)" : "rgba(255,255,255,0.68)",
             }]} />
@@ -91,8 +94,9 @@ export default function OngletsLayout() {
   );
 }
 
-// Le flou natif n'est fidèle que sur iOS ; ailleurs, l'aplat reste opaque
-const VERRE = Platform.OS === "ios";
+// Le verre : natif sur iOS, obtenu sur Android par dimezisBlurView — la
+// barre y était un aplat opaque, la seule pièce de l'app à ne pas flotter
+const VERRE = Platform.OS === "ios" || Platform.OS === "android";
 
 const s = creerStyles(() => ({
   zoneBarre: { position: "absolute", left: 14, right: 14 },

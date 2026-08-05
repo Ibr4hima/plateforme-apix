@@ -60,13 +60,37 @@ export function appliquerSchema(sombre: boolean | null) {
  * StyleSheet.create ordinaire fige ses couleurs à l'import du module, bien
  * avant que l'apparence puisse changer, et RN gèle même l'objet en dev.
  */
+/**
+ * Le cadrage vertical du texte sur Android.
+ *
+ * Android réserve autour de chaque ligne la place des jambages les plus
+ * extrêmes de la fonte (includeFontPadding), qu'ils servent ou non. Dans une
+ * pilule, un badge ou une puce d'année — un gabarit court, calé au pixel —
+ * ce coussin décentre le texte : il flotte haut, ou bas, jamais au milieu.
+ * iOS ne connaît pas ce réglage : le désactiver, c'est le rejoindre.
+ *
+ * Appliqué à tout style qui porte du texte, plutôt qu'aux centaines de
+ * feuilles une à une — un oubli se serait vu, et pas au bon endroit.
+ */
+const cadrer = (styles: any) => {
+  for (const cle of Object.keys(styles)) {
+    const st = styles[cle];
+    const porteDuTexte = st && (st.fontSize != null || st.fontFamily != null
+      || st.lineHeight != null || st.color != null || st.textAlign != null);
+    if (porteDuTexte && st.includeFontPadding == null) {
+      styles[cle] = { ...st, includeFontPadding: false };
+    }
+  }
+  return styles;
+};
+
 type Styles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
 export function creerStyles<S extends Styles<S> | Styles<any>>(
   fabrique: () => S & Styles<any>,
 ): S {
   if (!ANDROID) return StyleSheet.create(fabrique());
-  forcage = false; const clair: any = StyleSheet.create(fabrique());
-  forcage = true;  const sombre: any = StyleSheet.create(fabrique());
+  forcage = false; const clair: any = StyleSheet.create(cadrer(fabrique()));
+  forcage = true;  const sombre: any = StyleSheet.create(cadrer(fabrique()));
   forcage = null;
   const feuille = {} as S;
   for (const cle of Object.keys(clair)) {

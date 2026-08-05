@@ -10,9 +10,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
-  LayoutChangeEvent, Modal, Pressable, ScrollView,
+  LayoutChangeEvent, Modal, Platform, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
+
+const ANDROID = Platform.OS === "android";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Reanime, {
   Easing, FadeInDown, LinearTransition,
@@ -84,7 +86,11 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
           borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+        {/* Android ne floute pas sans le lui demander : sans cette méthode,
+            BlurView n'y pose qu'un voile plat et le bouton perd sa matière */}
+        <BlurView intensity={40} tint={sombre ? "dark" : "light"}
+          experimentalBlurMethod={ANDROID ? "dimezisBlurView" : undefined}
+          style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, {
           backgroundColor: teinte || (sombre ? "rgba(255,255,255,0.13)" : "rgba(255,255,255,0.62)"),
         }]} />
@@ -474,7 +480,7 @@ export function ChiffreAnime({ texte, style, duree = 750, echelleMax = ECHELLE.c
   // Le gabarit est contraint : le chiffre se réduit pour tenir sur une ligne,
   // et son agrandissement système est plafonné
   return (
-    <Text style={style} numberOfLines={1} adjustsFontSizeToFit
+    <Text style={style} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}
       maxFontSizeMultiplier={echelleMax}>{affiche}</Text>
   );
 }
