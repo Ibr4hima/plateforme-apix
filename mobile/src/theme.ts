@@ -12,10 +12,21 @@ export const POLICE = {
   gras:     "GoogleSans_700Bold",
 } as const;
 
-// Couleur dynamique clair/sombre (repli clair hors iOS) : l'app suit
-// l'apparence du système, et le bouton lune/soleil de l'accueil la force via
-// Appearance.setColorScheme.
-const SOMBRE_ACTIF = true;
+// Couleur clair/sombre.
+//
+// ⏸ MODE SOMBRE EN PAUSE — techniquement bloqué, pas oublié : Reanimated
+// refuse les valeurs DynamicColorIOS dans le style d'un composant animé
+// (« Invalid color value: [object Object] »), et Tapable — le retour tactile
+// de toute l'app, 177 emplois — en est un. Basculer ce drapeau fait donc
+// planter l'accueil au premier rendu.
+//
+// La sortie n'est pas un drapeau mais une résolution des couleurs en chaînes
+// simples : palette claire / sombre choisie à l'exécution et diffusée par un
+// contexte, les StyleSheet.create statiques cédant la place à des styles
+// dérivés du thème. C'est un chantier à part entière, à mener écran par
+// écran ; en attendant, l'app reste claire et les jetons ci-dessous portent
+// déjà leurs deux valeurs, prêtes pour ce jour-là.
+const SOMBRE_ACTIF = false;
 const dyn = (clair: string, sombre: string): any =>
   SOMBRE_ACTIF && Platform.OS === "ios" ? DynamicColorIOS({ light: clair, dark: sombre }) : clair;
 
