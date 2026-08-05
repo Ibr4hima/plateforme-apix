@@ -130,9 +130,11 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
 }
 
 const s = StyleSheet.create({
+  // Mêmes coins bas que le bandeau de l'accueil : 18 pt, franc mais posé
   bandeau: {
     paddingHorizontal: 20, paddingBottom: 18,
     backgroundColor: T.heroFond, overflow: "hidden",
+    borderBottomLeftRadius: 18, borderBottomRightRadius: 18, borderCurve: "continuous",
   },
   halo: {
     position: "absolute", top: -150, right: -100, width: 300, height: 300,

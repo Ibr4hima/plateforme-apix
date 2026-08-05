@@ -174,26 +174,22 @@ export default function Accueil() {
         {/* ── Explorer ── */}
         <Explorer />
 
-        {/* Le pied signe la page et NOMME LES SOURCES des chiffres du haut —
-            un ourlet centré en gris pâle ne servait personne */}
-        <View style={s.pied}>
-          <View style={s.piedFilet} />
-          <Text style={s.piedSources} maxFontSizeMultiplier={ECHELLE.compact}>
-            SOURCES · CNUCED · BANQUE MONDIALE · ANSD
-          </Text>
-          <Text style={s.piedTexte} maxFontSizeMultiplier={ECHELLE.texte}>
-            Direction de l&apos;Intelligence et des Perspectives Économiques
-          </Text>
-        </View>
+        <Text style={s.pied} maxFontSizeMultiplier={ECHELLE.texte}>
+          Direction de l&apos;Intelligence et des Perspectives Économiques
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
-  // Le bandeau bleu compact — bord droit, d'une rive à l'autre. L'aplat va
-  // d'un bord à l'autre de l'écran ; seul son CONTENU se plafonne (cap).
-  enTete: { backgroundColor: T.heroFond, overflow: "hidden", paddingBottom: ESPACE.m + 6 },
+  // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,
+  // moitié moins que les 28 du grand hero d'origine). L'aplat va d'un bord à
+  // l'autre de l'écran ; seul son CONTENU se plafonne (cap).
+  enTete: {
+    backgroundColor: T.heroFond, overflow: "hidden", paddingBottom: ESPACE.m + 6,
+    borderBottomLeftRadius: 18, borderBottomRightRadius: 18, borderCurve: "continuous",
+  },
   enTeteContenu: {
     flexDirection: "row", alignItems: "flex-end", gap: ESPACE.s,
     paddingHorizontal: ESPACE.m + 4,
@@ -232,10 +228,8 @@ const s = StyleSheet.create({
   // 4,9:1 sur la partie claire du dégradé — le seuil AA, alors que 72 %
   // n'y arrivait qu'à 3,9:1
   evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.86)", marginTop: 3 },
-  // Le pied : un filet court, les sources, la signature — aligné à gauche
-  // comme le reste de la page, pas centré comme un ourlet de site web
-  pied: { marginTop: ESPACE.l + 4, paddingHorizontal: ESPACE.m, gap: 6 },
-  piedFilet: { width: 44, height: StyleSheet.hairlineWidth, backgroundColor: T.carteBord, marginBottom: 6 },
-  piedSources: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.1 },
-  piedTexte: { fontSize: 12, lineHeight: 17, fontFamily: POLICE.normal, color: T.gris },
+  pied: {
+    textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
+    color: T.grisClair, marginTop: ESPACE.xl,
+  },
 });
