@@ -67,6 +67,13 @@ export const T = {
   orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(232,147,90,0.14)"),
   vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(87,184,125,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
+  // Le pouce du curseur : une commande doit se détacher de sa piste. Blanc
+  // le jour, blanc bleuté la nuit — surtout pas la couleur des cartes, qui
+  // le faisait disparaître dans le fond.
+  pouce:       dyn("#FFFFFF", "#DCE6F3"),
+  // L'encre posée SUR un aplat bleu (pastilles d'Explorer, boutons pleins) :
+  // blanche sur le bleu profond du jour, sombre sur le bleu clair de la nuit
+  surBleu:     dyn("#FFFFFF", "#0B1220"),
   // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
   voile:       dyn("rgba(16,26,46,0.055)", "rgba(255,255,255,0.07)"),
   voileFort:   dyn("rgba(16,26,46,0.10)", "rgba(255,255,255,0.13)"),

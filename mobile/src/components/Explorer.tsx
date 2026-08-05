@@ -20,7 +20,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
           {i > 0 && <View style={s.separateur} />}
           <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.ligne}>
             <View style={s.pastille}>
-              <Icone sf={m.sf} materiel={m.icone} taille={17} couleur="#fff" />
+              <Icone sf={m.sf} materiel={m.icone} taille={17} couleur={T.surBleu} />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={s.titre} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{m.titre}</Text>
@@ -65,7 +65,8 @@ const s = StyleSheet.create({
   // Carré bleu plein, icône blanche — la couleur qui ancre chaque rangée
   pastille: {
     width: 34, height: 34, borderRadius: 10.5, borderCurve: "continuous",
-    alignItems: "center", justifyContent: "center", backgroundColor: T.bleuAction,
+    // Le bleu du thème : profond le jour, clair la nuit — le glyphe s'inverse
+    alignItems: "center", justifyContent: "center", backgroundColor: T.bleu,
   },
   titre: { fontSize: 14.5, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   sous: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1.5 },

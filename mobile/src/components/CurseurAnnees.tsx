@@ -102,7 +102,7 @@ const s = StyleSheet.create({
   pouce: {
     position: "absolute", left: 0, bottom: 20 - (POUCE - 4) / 2,
     width: POUCE, height: POUCE, borderRadius: POUCE / 2,
-    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort,
+    backgroundColor: T.pouce, borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort,
     shadowColor: "#001e3c", shadowOpacity: 0.18, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
     elevation: 4,
   },
