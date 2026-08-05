@@ -134,7 +134,7 @@ export default function Lecteur() {
       </View>
       {a.titre ? <Text style={[s.artTitre, { color: P.titre, fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
       {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
-      <TexteRiche html={a.contenu || ""} couleur={P.corps} fontSize={corps} lineHeight={interligne} justifie />
+      <TexteRiche html={a.contenu || ""} couleur={P.corps} fontSize={corps} lineHeight={interligne} />
     </View>
   );
 
@@ -161,7 +161,7 @@ export default function Lecteur() {
               <View style={s.ornement} />
             </View>
             {chap.contenu ? (
-              <TexteRiche html={chap.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} justifie />
+              <TexteRiche html={chap.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
             ) : null}
 
             {/* Articles directs */}
@@ -178,7 +178,7 @@ export default function Lecteur() {
                   <Text style={[s.sectionTitre, { color: P.titre }]}>{sec.titre}</Text>
                 </View>
                 {sec.contenu ? (
-                  <TexteRiche html={sec.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} justifie />
+                  <TexteRiche html={sec.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
                 ) : null}
                 {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
               </View>
