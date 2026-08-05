@@ -194,7 +194,8 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
   label: string; actif: boolean; onPress: () => void;
   variante?: "pleine" | "pastel"; couleur?: string; desactive?: boolean;
 }) {
-  const c = couleur || "#004f91";
+  // La teinte part en concaténation (`${c}14`) : jamais un jeton dynamique
+  const c = useCouleur(couleur) || "#004f91";
   const fondActif = variante === "pleine"
     ? { backgroundColor: T.bleuAction, borderColor: T.bleuAction }
     : { backgroundColor: `${c}14`, borderColor: `${c}66` };

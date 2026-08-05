@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { useStyleResolu } from "@/lib/apparence";
+import { useCouleur, useStyleResolu } from "@/lib/apparence";
 import { cran } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
@@ -17,12 +17,16 @@ import { POLICE, T } from "@/theme";
 const POUCE = 24;      // diamètre du pouce
 const PAD = POUCE / 2; // demi-pouce de marge : il ne sort jamais de la piste
 
-export default function CurseurAnnees({ annees, valeur, onChange, couleur, voile }: {
+export default function CurseurAnnees({ annees, valeur, onChange, couleur: teinte, voile: voileBrut }: {
   annees: number[]; valeur: number; onChange: (annee: number) => void;
   // Teinte d'accent (portion parcourue, année) et son voile (fond de la
   // pilule) — bleu par défaut, orange sous les modules orange
   couleur?: string; voile?: string;
 }) {
+  // Les teintes arrivent par les PROPS (couleur={T.orange}) : ce sont des
+  // jetons dynamiques, que Reanimated refuse tout autant que dans un style
+  const couleur = useCouleur(teinte);
+  const voile = useCouleur(voileBrut);
   const [largeur, setLargeur] = useState(0);
   // Reanimated exige des couleurs simples : les styles teintés sont résolus
   const pilule = useStyleResolu(s.pilule);

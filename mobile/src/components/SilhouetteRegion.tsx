@@ -31,5 +31,6 @@ export default function SilhouetteRegion({ nom, taille = 34, couleur = "#004f91"
 export function SilhouettePole({ noms, taille = 34, couleur = "#004f91" }: {
   noms: string[]; taille?: number; couleur?: string;
 }) {
+  // La résolution se fait dans Silhouette, commune aux deux formes
   return <Silhouette base={cheminGroupe(noms)} taille={taille} couleur={couleur} />;
 }

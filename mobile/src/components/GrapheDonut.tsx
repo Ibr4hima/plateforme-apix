@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Svg, { G, Path, Text as TexteSvg } from "react-native-svg";
 import { degradeBleu } from "@/components/GrapheBarres";
 import { POLICE, T } from "@/theme";
+import { useCouleur } from "@/lib/apparence";
 
 function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
   // Secteur d'anneau entre les angles a0 → a1 (radians, 0 en haut, horaire)
@@ -33,6 +34,12 @@ function GrapheDonut({ data, fmt, centre }: {
     return { ...d, a0, a1: Math.min(a1, a0 + Math.PI * 2 - 0.0001), i };
   });
 
+  // SVG dessine hors du pipeline natif : couleurs résolues
+
+  const encreSvg = useCouleur(T.encre);
+
+  const grisSvg = useCouleur(T.gris);
+
   return (
     <View style={{ alignItems: "center", gap: 14 }}>
       <Svg width={TAILLE} height={TAILLE}>
@@ -42,8 +49,8 @@ function GrapheDonut({ data, fmt, centre }: {
               fill={degradeBleu(sec.i, secteurs.length)} opacity={0.92} />
           ))}
         </G>
-        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontFamily={POLICE.gras} fill={T.encre} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
-        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fontFamily={POLICE.normal} fill={T.gris} textAnchor="middle">total</TexteSvg>
+        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontFamily={POLICE.gras} fill={encreSvg} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
+        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fontFamily={POLICE.normal} fill={grisSvg} textAnchor="middle">total</TexteSvg>
       </Svg>
       <View style={s.legende}>
         {secteurs.map(sec => (
