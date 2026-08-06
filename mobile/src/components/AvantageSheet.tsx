@@ -11,14 +11,15 @@ import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
-// Couleur du secteur économique (celles du site : primaire vert,
-// secondaire orange, tertiaire bleu)
+// Couleur du secteur économique : primaire bleu, secondaire orange,
+// tertiaire vert (teal la nuit)
 const couleurSecteur = (nom?: string, teinte: (c: string) => string = c => c): string => {
   const n = (nom || "").toLowerCase();
-  if (n.includes("primaire")) return teinte("#188038");
+  if (n.includes("primaire")) return teinte("#004f91");
   if (n.includes("secondaire")) return teinte("#ca631f");
-  if (n.includes("tertiaire")) return teinte("#004f91");
+  if (n.includes("tertiaire")) return teinte("#188038");
   return T.gris as string;
 };
 
@@ -87,7 +88,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
               <Tapable key={f.id} echelle={0.98} style={s.doc}
                 onPress={() => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`).catch(() => {})}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
+                <TexteDefilant style={s.docTexte} texte={f.titre || f.fichier_nom} />
               </Tapable>
             ))}
           </View>

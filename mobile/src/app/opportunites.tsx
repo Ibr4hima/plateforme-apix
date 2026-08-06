@@ -25,6 +25,7 @@ import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -43,9 +44,9 @@ const NIVEAUX = [
 
 // Secteurs économiques des avantages & incitations (couleurs du site)
 const SECTEURS_AVGS = [
-  { cle: "primaire",   label: "Secteur Primaire",   couleur: "#188038" },
+  { cle: "primaire",   label: "Secteur Primaire",   couleur: "#004f91" },
   { cle: "secondaire", label: "Secteur Secondaire", couleur: "#ca631f" },
-  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#004f91" },
+  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#188038" },
 ] as const;
 
 
@@ -60,16 +61,16 @@ function CarteProjet({ p, onPress }: { p: any; onPress: () => void }) {
     <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
       <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{p.titre_projet}</Text>
-        {p.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{p.pole_nom}</Text> : null}
+        {p.pole_nom ? <TexteDefilant style={s.sousTitre} texte={p.pole_nom} /> : null}
         <View style={s.faits}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>RÉGION</Text>
-            <Text style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} numberOfLines={1}>{p.region_nom || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} texte={p.region_nom || "—"} />
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>DÉPARTEMENT</Text>
-            <Text style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} numberOfLines={1}>{p.departement_nom || "—"}</Text>
+            <TexteDefilant style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} texte={p.departement_nom || "—"} />
           </View>
         </View>
       </View>
@@ -87,7 +88,7 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
       style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && { transform: [{ scale: 0.99 }] }, !onPress && { opacity: 0.55 }]}>
       <View style={s.compteurEntete}>
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
-        <Text style={[s.compteurLabel, { color: couleur }]} numberOfLines={1}>{label.toUpperCase()}</Text>
+        <TexteDefilant style={[s.compteurLabel, { color: couleur }]} texte={label.toUpperCase()} />
       </View>
       {/* « 126 arrondissements » : sans plancher de rétraction, l'unité
           poussait le nombre et sortait de la carte. Le nombre garde sa place
@@ -114,7 +115,7 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[s.bandeauSur, { color: couleur }]}>{surtitre.toUpperCase()}</Text>
-        <Text style={s.bandeauTitre} numberOfLines={1}>{titre}</Text>
+        <TexteDefilant style={s.bandeauTitre} texte={titre} />
       </View>
     </View>
   );
@@ -126,7 +127,7 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
     <Pressable onPress={onPress}
       style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.blocFond }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
-      <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
+      <TexteDefilant style={s.tuileTitre} texte={titre} />
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
     </Pressable>
   );
@@ -244,7 +245,10 @@ export default function Opportunites() {
         {LENTILLES.map(l => {
           const actif = vue === l.cle;
           return (
-            <ChipFiltre key={l.cle} label={l.label} actif={actif} compte={pret ? comptes[l.cle] : null}
+            // Potentialités et Avantages portent déjà leurs totaux dans les
+            // cartes de la vue : le répéter dans l'onglet n'apprend rien
+            <ChipFiltre key={l.cle} label={l.label} actif={actif}
+              compte={pret && l.cle === "projets" ? comptes[l.cle] : null}
               onLayout={ev => { const { x, width: la } = ev.nativeEvent.layout; chipsPos.current[l.cle] = { x, largeur: la }; }}
               onPress={() => {
                 setVue(l.cle); setNiveauSel(null); setSecteurSel(null);
@@ -322,7 +326,7 @@ export default function Opportunites() {
                     <CarteCompteur key={n.cle} couleur={teinte(NIVEAU_COULEURS[n.cle])} label={n.label}
                       valeur={total} unite={n.unite} pct={pct}
                       sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
-                      actif={niveauSel === n.cle} largeur={s.compteurDemi}
+                      actif={niveauSel === n.cle}
                       onPress={count > 0 ? () => { tick(); setNiveauSel(niveauSel === n.cle ? null : n.cle); } : undefined} />
                   );
                 })}
@@ -426,12 +430,13 @@ const s = creerStyles(() => ({
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre },
 
-  grilleCompteurs: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  // Les niveaux territoriaux s'emboîtent — pôle, région, département,
+  // arrondissement : les empiler dit cette hiérarchie, une grille 2×2 la perd
+  grilleCompteurs: { gap: 10 },
   compteur: {
     backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 15, paddingTop: 14, paddingBottom: 13, gap: 10,
   },
-  compteurDemi: { flexGrow: 1, flexBasis: "45%" },
   compteurEntete: { flexDirection: "row", alignItems: "center", gap: 7 },
   compteurPoint: { width: 7, height: 7, borderRadius: 4 },
   compteurLabel: { flex: 1, fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.8 },

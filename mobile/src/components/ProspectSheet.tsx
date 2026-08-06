@@ -19,6 +19,7 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
 
@@ -205,7 +206,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`)}
                 style={({ pressed }) => [s.fichierChip, pressed && { backgroundColor: T.bleuVoile }]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
-                <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
+                <TexteDefilant style={s.fichierChipTexte} texte={f.titre} />
               </Pressable>
             ))}
           </View>

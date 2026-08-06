@@ -16,6 +16,7 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (

@@ -17,6 +17,7 @@ import { chargerIndex, creerFuse, GROUPES, type Resultat } from "@/lib/indexRech
 import { T, POLICE } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const MAX_PAR_GROUPE = 6;
 
@@ -83,7 +84,7 @@ export default function Recherche() {
             <View>
               {entete && <Text style={s.groupe}>{GROUPES[r.type].toUpperCase()}</Text>}
               <Pressable onPress={() => setFiche(r)} style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
-                <Text style={s.nom} numberOfLines={1}>{r.nom}</Text>
+                <TexteDefilant style={s.nom} texte={r.nom} />
                 {r.sous ? <Text style={s.sous} numberOfLines={1}>{r.sous}</Text> : null}
               </Pressable>
             </View>

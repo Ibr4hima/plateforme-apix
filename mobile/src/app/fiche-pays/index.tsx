@@ -149,7 +149,7 @@ export default function FichePaysIndex() {
                       <Pressable key={p.id} onPress={() => choisir(p)}
                         style={({ pressed }) => [s.pays, pressed && { backgroundColor: T.blocFond }]}>
                         {drapeauEmoji(p.code_iso2) ? <Text style={s.paysDrapeau}>{drapeauEmoji(p.code_iso2)}</Text> : null}
-                        <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
+                        <TexteDefilant style={s.paysNom} texte={p.nom} />
                         <Text style={s.paysIso}>{p.code_iso3}</Text>
                         <Ionicons name="chevron-forward" size={13} color={T.grisClair} />
                       </Pressable>

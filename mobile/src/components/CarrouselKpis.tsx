@@ -7,6 +7,7 @@ import { Apparition, ChiffreAnime } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
 

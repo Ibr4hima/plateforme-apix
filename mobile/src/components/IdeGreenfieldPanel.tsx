@@ -19,6 +19,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type Sens = "entrant" | "sortant";
 const LABELS: Record<Sens, string> = {
@@ -156,7 +157,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
           <View style={s.pied}>
             <Tapable echelle={0.98} onPress={() => { tick(); setActif(repere); setListeDepliee(false); }}
               style={s.repere}>
-              <Text style={s.repereLabel} numberOfLines={1}>{LABELS[repere]}</Text>
+              <TexteDefilant style={s.repereLabel} texte={LABELS[repere]} />
               <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
               <IconeTendance delta={dpcRep} />
             </Tapable>

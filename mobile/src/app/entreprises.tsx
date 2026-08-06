@@ -22,6 +22,7 @@ import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
 
@@ -54,9 +55,7 @@ function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
         <View style={s.dateSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.dateLabel}>RÉGION</Text>
-          <Text style={[s.dateVal, !e.region_nom && { color: T.grisClair }]} numberOfLines={1}>
-            {e.region_nom || "—"}
-          </Text>
+          <TexteDefilant style={[s.dateVal, !e.region_nom && { color: T.grisClair }]} texte={e.region_nom || "—"} />
         </View>
       </View>
     </Tapable>
@@ -188,7 +187,7 @@ export default function Entreprises() {
                       : <Text style={[s.regionCompte, { color: foncerPastel(r.pastel) }]}>{r.entreprises.length}</Text>}
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.regionNom} numberOfLines={1}>{r.nom}</Text>
+                    <TexteDefilant style={s.regionNom} texte={r.nom} />
                     <Text style={s.regionSous} numberOfLines={1}>
                       {r.entreprises.length} entreprise{r.entreprises.length > 1 ? "s" : ""} · {Math.round(part * 100)} %
                     </Text>
@@ -205,7 +204,7 @@ export default function Entreprises() {
                           <Text style={s.blocPetitTexte}>{monogramme(e.nom)}</Text>
                         </View>
                         <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={s.regionEntNom} numberOfLines={1}>{e.nom}</Text>
+                          <TexteDefilant style={s.regionEntNom} texte={e.nom} />
                           <Text style={s.regionEntSous} numberOfLines={1}>
                             {[formeCourte(e.forme_juridique), e.pole_territoire_nom].filter(Boolean).join(" · ") || "—"}
                           </Text>

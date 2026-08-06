@@ -22,6 +22,7 @@ import { fmtUSD } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
@@ -224,7 +225,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
                 <RangeeMouvante key={cle}>
                   <Tapable echelle={0.98} onPress={() => choisir(cle)}
                     style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                    <TexteDefilant style={s.repereLabel} texte={LABELS[cle]} />
                     <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtUSD(d.valeur) : "—"}</Text>
                     <IconeTendance delta={dpc} />
                   </Tapable>
@@ -290,7 +291,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
                   <Tapable key={r.nom} echelle={0.98}
                     onPress={() => { tick(); setResChoisi(r.nom); }}
                     style={[s.repere, i > 0 && s.repereBord]}>
-                    <Text style={s.repereLabel} numberOfLines={1}>{r.nom.toUpperCase()}</Text>
+                    <TexteDefilant style={s.repereLabel} texte={r.nom.toUpperCase()} />
                     <Text style={s.repereValeur} numberOfLines={1}>{fmtUSD(r.valeur)}</Text>
                     <IconeTendance delta={dpc} />
                   </Tapable>

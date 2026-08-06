@@ -20,6 +20,7 @@ import { getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 

@@ -21,6 +21,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "flux_e" | "flux_s" | "stock_e" | "stock_s" | "flux_net" | "stock_net";
 const LABELS: Record<CleSerie, string> = {
@@ -166,7 +167,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
                 <Tapable echelle={0.98}
                   onPress={() => { tick(); setActif(cle); }}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
+                  <TexteDefilant style={s.repereLabel} texte={LABELS[cle]} />
                   <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>

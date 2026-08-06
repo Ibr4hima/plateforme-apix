@@ -26,6 +26,7 @@ import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 const pastelPole = (nom?: string | null) =>
   (nom && POLE_COULEURS[normPole(nom)]) || "#C5BFBB";
@@ -41,7 +42,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
     <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
       <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{z.nom_zone}</Text>
-        {z.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{z.pole_nom}</Text> : null}
+        {z.pole_nom ? <TexteDefilant style={s.sousTitre} texte={z.pole_nom} /> : null}
         <View style={s.faits}>
           <View style={{ flex: 1.5, minWidth: 0 }}>
             <Text style={s.faitLabel}>LOCALISATION</Text>
@@ -206,7 +207,7 @@ export default function Zones() {
                     <SilhouettePole noms={regions} taille={38} couleur={foncerPastel(pastel)} />
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.poleNom} numberOfLines={1}>{p.pole_territoire}</Text>
+                    <TexteDefilant style={s.poleNom} texte={p.pole_territoire} />
                     <Text style={s.poleSous} numberOfLines={1}>
                       {[`${nbZones} zone${nbZones > 1 ? "s" : ""}`, regions.join(", ")].filter(Boolean).join(" · ")}
                     </Text>

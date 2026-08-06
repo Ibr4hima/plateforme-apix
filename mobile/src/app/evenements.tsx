@@ -23,6 +23,7 @@ import { fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 
 const dateDe = (e: any): Date | null => {

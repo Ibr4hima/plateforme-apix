@@ -219,7 +219,7 @@ export default function Lecteur() {
       <View style={[s.barre, { paddingTop: insets.top + 6, backgroundColor: P.fond }]}>
         <View style={s.barreContenu}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={s.barreEtiquette} numberOfLines={1}>{etiquette}</Text>
+            <TexteDefilant style={s.barreEtiquette} texte={etiquette} />
             {chap ? <Text style={[s.barreChapitre, { color: P.titre }]} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
           </View>
           <Pressable onPress={basculerSombre} hitSlop={6}

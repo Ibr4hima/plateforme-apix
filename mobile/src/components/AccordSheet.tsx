@@ -19,6 +19,7 @@ import { computeStatutAccord } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export const ST_PASTEL: Record<string, { label: string; p: string }> = {
   en_vigueur: { label: "En vigueur",           p: "#B4DE9D" },

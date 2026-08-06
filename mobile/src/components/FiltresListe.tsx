@@ -9,6 +9,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 export const basculer = (liste: string[], v: string) =>
   liste.includes(v) ? liste.filter(x => x !== v) : [...liste, v];

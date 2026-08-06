@@ -7,6 +7,7 @@ import Svg, { G, Path, Text as TexteSvg } from "react-native-svg";
 import { degradeBleu } from "@/components/GrapheBarres";
 import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import TexteDefilant from "@/components/TexteDefilant";
 
 function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
   // Secteur d'anneau entre les angles a0 → a1 (radians, 0 en haut, horaire)
@@ -56,7 +57,7 @@ function GrapheDonut({ data, fmt, centre }: {
         {secteurs.map(sec => (
           <View key={sec.label} style={s.legendeLigne}>
             <View style={[s.carre, { backgroundColor: degradeBleu(sec.i, secteurs.length) }]} />
-            <Text style={s.legendeTexte} numberOfLines={1}>{sec.label}</Text>
+            <TexteDefilant style={s.legendeTexte} texte={sec.label} />
             <Text style={s.legendePct}>{(sec.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</Text>
           </View>
         ))}
