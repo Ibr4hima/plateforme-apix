@@ -132,9 +132,14 @@ export default function CommerceExterieurPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anneesSerie.join(",")]);
 
-  if (gu.isLoading) return <SqueletteDonnees />;
+  // isLoading vaut isPending ET isFetching : une requête MISE EN PAUSE par le
+  // gestionnaire hors-ligne est pending sans être fetching. Elle échappait donc
+  // aux deux premières branches et tombait dans « pas de données », où l'app
+  // affirmait que les indicateurs n'existent pas — alors qu'elle ne les avait
+  // simplement jamais reçus. Tant qu'aucune réponse n'est arrivée, on attend.
   if (gu.isError) return <EtatErreur onRetry={() => gu.refetch()} />;
-  if (!gu.data?.disponible || series.exports.length === 0) return (
+  if (!gu.data) return <SqueletteDonnees />;
+  if (!gu.data.disponible || series.exports.length === 0) return (
     <EtatVide texte="Commerce extérieur du Sénégal"
       sousTexte="Les indicateurs NACE seront disponibles après l'import des rapports annuels dans l'administration." />
   );
