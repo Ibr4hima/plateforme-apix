@@ -11,7 +11,10 @@
     "ios": {
       "bundleIdentifier": "sn.apix.plateforme",
       "supportsTablet": true,
-      "icon": "./assets/images/icon.png"
+      "icon": "./assets/images/icon.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "sn.apix.plateforme",
