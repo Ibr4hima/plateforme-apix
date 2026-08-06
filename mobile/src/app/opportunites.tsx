@@ -88,7 +88,9 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
       style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && { transform: [{ scale: 0.99 }] }, !onPress && { opacity: 0.55 }]}>
       <View style={s.compteurEntete}>
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
-        <TexteDefilant style={[s.compteurLabel, { color: couleur }]} texte={label.toUpperCase()} />
+        {/* Un simple Text : depuis que les cartes tiennent toute la largeur,
+            ces intitulés ne se coupent plus — rien à faire défiler ici */}
+        <Text style={[s.compteurLabel, { color: couleur }]} numberOfLines={1}>{label.toUpperCase()}</Text>
       </View>
       {/* « 126 arrondissements » : sans plancher de rétraction, l'unité
           poussait le nombre et sortait de la carte. Le nombre garde sa place
