@@ -11,7 +11,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import Reanime, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import Reanime, { FadeIn, FadeInUp, FadeOut, FadeOutUp, LinearTransition } from "react-native-reanimated";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
@@ -50,15 +50,18 @@ const SECTEURS_AVGS = [
 ] as const;
 
 
-// La carte ouverte passe en tête, les autres gardent leur ordre relatif.
-// Un tri STABLE suffit : inutile de reconstruire la liste, et les clés ne
-// changent pas — c'est ce qui permet à l'animation de suivre chaque carte.
-const ordonner = <O extends { cle: string }>(liste: readonly O[], choisi: string | null): O[] =>
-  choisi ? [...liste].sort((a, b) => (a.cle === choisi ? -1 : b.cle === choisi ? 1 : 0)) : [...liste];
+// Une carte ouverte reste SEULE : les autres quittent la liste. L'écran ne
+// montre alors qu'une chose — le bloc choisi et ce qu'il contient — au lieu
+// d'un contenu coincé entre des cartes qui ne servent plus à rien.
+const reduire = <O extends { cle: string }>(liste: readonly O[], choisi: string | null): O[] =>
+  choisi ? liste.filter(o => o.cle === choisi) : [...liste];
 
-// Le déplacement : un ressort bref et ferme — on doit sentir que les cartes
-// se rangent, pas les regarder voyager
+// Le mouvement : les cartes écartées s'effacent en glissant vers le haut, la
+// carte retenue remonte à leur place. Bref et ferme — on doit sentir qu'elles
+// se rangent, pas les regarder voyager.
 const GLISSE = LinearTransition.springify().damping(24).stiffness(320).mass(0.6);
+const ENTREE_CARTE = FadeInUp.duration(180);
+const SORTIE_CARTE = FadeOutUp.duration(140);
 const PARAITRE = FadeIn.duration(160);
 const DISPARAITRE = FadeOut.duration(110);
 
@@ -331,17 +334,18 @@ export default function Opportunites() {
           {hero}
           {chargement || enErreur ? vide : (
             <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
-              {/* Ouvrir un niveau le fait remonter en tête ; les autres glissent
-                  SOUS son contenu. Ils restent frères dans la même liste — c'est
-                  la condition pour que LinearTransition anime leur déplacement
-                  au lieu de les démonter puis les remonter ailleurs. */}
+              {/* Ouvrir un niveau le laisse SEUL à l'écran, avec son contenu ;
+                  les autres s'effacent. Ils restent frères dans la même liste et
+                  gardent leurs clés — c'est la condition pour que Reanimated
+                  anime leur sortie au lieu de les faire disparaître d'un coup. */}
               <View style={s.grilleCompteurs}>
-                {ordonner(NIVEAUX, niveauSel).map(n => {
+                {reduire(NIVEAUX, niveauSel).map(n => {
                   const count = pots.filter((p: any) => p.niveau === n.cle).length;
                   const total = totauxNiveaux[n.cle] || 0;
                   const pct = total > 0 ? Math.round(count / total * 100) : 0;
                   return (
-                    <Reanime.View key={n.cle} layout={GLISSE}>
+                    <Reanime.View key={n.cle} layout={GLISSE}
+                      entering={ENTREE_CARTE} exiting={SORTIE_CARTE}>
                       <CarteCompteur couleur={teinte(NIVEAU_COULEURS[n.cle])} label={n.label}
                         valeur={total} unite={n.unite} pct={pct}
                         sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
@@ -398,17 +402,17 @@ export default function Opportunites() {
         {hero}
         {chargement || enErreur ? vide : (
           <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
-            {/* Même grammaire que les niveaux : le secteur ouvert remonte,
-                les autres se rangent sous son contenu */}
+            {/* Même grammaire que les niveaux : le secteur ouvert reste seul */}
             <View style={{ gap: 10 }}>
-              {ordonner(SECTEURS_AVGS, secteurSel).map(sec => {
+              {reduire(SECTEURS_AVGS, secteurSel).map(sec => {
                 const count = avgs.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(sec.cle)).length;
                 const secRef = secteurs.find((x: any) => (x.nom || "").toLowerCase().includes(sec.cle));
                 const braIds = new Set(branches.filter((b: any) => b.secteur_id === secRef?.id).map((b: any) => b.id));
                 const nbActs = activites.filter((a: any) => braIds.has(a.branche_id)).length;
                 const pct = nbActs > 0 ? Math.round(count / nbActs * 100) : 0;
                 return (
-                  <Reanime.View key={sec.cle} layout={GLISSE}>
+                  <Reanime.View key={sec.cle} layout={GLISSE}
+                    entering={ENTREE_CARTE} exiting={SORTIE_CARTE}>
                     <CarteCompteur couleur={teinte(sec.couleur)} label={sec.label}
                       valeur={nbActs} unite="activité" pct={pct}
                       sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
