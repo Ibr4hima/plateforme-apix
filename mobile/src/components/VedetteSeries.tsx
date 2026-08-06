@@ -17,7 +17,6 @@ import MiniTendance from "@/components/MiniTendance";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export type GrapheVedette = {
   cle: string;
@@ -62,9 +61,9 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
       {/* ── La vedette ── */}
       <View style={s.rangee}>
         <View style={s.vedette}>
-          <TexteDefilant style={s.etiquette}>
+          <Text style={s.etiquette} numberOfLines={1}>
             {gActive.label.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
-          </TexteDefilant>
+          </Text>
           {!multi && bilan && (
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={gActive.fmt(bilan.dernier.valeur)} style={s.nombre} />
@@ -91,7 +90,7 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
                 return (
                   <View key={sr.nom} style={s.legendeLigne}>
                     <View style={[s.point, { backgroundColor: sr.couleur }]} />
-                    <TexteDefilant style={s.legendeNom} texte={sr.nom} />
+                    <Text style={s.legendeNom} numberOfLines={1}>{sr.nom}</Text>
                     {b?.dernier && <Text style={s.legendeAnnee}>{b.dernier.annee}</Text>}
                     <Text style={s.legendeValeur}>{b ? gActive.fmt(b.dernier.valeur) : "—"}</Text>
                     {b?.delta != null ? (

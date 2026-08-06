@@ -20,7 +20,6 @@ import { getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 
@@ -100,12 +99,12 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <TexteDefilant style={s.etiquette}>
+          <Text style={s.etiquette} numberOfLines={1}>
             {indActif.libelle.toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
-          </TexteDefilant>
+          </Text>
           {/* La vue en badge — le tap ouvre le sélecteur */}
           <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgeVue}>
-            <TexteDefilant style={s.badgeVueTexte}>{sel.libelle}</TexteDefilant>
+            <Text style={s.badgeVueTexte} numberOfLines={1}>{sel.libelle}</Text>
           </Pressable>
         </View>
 

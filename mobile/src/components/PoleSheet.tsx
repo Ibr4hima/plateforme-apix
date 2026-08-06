@@ -16,7 +16,6 @@ import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
 export const splitLocalisation = (loc: string): string[] =>
@@ -109,7 +108,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
                 <Tapable key={z.id} onPress={() => setZoneOuverte(z)} echelle={0.99}
                   style={[s.zone, i > 0 && s.zoneBord]}>
                   <View style={{ flex: 1, minWidth: 0 }}>
-                    <TexteDefilant style={s.zoneNom} texte={z.nom_zone} />
+                    <Text style={s.zoneNom} numberOfLines={1}>{z.nom_zone}</Text>
                     <Text style={s.zoneSous} numberOfLines={1}>
                       <Text style={{ color: tc, fontFamily: POLICE.gras }}>{z.type_zone}</Text>
                       {`   ·   ${nbEnts} entreprise${nbEnts > 1 ? "s" : ""} installée${nbEnts > 1 ? "s" : ""}`}
@@ -153,7 +152,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
               <Tapable key={f.id} echelle={0.98} style={s.doc}
                 onPress={() => Linking.openURL(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`).catch(() => {})}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <TexteDefilant style={s.docTexte} texte={f.titre || f.nom} />
+                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>
               </Tapable>
             ))}
           </View>

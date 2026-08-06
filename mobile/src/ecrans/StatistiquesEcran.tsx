@@ -29,7 +29,6 @@ import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois lentilles — chips bleues, la teinte unique du module
 const LENTILLES = [
@@ -154,11 +153,11 @@ export default function StatistiquesEcran() {
         <View style={s.vedette}>
           {/* Étiquette + le pays en badge blanc, sans point */}
           <View style={s.vedetteEnTete}>
-            <TexteDefilant style={s.etiquette}>
+            <Text style={s.etiquette} numberOfLines={1}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
-            </TexteDefilant>
+            </Text>
             <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.badgePays}>
-              <TexteDefilant style={s.badgePaysTexte}>{paysNom(paysId) || "—"}</TexteDefilant>
+              <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>
             </Pressable>
           </View>
 
@@ -205,7 +204,7 @@ export default function StatistiquesEcran() {
                 <Tapable key={r.cle} echelle={0.98}
                   onPress={() => { tick(); setActif(r.cle); }}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <TexteDefilant style={s.repereLabel} texte={r.court} />
+                  <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
                     {d ? fmtUnite(d.valeur, r.ind.unite) : "—"}
                   </Text>

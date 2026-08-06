@@ -17,7 +17,6 @@ import { cran, tick } from "@/lib/haptique";
 import type { SourceIde } from "@/lib/ideSource";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 const SEGMENTS = [
@@ -116,7 +115,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
     return (
       <Tapable echelle={0.99} onPress={() => valider(src)} style={[s.ligne, !premier && s.ligneBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <TexteDefilant style={[s.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} texte={nom} />
+          <Text style={[s.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
           {legende ? <Text style={s.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
         </View>
         {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}

@@ -19,7 +19,6 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
 
@@ -189,7 +188,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             {e.canal ? (
               <View style={s.canalChip}>
                 <Ionicons name={(CANAL_ICONES[e.canal] || "chatbox-outline") as any} size={11} color={T.texte} />
-                <TexteDefilant style={s.canalChipTexte}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</TexteDefilant>
+                <Text style={s.canalChipTexte} numberOfLines={1}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</Text>
               </View>
             ) : null}
             {(e.interlocuteur || e.contact_par) ? (
@@ -206,7 +205,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`)}
                 style={({ pressed }) => [s.fichierChip, pressed && { backgroundColor: T.bleuVoile }]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
-                <TexteDefilant style={s.fichierChipTexte} texte={f.titre} />
+                <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
               </Pressable>
             ))}
           </View>

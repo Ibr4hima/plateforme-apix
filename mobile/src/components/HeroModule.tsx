@@ -12,7 +12,6 @@ import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
@@ -79,7 +78,7 @@ export function BarreHero({ titre, defilY, bouton, retour, seuil = 118 }: {
             <Icone sf="chevron.left" materiel="arrow_back" taille={19} couleur="#fff" poids="semibold" />
           </Pressable>
         ) : <PointPulsant />}
-        <TexteDefilant style={sb.titre} texte={titre} />
+        <Text style={sb.titre} numberOfLines={1}>{titre}</Text>
         {bouton && (
           <Pressable onPress={bouton.onPress} hitSlop={8}
             style={({ pressed }) => [sb.action, pressed && { backgroundColor: "rgba(255,255,255,0.24)" }]}>
@@ -146,7 +145,7 @@ export default function HeroModule({ titre, sousTitre, retour, recherche, segmen
             style={({ pressed }) => [s.retour, pressed && { backgroundColor: "rgba(255,255,255,0.22)" }]}>
             <Icone sf="chevron.left" materiel="arrow_back" taille={21} couleur="#fff" poids="semibold" />
           </Pressable>
-          <TexteDefilant style={s.titreCompact} texte={titre} />
+          <Text style={s.titreCompact} numberOfLines={1}>{titre}</Text>
         </View>
       )}
 

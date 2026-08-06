@@ -22,7 +22,6 @@ import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
@@ -73,19 +72,19 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
       <View style={s.carteCorps}>
         <View style={s.ligneTitre}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <TexteDefilant style={s.titre} texte={p.nom} />
-            {sousTitre ? <TexteDefilant style={s.sousTitre} texte={sousTitre} /> : null}
+            <Text style={s.titre} numberOfLines={1}>{p.nom}</Text>
+            {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
           </View>
           {badge && (
             <View style={[s.badge, { borderColor: `${teinte(couleurProspect(badge.label))}3D` }]}>
-              <TexteDefilant style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]}>{badge.label}</TexteDefilant>
+              <Text style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]} numberOfLines={1}>{badge.label}</Text>
             </View>
           )}
         </View>
         <View style={s.faits}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>PAYS</Text>
-            <TexteDefilant style={[s.faitVal, !p.siege_nom && { color: T.grisClair }]} texte={p.siege_nom || "—"} />
+            <Text style={[s.faitVal, !p.siege_nom && { color: T.grisClair }]} numberOfLines={1}>{p.siege_nom || "—"}</Text>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>

@@ -11,7 +11,6 @@ import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export const MAX_SEL = 4;
 
@@ -121,7 +120,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
       <Pressable onPress={() => !desactive && clicPays(p.id)}
         style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: T.champ }, desactive && { opacity: 0.4 }]}>
         <View style={[s.point, { borderColor: col, backgroundColor: sel ? col : "transparent" }]} />
-        <TexteDefilant style={[s.paysNom, sel && { fontFamily: POLICE.gras }]} texte={p.nom} />
+        <Text style={[s.paysNom, sel && { fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
       </Pressable>
     );
   };

@@ -14,7 +14,6 @@ import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export const MAX_SEL_IDE = 4;
 
@@ -179,7 +178,7 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
     <Pressable onPress={() => !desactive && onPress()}
       style={({ pressed }) => [s.ligne, indent && { paddingLeft: 26 }, pressed && { backgroundColor: T.champ }, desactive && { opacity: 0.4 }]}>
       <View style={[s.point, { borderColor: actif ? couleur : T.grisClair, backgroundColor: actif ? couleur : "transparent" }]} />
-      <TexteDefilant style={[s.ligneNom, actif && { fontFamily: POLICE.gras }]} texte={nom} />
+      <Text style={[s.ligneNom, actif && { fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
       {badge ? <View style={s.refBadge}><Text style={s.refBadgeTexte}>{badge}</Text></View> : null}
     </Pressable>
   );

@@ -12,7 +12,6 @@ import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Couleurs des niveaux territoriaux (palette du site)
 export const NIVEAU_COULEURS: Record<string, string> = {
@@ -112,7 +111,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
               <Tapable key={f.id} echelle={0.98} style={s.doc}
                 onPress={() => Linking.openURL(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`).catch(() => {})}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <TexteDefilant style={s.docTexte} texte={f.titre || f.fichier_nom} />
+                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
               </Tapable>
             ))}
           </View>

@@ -6,7 +6,6 @@ import { memo, useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Barre qui croît de 0 à sa largeur à l'apparition (stagger de 55 ms)
 function BarreCroissante({ pct, index, style, children }: {
@@ -94,7 +93,7 @@ export const BarresEmpilees = memo(function BarresEmpilees({ partenaires, ressou
               {parts.map(r => (
                 <View key={r.nom} style={s.repartitionLigne}>
                   <View style={[s.legendeCarre, { backgroundColor: degradeBleu(r.i, ressources.length) }]} />
-                  <TexteDefilant style={s.repartitionNom} texte={r.nom} />
+                  <Text style={s.repartitionNom} numberOfLines={1}>{r.nom}</Text>
                   <Text style={s.repartitionPct}>{(r.valeur / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</Text>
                 </View>
               ))}

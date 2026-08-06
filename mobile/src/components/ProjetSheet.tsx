@@ -14,7 +14,6 @@ import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
 const devSym = (code?: string, sym?: string) => sym || (code ? DEVISE_SYM[code] || code : "");
@@ -151,7 +150,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
               <Tapable key={f.id} echelle={0.98} style={s.doc}
                 onPress={() => Linking.openURL(`${API}/projets/${p.id}/fichiers/${f.id}/download`).catch(() => {})}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <TexteDefilant style={s.docTexte} texte={f.titre || f.fichier_nom} />
+                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
               </Tapable>
             ))}
           </View>

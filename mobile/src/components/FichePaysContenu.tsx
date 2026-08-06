@@ -18,7 +18,6 @@ import { getJson } from "@/lib/api";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Lu au rendu (voir PoleSheet) : sur Android un jeton fige a l'import.
 const COL_SEN_ = () => T.bleu;
@@ -95,7 +94,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
     return (
       <View style={s.duel}>
         <View style={s.duelEntete}>
-          <TexteDefilant style={s.duelLibelle} texte={ind.libelle} />
+          <Text style={s.duelLibelle} numberOfLines={1}>{ind.libelle}</Text>
           <Text style={s.duelUnite}>{ind.unite}</Text>
         </View>
         <View style={s.duelValeurs}>
@@ -144,7 +143,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
               return (
                 <View key={r.ressource}>
                   <View style={s.resLigne}>
-                    <TexteDefilant style={s.resNom} texte={r.ressource} />
+                    <Text style={s.resNom} numberOfLines={1}>{r.ressource}</Text>
                     <Text style={s.resVal}>{fmtUSD(r.valeur)} <Text style={s.resPct}>· {pct.toFixed(0)} %</Text></Text>
                   </View>
                   <View style={s.resBarFond}>
@@ -164,9 +163,9 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
       {/* ── La vedette de la relation : les échanges en grand, la balance en
           toutes lettres, les trois chiffres sous filets ── */}
       <View style={s.vedette}>
-        <TexteDefilant style={s.etiquette}>
+        <Text style={s.etiquette} numberOfLines={1}>
           ÉCHANGES BILATÉRAUX{bilat?.annee_min ? ` · ${bilat.annee_min} — ${bilat.annee_max}` : ""}
-        </TexteDefilant>
+        </Text>
         {totalEchanges > 0 ? (
           <>
             <ChiffreAnime texte={fmtUSD(totalEchanges)} style={s.nombre} />
@@ -240,7 +239,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
               <Tapable key={e.id} onPress={() => ouvrirEntreprise(e.id)} echelle={0.99}
                 style={[s.rangeeItem, i > 0 && s.rangeeBord]}>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <TexteDefilant style={s.itemTitre} texte={e.nom} />
+                  <Text style={s.itemTitre} numberOfLines={1}>{e.nom}</Text>
                   {(e.region || e.forme_juridique) ? <Text style={s.itemSous} numberOfLines={1}>{[e.forme_juridique, e.region].filter(Boolean).join(" · ")}</Text> : null}
                 </View>
                 <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
@@ -262,7 +261,7 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
           <Text style={[s.secTitle, { marginBottom: 0 }]}>INDICATEURS</Text>
           <View style={s.legendeCouleurs}>
             <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_SEN_() }]} /><Text style={s.legendeTexte}>Sénégal</Text></View>
-            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_AUTRE }]} /><TexteDefilant style={s.legendeTexte} texte={colAutre?.nom || autreNom} /></View>
+            <View style={s.legendeItem}><View style={[s.legendePoint, { backgroundColor: COL_AUTRE }]} /><Text style={s.legendeTexte} numberOfLines={1}>{colAutre?.nom || autreNom}</Text></View>
           </View>
         </View>
         {cats.map(cat => (

@@ -19,7 +19,6 @@ import { getJson } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export type BaseCode = "code-investissement" | "modalites-application";
 
@@ -113,7 +112,7 @@ export default function CodeSommaire() {
                   onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
                   style={s.resultat}>
                   <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
-                  {r.titre ? <TexteDefilant style={s.resTitre} texte={r.titre} /> : null}
+                  {r.titre ? <Text style={s.resTitre} numberOfLines={1}>{r.titre}</Text> : null}
                   <Extrait html={r.extrait} />
                 </Tapable>
               </Apparition>

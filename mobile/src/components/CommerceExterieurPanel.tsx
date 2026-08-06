@@ -26,7 +26,6 @@ import { fmtMFCFA } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
@@ -226,9 +225,9 @@ export default function CommerceExterieurPanel() {
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <TexteDefilant style={s.etiquette}>
+          <Text style={s.etiquette} numberOfLines={1}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
-          </TexteDefilant>
+          </Text>
           {/* Module Sénégal uniquement — badge bleu sans point */}
           <View style={s.badgePays}>
             <Text style={s.badgePaysTexte}>Sénégal</Text>
@@ -284,7 +283,7 @@ export default function CommerceExterieurPanel() {
                 <Tapable echelle={0.98}
                   onPress={() => { tick(); setActif(cle); }}
                   style={[s.repere, i > 0 && s.repereBord]}>
-                  <TexteDefilant style={s.repereLabel} texte={LABELS[cle]} />
+                  <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
                     {d ? fmtMFCFA(d.valeur) : "—"}
                   </Text>
@@ -308,11 +307,11 @@ export default function CommerceExterieurPanel() {
           </View>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <TexteDefilant style={s.etiquette}>
+              <Text style={s.etiquette} numberOfLines={1}>
                 {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
-              </TexteDefilant>
+              </Text>
               <View style={s.badgeProduit}>
-                <TexteDefilant style={s.badgeProduitTexte} texte={sensPr === "export" ? "Exportations" : "Importations"} />
+                <Text style={s.badgeProduitTexte} numberOfLines={1}>{sensPr === "export" ? "Exportations" : "Importations"}</Text>
               </View>
             </View>
 
@@ -364,7 +363,7 @@ export default function CommerceExterieurPanel() {
                         <Tapable key={x.produit} echelle={0.98}
                           onPress={() => { tick(); setProduitChoisi(x.produit); }}
                           style={[s.repere, i > 0 && s.repereBord]}>
-                          <TexteDefilant style={s.repereLabel} texte={x.produit.toUpperCase()} />
+                          <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
                           <Text style={s.repereValeur} numberOfLines={1}>
                             {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
                           </Text>
@@ -421,11 +420,11 @@ export default function CommerceExterieurPanel() {
 
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <TexteDefilant style={s.etiquette}>
+              <Text style={s.etiquette} numberOfLines={1}>
                 {zoneActive.toUpperCase()}{dernierZg ? ` · ${dernierZg.annee}` : ""}
-              </TexteDefilant>
+              </Text>
               <View style={s.badgeZone}>
-                <TexteDefilant style={s.badgeZoneTexte} texte={sensPr === "export" ? "Exportations" : "Importations"} />
+                <Text style={s.badgeZoneTexte} numberOfLines={1}>{sensPr === "export" ? "Exportations" : "Importations"}</Text>
               </View>
             </View>
 
@@ -471,7 +470,7 @@ export default function CommerceExterieurPanel() {
                   <Tapable key={x.nom} echelle={0.98}
                     onPress={() => { tick(); setZoneChoisie(x.nom); }}
                     style={[s.repere, i > 0 && s.repereBord]}>
-                    <TexteDefilant style={s.repereLabel} texte={x.nom.toUpperCase()} />
+                    <Text style={s.repereLabel} numberOfLines={1}>{x.nom.toUpperCase()}</Text>
                     <Text style={s.repereValeur} numberOfLines={1}>
                       {x.valeur != null ? fmtMFCFA(x.valeur) : "—"}
                     </Text>
@@ -502,7 +501,7 @@ export default function CommerceExterieurPanel() {
                     </View>
                     {drapeau ? <Text style={s.paysDrapeau}>{drapeau}</Text> : null}
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <TexteDefilant style={s.paysNom} texte={r.pays} />
+                      <Text style={s.paysNom} numberOfLines={1}>{r.pays}</Text>
                       {zone === "continent" && (
                         <Text style={s.paysRegion} numberOfLines={1}>{r.region}</Text>
                       )}

@@ -24,7 +24,6 @@ import { computeStatutAccord } from "@/lib/statuts";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 const TYPES = [
   { cle: "tbi",   label: "Traités Bilatéraux" },
@@ -54,7 +53,7 @@ function CarteAccord({ a, partenaires, onPress }: {
       <View style={s.carteCorps}>
         <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={2}>{titre}</Text>
         {sousTitreStatut(a) ? (
-          <TexteDefilant style={s.sousTitre} texte={sousTitreStatut(a) as string} />
+          <Text style={s.sousTitre} numberOfLines={1}>{sousTitreStatut(a)}</Text>
         ) : null}
         <View style={s.dates}>
           <View style={{ flex: 1, minWidth: 0 }}>

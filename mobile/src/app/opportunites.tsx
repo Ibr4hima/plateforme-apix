@@ -25,7 +25,6 @@ import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -61,16 +60,16 @@ function CarteProjet({ p, onPress }: { p: any; onPress: () => void }) {
     <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
       <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{p.titre_projet}</Text>
-        {p.pole_nom ? <TexteDefilant style={s.sousTitre} texte={p.pole_nom} /> : null}
+        {p.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{p.pole_nom}</Text> : null}
         <View style={s.faits}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>RÉGION</Text>
-            <TexteDefilant style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} texte={p.region_nom || "—"} />
+            <Text style={[s.faitVal, !p.region_nom && { color: T.grisClair }]} numberOfLines={1}>{p.region_nom || "—"}</Text>
           </View>
           <View style={s.faitSep} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.faitLabel}>DÉPARTEMENT</Text>
-            <TexteDefilant style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} texte={p.departement_nom || "—"} />
+            <Text style={[s.faitVal, !p.departement_nom && { color: T.grisClair }]} numberOfLines={1}>{p.departement_nom || "—"}</Text>
           </View>
         </View>
       </View>
@@ -117,7 +116,7 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[s.bandeauSur, { color: couleur }]}>{surtitre.toUpperCase()}</Text>
-        <TexteDefilant style={s.bandeauTitre} texte={titre} />
+        <Text style={s.bandeauTitre} numberOfLines={1}>{titre}</Text>
       </View>
     </View>
   );
@@ -129,7 +128,7 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
     <Pressable onPress={onPress}
       style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.blocFond }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
-      <TexteDefilant style={s.tuileTitre} texte={titre} />
+      <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
     </Pressable>
   );

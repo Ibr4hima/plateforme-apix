@@ -20,7 +20,6 @@ import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
-import TexteDefilant from "@/components/TexteDefilant";
 
 // La description est stockée en HTML riche (site) : on la ramène à du texte
 // avec puces et sauts de ligne pour l'app.
@@ -60,7 +59,7 @@ function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress
   return (
     <Tapable onPress={onPress} echelle={0.99} style={[s.ent, !premier && s.entBord]}>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <TexteDefilant style={s.entNom} texte={ze.entreprise?.nom} />
+        <Text style={s.entNom} numberOfLines={1}>{ze.entreprise?.nom}</Text>
         {ze.entreprise?.forme_juridique ? (
           <Text style={s.entForme} numberOfLines={1}>{ze.entreprise.forme_juridique}</Text>
         ) : null}
@@ -105,7 +104,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       <View style={s.faits}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.faitLabel}>SUPERFICIE</Text>
-          <TexteDefilant style={[s.faitVal, !zone.superficie && { color: T.grisClair }]} texte={zone.superficie ? `${Number(zone.superficie).toLocaleString("fr-FR")} ha` : "—"} />
+          <Text style={[s.faitVal, !zone.superficie && { color: T.grisClair }]} numberOfLines={1}>{zone.superficie ? `${Number(zone.superficie).toLocaleString("fr-FR")} ha` : "—"}</Text>
         </View>
         <View style={s.faitSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -115,7 +114,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
         <View style={s.faitSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.faitLabel}>CRÉATION</Text>
-          <TexteDefilant style={[s.faitVal, !zone.date_creation && { color: T.grisClair }]} texte={zone.date_creation ? fmtDate(zone.date_creation) : "—"} />
+          <Text style={[s.faitVal, !zone.date_creation && { color: T.grisClair }]} numberOfLines={1}>{zone.date_creation ? fmtDate(zone.date_creation) : "—"}</Text>
         </View>
       </View>
 
@@ -172,7 +171,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
               <Tapable key={f.id} echelle={0.98} style={s.doc}
                 onPress={() => Linking.openURL(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`).catch(() => {})}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <TexteDefilant style={s.docTexte} texte={f.titre || f.nom} />
+                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>
               </Tapable>
             ))}
           </View>

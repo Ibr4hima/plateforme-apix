@@ -219,8 +219,8 @@ export default function Lecteur() {
       <View style={[s.barre, { paddingTop: insets.top + 6, backgroundColor: P.fond }]}>
         <View style={s.barreContenu}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <TexteDefilant style={s.barreEtiquette} texte={etiquette} />
-            {chap ? <TexteDefilant style={[s.barreChapitre, { color: P.titre }]}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</TexteDefilant> : null}
+            <Text style={s.barreEtiquette} numberOfLines={1}>{etiquette}</Text>
+            {chap ? <Text style={[s.barreChapitre, { color: P.titre }]} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
           </View>
           <Pressable onPress={basculerSombre} hitSlop={6}
             style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>
