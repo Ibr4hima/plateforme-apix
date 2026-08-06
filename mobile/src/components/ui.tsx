@@ -13,8 +13,6 @@ import {
   LayoutChangeEvent, Modal, Platform, Pressable, ScrollView,
   StyleProp, StyleSheet, Text, View, ViewStyle,
 } from "react-native";
-
-const ANDROID = Platform.OS === "android";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Reanime, {
   Easing, FadeInDown, LinearTransition,
@@ -28,6 +26,7 @@ import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
 import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
+const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
 const FlouAnime = Reanime.createAnimatedComponent(BlurView);
 
@@ -86,13 +85,16 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
       <View accessible accessibilityRole="button" accessibilityLabel={accessibilityLabel}
         style={{ flex: 1, borderRadius: taille / 2, overflow: "hidden",
           borderWidth: StyleSheet.hairlineWidth, borderColor: T.voileFort }}>
-        {/* Android ne floute pas sans le lui demander : sans cette méthode,
-            BlurView n'y pose qu'un voile plat et le bouton perd sa matière */}
-        <BlurView intensity={40} tint={sombre ? "dark" : "light"}
-          experimentalBlurMethod={ANDROID ? "dimezisBlurView" : undefined}
-          style={StyleSheet.absoluteFill} />
+        {/* Pas de dimezisBlurView : le flou d'Android capture un bitmap
+            MATERIEL, que le canevas logiciel d'une vue rognée refuse de
+            dessiner (« Software rendering doesn't support hardware bitmaps »).
+            Sur Android, BlurView pose donc son voile plat — et le voile ci-
+            dessous, plus dense, lui rend la matière que le flou lui retire. */}
+        <BlurView intensity={40} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
         <View style={[StyleSheet.absoluteFill, {
-          backgroundColor: teinte || (sombre ? "rgba(255,255,255,0.13)" : "rgba(255,255,255,0.62)"),
+          backgroundColor: teinte
+            || (sombre ? (ANDROID ? "rgba(255,255,255,0.17)" : "rgba(255,255,255,0.13)")
+                       : "rgba(255,255,255,0.62)"),
         }]} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>
