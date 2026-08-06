@@ -14,7 +14,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
-import { foncerPastel } from "@/lib/couleurs";
+import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
@@ -153,6 +153,7 @@ function proposer(titre: string, libelles: string[], agir: (index: number) => vo
 }
 
 export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospect: any; onglet: OngletProspect; onClose: () => void }) {
+  const teinte = useTeinte();
   // En contact / transformés : bascule Échanges ⇄ Infos investisseur
   const [vue, setVue] = useState<"echanges" | "infos">(onglet === "cibles" ? "infos" : "echanges");
   const [cyclesOuverts, setCyclesOuverts] = useState<Set<number>>(new Set());
@@ -292,7 +293,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {meta.length > 0 && (
             <Text style={s.meta} numberOfLines={1}>
               {onglet !== "cibles" && badge ? (
-                <Text style={{ color: couleurProspect(badge.label), fontFamily: POLICE.gras }}>{badge.label}</Text>
+                <Text style={{ color: teinte(couleurProspect(badge.label)), fontFamily: POLICE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}

@@ -107,7 +107,7 @@ export default function FichePaysIndex() {
       // restent accessibles au fil de la comparaison
       <View style={{ flex: 1, backgroundColor: T.fond }}>
         {hero}
-        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
       </View>
@@ -122,7 +122,9 @@ export default function FichePaysIndex() {
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={[{ paddingBottom: margeBas }, cap]}
+      // Les deux pastilles de choix du pays vivent sous le bandeau : sans
+      // cette respiration, la liste des continents leur était collée
+      contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]}
       ListHeaderComponentStyle={{ marginBottom: 14 }}
       renderItem={({ item: c }: any) => {
         const ouvert = recherche || ouverts.has(c.continent);

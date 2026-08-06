@@ -13,7 +13,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Feuille } from "@/components/ui";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
-import { foncerPastel } from "@/lib/couleurs";
+import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
@@ -105,6 +105,7 @@ function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
 }
 
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
+  const teinte = useTeinte();
   const statut = statutEvenement(e);
   const st = statut ? ST_EVENT[statut] : null;
   const enCours = statut === "en_cours";
@@ -131,7 +132,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX
         <Text style={s.meta} numberOfLines={1}>
-          {st && <Text style={{ color: st.c, fontFamily: POLICE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
+          {st && <Text style={{ color: teinte(st.c), fontFamily: POLICE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
           {st && e.edition != null ? "   ·   " : ""}
           {e.edition != null ? ordinal(e.edition) : ""}
           {(st || e.edition != null) && roleP ? "   ·   " : ""}

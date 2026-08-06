@@ -24,6 +24,7 @@ import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { useTeinte } from "@/lib/couleurs";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -44,7 +45,7 @@ const NIVEAUX = [
 const SECTEURS_AVGS = [
   { cle: "primaire",   label: "Secteur Primaire",   couleur: "#188038" },
   { cle: "secondaire", label: "Secteur Secondaire", couleur: "#ca631f" },
-  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "bleu" },
+  { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#004f91" },
 ] as const;
 
 
@@ -132,6 +133,9 @@ function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; 
 }
 
 export default function Opportunites() {
+  // Les couleurs de secteur et de niveau sont écrites en dur : la nuit, elles
+  // passent par leur équivalent clair, sans quoi le bleu profond disparaît
+  const teinte = useTeinte();
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
@@ -288,7 +292,7 @@ export default function Opportunites() {
   if (vue === "potentialites") {
     const fichesNiveau = niveauSel ? potsFiltres.filter((p: any) => p.niveau === niveauSel) : [];
     const meta = NIVEAUX.find(n => n.cle === niveauSel);
-    const couleur = niveauSel ? NIVEAU_COULEURS[niveauSel] : T.bleu;
+    const couleur = niveauSel ? teinte(NIVEAU_COULEURS[niveauSel]) : T.bleu;
     // Groupes par rattachement (les pôles restent en un seul bloc)
     const groupes: { cle: string; fiches: any[] }[] = [];
     if (niveauSel === "pole") {
@@ -315,7 +319,7 @@ export default function Opportunites() {
                   const total = totauxNiveaux[n.cle] || 0;
                   const pct = total > 0 ? Math.round(count / total * 100) : 0;
                   return (
-                    <CarteCompteur key={n.cle} couleur={NIVEAU_COULEURS[n.cle]} label={n.label}
+                    <CarteCompteur key={n.cle} couleur={teinte(NIVEAU_COULEURS[n.cle])} label={n.label}
                       valeur={total} unite={n.unite} pct={pct}
                       sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
                       actif={niveauSel === n.cle} largeur={s.compteurDemi}
@@ -376,7 +380,7 @@ export default function Opportunites() {
                 const nbActs = activites.filter((a: any) => braIds.has(a.branche_id)).length;
                 const pct = nbActs > 0 ? Math.round(count / nbActs * 100) : 0;
                 return (
-                  <CarteCompteur key={sec.cle} couleur={sec.couleur} label={sec.label}
+                  <CarteCompteur key={sec.cle} couleur={teinte(sec.couleur)} label={sec.label}
                     valeur={nbActs} unite="activité" pct={pct}
                     sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
                     actif={secteurSel === sec.cle}
@@ -386,10 +390,10 @@ export default function Opportunites() {
             </View>
             {secteurSel && metaSect && branchesGroupes.map(bra => (
               <View key={bra.id} style={{ marginTop: 18 }}>
-                <Bandeau couleur={metaSect.couleur} count={bra.items.length} surtitre="Branche" titre={bra.nom} />
+                <Bandeau couleur={teinte(metaSect.couleur)} count={bra.items.length} surtitre="Branche" titre={bra.nom} />
                 <View style={s.groupe}>
                   {bra.items.map((a: any, i: number) => (
-                    <Tuile key={a.id} couleur={metaSect.couleur} titre={a.activite_nom}
+                    <Tuile key={a.id} couleur={teinte(metaSect.couleur)} titre={a.activite_nom}
                       onPress={() => setAvgOuvert(a)} dernier={i === bra.items.length - 1} />
                   ))}
                 </View>

@@ -380,7 +380,14 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
           IMPORTANT : c'est l'INTENSITÉ du flou qui est animée, pas l'opacité
           de la vue — une BlurView iOS à l'opacité animée rend par bandes non
           uniformes, visibles surtout à la fermeture. */}
-      <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
+      {/* Sur Android, BlurView ne floute pas sans dimezisBlurView — qui, lui,
+          fait tomber l'app (bitmap matériel sur canevas logiciel). À 28
+          d'intensité il n'y posait qu'un voile imperceptible : « le flou ne
+          marche pas ». Android prend donc le parti de Material — un voile
+          franc, sans flou — et c'est le voile ci-dessous qui s'y charge. */}
+      {ANDROID ? null : (
+        <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
+      )}
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, styleFeuille]}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
@@ -566,7 +573,12 @@ const sf = creerStyles(() => ({
   // en découlaient — les coins arrondis laissaient voir un flou non voilé, et
   // le glissement vers le bas découvrait une bande plus claire à l'ancienne
   // position. La feuille étant opaque, la voiler dessous ne coûte rien.
-  fond: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(2,20,38,0.28)" },
+  // Le voile : léger sur iOS, où le flou fait le gros du travail ; franc sur
+  // Android, où il est seul à isoler la feuille de ce qu'il y a derrière
+  fond: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: ANDROID ? "rgba(2,20,38,0.62)" : "rgba(2,20,38,0.28)",
+  },
   feuille: {
     backgroundColor: T.carte, borderTopLeftRadius: 34, borderTopRightRadius: 34,
     // La courbe continue (« squircle ») : c'est elle qui fait les coins

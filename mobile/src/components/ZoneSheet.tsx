@@ -19,6 +19,7 @@ import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { useTeinte } from "@/lib/couleurs";
 
 // La description est stockée en HTML riche (site) : on la ramène à du texte
 // avec puces et sauts de ligne pour l'app.
@@ -71,7 +72,8 @@ function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress
 export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () => void }) {
   const [ficheEnt, setFicheEnt] = useState<any>(null);
 
-  const col = zoneTypeMeta(zone.type_zone).color;
+  const teinte = useTeinte();
+  const col = teinte(zoneTypeMeta(zone.type_zone).color);
   const installes = (zone.entreprises || []).filter((ze: any) => ze.statut === "installee");
   const eligibles = (zone.entreprises || []).filter((ze: any) => ze.statut === "eligible");
   const secIds: number[] = zone.secteur_ids || [];

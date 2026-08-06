@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Linking, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
+import { useTeinte } from "@/lib/couleurs";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLICE, T, TYPO } from "@/theme";
@@ -13,11 +14,11 @@ import { creerStyles } from "@/lib/apparence";
 
 // Couleur du secteur économique (celles du site : primaire vert,
 // secondaire orange, tertiaire bleu)
-const couleurSecteur = (nom?: string): string => {
+const couleurSecteur = (nom?: string, teinte: (c: string) => string = c => c): string => {
   const n = (nom || "").toLowerCase();
-  if (n.includes("primaire")) return "#188038";
-  if (n.includes("secondaire")) return "#ca631f";
-  if (n.includes("tertiaire")) return "#004f91";
+  if (n.includes("primaire")) return teinte("#188038");
+  if (n.includes("secondaire")) return teinte("#ca631f");
+  if (n.includes("tertiaire")) return teinte("#004f91");
   return T.gris as string;
 };
 
@@ -36,6 +37,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
     queryKey: ["avantage", a.id],
     queryFn: () => getJson<any>(`/opportunites/avantages/${a.id}`).catch(() => null),
   });
+  const teinte = useTeinte();
   const d = detail || a;
   const selections: any[] = Array.isArray(d.selections) ? d.selections : [];
   const fichiers: any[] = Array.isArray(d.fichiers) ? d.fichiers : [];
@@ -46,7 +48,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
       sousEntete={(d.secteur_nom || d.branche_nom) ? (
         <Text style={s.meta} numberOfLines={2}>
           {d.secteur_nom ? (
-            <Text style={{ color: couleurSecteur(d.secteur_nom), fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
+            <Text style={{ color: couleurSecteur(d.secteur_nom, teinte), fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
           ) : null}
           {d.secteur_nom && d.branche_nom ? "   ·   " : ""}
           {d.branche_nom || ""}

@@ -12,7 +12,7 @@ import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
+import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -39,6 +39,7 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 }
 
 export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: any[]; onClose: () => void }) {
+  const teinte = useTeinte();
   const [zoneOuverte, setZoneOuverte] = useState<any>(null);
 
   const pastel    = POLE_COULEURS[normPole(pole.pole_territoire)] || "#C5BFBB";
@@ -101,7 +102,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
         <Section titre="Zones d'investissement">
           <View>
             {poleZones.map((z: any, i: number) => {
-              const tc = zoneTypeMeta(z.type_zone).color;
+              const tc = teinte(zoneTypeMeta(z.type_zone).color);
               const nbEnts = (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length;
               return (
                 <Tapable key={z.id} onPress={() => setZoneOuverte(z)} echelle={0.99}

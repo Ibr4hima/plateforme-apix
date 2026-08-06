@@ -67,29 +67,16 @@ function BarreOnglets({ state, navigation }: any) {
               }}>
               <View accessible accessibilityRole="tab" accessibilityLabel={o.titre}
                 accessibilityState={{ selected: actif }} style={s.zoneOnglet}>
-                {PLAT ? (
-                  // Material : la pastille n'enveloppe QUE l'icône, le libellé
-                  // reste dessous, en dehors
-                  <>
-                    <View style={[s.pastille, actif && s.pastilleActive]}>
-                      <Icone sf={o.sf} materiel={o.materiel} taille={21}
-                        couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
-                    </View>
-                    <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
-                      maxFontSizeMultiplier={ECHELLE.compact}>
-                      {o.court}
-                    </Text>
-                  </>
-                ) : (
-                  <View style={[s.pilule, actif && s.piluleActive]}>
-                    <Icone sf={o.sf} materiel={o.materiel} taille={21}
-                      couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
-                    <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
-                      maxFontSizeMultiplier={ECHELLE.compact}>
-                      {o.court}
-                    </Text>
-                  </View>
-                )}
+                {/* La pastille enveloppe l'icône ET le libellé, sur les deux
+                    plateformes : c'est elle qui désigne l'onglet actif */}
+                <View style={[s.pilule, actif && s.piluleActive]}>
+                  <Icone sf={o.sf} materiel={o.materiel} taille={21}
+                    couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
+                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
+                    maxFontSizeMultiplier={ECHELLE.compact}>
+                    {o.court}
+                  </Text>
+                </View>
               </View>
             </Tapable>
           );
@@ -132,7 +119,7 @@ const s = creerStyles(() => ({
     elevation: 8,
   },
   capsule: PLAT ? {
-    flexDirection: "row", alignItems: "flex-start",
+    flexDirection: "row", alignItems: "center",
     backgroundColor: T.carte,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
     paddingHorizontal: 4, paddingTop: 8,
@@ -143,13 +130,7 @@ const s = creerStyles(() => ({
     borderWidth: VERRE ? StyleSheet.hairlineWidth : 0, borderColor: T.voileFort,
     paddingHorizontal: 8, paddingVertical: 7,
   },
-  zoneOnglet: { alignItems: "center", justifyContent: "center", gap: PLAT ? 3 : 0 },
-  // Material : une pastille large et basse, derrière la seule icône
-  pastille: {
-    width: 64, height: 32, borderRadius: 999,
-    alignItems: "center", justifyContent: "center",
-  },
-  pastilleActive: { backgroundColor: T.bleuVoile },
+  zoneOnglet: { alignItems: "center", justifyContent: "center", alignSelf: "stretch" },
   pilule: {
     alignItems: "center", justifyContent: "center", gap: 2, alignSelf: "stretch",
     marginHorizontal: 2, paddingVertical: 7, borderRadius: 24, borderCurve: "continuous",

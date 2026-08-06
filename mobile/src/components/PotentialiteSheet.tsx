@@ -9,7 +9,7 @@ import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { COMP_PALETTE } from "@/lib/couleurs";
+import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -32,7 +32,8 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 }
 
 export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { pot: any; refAvantages: any[]; onClose: () => void }) {
-  const nivCouleur = NIVEAU_COULEURS[p.niveau] || T.bleu;
+  const teinte = useTeinte();
+  const nivCouleur = teinte(NIVEAU_COULEURS[p.niveau]) || T.bleu;
   const zoneNom = p.pole_nom || p.region_nom || p.departement_nom || p.arrondissement_nom || "";
   const secIds: number[] = p.secteur_ids || [];
   const braIds: number[] = p.branche_ids || [];
@@ -77,7 +78,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
         <Section titre="Atouts et potentialités">
           <View style={{ gap: 14 }}>
             {cats.map((cat, ci) => {
-              const couleur = COMP_PALETTE[ci % COMP_PALETTE.length];
+              const couleur = teinte(COMP_PALETTE[ci % COMP_PALETTE.length]);
               return (
                 <View key={cat.nom}>
                   <Text style={[s.categorieNom, { color: couleur }]}>{cat.nom.toUpperCase()}</Text>

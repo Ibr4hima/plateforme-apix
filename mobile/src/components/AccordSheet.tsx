@@ -18,6 +18,7 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
+import { useTeinte } from "@/lib/couleurs";
 
 export const ST_PASTEL: Record<string, { label: string; p: string }> = {
   en_vigueur: { label: "En vigueur",           p: "#B4DE9D" },
@@ -94,7 +95,8 @@ function Etape({ label, date, couleur, atteinte, premiere }: {
 
 export default function AccordSheet({ accord: a, onClose }: { accord: any; onClose: () => void }) {
   const statut = computeStatutAccord(a);
-  const couleur = statut ? ST_COULEUR[statut] : (T.gris as string);
+  const teinte = useTeinte();
+  const couleur = statut ? teinte(ST_COULEUR[statut]) : (T.gris as string);
 
   const OPTS = { staleTime: Infinity, gcTime: 24 * 3600 * 1000 } as const;
   // Le référentiel des parties porte les ISO2 → drapeaux emoji des chips
@@ -146,7 +148,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   // Échéance en pied de frise
   const expireDans = a.date_expiration ? dureeJusqua(a.date_expiration) : null;
   const echeance = statut === "expire" && a.date_expiration
-    ? { texte: `Expiré depuis ${dureeDepuis(a.date_expiration)}`, c: ST_COULEUR.expire }
+    ? { texte: `Expiré depuis ${dureeDepuis(a.date_expiration)}`, c: teinte(ST_COULEUR.expire) }
     : expireDans
     ? { texte: `Expire dans ${expireDans}`, c: T.orange as string }
     : null;
