@@ -16,7 +16,7 @@ import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { fetchTous } from "@/lib/api";
-import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
+import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
@@ -62,6 +62,8 @@ function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
 }
 
 export default function Entreprises() {
+  // Chaque région a sa teinte ; le hook la traduit pour l'apparence courante
+  const teinte = useTeinte();
   const bleuBord = useCouleur(T.bleu);
   const margeBas = useMargeBas();
   const { width } = useWindowDimensions();
@@ -99,10 +101,9 @@ export default function Entreprises() {
   }, [filtres]);
 
   // Par région : effectifs décroissants, part sur le total filtré.
-  // La couleur d'une région est celle de SON PÔLE TERRITOIRE — la même
-  // palette que la carte territoriale de la plateforme. Le pôle se lit dans
-  // les entreprises de la région (pole_territoire_nom) : aucune requête de
-  // plus, et la couleur reste stable quel que soit le tri.
+  // Chaque région porte SA couleur (lib/couleurs) — pas celle de son pôle :
+  // deux régions voisines du même pôle se confondaient, et rien ne signalait
+  // qu'on avait changé de territoire.
   const regions = useMemo(() => {
     const groupes = new Map<string, any[]>();
     for (const e of filtres) {
@@ -111,11 +112,7 @@ export default function Entreprises() {
       groupes.get(cle)!.push(e);
     }
     return Array.from(groupes.entries())
-      .map(([nom, entreprises]) => {
-        const pole = entreprises.find((e: any) => e.pole_territoire_nom)?.pole_territoire_nom;
-        const pastel = (pole && POLE_COULEURS[normPole(pole)]) || "#9DC3E6";
-        return { nom, entreprises, pastel };
-      })
+      .map(([nom, entreprises]) => ({ nom, entreprises, couleur: couleurRegion(nom) }))
       .sort((a, b) => b.entreprises.length - a.entreprises.length || a.nom.localeCompare(b.nom, "fr"));
   }, [filtres]);
 
@@ -177,13 +174,13 @@ export default function Entreprises() {
                 <Tapable onPress={() => { tick(); setRegionOuverte(ouvert ? null : r.nom); }} echelle={0.98}
                   style={[s.region, ouvert && { borderColor: bleuBord }]}>
                   {/* La forme réelle du territoire — un chiffre abstrait
-                      n'identifie pas une région, sa silhouette si. Silhouette
-                      dans la couleur de son pôle, tuile dans la même teinte
-                      très diluée : les deux s'accordent. */}
-                  <View style={[s.regionTuile, { backgroundColor: `${r.pastel}33` }]}>
+                      n'identifie pas une région, sa silhouette si. La couleur
+                      est celle de la région, la tuile la reprend très diluée :
+                      les deux s'accordent, de jour comme de nuit. */}
+                  <View style={[s.regionTuile, { backgroundColor: `${teinte(r.couleur)}2E` }]}>
                     {regionConnue(r.nom)
-                      ? <SilhouetteRegion nom={r.nom} taille={38} couleur={foncerPastel(r.pastel)} />
-                      : <Text style={[s.regionCompte, { color: foncerPastel(r.pastel) }]}>{r.entreprises.length}</Text>}
+                      ? <SilhouetteRegion nom={r.nom} taille={38} couleur={teinte(r.couleur)} />
+                      : <Text style={[s.regionCompte, { color: teinte(r.couleur) }]}>{r.entreprises.length}</Text>}
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.regionNom} numberOfLines={1}>{r.nom}</Text>
@@ -215,7 +212,9 @@ export default function Entreprises() {
               </Apparition>
             );
           }}
-          contentContainerStyle={{ paddingBottom: margeBas }}
+          // Les segments sont ancrés juste au-dessus : sans cette respiration,
+          // la première région leur était collée
+          contentContainerStyle={{ paddingTop: 14, paddingBottom: margeBas }}
           ListHeaderComponentStyle={{ marginBottom: 14 }}
           refreshing={isRefetching} onRefresh={refetch}
           keyboardShouldPersistTaps="handled"
