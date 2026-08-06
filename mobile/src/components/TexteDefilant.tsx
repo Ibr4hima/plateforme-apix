@@ -2,10 +2,13 @@
 //
 // Le remplacement direct d'un `<Text numberOfLines={1}>` — mêmes styles,
 // même encombrement. Tant que le texte tient, RIEN ne bouge : le composant
-// se comporte alors exactement comme le Text qu'il remplace. Dès qu'il
-// déborde, il part doucement vers la gauche, marque un temps sur la fin,
-// puis revient. Aller-retour plutôt que boucle sans fin : on lit le début
-// d'un titre bien plus souvent que sa fin.
+// se comporte alors exactement comme le Text qu'il remplace.
+//
+// Quand il déborde : il glisse d'un trait vers la gauche, JUSTE de quoi
+// montrer ce qui manquait, s'y arrête une seconde, puis revient à son point
+// de départ. Pas de défilement sans fin, pas de texte qui sort d'un côté
+// pour rentrer de l'autre : le mouvement ne sert qu'à révéler la fin, et il
+// s'arrête là. Il ne se déclenche jamais pour un titre qui tient.
 //
 // ── Comment on connaît la largeur qu'il FAUDRAIT ─────────────────────────
 // Dans le flux ordinaire, un texte d'une ligne reçoit la largeur de son
@@ -39,21 +42,27 @@ export default function TexteDefilant({ texte, children, style, maxFontSizeMulti
   const dx = useRef(new Animated.Value(0)).current;
   const [boite, setBoite] = useState(0);
   const [largeur, setLargeur] = useState(0);
-  // 4 pt de marge : en deçà, le débordement tient à l'arrondi de la mesure
-  const deborde = boite > 0 && largeur - boite > 4;
+  // Le seuil décide si ça bouge, et il doit être franc : à 4 pt, l'arrondi
+  // d'une mesure suffisait à lancer un titre qui tenait parfaitement — un
+  // mouvement sans raison, le pire des mouvements. Il faut donc DEUX
+  // conditions : au moins 10 pt manquants, et au moins 4 % de la largeur.
+  const manque = largeur - boite;
+  const deborde = boite > 0 && manque > 10 && manque > boite * 0.04;
 
   useEffect(() => {
     if (!deborde) { dx.setValue(0); return; }
-    const d = largeur - boite;
+    // Un aller, un temps d'arrêt sur la fin, un retour. Le rythme est celui
+    // d'une lecture : on part vite (≈ 45 pt par seconde), on laisse une
+    // seconde pour lire ce qui vient d'apparaître, et on revient d'un trait.
     const anim = Animated.loop(Animated.sequence([
-      Animated.delay(1400),
-      Animated.timing(dx, { toValue: -d, duration: Math.max(1400, d * 45), easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      Animated.delay(1600),
-      Animated.timing(dx, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.delay(900),
+      Animated.timing(dx, { toValue: -manque, duration: Math.max(600, manque * 22), easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      Animated.delay(1000),
+      Animated.timing(dx, { toValue: 0, duration: 420, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
     ]));
     anim.start();
     return () => { anim.stop(); dx.setValue(0); };
-  }, [deborde, boite, largeur, dx]);
+  }, [deborde, manque, dx]);
 
   const plat: any = StyleSheet.flatten(style) || {};
   const placement: any = {};
