@@ -3,6 +3,11 @@
 // dessous. Le continent du pays courant s'ouvre à l'arrivée, et le pays
 // choisi porte une coche bleue : on sait toujours où l'on est.
 //
+// Le Sénégal est ÉPINGLÉ au-dessus des continents, sous un tag « Réf. » : il
+// est la référence de toute la plateforme, et le chercher dans l'Afrique de
+// l'Ouest comme un pays parmi les autres n'avait pas de sens. Il est retiré
+// du groupe pour ne pas y figurer deux fois.
+//
 // La recherche court-circuite la hiérarchie — elle sert les résultats à plat,
 // avec le rattachement en légende (Afrique · Afrique de l'Ouest).
 import { Ionicons } from "@expo/vector-icons";
@@ -35,10 +40,16 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   const [ouverts, setOuverts] = useState<Set<string>>(
     () => new Set([paysChoisi?.continent || "Afrique"]));
 
+  // Le Sénégal, épinglé en tête — et retiré de la hiérarchie
+  const senegal = useMemo(
+    () => pays.find(p => p.code_iso3 === "SEN" || plier(p.nom) === "senegal"), [pays]);
+  const autres = useMemo(
+    () => (senegal ? pays.filter(p => p.id !== senegal.id) : pays), [pays, senegal]);
+
   // Hiérarchie continent → région → pays
   const sections = useMemo(() => {
     const parCont = new Map<string, Map<string, PaysOption[]>>();
-    for (const p of pays) {
+    for (const p of autres) {
       const c = p.continent || "Autre", r = p.region_geo || "Autre";
       if (!parCont.has(c)) parCont.set(c, new Map());
       const regions = parCont.get(c)!;
@@ -59,7 +70,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
         if (ia === -1) return 1; if (ib === -1) return -1;
         return ia - ib;
       });
-  }, [pays]);
+  }, [autres]);
 
   // La recherche sert à plat, hiérarchie court-circuitée
   const resultats = useMemo(() => {
@@ -72,7 +83,9 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
 
   const valider = (id: number) => { cran(); onChoisir(id); onClose(); };
 
-  const LignePays = ({ p, premier, legende }: { p: PaysOption; premier: boolean; legende?: boolean }) => {
+  const LignePays = ({ p, premier, legende, reference }: {
+    p: PaysOption; premier: boolean; legende?: boolean; reference?: boolean;
+  }) => {
     const actif = p.id === choisi;
     return (
       <Tapable echelle={0.99} onPress={() => valider(p.id)} style={[s.pays, !premier && s.paysBord]}>
@@ -84,6 +97,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
             </Text>
           ) : null}
         </View>
+        {reference ? <View style={s.tagRef}><Text style={s.tagRefTexte}>Réf.</Text></View> : null}
         {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}
       </Tapable>
     );
@@ -107,6 +121,12 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
         </View>
       ) : (
         <View style={{ gap: 10 }}>
+          {/* La référence, au-dessus de tout le reste */}
+          {senegal && (
+            <View style={[s.surface, { marginTop: 0 }]}>
+              <LignePays p={senegal} premier reference />
+            </View>
+          )}
           {sections.map(sec => {
             const ouvert = ouverts.has(sec.continent);
             return (
@@ -175,5 +195,7 @@ const s = creerStyles(() => ({
   paysBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   paysNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
   paysLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  tagRef: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2.5 },
+  tagRefTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
 }));

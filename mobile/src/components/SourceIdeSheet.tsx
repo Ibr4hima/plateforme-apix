@@ -2,7 +2,9 @@
 // au pouce : trois segments en tête (Pays · Monde · Secteurs) puis la liste
 // qui correspond.
 //
-//   · Pays    — le monde groupé en accordéons : continents, régions, pays
+//   · Pays    — le Sénégal épinglé en tête sous un tag « Réf. » (il est la
+//               référence de la plateforme), puis le monde groupé en
+//               accordéons : continents, régions, pays
 //   · Monde   — le total mondial, puis les continents, leurs régions et les
 //               groupements économiques
 //   · Secteurs — le global, les trois grands secteurs et leurs branches
@@ -49,10 +51,17 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
 
   const valider = (s: SourceIde) => { cran(); onChoisir(s); onClose(); };
 
+  // Le Sénégal, épinglé en tête — et retiré de la hiérarchie pour ne pas y
+  // figurer deux fois
+  const senegal = useMemo(
+    () => pays.find(p => p.code_iso3 === "SEN" || plier(p.nom) === "senegal"), [pays]);
+  const autres = useMemo(
+    () => (senegal ? pays.filter(p => p.id !== senegal.id) : pays), [pays, senegal]);
+
   // ── Pays : continent → région → pays ──
   const sections = useMemo(() => {
     const parCont = new Map<string, Map<string, PaysOption[]>>();
-    for (const p of pays) {
+    for (const p of autres) {
       const c = p.continent || "Autre", r = p.region_geo || "Autre";
       if (!parCont.has(c)) parCont.set(c, new Map());
       const regions = parCont.get(c)!;
@@ -73,7 +82,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
         if (ia === -1) return 1; if (ib === -1) return -1;
         return ia - ib;
       });
-  }, [pays]);
+  }, [autres]);
 
   // ── Monde : continents (avec leurs régions) puis groupements ──
   const continents = useMemo(() => groupements.filter(g => g.categorie === "continent"), [groupements]);
@@ -110,7 +119,9 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
       : s.type === "monde" ? s.code === (source as any).code
       : s.id === (source as any).id);
 
-  const Ligne = ({ src, nom, legende, premier }: { src: SourceIde; nom: string; legende?: string; premier: boolean }) => {
+  const Ligne = ({ src, nom, legende, premier, reference }: {
+    src: SourceIde; nom: string; legende?: string; premier: boolean; reference?: boolean;
+  }) => {
     const actif = estChoisi(src);
     return (
       <Tapable echelle={0.99} onPress={() => valider(src)} style={[s.ligne, !premier && s.ligneBord]}>
@@ -118,6 +129,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
           <Text style={[s.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
           {legende ? <Text style={s.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
         </View>
+        {reference ? <View style={s.tagRef}><Text style={s.tagRefTexte}>Réf.</Text></View> : null}
         {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}
       </Tapable>
     );
@@ -182,6 +194,12 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
         </View>
       ) : vue === "pays" ? (
         <View style={{ gap: 10 }}>
+          {/* La référence, au-dessus de tout le reste */}
+          {senegal && (
+            <View style={s.surface}>
+              <Ligne src={{ type: "pays", nom: senegal.nom }} nom={senegal.nom} premier reference />
+            </View>
+          )}
           {sections.map(sec => (
             <Accordeon key={sec.continent} cle={sec.continent} titre={sec.continent} compte={sec.nb}
               enfants={sec.regions.map((r, ri) => (
@@ -290,5 +308,7 @@ const s = creerStyles(() => ({
   ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   ligneNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
   ligneLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  tagRef: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2.5 },
+  tagRefTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
   vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
 }));
