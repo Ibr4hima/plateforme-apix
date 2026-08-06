@@ -22,6 +22,19 @@ function base64(texte: string): string {
 const AUTH = process.env.EXPO_PUBLIC_API_AUTH || "";
 export const ENTETES: Record<string, string> = AUTH ? { Authorization: `Basic ${base64(AUTH)}` } : {};
 
+/**
+ * L'empreinte de la configuration d'accès — elle sert de « buster » au cache
+ * persisté (voir app/_layout).
+ *
+ * Le cache garde une semaine de réponses sur l'appareil. Quand l'URL ou les
+ * identifiants changent d'un build à l'autre, ce qu'il contient ne décrit plus
+ * la même source : une version livrée sans identifiants a ainsi laissé des
+ * entrées que la version corrigée continuait de servir — un écran restait vide
+ * alors que l'API répondait. Lier l'empreinte à la configuration fait tomber
+ * le cache de lui-même dès qu'elle bouge.
+ */
+export const EMPREINTE_API = `${API}|${AUTH ? "auth" : "libre"}`;
+
 export async function getJson<T = any>(chemin: string): Promise<T> {
   const r = await fetch(`${API}${chemin}`, { headers: ENTETES });
   if (!r.ok) throw new Error(`API ${r.status} sur ${chemin}`);

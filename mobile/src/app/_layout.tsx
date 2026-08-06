@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
+import { EMPREINTE_API } from "@/lib/api";
 import { marquerOrigine } from "@/lib/origineTap";
 import { POLICE, T } from "@/theme";
 
@@ -59,7 +60,7 @@ export default function RacineLayout() {
 
   return (
     <PersistQueryClientProvider client={queryClient}
-      persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: "v1" }}>
+      persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}>
       <StatusBar style="light" />
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
