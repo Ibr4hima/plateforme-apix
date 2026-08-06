@@ -21,6 +21,7 @@ import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
+import { useTeinte } from "@/lib/couleurs";
 
 // Les trois étapes du pipeline — chips colorées, libellés complets
 const LENTILLES = [
@@ -62,6 +63,7 @@ function info2De(p: any, onglet: OngletProspect): { label: string; valeur: strin
 
 // ── La carte de prospect — le gabarit de la plateforme ───────────────────────
 function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect; onPress: () => void }) {
+  const teinte = useTeinte();
   const badge = onglet !== "cibles" ? badgeProspect(p) : null;
   const sousTitre = sousTitreDe(p, onglet);
   const info2 = info2De(p, onglet);
@@ -74,8 +76,8 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
             {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
           </View>
           {badge && (
-            <View style={[s.badge, { borderColor: `${couleurProspect(badge.label)}3D` }]}>
-              <Text style={[s.badgeTexte, { color: couleurProspect(badge.label) }]} numberOfLines={1}>{badge.label}</Text>
+            <View style={[s.badge, { borderColor: `${teinte(couleurProspect(badge.label))}3D` }]}>
+              <Text style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]} numberOfLines={1}>{badge.label}</Text>
             </View>
           )}
         </View>

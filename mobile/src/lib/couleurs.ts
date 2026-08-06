@@ -37,9 +37,9 @@ export const normPole = (s: string) =>
 // contrepartie exacte des jetons T.bleu / T.orange / T.vert.
 const NUIT: Record<string, string> = {
   "#004f91": "#85B9EC", // bleu APIX
-  "#ca631f": "#E8935A", // orange
-  "#188038": "#57B87D", // vert
-  "#6A1B9A": "#C08BE0", // violet
+  "#ca631f": "#FFA45C", // orange — réchauffé et éclairci
+  "#188038": "#48C9B0", // vert → teal : la famille froide du bleu de nuit
+  "#6A1B9A": "#C79BEB", // violet
   "#0891b2": "#5FC7DE", // cyan
   "#b91c1c": "#F08A8A", // rouge
   "#a16207": "#DCA84B", // ocre

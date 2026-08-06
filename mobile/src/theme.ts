@@ -43,8 +43,11 @@ const dyn = (clair: string, sombre: string): any =>
 const JETONS = {
   // Accents (textes, icônes, points) — éclaircis la nuit pour le contraste
   bleu:        dyn("#004f91", "#85B9EC"),
-  orange:      dyn("#ca631f", "#E8935A"),
-  vert:        dyn("#188038", "#57B87D"),
+  // La nuit, l'orange s'éclaircit et se réchauffe ; le vert quitte le vert —
+  // sur un fond de minuit bleuté, un vert franc jure, là où le teal appartient
+  // à la même famille froide que le bleu de la maison
+  orange:      dyn("#ca631f", "#FFA45C"),
+  vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
   // Hero et barres de navigation
@@ -92,8 +95,8 @@ const JETONS = {
   grilleZero:  dyn("#DDD9D4", "#33415A"),
   // Voiles bleus (blocs d'information, chips)
   bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
-  orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(232,147,90,0.14)"),
-  vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(87,184,125,0.14)"),
+  orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(255,164,92,0.14)"),
+  vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(72,201,176,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
   // Le pouce du curseur : une commande doit se détacher de sa piste. Blanc
   // le jour, blanc bleuté la nuit — surtout pas la couleur des cartes, qui

@@ -37,7 +37,7 @@ const PALETTES = {
   // reprennent les jetons du thème — encre, texte, bleu éclairci.
   nuit: {
     fond: "#0B1220", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
-    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(232,147,90,0.14)",
+    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(255,164,92,0.14)",
     neutreFond: "rgba(122,138,164,0.16)", neutreTexte: "#B9C2CF", neutreSep: "rgba(122,138,164,0.34)",
   },
 } as const;
