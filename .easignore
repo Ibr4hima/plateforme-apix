@@ -1,0 +1,19 @@
+# Ce qui ne part PAS chez EAS Build.
+#
+# eas-cli archive le DÉPÔT ENTIER, pas le seul dossier mobile : le tarball
+# emportait le frontend web, le backend, les migrations et la documentation,
+# soit 16 Mo au lieu de 3. Sur une connexion instable, chaque mégaoctet en
+# trop est une occasion de plus d'échouer en cours de route — ce qui est
+# arrivé (« write EPIPE »).
+#
+# Rien de tout cela n'est lu par un build mobile : le projet Expo est
+# autonome dans mobile/, avec son propre package.json.
+frontend/
+backend/
+database/
+docs/
+scripts/
+*.sql
+*.docx
+docker-compose*.yml
+secrets.caddy.env.example
