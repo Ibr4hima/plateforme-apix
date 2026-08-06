@@ -32,11 +32,12 @@ const PALETTES = {
     bleu: "#004f91", filet: "#F2F0EF", surligne: "#FFF6EB",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
   },
-  // Nuit : EXACTEMENT le fond de nuit de l'app (T.fond), pour que le lecteur
-  // ne soit pas une île bleue au milieu d'une app bleu-nuit. Les encres
-  // reprennent les jetons du thème — encre, texte, bleu éclairci.
+  // Nuit : EXACTEMENT le bleu des CARTES de l'app (T.carte, #151E2E) — pas
+  // celui du fond. Une page de lecture est une surface posée, comme une carte
+  // ou une feuille ; le fond de l'app, plus sombre, est ce sur quoi les
+  // surfaces reposent. Les encres reprennent les jetons du thème.
   nuit: {
-    fond: "#0B1220", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
+    fond: "#151E2E", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
     bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(255,164,92,0.14)",
     neutreFond: "rgba(122,138,164,0.16)", neutreTexte: "#B9C2CF", neutreSep: "rgba(122,138,164,0.34)",
   },
