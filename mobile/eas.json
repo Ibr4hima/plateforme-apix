@@ -1,0 +1,37 @@
+{
+  "cli": {
+    "version": ">= 21.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "developpement": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": false },
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
+      }
+    },
+    "partage": {
+      "distribution": "internal",
+      "channel": "partage",
+      "ios": { "simulator": false },
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "android": { "buildType": "app-bundle" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
