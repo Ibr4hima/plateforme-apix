@@ -11,6 +11,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import Reanime, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
@@ -48,6 +49,18 @@ const SECTEURS_AVGS = [
   { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#188038" },
 ] as const;
 
+
+// La carte ouverte passe en tête, les autres gardent leur ordre relatif.
+// Un tri STABLE suffit : inutile de reconstruire la liste, et les clés ne
+// changent pas — c'est ce qui permet à l'animation de suivre chaque carte.
+const ordonner = <O extends { cle: string }>(liste: readonly O[], choisi: string | null): O[] =>
+  choisi ? [...liste].sort((a, b) => (a.cle === choisi ? -1 : b.cle === choisi ? 1 : 0)) : [...liste];
+
+// Le déplacement : un ressort bref et ferme — on doit sentir que les cartes
+// se rangent, pas les regarder voyager
+const GLISSE = LinearTransition.springify().damping(24).stiffness(320).mass(0.6);
+const PARAITRE = FadeIn.duration(160);
+const DISPARAITRE = FadeOut.duration(110);
 
 // « Potentialités de la région de… » → « Région de… » (règle du site)
 const potTitre = (p: any) => (p.titre || "")
@@ -318,39 +331,47 @@ export default function Opportunites() {
           {hero}
           {chargement || enErreur ? vide : (
             <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
+              {/* Ouvrir un niveau le fait remonter en tête ; les autres glissent
+                  SOUS son contenu. Ils restent frères dans la même liste — c'est
+                  la condition pour que LinearTransition anime leur déplacement
+                  au lieu de les démonter puis les remonter ailleurs. */}
               <View style={s.grilleCompteurs}>
-                {NIVEAUX.map(n => {
+                {ordonner(NIVEAUX, niveauSel).map(n => {
                   const count = pots.filter((p: any) => p.niveau === n.cle).length;
                   const total = totauxNiveaux[n.cle] || 0;
                   const pct = total > 0 ? Math.round(count / total * 100) : 0;
                   return (
-                    <CarteCompteur key={n.cle} couleur={teinte(NIVEAU_COULEURS[n.cle])} label={n.label}
-                      valeur={total} unite={n.unite} pct={pct}
-                      sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
-                      actif={niveauSel === n.cle}
-                      onPress={count > 0 ? () => { tick(); setNiveauSel(niveauSel === n.cle ? null : n.cle); } : undefined} />
+                    <Reanime.View key={n.cle} layout={GLISSE}>
+                      <CarteCompteur couleur={teinte(NIVEAU_COULEURS[n.cle])} label={n.label}
+                        valeur={total} unite={n.unite} pct={pct}
+                        sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
+                        actif={niveauSel === n.cle}
+                        onPress={count > 0 ? () => { tick(); setNiveauSel(niveauSel === n.cle ? null : n.cle); } : undefined} />
+                      {niveauSel === n.cle && (
+                        <Reanime.View entering={PARAITRE} exiting={DISPARAITRE}>
+                          {meta && groupes.map(g => (
+                            <View key={g.cle} style={{ marginTop: 18 }}>
+                              <Bandeau couleur={couleur} count={g.fiches.length}
+                                surtitre={niveauSel === "pole" ? "Niveau territorial" : meta.rattachement} titre={g.cle} />
+                              <View style={s.groupe}>
+                                {g.fiches.map((p: any, i: number) => {
+                                  const nbActs = (p.activite_ids || []).length;
+                                  return (
+                                    <Tuile key={p.id} couleur={couleur} titre={potTitre(p)}
+                                      droite={nbActs > 0 ? `${nbActs} activité${nbActs > 1 ? "s" : ""}` : null}
+                                      onPress={() => setPotOuverte(p)} dernier={i === g.fiches.length - 1} />
+                                  );
+                                })}
+                              </View>
+                            </View>
+                          ))}
+                          {groupes.length === 0 && <EtatVide texte="Aucune fiche ne correspond." />}
+                        </Reanime.View>
+                      )}
+                    </Reanime.View>
                   );
                 })}
               </View>
-              {niveauSel && meta && groupes.map(g => (
-                <View key={g.cle} style={{ marginTop: 18 }}>
-                  <Bandeau couleur={couleur} count={g.fiches.length}
-                    surtitre={niveauSel === "pole" ? "Niveau territorial" : meta.rattachement} titre={g.cle} />
-                  <View style={s.groupe}>
-                    {g.fiches.map((p: any, i: number) => {
-                      const nbActs = (p.activite_ids || []).length;
-                      return (
-                        <Tuile key={p.id} couleur={couleur} titre={potTitre(p)}
-                          droite={nbActs > 0 ? `${nbActs} activité${nbActs > 1 ? "s" : ""}` : null}
-                          onPress={() => setPotOuverte(p)} dernier={i === g.fiches.length - 1} />
-                      );
-                    })}
-                  </View>
-                </View>
-              ))}
-              {niveauSel && groupes.length === 0 && (
-                <EtatVide texte="Aucune fiche ne correspond." />
-              )}
             </View>
           )}
         </Animated.ScrollView>
@@ -377,36 +398,42 @@ export default function Opportunites() {
         {hero}
         {chargement || enErreur ? vide : (
           <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
+            {/* Même grammaire que les niveaux : le secteur ouvert remonte,
+                les autres se rangent sous son contenu */}
             <View style={{ gap: 10 }}>
-              {SECTEURS_AVGS.map(sec => {
+              {ordonner(SECTEURS_AVGS, secteurSel).map(sec => {
                 const count = avgs.filter((a: any) => (a.secteur_nom || "").toLowerCase().includes(sec.cle)).length;
                 const secRef = secteurs.find((x: any) => (x.nom || "").toLowerCase().includes(sec.cle));
                 const braIds = new Set(branches.filter((b: any) => b.secteur_id === secRef?.id).map((b: any) => b.id));
                 const nbActs = activites.filter((a: any) => braIds.has(a.branche_id)).length;
                 const pct = nbActs > 0 ? Math.round(count / nbActs * 100) : 0;
                 return (
-                  <CarteCompteur key={sec.cle} couleur={teinte(sec.couleur)} label={sec.label}
-                    valeur={nbActs} unite="activité" pct={pct}
-                    sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
-                    actif={secteurSel === sec.cle}
-                    onPress={count > 0 ? () => { tick(); setSecteurSel(secteurSel === sec.cle ? null : sec.cle); } : undefined} />
+                  <Reanime.View key={sec.cle} layout={GLISSE}>
+                    <CarteCompteur couleur={teinte(sec.couleur)} label={sec.label}
+                      valeur={nbActs} unite="activité" pct={pct}
+                      sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
+                      actif={secteurSel === sec.cle}
+                      onPress={count > 0 ? () => { tick(); setSecteurSel(secteurSel === sec.cle ? null : sec.cle); } : undefined} />
+                    {secteurSel === sec.cle && (
+                      <Reanime.View entering={PARAITRE} exiting={DISPARAITRE}>
+                        {metaSect && branchesGroupes.map(bra => (
+                          <View key={bra.id} style={{ marginTop: 18 }}>
+                            <Bandeau couleur={teinte(metaSect.couleur)} count={bra.items.length} surtitre="Branche" titre={bra.nom} />
+                            <View style={s.groupe}>
+                              {bra.items.map((a: any, i: number) => (
+                                <Tuile key={a.id} couleur={teinte(metaSect.couleur)} titre={a.activite_nom}
+                                  onPress={() => setAvgOuvert(a)} dernier={i === bra.items.length - 1} />
+                              ))}
+                            </View>
+                          </View>
+                        ))}
+                        {branchesGroupes.length === 0 && <EtatVide texte="Aucun avantage ne correspond." />}
+                      </Reanime.View>
+                    )}
+                  </Reanime.View>
                 );
               })}
             </View>
-            {secteurSel && metaSect && branchesGroupes.map(bra => (
-              <View key={bra.id} style={{ marginTop: 18 }}>
-                <Bandeau couleur={teinte(metaSect.couleur)} count={bra.items.length} surtitre="Branche" titre={bra.nom} />
-                <View style={s.groupe}>
-                  {bra.items.map((a: any, i: number) => (
-                    <Tuile key={a.id} couleur={teinte(metaSect.couleur)} titre={a.activite_nom}
-                      onPress={() => setAvgOuvert(a)} dernier={i === bra.items.length - 1} />
-                  ))}
-                </View>
-              </View>
-            ))}
-            {secteurSel && branchesGroupes.length === 0 && (
-              <EtatVide texte="Aucun avantage ne correspond." />
-            )}
           </View>
         )}
       </Animated.ScrollView>
