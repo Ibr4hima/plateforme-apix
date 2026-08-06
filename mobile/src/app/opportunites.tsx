@@ -88,9 +88,13 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
         <Text style={[s.compteurLabel, { color: couleur }]} numberOfLines={1}>{label.toUpperCase()}</Text>
       </View>
+      {/* « 126 arrondissements » : sans plancher de rétraction, l'unité
+          poussait le nombre et sortait de la carte. Le nombre garde sa place
+          (il porte l'information), l'unité se rétracte et se coupe. */}
       <View style={s.compteurValeurs}>
-        <Text style={[s.compteurValeur, { color: valeur > 0 ? T.encre : T.grisClair }]}>{valeur || "—"}</Text>
-        <Text style={s.compteurUnite}>{unite}{valeur > 1 ? "s" : ""}</Text>
+        <Text style={[s.compteurValeur, { color: valeur > 0 ? T.encre : T.grisClair }]}
+          numberOfLines={1}>{valeur || "—"}</Text>
+        <Text style={s.compteurUnite} numberOfLines={1}>{unite}{valeur > 1 ? "s" : ""}</Text>
       </View>
       <View style={s.compteurBarFond}>
         <View style={[s.compteurBar, { width: `${Math.max(pct > 0 ? 4 : 0, pct)}%`, backgroundColor: couleur }]} />
@@ -428,8 +432,8 @@ const s = creerStyles(() => ({
   compteurPoint: { width: 7, height: 7, borderRadius: 4 },
   compteurLabel: { flex: 1, fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.8 },
   compteurValeurs: { flexDirection: "row", alignItems: "baseline", gap: 7 },
-  compteurValeur: { fontSize: 27, fontFamily: POLICE.gras, lineHeight: 31, letterSpacing: -0.5, fontVariant: ["tabular-nums"] },
-  compteurUnite: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
+  compteurValeur: { fontSize: 27, fontFamily: POLICE.gras, lineHeight: 31, letterSpacing: -0.5, fontVariant: ["tabular-nums"], flexShrink: 0 },
+  compteurUnite: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris, flexShrink: 1, minWidth: 0 },
   compteurBarFond: { height: 5, backgroundColor: T.filet, borderRadius: 99, overflow: "hidden" },
   compteurBar: { height: "100%", borderRadius: 99 },
   compteurSous: { fontSize: 10.5, fontFamily: POLICE.demi, color: T.texte },

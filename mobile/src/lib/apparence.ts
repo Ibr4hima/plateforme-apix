@@ -15,7 +15,7 @@
 // d'appel — une couleur oubliée redeviendrait invisible ou ferait planter.
 import { useMemo } from "react";
 import {
-  Appearance, Platform, StyleSheet, useColorScheme,
+  Appearance, Dimensions, Platform, StyleSheet, useColorScheme,
   type ImageStyle, type StyleProp, type TextStyle, type ViewStyle,
 } from "react-native";
 
@@ -48,18 +48,45 @@ export function appliquerSchema(sombre: boolean | null) {
   if (sombre != null) sombreSysteme = sombre;
 }
 
-/**
- * Une feuille de style qui suit l'apparence.
- *
- * Sur iOS : rien ne change — les jetons dynamiques descendent au natif tels
- * quels et la feuille reste construite une seule fois.
- *
- * Sur Android : la fabrique est appelée DEUX fois, une fois chaque schéma
- * forcé, et l'objet rendu expose chaque style en accesseur — le rendu lit
- * donc toujours la bonne variante. Il fallait passer par une fabrique : un
- * StyleSheet.create ordinaire fige ses couleurs à l'import du module, bien
- * avant que l'apparence puisse changer, et RN gèle même l'objet en dev.
- */
+// ── L'échelle typographique de l'appareil ────────────────────────────────────
+//
+// Toutes les tailles de texte de l'app étaient écrites en dur, pensées pour un
+// écran de 390 pt (iPhone 13/14/15). Sur un téléphone plus étroit, les mêmes
+// 27 pt ne tenaient plus dans la même carte : « 126 arrondissements » sortait
+// de son bloc, une étiquette débordait de sa pilule. Aucun réglage au cas par
+// cas ne règle ça — c'est le rapport ENTRE le texte et l'écran qui doit être
+// constant, pas la taille absolue.
+//
+// D'où un facteur unique, dérivé de la largeur : chaque taille, chaque
+// interligne et chaque interlettrage passe au travers. Il est borné des deux
+// côtés — en dessous de 0,88 le texte deviendrait illisible, au-dessus de 1,05
+// il grossirait sans rien apporter — et la largeur est plafonnée à 430 pour
+// que les tablettes, dont le contenu se recentre déjà, n'emportent pas
+// l'échelle avec elles.
+const REFERENCE = 390;
+const FACTEUR = Math.max(0.88, Math.min(1.05,
+  Math.min(Dimensions.get("window").width, 430) / REFERENCE));
+
+/** La taille adaptée à cet écran — arrondie au demi-point près. */
+export const pt = (taille: number): number => Math.round(taille * FACTEUR * 2) / 2;
+
+const adapter = (styles: any) => {
+  if (FACTEUR === 1) return styles;
+  for (const cle of Object.keys(styles)) {
+    const st = styles[cle];
+    if (!st) continue;
+    const { fontSize, lineHeight, letterSpacing } = st;
+    if (fontSize == null && lineHeight == null) continue;
+    styles[cle] = {
+      ...st,
+      ...(fontSize != null ? { fontSize: pt(fontSize) } : null),
+      ...(lineHeight != null ? { lineHeight: pt(lineHeight) } : null),
+      ...(letterSpacing != null ? { letterSpacing: letterSpacing * FACTEUR } : null),
+    };
+  }
+  return styles;
+};
+
 /**
  * Le cadrage vertical du texte sur Android.
  *
@@ -84,13 +111,27 @@ const cadrer = (styles: any) => {
   return styles;
 };
 
+/**
+ * Une feuille de style qui suit l'apparence.
+ *
+ * Sur iOS : rien ne change — les jetons dynamiques descendent au natif tels
+ * quels et la feuille reste construite une seule fois.
+ *
+ * Sur Android : la fabrique est appelée DEUX fois, une fois chaque schéma
+ * forcé, et l'objet rendu expose chaque style en accesseur — le rendu lit
+ * donc toujours la bonne variante. Il fallait passer par une fabrique : un
+ * StyleSheet.create ordinaire fige ses couleurs à l'import du module, bien
+ * avant que l'apparence puisse changer, et RN gèle même l'objet en dev.
+ *
+ * Toute feuille passe aussi par l'échelle de l'appareil (adapter).
+ */
 type Styles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle };
 export function creerStyles<S extends Styles<S> | Styles<any>>(
   fabrique: () => S & Styles<any>,
 ): S {
-  if (!ANDROID) return StyleSheet.create(fabrique());
-  forcage = false; const clair: any = StyleSheet.create(cadrer(fabrique()));
-  forcage = true;  const sombre: any = StyleSheet.create(cadrer(fabrique()));
+  if (!ANDROID) return StyleSheet.create(adapter(fabrique()));
+  forcage = false; const clair: any = StyleSheet.create(cadrer(adapter(fabrique())));
+  forcage = true;  const sombre: any = StyleSheet.create(cadrer(adapter(fabrique())));
   forcage = null;
   const feuille = {} as S;
   for (const cle of Object.keys(clair)) {

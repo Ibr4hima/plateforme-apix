@@ -9,7 +9,12 @@
 // laiteuse, pour que le contenu TRANSPARAISSE en défilant dessous au lieu de
 // se couper net sur un aplat. La coquille externe porte l'ombre (un
 // overflow:hidden la couperait), l'interne rogne le flou à la capsule.
-// Android ne floute pas de façon fiable : il garde l'aplat opaque.
+//
+// SUR ANDROID, tout cela n'a pas cours. La capsule flottante est un idiome
+// iOS ; Android attend une barre de navigation ANCRÉE, à plat, d'un bord à
+// l'autre, avec la pastille d'indication derrière la seule icône — c'est la
+// grammaire du Play Store et de Material 3. Et le flou natif y est hors
+// d'atteinte (voir plus bas). La barre y est donc plane et opaque.
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
 import { Platform, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -34,9 +39,10 @@ function BarreOnglets({ state, navigation }: any) {
   // plafonne et se centre, comme le contenu des écrans
   const capBarre = width >= 700 ? { maxWidth: 520, alignSelf: "center" as const, width: "100%" as const } : null;
   return (
-    <View pointerEvents="box-none" style={[s.zoneBarre, { bottom: Math.max(insets.bottom - 4, 12) }]}>
-      <View style={[s.coquille, capBarre]}>
-      <View style={s.capsule}>
+    <View pointerEvents="box-none"
+      style={[s.zoneBarre, PLAT ? { bottom: 0 } : { bottom: Math.max(insets.bottom - 4, 12) }]}>
+      <View style={[s.coquille, !PLAT && capBarre]}>
+      <View style={[s.capsule, PLAT && { paddingBottom: Math.max(insets.bottom, 8) }]}>
         {VERRE ? (
           <>
             <BlurView intensity={64} tint={sombre ? "dark" : "light"} style={StyleSheet.absoluteFill} />
@@ -61,14 +67,29 @@ function BarreOnglets({ state, navigation }: any) {
               }}>
               <View accessible accessibilityRole="tab" accessibilityLabel={o.titre}
                 accessibilityState={{ selected: actif }} style={s.zoneOnglet}>
-                <View style={[s.pilule, actif && s.piluleActive]}>
-                  <Icone sf={o.sf} materiel={o.materiel} taille={21}
-                    couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
-                  <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
-                    maxFontSizeMultiplier={ECHELLE.compact}>
-                    {o.court}
-                  </Text>
-                </View>
+                {PLAT ? (
+                  // Material : la pastille n'enveloppe QUE l'icône, le libellé
+                  // reste dessous, en dehors
+                  <>
+                    <View style={[s.pastille, actif && s.pastilleActive]}>
+                      <Icone sf={o.sf} materiel={o.materiel} taille={21}
+                        couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
+                    </View>
+                    <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
+                      maxFontSizeMultiplier={ECHELLE.compact}>
+                      {o.court}
+                    </Text>
+                  </>
+                ) : (
+                  <View style={[s.pilule, actif && s.piluleActive]}>
+                    <Icone sf={o.sf} materiel={o.materiel} taille={21}
+                      couleur={actif ? T.bleu : T.gris} poids={actif ? "semibold" : "regular"} />
+                    <Text style={[s.libelle, actif && s.libelleActif]} numberOfLines={1}
+                      maxFontSizeMultiplier={ECHELLE.compact}>
+                      {o.court}
+                    </Text>
+                  </View>
+                )}
               </View>
             </Tapable>
           );
@@ -97,23 +118,38 @@ export default function OngletsLayout() {
 // « Software rendering doesn't support hardware bitmaps ». Ailleurs qu'iOS,
 // la barre reste donc un aplat opaque.
 const VERRE = Platform.OS === "ios";
+// Barre ancrée et plane : la grammaire d'Android
+const PLAT = Platform.OS === "android";
 
 const s = creerStyles(() => ({
-  zoneBarre: { position: "absolute", left: 14, right: 14 },
+  zoneBarre: PLAT
+    ? { position: "absolute", left: 0, right: 0 }
+    : { position: "absolute", left: 14, right: 14 },
   // Coquille : elle seule porte l'ombre, que l'overflow de la capsule couperait
-  coquille: {
+  coquille: PLAT ? {} : {
     borderRadius: 34, borderCurve: "continuous",
     shadowColor: "#001e3c", shadowOpacity: 0.12, shadowRadius: 20, shadowOffset: { width: 0, height: 8 },
     elevation: 8,
   },
-  capsule: {
+  capsule: PLAT ? {
+    flexDirection: "row", alignItems: "flex-start",
+    backgroundColor: T.carte,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure,
+    paddingHorizontal: 4, paddingTop: 8,
+  } : {
     flexDirection: "row", alignItems: "center", overflow: "hidden",
     backgroundColor: VERRE ? "transparent" : T.carte,
     borderRadius: 34, borderCurve: "continuous",
     borderWidth: VERRE ? StyleSheet.hairlineWidth : 0, borderColor: T.voileFort,
     paddingHorizontal: 8, paddingVertical: 7,
   },
-  zoneOnglet: { alignItems: "center", justifyContent: "center" },
+  zoneOnglet: { alignItems: "center", justifyContent: "center", gap: PLAT ? 3 : 0 },
+  // Material : une pastille large et basse, derrière la seule icône
+  pastille: {
+    width: 64, height: 32, borderRadius: 999,
+    alignItems: "center", justifyContent: "center",
+  },
+  pastilleActive: { backgroundColor: T.bleuVoile },
   pilule: {
     alignItems: "center", justifyContent: "center", gap: 2, alignSelf: "stretch",
     marginHorizontal: 2, paddingVertical: 7, borderRadius: 24, borderCurve: "continuous",
