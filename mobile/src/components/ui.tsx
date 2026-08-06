@@ -25,7 +25,6 @@ import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
 import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
-import TexteDefilant from "@/components/TexteDefilant";
 
 const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);

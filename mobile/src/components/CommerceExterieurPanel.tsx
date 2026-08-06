@@ -226,9 +226,9 @@ export default function CommerceExterieurPanel() {
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {/* Module Sénégal uniquement — badge bleu sans point */}
           <View style={s.badgePays}>
             <Text style={s.badgePaysTexte}>Sénégal</Text>
@@ -308,9 +308,9 @@ export default function CommerceExterieurPanel() {
           </View>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              <TexteDefilant style={s.etiquette}>
                 {produitActif.toUpperCase()}{dernierPr ? ` · ${dernierPr.annee}` : ""}
-              </Text>
+              </TexteDefilant>
               <View style={s.badgeProduit}>
                 <TexteDefilant style={s.badgeProduitTexte} texte={sensPr === "export" ? "Exportations" : "Importations"} />
               </View>
@@ -421,9 +421,9 @@ export default function CommerceExterieurPanel() {
 
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              <TexteDefilant style={s.etiquette}>
                 {zoneActive.toUpperCase()}{dernierZg ? ` · ${dernierZg.annee}` : ""}
-              </Text>
+              </TexteDefilant>
               <View style={s.badgeZone}>
                 <TexteDefilant style={s.badgeZoneTexte} texte={sensPr === "export" ? "Exportations" : "Importations"} />
               </View>

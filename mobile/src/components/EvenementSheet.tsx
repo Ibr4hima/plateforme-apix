@@ -18,7 +18,6 @@ import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export const ROLE_PASTEL: Record<string, string> = {
   "Organisateur":    "#B4DE9D",

@@ -169,12 +169,12 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
           onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
         <View style={s.vedette}>
           <View style={s.vedetteEnTete}>
-            <Text style={s.etiquette} numberOfLines={1}>
+            <TexteDefilant style={s.etiquette}>
               {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
-            </Text>
+            </TexteDefilant>
             {/* Le pays en badge bleu, sans point — le tap ouvre le sélecteur */}
             <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
-              <Text style={s.badgePaysTexte} numberOfLines={1}>{selPays?.nom || "—"}</Text>
+              <TexteDefilant style={s.badgePaysTexte}>{selPays?.nom || "—"}</TexteDefilant>
             </Pressable>
           </View>
 
@@ -241,13 +241,13 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
         <View style={s.rangee}>
           <View style={s.vedette}>
             <View style={s.vedetteEnTete}>
-              <Text style={s.etiquette} numberOfLines={1}>
+              <TexteDefilant style={s.etiquette}>
                 {resActive.toUpperCase()}{dernierRes ? ` · ${dernierRes.annee}` : ""}
-              </Text>
+              </TexteDefilant>
               <View style={s.badgeRes}>
-                <Text style={s.badgeResTexte} numberOfLines={1}>
+                <TexteDefilant style={s.badgeResTexte}>
                   {expDir ? "Exportations" : "Importations"}
-                </Text>
+                </TexteDefilant>
               </View>
             </View>
 

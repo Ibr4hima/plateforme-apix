@@ -189,7 +189,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             {e.canal ? (
               <View style={s.canalChip}>
                 <Ionicons name={(CANAL_ICONES[e.canal] || "chatbox-outline") as any} size={11} color={T.texte} />
-                <Text style={s.canalChipTexte} numberOfLines={1}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</Text>
+                <TexteDefilant style={s.canalChipTexte}>{e.canal}{canalCoord(e.canal, e.canal_contact) ? ` · ${canalCoord(e.canal, e.canal_contact)}` : ""}</TexteDefilant>
               </View>
             ) : null}
             {(e.interlocuteur || e.contact_par) ? (

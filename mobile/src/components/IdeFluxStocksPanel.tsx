@@ -108,12 +108,12 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {/* La source en badge, sans point — le tap ouvre le sélecteur */}
           <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
+            <TexteDefilant style={s.badgePaysTexte}>{libelleSource(source)}</TexteDefilant>
           </Pressable>
         </View>
 

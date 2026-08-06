@@ -164,9 +164,9 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
       {/* ── La vedette de la relation : les échanges en grand, la balance en
           toutes lettres, les trois chiffres sous filets ── */}
       <View style={s.vedette}>
-        <Text style={s.etiquette} numberOfLines={1}>
+        <TexteDefilant style={s.etiquette}>
           ÉCHANGES BILATÉRAUX{bilat?.annee_min ? ` · ${bilat.annee_min} — ${bilat.annee_max}` : ""}
-        </Text>
+        </TexteDefilant>
         {totalEchanges > 0 ? (
           <>
             <ChiffreAnime texte={fmtUSD(totalEchanges)} style={s.nombre} />

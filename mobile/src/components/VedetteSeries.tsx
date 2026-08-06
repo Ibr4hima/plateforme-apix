@@ -62,9 +62,9 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
       {/* ── La vedette ── */}
       <View style={s.rangee}>
         <View style={s.vedette}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {gActive.label.toUpperCase()}{!multi && bilan ? ` · ${bilan.dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {!multi && bilan && (
             <View style={s.nombreLigne}>
               <ChiffreAnime texte={gActive.fmt(bilan.dernier.valeur)} style={s.nombre} />

@@ -13,7 +13,6 @@ import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import TexteDefilant from "@/components/TexteDefilant";
 
 export type SelNational = {
   niveau: "global" | "macro_secteur" | "groupe" | "secteur";

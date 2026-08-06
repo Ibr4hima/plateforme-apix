@@ -220,7 +220,7 @@ export default function Lecteur() {
         <View style={s.barreContenu}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <TexteDefilant style={s.barreEtiquette} texte={etiquette} />
-            {chap ? <Text style={[s.barreChapitre, { color: P.titre }]} numberOfLines={1}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</Text> : null}
+            {chap ? <TexteDefilant style={[s.barreChapitre, { color: P.titre }]}>Chapitre {numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}</TexteDefilant> : null}
           </View>
           <Pressable onPress={basculerSombre} hitSlop={6}
             style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>

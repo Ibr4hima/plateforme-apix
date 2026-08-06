@@ -154,11 +154,11 @@ export default function StatistiquesEcran() {
         <View style={s.vedette}>
           {/* Étiquette + le pays en badge blanc, sans point */}
           <View style={s.vedetteEnTete}>
-            <Text style={s.etiquette} numberOfLines={1}>
+            <TexteDefilant style={s.etiquette}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
-            </Text>
+            </TexteDefilant>
             <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.badgePays}>
-              <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>
+              <TexteDefilant style={s.badgePaysTexte}>{paysNom(paysId) || "—"}</TexteDefilant>
             </Pressable>
           </View>
 

@@ -78,7 +78,7 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
           </View>
           {badge && (
             <View style={[s.badge, { borderColor: `${teinte(couleurProspect(badge.label))}3D` }]}>
-              <Text style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]} numberOfLines={1}>{badge.label}</Text>
+              <TexteDefilant style={[s.badgeTexte, { color: teinte(couleurProspect(badge.label)) }]}>{badge.label}</TexteDefilant>
             </View>
           )}
         </View>

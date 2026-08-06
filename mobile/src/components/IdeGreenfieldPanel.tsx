@@ -113,11 +113,11 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {(secteur ? "VALEUR DES PROJETS ANNONCÉS" : LABELS[actif])}{dernier ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
-            <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
+            <TexteDefilant style={s.badgePaysTexte}>{libelleSource(source)}</TexteDefilant>
           </Pressable>
         </View>
 

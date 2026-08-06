@@ -100,12 +100,12 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
 
       <View style={s.vedette}>
         <View style={s.vedetteEnTete}>
-          <Text style={s.etiquette} numberOfLines={1}>
+          <TexteDefilant style={s.etiquette}>
             {indActif.libelle.toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
-          </Text>
+          </TexteDefilant>
           {/* La vue en badge — le tap ouvre le sélecteur */}
           <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgeVue}>
-            <Text style={s.badgeVueTexte} numberOfLines={1}>{sel.libelle}</Text>
+            <TexteDefilant style={s.badgeVueTexte}>{sel.libelle}</TexteDefilant>
           </Pressable>
         </View>
 
