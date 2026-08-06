@@ -1,16 +1,34 @@
-// Lancement animé — prolonge le splash natif : sur le bleu institutionnel,
-// le logo se dessine de gauche à droite derrière un liseré lumineux,
-// puis le voile s'efface pour révéler l'app.
+// Lancement animé — prolonge le splash natif.
+//
+// Une page nue : un fond, un logo, rien d'autre. Le logo se dessine de
+// gauche à droite derrière un liseré lumineux, puis le voile s'efface pour
+// révéler l'app.
+//
+// Le fond suit l'apparence. De jour, le bleu institutionnel APIX ; de nuit,
+// le bleu de minuit de l'app — même famille que le fond des écrans et que le
+// hero, pour qu'on ne passe pas d'un aplat éclatant à une nuit profonde en
+// une demi-seconde. Dans les deux cas, une seule lumière en diagonale, celle
+// des bandeaux : les trois cercles translucides d'avant se coupaient net sur
+// les bords, et un bord dur est tout ce qu'une page de lancement ne doit pas
+// montrer.
 import { useEffect, useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { Animated, Dimensions, Easing, Image, StyleSheet, View } from "react-native";
-import { creerStyles } from "@/lib/apparence";
+import { creerStyles, useSombre } from "@/lib/apparence";
 
 const { width: ECRAN } = Dimensions.get("window");
 const LOGO_L = Math.min(ECRAN * 0.62, 300);
 const LOGO_H = LOGO_L * (337 / 595); // ratio du fichier logo
 
+// Trois bornes plutôt que deux : le fond garde une profondeur, sans qu'aucune
+// transition ne se voie. Le logo est blanc — il porte sur les deux.
+const FOND = {
+  clair: ["#00376A", "#004f91", "#1064AC"] as const,
+  sombre: ["#0B1220", "#16213A", "#22406A"] as const,
+};
+
 export default function LancementAnime({ onFini }: { onFini: () => void }) {
+  const sombre = useSombre();
   const dessin = useRef(new Animated.Value(0)).current;  // révélation du logo
   const voile = useRef(new Animated.Value(1)).current;   // sortie de l'écran
   const [parti, setParti] = useState(false);
@@ -28,14 +46,19 @@ export default function LancementAnime({ onFini }: { onFini: () => void }) {
 
   return (
     <Animated.View pointerEvents="none" style={[s.fond, {
+      backgroundColor: sombre ? "#0B1220" : "#004f91",
       opacity: voile,
       transform: [{ scale: voile.interpolate({ inputRange: [0, 1], outputRange: [1.06, 1] }) }],
     }]}>
-      <LinearGradient colors={["#003259", "#004f91", "#0a5ca3"]}
+      <LinearGradient colors={[...(sombre ? FOND.sombre : FOND.clair)]}
         start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={StyleSheet.absoluteFill} />
-      <View style={s.haloHaut} />
-      <View style={s.haloBas} />
-      <View style={s.haloCentre} />
+      {/* La lumière : la même diagonale que les bandeaux de l'app, qui
+          s'éteint d'elle-même au lieu de se couper sur un bord */}
+      <LinearGradient
+        colors={["rgba(255,255,255,0.10)", "rgba(255,255,255,0.04)", "rgba(255,255,255,0)"]}
+        locations={[0, 0.45, 1]}
+        start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
+        style={StyleSheet.absoluteFill} />
 
       <View style={{ width: LOGO_L, height: LOGO_H }}>
         {/* Le logo se dessine : fenêtre qui s'ouvre de gauche à droite */}
@@ -52,19 +75,15 @@ export default function LancementAnime({ onFini }: { onFini: () => void }) {
           transform: [{ translateX: dessin.interpolate({ inputRange: [0, 1], outputRange: [0, LOGO_L] }) }],
         }]} />
       </View>
-
     </Animated.View>
   );
 }
 
 const s = creerStyles(() => ({
   fond: {
-    ...StyleSheet.absoluteFillObject, zIndex: 100, backgroundColor: "#004f91",
+    ...StyleSheet.absoluteFillObject, zIndex: 100,
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
-  haloHaut: { position: "absolute", top: -170, right: -110, width: 340, height: 340, borderRadius: 170, backgroundColor: "rgba(255,255,255,0.055)" },
-  haloBas: { position: "absolute", bottom: -150, left: -120, width: 300, height: 300, borderRadius: 150, backgroundColor: "rgba(26,106,176,0.35)" },
-  haloCentre: { position: "absolute", alignSelf: "center", width: 460, height: 460, borderRadius: 230, backgroundColor: "rgba(255,255,255,0.035)" },
   lisere: {
     position: "absolute", top: -6, bottom: -6, left: -1, width: 2.5, borderRadius: 2,
     backgroundColor: "rgba(255,255,255,0.9)",

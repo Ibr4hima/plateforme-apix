@@ -21,14 +21,21 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       }
     },
-    "splash": {
-      "backgroundColor": "#004f91",
-      "resizeMode": "contain",
-      "image": "./assets/images/splash-icon.png"
-    },
     "plugins": [
       "expo-router",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#004f91",
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#0B1220"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
