@@ -20,7 +20,7 @@ import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
 import ZoneSheet from "@/components/ZoneSheet";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { useMargeBas } from "@/lib/marges";
@@ -121,7 +121,7 @@ export default function Zones() {
     return [...liste].sort((a: any, b: any) => (a.pole_territoire || "").localeCompare(b.pole_territoire || "", "fr"));
   }, [poles, q]);
 
-  const pret = !isLoading && !isError;
+  const pret = zones !== undefined;
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
   const segments = [
@@ -163,7 +163,7 @@ export default function Zones() {
   );
 
   const vide = isLoading ? <SqueletteListe />
-    : isError ? <EtatErreur onRetry={() => refetch()} />
+    : enPanne({ isError, data: zones }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={vue === "zones" ? "Aucune zone ne correspond." : "Aucun pôle ne correspond."} />;
 
   return (
@@ -173,7 +173,7 @@ export default function Zones() {
       {vue === "zones" ? (
         <ListeRapide
           style={{ backgroundColor: T.fond }}
-          data={isLoading || isError ? [] : filtres}
+          data={filtres}
           keyExtractor={(z: any) => String(z.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
@@ -190,7 +190,7 @@ export default function Zones() {
       ) : (
         <ListeRapide
           style={{ backgroundColor: T.fond }}
-          data={isLoading || isError ? [] : polesFiltres}
+          data={polesFiltres}
           keyExtractor={(p: any) => String(p.id)}
           renderItem={({ item: p, index }: any) => {
             const pastel = pastelPole(p.pole_territoire);

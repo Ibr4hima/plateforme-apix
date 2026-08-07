@@ -35,6 +35,20 @@ export const ENTETES: Record<string, string> = AUTH ? { Authorization: `Basic ${
  */
 export const EMPREINTE_API = `${API}|${AUTH ? "auth" : "libre"}`;
 
+/**
+ * Une requête est EN PANNE quand elle a échoué SANS rien laisser à montrer.
+ *
+ * React Query conserve la dernière réponse connue quand un rafraîchissement
+ * échoue : `isError` devient vrai, mais `data` tient toujours. Les écrans
+ * traitaient pourtant l'erreur comme une absence — ils vidaient la liste et
+ * affichaient « impossible de joindre la plateforme » alors que la donnée
+ * était là. Hors ligne, l'app paraissait vide en ayant tout en cache.
+ *
+ * On ne montre donc l'erreur que lorsqu'il n'y a réellement rien.
+ */
+export const enPanne = (q: { isError: boolean; data?: unknown }): boolean =>
+  q.isError && q.data === undefined;
+
 export async function getJson<T = any>(chemin: string): Promise<T> {
   const r = await fetch(`${API}${chemin}`, { headers: ENTETES });
   if (!r.ok) throw new Error(`API ${r.status} sur ${chemin}`);

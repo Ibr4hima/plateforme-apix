@@ -19,7 +19,7 @@ import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import Icone from "@/components/Icone";
-import { fetchTous } from "@/lib/api";
+import { enPanne, fetchTous } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -143,8 +143,8 @@ export default function Evenements() {
   // Les compteurs vivent dans les segments eux-mêmes (pastilles), pas en
   // ligne de texte sous le hero
   const lentilles = [
-    { cle: "a_venir", label: "À venir",  compte: isLoading || isError ? undefined : aVenir.length },
-    { cle: "passes",  label: "Terminés", compte: isLoading || isError ? undefined : passes.length },
+    { cle: "a_venir", label: "À venir",  compte: data ? aVenir.length : undefined },
+    { cle: "passes",  label: "Terminés", compte: data ? passes.length : undefined },
   ];
 
   const hero = (
@@ -154,7 +154,7 @@ export default function Evenements() {
   );
 
   const vide = isLoading ? <SqueletteListe />
-    : isError ? <EtatErreur onRetry={() => refetch()} />
+    : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte={lentille === "a_venir"
         ? "Aucun événement à venir ne correspond."
         : "Aucun événement terminé ne correspond."} />;
@@ -166,7 +166,7 @@ export default function Evenements() {
       {hero}
       <Animated.SectionList
         style={{ backgroundColor: T.fond }}
-        sections={isLoading || isError ? [] : sections}
+        sections={sections}
         keyExtractor={(e: any) => String(e.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>

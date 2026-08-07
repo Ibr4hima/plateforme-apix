@@ -20,7 +20,7 @@ import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Permutation, RangeeM
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -137,7 +137,7 @@ export default function CommerceExterieurPanel() {
   // aux deux premières branches et tombait dans « pas de données », où l'app
   // affirmait que les indicateurs n'existent pas — alors qu'elle ne les avait
   // simplement jamais reçus. Tant qu'aucune réponse n'est arrivée, on attend.
-  if (gu.isError) return <EtatErreur onRetry={() => gu.refetch()} />;
+  if (enPanne(gu)) return <EtatErreur onRetry={() => gu.refetch()} />;
   if (!gu.data) return <SqueletteDonnees />;
   if (!gu.data.disponible || series.exports.length === 0) return (
     <EtatVide texte="Commerce extérieur du Sénégal"

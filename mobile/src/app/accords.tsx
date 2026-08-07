@@ -18,7 +18,7 @@ import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/compone
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Symbole from "@/components/Symbole";
-import { fetchTous, getJson } from "@/lib/api";
+import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { useMargeBas } from "@/lib/marges";
@@ -135,7 +135,7 @@ export default function Accords() {
 
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
 
-  const pret = !isLoading && !isError;
+  const pret = data !== undefined;
   // Pas de « Tous » : mêler en vigueur, signés et expirés ne répond à aucune
   // question — on ouvre sur les traités actifs
   const segments = [
@@ -184,7 +184,7 @@ export default function Accords() {
       {entete}
       <ListeRapide
         style={{ backgroundColor: T.fond }}
-        data={isLoading || isError ? [] : filtres}
+        data={filtres}
         keyExtractor={(a: any) => String(a.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
@@ -199,7 +199,7 @@ export default function Accords() {
         ListHeaderComponent={hero}
         ListEmptyComponent={
           isLoading ? <SqueletteListe />
-          : isError ? <EtatErreur onRetry={() => refetch()} />
+          : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
           : <EtatVide texte="Aucun accord ne correspond." />
         }
       />

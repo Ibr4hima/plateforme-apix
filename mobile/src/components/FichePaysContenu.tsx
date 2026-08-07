@@ -14,7 +14,7 @@ import { ChiffreAnime, EtatErreur, Tapable } from "@/components/ui";
 import AccordSheet from "@/components/AccordSheet";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -48,8 +48,11 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
     queryFn: () => getJson<any>(`/statistiques/entreprises-siege?pays_id=${autreId}`).catch(() => null),
   });
 
+  // L'erreur ne prend le dessus que s'il n'y a RIEN d'autre : quand une
+  // réponse est déjà en cache, on la garde et on la montre — c'est ce qui
+  // rend l'écran lisible hors ligne.
+  if (enPanne({ isError, data: data })) return <EtatErreur onRetry={() => refetch()} />;
   if (isLoading) return <SqueletteDonnees />;
-  if (isError) return <EtatErreur onRetry={() => refetch()} />;
 
   const cols = data?.pays || [];
   const colAutre = cols.find((c: any) => c.id === autreId);

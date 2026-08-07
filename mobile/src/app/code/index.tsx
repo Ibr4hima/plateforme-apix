@@ -15,7 +15,7 @@ import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, useWind
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -121,8 +121,8 @@ export default function CodeSommaire() {
         ) : (
           /* Table des matières */
           <View style={[s.liste, cap]}>
-            {requete.isLoading ? <SqueletteListe />
-            : requete.isError ? <EtatErreur onRetry={() => requete.refetch()} />
+            {enPanne(requete) ? <EtatErreur onRetry={() => requete.refetch()} />
+            : requete.isLoading ? <SqueletteListe />
             : liste.length === 0 ? <EtatVide texte="Aucun chapitre disponible." />
             : (
               <Apparition index={0}>

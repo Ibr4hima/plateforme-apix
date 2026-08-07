@@ -17,7 +17,7 @@ import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Permutation, RangeeM
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { fmtUSD } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
@@ -120,8 +120,11 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
 
   const selPays = pays.find((p: any) => p.id === paysId);
 
+  // L'erreur ne prend le dessus que s'il n'y a RIEN d'autre : quand une
+  // réponse est déjà en cache, on la garde et on la montre — c'est ce qui
+  // rend l'écran lisible hors ligne.
+  if (enPanne({ isError, data: refs })) return <EtatErreur onRetry={() => refetch()} />;
   if (isLoading) return <SqueletteDonnees />;
-  if (isError) return <EtatErreur onRetry={() => refetch()} />;
   if (!annees.length) return (
     <EtatVide texte="Aucune donnée commerciale" sousTexte="Les flux bilatéraux seront disponibles après import dans l'administration." />
   );

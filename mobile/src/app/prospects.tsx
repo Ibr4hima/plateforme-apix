@@ -15,7 +15,7 @@ import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } from "@/components/ProspectSheet";
-import { fetchTous } from "@/lib/api";
+import { enPanne, fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
@@ -135,7 +135,7 @@ export default function Prospects() {
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
       <ListeRapide
         style={{ backgroundColor: T.fond }}
-        data={courante.isLoading || courante.isError ? [] : filtres}
+        data={filtres}
         keyExtractor={(p: any) => String(p.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
@@ -168,7 +168,7 @@ export default function Prospects() {
         }
         ListEmptyComponent={
           courante.isLoading ? <SqueletteListe />
-          : courante.isError ? <EtatErreur onRetry={() => courante.refetch()} />
+          : enPanne(courante) ? <EtatErreur onRetry={() => courante.refetch()} />
           : <EtatVide texte="Aucun prospect ne correspond." />
         }
       />

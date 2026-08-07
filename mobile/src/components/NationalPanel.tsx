@@ -16,7 +16,7 @@ import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import type { SelNational } from "@/components/SourceNationalSheet";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -64,8 +64,11 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annees.join(",")]);
 
+  // L'erreur ne prend le dessus que s'il n'y a RIEN d'autre : quand une
+  // réponse est déjà en cache, on la garde et on la montre — c'est ce qui
+  // rend l'écran lisible hors ligne.
+  if (enPanne({ isError, data: data })) return <EtatErreur onRetry={() => refetch()} />;
   if (isLoading) return <SqueletteDonnees />;
-  if (isError) return <EtatErreur onRetry={() => refetch()} />;
   if (!indicateurs.length) return (
     <EtatVide texte="Investissements nationaux"
       sousTexte="Les indicateurs BDEF seront disponibles après leur import dans l'administration." />

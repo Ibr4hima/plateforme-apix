@@ -20,7 +20,7 @@ import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
-import { fetchTous, getJson } from "@/lib/api";
+import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
@@ -239,7 +239,9 @@ export default function Opportunites() {
   };
 
   const chargement = vue === "projets" ? projetsQ.isLoading : vue === "potentialites" ? potsQ.isLoading : avgsQ.isLoading;
-  const enErreur = vue === "projets" ? projetsQ.isError : vue === "potentialites" ? potsQ.isError : avgsQ.isError;
+  // En panne, et non « en erreur » : une réponse déjà en cache prime sur
+  // l'échec du rafraîchissement — c'est ce qui rend l'écran lisible hors ligne
+  const enErreur = enPanne(vue === "projets" ? projetsQ : vue === "potentialites" ? potsQ : avgsQ);
   const recharger = vue === "projets" ? projetsQ.refetch : vue === "potentialites" ? potsQ.refetch : avgsQ.refetch;
   const pret = !chargement && !enErreur;
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;

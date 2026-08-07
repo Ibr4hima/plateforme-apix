@@ -23,7 +23,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
 import { FiltresStatistiques } from "@/components/StatistiquesFiltres";
-import { getJson } from "@/lib/api";
+import { enPanne, getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
@@ -251,10 +251,10 @@ export default function StatistiquesEcran() {
           <View style={cap}>
             <CommerceExterieurPanel />
           </View>
+        ) : enPanne({ isError, data: donnees }) ? (
+          <EtatErreur onRetry={() => refetch()} />
         ) : isLoading || !indicateurs || !pays ? (
           <SqueletteDonnees />
-        ) : isError ? (
-          <EtatErreur onRetry={() => refetch()} />
         ) : (
           rendreVedette()
         )}

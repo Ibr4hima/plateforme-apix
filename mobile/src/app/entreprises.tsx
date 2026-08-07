@@ -14,7 +14,7 @@ import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
-import { fetchTous } from "@/lib/api";
+import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -116,7 +116,7 @@ export default function Entreprises() {
   }, [filtres]);
 
   const cap = width >= 700 ? { width: "100%" as const, maxWidth: 680, alignSelf: "center" as const } : null;
-  const pret = !isLoading && !isError;
+  const pret = data !== undefined;
 
   const lentilles = [
     { cle: "annuaire", label: "Liste des entreprises", compte: pret ? filtres.length : undefined },
@@ -130,7 +130,7 @@ export default function Entreprises() {
   );
 
   const vide = isLoading ? <SqueletteListe />
-    : isError ? <EtatErreur onRetry={() => refetch()} />
+    : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
     : <EtatVide texte="Aucune entreprise ne correspond." />;
 
   return (
@@ -140,7 +140,7 @@ export default function Entreprises() {
       {vue === "annuaire" ? (
         <Animated.SectionList
           style={{ backgroundColor: T.fond }}
-          sections={isLoading || isError ? [] : sections}
+          sections={sections}
           keyExtractor={(e: any) => String(e.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
@@ -168,7 +168,7 @@ export default function Entreprises() {
         // recyclage n'apportait rien qu'un défaut.
         <Animated.FlatList
           style={{ backgroundColor: T.fond }}
-          data={isLoading || isError ? [] : regions}
+          data={regions}
           keyExtractor={(r: any) => r.nom}
           renderItem={({ item: r, index }: any) => {
             const ouvert = regionOuverte === r.nom;

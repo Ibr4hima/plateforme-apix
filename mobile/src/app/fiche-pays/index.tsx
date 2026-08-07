@@ -121,7 +121,7 @@ export default function FichePaysIndex() {
         Ils sont six : le recyclage n'apporterait rien. */}
     <Animated.FlatList
       style={{ backgroundColor: T.fond }}
-      data={isLoading || isError ? [] : sections}
+      data={sections}
       keyExtractor={(c: any) => c.continent}
       keyboardShouldPersistTaps="handled"
       // Les deux pastilles de choix du pays vivent sous le bandeau : sans
