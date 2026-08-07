@@ -8,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
-import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
@@ -117,7 +116,10 @@ export default function FichePaysIndex() {
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
     {hero}
-    <ListeRapide
+    {/* Une FlatList, pas la FlashList : les continents CHANGENT de hauteur
+        en s'ouvrant, et le recyclage garde une taille estimée par cellule.
+        Ils sont six : le recyclage n'apporterait rien. */}
+    <Animated.FlatList
       style={{ backgroundColor: T.fond }}
       data={isLoading || isError ? [] : sections}
       keyExtractor={(c: any) => c.continent}

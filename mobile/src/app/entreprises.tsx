@@ -8,7 +8,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
@@ -162,7 +161,12 @@ export default function Entreprises() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <ListeRapide
+        // Une FlatList, pas la FlashList : ces lignes CHANGENT de hauteur en
+        // s'ouvrant, et le recyclage garde une taille estimée par cellule —
+        // la liste se décalait, l'en-tête disparaissait, un blanc s'installait
+        // au-dessus. Il n'y a de toute façon que quatorze régions : le
+        // recyclage n'apportait rien qu'un défaut.
+        <Animated.FlatList
           style={{ backgroundColor: T.fond }}
           data={isLoading || isError ? [] : regions}
           keyExtractor={(r: any) => r.nom}
