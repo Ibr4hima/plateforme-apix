@@ -171,3 +171,11 @@ logs/.claude/
 # Fichiers téléversés (documents métier — jamais versionnés ; volume Docker en prod)
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Dumps de base — des exports de travail, parfois volumineux et porteurs de
+# données : ils se transmettent hors du dépôt. À LA RACINE seulement : les
+# migrations de database/ sont, elles, versionnées.
+/*.sql
+
+# Verrou npm parasite à la racine : le projet mobile a le sien, dans mobile/
+/package-lock.json
