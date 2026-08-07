@@ -15,7 +15,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
-      }
+      },
+      "channel": "developpement"
     },
     "partage": {
       "distribution": "internal",
@@ -27,7 +28,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
-      }
+      },
+      "channel": "partage"
     },
     "production": {
       "autoIncrement": true,
@@ -36,7 +38,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://demo-plateforme-apix.com/api/v1"
-      }
+      },
+      "channel": "production"
     }
   },
   "submit": {

@@ -8,6 +8,13 @@
     "scheme": "apix",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b419e96f-fa4d-42bd-9d34-ecc3efbdb911",
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
       "bundleIdentifier": "sn.apix.plateforme",
       "supportsTablet": true,
