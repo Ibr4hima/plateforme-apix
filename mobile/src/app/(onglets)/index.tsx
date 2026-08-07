@@ -24,6 +24,7 @@ import { fetchTous } from "@/lib/api";
 import { appliquerSchema, creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { useMargeBas } from "@/lib/marges";
+import { usePrechargement } from "@/lib/prechargement";
 import { DEGRADE_EVENEMENT, DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
@@ -83,6 +84,10 @@ function ProchainEvenement() {
 }
 
 export default function Accueil() {
+  // Le cache des autres modules se remplit en arrière-plan, une fois l'accueil
+  // peint et ses propres requêtes abouties — pour qu'ils soient consultables
+  // hors ligne sans avoir été ouverts une première fois
+  usePrechargement();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { width } = useWindowDimensions();

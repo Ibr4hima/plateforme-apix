@@ -35,10 +35,16 @@ export default function RacineLayout() {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: { queries: { staleTime: 5 * 60 * 1000, gcTime: UNE_SEMAINE, retry: 1 } },
   }));
-  // Cache persisté sur l'appareil : l'app s'ouvre sur les dernières
-  // données connues puis rafraîchit en arrière-plan
+  // Cache persisté sur l'appareil : l'app s'ouvre sur les dernières données
+  // connues puis rafraîchit en arrière-plan.
+  //
+  // Chaque écriture sérialise TOUT le cache sur le fil JS. Le préchargement
+  // le fait grossir et le modifie vingt-cinq fois d'affilée : à 2 s d'écart,
+  // cela ferait autant de sérialisations d'un objet de plus en plus lourd,
+  // en plein défilement. Cinq secondes espacent ces écritures sans rien
+  // risquer — le cache n'a pas à être à la seconde près.
   const [persister] = useState(() => createAsyncStoragePersister({
-    storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 2000,
+    storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 5000,
   }));
   const [lancement, setLancement] = useState(true);
   const [polices] = useFonts({
