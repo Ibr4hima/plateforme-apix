@@ -115,8 +115,8 @@
   --ombre-rgb: 0 30 60;
   --gris-rgb: 122 138 164;
 
-  --degrade-hero: linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%);
-  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%);
+  --degrade-hero: #004f91;
+  --degrade-hero-orange: #ca631f;
   --degrade-filet: linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%);
   --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
   --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
@@ -238,8 +238,8 @@
     --ombre-rgb: 0 0 0;
     --gris-rgb: 122 138 164;
 
-    --degrade-hero: linear-gradient(155deg,#16213A 0%,#1A2A46 35%,#1E3459 70%,#22406A 100%);
-    --degrade-hero-orange: linear-gradient(155deg,#2A1A0C 0%,#43260F 35%,#6B3D18 70%,#8A5426 100%);
+    --degrade-hero: #16213A;
+    --degrade-hero-orange: #6B3D18;
     --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
     --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
     --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
@@ -359,8 +359,8 @@
   --ombre-rgb: 0 0 0;
   --gris-rgb: 122 138 164;
 
-  --degrade-hero: linear-gradient(155deg,#16213A 0%,#1A2A46 35%,#1E3459 70%,#22406A 100%);
-  --degrade-hero-orange: linear-gradient(155deg,#2A1A0C 0%,#43260F 35%,#6B3D18 70%,#8A5426 100%);
+  --degrade-hero: #16213A;
+  --degrade-hero-orange: #6B3D18;
   --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
   --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
   --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);

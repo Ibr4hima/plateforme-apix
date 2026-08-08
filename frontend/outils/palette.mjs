@@ -235,13 +235,19 @@ export const GRIS_ALPHA = "122 138 164";
 // (#16213A → #22406A) : une marche d'élévation au-dessus des cartes, la
 // couleur restant au contenu.
 export const DEGRADES = {
+  // ── Les bandeaux de hero : un APLAT, pas un dégradé ─────────────────────────
+  // Ils restent nommés « degrade » parce que la valeur est consommée comme un
+  // fond et que le nom est employé sur sept écrans ; ce qu'ils portent, en
+  // revanche, est une couleur pleine. Le bleu APIX de jour, et de nuit le bleu
+  // de minuit du hero de l'application — une simple marche d'élévation
+  // au-dessus des cartes, la couleur restant au contenu.
   degradeHero: {
-    clair: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",
-    sombre: "linear-gradient(155deg,#16213A 0%,#1A2A46 35%,#1E3459 70%,#22406A 100%)",
+    clair: "#004f91",
+    sombre: "#16213A",
   },
   degradeHeroOrange: {
-    clair: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%)",
-    sombre: "linear-gradient(155deg,#2A1A0C 0%,#43260F 35%,#6B3D18 70%,#8A5426 100%)",
+    clair: "#ca631f",
+    sombre: "#6B3D18",
   },
   degradeFilet: {
     clair: "linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%)",

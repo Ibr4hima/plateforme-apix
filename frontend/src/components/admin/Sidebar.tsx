@@ -20,7 +20,6 @@ import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AUTH_ENFORCED, nomAffiche, pageAdminAccessible, ROLE_LABELS } from "@/lib/authGate";
 import { MODULES_ADMIN, IS_DEPLOYED } from "@/components/admin/navAdmin";
-import BasculeApparence from "@/components/layout/BasculeApparence";
 
 // Encre pour les libellés actifs, aplat pour le logo et le liseré : deux
 // emplois qui ne se traduisent pas pareil la nuit.
@@ -182,9 +181,6 @@ export default function Sidebar() {
             {!replie && <span className="nav-txt" style={{ fontWeight: 600, color: "var(--danger)" }}>Se déconnecter</span>}
           </button>
         )}
-
-        <BasculeApparence className="nav-lien" libelle={!replie} couleur="var(--gris)" taille={16}
-          style={{ justifyContent: replie ? "center" : undefined }} />
 
         <button onClick={basculer} className="nav-lien" aria-expanded={!replie}
           title={replie ? "Déplier le menu" : "Replier le menu"}

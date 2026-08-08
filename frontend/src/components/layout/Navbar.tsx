@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { moduleAutorise } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
 import NavActions from "@/components/layout/NavActions";
+import BasculeApparence from "@/components/layout/BasculeApparence";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 import { useEffect, useRef, useState } from "react";
 
@@ -488,7 +489,15 @@ export default function Navbar() {
           </nav>
 
           {/* ── Recherche + Menu ── */}
-          <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+          <div className="apix-nav-cta" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* La commande d'apparence vit ICI et non dans NavActions : cette
+                barre n'est rendue que par la page d'accueil, alors que
+                NavActions est repris par tous les bandeaux de module. */}
+            <BasculeApparence couleur={textColor} style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
+              background: "transparent", border: "1px solid var(--bordure-forte)",
+            }} />
             <NavActions flouFond={pathname !== "/"} home={pathname !== "/"} />
           </div>
 

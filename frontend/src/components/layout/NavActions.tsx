@@ -5,7 +5,6 @@
 // (Modules en flyout, Tableau de bord, Fiche Pays, Code, Lexique, Admin…).
 
 import { ChevronDown } from "lucide-react";
-import BasculeApparence from "@/components/layout/BasculeApparence";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
@@ -107,9 +106,6 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           <span className="material-symbols-outlined" style={{ fontSize: 18, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
         </Link>
       )}
-      {/* Apparence : clair / sombre / système */}
-      <BasculeApparence style={boutonStyle(onDark, false)} couleur={icoColor} />
-
       {/* Recherche globale (⌘K) */}
       <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
         style={boutonStyle(onDark, false)}

@@ -99,8 +99,6 @@ export default function HomePage() {
         {/* Déco fond — même langage que les barres de titre */}
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
           <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)"}}/>
-          <div style={{position:"absolute" as const,top:"-30%",right:"-8%",width:720,height:720,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-35%",left:"-10%",width:560,height:560,borderRadius:"50%",background:"radial-gradient(circle,rgb(var(--bleu-rgb) / 0.5) 0%,transparent 65%)"}}/>
           <div style={{position:"absolute" as const,left:0,right:0,bottom:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)"}}/>
         </div>
 
@@ -205,7 +203,6 @@ export default function HomePage() {
       <section className="lp-pad" style={{background:"var(--degrade-hero)",padding:"80px 60px",position:"relative" as const,overflow:"hidden"}}>
         <div style={{position:"absolute" as const,inset:0,pointerEvents:"none"}}>
           <div style={{position:"absolute" as const,inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px",maskImage:"radial-gradient(ellipse at 20% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)",WebkitMaskImage:"radial-gradient(ellipse at 20% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)"}}/>
-          <div style={{position:"absolute" as const,bottom:"-30%",left:"-8%",width:520,height:520,borderRadius:"50%",background:"radial-gradient(circle,rgb(var(--bleu-rgb) / 0.5) 0%,transparent 65%)"}}/>
           <div style={{position:"absolute" as const,left:0,right:0,top:0,height:1,background:"linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.25) 50%,transparent 100%)"}}/>
         </div>
         <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>

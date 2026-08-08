@@ -3,16 +3,17 @@
 import React from "react";
 
 // ── Barre de titre commune des pages publiques ────────────────────────────────
-// Bleu APIX, décor discret (trame, halos, liseré lumineux), point pulsant blanc,
-// emplacement pour des contrôles à côté du titre et des actions à droite.
-
-// Dégradés du bandeau : bleu pour les pages publiques, orange pour
-// l'administration (distinction immédiate entre les deux espaces).
-const DEGRADES = {
+// Un APLAT de couleur — bleu APIX pour les pages publiques, orange pour
+// l'administration —, une trame très fine, un liseré lumineux en bas, un point
+// pulsant blanc, et de la place pour des contrôles et des actions.
+//
+// Le bandeau portait un dégradé et deux halos radiaux. Il porte maintenant une
+// couleur pleine : les halos, à 45 % d'opacité, recréaient sur l'aplat
+// exactement le dégradé qu'on venait d'en retirer.
+const FONDS = {
   bleu:   "var(--degrade-hero)",
   orange: "var(--degrade-hero-orange)",
 };
-const HALOS = { bleu: "rgb(var(--bleu-rgb) / 0.45)", orange: "rgb(var(--orange-rgb) / 0.45)" };
 
 export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
   titre: React.ReactNode;
@@ -24,15 +25,11 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
   pleineLargeur?: boolean;     // aligne le contenu sur une page pleine largeur (sans colonne de filtres)
 }) {
   return (
-    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: DEGRADES[ton], position: "relative", overflow: "hidden" }}>
+    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: FONDS[ton], position: "relative", overflow: "hidden" }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
-        {/* Trame fine estompée */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)", WebkitMaskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)" }} />
-        {/* Halos lumineux */}
-        <div style={{ position: "absolute", top: "-140%", right: "-6%", width: 580, height: 580, borderRadius: "50%", background: "radial-gradient(circle,rgba(255,255,255,0.07) 0%,transparent 60%)" }} />
-        <div style={{ position: "absolute", bottom: "-160%", left: "-8%", width: 460, height: 460, borderRadius: "50%", background: `radial-gradient(circle,${HALOS[ton]} 0%,transparent 65%)` }} />
         {/* Liseré lumineux en bas */}
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)" }} />
       </div>
