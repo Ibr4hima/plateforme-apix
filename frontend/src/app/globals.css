@@ -1,37 +1,272 @@
 @import "tailwindcss";
 
+/* @@ PALETTE — généré par outils/genere-css.mjs, ne pas éditer à la main @@ */
+/* Les deux schémas de la plateforme. Le mode clair reprend les valeurs
+   historiques du site ; le mode sombre celles de l'application mobile, pour
+   que les deux surfaces montrent les mêmes couleurs.
+   Source : outils/palette.mjs */
 :root {
-  --apix-orange:        #ca631f;
-  --apix-orange-light:  #e07a3a;
-  --apix-orange-dark:   #a84e18;
-  --apix-blue:          #004f91;
-  --apix-blue-light:    #1a6ab0;
-  --surface-0:          #F2F0EF;
-  --surface-1:          #E8E5E3;
-  --surface-2:          #DEDAD7;
-  --surface-3:          #D0CBC7;
-  --border:             #C5BFBB;
-  --border-light:       #B8B1AC;
-  --text-primary:       #1a1a2e;
-  --text-secondary:     #4a5568;
-  --text-muted:         #9aa5b4;
+  color-scheme: light;
+  --carte: #FFFFFF;
+  --carte-douce: #FAFAF9;
+  --champ: #F8F7F6;
+  --fond: #F6F5F3;
+  --fond-creux: #F2F0EF;
+  --fond-creux2: #E8E5E3;
+  --filet: #F2F0EF;
+  --bordure: #ECEAE7;
+  --bordure-forte: #C5BFBB;
+  --encre: #1a1a2e;
+  --texte: #4a5568;
+  --gris-fort: #6b7280;
+  --gris: #9aa5b4;
+  --sur-bleu: #FFFFFF;
+  --bleu: #004f91;
+  --bleu-action: #004f91;
+  --bleu-nuit: #003a6e;
+  --bleu-clair: #1a6ab0;
+  --bleu-profond: #002a52;
+  --bleu-voile: #EEF1F6;
+  --orange: #ca631f;
+  --orange-action: #ca631f;
+  --orange-fonce: #a84e18;
+  --orange-profond: #4d2206;
+  --orange-voile: #FFF6EF;
+  --vert: #188038;
+  --vert-action: #188038;
+  --vert-fonce: #0d652d;
+  --vert-voile: #EDFBF1;
+  --violet: #6A1B9A;
+  --violet-action: #6A1B9A;
+  --violet-voile: #F3EDFA;
+  --danger: #dc2626;
+  --danger-action: #dc2626;
+  --danger-fonce: #991b1b;
+  --danger-voile: #FFF2F2;
+  --alerte: #b45309;
+  --alerte-action: #b45309;
+  --alerte-voile: #FFF9F0;
+  --cyan: #0891b2;
+  --cyan-fonce: #0e7490;
+  --rose: #be185d;
+  --rose-voile: #FCE7F3;
+  --grille: #F0EEEB;
+  --grille-zero: #DDD9D4;
+  --pouce: #FFFFFF;
+  --verre: rgba(255,255,255,0.65);
+  --verre-fort: rgba(242,240,239,0.92);
+  --ombre-a1: 0.08;
+  --ombre-a2: 0.16;
+
+  --bleu-rgb: 0 79 145;
+  --orange-rgb: 202 99 31;
+  --vert-rgb: 24 128 56;
+  --violet-rgb: 106 27 154;
+  --danger-rgb: 220 38 38;
+  --alerte-rgb: 180 83 9;
+  --cyan-rgb: 8 145 178;
+  --encre-rgb: 26 26 46;
+  --ombre-rgb: 0 30 60;
+  --gris-rgb: 122 138 164;
+
+  --degrade-hero: linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%);
+  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%);
+  --degrade-filet: linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%);
+  --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
+  --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
+  --degrade-pastille: linear-gradient(135deg,#004f91,#1a6ab0);
+  --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%);
+}
+
+/* Sans choix explicite de l'utilisateur, on suit le système. Le sélecteur
+   exclut [data-theme="light"] pour qu'un utilisateur ayant explicitement
+   demandé le mode clair sur une machine réglée en sombre l'obtienne bien. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --carte: #151E2E;
+    --carte-douce: #1B2536;
+    --champ: #101927;
+    --fond: #0B1220;
+    --fond-creux: #0E1626;
+    --fond-creux2: #16202F;
+    --filet: rgba(122,138,164,0.10);
+    --bordure: rgba(122,138,164,0.17);
+    --bordure-forte: rgba(122,138,164,0.32);
+    --encre: #EDF1F7;
+    --texte: #B9C2CF;
+    --gris-fort: #9AA7B8;
+    --gris: #8D9AAC;
+    --sur-bleu: #FFFFFF;
+    --bleu: #85B9EC;
+    --bleu-action: #2E64A6;
+    --bleu-nuit: #16213A;
+    --bleu-clair: #22406A;
+    --bleu-profond: #101A2C;
+    --bleu-voile: rgba(133,185,236,0.10);
+    --orange: #FFA45C;
+    --orange-action: #B35A18;
+    --orange-fonce: #8A4212;
+    --orange-profond: #2A1A0C;
+    --orange-voile: rgba(255,164,92,0.11);
+    --vert: #48C9B0;
+    --vert-action: #1F6F5F;
+    --vert-fonce: #14513F;
+    --vert-voile: rgba(72,201,176,0.11);
+    --violet: #C79BEB;
+    --violet-action: #5B3A86;
+    --violet-voile: rgba(199,155,235,0.11);
+    --danger: #F08A8A;
+    --danger-action: #A83232;
+    --danger-fonce: #7A2A2A;
+    --danger-voile: rgba(240,138,138,0.11);
+    --alerte: #E0A458;
+    --alerte-action: #8A5A1A;
+    --alerte-voile: rgba(224,164,88,0.11);
+    --cyan: #5FC7DE;
+    --cyan-fonce: #2A6A5E;
+    --rose: #EE8AB0;
+    --rose-voile: rgba(238,138,176,0.11);
+    --grille: #243044;
+    --grille-zero: #33415A;
+    --pouce: #DCE6F3;
+    --verre: rgba(21,30,46,0.72);
+    --verre-fort: rgba(11,18,32,0.92);
+    --ombre-a1: 0.34;
+    --ombre-a2: 0.52;
+
+    --bleu-rgb: 133 185 236;
+    --orange-rgb: 255 164 92;
+    --vert-rgb: 72 201 176;
+    --violet-rgb: 199 155 235;
+    --danger-rgb: 240 138 138;
+    --alerte-rgb: 224 164 88;
+    --cyan-rgb: 95 199 222;
+    --encre-rgb: 237 241 247;
+    --ombre-rgb: 0 0 0;
+    --gris-rgb: 122 138 164;
+
+    --degrade-hero: linear-gradient(155deg,#16213A 0%,#1A2A46 35%,#1E3459 70%,#22406A 100%);
+    --degrade-hero-orange: linear-gradient(155deg,#2A1A0C 0%,#43260F 35%,#6B3D18 70%,#8A5426 100%);
+    --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
+    --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
+    --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
+    --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
+    --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
+  }
+}
+
+/* Choix explicite — l'emporte sur la préférence système dans les deux sens. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --carte: #151E2E;
+  --carte-douce: #1B2536;
+  --champ: #101927;
+  --fond: #0B1220;
+  --fond-creux: #0E1626;
+  --fond-creux2: #16202F;
+  --filet: rgba(122,138,164,0.10);
+  --bordure: rgba(122,138,164,0.17);
+  --bordure-forte: rgba(122,138,164,0.32);
+  --encre: #EDF1F7;
+  --texte: #B9C2CF;
+  --gris-fort: #9AA7B8;
+  --gris: #8D9AAC;
+  --sur-bleu: #FFFFFF;
+  --bleu: #85B9EC;
+  --bleu-action: #2E64A6;
+  --bleu-nuit: #16213A;
+  --bleu-clair: #22406A;
+  --bleu-profond: #101A2C;
+  --bleu-voile: rgba(133,185,236,0.10);
+  --orange: #FFA45C;
+  --orange-action: #B35A18;
+  --orange-fonce: #8A4212;
+  --orange-profond: #2A1A0C;
+  --orange-voile: rgba(255,164,92,0.11);
+  --vert: #48C9B0;
+  --vert-action: #1F6F5F;
+  --vert-fonce: #14513F;
+  --vert-voile: rgba(72,201,176,0.11);
+  --violet: #C79BEB;
+  --violet-action: #5B3A86;
+  --violet-voile: rgba(199,155,235,0.11);
+  --danger: #F08A8A;
+  --danger-action: #A83232;
+  --danger-fonce: #7A2A2A;
+  --danger-voile: rgba(240,138,138,0.11);
+  --alerte: #E0A458;
+  --alerte-action: #8A5A1A;
+  --alerte-voile: rgba(224,164,88,0.11);
+  --cyan: #5FC7DE;
+  --cyan-fonce: #2A6A5E;
+  --rose: #EE8AB0;
+  --rose-voile: rgba(238,138,176,0.11);
+  --grille: #243044;
+  --grille-zero: #33415A;
+  --pouce: #DCE6F3;
+  --verre: rgba(21,30,46,0.72);
+  --verre-fort: rgba(11,18,32,0.92);
+  --ombre-a1: 0.34;
+  --ombre-a2: 0.52;
+
+  --bleu-rgb: 133 185 236;
+  --orange-rgb: 255 164 92;
+  --vert-rgb: 72 201 176;
+  --violet-rgb: 199 155 235;
+  --danger-rgb: 240 138 138;
+  --alerte-rgb: 224 164 88;
+  --cyan-rgb: 95 199 222;
+  --encre-rgb: 237 241 247;
+  --ombre-rgb: 0 0 0;
+  --gris-rgb: 122 138 164;
+
+  --degrade-hero: linear-gradient(155deg,#16213A 0%,#1A2A46 35%,#1E3459 70%,#22406A 100%);
+  --degrade-hero-orange: linear-gradient(155deg,#2A1A0C 0%,#43260F 35%,#6B3D18 70%,#8A5426 100%);
+  --degrade-filet: linear-gradient(90deg,#16213A 0%,#1E3459 55%,#22406A 100%);
+  --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
+  --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
+  --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
+  --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
+}
+/* @@ FIN PALETTE @@ */
+
+
+/* Les noms historiques restent : ils ne portent plus de valeur propre mais
+   renvoient à la palette générée ci-dessus, et suivent donc la bascule
+   clair/sombre sans qu'aucun de leurs points d'appel ait à changer. */
+:root {
+  --apix-orange:        var(--orange);
+  --apix-orange-light:  var(--orange);
+  --apix-orange-dark:   var(--orange-fonce);
+  --apix-blue:          var(--bleu);
+  --apix-blue-light:    var(--bleu-clair);
+  --surface-0:          var(--fond-creux);
+  --surface-1:          var(--fond-creux2);
+  --surface-2:          var(--bordure-forte);
+  --surface-3:          var(--bordure-forte);
+  --border:             var(--bordure-forte);
+  --border-light:       var(--bordure-forte);
+  --text-primary:       var(--encre);
+  --text-secondary:     var(--texte);
+  --text-muted:         var(--gris);
   --font-display: var(--font-google-sans), sans-serif;
   --font-body: var(--font-google-sans), sans-serif;
 
   /* ── Design system v1 : jetons sémantiques ── */
-  --ds-primaire:       var(--apix-blue);
-  --ds-accent:         var(--apix-orange);
-  --ds-succes:         #188038;
-  --ds-alerte:         #b45309;
-  --ds-danger:         #b91c1c;
-  --ds-fond:           #F6F5F3;
-  --ds-carte:          #ffffff;
-  --ds-carte-douce:    #FAFAF9;
-  --ds-champ:          #F8F7F6;
-  --ds-bordure:        #ECEAE7;
-  --ds-filet:          #F2F0EF;
-  --ds-voile-bleu:     rgba(0, 79, 145, 0.07);
-  --ds-focus:          rgba(0, 79, 145, 0.45);
+  --ds-primaire:       var(--bleu);
+  --ds-accent:         var(--orange);
+  --ds-succes:         var(--vert);
+  --ds-alerte:         var(--alerte);
+  --ds-danger:         var(--danger);
+  --ds-fond:           var(--fond);
+  --ds-carte:          var(--carte);
+  --ds-carte-douce:    var(--carte-douce);
+  --ds-champ:          var(--champ);
+  --ds-bordure:        var(--bordure);
+  --ds-filet:          var(--filet);
+  --ds-voile-bleu:     rgb(var(--bleu-rgb) / 0.07);
+  --ds-focus:          rgb(var(--bleu-rgb) / 0.45);
 
   /* Espacement : 4 8 12 16 24 32 48 64 */
   --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
@@ -45,8 +280,8 @@
      --ombre-1 : éléments posés (cartes, champs, boutons au repos)
      --ombre-2 : éléments élevés (survol, menus, feuilles, modals)
      Les noms sémantiques restent en alias pour ne rien casser. */
-  --ombre-1: 0 1px 3px rgba(0, 30, 60, 0.08);
-  --ombre-2: 0 14px 44px rgba(0, 30, 60, 0.16);
+  --ombre-1: 0 1px 3px rgb(var(--ombre-rgb) / var(--ombre-a1));
+  --ombre-2: 0 14px 44px rgb(var(--ombre-rgb) / var(--ombre-a2));
   --ombre-subtile:   var(--ombre-1);
   --ombre-carte:     var(--ombre-1);
   --ombre-flottante: var(--ombre-2);
@@ -68,7 +303,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--surface-0);
+  background-color: var(--fond);
   color: var(--text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -76,40 +311,40 @@ body {
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--surface-1); }
-::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-::selection { background: rgba(202, 99, 31, 0.2); color: var(--text-primary); }
+::-webkit-scrollbar-track { background: var(--fond-creux); }
+::-webkit-scrollbar-thumb { background: var(--bordure-forte); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gris); }
+::selection { background: rgb(var(--orange-rgb) / 0.2); color: var(--encre); }
 
 .font-display { font-family: var(--font-display); }
 .font-body    { font-family: var(--font-body); }
 
 .text-gradient-orange {
-  background: linear-gradient(135deg, #ca631f, #e8935a);
+  background: linear-gradient(135deg, var(--orange), var(--orange));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.bg-gradient-orange { background: linear-gradient(135deg, #ca631f 0%, #a84e18 100%); }
-.bg-gradient-blue   { background: linear-gradient(135deg, #004f91 0%, #003a6e 100%); }
+.bg-gradient-orange { background: var(--degrade-orange); }
+.bg-gradient-blue   { background: var(--degrade-bleu); }
 
 .glass {
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--verre);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--bordure-forte);
 }
 .glass-strong {
-  background: rgba(242, 240, 239, 0.92);
+  background: var(--verre-fort);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-light);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  border: 1px solid var(--bordure-forte);
+  box-shadow: 0 4px 24px rgb(var(--ombre-rgb) / var(--ombre-a1));
 }
 
-.shadow-orange     { box-shadow: 0 0 30px rgba(202, 99, 31, 0.2); }
-.shadow-blue       { box-shadow: 0 0 30px rgba(0, 79, 145, 0.15); }
+.shadow-orange     { box-shadow: 0 0 30px rgb(var(--orange-rgb) / 0.2); }
+.shadow-blue       { box-shadow: 0 0 30px rgb(var(--bleu-rgb) / 0.15); }
 .shadow-card       { box-shadow: var(--ombre-1); }
 .shadow-card-hover { box-shadow: var(--ombre-2); }
 
@@ -186,21 +421,21 @@ body {
 }
 .ds-bouton:active { transform: scale(0.97); }
 .ds-bouton:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-.ds-bouton--primaire { background: var(--ds-primaire); color: #fff; }
-.ds-bouton--primaire:hover:not(:disabled) { background: #00427a; box-shadow: var(--ombre-flottante); }
-.ds-bouton--accent { background: linear-gradient(135deg, #ca631f 0%, #a84e18 100%); color: #fff; }
-.ds-bouton--accent:hover:not(:disabled) { box-shadow: 0 8px 30px rgba(202, 99, 31, 0.35); transform: translateY(-1px); }
+.ds-bouton--primaire { background: var(--bleu-action); color: var(--sur-bleu); }
+.ds-bouton--primaire:hover:not(:disabled) { background: var(--bleu-nuit); box-shadow: var(--ombre-flottante); }
+.ds-bouton--accent { background: var(--degrade-orange); color: var(--sur-bleu); }
+.ds-bouton--accent:hover:not(:disabled) { box-shadow: 0 8px 30px rgb(var(--orange-rgb) / 0.35); transform: translateY(-1px); }
 .ds-bouton--accent:active { transform: scale(0.97); }
-.ds-bouton--secondaire { background: var(--ds-carte); color: var(--text-secondary); border-color: var(--ds-bordure); }
-.ds-bouton--secondaire:hover:not(:disabled) { border-color: var(--ds-primaire); color: var(--ds-primaire); background: var(--ds-voile-bleu); }
-.ds-bouton--fantome { background: transparent; color: var(--ds-primaire); }
+.ds-bouton--secondaire { background: var(--carte); color: var(--texte); border-color: var(--bordure); }
+.ds-bouton--secondaire:hover:not(:disabled) { border-color: var(--bleu); color: var(--bleu); background: var(--ds-voile-bleu); }
+.ds-bouton--fantome { background: transparent; color: var(--bleu); }
 .ds-bouton--fantome:hover:not(:disabled) { background: var(--ds-voile-bleu); }
 .ds-bouton--petit { padding: 7px 14px; font-size: 12px; border-radius: var(--rayon-sm); }
 .ds-bouton--grand { padding: 13px 26px; font-size: 14.5px; border-radius: var(--rayon-lg); }
 
 /* ── Carte : surface de base, variante interactive ── */
 .ds-carte {
-  background: var(--ds-carte); border: 1px solid var(--ds-bordure);
+  background: var(--carte); border: 1px solid var(--bordure);
   border-radius: var(--rayon-lg); box-shadow: var(--ombre-carte);
 }
 .ds-carte--interactive {
@@ -209,19 +444,19 @@ body {
               transform var(--duree-moyenne) var(--sortie),
               border-color var(--duree-moyenne) var(--sortie);
 }
-.ds-carte--interactive:hover { box-shadow: var(--ombre-flottante); transform: translateY(-2px); border-color: rgba(0, 79, 145, 0.25); }
+.ds-carte--interactive:hover { box-shadow: var(--ombre-flottante); transform: translateY(-2px); border-color: rgb(var(--bleu-rgb) / 0.25); }
 .ds-carte--interactive:active { transform: translateY(0) scale(0.99); }
 
 /* ── Chip / segment actif ── */
 .ds-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  border: 1px solid var(--ds-bordure); border-radius: var(--rayon-pilule);
-  background: var(--ds-carte); color: var(--text-secondary);
+  border: 1px solid var(--bordure); border-radius: var(--rayon-pilule);
+  background: var(--carte); color: var(--texte);
   font: 600 12px/1 var(--font-body); padding: 7px 14px; cursor: pointer;
   transition: background var(--duree-courte) var(--sortie), color var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie);
 }
-.ds-chip:hover { border-color: var(--ds-primaire); color: var(--ds-primaire); }
-.ds-chip[aria-pressed="true"], .ds-chip--actif { background: var(--ds-primaire); border-color: var(--ds-primaire); color: #fff; }
+.ds-chip:hover { border-color: var(--bleu); color: var(--bleu); }
+.ds-chip[aria-pressed="true"], .ds-chip--actif { background: var(--bleu-action); border-color: var(--bleu-action); color: var(--sur-bleu); }
 
 /* Nombre de donnée : chiffres tabulaires obligatoires */
 .ds-donnee { font-variant-numeric: tabular-nums; }
@@ -229,11 +464,11 @@ body {
 /* ── Home : états hover pilotés en CSS (pilote design system) ── */
 .lp-cta-verre { transition: background var(--duree-courte) var(--sortie), border-color var(--duree-courte) var(--sortie); }
 .lp-cta-verre:hover { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.4) !important; }
-.lp-quick-item:hover { background: rgba(0,0,0,0.1); }
+.lp-quick-item:hover { background: rgb(var(--ombre-rgb) / 0.16); }
 .mod-card { transition: background var(--duree-courte) var(--sortie); }
-.mod-card:hover { background: var(--ds-carte-douce) !important; }
+.mod-card:hover { background: var(--carte-douce) !important; }
 .mod-card:hover .mod-arrow { opacity: 1; }
-.mod-card:hover .mod-num { color: var(--mod-couleur, var(--ds-primaire)); }
+.mod-card:hover .mod-num { color: var(--mod-couleur, var(--bleu)); }
 
 
 /* ── Icônes Material Symbols, auto-hébergées ─────────────────────────────────
