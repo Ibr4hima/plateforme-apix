@@ -186,6 +186,9 @@ export const TRIPLETS = {
   bleu:   { clair: "0 79 145",   sombre: "133 185 236" },
   bleuFixe: { clair: "0 79 145", sombre: "0 79 145" },
   orange: { clair: "202 99 31",  sombre: "255 164 92" },
+  // L'APLAT orange, en triplet : les voiles et bordures qui doivent s'accorder
+  // au fond d'un bouton, et non à l'encre orange.
+  orangeAction: { clair: "202 99 31", sombre: "179 90 24" },
   vert:   { clair: "24 128 56",  sombre: "72 201 176" },
   violet: { clair: "106 27 154", sombre: "199 155 235" },
   danger: { clair: "220 38 38",  sombre: "240 138 138" },
@@ -264,6 +267,14 @@ export const DEGRADES = {
   degradePastille: {
     clair: "linear-gradient(135deg,#004f91,#1a6ab0)",
     sombre: "linear-gradient(135deg,#22406A,#2E64A6)",
+  },
+  // Le mot vedette du titre d'accueil. C'est le seul dégradé de TEXTE de la
+  // plateforme : il part de l'orange de la maison et monte vers un abricot.
+  // De nuit, les deux bornes montent avec le reste — un dégradé sombre sur un
+  // hero sombre ne se verrait pas.
+  degradeTexte: {
+    clair: "linear-gradient(135deg,#ca631f 0%,#e8935a 100%)",
+    sombre: "linear-gradient(135deg,#FFA45C 0%,#FFD2A6 100%)",
   },
   degradeChat: {
     clair: "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)",
