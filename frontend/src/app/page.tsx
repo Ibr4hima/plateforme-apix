@@ -105,18 +105,27 @@ export default function HomePage() {
         <div style={{maxWidth:1200,margin:"0 auto",width:"100%",position:"relative" as const,zIndex:1}}>
 
           {/* Tag institutionnel */}
-          {/* L'étiquette porte l'orange DU BOUTON (--orange-action) et non
-              l'encre orange : les deux se répondent à l'écran, et de nuit
-              l'encre est un abricot clair là où l'aplat du bouton est brûlé. */}
+          {/* La pilule — bulle, bordure, voile — porte l'orange DU BOUTON, pour
+              que les deux se répondent à l'écran. Le TEXTE garde l'encre
+              orange : sur le bandeau de nuit, l'aplat brûlé du bouton ne
+              donnait que 3,3:1, contre 8,2:1 pour l'encre. */}
           <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgb(var(--orange-action-rgb) / 0.08)",border:"1.5px solid rgb(var(--orange-action-rgb) / 0.45)",borderRadius:999,padding:"8px 17px",marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:"var(--orange-action)",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--orange-action)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
           <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"var(--sur-bleu)",marginBottom:24,maxWidth:800}}>
             Intelligence<br/>
-            <span style={{background:"var(--degrade-texte)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
+            <span style={{
+              // Repli explicite, et il ne relève pas de la coquetterie : ce mot
+              // est peint en texte transparent sur un fond dégradé. Si la
+              // variable manque — feuille de style d'un cache de développement
+              // restée en arrière d'un commit —, `background` retombe sur
+              // « transparent » et le mot DISPARAÎT purement et simplement.
+              // Le repli garantit qu'il reste lisible dans ce cas.
+              background:"var(--degrade-texte, linear-gradient(135deg,#ca631f 0%,#e8935a 100%))",
+              WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
             <br/>Sénégal
           </h1>
 
@@ -212,7 +221,7 @@ export default function HomePage() {
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgb(var(--orange-action-rgb) / 0.1)",border:"1px solid rgb(var(--orange-action-rgb) / 0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"var(--orange-action)"}}/>
-              <span style={{fontSize:11,fontWeight:700,color:"var(--orange-action)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
+              <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>
             <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"var(--sur-bleu)",lineHeight:1.1,marginBottom:16}}>
               KPIs, visualisations<br/>et analyses en temps réel
