@@ -186,9 +186,6 @@ export const TRIPLETS = {
   bleu:   { clair: "0 79 145",   sombre: "133 185 236" },
   bleuFixe: { clair: "0 79 145", sombre: "0 79 145" },
   orange: { clair: "202 99 31",  sombre: "255 164 92" },
-  // L'APLAT orange, en triplet : les voiles et bordures qui doivent s'accorder
-  // au fond d'un bouton, et non à l'encre orange.
-  orangeAction: { clair: "202 99 31", sombre: "179 90 24" },
   vert:   { clair: "24 128 56",  sombre: "72 201 176" },
   violet: { clair: "106 27 154", sombre: "199 155 235" },
   danger: { clair: "220 38 38",  sombre: "240 138 138" },
@@ -272,9 +269,12 @@ export const DEGRADES = {
   // plateforme : il part de l'orange de la maison et monte vers un abricot.
   // De nuit, les deux bornes montent avec le reste — un dégradé sombre sur un
   // hero sombre ne se verrait pas.
+  // Les deux bornes sont DÉRIVÉES de --orange : la seconde en est un
+  // éclaircissement. Rien à tenir à jour de part et d'autre, et le dégradé
+  // suit l'apparence sans valeur propre — c'est --orange qui bascule.
   degradeTexte: {
-    clair: "linear-gradient(135deg,#ca631f 0%,#e8935a 100%)",
-    sombre: "linear-gradient(135deg,#FFA45C 0%,#FFD2A6 100%)",
+    clair: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
+    sombre: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
   },
   degradeChat: {
     clair: "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)",

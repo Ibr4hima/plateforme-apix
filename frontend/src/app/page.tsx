@@ -109,7 +109,7 @@ export default function HomePage() {
               que les deux se répondent à l'écran. Le TEXTE garde l'encre
               orange : sur le bandeau de nuit, l'aplat brûlé du bouton ne
               donnait que 3,3:1, contre 8,2:1 pour l'encre. */}
-          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:"rgb(var(--orange-action-rgb) / 0.08)",border:"1.5px solid rgb(var(--orange-action-rgb) / 0.45)",borderRadius:999,padding:"8px 17px",marginBottom:28}}>
+          <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:voile("var(--orange-action)", 8),border:`1.5px solid ${voile("var(--orange-action)", 45)}`,borderRadius:999,padding:"8px 17px",marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:"var(--orange-action)",animation:"pulse 2s infinite"}}/>
             <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
@@ -118,13 +118,13 @@ export default function HomePage() {
           <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"var(--sur-bleu)",marginBottom:24,maxWidth:800}}>
             Intelligence<br/>
             <span style={{
-              // Repli explicite, et il ne relève pas de la coquetterie : ce mot
-              // est peint en texte transparent sur un fond dégradé. Si la
-              // variable manque — feuille de style d'un cache de développement
-              // restée en arrière d'un commit —, `background` retombe sur
-              // « transparent » et le mot DISPARAÎT purement et simplement.
-              // Le repli garantit qu'il reste lisible dans ce cas.
-              background:"var(--degrade-texte, linear-gradient(135deg,#ca631f 0%,#e8935a 100%))",
+              // Ce mot est peint en texte TRANSPARENT sur un fond dégradé : si
+              // la variable manque, `background` retombe sur « transparent » et
+              // le mot disparaît purement et simplement. D'où un repli — et un
+              // repli qui donne EXACTEMENT le même rendu, puisqu'il est écrit
+              // avec la même dérivation à partir de --orange. Rien de neuf n'est
+              // requis de la feuille de style : seule --orange doit exister.
+              background:"var(--degrade-texte, linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%))",
               WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
             <br/>Sénégal
           </h1>
@@ -219,7 +219,7 @@ export default function HomePage() {
         </div>
         <div className="lp-cta-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative" as const,zIndex:1,display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
           <div>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgb(var(--orange-action-rgb) / 0.1)",border:"1px solid rgb(var(--orange-action-rgb) / 0.2)",borderRadius:999,padding:"5px 14px",marginBottom:24}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:voile("var(--orange-action)", 10),border:`1px solid ${voile("var(--orange-action)", 20)}`,borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"var(--orange-action)"}}/>
               <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>

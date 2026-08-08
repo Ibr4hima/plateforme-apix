@@ -99,7 +99,6 @@
   --bleu-rgb: 0 79 145;
   --bleu-fixe-rgb: 0 79 145;
   --orange-rgb: 202 99 31;
-  --orange-action-rgb: 202 99 31;
   --vert-rgb: 24 128 56;
   --violet-rgb: 106 27 154;
   --danger-rgb: 220 38 38;
@@ -122,7 +121,7 @@
   --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
   --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
   --degrade-pastille: linear-gradient(135deg,#004f91,#1a6ab0);
-  --degrade-texte: linear-gradient(135deg,#ca631f 0%,#e8935a 100%);
+  --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
   --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%);
 }
 
@@ -224,7 +223,6 @@
     --bleu-rgb: 133 185 236;
     --bleu-fixe-rgb: 0 79 145;
     --orange-rgb: 255 164 92;
-    --orange-action-rgb: 179 90 24;
     --vert-rgb: 72 201 176;
     --violet-rgb: 199 155 235;
     --danger-rgb: 240 138 138;
@@ -247,7 +245,7 @@
     --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
     --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
     --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
-    --degrade-texte: linear-gradient(135deg,#FFA45C 0%,#FFD2A6 100%);
+    --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
     --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
   }
 }
@@ -347,7 +345,6 @@
   --bleu-rgb: 133 185 236;
   --bleu-fixe-rgb: 0 79 145;
   --orange-rgb: 255 164 92;
-  --orange-action-rgb: 179 90 24;
   --vert-rgb: 72 201 176;
   --violet-rgb: 199 155 235;
   --danger-rgb: 240 138 138;
@@ -370,7 +367,7 @@
   --degrade-bleu: linear-gradient(135deg, #22406A 0%, #16213A 100%);
   --degrade-orange: linear-gradient(135deg, #B35A18 0%, #8A4212 100%);
   --degrade-pastille: linear-gradient(135deg,#22406A,#2E64A6);
-  --degrade-texte: linear-gradient(135deg,#FFA45C 0%,#FFD2A6 100%);
+  --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
   --degrade-chat: linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%);
 }
 /* @@ FIN PALETTE @@ */
