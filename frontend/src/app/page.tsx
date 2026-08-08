@@ -118,13 +118,18 @@ export default function HomePage() {
           <h1 className="hero-h1" style={{fontWeight:800,fontSize:"clamp(2.8rem,5.5vw,5rem)",lineHeight:1.05,letterSpacing:"-0.025em",color:"var(--sur-bleu)",marginBottom:24,maxWidth:800}}>
             Intelligence<br/>
             <span style={{
-              // Ce mot est peint en texte TRANSPARENT sur un fond dégradé : si
-              // la variable manque, `background` retombe sur « transparent » et
-              // le mot disparaît purement et simplement. D'où un repli — et un
-              // repli qui donne EXACTEMENT le même rendu, puisqu'il est écrit
-              // avec la même dérivation à partir de --orange. Rien de neuf n'est
-              // requis de la feuille de style : seule --orange doit exister.
-              background:"var(--degrade-texte, linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%))",
+              // backgroundImage, et surtout PAS le raccourci `background` :
+              // celui-ci réinitialise les propriétés détaillées voisines, et
+              // React refuse de mêler les deux dans un même objet de style. Le
+              // découpage sur les lettres était perdu et le dégradé se peignait
+              // sur toute la boîte — le mot devenait un rectangle orange.
+              //
+              // Le repli n'est pas une coquetterie : le mot est peint en texte
+              // TRANSPARENT par-dessus ce dégradé. Si la variable manque,
+              // l'image de fond vaut « none » et le mot disparaît. Le repli
+              // reprend la même dérivation à partir de --orange, donc le même
+              // rendu : seule --orange doit exister dans la feuille de style.
+              backgroundImage:"var(--degrade-texte, linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%))",
               WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Investissement</span>
             <br/>Sénégal
           </h1>
