@@ -41,9 +41,9 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
   }, []);
 
   if (disabled) return (
-    <div style={{ background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "#C5BFBB", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <span>{placeholder}</span>
-      <ChevronDown size={14} style={{ color: "#C5BFBB" }} />
+      <ChevronDown size={14} style={{ color: "var(--gris)" }} />
     </div>
   );
 
@@ -52,30 +52,30 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
       <div
         onClick={() => setOpen(o => !o)}
         style={{
-          background: "#F2F0EF", border: `1px solid ${open ? color : "#C5BFBB"}`,
-          borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "#1a1a2e",
+          background: "var(--fond)", border: `1px solid ${open ? color : "var(--gris)"}`,
+          borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--encre)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           cursor: "pointer", transition: "border-color 0.2s", userSelect: "none" as const,
         }}
       >
-        <span style={{ color: selected.length ? "#1a1a2e" : "#9aa5b4" }}>
+        <span style={{ color: selected.length ? "var(--encre)" : "var(--gris)" }}>
           {selected.length > 0
             ? <span style={{ color, fontWeight: 600 }}>{selected.length} sélectionné{selected.length > 1 ? "s" : ""}</span>
             : placeholder
           }
         </span>
-        {open ? <ChevronUp size={14} style={{ color }} /> : <ChevronDown size={14} style={{ color: "#9aa5b4" }} />}
+        {open ? <ChevronUp size={14} style={{ color }} /> : <ChevronDown size={14} style={{ color: "var(--gris)" }} />}
       </div>
 
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
-          background: "#fff", border: `1px solid ${color}40`, borderRadius: 10,
-          boxShadow: `0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px ${color}15`,
+          background: "var(--carte)", border: `1px solid ${color}40`, borderRadius: 10,
+          boxShadow: `0 8px 32px rgb(var(--ombre-rgb) / 0.12), 0 0 0 1px ${color}15`,
           maxHeight: 260, overflowY: "auto",
         }}>
           {items.length === 0 ? (
-            <div style={{ padding: "14px", fontSize: 13, color: "#9aa5b4", textAlign: "center" }}>Aucun élément</div>
+            <div style={{ padding: "14px", fontSize: 13, color: "var(--gris)", textAlign: "center" }}>Aucun élément</div>
           ) : items.map(item => {
             const isSelected = selected.includes(item.id);
             return (
@@ -86,14 +86,14 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "10px 14px", cursor: "pointer",
                   background: isSelected ? color + "0d" : "transparent",
-                  borderBottom: "1px solid #F2F0EF",
+                  borderBottom: "1px solid var(--bordure)",
                 }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "#F8F7F6"; }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = isSelected ? color + "0d" : "transparent"; }}
               >
                 <div style={{
                   width: 17, height: 17, borderRadius: 4, flexShrink: 0,
-                  border: `2px solid ${isSelected ? color : "#C5BFBB"}`,
+                  border: `2px solid ${isSelected ? color : "var(--gris)"}`,
                   background: isSelected ? color : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "all 0.12s",
@@ -104,8 +104,8 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
                     </svg>
                   )}
                 </div>
-                <span style={{ fontSize: 11, color: "#9aa5b4", minWidth: 55, flexShrink: 0 }}>{item.code}</span>
-                <span style={{ fontSize: 13, color: isSelected ? "#1a1a2e" : "#4a5568", lineHeight: 1.3, fontWeight: isSelected ? 600 : 400 }}>{item.nom}</span>
+                <span style={{ fontSize: 11, color: "var(--gris)", minWidth: 55, flexShrink: 0 }}>{item.code}</span>
+                <span style={{ fontSize: 13, color: isSelected ? "var(--encre)" : "var(--texte)", lineHeight: 1.3, fontWeight: isSelected ? 600 : 400 }}>{item.nom}</span>
               </div>
             );
           })}
@@ -184,24 +184,24 @@ export function NaemaCascadeMulti({
   };
 
   const totalSelection = selSecIds.length + selBraIds.length + selActIds.length;
-  const COLORS = { sec: "#ca631f", bra: "#004f91", act: "#059669" };
+  const COLORS = { sec: "var(--orange)", bra: "var(--bleu)", act: "var(--vert)" };
 
   return (
-    <div style={{ border: "1px solid #E8E5E3", borderRadius: 12, padding: 16, background: "#FAFAF9" }}>
+    <div style={{ border: "1px solid var(--bordure-forte)", borderRadius: 12, padding: 16, background: "var(--carte-douce)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <Filter size={13} style={{ color: "#ca631f" }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <Filter size={13} style={{ color: "var(--orange)" }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Filtrer par activité NAEMA
           </span>
           {totalSelection > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.12)", padding: "2px 8px", borderRadius: 999 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>
               {totalSelection} filtre{totalSelection > 1 ? "s" : ""}
             </span>
           )}
         </div>
         {totalSelection > 0 && (
-          <button onClick={reinitialiser} style={{ fontSize: 12, color: "#dc2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
+          <button onClick={reinitialiser} style={{ fontSize: 12, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
             Réinitialiser
           </button>
         )}
@@ -211,7 +211,7 @@ export function NaemaCascadeMulti({
 
         {/* Secteurs */}
         <div>
-          <label style={{ fontSize: 11, fontWeight: 600, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+          <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
             Secteur(s)
           </label>
           <MultiDropdown
@@ -231,7 +231,7 @@ export function NaemaCascadeMulti({
         {/* Branches */}
         {selSecIds.length > 0 && (
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
               Branche(s)
             </label>
             <MultiDropdown
@@ -252,7 +252,7 @@ export function NaemaCascadeMulti({
         {/* Activités */}
         {selBraIds.length > 0 && (
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
               Activité(s)
             </label>
             <MultiDropdown
@@ -278,10 +278,10 @@ export function NaemaCascadeMulti({
             onClick={appliquer}
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              background: "linear-gradient(135deg, #ca631f, #a84e18)",
-              color: "#fff", fontWeight: 600, fontSize: 13,
+              background: "linear-gradient(135deg, var(--orange-action), var(--orange-fonce))",
+              color: "var(--sur-bleu)", fontWeight: 600, fontSize: 13,
               padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(202,99,31,0.3)",
+              boxShadow: "0 4px 12px rgb(var(--ombre-rgb) / 0.3)",
             }}
           >
             <Filter size={13} /> Appliquer les filtres
@@ -340,8 +340,8 @@ export function NaemaCascade({
     else setActivites([]);
   }, [brancheId]);
 
-  const s = { width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
-  const dL = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
+  const s = { width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
+  const dL = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
   const dF = { display: "flex", flexDirection: "column" as const, gap: 3 };
 
   return (

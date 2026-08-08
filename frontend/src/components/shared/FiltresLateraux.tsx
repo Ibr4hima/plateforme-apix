@@ -22,11 +22,11 @@ function EnteteRepliable({ label, badges, open, onToggle, controlsId }: {
     <button onClick={onToggle} aria-expanded={open} aria-controls={controlsId}
       style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
       <div style={{display:"flex",alignItems:"center",gap:6}}>
-        <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+        <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
         {badges}
       </div>
-      <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-        {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
+      <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
       </span>
     </button>
   );
@@ -38,10 +38,10 @@ function LigneOption({ sel, couleur, texte, onClick }: {
   return (
     <button onClick={onClick} aria-pressed={sel}
       style={{display:"flex",alignItems:"center",gap:8,padding:"5px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const}}
-      onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+      onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-      <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?couleur:"#C5BFBB"}`,background:sel?couleur:"transparent",flexShrink:0}}/>
-      <span style={{fontSize:12,color:sel?couleur:"#4a5568",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
+      <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?couleur:"var(--gris)"}`,background:sel?couleur:"transparent",flexShrink:0}}/>
+      <span style={{fontSize:12,color:sel?couleur:"var(--texte)",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
     </button>
   );
 }
@@ -66,9 +66,9 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
       {open&&(
         <>
           {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
-            <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+            <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"var(--gris)"}}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" aria-label={`Rechercher dans ${label}`}
-              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid #E8E5E3",background:"#F8F7F6",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
+              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid var(--bordure-forte)",background:"var(--carte-douce)",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
           </div>}
           <div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
             {filtered.map(item=>(
@@ -86,7 +86,7 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
 export function BoutonEffacerFiltres({ onClick }: { onClick: () => void }) {
   return (
     <button onClick={onClick}
-      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer"}}>
+      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:600,fontSize:13,cursor:"pointer"}}>
       Effacer les filtres
     </button>
   );
@@ -95,9 +95,9 @@ export function BoutonEffacerFiltres({ onClick }: { onClick: () => void }) {
 // Cascade générique à 3 niveaux (bleu → orange → vert) utilisée par les deux
 // filtres ci-dessous : chaque niveau n'apparaît que si le parent est coché.
 const NIVEAUX = [
-  { couleur: "#004f91", fond: "rgba(0,79,145,0.1)" },
-  { couleur: "#ca631f", fond: "rgba(202,99,31,0.1)" },
-  { couleur: "#188038", fond: "rgba(24,128,56,0.1)" },
+  { couleur: "var(--bleu)", fond: "rgb(var(--bleu-rgb) / 0.1)" },
+  { couleur: "var(--orange)", fond: "rgb(var(--orange-rgb) / 0.1)" },
+  { couleur: "var(--vert)", fond: "rgb(var(--vert-rgb) / 0.1)" },
 ];
 
 function CascadeFilter({ titre, niveaux, marginBottom }: {

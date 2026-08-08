@@ -44,7 +44,7 @@ export function KpiCarte({ label, valeur, note, accent }: {
   return (
     <Carte style={{ padding: "var(--esp-4)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", left: 16, right: 16, top: 0, height: 2.5, borderRadius: 2,
-        background: accent ? "rgba(202,99,31,0.4)" : "rgba(0,79,145,0.18)" }} />
+        background: accent ? "rgb(var(--orange-rgb) / 0.4)" : "rgb(var(--bleu-rgb) / 0.18)" }} />
       <p style={{ font: "var(--typo-micro)", color: "var(--text-muted)", letterSpacing: "0.09em", textTransform: "uppercase" }}>{label}</p>
       <p className="ds-donnee" style={{ font: "700 24px/1.2 var(--font-display)", color: "var(--ds-primaire)", marginTop: 8 }}>{valeur}</p>
       {note ? <p className="ds-donnee" style={{ font: "var(--typo-legende)", color: "var(--text-muted)", marginTop: 6 }}>{note}</p> : null}
@@ -58,8 +58,8 @@ export function Badge({ ton = "neutre", children }: {
 }) {
   const c = { neutre: "var(--text-secondary)", succes: "var(--ds-succes)", alerte: "var(--ds-alerte)",
               danger: "var(--ds-danger)", primaire: "var(--ds-primaire)" }[ton];
-  const bg = { neutre: "var(--ds-filet)", succes: "rgba(24,128,56,0.08)", alerte: "rgba(202,99,31,0.10)",
-               danger: "rgba(185,28,28,0.08)", primaire: "var(--ds-voile-bleu)" }[ton];
+  const bg = { neutre: "var(--ds-filet)", succes: "rgb(var(--vert-rgb) / 0.08)", alerte: "rgb(var(--orange-rgb) / 0.10)",
+               danger: "rgb(var(--danger-rgb) / 0.08)", primaire: "var(--ds-voile-bleu)" }[ton];
   return (
     <span style={{ display: "inline-flex", alignItems: "center", background: bg, color: c,
       font: "700 11px/1 var(--font-body)", borderRadius: "var(--rayon-pilule)", padding: "4px 12px" }}>

@@ -17,16 +17,16 @@ import { badgePole, poleAccent } from "@/lib/couleurs";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const TYPE_ZONES = [
-  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "#004f91", bg: "rgba(0,79,145,0.06)",  border: "rgba(0,79,145,0.2)" },
-  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "#ca631f", bg: "rgba(202,99,31,0.06)", border: "rgba(202,99,31,0.2)" },
-  { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "#188038", bg: "rgba(24,128,56,0.06)",  border: "rgba(24,128,56,0.2)" },
+  { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.06)",  border: "rgb(var(--bleu-rgb) / 0.2)" },
+  { key: "ZAI", label: "Zones Aménagées pour l'Investissement", code: "ZAI", color: "var(--orange)", bg: "rgb(var(--orange-rgb) / 0.06)", border: "rgb(var(--orange-rgb) / 0.2)" },
+  { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.06)",  border: "rgb(var(--vert-rgb) / 0.2)" },
 ];
 
 // Couleurs des pôles territoriaux — identiques à la page publique
 // (VueTerritorialeSenegal), indexées par nom normalisé.
 const POLE_COULEURS: Record<string, string> = {
-  "dakar": "#9DC3E6",          // bleu clair
-  "thies": "#9DD3DE",          // bleu-teal
+  "dakar": "var(--bleu)",          // bleu clair
+  "thies": "var(--bleu)",          // bleu-teal
   "diourbel louga": "#9DDEC2", // menthe
   "centre": "#B4DE9D",         // vert tendre
   "nord": "#D2DE9D",           // vert-jaune
@@ -293,7 +293,7 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
             const suffixe = (form.decret_creation || "").replace(DECRET_RE, "");
             return (
               <div style={{ display: "flex", alignItems: "stretch" }}>
-                <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "#F5F4F3", border: "1px solid #E4E1DE", borderRight: "none", borderRadius: "10px 0 0 10px", fontSize: 13, fontWeight: 600, color: "#4a5568", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
+                <span style={{ display: "flex", alignItems: "center", padding: "0 13px", background: "var(--champ)", border: "1px solid var(--bordure-forte)", borderRight: "none", borderRadius: "10px 0 0 10px", fontSize: 13, fontWeight: 600, color: "var(--texte)", whiteSpace: "nowrap" as const, flexShrink: 0 }}>Décret n°</span>
                 <FInput value={suffixe}
                   onChange={e => { const v = e.target.value.replace(DECRET_RE, ""); update("decret_creation", v.trim() ? `Décret n° ${v}` : ""); }}
                   placeholder="2002-1036"
@@ -326,33 +326,33 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
         {fichiers.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
             {fichiers.map((f: any) => (
-              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 10, padding: "8px 12px" }}>
-                <FileText size={13} style={{ color: "#004f91" }} />
-                <span style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500 }}>{f.titre || f.fichier_nom}</span>
-                <button onClick={() => supprimerFichier(f.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 10, padding: "8px 12px" }}>
+                <FileText size={13} style={{ color: "var(--bleu)" }} />
+                <span style={{ fontSize: 13, flex: 1, color: "var(--encre)", fontWeight: 500 }}>{f.titre || f.fichier_nom}</span>
+                <button onClick={() => supprimerFichier(f.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "var(--danger)" }} /></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 10, cursor: "pointer", border: "2px dashed #E4E1DE", background: "#FAFAF9", transition: "border-color 0.15s" }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = "#004f91"}
-          onMouseLeave={e => e.currentTarget.style.borderColor = "#E4E1DE"}>
-          <Upload size={14} color="#9aa5b4" />
-          <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+        <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 10, cursor: "pointer", border: "2px dashed var(--bordure-forte)", background: "var(--carte-douce)", transition: "border-color 0.15s" }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = "var(--bleu)"}
+          onMouseLeave={e => e.currentTarget.style.borderColor = "var(--bordure-forte)"}>
+          <Upload size={14} color="var(--gris)" />
+          <span style={{ fontSize: 13, color: "var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display: "none" }}
             onChange={e => { const files = Array.from(e.target.files || []); setPdfQueue(prev => [...prev, ...files.map(f => ({ file: f, titre: f.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
         </label>
         {pdfQueue.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
             {pdfQueue.map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(106,27,154,0.05)", border: "1px solid rgba(106,27,154,0.2)", borderRadius: 10, padding: "8px 12px" }}>
-                <FileText size={13} style={{ color: "#6A1B9A" }} />
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgb(var(--violet-rgb) / 0.05)", border: "1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius: 10, padding: "8px 12px" }}>
+                <FileText size={13} style={{ color: "var(--violet)" }} />
                 <input value={p.titre} onChange={e => setPdfQueue(prev => prev.map((x, j) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre du document"
-                  style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(106,27,154,0.3)", outline: "none", fontSize: 12.5, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
-                <button onClick={() => setPdfQueue(prev => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                  style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgb(var(--violet-rgb) / 0.3)", outline: "none", fontSize: 12.5, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
+                <button onClick={() => setPdfQueue(prev => prev.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "var(--danger)" }} /></button>
               </div>
             ))}
-            <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize: 11, color: "var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -364,9 +364,9 @@ function ZoneModal({ open, onClose, onSaved, typeZone, editZone }: {
 
 // ── Modal ajout entreprises avec statuts ─────────────────────────────────────
 const STATUT_CONFIG: Record<string,{label:string;color:string;bg:string;border:string}> = {
-  installee:    { label:"Installée",    color:"#188038", bg:"rgba(24,128,56,0.08)",  border:"rgba(24,128,56,0.2)"  },
-  eligible:     { label:"Éligible",     color:"#ca631f", bg:"rgba(202,99,31,0.08)",  border:"rgba(202,99,31,0.2)"  },
-  non_eligible: { label:"Non éligible", color:"#9aa5b4", bg:"#F2F0EF",               border:"#E8E5E3"              },
+  installee:    { label:"Installée",    color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)",  border:"rgb(var(--vert-rgb) / 0.2)"  },
+  eligible:     { label:"Éligible",     color:"var(--orange)", bg:"rgb(var(--orange-rgb) / 0.08)",  border:"rgb(var(--orange-rgb) / 0.2)"  },
+  non_eligible: { label:"Non éligible", color:"var(--gris)", bg:"var(--fond)",               border:"var(--bordure-forte)"              },
 };
 
 function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
@@ -422,49 +422,49 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
 
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"var(--ombre-2)",overflow:"hidden",animation:"vueIn 0.22s ease"}}>
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:720,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"var(--ombre-2)",overflow:"hidden",animation:"vueIn 0.22s ease"}}>
+        <div style={{height:4,background:"var(--bleu-action)",flexShrink:0}}/>
         {/* Header */}
-        <div style={{padding:"18px 28px 14px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+        <div style={{padding:"18px 28px 14px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16,marginBottom:12}}>
             <div style={{minWidth:0}}>
-              <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>Entreprises — {zoneNom}</h2>
+              <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3}}>Entreprises — {zoneNom}</h2>
               <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-                {nbI>0&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",padding:"3px 10px",borderRadius:999}}>{nbI} installée{nbI>1?"s":""}</span>}
-                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999}}>{nbE} éligible{nbE>1?"s":""}</span>
-                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6b7280",background:"#F2F0EF",padding:"3px 10px",borderRadius:999}}>{nbN} non éligible{nbN>1?"s":""}</span>
+                {nbI>0&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>{nbI} installée{nbI>1?"s":""}</span>}
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>{nbE} éligible{nbE>1?"s":""}</span>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--gris-fort)",background:"var(--fond)",padding:"3px 10px",borderRadius:999}}>{nbN} non éligible{nbN>1?"s":""}</span>
               </div>
             </div>
             <button onClick={onClose}
-              style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-              onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-              onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-              <X size={15} color="#4a5568"/>
+              style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+              onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+              onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+              <X size={15} color="var(--texte)"/>
             </button>
           </div>
           {/* Filtres */}
           <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap" as const}}>
             {([{v:"eligible",l:`Éligibles (${nbE})`},{v:"installee",l:`Installées (${nbI})`},{v:"non_eligible",l:`Non éligibles (${nbN})`},{v:"tous",l:"Toutes"}] as {v:string;l:string}[]).map(f=>(
               <button key={f.v} onClick={()=>setFiltre(f.v as any)}
-                style={{padding:"4px 12px",borderRadius:999,fontSize:11,fontWeight:filtre===f.v?700:600,cursor:"pointer",border:`1.5px solid ${filtre===f.v?"#004f91":"#E8E5E3"}`,background:filtre===f.v?"#004f91":"#fff",color:filtre===f.v?"#fff":"#9aa5b4",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
+                style={{padding:"4px 12px",borderRadius:999,fontSize:11,fontWeight:filtre===f.v?700:600,cursor:"pointer",border:`1.5px solid ${filtre===f.v?"var(--bleu)":"var(--bordure-forte)"}`,background:filtre===f.v?"var(--bleu-action)":"var(--carte)",color:filtre===f.v?"var(--sur-bleu)":"var(--gris)",transition:"all 0.15s",fontFamily:"var(--font-google-sans)"}}>
                 {f.l}
               </button>
             ))}
           </div>
           <div style={{position:"relative"}}>
-            <Search size={13} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"#9aa5b4"}}/>
+            <Search size={13} style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",color:"var(--gris)"}}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{width:"100%",background:"#F8F7F6",border:"1px solid #E8E5E3",borderRadius:9,padding:"8px 12px 8px 32px",fontSize:13,color:"#1a1a2e",outline:"none",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"}}/>
+              style={{width:"100%",background:"var(--carte-douce)",border:"1px solid var(--bordure-forte)",borderRadius:9,padding:"8px 12px 8px 32px",fontSize:13,color:"var(--encre)",outline:"none",boxSizing:"border-box" as const,fontFamily:"var(--font-google-sans)"}}/>
           </div>
         </div>
         {/* Liste */}
         <div style={{flex:1,overflowY:"auto",padding:"12px 28px"}}>
           {loading
-            ?<div style={{display:"flex",justifyContent:"center",padding:40}}><Loader2 size={22} style={{color:"#9aa5b4",animation:"spin 1s linear infinite"}}/></div>
+            ?<div style={{display:"flex",justifyContent:"center",padding:40}}><Loader2 size={22} style={{color:"var(--gris)",animation:"spin 1s linear infinite"}}/></div>
             :filtered.length===0
-              ?<p style={{textAlign:"center",color:"#9aa5b4",fontSize:13,padding:"24px 0"}}>Aucun résultat</p>
+              ?<p style={{textAlign:"center",color:"var(--gris)",fontSize:13,padding:"24px 0"}}>Aucun résultat</p>
               :<div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {filtered.map((e:any)=>{
                   const curChoix=choix[e.id];
@@ -474,18 +474,18 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
                   const clickable=e.statut!=="non_eligible";
                   return (
                     <div key={e.id} onClick={()=>clickable&&toggleChoix(e)}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,cursor:clickable?"pointer":"default",borderTop:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderRight:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderBottom:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderLeft:`3px solid ${cfg.color}`,background:isChoisi?cfg.bg:"#fff",transition:"all 0.12s",opacity:e.statut==="non_eligible"?0.5:1}}>
-                      <div style={{width:16,height:16,borderRadius:4,flexShrink:0,border:`2px solid ${isChoisi?cfg.color:"#E8E5E3"}`,background:isChoisi?cfg.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,cursor:clickable?"pointer":"default",borderTop:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderRight:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderBottom:`1px solid ${isChoisi?cfg.color:cfg.border}`,borderLeft:`3px solid ${cfg.color}`,background:isChoisi?cfg.bg:"var(--carte)",transition:"all 0.12s",opacity:e.statut==="non_eligible"?0.5:1}}>
+                      <div style={{width:16,height:16,borderRadius:4,flexShrink:0,border:`2px solid ${isChoisi?cfg.color:"var(--sur-bleu)"}`,background:isChoisi?cfg.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
                         {isChoisi&&<svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </div>
                       <div style={{width:32,height:32,borderRadius:8,background:cfg.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                         <Building2 size={14} style={{color:cfg.color}}/>
                       </div>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontWeight:600,fontSize:13,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                        <div style={{fontSize:11,color:"#9aa5b4",marginTop:1}}>
+                        <div style={{fontWeight:600,fontSize:13,color:"var(--encre)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                        <div style={{fontSize:11,color:"var(--gris)",marginTop:1}}>
                           {[e.forme_juridique,e.region_nom].filter(Boolean).join(" · ")}
-                          {e.activites_communes?.length>0&&<span style={{color:"#004f91",marginLeft:6}}>· {e.activites_communes.length} activité{e.activites_communes.length>1?"s":""} commune{e.activites_communes.length>1?"s":""}</span>}
+                          {e.activites_communes?.length>0&&<span style={{color:"var(--bleu)",marginLeft:6}}>· {e.activites_communes.length} activité{e.activites_communes.length>1?"s":""} commune{e.activites_communes.length>1?"s":""}</span>}
                         </div>
                       </div>
                       <span style={{fontSize:10,fontWeight:700,color:cfg.color,background:cfg.bg,border:`1px solid ${cfg.border}`,padding:"2px 8px",borderRadius:999,flexShrink:0}}>{cfg.label}</span>
@@ -495,14 +495,14 @@ function EntreprisesModal({ open, onClose, zoneId, onSaved, zoneNom }: {
               </div>}
         </div>
         {/* Footer */}
-        <div style={{padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-          <span style={{fontSize:12,color:nbChoix>0?"#1a1a2e":"#9aa5b4"}}>
+        <div style={{padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+          <span style={{fontSize:12,color:nbChoix>0?"var(--encre)":"var(--gris)"}}>
             {nbChoix>0?<span style={{fontWeight:600}}>{nbChoix} à enregistrer</span>:`${filtered.length} affiché${filtered.length>1?"s":""}`}
           </span>
           <div style={{display:"flex",gap:10}}>
-            <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>Fermer</button>
+            <button onClick={onClose} style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>Fermer</button>
             <button onClick={handleSauvegarder} disabled={!nbChoix||saving||saveOk}
-              style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:saveOk?"#188038":nbChoix?"#004f91":"#C5BFBB",color:"#fff",fontWeight:700,cursor:!nbChoix||saving||saveOk?"not-allowed":"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:saveOk?"0 3px 12px rgba(24,128,56,0.25)":nbChoix?"0 3px 12px rgba(0,79,145,0.25)":"none"}}>
+              style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:saveOk?"var(--vert-action)":nbChoix?"var(--bleu-action)":"var(--fond-creux2)",color:"var(--sur-bleu)",fontWeight:700,cursor:!nbChoix||saving||saveOk?"not-allowed":"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:saveOk?"0 3px 12px rgb(var(--ombre-rgb) / 0.25)":nbChoix?"0 3px 12px rgb(var(--ombre-rgb) / 0.25)":"none"}}>
               {saving?<><Loader2 size={13} style={{animation:"spin 1s linear infinite"}}/> Enregistrement…</>:saveOk?<><Check size={13}/> Enregistré</>:`Enregistrer (${nbChoix})`}
             </button>
           </div>
@@ -585,7 +585,7 @@ function OngletPoles() {
     charger();
   };
 
-  if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "#9aa5b4", animation: "spin 1s linear infinite" }} /></div>;
+  if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: 40 }}><Loader2 size={24} style={{ color: "var(--gris)", animation: "spin 1s linear infinite" }} /></div>;
   return (
     <div style={{ maxWidth: 720 }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -614,42 +614,42 @@ function PoleCard({ pole, isNew = false, form, isOpen, onToggleOpen, updateForm,
   regions: any[]; onSave: () => void; onCancel: () => void; onDelete?: () => void;
   onDeleteFichier?: (fid: number) => void; saving: boolean; error: string;
 }) {
-  const IS: any = { background: "#F2F0EF", border: "1px solid #C5BFBB", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  const LS: any = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 4, display: "block" };
+  const IS: any = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  const LS: any = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
   const id: number | "new" = isNew ? "new" : pole.id;
   const f = form;
   const pc = isNew ? null : getPoleColor(pole.pole_territoire);
-  const accentColor = isNew ? "#059669" : pc!;
+  const accentColor = isNew ? "var(--vert)" : pc!;
   const initial = (!isNew && (f.pole_territoire || pole.pole_territoire)?.[0]) || "P";
   return (
-    <div style={{ background: "#fff", borderTop: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderRight: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderBottom: `1px solid ${isOpen ? accentColor : "#C5BFBB"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
+    <div style={{ background: "var(--carte)", borderTop: `1px solid ${isOpen ? accentColor : "var(--gris)"}`, borderRight: `1px solid ${isOpen ? accentColor : "var(--gris)"}`, borderBottom: `1px solid ${isOpen ? accentColor : "var(--gris)"}`, borderLeft: `4px solid ${accentColor}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", cursor: "pointer" }}
         onClick={onToggleOpen}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgba(5,150,105,0.1)" : accentColor, border: isNew ? "none" : "1px solid rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {isNew ? <Plus size={14} style={{ color: "#059669" }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>{initial}</span>}
+        <div style={{ width: 34, height: 34, borderRadius: 9, background: isNew ? "rgb(var(--vert-rgb) / 0.1)" : accentColor, border: isNew ? "none" : "1px solid rgb(var(--ombre-rgb) / 0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {isNew ? <Plus size={14} style={{ color: "var(--vert)" }} /> : <span style={{ fontSize: 13, fontWeight: 800, color: "var(--encre)" }}>{initial}</span>}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{isNew ? "Ajouter un nouveau pôle" : f.pole_territoire || pole.pole_territoire}</div>
-          {!isNew && (f.localisation || pole.localisation) && <div style={{ fontSize: 12, color: "#9aa5b4", marginTop: 1 }}>{f.localisation || pole.localisation}</div>}
+          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--encre)" }}>{isNew ? "Ajouter un nouveau pôle" : f.pole_territoire || pole.pole_territoire}</div>
+          {!isNew && (f.localisation || pole.localisation) && <div style={{ fontSize: 12, color: "var(--gris)", marginTop: 1 }}>{f.localisation || pole.localisation}</div>}
         </div>
-        {!isNew && <button onClick={e => { e.stopPropagation(); onDelete?.(); }} style={{ background: "rgba(220,38,38,0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}><Trash2 size={13} style={{ color: "#dc2626" }} /></button>}
-        {isOpen ? <ChevronDown size={15} style={{ color: "#9aa5b4" }} /> : <ChevronRight size={15} style={{ color: "#9aa5b4" }} />}
+        {!isNew && <button onClick={e => { e.stopPropagation(); onDelete?.(); }} style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 7, padding: "5px 8px" }}><Trash2 size={13} style={{ color: "var(--danger)" }} /></button>}
+        {isOpen ? <ChevronDown size={15} style={{ color: "var(--gris)" }} /> : <ChevronRight size={15} style={{ color: "var(--gris)" }} />}
       </div>
       {isOpen && (
         <div style={{ borderTop: `1px solid ${accentColor}30`, padding: "16px 18px", background: isNew ? "transparent" : `${accentColor}08`, display: "flex", flexDirection: "column", gap: 12 }}>
           <div><label style={LS}>Nom du pôle *</label><input value={f.pole_territoire || ""} onChange={e => updateForm(id, "pole_territoire", e.target.value)} placeholder="Ex : Pôle Dakar" style={IS} /></div>
           <div>
             <label style={LS}>Régions composant ce pôle</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 10, background: "#F8F7F6", borderRadius: 10, border: "1px solid #C5BFBB" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 10, background: "var(--carte-douce)", borderRadius: 10, border: "1px solid var(--bordure-forte)" }}>
               {regions.map((r: any) => {
                 const sel = (f.region_ids || []).includes(r.id);
                 return <button key={r.id} onClick={() => toggleRegion(id, r.id)}
-                  style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? accentColor : "#C5BFBB"}`, background: sel ? accentColor : "#fff", color: sel ? "#1a1a2e" : "#4a5568", transition: "all 0.12s" }}>
+                  style={{ padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: `1.5px solid ${sel ? accentColor : "var(--gris)"}`, background: sel ? accentColor : "var(--sur-bleu)", color: sel ? "var(--encre)" : "var(--texte)", transition: "all 0.12s" }}>
                   {r.nom}
                 </button>;
               })}
             </div>
-            {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "#9aa5b4", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
+            {(f.region_ids || []).length > 0 && <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 6 }}>Localisation : {regions.filter(r => f.region_ids.includes(r.id)).map((r: any) => r.nom).join(", ")}</p>}
           </div>
           <div><label style={LS}>Description</label><RichTextEditor value={f.description || ""} onChange={v => updateForm(id, "description", v)}/></div>
 
@@ -659,43 +659,43 @@ function PoleCard({ pole, isNew = false, form, isOpen, onToggleOpen, updateForm,
             {!isNew && (pole.fichiers || []).length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
                 {pole.fichiers.map((fi: any) => (
-                  <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.15)", borderRadius: 8, padding: "7px 12px" }}>
-                    <FileText size={13} style={{ color: "#004f91" }} />
+                  <div key={fi.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 8, padding: "7px 12px" }}>
+                    <FileText size={13} style={{ color: "var(--bleu)" }} />
                     <a href={`${API_BASE}/zones-types/poles/${pole.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ fontSize: 13, flex: 1, color: "#1a1a2e", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
-                    <button onClick={() => onDeleteFichier?.(fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                      style={{ fontSize: 13, flex: 1, color: "var(--encre)", fontWeight: 500, textDecoration: "none" }}>{fi.titre}</a>
+                    <button onClick={() => onDeleteFichier?.(fi.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "var(--danger)" }} /></button>
                   </div>
                 ))}
               </div>
             )}
-            <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed #C5BFBB", background: "#F8F7F6" }}
+            <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", borderRadius: 8, cursor: "pointer", border: "2px dashed var(--bordure-forte)", background: "var(--carte-douce)" }}
               onMouseEnter={e => e.currentTarget.style.borderColor = accentColor}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "#C5BFBB"}>
-              <Upload size={14} color="#9aa5b4" />
-              <span style={{ fontSize: 13, color: "#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+              onMouseLeave={e => e.currentTarget.style.borderColor = "var(--bordure-forte)"}>
+              <Upload size={14} color="var(--gris)" />
+              <span style={{ fontSize: 13, color: "var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
               <input type="file" accept=".pdf" multiple style={{ display: "none" }}
                 onChange={e => { const files = Array.from(e.target.files || []); updateForm(id, "pdfQueue", [...(f.pdfQueue || []), ...files.map(file => ({ file, titre: file.name.replace(/\.pdf$/i, "") }))]); e.target.value = ""; }} />
             </label>
             {(f.pdfQueue || []).length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 8 }}>
                 {f.pdfQueue.map((p: any, i: number) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(124,58,237,0.05)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "7px 12px" }}>
-                    <FileText size={13} style={{ color: "#7c3aed" }} />
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, background: "rgb(var(--violet-rgb) / 0.05)", border: "1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius: 8, padding: "7px 12px" }}>
+                    <FileText size={13} style={{ color: "var(--violet)" }} />
                     <input value={p.titre} onChange={e => updateForm(id, "pdfQueue", f.pdfQueue.map((x: any, j: number) => j === i ? { ...x, titre: e.target.value } : x))} placeholder="Titre"
-                      style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgba(124,58,237,0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
-                    <button onClick={() => updateForm(id, "pdfQueue", f.pdfQueue.filter((_: any, j: number) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "#dc2626" }} /></button>
+                      style={{ flex: 1, background: "transparent", border: "none", borderBottom: "1px solid rgb(var(--violet-rgb) / 0.3)", outline: "none", fontSize: 12, padding: "2px 0", fontFamily: "var(--font-google-sans)" }} />
+                    <button onClick={() => updateForm(id, "pdfQueue", f.pdfQueue.filter((_: any, j: number) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} style={{ color: "var(--danger)" }} /></button>
                   </div>
                 ))}
-                <p style={{ fontSize: 11, color: "#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+                <p style={{ fontSize: 11, color: "var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
               </div>
             )}
           </div>
 
-          {error && <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: "var(--danger)" }}>{error}</p>}
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid #C5BFBB", background: "#fff", color: "#4a5568", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+            <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
             <button onClick={onSave} disabled={saving}
-              style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "#059669" : "#1a1a2e", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              style={{ display: "flex", alignItems: "center", gap: 5, padding: "8px 18px", borderRadius: 9, border: "none", background: isNew ? "var(--vert-action)" : "var(--encre)", color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
               {saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {isNew ? "Créer" : "Enregistrer"}</>}
             </button>
           </div>
@@ -718,36 +718,36 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
   const locStr = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
 
   const SecTitle = ({children}:{children:React.ReactNode}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
   const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
+    <div style={{background:"rgb(var(--bleu-rgb) / 0.04)",border:"1px solid rgb(var(--bleu-rgb) / 0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
+      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"var(--bleu)",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
       {children}
     </div>
   );
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={ev=>ev.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div onClick={ev=>ev.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:680, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         {/* Liseré d'accent */}
-        <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
+        <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }}/>
 
         {/* En-tête */}
-        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"#1a1a2e", lineHeight:1.3 }}>{z.nom_zone}</h2>
+            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{z.nom_zone}</h2>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
               <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:800, letterSpacing:"0.04em", color:t.color, background:`${t.color}12`, padding:"3px 10px", borderRadius:999 }}>{t.code}</span>
-              {z.pole_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{z.pole_nom}</span>}
+              {z.pole_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{z.pole_nom}</span>}
             </div>
           </div>
           <button onClick={onClose}
-            style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
+            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            <X size={15} color="var(--texte)"/>
           </button>
         </div>
 
@@ -759,10 +759,10 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
             <section>
               <SecTitle>Informations</SecTitle>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                {locStr && <Bloc label="Localisation"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{locStr}</p></Bloc>}
-                {z.superficie && <Bloc label="Superficie"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</p></Bloc>}
-                {z.date_creation && <Bloc label="Création"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{new Date(z.date_creation + "T00:00:00").toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" })}</p></Bloc>}
-                {z.decret_creation && <Bloc label="Décret"><p style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{z.decret_creation}</p></Bloc>}
+                {locStr && <Bloc label="Localisation"><p style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{locStr}</p></Bloc>}
+                {z.superficie && <Bloc label="Superficie"><p style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</p></Bloc>}
+                {z.date_creation && <Bloc label="Création"><p style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{new Date(z.date_creation + "T00:00:00").toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" })}</p></Bloc>}
+                {z.decret_creation && <Bloc label="Décret"><p style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{z.decret_creation}</p></Bloc>}
               </div>
             </section>
           )}
@@ -771,9 +771,9 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
           {z.description && (
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
+              <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{ __html:z.description }} style={{ fontSize:13, color:"#4a5568", lineHeight:1.7 }}/>
+                <div data-rte dangerouslySetInnerHTML={{ __html:z.description }} style={{ fontSize:13, color:"var(--texte)", lineHeight:1.7 }}/>
               </div>
             </section>
           )}
@@ -795,25 +795,25 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                     return (
                       <div key={secId}>
                         <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length ? 5 : 0 }}>
-                          <div style={{ width:8, height:8, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
-                          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>{sec.nom}</span>
+                          <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }}/>
+                          <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>{sec.nom}</span>
                         </div>
                         {brasDuSec.length > 0 && (
-                          <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(0,79,145,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
+                          <div style={{ paddingLeft:20, borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
                             {brasDuSec.map((bra: any) => {
                               const actsDeBra = activites.filter((a: any) => a.branche_id === bra.id && actIds.includes(a.id));
                               return (
                                 <div key={bra.id}>
                                   <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length ? 4 : 0 }}>
-                                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/>
-                                    <span style={{ fontSize:11, fontWeight:600, color:"#ca631f" }}>{bra.nom}</span>
+                                    <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", flexShrink:0 }}/>
+                                    <span style={{ fontSize:11, fontWeight:600, color:"var(--orange)" }}>{bra.nom}</span>
                                   </div>
                                   {actsDeBra.length > 0 && (
                                     <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
                                       {actsDeBra.map((act: any) => (
                                         <div key={act.id} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/>
-                                          <span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act.nom}</span>
+                                          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--vert-action)", flexShrink:0 }}/>
+                                          <span style={{ fontSize:11, color:"var(--vert)", fontWeight:500 }}>{act.nom}</span>
                                         </div>
                                       ))}
                                     </div>
@@ -835,7 +835,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
           <section>
             <SecTitle>Entreprises ({z.entreprises?.length || 0})</SecTitle>
             {!z.entreprises?.length
-              ? <p style={{ fontSize:13, color:"#9aa5b4", fontStyle:"italic" }}>Aucune entreprise installée.</p>
+              ? <p style={{ fontSize:13, color:"var(--gris)", fontStyle:"italic" }}>Aucune entreprise installée.</p>
               : <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                 {z.entreprises.map((ze: any) => {
                   const curStatut = ze.statut || "installee";
@@ -844,12 +844,12 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                   const nextCfg = STATUT_CONFIG[nextStatut];
                   return (
                     <div key={ze.id} onClick={() => ouvrirFicheEnt(ze.entreprise?.id)}
-                      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", cursor:"pointer", transition:"border-color 0.15s, background 0.15s" }}
-                      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";}}
-                      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";}}>
+                      style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:"var(--carte-douce)", borderRadius:12, border:"1px solid var(--bordure)", cursor:"pointer", transition:"border-color 0.15s, background 0.15s" }}
+                      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.25)";ev.currentTarget.style.background="var(--carte)";}}
+                      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";}}>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontWeight:700, fontSize:13, color:"#1a1a2e", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ze.entreprise?.nom}</div>
-                        <div style={{ fontSize:11, color:"#9aa5b4" }}>{ze.entreprise?.forme_juridique || "—"}</div>
+                        <div style={{ fontWeight:700, fontSize:13, color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{ze.entreprise?.nom}</div>
+                        <div style={{ fontSize:11, color:"var(--gris)" }}>{ze.entreprise?.forme_juridique || "—"}</div>
                       </div>
                       <button title={`Passer en "${nextCfg.label}"`}
                         onClick={async (e) => {
@@ -865,12 +865,12 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity:0.6 }}><path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); ouvrirFicheEnt(ze.entreprise?.id); }}
-                        style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 10px", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                        style={{ display:"flex", alignItems:"center", gap:4, background:"rgb(var(--bleu-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 10px", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                         <Eye size={12}/> Fiche
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); onRetirerEntreprise(z.id, ze.entreprise?.id); }} disabled={deletingEnt === ze.entreprise?.id}
-                        style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}>
-                        {deletingEnt === ze.entreprise?.id ? <Loader2 size={12} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/> : <Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                        style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}>
+                        {deletingEnt === ze.entreprise?.id ? <Loader2 size={12} style={{ color:"var(--danger)", animation:"spin 1s linear infinite" }}/> : <Trash2 size={12} style={{ color:"var(--danger)" }}/>}
                       </button>
                     </div>
                   );
@@ -885,9 +885,9 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                 {z.fichiers.map((f: any) => (
                   <a key={f.id} href={`${API_BASE}/zones-types/${z.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"9px 12px", textDecoration:"none" }}>
-                    <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
-                    <span style={{ fontSize:12.5, color:"#004f91", fontWeight:600 }}>{f.titre || f.fichier_nom}</span>
+                    style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"9px 12px", textDecoration:"none" }}>
+                    <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
+                    <span style={{ fontSize:12.5, color:"var(--bleu)", fontWeight:600 }}>{f.titre || f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -897,18 +897,18 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
         </div>
 
         {/* Pied */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
           <button className="ro-w" onClick={onAddEntreprise}
-            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
             <Plus size={13}/> Entreprise
           </button>
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={onClose}
-              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
             <button className="ro-w" onClick={onEdit}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
+              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
               <Pencil size={13}/> Modifier
             </button>
           </div>
@@ -1019,14 +1019,14 @@ export default function GestionZonesPage() {
               const active = selectedType === t.key;
               const c = t.color;
               const GRADS: Record<string,string> = {
-                "#004f91":"linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)",
-                "#ca631f":"linear-gradient(90deg,#9c4a15 0%,#ca631f 60%,#e07a2e 100%)",
-                "#188038":"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)",
+                "var(--bleu)":"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)",
+                "var(--orange)":"linear-gradient(90deg,var(--orange) 0%,var(--orange) 60%,var(--orange) 100%)",
+                "var(--vert)":"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,#2aa14e 100%)",
               };
               const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
               return (
                 <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
-                  style={{ background: "#fff", border: `1.5px solid ${c}${active ? "99" : "73"}`, borderRadius: 14, cursor: "pointer",
+                  style={{ background: "var(--carte)", border: `1.5px solid ${c}${active ? "99" : "73"}`, borderRadius: 14, cursor: "pointer",
                     transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
                     boxShadow: active ? `0 12px 28px ${c}2e` : `0 4px 18px ${c}26`,
                     transform: active ? "translateY(-2px)" : "none",
@@ -1046,18 +1046,18 @@ export default function GestionZonesPage() {
 
                   {/* Bandeau du type — même style que la page publique */}
                   <div style={{ display: "flex", alignItems: "center", gap: 7, background: grad, padding: "6px 16px" }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{t.code}</span>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--carte)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: "var(--sur-bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{t.code}</span>
                     {active && (
                       <span style={{ marginLeft: "auto", width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="var(--carte)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       </span>
                     )}
                   </div>
 
                   <div style={{ padding: "14px 16px 14px", flex: 1 }}>
                     {/* Libellé du type (défile au survol si trop long) */}
-                    <div data-marquee style={{ fontWeight: 700, fontSize: 13.5, color: "#1a1a2e", lineHeight: 1.35, overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                    <div data-marquee style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", lineHeight: 1.35, overflow: "hidden", whiteSpace: "nowrap" as const }}>
                       <span style={{ display: "inline-block" }}>{t.label}</span>
                     </div>
 
@@ -1065,17 +1065,17 @@ export default function GestionZonesPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
                       <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
                         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "#1a1a2e" : "#9aa5b4" }}>{nbEnt}</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "var(--encre)" : "var(--gris)" }}>{nbEnt}</p>
                       </div>
                       <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
                         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "#1a1a2e" : "#9aa5b4" }}>{zDuT.length}</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "var(--encre)" : "var(--gris)" }}>{zDuT.length}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Action */}
-                  <div style={{ display: "flex", borderTop: "1px solid #F2F0EF" }}>
+                  <div style={{ display: "flex", borderTop: "1px solid var(--bordure)" }}>
                     <button className="ro-w" onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
                       style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                       onMouseEnter={ev => ev.currentTarget.style.background = `${c}0D`}
@@ -1093,9 +1093,9 @@ export default function GestionZonesPage() {
             const t = TYPE_ZONES.find(x => x.key === selectedType)!;
             const zDuT = zones.filter(z => z.type_zone === t.key);
             return zDuT.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 24px", color: "#9aa5b4" }}>
+              <div style={{ textAlign: "center", padding: "60px 24px", color: "var(--gris)" }}>
                 <Building2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
-                <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568" }}>Aucune zone {t.code}</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)" }}>Aucune zone {t.code}</p>
                 <p style={{ fontSize: 13.5, marginTop: 6 }}>Utilisez « Ajouter une {t.code} » sur la carte du type pour en créer une.</p>
               </div>
             ) : (
@@ -1104,14 +1104,14 @@ export default function GestionZonesPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 15, padding: "15px 20px", marginBottom: 20, borderRadius: 16,
                 background: `linear-gradient(100deg, ${t.color}14 0%, ${t.color}06 42%, rgba(255,255,255,0) 100%)`,
                 border: `1px solid ${t.color}22` }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${t.color}1a` }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--carte)", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${t.color}1a` }}>
                   <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.02em", color: t.color }}>{t.code}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 9.5, fontWeight: 700, color: t.color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>Type de zone</div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "#1a1a2e", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{t.label}</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "var(--encre)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{t.label}</div>
                 </div>
-                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "#fff", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${t.color}40` }}>
+                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${t.color}40` }}>
                   {zDuT.length} zone{zDuT.length > 1 ? "s" : ""}
                 </span>
               </div>
@@ -1123,7 +1123,7 @@ export default function GestionZonesPage() {
                   const nbEnt = z.entreprises?.length || 0;
                   return (
                   <div key={z.id} onClick={() => setVueId(z.id)}
-                    style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
+                    style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
                     onMouseEnter={ev => {
                       ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = hoverC;
                       // Contenus trop longs : glissent pour révéler la fin
@@ -1133,7 +1133,7 @@ export default function GestionZonesPage() {
                       });
                     }}
                     onMouseLeave={ev => {
-                      ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)";
+                      ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
                       ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
                         const span = box.firstElementChild as HTMLElement | null;
                         if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
@@ -1144,10 +1144,10 @@ export default function GestionZonesPage() {
                       {/* Nom + superficie | badge pôle */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
                         <div style={{ minWidth: 0, flex: 1 }}>
-                          <div data-marquee style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                          <div data-marquee style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", whiteSpace: "nowrap" as const }}>
                             <span style={{ display: "inline-block" }}>{z.nom_zone}</span>
                           </div>
-                          {z.superficie && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</div>}
+                          {z.superficie && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</div>}
                         </div>
                         {z.pole_nom && (
                           <span title={z.pole_nom} style={{ ...badgePole(z.pole_nom), whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
@@ -1157,42 +1157,42 @@ export default function GestionZonesPage() {
                       </div>
 
                       {/* Localisation · Entreprises en rangée épurée */}
-                      <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+                      <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Localisation</p>
-                          <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: (z.departement_nom || z.region_nom) ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Localisation</p>
+                          <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: (z.departement_nom || z.region_nom) ? "var(--encre)" : "var(--gris)", overflow: "hidden", whiteSpace: "nowrap" as const }}>
                             <span style={{ display: "inline-block" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ") || "—"}</span>
                           </p>
                         </div>
-                        <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+                        <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
-                          <p style={{ fontSize: 12.5, fontWeight: 700, color: nbEnt > 0 ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{nbEnt}</p>
+                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
+                          <p style={{ fontSize: 12.5, fontWeight: 700, color: nbEnt > 0 ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{nbEnt}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+                    <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
                       <button onClick={() => openEditZone(z)}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                         onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
                         <Pencil size={12} /> Modifier
                       </button>
-                      <div style={{ width: 1, background: "#F2F0EF" }} />
+                      <div style={{ width: 1, background: "var(--fond)" }} />
                       <button onClick={() => { setEntModalZone(z); setEntModal(true); }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#188038", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgba(24,128,56,0.05)"}
+                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--vert)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--vert-rgb) / 0.05)"}
                         onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
                         <Plus size={12} /> Entreprise
                       </button>
-                      <div style={{ width: 1, background: "#F2F0EF" }} />
+                      <div style={{ width: 1, background: "var(--fond)" }} />
                       <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id}
                         style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
                         onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                        {deleting === z.id ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+                        {deleting === z.id ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
                       </button>
                     </div>
                   </div>

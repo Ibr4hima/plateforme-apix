@@ -33,11 +33,11 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
       <button onClick={()=>setOpen(o=>!o)}
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"#004f91",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"#004f91":"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
+          {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"var(--bleu-action)",display:"inline-block"}}/>}
+          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
         </div>
-        <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {open?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
+        <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
         </span>
       </button>
       {open&&(
@@ -47,12 +47,12 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
               onChange={(d,f)=>onChange(d,f)}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
-            <span style={{fontSize:10,color:"#9aa5b4"}}>—</span>
-            <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
+            <span style={{fontSize:10,color:"var(--gris)"}}>—</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
           </div>
           {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
-            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
+            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"var(--danger)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
             <X size={10}/> Réinitialiser
           </button>}
         </div>
@@ -156,12 +156,12 @@ export default function EntreprisesPage() {
   const togglePole    =(v:string)=>setPolesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
   return (
-    <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions onDark home flouFond/>}
         droite={onglet==="liste" ? (
           <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
-            icon={triDate==="desc"?<ArrowDownUp size={13} color="#fff"/>:<ArrowUpDown size={13} color="#fff"/>}
+            icon={triDate==="desc"?<ArrowDownUp size={13} color="var(--sur-bleu)"/>:<ArrowUpDown size={13} color="var(--sur-bleu)"/>}
             onClick={()=>setTriDate(triDate==="desc"?"asc":"desc")}/>
         ) : null}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises"},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
@@ -182,16 +182,16 @@ export default function EntreprisesPage() {
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Forme juridique" color="#004f91" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <SideFilter label="Forme juridique" color="var(--bleu)" items={formeOpts} selected={formesSel} onToggle={toggleForme} listMaxHeight={180} format={v=>v.replace(/\s*\([^)]*\)\s*$/,"")}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
                 {dateMin<dateMax&&<DateRangeFilter minYear={dateMin} maxYear={dateMax} startYear={dateStart} endYear={dateEnd} onChange={(s,e)=>{setDateStart(s);setDateEnd(e);}}/>}
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs} secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel} onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite}/>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
                 <LocalisationFilter regions={regions} regionsSel={regionsSel} departementsSel={deptsSel} arrondissementsSel={arrondsSel} onRegion={toggleRegion} onDepartement={toggleDept} onArrondissement={toggleArr}/>
-                {poles.length>0&&<><div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
-                <SideFilter label="Pôle territoire" color="#004f91" items={poles} selected={polesSel} onToggle={togglePole} listMaxHeight={180}/></>}
+                {poles.length>0&&<><div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
+                <SideFilter label="Pôle territoire" color="var(--bleu)" items={poles} selected={polesSel} onToggle={togglePole} listMaxHeight={180}/></>}
           </PanneauFiltres>
           {/* Grille */}
           <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
@@ -200,9 +200,9 @@ export default function EntreprisesPage() {
             ):erreur?(
               <ErreurChargement onRetry={()=>charger()}/>
             ):entreprises.length===0?(
-              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucune entreprise trouvée</p>
+                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucune entreprise trouvée</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
@@ -215,15 +215,15 @@ export default function EntreprisesPage() {
                   const accentPole = poleAccent(e.pole_territoire_nom||"");
                   return (
                   <div key={e.id} {...carteCliquable(()=>gate(()=>setSelec(e)))}
-                    style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accentPole;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Dénomination + forme juridique | badge pôle territoire */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
                       <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:"#1a1a2e",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
+                        <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
                       </div>
                       {e.pole_territoire_nom&&(
                         <span title={e.pole_territoire_nom} style={{...badgePole(e.pole_territoire_nom),whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
@@ -233,15 +233,15 @@ export default function EntreprisesPage() {
                     </div>
 
                     {/* Date de création · Région en rangée épurée */}
-                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"#1a1a2e":"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
                       </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"#1a1a2e":"#C5BFBB",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
                       </div>
                     </div>
                   </div>

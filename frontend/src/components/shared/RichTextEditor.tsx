@@ -10,15 +10,15 @@ function RichToolBtn({ label, title, onExec, italic }: {
       type="button"
       title={title}
       onMouseDown={e => { e.preventDefault(); onExec(); }}
-      style={{ minWidth: 30, height: 28, padding: "0 5px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 5, border: "1px solid transparent", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: italic ? "normal" : 700, fontStyle: italic ? "italic" : "normal", color: "#4a5568", fontFamily: "var(--font-google-sans)" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "#F2F0EF"; e.currentTarget.style.borderColor = "#C5BFBB"; }}
+      style={{ minWidth: 30, height: 28, padding: "0 5px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 5, border: "1px solid transparent", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: italic ? "normal" : 700, fontStyle: italic ? "italic" : "normal", color: "var(--texte)", fontFamily: "var(--font-google-sans)" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "var(--fond)"; e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; }}>
       {label}
     </button>
   );
 }
 
-const SEP = <div style={{ width: 1, background: "#E8E5E3", margin: "0 3px", alignSelf: "stretch" as const }} />;
+const SEP = <div style={{ width: 1, background: "var(--fond-creux2)", margin: "0 3px", alignSelf: "stretch" as const }} />;
 
 export default function RichTextEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
   };
 
   return (
-    <div style={{ border: "1px solid #C5BFBB", borderRadius: 8, overflow: "hidden" }}>
+    <div style={{ border: "1px solid var(--bordure-forte)", borderRadius: 8, overflow: "hidden" }}>
       <style>{`
         [data-rte] ul{padding-left:20px;list-style-type:disc}
         [data-rte] ul.dash-list{list-style-type:"— ";padding-left:22px}
@@ -70,7 +70,7 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
         [data-rte] li{margin-bottom:2px}
         [data-rte][contenteditable] *{font-family:var(--font-google-sans)!important;font-size:13px!important;background:transparent!important}
       `}</style>
-      <div style={{ display: "flex", gap: 2, padding: "5px 8px", background: "#fff", borderBottom: "1px solid #E8E5E3", flexWrap: "wrap" as const }}>
+      <div style={{ display: "flex", gap: 2, padding: "5px 8px", background: "var(--carte)", borderBottom: "1px solid var(--bordure-forte)", flexWrap: "wrap" as const }}>
         <RichToolBtn label="G"  title="Gras (Ctrl+B)"              onExec={() => exec("bold")} />
         <RichToolBtn label="I"  title="Italique (Ctrl+I)"          onExec={() => exec("italic")} italic />
         {SEP}
@@ -97,7 +97,7 @@ export default function RichTextEditor({ value, onChange }: { value: string; onC
           emit();
         }}
         onInput={emit}
-        style={{ minHeight: 120, padding: "10px 12px", outline: "none", fontSize: 13, color: "#1a1a2e", lineHeight: 1.7, background: "#F2F0EF", fontFamily: "var(--font-google-sans)" }}
+        style={{ minHeight: 120, padding: "10px 12px", outline: "none", fontSize: 13, color: "var(--encre)", lineHeight: 1.7, background: "var(--fond)", fontFamily: "var(--font-google-sans)" }}
       />
     </div>
   );

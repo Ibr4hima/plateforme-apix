@@ -32,10 +32,10 @@ export default function IdePage() {
   // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
   // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
   const d3Pret = useD3Pret();
-  if (!d3Pret) return <div style={{ minHeight:"100vh", background:"#F6F5F3" }}/>;
+  if (!d3Pret) return <div style={{ minHeight:"100vh", background:"var(--champ)" }}/>;
 
   return (
-    <div style={{ minHeight:"100vh", background:"#F6F5F3", fontFamily:"var(--font-google-sans)" }}>
+    <div style={{ minHeight:"100vh", background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       {/* Les curseurs de la page viennent du module commun, qui apporte sa
           propre feuille de style ; il ne reste ici que l'animation d'attente. */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
@@ -46,17 +46,17 @@ export default function IdePage() {
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
-        <div style={{ background:"#fff", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, borderBottom:"1px solid #ECEAE7" }}>
+        <div style={{ background:"var(--carte)", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, borderBottom:"1px solid var(--bordure)" }}>
           <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px" }}>
 
             {/* Niveau 1 : Réalisés / Projetés — segmented control du site */}
-            <div style={{ display:"inline-flex", background:"#F2F0EF", borderRadius:999, padding:3, gap:3 }}>
+            <div style={{ display:"inline-flex", background:"var(--fond)", borderRadius:999, padding:3, gap:3 }}>
               {([
                 {v:"realises", l:"Investissements réalisés"},
                 {v:"projetes", l:"Investissements projetés"},
               ] as const).map(s=>(
                 <button key={s.v} onClick={()=>setSection(s.v)}
-                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, background:section===s.v?"#fff":"transparent", color:section===s.v?"#004f91":"#9aa5b4", boxShadow:section===s.v?"0 1px 4px rgba(0,0,0,0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
+                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, background:section===s.v?"var(--carte)":"transparent", color:section===s.v?"var(--bleu)":"var(--gris)", boxShadow:section===s.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
                   {s.l}
                 </button>
               ))}
@@ -85,13 +85,13 @@ export default function IdePage() {
           {section === "projetes" && (
             <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
               <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-                <div style={{ width:64, height:64, borderRadius:16, background:"rgba(0,79,145,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ width:64, height:64, borderRadius:16, background:"rgb(var(--bleu-rgb) / 0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <span style={{ fontSize:32 }}>📈</span>
                 </div>
-                <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"#1a1a2e" }}>FDI Markets</h2>
-                <p style={{ fontSize:14, color:"#9aa5b4", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
-                <div style={{ background:"rgba(0,79,145,0.07)", border:"1px solid rgba(0,79,145,0.2)", borderRadius:10, padding:"10px 20px" }}>
-                  <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Disponible prochainement</span>
+                <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"var(--encre)" }}>FDI Markets</h2>
+                <p style={{ fontSize:14, color:"var(--gris)", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
+                <div style={{ background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.2)", borderRadius:10, padding:"10px 20px" }}>
+                  <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Disponible prochainement</span>
                 </div>
               </div>
             </div>

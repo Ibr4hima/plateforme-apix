@@ -9,7 +9,7 @@ import LectureSeule from "@/components/admin/LectureSeule";
 
 export default function AdminChrome({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", minHeight: "100vh", background: "#F6F5F3" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", minHeight: "100vh", background: "var(--champ)" }}>
       <Sidebar />
       {/* minWidth:0 — sans quoi une grille ou un tableau large pousserait la
           colonne au-delà de la fenêtre au lieu de défiler dans son cadre. */}

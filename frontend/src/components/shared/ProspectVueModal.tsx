@@ -29,21 +29,21 @@ export function ilYa(dstr: string | null): string | null {
 }
 
 export function badgeProspect(p: any) {
-  if (p?.issue === "installe") return { label: "Installation à venir", color: "#188038", bg: "rgba(24,128,56,0.08)" };
-  if (p?.issue === "decline")  return { label: "Décliné",  color: "#6b7280", bg: "#F2F0EF" };
+  if (p?.issue === "installe") return { label: "Installation à venir", color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.08)" };
+  if (p?.issue === "decline")  return { label: "Décliné",  color: "var(--gris-fort)", bg: "var(--fond)" };
   // Après un re-contact, seule l'activité du cycle courant compte (même logique que l'admin).
   const debut = cycleCourantDebut(p);
   let dateDernierEchange = p?.date_dernier_echange;
   if (debut) {
     const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
-    if (!echangesCycle.length) return { label: "À recontacter", color: "#004f91", bg: "rgba(0,79,145,0.07)" };
+    if (!echangesCycle.length) return { label: "À recontacter", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.07)" };
     dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
   }
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
-  if (jours <= 90)  return { label: "En cours",   color: "#188038", bg: "rgba(24,128,56,0.08)" };
-  if (jours <= 120) return { label: "En attente", color: "#6b7280", bg: "#F2F0EF" };
-  return                   { label: "Inactif",    color: "#dc2626", bg: "rgba(220,38,38,0.07)" };
+  if (jours <= 90)  return { label: "En cours",   color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.08)" };
+  if (jours <= 120) return { label: "En attente", color: "var(--gris-fort)", bg: "var(--fond)" };
+  return                   { label: "Inactif",    color: "var(--danger)", bg: "rgb(var(--danger-rgb) / 0.07)" };
 }
 
 // Jetons du design system par statut (fiche) — alignés sur les cards
@@ -128,28 +128,28 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   // Carte d'échange (lecture seule), même design que l'admin
   const EchangeCard = ({ e }: { e: any }) => (
     <div style={{ paddingLeft: 22, position: "relative" as const }}>
-      <div style={{ position: "absolute" as const, left: 1, top: 16, width: 9, height: 9, borderRadius: "50%", background: "#004f91", border: "2px solid #fff", boxShadow: "0 0 0 1px rgba(0,79,145,0.27)" }}/>
+      <div style={{ position: "absolute" as const, left: 1, top: 16, width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", border: "2px solid var(--carte)", boxShadow: "0 0 0 1px rgb(var(--ombre-rgb) / 0.27)" }}/>
       <FicheCarteNeutre style={{ padding: "13px 15px" }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: "#1a1a2e" }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--encre)" }}>
           {new Date(e.date_echange).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
         </div>
         {(e.canal || e.interlocuteur || e.contact_par) && (
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6, marginTop: 8 }}>
             {e.canal && (() => { const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: "#4a5568", background: "#F5F4F3", padding: "3px 10px", borderRadius: 999 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: "var(--texte)", background: "var(--champ)", padding: "3px 10px", borderRadius: 999 }}>
                 <CIcon size={11} style={{ flexShrink: 0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
               </span>
             ); })()}
             {(e.interlocuteur || e.contact_par) && (
-              <span style={{ fontSize: 11, color: "#98a1ad", fontWeight: 500 }}>
+              <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 500 }}>
                 {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
               </span>
             )}
           </div>
         )}
         {e.commentaire && (
-          <div style={{ background: "#fff", border: "1px solid #F0EEEC", borderRadius: 10, padding: "10px 13px", marginTop: 10 }}>
-            <div data-rte className="cr-rte" style={{ fontSize: 12, color: "#5b6472", lineHeight: 1.6 }}
+          <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 10, padding: "10px 13px", marginTop: 10 }}>
+            <div data-rte className="cr-rte" style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.6 }}
               dangerouslySetInnerHTML={{ __html: e.commentaire }}/>
           </div>
         )}
@@ -165,7 +165,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             ))}
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "#98a1ad", marginTop: 10, paddingTop: 9, borderTop: "1px solid #F2F0EF" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--gris)", marginTop: 10, paddingTop: 9, borderTop: "1px solid var(--bordure)" }}>
           <Clock size={11} style={{ flexShrink: 0 }}/>
           <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
         </div>
@@ -176,7 +176,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   // Timeline d'une liste d'échanges
   const Timeline = ({ echanges }: { echanges: any[] }) => (
     <div style={{ position: "relative" as const }}>
-      <div style={{ position: "absolute" as const, left: 5, top: 10, bottom: 10, width: 2, background: "#F0EEEC", borderRadius: 2 }}/>
+      <div style={{ position: "absolute" as const, left: 5, top: 10, bottom: 10, width: 2, background: "var(--fond-creux)", borderRadius: 2 }}/>
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
         {[...echanges].sort((a: any, b: any) => a.date_echange.localeCompare(b.date_echange)).map((e: any) => <EchangeCard key={e.id} e={e}/>)}
       </div>
@@ -187,8 +187,8 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   const Contraintes = ({ items }: { items: any[] }) => (
     <div style={{ display: "flex", flexDirection: "column" as const, gap: 5 }}>
       {items.map((c: any) => (
-        <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#5b6472" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#004f91", flexShrink: 0, marginTop: 6 }}/>
+        <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "var(--texte)" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0, marginTop: 6 }}/>
           <span style={{ lineHeight: 1.5 }}>{c.description.replace(/<[^>]+>/g, "").trim()}</span>
         </div>
       ))}
@@ -198,33 +198,33 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   // Bloc cycle repliable (archivé ou courant figé)
   const CycleBloc = ({ id, num, issue, concluLe, commentaire, echanges, contraintes }: any) => {
     const inst = issue === "installe";
-    const col = inst ? "#188038" : "#6b7280";
+    const col = inst ? "var(--vert)" : "var(--gris-fort)";
     const isOpen = openCycles.has(id);
     return (
-      <div style={{ border: "1px solid #F0EEEC", borderRadius: 12, overflow: "hidden" as const }}>
-        <button onClick={() => toggleCycle(id)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: isOpen ? "#FAFAF9" : "#fff", border: "none", cursor: "pointer", textAlign: "left" as const }}>
+      <div style={{ border: "1px solid var(--bordure)", borderRadius: 12, overflow: "hidden" as const }}>
+        <button onClick={() => toggleCycle(id)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: isOpen ? "var(--carte-douce)" : "var(--carte)", border: "none", cursor: "pointer", textAlign: "left" as const }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#98a1ad", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
-            {concluLe && <span style={{ fontSize: 11, color: "#98a1ad" }}>· Conclu le {new Date(concluLe).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span>}
+            {concluLe && <span style={{ fontSize: 11, color: "var(--gris)" }}>· Conclu le {new Date(concluLe).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span>}
           </div>
-          {isOpen ? <ChevronUp size={14} style={{ color: "#98a1ad", flexShrink: 0 }}/> : <ChevronDown size={14} style={{ color: "#98a1ad", flexShrink: 0 }}/>}
+          {isOpen ? <ChevronUp size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/> : <ChevronDown size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/>}
         </button>
         {isOpen && (
-          <div style={{ borderTop: "1px solid #F0EEEC", padding: "16px 16px", background: "#fff", display: "flex", flexDirection: "column" as const, gap: 14 }}>
+          <div style={{ borderTop: "1px solid var(--bordure)", padding: "16px 16px", background: "var(--carte)", display: "flex", flexDirection: "column" as const, gap: 14 }}>
             {commentaire && (
-              <div data-rte style={{ fontSize: 13, color: "#5b6472", lineHeight: 1.7, fontStyle: "italic" }}
+              <div data-rte style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7, fontStyle: "italic" }}
                 dangerouslySetInnerHTML={{ __html: commentaire }}/>
             )}
             {echanges.length > 0 && (
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#98a1ad", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Historique</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Historique</p>
                 <Timeline echanges={echanges}/>
               </div>
             )}
             {contraintes.length > 0 && (
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
                   {contraintes.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                 </p>
                 <Contraintes items={contraintes}/>
@@ -263,7 +263,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             {mails.length > 0 && (
               <FicheBloc label={mails.length > 1 ? "Emails" : "Email"}>
                 {mails.map((m: string, i: number) => (
-                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "#1a1a2e", wordBreak: "break-all" }}>{m}</p>
+                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m}</p>
                 ))}
               </FicheBloc>
             )}
@@ -287,8 +287,8 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             {p.points_focaux.map((pf: any, i: number) => (
               <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 700, color: "#1a1a2e" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                  {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", background: "rgba(202,99,31,0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
+                  <span style={{ fontWeight: 700, color: "var(--encre)" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                  {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
                 </div>
                 <FicheContacts tels={(pf.telephones || []).filter(Boolean)} mails={(pf.mails || []).filter(Boolean)} />
               </FicheCarteNeutre>
@@ -305,8 +305,8 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
           <FicheSection titre="Compte rendu des échanges" count={echsCourant.length}>
             {echsCourant.length > 0 && <Timeline echanges={echsCourant}/>}
             {contrCourant.length > 0 && (
-              <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid #F2F0EF" : "none" }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+              <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid var(--bordure)" : "none" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
                   {contrCourant.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                 </p>
                 <Contraintes items={contrCourant}/>

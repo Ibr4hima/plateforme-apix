@@ -36,14 +36,14 @@ export default function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:(
 
   const LigneEnt = ({ze}:{ze:any}) => (
     <div onClick={()=>ouvrirFiche(ze.entreprise?.id)}
-      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"#FAFAF9",borderRadius:12,border:"1px solid #F0EEEC",cursor:"pointer",transition:"border-color 0.15s, background 0.15s"}}
-      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgba(0,79,145,0.25)";ev.currentTarget.style.background="#fff";}}
-      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";}}>
+      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--carte-douce)",borderRadius:12,border:"1px solid var(--bordure)",cursor:"pointer",transition:"border-color 0.15s, background 0.15s"}}
+      onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.25)";ev.currentTarget.style.background="var(--carte)";}}
+      onMouseLeave={ev=>{ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";}}>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
-        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"#9aa5b4"}}>{ze.entreprise.forme_juridique}</div>}
+        <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
+        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"var(--gris)"}}>{ze.entreprise.forme_juridique}</div>}
       </div>
-      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgba(0,79,145,0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"#004f91",fontWeight:600,flexShrink:0}}>
+      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"var(--bleu)",fontWeight:600,flexShrink:0}}>
         Fiche →
       </span>
     </div>

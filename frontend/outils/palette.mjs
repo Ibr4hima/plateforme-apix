@@ -51,6 +51,12 @@ export const JETONS = {
   // Posé sur un aplat de marque : blanc dans les deux schémas — les aplats de
   // nuit (bleuAction, orangeAction…) sont choisis pour le porter.
   surBleu:      { clair: "#FFFFFF", sombre: "#FFFFFF" },
+  // Le pendant du précédent : l'encre de ce qui est posé sur une surface
+  // blanche PAR CONSTRUCTION — la pastille active d'un segment de bandeau,
+  // par exemple, qui reste blanche la nuit puisque le bandeau reste sombre.
+  // Elle ne bascule donc pas non plus : un bleu clair sur ce blanc-là serait
+  // illisible.
+  bleuFixe:     { clair: "#004f91", sombre: "#004f91" },
 
   // ── Marque ──
   // Deux jetons par teinte : l'ENCRE monte en luminosité la nuit, l'APLAT
@@ -109,6 +115,10 @@ export const JETONS = {
   // gris laiteux et mange le flou au lieu de le porter.
   verre:        { clair: "rgba(255,255,255,0.65)", sombre: "rgba(21,30,46,0.72)" },
   verreFort:    { clair: "rgba(242,240,239,0.92)", sombre: "rgba(11,18,32,0.92)" },
+  // Les deux états de la barre de navigation : posée sur la page, puis un cran
+  // plus opaque une fois qu'on a fait défiler.
+  verreBarre:   { clair: "rgba(255,255,255,0.88)", sombre: "rgba(13,21,36,0.86)" },
+  verreOpaque:  { clair: "rgba(255,255,255,0.96)", sombre: "rgba(13,21,36,0.96)" },
 
   // L'opacité des deux niveaux d'ombre. Elle monte la nuit : une ombre portée
   // à 8 % est invisible sur une surface déjà sombre, alors qu'elle suffit
@@ -124,12 +134,17 @@ export const JETONS = {
 // est préservée telle quelle, et la teinte suit le schéma.
 export const TRIPLETS = {
   bleu:   { clair: "0 79 145",   sombre: "133 185 236" },
+  bleuFixe: { clair: "0 79 145", sombre: "0 79 145" },
   orange: { clair: "202 99 31",  sombre: "255 164 92" },
   vert:   { clair: "24 128 56",  sombre: "72 201 176" },
   violet: { clair: "106 27 154", sombre: "199 155 235" },
   danger: { clair: "220 38 38",  sombre: "240 138 138" },
   alerte: { clair: "180 83 9",   sombre: "224 164 88" },
   cyan:   { clair: "8 145 178",  sombre: "95 199 222" },
+  // La surface haute en triplet : sert aux panneaux translucides (barre de
+  // recherche, menus déroulants), qui étaient écrits en blanc translucide et
+  // seraient donc restés blancs la nuit.
+  carte:  { clair: "255 255 255", sombre: "21 30 46" },
   // L'encre translucide : filets, pastilles neutres, voiles gris.
   encre:  { clair: "26 26 46",   sombre: "237 241 247" },
   // Les ombres. De jour un bleu d'encre très sombre ; de nuit le noir pur —

@@ -58,36 +58,36 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
       <button onClick={() => !plein && setOpen(o => !o)} disabled={plein}
         aria-label="Comparer avec d'autres pays" title={plein ? "4 pays maximum" : "Comparer avec d'autres pays"}
-        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${plein ? "#D8D4D0" : open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
-          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: plein ? "#C5BFBB" : "#004f91",
+        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${plein ? "var(--bordure-forte)" : open ? "var(--bleu)" : "rgb(var(--bleu-rgb) / 0.35)"}`,
+          background: open ? "rgb(var(--bleu-rgb) / 0.08)" : "rgb(var(--carte-rgb) / 0.7)", color: plein ? "var(--gris)" : "var(--bleu)",
           cursor: plein ? "not-allowed" : "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}
-        onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; } }}
-        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "#D8D4D0" : "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        onMouseEnter={e => { if (!plein) { e.currentTarget.style.borderColor = "var(--bleu)"; e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.08)"; } }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = plein ? "var(--bordure-forte)" : "rgb(var(--bleu-rgb) / 0.35)"; e.currentTarget.style.background = "rgb(var(--carte-rgb) / 0.7)"; } }}>
         <Plus size={14} />
       </button>
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 60, width: 300,
-          border: "1px solid #E4E1DE", borderRadius: 12, background: "#fff", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
-          <div style={{ padding: 8, borderBottom: "1px solid #F2F0EF" }}>
+          border: "1px solid var(--bordure-forte)", borderRadius: 12, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+          <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", boxSizing: "border-box" as const, background: "#FCFCFB", borderWidth: 1, borderStyle: "solid", borderColor: "#E2E1DE", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
             {groupes.map(([continent, liste]) => (
               <div key={continent}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
                 {liste.map(p => (
                   <button key={p.id} onClick={() => { onPick(p.id); setQ(""); inputRef.current?.focus(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid #F2F0EF", transition: "background 0.1s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid var(--bordure)", transition: "background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize: 12, color: "#1a1a2e", fontWeight: 500 }}>{p.nom}</span>
+                    <span style={{ fontSize: 12, color: "var(--encre)", fontWeight: 500 }}>{p.nom}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {dispo.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
           </div>
         </div>
       )}
@@ -136,31 +136,31 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
   const trendBg = isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9";
   const trendBorder = isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC";
   const SecTitle = ({ children }: { children: any }) => (
-    <p style={{ fontSize: 10.5, fontWeight: 700, color: "#004f91", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
+    <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
   );
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
-        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
-        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
+        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0, lineHeight: 1.35 }}>{ind.libelle}</h2>
+              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35 }}>{ind.libelle}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: couleur, background: `${couleur}12`, border: `1px solid ${couleur}30` }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block" }} />{pays}
                 </span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "#4a5568", background: "#F5F4F3" }}>{ind.unite}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "var(--texte)", background: "var(--champ)" }}>{ind.unite}</span>
                 {variation !== null && (
                   <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: trendColor, background: trendBg, border: `1px solid ${trendBorder}` }}>{isPos ? "Positif" : isNeg ? "Négatif" : "Stable"}</span>
                 )}
-                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "#4a5568", background: "#F5F4F3" }}>{annee}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "var(--texte)", background: "var(--champ)" }}>{annee}</span>
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-              <X size={15} color="#4a5568" />
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+              <X size={15} color="var(--texte)" />
             </button>
           </div>
         </div>
@@ -169,22 +169,22 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
             <SecTitle>Valeur</SecTitle>
             <div style={{ background: trendBg, border: `1px solid ${trendBorder}`, borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
               <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite)}</span>
-              <span style={{ fontSize: 13, color: "#9aa5b4", fontWeight: 500 }}>en {annee}</span>
+              <span style={{ fontSize: 13, color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
             </div>
           </div>
           <div>
             <SecTitle>Interprétation</SecTitle>
-            <div style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "14px 18px" }}>
-              <p style={{ fontSize: 13, color: "#1a1a2e", lineHeight: 1.75 }}>{interpret}</p>
+            <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "14px 18px" }}>
+              <p style={{ fontSize: 13, color: "var(--encre)", lineHeight: 1.75 }}>{interpret}</p>
             </div>
           </div>
           <div>
             <SecTitle>Définition</SecTitle>
-            <p style={{ fontSize: 12, color: "#9aa5b4", lineHeight: 1.65 }}>{def}</p>
+            <p style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.65 }}>{def}</p>
           </div>
         </div>
-        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+        <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
     </div>
@@ -224,16 +224,16 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
   const val = (pid: number, code: string, a: number) =>
     donnees.find(d => d.pays_id === pid && d.indicateur === code && d.annee === a)?.valeur ?? null;
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 1200, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
-        <div style={{ height: 4, background: "#004f91", flexShrink: 0 }} />
-        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 1200, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
+        <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "#1a1a2e", margin: 0, lineHeight: 1.35, flexShrink: 0 }}>Tableau de données</h2>
-                {annees.length > 0 && <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, background: "#ECEAE8", border: "1px solid #DFDBD7", fontSize: 10.5, fontWeight: 700, color: "#3a4452", letterSpacing: "0.02em", flexShrink: 0 }}>{annees[0]} — {annees[annees.length - 1]}</span>}
+                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35, flexShrink: 0 }}>Tableau de données</h2>
+                {annees.length > 0 && <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, background: "var(--fond-creux2)", border: "1px solid var(--bordure-forte)", fontSize: 10.5, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.02em", flexShrink: 0 }}>{annees[0]} — {annees[annees.length - 1]}</span>}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", minWidth: 0 }}>
                 {paysSelectionnes.map(p => (
@@ -243,25 +243,25 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                 ))}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-              <X size={15} color="#4a5568" />
+            <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+              <X size={15} color="var(--texte)" />
             </button>
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead style={{ position: "sticky", top: 0, zIndex: 2 }}>
-              <tr style={{ background: "#FAFAF9" }}>
-                <th style={{ padding: "11px 28px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", letterSpacing: "0.1em", textTransform: "uppercase", position: "sticky", left: 0, background: "#FAFAF9", borderRight: "1px solid #F0EEEC", borderBottom: "1px solid #F0EEEC", whiteSpace: "nowrap", minWidth: 200 }}>Indicateur</th>
-                {annees.map(a => <th key={a} style={{ padding: "11px 12px", fontSize: 10, fontWeight: 800, color: "#4a5568", letterSpacing: "0.06em", textAlign: "right", minWidth: 90, borderBottom: "1px solid #F0EEEC" }}>{a}</th>)}
+              <tr style={{ background: "var(--carte-douce)" }}>
+                <th style={{ padding: "11px 28px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", letterSpacing: "0.1em", textTransform: "uppercase", position: "sticky", left: 0, background: "var(--carte-douce)", borderRight: "1px solid var(--bordure)", borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap", minWidth: 200 }}>Indicateur</th>
+                {annees.map(a => <th key={a} style={{ padding: "11px 12px", fontSize: 10, fontWeight: 800, color: "var(--texte)", letterSpacing: "0.06em", textAlign: "right", minWidth: 90, borderBottom: "1px solid var(--bordure)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
               {paysSelectionnes.map(pays => (
                 <Fragment key={pays.id}>
                   <tr>
-                    <td colSpan={annees.length + 1} style={{ padding: "12px 28px 6px", background: "#fff" }}>
+                    <td colSpan={annees.length + 1} style={{ padding: "12px 28px 6px", background: "var(--carte)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", background: pays.couleur, flexShrink: 0 }} />
                         <span style={{ fontSize: 12.5, fontWeight: 800, color: pays.couleur }}>{pays.nom}</span>
@@ -270,16 +270,16 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                   </tr>
                   {indicateurs.map((ind, si) => (
                     <tr key={`${pays.id}-${ind.code}`}
-                      style={{ borderBottom: si === indicateurs.length - 1 ? "1px solid #ECEAE7" : "1px solid #F6F4F3", background: "#fff", transition: "background 0.1s" }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#FAFAF9"}
-                      onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
-                      <td style={{ padding: "9px 28px 9px 44px", position: "sticky", left: 0, background: "inherit", borderRight: "1px solid #F0EEEC", whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "#9aa5b4", fontSize: 11 }}>· {ind.unite}</span></span>
+                      style={{ borderBottom: si === indicateurs.length - 1 ? "1px solid var(--bordure)" : "1px solid var(--filet)", background: "var(--carte)", transition: "background 0.1s" }}
+                      onMouseEnter={e => e.currentTarget.style.background = "var(--carte-douce)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "var(--carte)"}>
+                      <td style={{ padding: "9px 28px 9px 44px", position: "sticky", left: 0, background: "inherit", borderRight: "1px solid var(--bordure)", whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "var(--gris)", fontSize: 11 }}>· {ind.unite}</span></span>
                       </td>
                       {annees.map(a => {
                         const v = val(pays.id, ind.code, a);
                         const display = v !== null && v !== undefined ? fmt(v, ind.unite) : "—";
-                        const color = v === null || v === undefined ? "#C5BFBB" : (ind.unite === "%" && v < 0) ? "#dc2626" : "#4a5568";
+                        const color = v === null || v === undefined ? "var(--gris)" : (ind.unite === "%" && v < 0) ? "var(--danger)" : "var(--texte)";
                         return (
                           <td key={a} style={{ padding: "9px 12px", textAlign: "right", fontSize: 12, color, fontWeight: v !== null && v !== undefined ? 600 : 400, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{display}</td>
                         );
@@ -291,12 +291,12 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
             </tbody>
           </table>
         </div>
-        <div style={{ padding: "14px 28px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: 11, color: "#9aa5b4" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
+        <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
+          <span style={{ fontSize: 11, color: "var(--gris)" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={() => exportXLSXStat(donnees, indicateurs, paysSelectionnes, annees, periode)}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)" }}>
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
               <FileSpreadsheet size={13} /> Excel
             </button>
           </div>
@@ -325,8 +325,8 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
   }, [dep]);
   return (
     <button ref={ref} onClick={onClick} title="Tableau de données"
-      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: mode === "icone" ? 0 : 7, padding: mode === "icone" ? "8px 10px" : "8px 16px", borderRadius: 999, border: "1px solid #E4E1DE", background: "#fff", color: "#004f91", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "#F5F4F3"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}>
+      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: mode === "icone" ? 0 : 7, padding: mode === "icone" ? "8px 10px" : "8px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
       <Table size={14} />{mode !== "icone" && <span>{mode === "full" ? "Tableau de données" : "Données"}</span>}
     </button>
   );
@@ -480,21 +480,21 @@ export default function StatistiquesPage() {
     setPeriodeTouchee(false); setKpisEpingles(kpiDefautSet.length ? kpiDefautSet : indicateurs.map(i => i.code).slice(0, MAX_KPI));
   };
 
-  const LBL: any = { fontSize: 11, fontWeight: 700, color: "#9aa5b4", textTransform: "uppercase", letterSpacing: "0.1em" };
+  const LBL: any = { fontSize: 11, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" };
 
   // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
   // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
   const d3Pret = useD3Pret();
-  if (!d3Pret) return <main style={{ minHeight: "100vh", background: "#F6F5F3" }}/>;
+  if (!d3Pret) return <main style={{ minHeight: "100vh", background: "var(--champ)" }}/>;
 
   return (
-    <main style={{ minHeight: "100vh", background: "#F6F5F3", fontFamily: "var(--font-google-sans)" }}>
+    <main style={{ minHeight: "100vh", background: "var(--champ)", fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
 .drs-thumb::-moz-range-track{background:transparent;height:4px}
-.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
-.drs-thumb::-moz-range-thumb{background:#004f91;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,79,145,0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
+.drs-thumb::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;background:var(--bleu-action);border:2px solid var(--carte);border-radius:50%;box-shadow:0 1px 4px rgb(var(--ombre-rgb) / 0.35);cursor:pointer;height:16px;width:16px;pointer-events:all;margin-top:-6px}
+.drs-thumb::-moz-range-thumb{background:var(--bleu-action);border:2px solid var(--carte);border-radius:50%;box-shadow:0 1px 4px rgb(var(--ombre-rgb) / 0.35);cursor:pointer;height:16px;width:16px;pointer-events:all}`}</style>
       <BarreTitre titre="Échanges commerciaux" compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[
           { v: "indicateurs", l: "Indicateurs économiques" },
@@ -510,37 +510,37 @@ export default function StatistiquesPage() {
       ) : (
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* ── Barre de filtre ── */}
-        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "#fff", borderRight: "1px solid #E8E5E3", height: "100vh", overflowY: "auto", position: "sticky", top: 0, display: "flex", flexDirection: "column" }}>
-          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-          {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
-          <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid #F2F0EF", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
-            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
+        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100vh", overflowY: "auto", position: "sticky", top: 0, display: "flex", flexDirection: "column" }}>
+          <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
+          {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
+          <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid var(--bordure)", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
+            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgba(0,79,145,0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
-                <SlidersHorizontal size={14} style={{ color: "#004f91" }} />
-                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
+              <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
+                <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
+                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
               </button>
-              {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser" style={{ background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,38,38,0.15)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(220,38,38,0.08)"; }}>
-                <X size={13} style={{ color: "#dc2626" }} />
+              {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser" style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.15)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.08)"; }}>
+                <X size={13} style={{ color: "var(--danger)" }} />
               </button>}
             </div>
           </div>
           {sidebarOpen && <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
             {/* Recherche pays */}
             <div style={{ position: "relative", marginBottom: 18 }}>
-              <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
               <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-              {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+              {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
             </div>
-            <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+            <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
             {/* Pays */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={LBL}>Pays</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.18)", padding: "1px 6px", borderRadius: 999 }}>{`${selection.length}/${MAX_SEL}`}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{`${selection.length}/${MAX_SEL}`}</span>
               </div>
               {/* Sénégal épinglé (référence) */}
               {senId !== null && (() => {
@@ -550,16 +550,16 @@ export default function StatistiquesPage() {
                   <div style={{ marginBottom: 8, marginLeft: 6 }}>
                     <button onClick={() => clickPays(senId)}
                       style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left", width: "100%" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                      <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                      <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                      <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                      <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                     </button>
                   </div>
                 );
               })()}
-              <div style={{ height: 1, background: "#F2F0EF", marginBottom: 8 }} />
+              <div style={{ height: 1, background: "var(--fond)", marginBottom: 8 }} />
               <div style={{ maxHeight: 220, overflowY: "auto" }}>
                 {sortContinents(Object.keys(groupedPays)).map(continent => {
                   const isOpen = openConts.has(continent);
@@ -567,31 +567,31 @@ export default function StatistiquesPage() {
                   return (
                     <div key={continent} style={{ marginBottom: 6 }}>
                       <button onClick={() => toggleCont(continent)}
-                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgba(0,79,145,0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
-                        <ChevronDown size={11} style={{ color: "#004f91", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
+                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgb(var(--bleu-rgb) / 0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
+                        <ChevronDown size={11} style={{ color: "var(--bleu)", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
                       </button>
                       {isOpen && Object.entries(zones).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([zone, paysInZone]) => (
                         <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
-                          <p style={{ fontSize: 9, fontWeight: 600, color: "#C5BFBB", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
+                          <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
                           {paysInZone.map(p => {
                             const sel = selection.includes(p.id);
-                            const col = sel ? couleurPays(p.id) : "#C5BFBB";
+                            const col = sel ? couleurPays(p.id) : "var(--gris)";
                             const disabled = !sel && selection.length >= MAX_SEL;
                             if (p.id === senId) return (
                               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
-                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                                <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
+                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                                <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)" }}>Réf.</span>
                               </div>
                             );
                             return (
                               <button key={p.id} onClick={() => clickPays(p.id)}
                                 style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: disabled ? "not-allowed" : "pointer", background: "transparent", textAlign: "left", width: "100%", opacity: disabled ? 0.4 : 1 }}
-                                onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "#F8F7F6"; }}
+                                onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "var(--carte-douce)"; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "#C5BFBB"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                                <span style={{ fontSize: 12, color: "#4a5568", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                                <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
+                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
                               </button>
                             );
                           })}
@@ -600,19 +600,19 @@ export default function StatistiquesPage() {
                     </div>
                   );
                 })}
-                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
               </div>
             </div>
-            <div style={{ height: 1, background: "#F2F0EF", marginBottom: 18 }} />
+            <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
             {/* Période */}
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
                 <span style={LBL}>Période</span>
               </div>
-              <div style={{ display: "flex", gap: 3, background: "#F2F0EF", borderRadius: 9, padding: 3, marginBottom: 12 }}>
+              <div style={{ display: "flex", gap: 3, background: "var(--fond)", borderRadius: 9, padding: 3, marginBottom: 12 }}>
                 {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
                   <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")}
-                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "#fff" : "transparent", color: modeAnnees === m.v ? "#1a1a2e" : "#9aa5b4", boxShadow: modeAnnees === m.v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
+                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "var(--carte)" : "transparent", color: modeAnnees === m.v ? "var(--encre)" : "var(--gris)", boxShadow: modeAnnees === m.v ? "0 1px 4px rgb(var(--ombre-rgb) / 0.1)" : "none", transition: "all 0.15s" }}>
                     {m.l}
                   </button>
                 ))}
@@ -620,8 +620,8 @@ export default function StatistiquesPage() {
               {modeAnnees === "plage" ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ position: "relative", height: 24, marginBottom: 2 }}>
-                    <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 4, background: "#E8E5E3", borderRadius: 2, transform: "translateY(-50%)" }} />
-                    <div style={{ position: "absolute", top: "50%", left: `${((anneeMin - bornes[0]) / span) * 100}%`, width: `${Math.max(0, ((anneeMax - bornes[0]) / span) * 100 - ((anneeMin - bornes[0]) / span) * 100)}%`, height: 4, background: "#004f91", borderRadius: 2, transform: "translateY(-50%)" }} />
+                    <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 4, background: "var(--fond-creux2)", borderRadius: 2, transform: "translateY(-50%)" }} />
+                    <div style={{ position: "absolute", top: "50%", left: `${((anneeMin - bornes[0]) / span) * 100}%`, width: `${Math.max(0, ((anneeMax - bornes[0]) / span) * 100 - ((anneeMin - bornes[0]) / span) * 100)}%`, height: 4, background: "var(--bleu-action)", borderRadius: 2, transform: "translateY(-50%)" }} />
                     <input type="range" min={bornes[0]} max={bornes[1]} value={anneeMin}
                       onChange={e => { setPeriodeTouchee(true); setAnneeMin(Math.min(+e.target.value, anneeMax)); }}
                       className="drs-thumb" style={{ zIndex: anneeMin >= anneeMax ? 4 : 2 } as any} />
@@ -630,11 +630,11 @@ export default function StatistiquesPage() {
                       className="drs-thumb" style={{ zIndex: 3 } as any} />
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
-                    <span style={{ fontSize: 10, color: "#9aa5b4" }}>—</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
+                    <span style={{ fontSize: 10, color: "var(--gris)" }}>—</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
                   </div>
-                  <p style={{ fontSize: 11, color: "#9aa5b4", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
+                  <p style={{ fontSize: 11, color: "var(--gris)", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
                 </div>
               ) : (
                 <div>
@@ -643,15 +643,15 @@ export default function StatistiquesPage() {
                       const sel = anneesSpec.includes(a);
                       return (
                         <button key={a} onClick={() => { setPeriodeTouchee(true); setAnneesSpec(prev => sel ? prev.filter(x => x !== a) : [...prev, a].sort()); }}
-                          style={{ padding: "5px 0", borderRadius: 5, border: `1px solid ${sel ? "#004f91" : "#E8E5E3"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "#004f91" : "#F8F7F6", color: sel ? "#fff" : "#4a5568", transition: "all 0.1s" }}>
+                          style={{ padding: "5px 0", borderRadius: 5, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
                           {a}
                         </button>
                       );
                     })}
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, color: "#4a5568" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
-                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "#9aa5b4", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
+                    <span style={{ fontSize: 11, color: "var(--texte)" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
+                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "var(--gris)", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
                   </div>
                 </div>
               )}
@@ -669,8 +669,8 @@ export default function StatistiquesPage() {
           ) : erreur ? (
             <ErreurChargement onRetry={() => setTick(t => t + 1)} />
           ) : !selection.length ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
-              <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Sélectionnez un pays</p>
+            <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Sélectionnez un pays</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
           ) : errDonnees ? (
@@ -707,8 +707,8 @@ export default function StatistiquesPage() {
                         ))
                       ) : (
                         <>
-                          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#004f91", flexShrink: 0 }} />
-                          <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "#1a1a2e", margin: 0 }}>{paysNom(selection[0])}</h2>
+                          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
+                          <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--encre)", margin: 0 }}>{paysNom(selection[0])}</h2>
                         </>
                       )}
                       <BtnAjoutPays pays={pays} exclus={selection} plein={selection.length >= MAX_SEL} onPick={clickPays} onOpenChange={setPopoverOpen} />
@@ -730,16 +730,16 @@ export default function StatistiquesPage() {
                           const pickerOuvert = pickerSlot === slot;
                           return (
                             <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
-                              style={{ position: "relative", background: "#fff", borderRadius: 14, padding: "13px 14px", border: `1px solid ${pickerOuvert ? "rgba(0,79,145,0.35)" : "rgba(16,26,46,0.12)"}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0, zIndex: pickerOuvert ? 5 : undefined }}
-                              onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgba(0,79,145,0.35)" : "rgba(16,26,46,0.12)"; }}>
+                              style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1px solid ${pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0, zIndex: pickerOuvert ? 5 : undefined }}
+                              onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
+                              onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"; }}>
                               <BtnSwapKpi ouvert={pickerOuvert} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)} />
                               <div style={{ marginBottom: 7, paddingRight: 26 }}>
-                                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#004f91", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "#9aa5b4", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
+                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
                               </div>
-                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "#dc2626" : "#1a1a2e", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
-                              <p style={{ fontSize: 10, color: "#9aa5b4", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
+                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
+                              <p style={{ fontSize: 10, color: "var(--gris)", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
                               {pickerOuvert && (
                                 <PickerKpi items={pickerItems} alignDroite={slot >= 2}
                                   onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
@@ -752,11 +752,11 @@ export default function StatistiquesPage() {
                           const pickerOuvert = pickerSlot === slot;
                           return (
                             <div key={`empty-${i}`} data-picker-trigger onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)}
-                              style={{ position: "relative", background: "#fff", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "#004f91" : "#E8E5E3"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
-                              onMouseEnter={e => { e.currentTarget.style.borderColor = "#004f91"; }}
-                              onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "#E8E5E3"; }}>
-                              <span style={{ fontSize: 20, color: pickerOuvert ? "#004f91" : "#C5BFBB", lineHeight: 1 }}>+</span>
-                              <span style={{ fontSize: 10, color: pickerOuvert ? "#004f91" : "#C5BFBB", textAlign: "center", lineHeight: 1.5 }}>Ajouter un<br />indicateur</span>
+                              style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "var(--bleu)" : "var(--bordure-forte)"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--bleu)"; }}
+                              onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}>
+                              <span style={{ fontSize: 20, color: pickerOuvert ? "var(--bleu)" : "var(--gris)", lineHeight: 1 }}>+</span>
+                              <span style={{ fontSize: 10, color: pickerOuvert ? "var(--bleu)" : "var(--gris)", textAlign: "center", lineHeight: 1.5 }}>Ajouter un<br />indicateur</span>
                               {pickerOuvert && (
                                 <PickerKpi items={pickerItems} alignDroite={slot >= 2}
                                   onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
@@ -789,7 +789,7 @@ export default function StatistiquesPage() {
       </div>
       )}
 
-      <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} couleur="#004f91" onClose={() => setKpiActif(null)} />
+      <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} couleur="var(--bleu)" onClose={() => setKpiActif(null)} />
       <ModalDonnees open={showTable} onClose={() => setShowTable(false)} donnees={donnees} indicateurs={indicateurs}
         paysSelectionnes={selection.map(id => ({ id, nom: paysNom(id), couleur: couleurPays(id) }))} annees={anneesActives} />
     </main>

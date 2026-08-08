@@ -6,7 +6,7 @@ import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
 
 // ── Barres horizontales (top N) ───────────────────────────────────────────────
-export function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, exposant = 0.5 }: {
+export function GrapheBarresH({ data, fmt, couleur = "var(--bleu)", rowH = 34, exposant = 0.5 }: {
   data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; couleur?: string; rowH?: number; exposant?: number;
 }) {
   const ref = useRef<SVGSVGElement>(null);
@@ -39,11 +39,11 @@ export function GrapheBarresH({ data, fmt, couleur = "#004f91", rowH = 34, expos
 
     svg.selectAll("text.lbl").data(data).enter().append("text")
       .attr("x", M.left - 8).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
-      .attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(d => d.label);
+      .attr("text-anchor", "end").style("font-size", "11px").style("fill", "var(--texte)").text(d => d.label);
 
     svg.selectAll("text.val").data(data).enter().append("text")
       .attr("x", d => x(d.valeur) + 6).attr("y", d => y(d.label)! + y.bandwidth() / 2).attr("dy", "0.35em")
-      .style("font-size", "10.5px").style("fill", "#9aa5b4").style("font-weight", "700").text(d => fmtV(d.valeur));
+      .style("font-size", "10.5px").style("fill", "var(--gris)").style("font-weight", "700").text(d => fmtV(d.valeur));
   }, [data, fmtV, couleur, rowH]);
   useEffect(() => {
     if (!wrapRef.current) return;

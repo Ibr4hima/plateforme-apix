@@ -53,26 +53,26 @@ export default function ConfirmationHote() {
 
   return createPortal(
     <div onClick={() => repondre(false)}
-      style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div onClick={e => e.stopPropagation()} role="alertdialog" aria-modal="true"
-        style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
-        <div style={{ height: 4, background: "#dc2626", flexShrink: 0 }} />
+        style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
+        <div style={{ height: 4, background: "var(--danger-action)", flexShrink: 0 }} />
         <div style={{ padding: "22px 26px 18px" }}>
-          <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0, lineHeight: 1.3 }}>
+          <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0, lineHeight: 1.3 }}>
             {demande.titre || "Confirmation"}
           </h2>
-          <p style={{ fontSize: 13.5, color: "#4a5568", lineHeight: 1.65, marginTop: 10, whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: 13.5, color: "var(--texte)", lineHeight: 1.65, marginTop: 10, whiteSpace: "pre-line" }}>
             {demande.message}
           </p>
         </div>
-        <div style={{ padding: "14px 26px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <div style={{ padding: "14px 26px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", gap: 10 }}>
           <button onClick={() => repondre(false)} autoFocus
-            style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #E4E1DE", background: "#fff", color: "#4a5568", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
             Annuler
           </button>
           <button onClick={() => repondre(true)}
-            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgba(220,38,38,0.25)", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
             {demande.boutonOk || "Confirmer"}
           </button>
         </div>

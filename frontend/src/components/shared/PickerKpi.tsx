@@ -25,7 +25,7 @@ export function BtnSwapKpi({ ouvert, onClick }: { ouvert: boolean; onClick: () =
       aria-label="Remplacer cet indicateur" title="Remplacer cet indicateur"
       onClick={e => { e.stopPropagation(); onClick(); }}
       style={{ position: "absolute", top: 8, right: 8, width: 24, height: 24, borderRadius: 999, border: "none",
-        background: ouvert ? "#004f91" : "rgba(0,79,145,0.08)", color: ouvert ? "#fff" : "#004f91",
+        background: ouvert ? "var(--bleu-action)" : "rgb(var(--bleu-rgb) / 0.08)", color: ouvert ? "var(--sur-bleu)" : "var(--bleu)",
         display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
       <IconeCached />
     </button>
@@ -65,30 +65,30 @@ export default function PickerKpi({ items, alignDroite, onPick, onClose }: {
   return (
     <div ref={ref} onClick={e => e.stopPropagation()}
       style={{ position:"absolute", top:"calc(100% + 8px)", ...(alignDroite ? { right: 0 } : { left: 0 }), zIndex:60, width:320,
-        border:"1px solid #E4E1DE", borderRadius:12, background:"#fff", boxShadow:"var(--ombre-2)", overflow:"hidden", cursor:"default", textAlign:"left" as const }}>
-      <div style={{ padding:8, borderBottom:"1px solid #F2F0EF" }}>
+        border:"1px solid var(--bordure-forte)", borderRadius:12, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden", cursor:"default", textAlign:"left" as const }}>
+      <div style={{ padding:8, borderBottom:"1px solid var(--bordure)" }}>
         <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un indicateur…"
-          style={{ width:"100%", boxSizing:"border-box" as const, background:"#FCFCFB", borderWidth:1, borderStyle:"solid", borderColor:"#E2E1DE", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+          style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
       </div>
       <div style={{ maxHeight:262, overflowY:"auto" as const }}>
         {dispo.map((it, i) => (
           <div key={it.id}>
             {/* Bandeau de groupe (facultatif) au premier item de chaque groupe */}
             {it.groupe && it.groupe !== dispo[i-1]?.groupe && (
-              <div style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0, zIndex:1 }}>{it.groupe}</div>
+              <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0, zIndex:1 }}>{it.groupe}</div>
             )}
             <button title={it.title} onClick={() => onPick(it.id)}
-              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid #F2F0EF", transition:"background 0.1s", fontFamily:"var(--font-google-sans)" }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+              style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid var(--bordure)", transition:"background 0.1s", fontFamily:"var(--font-google-sans)" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <span style={{ fontSize:12, color:"#1a1a2e", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{it.label}</span>
-              {it.badge && <span style={{ fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.badge}</span>}
+              <span style={{ fontSize:12, color:"var(--encre)", fontWeight:500, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{it.label}</span>
+              {it.badge && <span style={{ fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--fond)", padding:"1px 5px", borderRadius:4, whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.badge}</span>}
               {/* Aperçu de la valeur : on voit ce qu'on obtient avant de remplacer */}
-              <span style={{ fontSize:11.5, fontWeight:700, color:"#004f91", whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.valeur}</span>
+              <span style={{ fontSize:11.5, fontWeight:700, color:"var(--bleu)", whiteSpace:"nowrap" as const, flexShrink:0 }}>{it.valeur}</span>
             </button>
           </div>
         ))}
-        {dispo.length === 0 && <p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"14px 0" }}>Aucun indicateur trouvé</p>}
+        {dispo.length === 0 && <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"14px 0" }}>Aucun indicateur trouvé</p>}
       </div>
     </div>
   );

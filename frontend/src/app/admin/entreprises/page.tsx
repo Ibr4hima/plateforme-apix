@@ -223,17 +223,17 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
     } catch(err:any){ setErrors({global:err.message||"Erreur"}); } finally { setSaving(false); }
   };
 
-  const errStyle = (f: string) => errors[f] ? { borderColor: "#dc2626" } : undefined;
-  const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: 11, color: "#dc2626", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
+  const errStyle = (f: string) => errors[f] ? { borderColor: "var(--danger)" } : undefined;
+  const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: 11, color: "var(--danger)", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
   // Bouton « + » rond en pointillés — ajout d'une entrée (grisé tant que la
   // précédente n'est pas complète et valide)
   const BtnPlus = ({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) => (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
-      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
-        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"}`,
+        background:"rgb(var(--carte-rgb) / 0.7)", color:ok?"var(--bleu)":"var(--gris)", cursor:ok?"pointer":"not-allowed",
         display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"; e.currentTarget.style.background="rgb(var(--carte-rgb) / 0.7)"; }}>
       <Plus size={13}/>
     </button>
   );
@@ -328,8 +328,8 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                   </div>
                   {form.telephones.length > 1 && (
                     <button onClick={()=>update("telephones",form.telephones.filter((_:any,idx:number)=>idx!==i))}
-                      style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0,marginTop:1}}>
-                      <X size={12} style={{color:"#dc2626"}}/>
+                      style={{background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0,marginTop:1}}>
+                      <X size={12} style={{color:"var(--danger)"}}/>
                     </button>
                   )}
                 </div>
@@ -349,11 +349,11 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
               {form.mails.map((mail:string, i:number) => (
                 <div key={i} style={{display:"flex",gap:6}}>
                   <FInput type="email" value={mail} onChange={e=>{const arr=[...form.mails];arr[i]=e.target.value;update("mails",arr);}}
-                    placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||form.mails.slice(0,i).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}} />
+                    placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||form.mails.slice(0,i).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"var(--danger)"}:{})}} />
                   {form.mails.length > 1 && (
                     <button onClick={()=>update("mails",form.mails.filter((_:any,idx:number)=>idx!==i))}
-                      style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
-                      <X size={12} style={{color:"#dc2626"}}/>
+                      style={{background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 8px",flexShrink:0}}>
+                      <X size={12} style={{color:"var(--danger)"}}/>
                     </button>
                   )}
                 </div>
@@ -389,12 +389,12 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             {focaux.map((pf,i)=>(
               <FPanel key={i}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"#004f91"}}/><span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>Point focal {i+1}</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"var(--bleu)"}}/><span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>Point focal {i+1}</span></div>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#4a5568",cursor:"pointer"}}>
+                    <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"var(--texte)",cursor:"pointer"}}>
                       <input type="checkbox" checked={pf.est_principal} onChange={e=>updFocal(i,"est_principal",e.target.checked)}/> Principal
                     </label>
-                    <button onClick={()=>setFocaux(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:4}}><Trash size={13} style={{color:"#dc2626"}}/></button>
+                    <button onClick={()=>setFocaux(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:4}}><Trash size={13} style={{color:"var(--danger)"}}/></button>
                   </div>
                 </div>
                 <FGrid cols="auto 1fr 1fr 1fr" gap={10} style={{marginBottom:12}}>
@@ -422,7 +422,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                           <div style={{flex:1,minWidth:0}}>
                             <PhoneInput value={tel} onChange={v=>{const arr=[...pf.telephones];arr[ti]=v;updFocal(i,"telephones",arr);}} placeholder="Numéro"/>
                           </div>
-                          {pf.telephones.length>1&&<button onClick={()=>updFocal(i,"telephones",pf.telephones.filter((_:any,idx:number)=>idx!==ti))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px",marginTop:1}}><X size={11} style={{color:"#dc2626"}}/></button>}
+                          {pf.telephones.length>1&&<button onClick={()=>updFocal(i,"telephones",pf.telephones.filter((_:any,idx:number)=>idx!==ti))} style={{background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px",marginTop:1}}><X size={11} style={{color:"var(--danger)"}}/></button>}
                         </div>
                       ))}
                     </div>
@@ -437,8 +437,8 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
                       {pf.mails.map((mail:string, mi:number)=>(
                         <div key={mi} style={{display:"flex",gap:6}}>
                           <FInput type="email" value={mail} onChange={e=>{const arr=[...pf.mails];arr[mi]=e.target.value;updFocal(i,"mails",arr);}}
-                            placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||pf.mails.slice(0,mi).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"#dc2626"}:{})}}/>
-                          {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"#dc2626"}}/></button>}
+                            placeholder="email@domaine.sn" style={{flex:1, ...(mail&&(!isEmailComplete(mail)||pf.mails.slice(0,mi).some((m:string)=>normEmail(m)===normEmail(mail)))?{borderColor:"var(--danger)"}:{})}}/>
+                          {pf.mails.length>1&&<button onClick={()=>updFocal(i,"mails",pf.mails.filter((_:any,idx:number)=>idx!==mi))} style={{background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:6,padding:"9px 7px"}}><X size={11} style={{color:"var(--danger)"}}/></button>}
                         </div>
                       ))}
                     </div>
@@ -451,11 +451,11 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
         {(()=>{ const ok=focaux.every(pf=>isContactComplete({...pf, civilite: pf.civilite||"Monsieur"},["civilite","nom","prenom"])) && contactsPartages(focaux).length===0; return (
         <button onClick={()=>ok&&setFocaux(prev=>[...prev,{...EMPTY_FOCAL, est_principal: prev.length===0}])} disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (civilité, nom, prénom, téléphone et email valides)"}
-          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
-          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="#004f91";}}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Plus size={14} color="#9aa5b4"/>
-          <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un point focal</span>
+          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 14px",borderRadius:10,cursor:ok?"pointer":"not-allowed",opacity:ok?1:0.45,border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s",fontFamily:"var(--font-google-sans)"}}
+          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Plus size={14} color="var(--gris)"/>
+          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un point focal</span>
         </button>
         ); })()}
       </FSection>
@@ -471,16 +471,16 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
   const accentPole = poleAccent(e.pole_territoire_nom || "");
   return (
     <div onClick={onVoir}
-      style={{ background: "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
+      style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
       onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accentPole; }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
 
       <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
         {/* Dénomination + forme juridique | publication & pôle territoire */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: "#1a1a2e", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
-            {e.forme_juridique && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
+            {e.forme_juridique && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexShrink: 1, justifyContent: "flex-end" }}>
             {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
@@ -493,40 +493,40 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
         </div>
 
         {/* Date de création · Région en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.date_creation ? "#1a1a2e" : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.date_creation ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
           </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.region_nom ? "#1a1a2e" : "#C5BFBB", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.region_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
           </div>
         </div>
       </div>
 
       {/* Actions d'administration */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           <Pencil size={12} /> Modifier
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
           style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
         </button>
       </div>
     </div>
@@ -582,13 +582,13 @@ export default function AdminEntreprises() {
       <BarreTitre titre="Entreprises installées" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={ev => { ev.currentTarget.style.background = "#FFF6EF"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.transform = "none"; }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={ev => { ev.currentTarget.style.background = "var(--orange-voile)"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={ev => { ev.currentTarget.style.background = "var(--carte)"; ev.currentTarget.style.transform = "none"; }}>
             <Plus size={15} /> Ajouter une entreprise
           </button>
         }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{entreprises.length}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{entreprises.length}</span>
       </BarreTitre>
 
       {/* ── Grille pleine largeur (3 colonnes) ── */}
@@ -598,9 +598,9 @@ export default function AdminEntreprises() {
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : entreprises.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
             <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucune entreprise enregistrée</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucune entreprise enregistrée</p>
             <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter une entreprise » pour commencer.</p>
           </div>
         ) : (
@@ -618,7 +618,7 @@ export default function AdminEntreprises() {
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       <EntreprisePublicModal entreprise={vue} onClose={() => setVue(null)} actions={vue ? (
         <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Pencil size={13} /> Modifier
         </button>
       ) : null} />

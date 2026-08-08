@@ -19,25 +19,25 @@ import { badge_gris, poleAccent } from "@/lib/couleurs";
 function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void; titre:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?"Ajouter":titre}
-      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
-        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"}`,
+        background:"rgb(var(--carte-rgb) / 0.7)", color:ok?"var(--bleu)":"var(--gris)", cursor:ok?"pointer":"not-allowed",
         display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"; e.currentTarget.style.background="rgb(var(--carte-rgb) / 0.7)"; }}>
       <Plus size={13}/>
     </button>
   );
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const IS: any  = { background:"#fff", border:"1px solid #E4E1DE", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 const validMail = (v: string) => !v || /^[^@.][^@]*@[^@]+\.[^@]+[^@.]$/.test(v.trim());
 const ERR_MAIL = "Email invalide";
 function FieldErr({ msg }: { msg: string }) {
-  return <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{msg}</p>;
+  return <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>{msg}</p>;
 }
 
 // ── Point focal row ───────────────────────────────────────────────────────────
@@ -46,11 +46,11 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...pf, [k]:v});
   return (
-    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Point focal {idx+1}</span>
-        <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
-          <X size={12} style={{ color:"#dc2626" }}/>
+        <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
+        <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
+          <X size={12} style={{ color:"var(--danger)" }}/>
         </button>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"100px 1fr 1fr", gap:8, marginBottom:10 }}>
@@ -78,8 +78,8 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
               </div>
               {(pf.telephones||[""]).length>1&&(
                 <button onClick={()=>upd("telephones",(pf.telephones||[""]).filter((_:any,i:number)=>i!==ti))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
             </div>
@@ -95,11 +95,11 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           {(pf.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(pf.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#E4E1DE"}}/>
+                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
               {(pf.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(pf.mails||[""]).filter((_:any,i:number)=>i!==mi))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
               {mail&&!validMail(mail)&&<FieldErr msg={ERR_MAIL}/>}
@@ -117,11 +117,11 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...porteur, [k]:v});
   return (
-    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Porteur {idx+1}</span>
-        <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
-          <X size={12} style={{ color:"#dc2626" }}/>
+        <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Porteur {idx+1}</span>
+        <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
+          <X size={12} style={{ color:"var(--danger)" }}/>
         </button>
       </div>
       <div style={{ marginBottom:10 }}>
@@ -143,8 +143,8 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
               </div>
               {(porteur.telephones||[""]).length>1&&(
                 <button onClick={()=>upd("telephones",(porteur.telephones||[""]).filter((_:any,i:number)=>i!==ti))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
             </div>
@@ -160,11 +160,11 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(porteur.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#E4E1DE"}}/>
+                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
               {(porteur.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(porteur.mails||[""]).filter((_:any,i:number)=>i!==mi))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
               {mail&&!validMail(mail)&&<FieldErr msg={ERR_MAIL}/>}
@@ -179,9 +179,9 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed #E4E1DE", background:"#FAFAF9", color:"#9aa5b4", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.color="#004f91"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor="#E4E1DE"; e.currentTarget.style.color="#9aa5b4"; }}>
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--gris)", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.color="var(--bleu)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
       <Plus size={13}/> {label}
     </button>
   );
@@ -461,22 +461,22 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"} onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Upload size={14} color="#9aa5b4"/>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Upload size={14} color="var(--gris)"/>
+          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
             const files = Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"") }))]);
@@ -486,16 +486,16 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                  <X size={13} style={{ color:"#dc2626" }}/>
+                  <X size={13} style={{ color:"var(--danger)" }}/>
                 </button>
               </div>
             ))}
-            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize:11, color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -519,39 +519,39 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
   };
   const invest = fmtInvest();
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
   const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
-    <div style={{background:"rgba(0,79,145,0.04)",border:"1px solid rgba(0,79,145,0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"#004f91",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
+    <div style={{background:"rgb(var(--bleu-rgb) / 0.04)",border:"1px solid rgb(var(--bleu-rgb) / 0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
+      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"var(--bleu)",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
       {children}
     </div>
   );
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+        <div style={{height:4,background:"var(--bleu-action)",flexShrink:0}}/>
 
         {/* En-tête */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
           <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3}}>{p.titre_projet}</h2>
+            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3}}>{p.titre_projet}</h2>
             <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-              {p.pole_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{p.pole_nom}</span>}
-              {p.region_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999}}>Région de {p.region_nom}</span>}
-              {p.departement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",padding:"3px 10px",borderRadius:999}}>Département de {p.departement_nom}</span>}
-              {p.arrondissement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#6A1B9A",background:"rgba(106,27,154,0.07)",padding:"3px 10px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
+              {p.pole_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{p.pole_nom}</span>}
+              {p.region_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Région de {p.region_nom}</span>}
+              {p.departement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Département de {p.departement_nom}</span>}
+              {p.arrondissement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--violet)",background:"rgb(var(--violet-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
             </div>
           </div>
           <button onClick={onClose}
-            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
+            style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            <X size={15} color="var(--texte)"/>
           </button>
         </div>
 
@@ -563,8 +563,8 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             <section>
               <SecTitle>Informations</SecTitle>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {invest && <Bloc label="Investissement"><p style={{fontSize:13,fontWeight:700,color:"#1a1a2e"}}>{invest}</p></Bloc>}
-                {p.date_debut && <Bloc label="Date de début"><p style={{fontSize:12.5,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p></Bloc>}
+                {invest && <Bloc label="Investissement"><p style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>{invest}</p></Bloc>}
+                {p.date_debut && <Bloc label="Date de début"><p style={{fontSize:12.5,fontWeight:600,color:"var(--encre)"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p></Bloc>}
               </div>
             </section>
           )}
@@ -573,9 +573,9 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
           {p.description && (
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
+                <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
               </div>
             </section>
           )}
@@ -592,25 +592,25 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   return (
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{sec.nom}</span>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"var(--bleu-action)",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
-                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
                           {brasDuSec.map((bra:any) => {
                             const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -636,15 +636,15 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const tels=(por.telephones||[]).filter(Boolean);
                   const mails=(por.mails||[]).filter(Boolean);
                   return (
-                    <div key={pi} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"11px 14px"}}>
-                      {por.nom && <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e"}}>{por.nom}</p>}
+                    <div key={pi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
+                      {por.nom && <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{por.nom}</p>}
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
                           {tels.map((t:string,ti:number)=>(
-                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
                           ))}
                           {mails.map((m:string,mi:number)=>(
-                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
+                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
                           ))}
                         </div>
                       )}
@@ -664,15 +664,15 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const tels=(pf.telephones||[]).filter(Boolean);
                   const mails=(pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={fi} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"11px 14px"}}>
-                      <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
+                    <div key={fi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
+                      <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
                           {tels.map((t:string,ti:number)=>(
-                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
                           ))}
                           {mails.map((m:string,mi:number)=>(
-                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"#188038",background:"rgba(24,128,56,0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
+                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
                           ))}
                         </div>
                       )}
@@ -690,9 +690,9 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {p.fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
-                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
-                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -702,13 +702,13 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -778,9 +778,9 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
       {loading ? (
         <SkeletonCards n={6} cols={3} height={190}/>
       ) : projets.length===0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"#9aa5b4" }}>
+        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
           <Layers size={48} style={{ marginBottom:16, opacity:0.3 }}/>
-          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucun projet enregistré</p>
+          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun projet enregistré</p>
           <p style={{ fontSize:14, marginTop:6 }}>Cliquez sur « Nouveau projet » pour commencer.</p>
         </div>
       ) : (
@@ -790,55 +790,55 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
             const hoverC = p.pole_nom ? poleAccent(p.pole_nom) : "rgba(0,79,145,0.33)";
             return (
             <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"#fff", border:"1px solid rgba(16,26,46,0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden", opacity:p.est_publie===false?0.85:1 }}
+              style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden", opacity:p.est_publie===false?0.85:1 }}
               onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
-              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
 
               <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
                 {/* Titre + pôle en sous-titre | publication */}
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
                   <div style={{ minWidth:0, flex:1 }}>
-                    <div style={{ fontWeight:800, fontSize:15.5, color:"#1a1a2e", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
-                    {p.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{p.pole_nom}</div>}
+                    <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
+                    {p.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{p.pole_nom}</div>}
                   </div>
                   {p.est_publie===false&&<span style={{ ...badge_gris, whiteSpace:"nowrap" as const, flexShrink:0 }}>Non publié</span>}
                 </div>
 
                 {/* Région · Département en rangée épurée */}
-                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #F2F0EF", paddingTop:13, marginTop:"auto" }}>
+                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
-                    <p style={{ fontSize:12.5, fontWeight:700, color:p.region_nom?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.region_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
                   </div>
-                  <div style={{ width:1, alignSelf:"stretch", background:"#F2F0EF", margin:"0 18px" }}/>
+                  <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
-                    <p style={{ fontSize:12.5, fontWeight:700, color:p.departement_nom?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.departement_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={ev=>ev.stopPropagation()}>
+              <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={ev=>ev.stopPropagation()}>
                 <button className="ro-w" onClick={()=>{ setEdit(p); setModal(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   <Pencil size={12}/> Modifier
                 </button>
-                <div style={{ width:1, background:"#F2F0EF" }}/>
+                <div style={{ width:1, background:"var(--fond)" }}/>
                 <button className="ro-w" onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"#188038":"#ca631f", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgba(24,128,56,0.05)":"rgba(202,99,31,0.06)"}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"var(--vert)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgb(var(--vert-rgb) / 0.05)":"rgb(var(--orange-rgb) / 0.06)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}
                 </button>
-                <div style={{ width:1, background:"#F2F0EF" }}/>
+                <div style={{ width:1, background:"var(--fond)" }}/>
                 <button className="ro-w" onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                   style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  {deleting===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                  {deleting===p.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
                 </button>
               </div>
             </div>

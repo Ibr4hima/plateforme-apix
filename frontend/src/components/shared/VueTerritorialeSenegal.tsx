@@ -47,9 +47,9 @@ type Compteurs = { primaire: number; secondaire: number; tertiaire: number };
 function BarresSecteurs({ counts, compact }: { counts: Compteurs; compact?: boolean }) {
   const total = counts.primaire + counts.secondaire + counts.tertiaire || 1;
   const rows = [
-    { label: compact ? "Primaire"   : "Secteur primaire",   val: counts.primaire,   color: "#004f91" },
-    { label: compact ? "Secondaire" : "Secteur secondaire", val: counts.secondaire, color: "#ca631f" },
-    { label: compact ? "Tertiaire"  : "Secteur tertiaire",  val: counts.tertiaire,  color: "#188038" },
+    { label: compact ? "Primaire"   : "Secteur primaire",   val: counts.primaire,   color: "var(--bleu)" },
+    { label: compact ? "Secondaire" : "Secteur secondaire", val: counts.secondaire, color: "var(--orange)" },
+    { label: compact ? "Tertiaire"  : "Secteur tertiaire",  val: counts.tertiaire,  color: "var(--vert)" },
   ];
   return (
     <div style={{ display:"flex", flexDirection:"column" as const, gap: compact ? 6 : 10 }}>
@@ -58,10 +58,10 @@ function BarresSecteurs({ counts, compact }: { counts: Compteurs; compact?: bool
         return (
           <div key={r.label}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom: compact ? 2 : 4, fontSize: compact ? 10.5 : 12 }}>
-              <span style={{ color:"#1a1a2e", fontWeight:600 }}>{r.label}</span>
+              <span style={{ color:"var(--encre)", fontWeight:600 }}>{r.label}</span>
               <span style={{ fontWeight:700, color:r.color }}>{pct}%</span>
             </div>
-            <div style={{ height: compact ? 4 : 6, background:"#F2F0EF", borderRadius:99, overflow:"hidden" }}>
+            <div style={{ height: compact ? 4 : 6, background:"var(--fond)", borderRadius:99, overflow:"hidden" }}>
               <div style={{ height:"100%", width:`${pct}%`, background:r.color, borderRadius:99, transition: compact ? undefined : "width 0.4s ease" }}/>
             </div>
           </div>
@@ -164,8 +164,8 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         const nom = NAME_MAP[rawNom] || rawNom;
         const pole = poles.find(p => splitLocalisation(p.localisation).includes(nom));
         const color = mode === "region"
-          ? (REGION_PALETTE[nom] || "#E8E5E3")
-          : (pole ? getPoleColor(pole.id) : "#E8E5E3");
+          ? (REGION_PALETTE[nom] || "var(--sur-bleu)")
+          : (pole ? getPoleColor(pole.id) : "var(--sur-bleu)");
 
         const g = svg.append("g").style("transition", "filter 0.15s");
 
@@ -173,7 +173,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           .attr("d", pathGen(feature))
           .attr("fill", color)
           .attr("fill-opacity", 0.95)
-          .attr("stroke", mode === "region" ? "#66615E" : "none")
+          .attr("stroke", mode === "region" ? "var(--texte)" : "none")
           .attr("stroke-width", 0.5)
           .attr("stroke-linejoin", "round")
           .style("transition", "filter 0.15s");
@@ -213,7 +213,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           ))
           .attr("d", pathGen)
           .attr("fill", "none")
-          .attr("stroke", "#66615E")
+          .style("stroke", "var(--texte)")
           .attr("stroke-width", 0.6)
           .attr("stroke-linejoin", "round");
 
@@ -222,7 +222,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           .datum(mesh(topo, topo.objects.sen, (a: any, b: any) => a === b))
           .attr("d", pathGen)
           .attr("fill", "none")
-          .attr("stroke", "#66615E")
+          .style("stroke", "var(--texte)")
           .attr("stroke-width", 0.9)
           .attr("stroke-linejoin", "round");
 
@@ -287,30 +287,30 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         <div style={{ borderRadius:14, border:"0.5px solid var(--color-border-tertiary)", overflow:"hidden", position:"relative" }}>
           <div ref={containerRef} style={{ width:"100%" }}/>
           {tooltip && !tooltip.pole && !tooltip.region && (
-            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"#fff", border:"1px solid #ECEAE7", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"#1a1a2e", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
+            <div style={{ position:"absolute", left:Math.min(tooltip.x+14,300), top:Math.max(tooltip.y-20,6), background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:10, padding:"7px 13px", fontSize:13, fontWeight:600, color:"var(--encre)", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)", whiteSpace:"nowrap" as const }}>
               {tooltip.nom}
             </div>
           )}
           {tooltip && tooltip.region && (() => {
             const nom = tooltip.region;
-            const color = REGION_PALETTE[nom] || "#E8E5E3";
+            const color = REGION_PALETTE[nom] || "var(--sur-bleu)";
             const stats = regionStats[nom];
             const total = stats ? stats.total : 0;
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:224, background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:9 }}>
-                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                  <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", lineHeight:1.25 }}>{nom}</span>
+                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
+                  <span style={{ fontSize:13, fontWeight:700, color:"var(--encre)", lineHeight:1.25 }}>{nom}</span>
                 </div>
                 {/* Entreprises formalisées */}
                 <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"#004f91", lineHeight:1 }}>{total}</span>
-                  <span style={{ fontSize:11.5, fontWeight:600, color:"#1a1a2e" }}>entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</span>
+                  <span style={{ fontSize:20, fontWeight:800, color:"var(--bleu)", lineHeight:1 }}>{total}</span>
+                  <span style={{ fontSize:11.5, fontWeight:600, color:"var(--encre)" }}>entreprise{total!==1?"s":""} formalisée{total!==1?"s":""}</span>
                 </div>
                 {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
+                <p style={{ fontSize:9, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
                 <BarresSecteurs compact counts={{ primaire: stats?.primaire ?? 0, secondaire: stats?.secondaire ?? 0, tertiaire: stats?.tertiaire ?? 0 }}/>
               </div>
             );
@@ -337,24 +337,24 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             });
             const ch = containerRef.current?.clientHeight ?? 420;
             return (
-              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"#fff", border:"1px solid #ECEAE7", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
+              <div style={{ position:"absolute", ...posTooltip(tooltip.x, tooltip.y, ch), width:238, background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px", pointerEvents:"none", zIndex:20, boxShadow:"var(--ombre-2)" }}>
                 {/* Nom + régions */}
                 <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
-                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                  <span style={{ fontSize:13, fontWeight:700, color:"#1a1a2e", lineHeight:1.25 }}>{pole.pole_territoire}</span>
+                  <div style={{ width:10, height:10, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
+                  <span style={{ fontSize:13, fontWeight:700, color:"var(--encre)", lineHeight:1.25 }}>{pole.pole_territoire}</span>
                 </div>
                 <div style={{ display:"flex", gap:4, flexWrap:"wrap" as const, marginBottom:10 }}>
                   {regions.map(r => (
-                    <span key={r} style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"2px 8px", borderRadius:999 }}>{r}</span>
+                    <span key={r} style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999 }}>{r}</span>
                   ))}
                 </div>
                 {/* Entreprises installées */}
                 <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:10 }}>
-                  <span style={{ fontSize:20, fontWeight:800, color:"#004f91", lineHeight:1 }}>{nb}</span>
-                  <span style={{ fontSize:11.5, fontWeight:600, color:"#1a1a2e" }}>entreprise{nb!==1?"s":""} installée{nb!==1?"s":""}</span>
+                  <span style={{ fontSize:20, fontWeight:800, color:"var(--bleu)", lineHeight:1 }}>{nb}</span>
+                  <span style={{ fontSize:11.5, fontWeight:600, color:"var(--encre)" }}>entreprise{nb!==1?"s":""} installée{nb!==1?"s":""}</span>
                 </div>
                 {/* Répartition sectorielle */}
-                <p style={{ fontSize:9, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
+                <p style={{ fontSize:9, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:6 }}>Répartition sectorielle</p>
                 <BarresSecteurs compact counts={counts}/>
               </div>
             );
@@ -363,29 +363,29 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
       </div>
 
       {/* Légende */}
-      <div style={{ width:196, flexShrink:0, background:"#FAFAF9", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px" }}>
+      <div style={{ width:196, flexShrink:0, background:"var(--carte-douce)", border:"0.5px solid var(--color-border-tertiary)", borderRadius:14, padding:"18px 16px" }}>
         {mode === "region" ? (
           <>
-            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Régions</p>
+            <p style={{ fontSize:10, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Régions</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
               {Object.entries(REGION_PALETTE).map(([nom, color]) => (
                 <div key={nom} onClick={() => onRegionClickRef.current ? onRegionClickRef.current(nom) : setActiveRegion(prev => prev === nom ? null : nom)}
                   style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"4px 8px", borderRadius:8, background: activeRegion===nom ? color+"55" : "transparent", transition:"background 0.15s" }}>
-                  <div style={{ width:12, height:12, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgba(0,0,0,0.08)" }}/>
-                  <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{nom}</span>
+                  <div style={{ width:12, height:12, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
+                  <span style={{ fontSize:12, color:"var(--encre)", lineHeight:1.3 }}>{nom}</span>
                 </div>
               ))}
             </div>
           </>
         ) : (
           <>
-            <p style={{ fontSize:10, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
+            <p style={{ fontSize:10, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:14 }}>Pôles territoriaux</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
               {poles.map(p => (
                 <div key={p.id} onClick={() => onPoleClickRef.current ? onPoleClickRef.current(p) : setActivePole((prev:any) => prev?.id === p.id ? null : p)}
                   style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"5px 8px", borderRadius:8, background: activePole?.id===p.id ? getPoleColor(p.id)+"33" : "transparent", transition:"background 0.15s" }}>
-                  <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgba(0,0,0,0.08)", opacity:0.95 }}/>
-                  <span style={{ fontSize:12, color:"#1a1a2e", lineHeight:1.3 }}>{p.pole_territoire}</span>
+                  <div style={{ width:12, height:12, borderRadius:3, background:getPoleColor(p.id), flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)", opacity:0.95 }}/>
+                  <span style={{ fontSize:12, color:"var(--encre)", lineHeight:1.3 }}>{p.pole_territoire}</span>
                 </div>
               ))}
             </div>
@@ -413,7 +413,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
             {/* Entreprises installées */}
             <FicheBloc label={`Entreprise${nbInst!==1?"s":""} installée${nbInst!==1?"s":""}`}>
-              <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{nbInst}</p>
+              <p style={{ fontSize:26, fontWeight:800, color:nbInst>0?"var(--bleu)":"var(--gris)", lineHeight:1.1 }}>{nbInst}</p>
             </FicheBloc>
 
             {/* Zones d'investissement */}
@@ -424,9 +424,9 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
                     const tc=z.type_zone==="ZES"?"#004f91":z.type_zone==="ZAI"?"#ca631f":"#188038";
                     const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
                     return (
-                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"#FAFAF9", borderRadius:12, border:"1px solid #F0EEEC", fontSize:12 }}>
+                      <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:12, border:"1px solid var(--bordure)", fontSize:12 }}>
                         <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
-                        <span style={{ color:"#1a1a2e", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
+                        <span style={{ color:"var(--encre)", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
                         <span style={{ fontSize:11, fontWeight:700, color:tc, background:tc+"12", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
                       </div>
                     );
@@ -456,7 +456,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
             {/* Total entreprises */}
             <FicheBloc label={`Entreprise${total!==1?"s":""} formalisée${total!==1?"s":""}`}>
-              <p style={{ fontSize:26, fontWeight:800, color:total>0?"#004f91":"#9aa5b4", lineHeight:1.1 }}>{total}</p>
+              <p style={{ fontSize:26, fontWeight:800, color:total>0?"var(--bleu)":"var(--gris)", lineHeight:1.1 }}>{total}</p>
             </FicheBloc>
 
             {/* Répartition sectorielle */}

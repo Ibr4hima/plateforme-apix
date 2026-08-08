@@ -147,7 +147,7 @@ export default function AccordsPage() {
   const autresPays = paysDistincts.filter((p:any)=>p.nom!=="Sénégal").sort((a:any,b:any)=>a.nom.localeCompare(b.nom,"fr"));
 
   return (
-    <main style={{minHeight:"100vh",background:"#F6F5F3",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>}>
@@ -161,13 +161,13 @@ export default function AccordsPage() {
       /* Traités internationaux — à venir */
       <div style={{maxWidth:1400,margin:"0 auto",padding:"80px 40px",textAlign:"center" as const}}>
         <div style={{display:"inline-flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
-          <div style={{width:64,height:64,borderRadius:16,background:"rgba(0,79,145,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <FileText size={28} style={{color:"#004f91"}}/>
+          <div style={{width:64,height:64,borderRadius:16,background:"rgb(var(--bleu-rgb) / 0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <FileText size={28} style={{color:"var(--bleu)"}}/>
           </div>
-          <h2 style={{fontWeight:800,fontSize:"1.4rem",color:"#1a1a2e"}}>Traités Internationaux</h2>
-          <p style={{fontSize:14,color:"#9aa5b4",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
-          <div style={{background:"rgba(0,79,145,0.07)",border:"1px solid rgba(0,79,145,0.2)",borderRadius:10,padding:"10px 20px"}}>
-            <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>Disponible prochainement</span>
+          <h2 style={{fontWeight:800,fontSize:"1.4rem",color:"var(--encre)"}}>Traités Internationaux</h2>
+          <p style={{fontSize:14,color:"var(--gris)",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
+          <div style={{background:"rgb(var(--bleu-rgb) / 0.07)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:10,padding:"10px 20px"}}>
+            <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>Disponible prochainement</span>
           </div>
         </div>
       </div>
@@ -181,8 +181,8 @@ export default function AccordsPage() {
                 {/* Statut */}
                 <div style={{marginBottom:18}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                    <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
-                    {statutFiltre&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
+                    <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
+                    {statutFiltre&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
                   </div>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {[
@@ -193,25 +193,25 @@ export default function AccordsPage() {
                     ].map(o=>{const sel=statutFiltre===o.v; return (
                       <button key={o.v} onClick={()=>setStatutFiltre(o.v)}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0}}/>
-                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{o.l}</span>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0}}/>
+                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>{o.l}</span>
                       </button>
                     );})}
                   </div>
                 </div>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
                 {/* Parties signataires — section personnalisée */}
                 <div style={{marginBottom:18}}>
                   <button onClick={()=>setPartiesOpen(o=>!o)}
                     style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:partiesOpen?8:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:11,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
-                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
+                      <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
+                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
                     </div>
-                    <span style={{width:20,height:20,borderRadius:"50%",background:"#F5F4F3",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          {partiesOpen?<ChevronUp size={11} style={{color:"#4a5568"}}/>:<ChevronDown size={11} style={{color:"#4a5568"}}/>}
+                    <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          {partiesOpen?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
         </span>
                   </button>
                   {partiesOpen&&<div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
@@ -219,43 +219,43 @@ export default function AccordsPage() {
                     {senegalId!==undefined&&(()=>{const sel=paysIdsFiltres.includes(senegalId); return (
                       <button onClick={()=>togglePaysId(senegalId)}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>Sénégal</span>
+                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>Sénégal</span>
                       </button>
                     );})()}
                     {/* APIX S.A */}
                     {(()=>{const sel=apixFiltre; return (
                       <button onClick={()=>setApixFiltre(f=>!f)}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
-                        onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                        onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>APIX S.A</span>
+                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>APIX S.A</span>
                       </button>
                     );})()}
                     {/* Sous-section Pays */}
                     {autresPays.length>0&&<>
-                      <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
+                      <p style={{fontSize:10,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
                       <div style={{maxHeight:160,overflowY:"auto" as const}}>
                         {autresPays.map((p:any)=>{const sel=paysIdsFiltres.includes(p.id); return (
                           <button key={p.id} onClick={()=>togglePaysId(p.id)}
                             style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",cursor:"pointer",background:"transparent",textAlign:"left" as const,width:"100%"}}
-                            onMouseEnter={e=>{e.currentTarget.style.background="#F8F7F6";}}
+                            onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
                             onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
-                            <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"#004f91":"#C5BFBB"}`,background:sel?"#004f91":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                           </div>
-                            <span style={{fontSize:12,color:"#4a5568",fontWeight:sel?700:400}}>{p.nom}</span>
+                            <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>{p.nom}</span>
                           </button>
                         );})}
                       </div>
                     </>}
                   </div>}
                 </div>
-                <div style={{height:1,background:"#F2F0EF",marginBottom:18}}/>
+                <div style={{height:1,background:"var(--fond)",marginBottom:18}}/>
                 <ThematiquesCascadeFilter secteurs={secteurs}
                   secteursSel={secteursSel} branchesSel={branchesSel} activitesSel={activitesSel}
                   onSecteur={toggleSecteur} onBranche={toggleBranche} onActivite={toggleActivite} marginBottom={0}/>
@@ -268,9 +268,9 @@ export default function AccordsPage() {
             ) : erreur ? (
               <ErreurChargement onRetry={()=>charger()}/>
             ) : accords.length===0 ? (
-              <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+              <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <FileText size={48} style={{marginBottom:16,opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun accord trouvé</p>
+                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun accord trouvé</p>
                 <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
@@ -283,24 +283,24 @@ export default function AccordsPage() {
                   // Badges du design system : en vigueur vert, signé bleu,
                   // expiré gris ; l'accent de survol suit la couleur du statut
                   const ST: any = {
-                    en_vigueur: { label:"En vigueur",            badge:badge_vert, accent:"#188038" },
-                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu, accent:"#004f91" },
-                    expire:     { label:"Expiré",                badge:badge_gris, accent:"#9aa5b4" },
+                    en_vigueur: { label:"En vigueur",            badge:badge_vert, accent:"var(--vert)" },
+                    signe:      { label:"Signé non en vigueur",  badge:badge_bleu, accent:"var(--bleu)" },
+                    expire:     { label:"Expiré",                badge:badge_gris, accent:"var(--gris)" },
                   };
                   const st = statut ? ST[statut] : null;
                   const estExpire = statut==="expire";
-                  const txtC = estExpire ? "#4a5568" : "#1a1a2e";
+                  const txtC = estExpire ? "var(--texte)" : "var(--encre)";
                   // Date secondaire : expiration si renseignée, sinon entrée en vigueur
                   const dateSec = a.date_expiration
                     ? { label:"Expiration", val:fmtDate(a.date_expiration), vide:false }
                     : { label:"Entrée en vigueur", val:a.date_entree_vigueur?fmtDate(a.date_entree_vigueur):"Non définie", vide:!a.date_entree_vigueur };
                   // Accent du survol = couleur du statut
-                  const accent = st ? st.accent : "#C5BFBB";
+                  const accent = st ? st.accent : "var(--gris)";
                   return (
                   <div key={a.id} {...carteCliquable(()=>gate(()=>setSelec(a)))}
-                    style={{background:estExpire?"#FBFAF9":"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                    style={{background:estExpire?"var(--carte-douce)":"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
                     onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=accent;}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Titre + ancienneté du statut | badge pastel à droite */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
@@ -311,7 +311,7 @@ export default function AccordsPage() {
                             : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
                             : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
                             : a.reference || null;
-                          return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"#9aa5b4",marginTop:3}}>{sousTitre}</div>;
+                          return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
                         })()}
                       </div>
                       {st&&(
@@ -322,15 +322,15 @@ export default function AccordsPage() {
                     </div>
 
                     {/* Dates en rangée épurée + flèche d'action */}
-                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid #F2F0EF",paddingTop:13,marginTop:"auto"}}>
+                    <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"#C5BFBB",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                       </div>
-                      <div style={{width:1,alignSelf:"stretch",background:"#F2F0EF",margin:"0 18px"}}/>
+                      <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"#9aa5b4",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"#C5BFBB":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
+                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
+                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
                       </div>
                     </div>
                   </div>

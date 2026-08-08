@@ -20,9 +20,9 @@ function fmtPhone(raw: string): string {
   if (!raw) return raw;
   try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
-const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 // Canaux de contact possibles lors d'un échange.
 const CANAUX = [
@@ -98,10 +98,10 @@ function isValidEmail(email: string): boolean {
 }
 
 const ETATS = [
-  { value:"en_cours",  label:"En cours",  color:"#ca631f" },
-  { value:"interesse", label:"Intéressé", color:"#004f91" },
-  { value:"negatif",   label:"Négatif",   color:"#dc2626" },
-  { value:"converti",  label:"Converti",  color:"#188038" },
+  { value:"en_cours",  label:"En cours",  color:"var(--orange)" },
+  { value:"interesse", label:"Intéressé", color:"var(--bleu)" },
+  { value:"negatif",   label:"Négatif",   color:"var(--danger)" },
+  { value:"converti",  label:"Converti",  color:"var(--vert)" },
 ];
 
 // Début du cycle de prospection courant : date (YYYY-MM-DD) du dernier
@@ -155,22 +155,22 @@ function echangesDuCycle(p:any, cy:any): any[] {
 // L'issue de la relation (installé / décliné) prime sur l'indicateur d'activité ;
 // sinon on retombe sur le délai depuis le dernier échange du cycle courant.
 function badgeProspect(p:any) {
-  if (p?.issue === "installe") return { label:"Installation à venir", color:"#188038", bg:"rgba(24,128,56,0.08)" };
-  if (p?.issue === "decline")  return { label:"Décliné",  color:"#6b7280", bg:"#F2F0EF" };
+  if (p?.issue === "installe") return { label:"Installation à venir", color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" };
+  if (p?.issue === "decline")  return { label:"Décliné",  color:"var(--gris-fort)", bg:"var(--fond)" };
   // Après un re-contact, on ne mesure l'activité que sur le cycle courant ;
   // les échanges des cycles passés ne doivent pas faire paraître la fiche « Inactif ».
   const debut = cycleCourantDebut(p);
   let dateDernierEchange = p?.date_dernier_echange;
   if (debut) {
     const echangesCycle = (p?.echanges||[]).filter((e:any)=>e.date_echange >= debut);
-    if (!echangesCycle.length) return { label:"À recontacter", color:"#004f91", bg:"rgba(0,79,145,0.07)" };
+    if (!echangesCycle.length) return { label:"À recontacter", color:"var(--bleu)", bg:"rgb(var(--bleu-rgb) / 0.07)" };
     dateDernierEchange = echangesCycle.map((e:any)=>e.date_echange).sort().at(-1);
   }
   if (!dateDernierEchange) return null;
   const jours = Math.floor((Date.now() - new Date(dateDernierEchange).getTime()) / 86400000);
-  if (jours <= 90)  return { label:"En cours",   color:"#188038", bg:"rgba(24,128,56,0.08)" };
-  if (jours <= 120) return { label:"En attente", color:"#6b7280", bg:"#F2F0EF" };
-  return                  { label:"Inactif",    color:"#dc2626", bg:"rgba(220,38,38,0.07)" };
+  if (jours <= 90)  return { label:"En cours",   color:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)" };
+  if (jours <= 120) return { label:"En attente", color:"var(--gris-fort)", bg:"var(--fond)" };
+  return                  { label:"Inactif",    color:"var(--danger)", bg:"rgb(var(--danger-rgb) / 0.07)" };
 }
 
 // Une prospection conclue est aussitôt archivée dans « Précédents contacts »
@@ -233,11 +233,11 @@ const EMPTY_FORM = {
 function BtnPlus({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) {
   return (
     <button type="button" onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
-      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
-        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"}`,
+        background:"rgb(var(--carte-rgb) / 0.7)", color:ok?"var(--bleu)":"var(--gris)", cursor:ok?"pointer":"not-allowed",
         display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"; e.currentTarget.style.background="rgb(var(--carte-rgb) / 0.7)"; }}>
       <Plus size={13}/>
     </button>
   );
@@ -260,8 +260,8 @@ function MultiPhones({ values, onChange }: { values:string[]; onChange:(v:string
             </div>
             {values.length > 1 && (
               <button type="button" onClick={()=>onChange(values.filter((_,j)=>j!==i))}
-                style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 8px", flexShrink:0, marginTop:1 }}>
-                <X size={12} style={{ color:"#dc2626" }}/>
+                style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 8px", flexShrink:0, marginTop:1 }}>
+                <X size={12} style={{ color:"var(--danger)" }}/>
               </button>
             )}
           </div>
@@ -288,8 +288,8 @@ function MultiMails({ values, onChange }: { values:string[]; onChange:(v:string[
               style={{ flex:1 }}/>
             {values.length > 1 && (
               <button type="button" onClick={()=>onChange(values.filter((_,j)=>j!==i))}
-                style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 8px", flexShrink:0 }}>
-                <X size={12} style={{ color:"#dc2626" }}/>
+                style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 8px", flexShrink:0 }}>
+                <X size={12} style={{ color:"var(--danger)" }}/>
               </button>
             )}
           </div>
@@ -307,19 +307,19 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
 }) {
   const upd = (k:keyof PointFocal, v:any) => onUpdate({ ...pf, [k]:v });
   return (
-    <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"14px 16px" }}>
+    <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <User size={13} style={{ color:"#004f91" }}/>
-          <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Point focal {idx+1}</span>
+          <User size={13} style={{ color:"var(--bleu)" }}/>
+          <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <label style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#4a5568", cursor:"pointer" }}>
+          <label style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--texte)", cursor:"pointer" }}>
             <input type="checkbox" checked={pf.est_principal} onChange={e=>upd("est_principal",e.target.checked)}/> Principal
           </label>
           <button type="button" onClick={onRemove}
             style={{ background:"none", border:"none", cursor:"pointer", padding:4 }}>
-            <Trash2 size={13} style={{ color:"#dc2626" }}/>
+            <Trash2 size={13} style={{ color:"var(--danger)" }}/>
           </button>
         </div>
       </div>
@@ -346,20 +346,20 @@ function ToggleField({ label, desc, value, onChange, children }: {
   label:string; desc?:string; value:boolean; onChange:(v:boolean)=>void; children?:React.ReactNode;
 }) {
   return (
-    <div style={{ border:"1px solid #E4E1DE", borderRadius:12, overflow:"hidden" }}>
+    <div style={{ border:"1px solid var(--bordure-forte)", borderRadius:12, overflow:"hidden" }}>
       <button type="button" onClick={()=>onChange(!value)}
         style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center",
-          padding:"12px 16px", background:value?"rgba(0,79,145,0.04)":"#fff", border:"none", cursor:"pointer", textAlign:"left" as const, fontFamily:"var(--font-google-sans)" }}>
+          padding:"12px 16px", background:value?"rgb(var(--bleu-rgb) / 0.04)":"var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const, fontFamily:"var(--font-google-sans)" }}>
         <div>
-          <span style={{ fontSize:13, fontWeight:600, color:"#1a1a2e" }}>{label}</span>
-          {desc && <p style={{ fontSize:11, color:"#9aa5b4", marginTop:2 }}>{desc}</p>}
+          <span style={{ fontSize:13, fontWeight:600, color:"var(--encre)" }}>{label}</span>
+          {desc && <p style={{ fontSize:11, color:"var(--gris)", marginTop:2 }}>{desc}</p>}
         </div>
-        <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"#004f91":"#D8D4D0", position:"relative" as const, transition:"background 0.2s" }}>
-          <div style={{ position:"absolute" as const, top:2, left:value?18:2, width:16, height:16, borderRadius:8, background:"#fff", transition:"left 0.2s", boxShadow:"0 1px 3px rgba(0,0,0,0.2)" }}/>
+        <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"var(--bleu-action)":"var(--bordure-forte)", position:"relative" as const, transition:"background 0.2s" }}>
+          <div style={{ position:"absolute" as const, top:2, left:value?18:2, width:16, height:16, borderRadius:8, background:"var(--carte)", transition:"left 0.2s", boxShadow:"0 1px 3px rgb(var(--ombre-rgb) / 0.2)" }}/>
         </div>
       </button>
       {value && children && (
-        <div style={{ padding:"12px 16px 16px", borderTop:"1px solid #F2F0EF", background:"rgba(0,79,145,0.02)" }}>
+        <div style={{ padding:"12px 16px 16px", borderTop:"1px solid var(--bordure)", background:"rgb(var(--bleu-rgb) / 0.02)" }}>
           {children}
         </div>
       )}
@@ -553,11 +553,11 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
         <button type="button" disabled={!ok}
           title={ok?undefined:"Complétez d'abord le point focal précédent (nom, prénom, téléphone et email valides)"}
           onClick={()=>ok&&upd("points_focaux",[...form.points_focaux,{ ...EMPTY_FOCAL, est_principal: form.points_focaux.length===0 }])}
-          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
-          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="#004f91";}}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Plus size={14} color="#9aa5b4"/>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un point focal</span>
+          style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"12px 14px", borderRadius:10, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s", fontFamily:"var(--font-google-sans)" }}
+          onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Plus size={14} color="var(--gris)"/>
+          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un point focal</span>
         </button>
         ); })()}
       </FSection>
@@ -856,7 +856,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
       {/* Échange */}
       <FSection title="Échange" extra={!isEdit && dernierEchangeCourant ? (
-        <span style={{ fontSize:11, color:"#ca631f", fontWeight:600 }}>
+        <span style={{ fontSize:11, color:"var(--orange)", fontWeight:600 }}>
           Dernier échange : {new Date(dernierEchangeCourant.date_echange).toLocaleDateString("fr-FR")}
         </span>
       ) : undefined}>
@@ -922,8 +922,8 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                       <FInput type="email" value={form.canal_contact}
                         onChange={e=>{ upd("canal_contact",e.target.value); if(emailError) setEmailError(""); }}
                         onBlur={()=>{ if(form.canal_contact && !isValidEmail(form.canal_contact)) setEmailError("Adresse e-mail invalide"); }}
-                        placeholder={meta?.placeholder || ""} style={{ borderColor: emailError?"#dc2626":undefined }}/>
-                      {emailError && <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{emailError}</p>}
+                        placeholder={meta?.placeholder || ""} style={{ borderColor: emailError?"var(--danger)":undefined }}/>
+                      {emailError && <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>{emailError}</p>}
                     </>
                   ) : (
                     <FInput value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
@@ -950,30 +950,30 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
           {/* Compte rendu (obligatoire — un seul) */}
           <div>
-            <FLabel>Compte rendu <span style={{ color:"#dc2626" }}>*</span></FLabel>
+            <FLabel>Compte rendu <span style={{ color:"var(--danger)" }}>*</span></FLabel>
             {crExistant && !compteRendu && (
-              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px", marginBottom:8 }}>
-                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px", marginBottom:8 }}>
+                <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ flex:1, fontSize:12.5, color:"#004f91", fontWeight:600, textDecoration:"none" }}>
+                  style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                   {crExistant.titre}
                 </a>
               </div>
             )}
             {compteRendu ? (
-              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
                   placeholder="Titre du compte rendu"
-                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
               </div>
             ) : (
-              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
-                onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-                onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-                <Upload size={14} color="#9aa5b4"/>
-                <span style={{ fontSize:13, color:"#9aa5b4" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
+              <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
+                onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+                <Upload size={14} color="var(--gris)"/>
+                <span style={{ fontSize:13, color:"var(--gris)" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
                 <input type="file" accept=".pdf" style={{ display:"none" }} onChange={e=>{
                   const file = e.target.files?.[0]; if (!file) return;
                   setCompteRendu({ file, titre:file.name.replace(/\.pdf$/i,"") });
@@ -985,14 +985,14 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
           {/* Autres documents (facultatif — un ou plusieurs) */}
           <div>
-            <FLabel>Autres documents <span style={{ fontWeight:400, color:"#9aa5b4" }}>(facultatif)</span></FLabel>
+            <FLabel>Autres documents <span style={{ fontWeight:400, color:"var(--gris)" }}>(facultatif)</span></FLabel>
             {autresExistants.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {autresExistants.map((f:any) => (
-                  <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
-                    <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+                  <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+                    <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                     <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ flex:1, fontSize:12.5, color:"#004f91", fontWeight:600, textDecoration:"none" }}>
+                      style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                       {f.titre}
                     </a>
                   </div>
@@ -1002,21 +1002,21 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             {pdfQueue.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {pdfQueue.map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
-                    <FileText size={13} style={{ color:"#6A1B9A", flexShrink:0 }}/>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                    <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document"
-                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
-                    <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }}/></button>
+                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                    <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
                   </div>
                 ))}
               </div>
             )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-              onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-              <Upload size={14} color="#9aa5b4"/>
-              <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+              <Upload size={14} color="var(--gris)"/>
+              <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
               <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
                 const files = Array.from(e.target.files||[]);
                 setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -1024,7 +1024,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               }}/>
             </label>
             {(compteRendu || pdfQueue.length > 0) && (
-              <p style={{ fontSize:11, color:"#9aa5b4", marginTop:6 }}>Les fichiers seront téléversés à l'enregistrement.</p>
+              <p style={{ fontSize:11, color:"var(--gris)", marginTop:6 }}>Les fichiers seront téléversés à l'enregistrement.</p>
             )}
           </div>
 
@@ -1036,17 +1036,17 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
         {localContraintes.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
             {localContraintes.map((c:any) => (
-              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(220,38,38,0.04)", border:"1px solid rgba(220,38,38,0.15)", borderRadius:10, padding:"9px 12px" }}>
-                <div style={{ flex:1, fontSize:12, color:"#1a1a2e", lineHeight:1.5 }}>
+              <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgb(var(--danger-rgb) / 0.04)", border:"1px solid rgb(var(--danger-rgb) / 0.15)", borderRadius:10, padding:"9px 12px" }}>
+                <div style={{ flex:1, fontSize:12, color:"var(--encre)", lineHeight:1.5 }}>
                   {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
                 </div>
                 <button type="button" onClick={()=>ouvrirContrainte(c)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
-                  <Pencil size={12} style={{ color:"#9aa5b4" }}/>
+                  <Pencil size={12} style={{ color:"var(--gris)" }}/>
                 </button>
                 <button type="button" onClick={()=>supprimerContrainte(c.id)}
                   style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 4px", flexShrink:0 }}>
-                  <Trash2 size={12} style={{ color:"#dc2626" }}/>
+                  <Trash2 size={12} style={{ color:"var(--danger)" }}/>
                 </button>
               </div>
             ))}
@@ -1057,7 +1057,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
               {bulletContraintes.map((b,i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span style={{ color:"#004f91", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
+                  <span style={{ color:"var(--bleu)", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
                   <input
                     className="fui-input"
                     ref={el=>{ bulletRefs.current[i]=el; }}
@@ -1080,7 +1080,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 </div>
               ))}
             </div>
-            {contrainteError && <p style={{ fontSize:12, color:"#dc2626" }}>{contrainteError}</p>}
+            {contrainteError && <p style={{ fontSize:12, color:"var(--danger)" }}>{contrainteError}</p>}
             <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
               <FButtonGhost type="button" onClick={annulerContrainte} style={{ padding:"7px 14px", fontSize:12 }}>Annuler</FButtonGhost>
               <FButton type="button" onClick={enregistrerContrainte} disabled={savingContrainte} loading={savingContrainte}
@@ -1091,9 +1091,9 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
           </FPanel>
         ) : (
           <button type="button" onClick={()=>ouvrirContrainte(null)}
-            style={{ width:"100%", border:"2px dashed #E4E1DE", background:"#FAFAF9", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"#9aa5b4", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
-            onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#004f91"; (e.currentTarget as HTMLButtonElement).style.color="#004f91"; }}
-            onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="#E4E1DE"; (e.currentTarget as HTMLButtonElement).style.color="#9aa5b4"; }}>
+            style={{ width:"100%", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"var(--gris)", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
+            onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bleu)"; (e.currentTarget as HTMLButtonElement).style.color="var(--bleu)"; }}
+            onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bordure-forte)"; (e.currentTarget as HTMLButtonElement).style.color="var(--gris)"; }}>
             <Plus size={14}/> Ajouter
           </button>
         )}
@@ -1140,21 +1140,21 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const displayName = p.nom;
 
   // ── Système de design de la fiche
-  const accent = "#004f91";
-  const TXT="#1a1a2e", SUB="#5b6472", MUT="#98a1ad", SURF="#FAFAF9", BRD="#F0EEEC", DIV="#F2F0EF";
+  const accent = "var(--bleu)";
+  const TXT="var(--encre)", SUB="var(--texte)", MUT="var(--gris)", SURF="var(--sur-bleu)", BRD="var(--sur-bleu)", DIV="var(--sur-bleu)";
   const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
-  const linkStyle: any = { fontSize:13, fontWeight:600, color:"#004f91", wordBreak:"break-all" as const, textDecoration:"none" };
+  const linkStyle: any = { fontSize:13, fontWeight:600, color:"var(--bleu)", wordBreak:"break-all" as const, textDecoration:"none" };
   const href = (u:string) => /^https?:\/\//.test(u) ? u : `https://${u}`;
 
   const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",textTransform:"uppercase" as const,letterSpacing:"0.14em",marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.14em",marginBottom:10}}>{children}</p>
   );
 
   const Section = ({ title, count, action, first, children }:any) => (
     <section style={{ marginTop:first?0:22, paddingTop:first?0:22, borderTop:first?"none":`1px solid ${DIV}` }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:12, minHeight:24 }}>
-        <h3 style={{ fontSize:10.5, fontWeight:700, color:"#004f91", letterSpacing:"0.14em", textTransform:"uppercase" as const }}>
-          {title}{typeof count==="number" ? <span style={{ color:"#C5BFBB", fontWeight:700, marginLeft:7 }}>{count}</span> : null}
+        <h3 style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const }}>
+          {title}{typeof count==="number" ? <span style={{ color:"var(--gris)", fontWeight:700, marginLeft:7 }}>{count}</span> : null}
         </h3>
         {action || null}
       </div>
@@ -1175,20 +1175,20 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         return (
           <div key={secId}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length?5:0 }}>
-              <div style={{ width:8, height:8, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>{sec.nom}</span>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>{sec.nom}</span>
             </div>
-            {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgba(0,79,145,0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
+            {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
               {brasDuSec.map((bra:any)=>{
                 const actsDeBra = activites.filter(a=>a.branche_id===bra.id && actIds.includes(a.id));
                 return (
                   <div key={bra.id}>
                     <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length?4:0 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#ca631f", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"#ca631f" }}>{bra.nom}</span>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"var(--orange)" }}>{bra.nom}</span>
                     </div>
                     {actsDeBra.length>0 && <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
                       {actsDeBra.map((act:any)=>(
                         <div key={act.id} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                          <div style={{ width:5, height:5, borderRadius:"50%", background:"#188038", flexShrink:0 }}/><span style={{ fontSize:11, color:"#188038", fontWeight:500 }}>{act.nom}</span>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--vert-action)", flexShrink:0 }}/><span style={{ fontSize:11, color:"var(--vert)", fontWeight:500 }}>{act.nom}</span>
                         </div>
                       ))}
                     </div>}
@@ -1203,28 +1203,28 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   );
 
   return (
-    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgba(2,20,38,0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+    <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}\n.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#fff", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:720, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         {/* Liseré d'accent */}
-        <div style={{ height:4, background:"#004f91", flexShrink:0 }}/>
+        <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }}/>
 
         {/* En-tête */}
-        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
             <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:TXT, lineHeight:1.3 }}>{displayName}</h2>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
               {(()=>{ const b=badgeProspect(p); return b ? (
                 <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:b.color, background:b.bg, padding:"3px 10px", borderRadius:999 }}>{b.label}</span>
               ) : null; })()}
-              {p.siege_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{p.siege_nom}</span>}
+              {p.siege_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.siege_nom}</span>}
             </div>
           </div>
           <button onClick={onClose}
-            style={{ background:"#F5F4F3", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
+            style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            <X size={15} color="var(--texte)"/>
           </button>
         </div>
 
@@ -1238,31 +1238,31 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <Section title="Contact" first>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {p.telephones?.length > 0 && (
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
                     {p.telephones.map((t:string,i:number)=>(
-                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e" }}>{fmtPhone(t)}</p>
+                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{fmtPhone(t)}</p>
                     ))}
                   </div>
                 )}
                 {p.mails?.length > 0 && (
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
                     {p.mails.map((m:string,i:number)=>(
-                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"#1a1a2e", wordBreak:"break-all" as const }}>{m}</p>
+                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)", wordBreak:"break-all" as const }}>{m}</p>
                     ))}
                   </div>
                 )}
                 {p.siteweb && (
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
-                    <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
+                    <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
                   </div>
                 )}
                 {p.linkedin && (
-                  <div style={{ background:"rgba(0,79,145,0.04)", border:"1px solid rgba(0,79,145,0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
-                    <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"#004f91", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
+                  <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
+                    <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
                   </div>
                 )}
               </div>
@@ -1334,19 +1334,19 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   const pfTels  = (pf.telephones||[]).filter(Boolean);
                   const pfMails = (pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={i} style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"11px 14px", fontSize:12 }}>
+                    <div key={i} style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"11px 14px", fontSize:12 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
-                        <span style={{ fontWeight:700, color:"#1a1a2e" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                        {pf.poste && <span style={{ fontSize:11, color:"#9aa5b4" }}>{pf.poste}</span>}
-                        {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"#ca631f", background:"rgba(202,99,31,0.08)", borderRadius:999, padding:"2px 8px" }}>Principal</span>}
+                        <span style={{ fontWeight:700, color:"var(--encre)" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
+                        {pf.poste && <span style={{ fontSize:11, color:"var(--gris)" }}>{pf.poste}</span>}
+                        {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", borderRadius:999, padding:"2px 8px" }}>Principal</span>}
                       </div>
                       {(pfTels.length > 0 || pfMails.length > 0) && (
                         <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:7 }}>
                           {pfTels.map((t:string, ti:number) => (
-                            <span key={`t${ti}`} style={{ fontSize:11, fontWeight:600, color:"#004f91", background:"rgba(0,79,145,0.07)", padding:"3px 10px", borderRadius:999 }}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{ fontSize:11, fontWeight:600, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{fmtPhone(t)}</span>
                           ))}
                           {pfMails.map((m:string, mi:number) => (
-                            <span key={`m${mi}`} style={{ fontSize:11, fontWeight:600, color:"#188038", background:"rgba(24,128,56,0.07)", padding:"3px 10px", borderRadius:999 }}>{m}</span>
+                            <span key={`m${mi}`} style={{ fontSize:11, fontWeight:600, color:"var(--vert)", background:"rgb(var(--vert-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{m}</span>
                           ))}
                         </div>
                       )}
@@ -1386,8 +1386,8 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       return (
                         <Fragment key={e.id}>
                         <div style={{ paddingLeft:22, position:"relative" as const }}>
-                          <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid #fff", boxShadow:`0 0 0 1px ${accent}44` }}/>
-                          <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
+                          <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                          <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
 
                             {/* En-tête : date déclarée + actions */}
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
@@ -1397,16 +1397,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               {canAct && (
                                 <div style={{ display:"flex", alignItems:"center", gap:4, flexShrink:0 }}>
                                   <button onClick={()=>onEditEchange?.(e)}
-                                    style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,79,145,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
+                                    style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgb(var(--bleu-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
                                     title="Modifiable pendant 24h">
-                                    <Pencil size={11} style={{ color:"#004f91" }}/>
+                                    <Pencil size={11} style={{ color:"var(--bleu)" }}/>
                                   </button>
                                   <button onClick={()=>handleDeleteEchange(e.id)} disabled={deletingEchange===e.id}
-                                    style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
+                                    style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 7px" }}
                                     title="Supprimer">
                                     {deletingEchange===e.id
-                                      ? <Loader2 size={11} style={{ color:"#dc2626", animation:"spin 1s linear infinite" }}/>
-                                      : <Trash2 size={11} style={{ color:"#dc2626" }}/>}
+                                      ? <Loader2 size={11} style={{ color:"var(--danger)", animation:"spin 1s linear infinite" }}/>
+                                      : <Trash2 size={11} style={{ color:"var(--danger)" }}/>}
                                   </button>
                                 </div>
                               )}
@@ -1416,7 +1416,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {(e.canal || e.interlocuteur || e.contact_par) && (
                               <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                 {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                     <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                   </span>
                                 ); })()}
@@ -1430,7 +1430,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* Compte-rendu */}
                             {e.commentaire && (
-                              <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                              <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
                                 <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                   dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                               </div>
@@ -1443,7 +1443,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                   <a key={f.id}
                                     href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                     target="_blank" rel="noopener noreferrer"
-                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgba(0,79,145,0.06)", textDecoration:"none", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                     <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                   </a>
                                 ))}
@@ -1468,13 +1468,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               {/* Contraintes exprimées — cycle de prospection courant uniquement */}
               {showEchanges && contraintesCycleCourant(p).length > 0 && (()=>{ const hasEch = echangesDuCycle(p,null).length>0; return (
                 <div style={{ marginTop: hasEch ? 18 : 0, paddingTop: hasEch ? 16 : 0, borderTop: hasEch ? `1px solid ${DIV}` : "none" }}>
-                  <SubLabel color="#004f91">
+                  <SubLabel color="var(--bleu)">
                     {contraintesCycleCourant(p).length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                   </SubLabel>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                     {contraintesCycleCourant(p).map((c:any) => (
                       <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                        <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
+                        <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                         <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                       </div>
                     ))}
@@ -1499,7 +1499,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 const contrCourant = contraintesCycleCourant(p);
                 return (
                   <div style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
-                    <button onClick={()=>toggleCycle(synId)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+                    <button onClick={()=>toggleCycle(synId)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
                         <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {currentNum}</span>
                         <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
@@ -1521,15 +1521,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                                 {[...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
-                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid #fff", boxShadow:`0 0 0 1px ${accent}44` }}/>
-                                    <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
+                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1541,7 +1541,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                         </div>
                                       )}
                                       {e.commentaire && (
-                                        <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
                                           <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
@@ -1552,7 +1552,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgba(0,79,145,0.06)", textDecoration:"none", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
@@ -1572,13 +1572,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         )}
                         {contrCourant.length > 0 && (
                           <div>
-                            <SubLabel color="#004f91">
+                            <SubLabel color="var(--bleu)">
                               {contrCourant.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                             </SubLabel>
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contrCourant.map((c:any) => (
                                 <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
+                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
                               ))}
@@ -1599,7 +1599,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 return (
                   <div key={cy.id} style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
                     {/* En-tête cliquable */}
-                    <button onClick={()=>toggleCycle(cy.id)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "#fff", border:"none", cursor:"pointer", textAlign:"left" as const }}>
+                    <button onClick={()=>toggleCycle(cy.id)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
                         <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {cy.cycle_num}</span>
                         <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
@@ -1627,15 +1627,15 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                                 {[...echangesCy].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
-                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid #fff", boxShadow:`0 0 0 1px ${accent}44` }}/>
-                                    <div style={{ background:"#fff", border:"1px solid #F0EEEC", borderRadius:12, padding:"13px 15px" }}>
+                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                                    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"#4a5568", background:"#F5F4F3", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
@@ -1647,7 +1647,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                         </div>
                                       )}
                                       {e.commentaire && (
-                                        <div style={{ background:"#FAFAF9", border:"1px solid #F0EEEC", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
+                                        <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
                                           <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
@@ -1658,7 +1658,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgba(0,79,145,0.06)", textDecoration:"none", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
@@ -1680,13 +1680,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                         {/* Contraintes du cycle */}
                         {contraintesCy.length > 0 && (
                           <div>
-                            <SubLabel color="#004f91">
+                            <SubLabel color="var(--bleu)">
                               {contraintesCy.length===1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                             </SubLabel>
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contraintesCy.map((c:any) => (
                                 <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
-                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0, marginTop:6 }}/>
+                                  <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
                               ))}
@@ -1705,21 +1705,21 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         </div>
 
         {/* Pied */}
-        <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid #F2F0EF", background:"#FCFBFA", flexShrink:0 }}>
+        <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
           {(!readOnly && !estFige(p)) ? (
             <button className="ro-w" onClick={onContacter}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgba(24,128,56,0.08)", color:"#188038", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
               <MessageSquare size={13}/> Contacter
             </button>
           ) : <span/>}
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={onClose}
-              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #E4E1DE", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
             {!readOnly && !historiqueOnly && (
               <button className="ro-w" onClick={onEdit}
-                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"#004f91", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgba(0,79,145,0.25)" }}>
+                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
                 <Pencil size={13}/> Modifier
               </button>
             )}
@@ -1832,9 +1832,9 @@ export default function ProspectsPage() {
       <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur
         droite={onglet!=="precedents" ? (
           <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"#fff", color:"#ca631f", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgba(0,0,0,0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
-            onMouseEnter={ev=>{ev.currentTarget.style.background="#FFF6EF";ev.currentTarget.style.transform="translateY(-1px)";}}
-            onMouseLeave={ev=>{ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="none";}}>
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"var(--carte)", color:"var(--orange)", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
+            onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
+            onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
             <Plus size={15}/> Nouveau prospect
           </button>
         ) : undefined}>
@@ -1848,9 +1848,9 @@ export default function ProspectsPage() {
       {loading ? (
         <SkeletonCards n={6} cols={3} height={190}/>
       ) : prospects.length === 0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"#9aa5b4" }}>
+        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
           <Building2 size={48} style={{ marginBottom:16, opacity:0.3 }}/>
-          <p style={{ fontSize:16, fontWeight:600, color:"#4a5568" }}>Aucun prospect</p>
+          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun prospect</p>
           <p style={{ fontSize:14, marginTop:6 }}>{onglet==="cibles"?"Cliquez sur « Nouveau prospect » pour commencer.":onglet==="historique"?"Aucun échange enregistré pour l'instant.":"Aucune prospection conclue pour l'instant."}</p>
         </div>
       ) : (
@@ -1879,22 +1879,22 @@ export default function ProspectsPage() {
               const badgeStatut = activite ? (STATUT_BADGE[activite.label] || badge_gris) : null;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
-                  style={{ background:"#fff", border:"1px solid rgba(16,26,46,0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
+                  style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
-                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgba(16,26,46,0.12)";}}>
+                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
 
                   <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
                     {/* Dénomination + repère temporel | badge de statut */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
                       <div style={{ minWidth:0, flex:1 }}>
-                        <div style={{ fontWeight:800, fontSize:15.5, color:"#1a1a2e", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
+                        <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
                         {(()=>{
                           const sousTitre = onglet==="cibles"
                             ? (p.nb_echanges>0 ? "Déjà contacté" : null)
                             : onglet==="precedents" && p.issue_conclu_le
                             ? `${p.issue==="decline"?"Décliné":"Conclu"} le ${fmtJour(p.issue_conclu_le)}`
                             : null;
-                          return sousTitre && <div style={{ fontSize:11, fontWeight:500, color:"#9aa5b4", marginTop:3 }}>{sousTitre}</div>;
+                          return sousTitre && <div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{sousTitre}</div>;
                         })()}
                       </div>
                       {onglet!=="cibles" && activite && badgeStatut && (
@@ -1903,48 +1903,48 @@ export default function ProspectsPage() {
                     </div>
 
                     {/* Pays · info contextuelle en rangée épurée */}
-                    <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid #F2F0EF", paddingTop:13, marginTop:"auto" }}>
+                    <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
+                        <p style={{ fontSize:12.5, fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
                           {(onglet==="cibles" ? p.siege_nom : p.mails?.[0]) || "—"}
                         </p>
                       </div>
-                      <div style={{ width:1, alignSelf:"stretch", background:"#F2F0EF", margin:"0 18px" }}/>
+                      <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"#9aa5b4", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:info2.value?"#1a1a2e":"#C5BFBB", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
+                        <p style={{ fontSize:12.5, fontWeight:700, color:info2.value?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
                   {onglet==="precedents" ? (
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>setVue(p)}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#4a5568", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(156,163,175,0.07)"}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--texte)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--gris-rgb) / 0.07)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Consulter
                       </button>
                       {p.issue==="decline" && (
                         <>
-                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <div style={{ width:1, background:"var(--fond)" }}/>
                           <button onClick={()=>handleRecontact(p.id)}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Re-contacter
                           </button>
                         </>
                       )}
-                      <div style={{ width:1, background:"#F2F0EF" }}/>
+                      <div style={{ width:1, background:"var(--fond)" }}/>
                       <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                         style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
                         title="Supprimer définitivement (test)"
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                        {deleting===p.id?<Loader2 size={12} style={{ color:"var(--danger)",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"var(--danger)" }}/>}
                       </button>
                     </div>
                   ) : onglet==="historique" ? (
@@ -1953,18 +1953,18 @@ export default function ProspectsPage() {
                         const nbEchangesCourants = echangesDuCycle(p, null).length;
                         const terminerDisabled = nbEchangesCourants === 0;
                         return (
-                        <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }}>
+                        <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }}>
                           <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Contacter
                           </button>
-                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <div style={{ width:1, background:"var(--fond)" }}/>
                           <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
                             title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize:11.5, color:terminerDisabled?"#9aa5b4":"#ca631f", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>{if(!terminerDisabled)ev.currentTarget.style.background="rgba(202,99,31,0.05)";}}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize:11.5, color:terminerDisabled?"var(--gris)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>{if(!terminerDisabled)ev.currentTarget.style.background="rgb(var(--orange-rgb) / 0.05)";}}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <Check size={12}/> Terminer
                           </button>
@@ -1972,23 +1972,23 @@ export default function ProspectsPage() {
                         );
                       })()}
                       {terminerOpenId===p.id && (
-                        <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"#FAFAF9", borderRadius:10, border:"1px solid #F0EEEC" }}>
-                          <p style={{ fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
+                        <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
+                          <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
                           <div style={{ display:"flex", gap:6, marginBottom:10 }}>
-                            {[{val:"installe",lbl:"Installation au Sénégal",col:"#188038"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
+                            {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
                               <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
-                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"#E8E5E3"}`, background:terminerForm.issue===val?`${col}18`:"transparent", color:terminerForm.issue===val?col:"#9aa5b4", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
+                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${col}18`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
                                 {lbl}
                               </button>
                             ))}
                           </div>
                           <div style={{ marginBottom:10 }}>
-                            <p style={{ fontSize:11, fontWeight:600, color:"#4a5568", marginBottom:5 }}>Commentaire *</p>
+                            <p style={{ fontSize:11, fontWeight:600, color:"var(--texte)", marginBottom:5 }}>Commentaire *</p>
                             <RichTextEditor value={terminerForm.commentaire} onChange={(v:string)=>setTerminerForm(f=>({ ...f, commentaire:v }))}/>
                           </div>
                           <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
                             onClick={()=>handleTerminer(p.id)}
-                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"#E8E5E3":"#ca631f", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"#9aa5b4":"#fff", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--orange-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                             {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
                             Conclure la prospection
                           </button>
@@ -1997,39 +1997,39 @@ export default function ProspectsPage() {
                     </div>
                   ) : onglet==="cibles" && p.nb_echanges > 0 ? (
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
                       </button>
                     </div>
                   ) : (
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid #F2F0EF" }} onClick={e=>e.stopPropagation()}>
+                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#004f91", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.05)"}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
                       </button>
                       {!estFige(p) && (
                         <>
-                          <div style={{ width:1, background:"#F2F0EF" }}/>
+                          <div style={{ width:1, background:"var(--fond)" }}/>
                           <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"#188038", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgba(24,128,56,0.05)"}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Contacter
                           </button>
                         </>
                       )}
-                      <div style={{ width:1, background:"#F2F0EF" }}/>
+                      <div style={{ width:1, background:"var(--fond)" }}/>
                       <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
                         style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.05)"}
+                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        {deleting===p.id?<Loader2 size={12} style={{ color:"#dc2626",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"#dc2626" }}/>}
+                        {deleting===p.id?<Loader2 size={12} style={{ color:"var(--danger)",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"var(--danger)" }}/>}
                       </button>
                     </div>
                   )}

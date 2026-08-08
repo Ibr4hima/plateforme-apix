@@ -24,12 +24,12 @@ export const ROLE_BADGE: Record<string, React.CSSProperties> = {
   "Sponsor":         badge_ambre,
 };
 export const ROLE_PILL: Record<string,{c:string;bg:string}> = {
-  "Organisateur":    { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
-  "Co-organisateur": { c:"#188038", bg:"rgba(24,128,56,0.08)"  },
-  "Participant":     { c:"#ca631f", bg:"rgba(202,99,31,0.08)"  },
-  "Partenaire":      { c:"#004f91", bg:"rgba(0,79,145,0.07)"   },
-  "Sponsor":         { c:"#a16207", bg:"rgba(161,98,7,0.08)"   },
-  "Invité":          { c:"#6A1B9A", bg:"rgba(106,27,154,0.07)" },
+  "Organisateur":    { c:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)"  },
+  "Co-organisateur": { c:"var(--vert)", bg:"rgb(var(--vert-rgb) / 0.08)"  },
+  "Participant":     { c:"var(--orange)", bg:"rgb(var(--orange-rgb) / 0.08)"  },
+  "Partenaire":      { c:"var(--bleu)", bg:"rgb(var(--bleu-rgb) / 0.07)"   },
+  "Sponsor":         { c:"var(--orange)", bg:"rgb(var(--alerte-rgb) / 0.08)"   },
+  "Invité":          { c:"var(--violet)", bg:"rgb(var(--violet-rgb) / 0.07)" },
 };
 export const ROLES_APIX: Record<string,string> = { "Organisateur":"Organisateur","Co-organisateur":"Co-organisateur","Participant":"Participant","Partenaire":"Partenaire","Sponsor":"Sponsor","Invité":"Invité" };
 
@@ -80,7 +80,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
           {dateStr && (
             <FicheBloc label="Date">
               <FicheValeur>{dateStr}</FicheValeur>
-              {e.duree_jours && <p style={{ fontSize: 10.5, color: "#9aa5b4", marginTop: 2 }}>{e.duree_jours} jour{e.duree_jours > 1 ? "s" : ""}</p>}
+              {e.duree_jours && <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 2 }}>{e.duree_jours} jour{e.duree_jours > 1 ? "s" : ""}</p>}
             </FicheBloc>
           )}
           {(e.ville || e.pays_hote_nom) && <FicheBloc label="Lieu"><FicheValeur>{[e.ville, e.pays_hote_nom].filter(Boolean).join(", ")}</FicheValeur></FicheBloc>}
@@ -109,7 +109,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {paysInvites.length > 0 && (
               <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#9aa5b4", textTransform: "uppercase", marginBottom: 5 }}>Pays invités</p>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Pays invités</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {paysInvites.map(p => <span key={p} style={badge_bleu}>{p}</span>)}
                 </div>
@@ -117,7 +117,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
             )}
             {entInvitees.length > 0 && (
               <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "#9aa5b4", textTransform: "uppercase", marginBottom: 5 }}>Entreprises invitées</p>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Entreprises invitées</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {entInvitees.map(ent => <span key={ent} style={badge_bleu}>{ent}</span>)}
                 </div>

@@ -93,11 +93,11 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
 
     svg.append("g").selectAll("line").data(y.ticks(4)).enter().append("line")
       .attr("x1", M.left).attr("x2", W - M.right).attr("y1", d => y(d)).attr("y2", d => y(d))
-      .attr("stroke", "#EBEBEB").attr("stroke-width", 1);
+      .style("stroke", "var(--grille)").attr("stroke-width", 1);
 
     if (y.domain()[0] < 0)
       svg.append("line").attr("x1", M.left).attr("x2", W - M.right).attr("y1", y(0)).attr("y2", y(0))
-        .attr("stroke", "#C5BFBB").attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
+        .style("stroke", "var(--bordure-forte)").attr("stroke-width", 1.2).attr("stroke-dasharray", "4,3");
 
     const tooltip = d3.select("#d3-tooltip") as any;
     const fmtAxis = (v: d3.NumberValue) => fmtAxe(+v);
@@ -136,9 +136,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       const tickVals = allAnnees.filter((_, i) => i % step === 0).map(String);
       svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
         .call(d3.axisBottom(xBand).tickValues(tickVals).tickFormat((t: any) => fmtXv(Number(t))).tickSizeOuter(0))
-        .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
+        .call(g => g.select(".domain").style("stroke", "var(--bordure-forte)"))
         .call(g => g.selectAll("line").remove())
-        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+        .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
 
     // ── COURBES SIGNATURE ──
     } else {
@@ -201,7 +201,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
             .attr("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
           gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
-            .attr("fill", s.couleur).attr("stroke", "#fff").attr("stroke-width", 1.6);
+            .attr("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.6);
 
           // Points décoratifs
           const nb = valid.length;
@@ -209,7 +209,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           if (showDots && rBase > 0) {
             svg.selectAll(`.p${gid}`).data(valid).enter().append("circle")
               .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
-              .attr("fill", "#fff").attr("stroke", s.couleur).attr("stroke-width", 1.5)
+              .style("fill", "var(--sur-bleu)").attr("stroke", s.couleur).attr("stroke-width", 1.5)
               .style("pointer-events", "none");
           }
         }
@@ -233,8 +233,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const cy = Math.max(2, py - 30);
           const chip = gPic.append("g");
           chip.append("rect").attr("x", cx).attr("y", cy).attr("rx", 9).attr("width", lw).attr("height", 18)
-            .attr("fill", "#fff").attr("stroke", "rgba(0,30,60,0.16)").attr("stroke-width", 0.75)
-            .attr("filter", `drop-shadow(0 3px 6px rgba(0,30,60,0.10))`);
+            .style("fill", "var(--sur-bleu)").style("stroke", "rgb(var(--encre-rgb) / 0.16)").attr("stroke-width", 0.75)
+            .attr("filter", `drop-shadow(0 3px 6px rgb(var(--ombre-rgb) / 0.10))`);
           chip.append("text").attr("x", cx + lw / 2).attr("y", cy + 12.5).attr("text-anchor", "middle")
             .style("font-size", "8.5px").style("font-weight", "700").style("letter-spacing", "0.8px")
             .attr("fill", series[0].couleur).text(libelle);
@@ -245,11 +245,11 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       const gCurseur = svg.append("g").style("display", "none");
       const ligneCurseur = gCurseur.append("line")
         .attr("y1", M.top).attr("y2", H - M.bottom)
-        .attr("stroke", "rgba(26,26,46,0.30)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
+        .style("stroke", "rgb(var(--encre-rgb) / 0.30)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
       const pointsCurseur = series.map(s => {
         const g = gCurseur.append("g");
         g.append("circle").attr("r", 7.5).attr("fill", s.couleur).attr("opacity", 0.25).attr("filter", `url(#${idGlow})`);
-        g.append("circle").attr("r", 4.2).attr("fill", s.couleur).attr("stroke", "#fff").attr("stroke-width", 1.8);
+        g.append("circle").attr("r", 4.2).attr("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.8);
         return g;
       });
 
@@ -278,7 +278,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const prec = avant.length ? avant.reduce((m, d) => (d.annee > m.annee ? d : m)) : null;
           const delta = prec && prec.valeur !== 0 ? (v - prec.valeur) / Math.abs(prec.valeur) * 100 : null;
           const deltaHtml = delta === null ? "" :
-            `<span style="color:${delta >= 0 ? "#7FE0A7" : "#FCA5A5"};font-weight:700;font-size:11px"> ${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>`;
+            `<span style="color:${delta >= 0 ? "var(--vert)" : "var(--danger-voile)"};font-weight:700;font-size:11px"> ${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>`;
           lignesTooltip.push(
             `<span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:${s.couleur};margin-right:6px"></span>` +
             `${series.length > 1 ? s.nom + " · " : ""}<strong>${fmtV(v)}</strong>${deltaHtml}`);
@@ -309,9 +309,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       }
       svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
         .call(d3.axisBottom(xLin).tickValues(tickAnnees).tickFormat(fmtX ? ((d: any) => fmtXv(Number(d))) : d3.format("d")).tickSizeOuter(0))
-        .call(g => g.select(".domain").attr("stroke", "#E8E5E3"))
+        .call(g => g.select(".domain").style("stroke", "var(--bordure-forte)"))
         .call(g => g.selectAll("line").remove())
-        .call(g => g.selectAll("text").style("fill", "#9aa5b4").style("font-size", "10px"));
+        .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
     }
 
     // ── Axe Y gauche (série 0) ──
@@ -319,7 +319,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
       .call(g => g.select(".domain").remove())
       .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "#9aa5b4").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
+      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "var(--gris)").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
 
     // ── Axe Y droit (série 1) si double axe ──
     if (useDual) {

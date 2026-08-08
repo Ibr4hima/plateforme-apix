@@ -47,13 +47,13 @@ function AssociatePicker({ paysList, onSelect }: { paysList: RefPays[]; onSelect
   return (
     <div ref={ref} style={{ position: "relative", flex: 1, minWidth: 0 }}>
       <input value={chosen || search} onChange={e => { setSearch(e.target.value); setChosen(""); setOpen(true); }} onFocus={() => setOpen(true)}
-        placeholder="Rechercher un pays du référentiel…" style={{ ...IS, borderColor: chosen ? "#004f91" : "#E2E1DE" }} />
+        placeholder="Rechercher un pays du référentiel…" style={{ ...IS, borderColor: chosen ? "var(--bleu)" : "var(--bordure-forte)" }} />
       {open && filtered.length > 0 && !chosen && (
-        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #E4E1DE", borderRadius: 12, boxShadow: "var(--ombre-2)", maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
+        <div style={{ position: "absolute", zIndex: 200, top: "100%", left: 0, right: 0, background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 12, boxShadow: "var(--ombre-2)", maxHeight: 220, overflowY: "auto", marginTop: 4 }}>
           {filtered.map(p => (
             <div key={p.id} onClick={() => { setChosen(p.nom_fr); setSearch(""); setOpen(false); onSelect(p.id, p.nom_fr); }}
-              style={{ padding: "8px 13px", fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #F6F5F4" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,79,145,0.05)")}
+              style={{ padding: "8px 13px", fontSize: 12.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid var(--filet)" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)")}
               onMouseLeave={e => (e.currentTarget.style.background = "")}>
               <Drapeau code={p.code_iso2} />{p.nom_fr}
             </div>
@@ -307,8 +307,8 @@ export default function AdminIdePage() {
                 {importing ? "Import en cours…" : "Importer"}
               </button>
               {prodDispo && (
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "#4a5568", cursor: "pointer", userSelect: "none" }}>
-                  <input type="checkbox" checked={prodSync} onChange={e => setProdSync(e.target.checked)} style={{ width: 15, height: 15, accentColor: "#004f91", cursor: "pointer" }} />
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--texte)", cursor: "pointer", userSelect: "none" }}>
+                  <input type="checkbox" checked={prodSync} onChange={e => setProdSync(e.target.checked)} style={{ width: 15, height: 15, accentColor: "var(--bleu)", cursor: "pointer" }} />
                   Envoyer aussi en <strong>production</strong>
                 </label>
               )}
@@ -318,16 +318,16 @@ export default function AdminIdePage() {
 
         {/* ── Pays non reconnus ── */}
         {nonResolus.length > 0 && (
-          <Carte accent="#ca631f"
+          <Carte accent="var(--orange)"
             titre={`${nonResolus.length} pays non reconnus — association manuelle`}
             aide="Associez-les une fois : ils seront reconnus automatiquement lors des prochains imports."
-            extra={<Compteur n={Object.values(associations).filter(v => v.id).length} mot="associé" couleur="#ca631f" />}>
+            extra={<Compteur n={Object.values(associations).filter(v => v.id).length} mot="associé" couleur="var(--orange)" />}>
             <div className="ro-w" style={{ display: "flex", flexDirection: "column", gap: 9 }}>
               {nonResolus.map(nr => (
-                <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgba(202,99,31,0.04)", borderRadius: 12, border: "1px solid rgba(202,99,31,0.18)", flexWrap: "wrap" }}>
+                <div key={nr.label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "rgb(var(--orange-rgb) / 0.04)", borderRadius: 12, border: "1px solid rgb(var(--orange-rgb) / 0.18)", flexWrap: "wrap" }}>
                   <div style={{ flex: "0 0 240px", minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#ca631f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nr.label}</div>
-                    <div style={{ fontSize: 11, color: "#9aa5b4", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--orange)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nr.label}</div>
+                    <div style={{ fontSize: 11, color: "var(--gris)", marginTop: 2 }}>{nr.nb_lignes} lignes non importées</div>
                   </div>
                   <AssociatePicker paysList={paysList} onSelect={(id, nom) => setAssociations(prev => ({ ...prev, [nr.label]: { id, nom } }))} />
                   <button onClick={() => handleDeplacerVersAutre(nr.label)} disabled={!!associations[nr.label]}
@@ -335,7 +335,7 @@ export default function AdminIdePage() {
                     style={{ ...btnSecondaire, opacity: associations[nr.label] ? 0.5 : 1, cursor: associations[nr.label] ? "default" : "pointer" }}>
                     Déplacer vers « Autre »
                   </button>
-                  {associations[nr.label] && <CheckCircle size={18} color="#188038" style={{ flexShrink: 0 }} />}
+                  {associations[nr.label] && <CheckCircle size={18} color="var(--vert)" style={{ flexShrink: 0 }} />}
                 </div>
               ))}
               <button onClick={handleAssocierEtReimporter} disabled={associating || !Object.values(associations).some(v => v.id)}
@@ -360,10 +360,10 @@ export default function AdminIdePage() {
 
           {/* Barre de sélection multiple */}
           {nbSelec > 0 && (
-            <div className="ro-w" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(0,79,145,0.05)", border: "1px solid rgba(0,79,145,0.18)" }}>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "#004f91" }}>
+            <div className="ro-w" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12, padding: "10px 14px", borderRadius: 12, background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.18)" }}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--bleu)" }}>
                 {nbSelec} pays sélectionné{nbSelec > 1 ? "s" : ""}
-                {enSuppression && <span style={{ color: "#9aa5b4", fontWeight: 500 }}> — suppression {suppression!.faits}/{suppression!.total}…</span>}
+                {enSuppression && <span style={{ color: "var(--gris)", fontWeight: 500 }}> — suppression {suppression!.faits}/{suppression!.total}…</span>}
               </span>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button onClick={() => setSelection(new Set())} disabled={enSuppression} style={btnSecondaire}>Tout désélectionner</button>
@@ -376,9 +376,9 @@ export default function AdminIdePage() {
           )}
 
           {loading ? <SkeletonRows n={8} /> : mergedPays.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "56px 24px", color: "#9aa5b4" }}>
+            <div style={{ textAlign: "center", padding: "56px 24px", color: "var(--gris)" }}>
               <Globe2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
-              <p style={{ fontSize: 15, fontWeight: 600, color: "#4a5568" }}>Aucun pays dans le référentiel</p>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)" }}>Aucun pays dans le référentiel</p>
             </div>
           ) : (
             <Tableau hauteurMax={620}>
@@ -398,16 +398,16 @@ export default function AdminIdePage() {
                 paysAffiches.map(s => {
                   const coche = selection.has(s.ref_pays_id);
                   return (
-                    <Ligne key={s.ref_pays_id} fond={coche ? "rgba(0,79,145,0.05)" : undefined}
+                    <Ligne key={s.ref_pays_id} fond={coche ? "rgb(var(--bleu-rgb) / 0.05)" : undefined}
                       style={{ opacity: s.hasData ? 1 : 0.5 }}>
                       <td style={{ ...TD, paddingRight: 0 }} className="ro-w">
                         <Case checked={coche} onChange={() => basculer(s.ref_pays_id)} disabled={!s.hasData}
                           titre={s.hasData ? "Sélectionner" : "Aucune donnée à supprimer"} />
                       </td>
-                      <td style={{ ...TD, position: "sticky", left: 0, background: coche ? "#F4F8FC" : "#fff", whiteSpace: "nowrap" }}>
+                      <td style={{ ...TD, position: "sticky", left: 0, background: coche ? "var(--bleu-voile)" : "var(--carte)", whiteSpace: "nowrap" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                           <Drapeau code={s.code_iso2} />
-                          <span style={{ fontWeight: s.hasData ? 700 : 500, color: s.hasData ? "#1a1a2e" : "#9aa5b4" }}>{s.pays}</span>
+                          <span style={{ fontWeight: s.hasData ? 700 : 500, color: s.hasData ? "var(--encre)" : "var(--gris)" }}>{s.pays}</span>
                         </span>
                       </td>
                       {Object.keys(SERIES_LABELS).map(k => {
@@ -415,20 +415,20 @@ export default function AdminIdePage() {
                         return (
                           <td key={k} style={{ ...TD, textAlign: "center" }}>
                             {serie ? (
-                              <span style={{ ...NUM, background: "rgba(0,79,145,0.06)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "#004f91", whiteSpace: "nowrap" }}>
-                                {serie.annee_min}–{serie.annee_max} <span style={{ color: "#9aa5b4", fontWeight: 500 }}>({serie.nb})</span>
+                              <span style={{ ...NUM, background: "rgb(var(--bleu-rgb) / 0.06)", padding: "3px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 600, color: "var(--bleu)", whiteSpace: "nowrap" }}>
+                                {serie.annee_min}–{serie.annee_max} <span style={{ color: "var(--gris)", fontWeight: 500 }}>({serie.nb})</span>
                               </span>
-                            ) : <span style={{ color: "#E0DDDA" }}>–</span>}
+                            ) : <span style={{ color: "var(--sur-bleu)" }}>–</span>}
                           </td>
                         );
                       })}
                       <td style={{ ...TD, textAlign: "center" }} className="ro-w">
                         {s.hasData && (
                           <button onClick={() => supprimerPays([s.ref_pays_id], `pour ${s.pays}`)} disabled={enSuppression} title="Supprimer ses données"
-                            style={{ background: "rgba(220,38,38,0.07)", border: "none", cursor: enSuppression ? "default" : "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
-                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(220,38,38,0.15)")}
-                            onMouseLeave={e => (e.currentTarget.style.background = "rgba(220,38,38,0.07)")}>
-                            <Trash2 size={13} style={{ color: "#dc2626" }} />
+                            style={{ background: "rgb(var(--danger-rgb) / 0.07)", border: "none", cursor: enSuppression ? "default" : "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.15)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.07)")}>
+                            <Trash2 size={13} style={{ color: "var(--danger)" }} />
                           </button>
                         )}
                       </td>
@@ -440,7 +440,7 @@ export default function AdminIdePage() {
           )}
 
           {!loading && (
-            <p style={{ fontSize: 11.5, color: "#9aa5b4", marginTop: 10 }}>
+            <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 10 }}>
               {nbImportes} pays sur {nbTotal} du référentiel ont des données IDE.
               {vue === "importes" && nbTotal > nbImportes ? " Basculez sur « Tous les pays » pour voir ceux qui n'en ont pas." : ""}
             </p>

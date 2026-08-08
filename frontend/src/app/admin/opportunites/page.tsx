@@ -17,20 +17,20 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Niveaux et secteurs — mêmes libellés et couleurs que la page publique
 const NIVEAUX_POTS = [
-  {key:"pole",           label:"Pôles territoires", unit:"pôle",           color:"#004f91"},
-  {key:"region",         label:"Régions",           unit:"région",         color:"#ca631f"},
-  {key:"departement",    label:"Départements",      unit:"département",    color:"#188038"},
-  {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"#6A1B9A"},
+  {key:"pole",           label:"Pôles territoires", unit:"pôle",           color:"var(--bleu)"},
+  {key:"region",         label:"Régions",           unit:"région",         color:"var(--orange)"},
+  {key:"departement",    label:"Départements",      unit:"département",    color:"var(--vert)"},
+  {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", color:"var(--violet)"},
 ] as const;
 const SECTEURS_AVGS = [
-  {key:"primaire",   label:"Secteur Primaire",   color:"#188038"},
-  {key:"secondaire", label:"Secteur Secondaire", color:"#ca631f"},
-  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"#004f91"},
+  {key:"primaire",   label:"Secteur Primaire",   color:"var(--vert)"},
+  {key:"secondaire", label:"Secteur Secondaire", color:"var(--orange)"},
+  {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--bleu)"},
 ] as const;
 
-const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 const NIVEAUX = [
   { value:"pole",           label:"Pôle territoire" },
@@ -206,9 +206,9 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
 
       {/* Zone géographique — titre fixe en mode édition, sélection en mode création */}
       {edit ? (
-        <div style={{ padding:"14px 18px", background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:12 }}>
-          <div style={{ fontSize:10, fontWeight:700, color:"#004f91", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
-          <div style={{ fontSize:16, fontWeight:700, color:"#1a1a2e" }}>{titreAuto() || edit.titre}</div>
+        <div style={{ padding:"14px 18px", background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:12 }}>
+          <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"var(--encre)" }}>{titreAuto() || edit.titre}</div>
         </div>
       ) : (
         <FSection title="Zone géographique">
@@ -221,7 +221,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
             // Note « n déjà défini(s) » commune aux 4 niveaux (les entrées
             // restent visibles dans les listes, grisées et non sélectionnables)
             const NoteDefinis = ({ n, libelle, fem }: { n:number; libelle:string; fem?:boolean }) => n>0 ? (
-              <p style={{fontSize:11,color:"#9aa5b4",marginTop:4}}>
+              <p style={{fontSize:11,color:"var(--gris)",marginTop:4}}>
                 {n} {libelle}{n>1?"s":""} déjà défini{fem?"e":""}{n>1?"s":""} — modifiable{n>1?"s":""} depuis la liste
               </p>
             ) : null;
@@ -303,23 +303,23 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#004f91", flexShrink:0 }}/>
+              <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{color:"#dc2626"}}/></button>
+                }} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Upload size={14} color="#9aa5b4"/>
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Upload size={14} color="var(--gris)"/>
+          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
             const files = Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -329,16 +329,16 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginTop:8 }}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{color:"#6A1B9A",flexShrink:0}}/>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                  <X size={13} style={{color:"#dc2626"}}/>
+                  <X size={13} style={{color:"var(--danger)"}}/>
                 </button>
               </div>
             ))}
-            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize:11, color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -434,12 +434,12 @@ function AvantageModal({ open, onClose, edit, onSaved }:
   // Colonne de sélection simple (cascade Secteur → Branche → Activité)
   const AvgCol = ({ title, color, open: colOpen, onToggle, count, children }: any) => (
     <div style={{flex:1,minWidth:0}}>
-      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?color+"08":"#F8F7F6",border:`1px solid ${count>0?color+"30":"#E8E5E3"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
+      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?color+"08":"var(--carte-douce)",border:`1px solid ${count>0?color+"30":"var(--bordure-forte)"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:11,fontWeight:700,color:count>0?color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
+          <span style={{fontSize:11,fontWeight:700,color:count>0?color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
           {count>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"15",padding:"1px 6px",borderRadius:999}}>1</span>}
         </div>
-        {colOpen?<ChevronUp size={12} style={{color:"#9aa5b4"}}/>:<ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+        {colOpen?<ChevronUp size={12} style={{color:"var(--gris)"}}/>:<ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
       {colOpen&&<div style={{border:`1px solid ${color}20`,borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>{children}</div>}
     </div>
@@ -447,10 +447,10 @@ function AvantageModal({ open, onClose, edit, onSaved }:
   const AvgItem = ({ label, sel, color, disabled, onClick }: any) => (
     <button onClick={onClick} disabled={disabled}
       style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",border:"none",cursor:disabled?"not-allowed":"pointer",background:sel?color+"12":"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s",opacity:disabled?0.45:1}}
-      onMouseEnter={e=>{if(!sel&&!disabled)e.currentTarget.style.background="#F8F7F6";}}
+      onMouseEnter={e=>{if(!sel&&!disabled)e.currentTarget.style.background="var(--carte-douce)";}}
       onMouseLeave={e=>{e.currentTarget.style.background=sel?color+"12":"transparent";}}>
-      <div style={{width:13,height:13,borderRadius:"50%",border:`2px solid ${sel?color:"#C5BFBB"}`,background:sel?color:"transparent",flexShrink:0,transition:"all 0.12s"}}/>
-      <span style={{fontSize:12,color:sel?"#1a1a2e":"#4a5568",fontWeight:sel?600:400}}>{label}</span>
+      <div style={{width:13,height:13,borderRadius:"50%",border:`2px solid ${sel?color:"var(--gris)"}`,background:sel?color:"transparent",flexShrink:0,transition:"all 0.12s"}}/>
+      <span style={{fontSize:12,color:sel?"var(--encre)":"var(--texte)",fontWeight:sel?600:400}}>{label}</span>
     </button>
   );
 
@@ -466,12 +466,12 @@ function AvantageModal({ open, onClose, edit, onSaved }:
 
       {/* Activité concernée */}
       {edit ? (
-        <div style={{padding:"14px 18px",background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:12}}>
-          <div style={{fontSize:10,fontWeight:700,color:"#004f91",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
+        <div style={{padding:"14px 18px",background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:12}}>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
-            {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"#004f91",background:"rgba(0,79,145,0.08)",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
-            {edit.branche_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
-            {edit.activite_nom&&<><span style={{fontSize:11,color:"#C5BFBB"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.1)",border:"1px solid rgba(24,128,56,0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
+            {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
+            {edit.branche_nom&&<><span style={{fontSize:11,color:"var(--gris)"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
+            {edit.activite_nom&&<><span style={{fontSize:11,color:"var(--gris)"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.1)",border:"1px solid rgb(var(--vert-rgb) / 0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
           </div>
         </div>
       ) : (
@@ -479,45 +479,45 @@ function AvantageModal({ open, onClose, edit, onSaved }:
           {/* Chips de résumé */}
           {(form.secteur_id||form.branche_id||form.activite_id) && (
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
-              {form.secteur_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#004f9110",color:"#004f91",border:"1px solid #004f9125",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+              {form.secteur_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.06)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {secteurs.find((s:any)=>s.id===form.secteur_id)?.nom||""}
-                <button onClick={()=>{upd("secteur_id",null);upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#004f91"}}/></button>
+                <button onClick={()=>{upd("secteur_id",null);upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--bleu)"}}/></button>
               </span>}
-              {form.branche_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#ca631f10",color:"#ca631f",border:"1px solid #ca631f25",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+              {form.branche_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--orange-rgb) / 0.06)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {branches.find((b:any)=>b.id===form.branche_id)?.nom||""}
-                <button onClick={()=>{upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#ca631f"}}/></button>
+                <button onClick={()=>{upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--orange)"}}/></button>
               </span>}
-              {form.activite_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"#18803810",color:"#188038",border:"1px solid #18803825",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
+              {form.activite_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--vert-rgb) / 0.06)",color:"var(--vert)",border:"1px solid rgb(var(--vert-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {activites.find((a:any)=>a.id===form.activite_id)?.nom||""}
-                <button onClick={()=>upd("activite_id",null)} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"#188038"}}/></button>
+                <button onClick={()=>upd("activite_id",null)} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--vert)"}}/></button>
               </span>}
             </div>
           )}
           {/* Cascade 3 colonnes */}
           <div style={{display:"flex",gap:8}}>
-            <AvgCol title="Secteur" color="#004f91" open={openSec} onToggle={()=>setOpenSec((o:boolean)=>!o)} count={form.secteur_id?1:0}>
+            <AvgCol title="Secteur" color="var(--bleu)" open={openSec} onToggle={()=>setOpenSec((o:boolean)=>!o)} count={form.secteur_id?1:0}>
               {secteurs.map((s:any)=>{
                 const sel = form.secteur_id===s.id;
-                return <AvgItem key={s.id} label={s.nom} sel={sel} color="#004f91"
+                return <AvgItem key={s.id} label={s.nom} sel={sel} color="var(--bleu)"
                   onClick={()=>{ upd("secteur_id",sel?null:s.id); if(!sel){upd("branche_id",null);upd("activite_id",null);setOpenBra(true);} }}/>;
               })}
             </AvgCol>
-            <AvgCol title="Branche" color="#ca631f" open={openBra} onToggle={()=>setOpenBra((o:boolean)=>!o)} count={form.branche_id?1:0}>
+            <AvgCol title="Branche" color="var(--orange)" open={openBra} onToggle={()=>setOpenBra((o:boolean)=>!o)} count={form.branche_id?1:0}>
               {brasDispo.length===0
-                ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
+                ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
                 : brasDispo.map((b:any)=>{
                     const sel = form.branche_id===b.id;
-                    return <AvgItem key={b.id} label={b.nom} sel={sel} color="#ca631f"
+                    return <AvgItem key={b.id} label={b.nom} sel={sel} color="var(--orange)"
                       onClick={()=>{ upd("branche_id",sel?null:b.id); if(!sel){upd("activite_id",null);setOpenAct(true);} }}/>;
                   })}
             </AvgCol>
-            <AvgCol title="Activité" color="#188038" open={openAct} onToggle={()=>setOpenAct((o:boolean)=>!o)} count={form.activite_id?1:0}>
+            <AvgCol title="Activité" color="var(--vert)" open={openAct} onToggle={()=>setOpenAct((o:boolean)=>!o)} count={form.activite_id?1:0}>
               {actsDispo.length===0
-                ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir une branche d'abord</p>
+                ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir une branche d'abord</p>
                 : actsDispo.map((a:any)=>{
                     const sel = form.activite_id===a.id;
                     const used = usedActivites.includes(a.id);
-                    return <AvgItem key={a.id} label={`${a.nom}${used&&!sel?" (déjà défini)":""}`} sel={sel} color="#188038" disabled={used&&!sel}
+                    return <AvgItem key={a.id} label={`${a.nom}${used&&!sel?" (déjà défini)":""}`} sel={sel} color="var(--vert)" disabled={used&&!sel}
                       onClick={()=>{ if(!used) upd("activite_id",sel?null:a.id); }}/>;
                   })}
             </AvgCol>
@@ -535,23 +535,23 @@ function AvantageModal({ open, onClose, edit, onSaved }:
         {fichiers.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"8px 12px"}}>
-                <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize:13,flex:1,color:"#1a1a2e",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if(edit?.id) await fetch(`${API}/opportunites/avantages/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                }} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
+                }} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s"}}
-          onMouseEnter={e=>{e.currentTarget.style.borderColor="#004f91";}}
-          onMouseLeave={e=>{e.currentTarget.style.borderColor="#E4E1DE";}}>
-          <Upload size={14} color="#9aa5b4"/>
-          <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
+        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--bleu)";}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bordure-forte)";}}>
+          <Upload size={14} color="var(--gris)"/>
+          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
             const files=Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -561,16 +561,16 @@ function AvantageModal({ open, onClose, edit, onSaved }:
         {pdfQueue.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginTop:8}}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(106,27,154,0.05)",border:"1px solid rgba(106,27,154,0.2)",borderRadius:10,padding:"8px 12px"}}>
-                <FileText size={13} style={{color:"#6A1B9A",flexShrink:0}}/>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(106,27,154,0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                  placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}>
-                  <X size={13} style={{color:"#dc2626"}}/>
+                  <X size={13} style={{color:"var(--danger)"}}/>
                 </button>
               </div>
             ))}
-            <p style={{fontSize:11,color:"#9aa5b4"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{fontSize:11,color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -658,35 +658,35 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
               {sec.items.map((a:any) => (
                 <div key={a.id} onClick={()=>onVue(a)}
-                  style={{background:"#fff",borderTop:"1px solid #E8E5E3",borderRight:"1px solid #E8E5E3",borderBottom:"1px solid #E8E5E3",borderLeft:`3px solid ${a.est_publie?color:"#C5BFBB"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"var(--ombre-1)",minWidth:0}}
+                  style={{background:"var(--carte)",borderTop:"1px solid var(--bordure-forte)",borderRight:"1px solid var(--bordure-forte)",borderBottom:"1px solid var(--bordure-forte)",borderLeft:`3px solid ${a.est_publie?color:"var(--gris)"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"var(--ombre-1)",minWidth:0}}
                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderTopColor=`${color}50`;ev.currentTarget.style.borderRightColor=`${color}50`;ev.currentTarget.style.borderBottomColor=`${color}50`;}}
-                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.borderTopColor="#E8E5E3";ev.currentTarget.style.borderRightColor="#E8E5E3";ev.currentTarget.style.borderBottomColor="#E8E5E3";}}>
-                  <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
+                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.borderTopColor="var(--bordure-forte)";ev.currentTarget.style.borderRightColor="var(--bordure-forte)";ev.currentTarget.style.borderBottomColor="var(--bordure-forte)";}}>
+                  <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
                   <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                    {a.secteur_nom&&<span style={{fontSize:11,color:"#9aa5b4"}}>{a.secteur_nom}</span>}
-                    {a.branche_nom&&<><span style={{fontSize:10,color:"#C5BFBB"}}>›</span><span style={{fontSize:11,color:"#9aa5b4"}}>{a.branche_nom}</span></>}
+                    {a.secteur_nom&&<span style={{fontSize:11,color:"var(--gris)"}}>{a.secteur_nom}</span>}
+                    {a.branche_nom&&<><span style={{fontSize:10,color:"var(--gris)"}}>›</span><span style={{fontSize:11,color:"var(--gris)"}}>{a.branche_nom}</span></>}
                   </div>
                   {(a.selections||[]).length>0&&(
                     <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
                       {(a.selections||[]).slice(0,3).map((s:any)=>(
                         <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${color}10`,border:`1px solid ${color}25`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
                       ))}
-                      {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"#9aa5b4"}}>+{(a.selections||[]).length-3}</span>}
+                      {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"var(--gris)"}}>+{(a.selections||[]).length-3}</span>}
                     </div>
                   )}
-                  {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"#9aa5b4",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
-                  <div style={{display:"flex",gap:5,borderTop:"1px solid #F2F0EF",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
+                  {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"var(--gris)",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
+                  <div style={{display:"flex",gap:5,borderTop:"1px solid var(--bordure)",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
                     <button className="ro-w" onClick={()=>onEdit(a)}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgba(0,79,145,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"#004f91",fontWeight:600}}>
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"var(--bleu)",fontWeight:600}}>
                       <Pencil size={11}/> Modifier
                     </button>
                     <button onClick={()=>onToggle(a)} disabled={avgToggle===a.id}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgba(5,150,105,0.07)":"rgba(156,163,175,0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"#059669":"#6b7280",fontWeight:600}}>
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--gris-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"var(--vert)":"var(--gris-fort)",fontWeight:600}}>
                       {avgToggle===a.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={11}/> Public</>:<><Eye size={11}/> Publier</>}
                     </button>
                     <button className="ro-w" onClick={()=>onDelete(a.id)} disabled={avgDel===a.id}
-                      style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
-                      {avgDel===a.id?<Loader2 size={11} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"#dc2626"}}/>}
+                      style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
+                      {avgDel===a.id?<Loader2 size={11} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"var(--danger)"}}/>}
                     </button>
                   </div>
                 </div>
@@ -731,24 +731,24 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   }, [p.id]);
 
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
 
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:660,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+        <div style={{height:4,background:"var(--bleu-action)",flexShrink:0}}/>
 
         {/* En-tête */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
           <div style={{minWidth:0,flex:1}}>
             <h2 title={p.titre}
               onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
               onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-              style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
               <span style={{display:"inline-block"}}>{p.titre}</span>
             </h2>
             {zoneNom&&(
@@ -758,10 +758,10 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
             )}
           </div>
           <button onClick={onClose}
-            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
+            style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            <X size={15} color="var(--texte)"/>
           </button>
         </div>
 
@@ -780,25 +780,25 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                   return (
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"#004f91"}}>{sec.nom}</span>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"var(--bleu-action)",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
-                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(0,79,145,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
                           {brasDuSec.map((bra:any) => {
                             const actsDeBra = activites.filter((a:any) => a.branche_id === bra.id && (p.activite_ids||[]).includes(a.id));
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#ca631f",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#ca631f"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -819,9 +819,9 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
           {p.description&&(
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte style={{fontSize:13,color:"#4a5568",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
+                <div data-rte style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
               </div>
             </section>
           )}
@@ -833,9 +833,9 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
-                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
-                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -845,13 +845,13 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -874,33 +874,33 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
   },[a.id]);
 
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"#004f91",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
 
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(2,20,38,0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"#fff",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:620,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
-        <div style={{height:4,background:"#004f91",flexShrink:0}}/>
+        <div style={{height:4,background:"var(--bleu-action)",flexShrink:0}}/>
 
         {/* En-tête */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid #F2F0EF",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
           <div style={{minWidth:0,flex:1}}>
             <h2 title={data.activite_nom}
               onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
               onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-              style={{fontWeight:800,fontSize:"1.1rem",color:"#1a1a2e",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
               <span style={{display:"inline-block"}}>{data.activite_nom}</span>
             </h2>
             <div style={{display:"flex",gap:6,marginTop:8,minWidth:0}}>
-              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>{data.secteur_nom}</span>}
+              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>{data.secteur_nom}</span>}
               {data.branche_nom&&(
                 <span title={data.branche_nom}
                   onMouseEnter={ev=>{const box=ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;const sp=box?.firstElementChild as HTMLElement|null;if(!box||!sp)return;const d=sp.scrollWidth-box.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
                   onMouseLeave={ev=>{const sp=(ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null)?.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-                  style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"#ca631f",background:"rgba(202,99,31,0.08)",padding:"3px 10px",borderRadius:999,minWidth:0}}>
+                  style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999,minWidth:0}}>
                   <span data-marquee style={{overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
                     <span style={{display:"inline-block"}}>{data.branche_nom}</span>
                   </span>
@@ -909,10 +909,10 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             </div>
           </div>
           <button onClick={onClose}
-            style={{background:"#F5F4F3",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
-            onMouseEnter={ev=>(ev.currentTarget.style.background="#ECEAE8")}
-            onMouseLeave={ev=>(ev.currentTarget.style.background="#F5F4F3")}>
-            <X size={15} color="#4a5568"/>
+            style={{background:"var(--champ)",border:"none",cursor:"pointer",borderRadius:99,width:32,height:32,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background 0.15s"}}
+            onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
+            onMouseLeave={ev=>(ev.currentTarget.style.background="var(--champ)")}>
+            <X size={15} color="var(--texte)"/>
           </button>
         </div>
 
@@ -925,12 +925,12 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <SecTitle>Avantages &amp; incitations</SecTitle>
               <div style={{display:"flex",flexDirection:"column" as const,gap:8}}>
                 {(data.selections||[]).map((s:any)=>(
-                  <div key={s.id} style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"12px 14px"}}>
+                  <div key={s.id} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:700,color:"#188038"}}>{s.type_libelle}</span>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:700,color:"var(--vert)"}}>{s.type_libelle}</span>
                     </div>
-                    {s.commentaire&&<p style={{fontSize:13,color:"#4a5568",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
+                    {s.commentaire&&<p style={{fontSize:13,color:"var(--texte)",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
                   </div>
                 ))}
               </div>
@@ -941,9 +941,9 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
           {data.avantages&&(
             <section>
               <SecTitle>Description</SecTitle>
-              <div style={{background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,padding:"13px 15px"}}>
+              <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}/>
+                <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
               </div>
             </section>
           )}
@@ -955,9 +955,9 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <div style={{display:"flex",flexDirection:"column" as const,gap:5}}>
                 {(data.fichiers||[]).map((f:any)=>(
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
-                    <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
-                    <span style={{fontSize:12.5,color:"#004f91",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
+                    <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
+                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -967,13 +967,13 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
         </div>
 
         {/* Pied */}
-        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid #F2F0EF",background:"#FCFBFA",flexShrink:0}}>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid #E4E1DE",background:"#fff",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(data);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgba(0,79,145,0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -1098,17 +1098,17 @@ export default function OpportunitesAdminPage() {
   const openNewProjet = useRef<(() => void) | null>(null);
 
   const TABS=[
-    {key:"projets",       label:"Banque de projets",      color:"#ca631f"},
-    {key:"potentialites", label:"Potentialités par zone",  color:"#059669"},
-    {key:"avantages",     label:"Avantages & incitations", color:"#0D652D"},
+    {key:"projets",       label:"Banque de projets",      color:"var(--orange)"},
+    {key:"potentialites", label:"Potentialités par zone",  color:"var(--vert)"},
+    {key:"avantages",     label:"Avantages & incitations", color:"var(--vert-fonce)"},
   ] as const;
 
   const niveauBadge=(p:any)=>{
-    if(p.pole_id)          return {label:p.pole_nom||"Pôle",            color:"#ca631f"};
-    if(p.region_id)        return {label:p.region_nom||"Région",        color:"#E35336"};
-    if(p.departement_id)   return {label:p.departement_nom||"Dép.",     color:"#0891b2"};
-    if(p.arrondissement_id)return {label:p.arrondissement_nom||"Arr.",  color:"#0D652D"};
-    return {label:"Global",color:"#6b7280"};
+    if(p.pole_id)          return {label:p.pole_nom||"Pôle",            color:"var(--orange)"};
+    if(p.region_id)        return {label:p.region_nom||"Région",        color:"var(--danger)"};
+    if(p.departement_id)   return {label:p.departement_nom||"Dép.",     color:"var(--cyan)"};
+    if(p.arrondissement_id)return {label:p.arrondissement_nom||"Arr.",  color:"var(--vert-fonce)"};
+    return {label:"Global",color:"var(--gris-fort)"};
   };
   const potTitle = (p:any) => (p.titre||"")
     .replace(/^[Pp]otentialités?\s+(de\s+l[''']|de\s+la\s+|de\s+le\s+|du\s+|de\s+)/i, "")
@@ -1131,9 +1131,9 @@ export default function OpportunitesAdminPage() {
       <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={actionOnglet.onClick}
-            style={{display:"inline-flex",alignItems:"center",gap:8,background:"#fff",color:"#ca631f",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgba(0,0,0,0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
-            onMouseEnter={ev=>{ev.currentTarget.style.background="#FFF6EF";ev.currentTarget.style.transform="translateY(-1px)";}}
-            onMouseLeave={ev=>{ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="none";}}>
+            style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--carte)",color:"var(--orange)",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
+            onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
+            onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
             <Plus size={15}/> {actionOnglet.label}
           </button>
         }>
@@ -1168,9 +1168,9 @@ export default function OpportunitesAdminPage() {
                 return (
                   // Clic = bascule : les fiches se déplient sous les cards
                   <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(actif?null:n.key)}
-                    style={{background:"#fff",border:actif?`1.5px solid ${n.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    style={{background:"var(--carte)",border:actif?`1.5px solid ${n.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${n.color}88`:"rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${n.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Niveau */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1180,18 +1180,18 @@ export default function OpportunitesAdminPage() {
 
                     {/* Compteur principal */}
                     <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"#1a1a2e":"#C5BFBB",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"#9aa5b4"}}>{n.unit}{total>1?"s":""}</span>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
                     </div>
 
                     {/* Couverture des fiches */}
                     <div style={{marginTop:"auto"}}>
-                      <div style={{height:6,background:"#F2F0EF",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                      <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                         <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
-                      <p style={{fontSize:11,fontWeight:600,color:count>0?"#4a5568":"#9aa5b4"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                         {count>0
-                          ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"#9aa5b4",fontWeight:500}}> · {pct} %</span>:null}</>
+                          ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                           : "Aucune fiche définie"}
                       </p>
                     </div>
@@ -1210,16 +1210,16 @@ export default function OpportunitesAdminPage() {
                   <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 14px",borderRadius:16,
                     background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
                     border:`1px solid ${meta.color}22`}}>
-                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
                       <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                     </div>
                     <div style={{minWidth:0,flex:1}}>
                       <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
-                      <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                      <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
                     </div>
                   </div>
                 );
-                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"#9aa5b4"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
+                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
 
                 // Rattachements géographiques via le référentiel déjà chargé
                 const regionDuDept = (nom:string) => {
@@ -1246,43 +1246,43 @@ export default function OpportunitesAdminPage() {
                   const nbActs = (p.activite_ids||[]).length;
                   return (
                     <div onClick={()=>setPotVue(p)}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:p.est_publie===false?0.7:1}}
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:p.est_publie===false?0.7:1}}
                       onMouseEnter={ev=>{
-                        ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                        ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                         // Nom trop long : glisse pour révéler la fin
                         const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                         const span = box?.firstElementChild as HTMLElement | null;
                         if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
                       }}
                       onMouseLeave={ev=>{
-                        ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                        ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
                         const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                         if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                       }}>
                       <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                         <span style={{display:"inline-block"}}>{potTitle(p)}</span>
                       </div>
-                      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"#9aa5b4",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
                       {/* Actions d'administration */}
                       <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
                         <button onClick={()=>{setPotEdit(p);setPotModal(true);}} title="Modifier"
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,79,145,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.14)"}
-                          onMouseLeave={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.07)"}>
-                          <Pencil size={12} style={{color:"#004f91"}}/>
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--bleu-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                          onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.14)"}
+                          onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.07)"}>
+                          <Pencil size={12} style={{color:"var(--bleu)"}}/>
                         </button>
                         <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} title={p.est_publie?"Retirer de la page publique":"Publier"}
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:p.est_publie?"rgba(24,128,56,0.07)":"rgba(202,99,31,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:p.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--orange-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
                           {potToggle===p.id
-                            ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"#9aa5b4"}}/>
-                            : p.est_publie ? <EyeOff size={12} style={{color:"#188038"}}/> : <Eye size={12} style={{color:"#ca631f"}}/>}
+                            ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"var(--gris)"}}/>
+                            : p.est_publie ? <EyeOff size={12} style={{color:"var(--vert)"}}/> : <Eye size={12} style={{color:"var(--orange)"}}/>}
                         </button>
                         <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} title="Supprimer"
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                          onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
-                          onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
-                          {potDel===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                          onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.14)"}
+                          onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.07)"}>
+                          {potDel===p.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
                         </button>
                       </div>
                     </div>
@@ -1293,7 +1293,7 @@ export default function OpportunitesAdminPage() {
                 if (selectedNiveau==="pole") return (
                   <>
                   {bandeauNiveau}
-                  <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
+                  <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                       {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
                     </div>
@@ -1311,16 +1311,16 @@ export default function OpportunitesAdminPage() {
                           <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
                             background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
                             border:`1px solid ${meta.color}22`}}>
-                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
                               <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                             </div>
                             <div style={{minWidth:0,flex:1}}>
                               <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
-                              <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                              <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
                             </div>
                           </div>
                           {/* Fiches du groupe */}
-                          <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
+                          <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
                             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                               {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
                             </div>
@@ -1345,9 +1345,9 @@ export default function OpportunitesAdminPage() {
           {avgsLoad ? (
             <SkeletonCards n={3} cols={3} height={190}/>
           ) : avgs.length===0 ? (
-            <div style={{textAlign:"center",padding:"80px 24px",color:"#9aa5b4"}}>
+            <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
               <Award size={48} style={{marginBottom:16,opacity:0.3}}/>
-              <p style={{fontSize:16,fontWeight:600,color:"#4a5568"}}>Aucun avantage enregistré</p>
+              <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun avantage enregistré</p>
               <p style={{fontSize:14,marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
             </div>
           ) : (
@@ -1365,9 +1365,9 @@ export default function OpportunitesAdminPage() {
                 return (
                   // Clic = bascule : les branches se déplient sous les cards
                   <div key={s.key} onClick={()=>count>0&&setSelectedSec(actif?null:s.key)}
-                    style={{background:"#fff",border:actif?`1.5px solid ${s.color}88`:"1px solid rgba(16,26,46,0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    style={{background:"var(--carte)",border:actif?`1.5px solid ${s.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
                     onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${s.color}88`:"rgba(16,26,46,0.12)";}}>
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${s.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1377,18 +1377,18 @@ export default function OpportunitesAdminPage() {
 
                     {/* Compteur principal */}
                     <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"#1a1a2e":"#C5BFBB",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"#9aa5b4"}}>activité{actCount>1?"s":""}</span>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
                     </div>
 
                     {/* Couverture des avantages */}
                     <div style={{marginTop:"auto"}}>
-                      <div style={{height:6,background:"#F2F0EF",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                      <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                         <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
-                      <p style={{fontSize:11,fontWeight:600,color:count>0?"#4a5568":"#9aa5b4"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                         {count>0
-                          ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"#9aa5b4",fontWeight:500}}> · {pct} %</span>:null}</>
+                          ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                           : "Aucun avantage défini"}
                       </p>
                     </div>
@@ -1418,55 +1418,55 @@ export default function OpportunitesAdminPage() {
                         <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
                           background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
                           border:`1px solid ${meta.color}22`}}>
-                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"#fff",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
                             <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
                             <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
-                            <div style={{fontWeight:800,fontSize:16,color:"#1a1a2e",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
                           </div>
                         </div>
                         {/* Activités de la branche */}
-                        <div style={{background:"#fff",border:"1px solid rgba(16,26,46,0.12)",borderRadius:16,boxShadow:"none"}}>
+                        <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
                           <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSec==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                             {bra.items.map((a:any)=>(
                               <div key={a.id} onClick={()=>setAvgVue(a)}
-                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"#FAFAF9",border:"1px solid #F0EEEC",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
+                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="#fff";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                   const span = box?.firstElementChild as HTMLElement | null;
                                   if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
                                 }}
                                 onMouseLeave={ev=>{
-                                  ev.currentTarget.style.borderColor="#F0EEEC";ev.currentTarget.style.background="#FAFAF9";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                  ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
                                   const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
                                 <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"#1a1a2e",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
                                 {/* Actions d'administration */}
                                 <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
                                   <button onClick={()=>{setAvgEdit(a);setAvgModal(true);}} title="Modifier"
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,79,145,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.14)"}
-                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgba(0,79,145,0.07)"}>
-                                    <Pencil size={12} style={{color:"#004f91"}}/>
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--bleu-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.14)"}
+                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.07)"}>
+                                    <Pencil size={12} style={{color:"var(--bleu)"}}/>
                                   </button>
                                   <button onClick={()=>toggleAvg(a)} disabled={avgToggle===a.id} title={a.est_publie?"Retirer de la page publique":"Publier"}
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:a.est_publie?"rgba(24,128,56,0.07)":"rgba(202,99,31,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--orange-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
                                     {avgToggle===a.id
-                                      ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"#9aa5b4"}}/>
-                                      : a.est_publie ? <EyeOff size={12} style={{color:"#188038"}}/> : <Eye size={12} style={{color:"#ca631f"}}/>}
+                                      ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"var(--gris)"}}/>
+                                      : a.est_publie ? <EyeOff size={12} style={{color:"var(--vert)"}}/> : <Eye size={12} style={{color:"var(--orange)"}}/>}
                                   </button>
                                   <button onClick={()=>deleteAvg(a.id)} disabled={avgDel===a.id} title="Supprimer"
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(220,38,38,0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.14)"}
-                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgba(220,38,38,0.07)"}>
-                                    {avgDel===a.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
+                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.14)"}
+                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.07)"}>
+                                    {avgDel===a.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
                                   </button>
                                 </div>
                               </div>

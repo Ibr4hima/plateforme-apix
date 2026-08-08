@@ -1,14 +1,14 @@
 // Données de navigation partagées entre la navbar et les bandeaux de page.
 
 export const modules = [
-  { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "#ca631f" },
-  { label: "Échanges commerciaux",          href: "/statistiques", icon: "currency_exchange",      color: "#004f91" },
-  { label: "Prospects",                     href: "/prospects",    icon: "frame_inspect",          color: "#ca631f" },
-  { label: "Entreprises installées",        href: "/entreprises",  icon: "enterprise",             color: "#004f91" },
-  { label: "Zones d'investissement",        href: "/zones",        icon: "real_estate_agent",      color: "#ca631f" },
-  { label: "Opportunités d'investissement", href: "/opportunites", icon: "bookmark_stacks",        color: "#004f91" },
-  { label: "Accords & Traités",             href: "/accords",      icon: "signature",              color: "#ca631f" },
-  { label: "Événements",                    href: "/evenements",   icon: "event",                  color: "#004f91" },
+  { label: "Investissements privés",        href: "/ide",          icon: "finance_mode",           color: "var(--orange)" },
+  { label: "Échanges commerciaux",          href: "/statistiques", icon: "currency_exchange",      color: "var(--bleu)" },
+  { label: "Prospects",                     href: "/prospects",    icon: "frame_inspect",          color: "var(--orange)" },
+  { label: "Entreprises installées",        href: "/entreprises",  icon: "enterprise",             color: "var(--bleu)" },
+  { label: "Zones d'investissement",        href: "/zones",        icon: "real_estate_agent",      color: "var(--orange)" },
+  { label: "Opportunités d'investissement", href: "/opportunites", icon: "bookmark_stacks",        color: "var(--bleu)" },
+  { label: "Accords & Traités",             href: "/accords",      icon: "signature",              color: "var(--orange)" },
+  { label: "Événements",                    href: "/evenements",   icon: "event",                  color: "var(--bleu)" },
 ];
 
 // Slugs des modules protégés (connexion requise quand AUTH_ENFORCED est actif)

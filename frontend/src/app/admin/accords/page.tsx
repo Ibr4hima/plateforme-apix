@@ -63,35 +63,35 @@ function BoutonAjoutPays({ allPays, exclusIds, onPick, fermerApresChoix = false 
   return (
     <div ref={ref} style={{ position: "relative", display: "inline-flex" }}>
       <button onClick={() => setOpen(o => !o)} aria-label="Ajouter un pays" title="Ajouter un pays"
-        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${open ? "#004f91" : "rgba(0,79,145,0.35)"}`,
-          background: open ? "rgba(0,79,145,0.08)" : "rgba(255,255,255,0.7)", color: "#004f91", cursor: "pointer",
+        style={{ width: 28, height: 28, borderRadius: 999, border: `1.5px dashed ${open ? "var(--bleu)" : "rgb(var(--bleu-rgb) / 0.35)"}`,
+          background: open ? "rgb(var(--bleu-rgb) / 0.08)" : "rgb(var(--carte-rgb) / 0.7)", color: "var(--bleu)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = "#004f91"; e.currentTarget.style.background = "rgba(0,79,145,0.08)"; }}
-        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = "rgba(0,79,145,0.35)"; e.currentTarget.style.background = "rgba(255,255,255,0.7)"; } }}>
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--bleu)"; e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.08)"; }}
+        onMouseLeave={e => { if (!open) { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; e.currentTarget.style.background = "rgb(var(--carte-rgb) / 0.7)"; } }}>
         <Plus size={14} />
       </button>
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 220, width: 300,
-          border: "1px solid #E4E1DE", borderRadius: 12, background: "#fff", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
-          <div style={{ padding: 8, borderBottom: "1px solid #F2F0EF" }}>
+          border: "1px solid var(--bordure-forte)", borderRadius: 12, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
+          <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
             <input ref={inputRef} className="fui-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", boxSizing: "border-box" as const, background: "#FCFCFB", borderWidth: 1, borderStyle: "solid", borderColor: "#E2E1DE", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
             {groupes.map(([continent, pays]: any) => (
               <div key={continent}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
                 {pays.map((p: any) => (
                   <button key={p.id} onClick={() => { onPick(p); setQ(""); if (fermerApresChoix) setOpen(false); else inputRef.current?.focus(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid #F2F0EF", transition: "background 0.1s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+                    style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid var(--bordure)", transition: "background 0.1s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize: 12, color: "#1a1a2e", fontWeight: 500 }}>{p.nom_fr}</span>
+                    <span style={{ fontSize: 12, color: "var(--encre)", fontWeight: 500 }}>{p.nom_fr}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {dispo.length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
           </div>
         </div>
       )}
@@ -282,7 +282,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           <BoutonAjoutPays allPays={allPays} exclusIds={[senIdRef, tbiAutreId].filter(Boolean) as number[]} fermerApresChoix
             onPick={p=>update("pays_ids",senIdRef?[senIdRef,p.id]:[p.id])} />
         </div>
-        {tbiTitre&&<p style={{fontSize:12,color:"#9aa5b4",marginTop:12}}>Titre de l&apos;accord : <strong style={{color:"#1a1a2e"}}>{tbiTitre}</strong></p>}
+        {tbiTitre&&<p style={{fontSize:12,color:"var(--gris)",marginTop:12}}>Titre de l&apos;accord : <strong style={{color:"var(--encre)"}}>{tbiTitre}</strong></p>}
       </FSection>
       ) : (<>
       {/* Parties signataires */}
@@ -311,9 +311,9 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         ) : (
           <>
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
-              <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(0,79,145,0.1)",color:"#004f91",border:"1px solid rgba(0,79,145,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--bleu-rgb) / 0.1)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
               {(form.orgs as string[]).map((org:string)=>(
-                <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(202,99,31,0.1)",color:"#ca631f",border:"1px solid rgba(202,99,31,0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
+                <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--orange-rgb) / 0.1)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
                   {org}<button onClick={()=>update("orgs",(form.orgs as string[]).filter((x:string)=>x!==org))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
                 </span>
               ))}
@@ -360,21 +360,21 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         {fichiers.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginBottom:8}}>
             {fichiers.map((f:any)=>(
-              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(0,79,145,0.05)",border:"1px solid rgba(0,79,145,0.15)",borderRadius:10,padding:"8px 12px"}}>
-                <FileText size={13} style={{color:"#004f91",flexShrink:0}}/>
+              <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize:13,flex:1,color:"#1a1a2e",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
-                  style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
+                  style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed #E4E1DE",background:"#FAFAF9",transition:"border-color 0.15s"}}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Upload size={14} color="#9aa5b4"/>
-          <span style={{fontSize:13,color:"#9aa5b4"}}>Ajouter un ou plusieurs PDF</span>
+        <label style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",border:"2px dashed var(--bordure-forte)",background:"var(--carte-douce)",transition:"border-color 0.15s"}}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Upload size={14} color="var(--gris)"/>
+          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
             const files=Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -384,15 +384,15 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         {pdfQueue.length>0&&(
           <div style={{display:"flex",flexDirection:"column" as const,gap:5,marginTop:8}}>
             {pdfQueue.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgba(106,27,154,0.05)",border:"1px solid rgba(106,27,154,0.2)",borderRadius:10,padding:"8px 12px"}}>
-                <FileText size={13} style={{color:"#6A1B9A",flexShrink:0}}/>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:10,padding:"8px 12px"}}>
+                <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document"
-                  style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgba(106,27,154,0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
-                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"#dc2626"}}/></button>
+                  style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
             ))}
-            <p style={{fontSize:11,color:"#9aa5b4"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{fontSize:11,color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -415,9 +415,9 @@ const dureeDepuis = (dstr: string): string => {
 // Statuts sur les jetons du design system : en vigueur vert, signé bleu,
 // expiré gris ; l'accent de survol suit la couleur du statut.
 const STATUT_CARTE: Record<string, { label: string; badge: React.CSSProperties; accent: string }> = {
-  en_vigueur: { label: "En vigueur",           badge: badge_vert, accent: "#188038" },
-  signe:      { label: "Signé non en vigueur", badge: badge_bleu, accent: "#004f91" },
-  expire:     { label: "Expiré",               badge: badge_gris, accent: "#9aa5b4" },
+  en_vigueur: { label: "En vigueur",           badge: badge_vert, accent: "var(--vert)" },
+  signe:      { label: "Signé non en vigueur", badge: badge_bleu, accent: "var(--bleu)" },
+  expire:     { label: "Expiré",               badge: badge_gris, accent: "var(--gris)" },
 };
 
 function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
@@ -428,7 +428,7 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
   const st = statut ? STATUT_CARTE[statut] : null;
   const estExpire = statut === "expire";
   const txtC = estExpire ? "#4a5568" : "#1a1a2e";
-  const accent = st ? st.accent : "#C5BFBB";
+  const accent = st ? st.accent : "var(--gris)";
   // Date secondaire : expiration si renseignée, sinon entrée en vigueur
   const dateSec = a.date_expiration
     ? { label: "Expiration", val: fmtDate(a.date_expiration), vide: false }
@@ -440,16 +440,16 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
 
   return (
     <div onClick={onVoir}
-      style={{ background: estExpire ? "#FBFAF9" : "#fff", border: "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: a.est_publie === false ? 0.85 : 1 }}
+      style={{ background: estExpire ? "var(--carte-douce)" : "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: a.est_publie === false ? 0.85 : 1 }}
       onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent; }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgba(16,26,46,0.12)"; }}>
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
 
       <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
         {/* Titre + ancienneté du statut | publication & statut */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{a.titre}</div>
-            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>}
+            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "flex-end" }}>
             {a.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
@@ -458,40 +458,40 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
         </div>
 
         {/* Dates en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: a.date_signature ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: a.date_signature ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
           </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: dateSec.vide ? "#C5BFBB" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: dateSec.vide ? "var(--gris)" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
           </div>
         </div>
       </div>
 
       {/* Actions d'administration */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }} onClick={ev => ev.stopPropagation()}>
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           <Pencil size={12} /> Modifier
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: a.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = a.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: a.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = a.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : a.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
           style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
         </button>
       </div>
     </div>
@@ -554,13 +554,13 @@ export default function AdminAccords() {
       <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#FFF6EF"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "none"; }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-voile)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "none"; }}>
             <Plus size={15} /> Ajouter un accord
           </button>
         }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{accords.length}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{accords.length}</span>
       </BarreTitre>
 
       {/* ── Grille pleine largeur (3 colonnes) ── */}
@@ -570,9 +570,9 @@ export default function AdminAccords() {
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : accords.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
             <FileText size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun accord enregistré</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun accord enregistré</p>
             <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un accord » pour commencer.</p>
           </div>
         ) : (
@@ -590,7 +590,7 @@ export default function AdminAccords() {
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       {vue && <AccordVueModal accord={vue} onClose={() => setVue(null)} actions={
         <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Pencil size={13} /> Modifier
         </button>
       } />}

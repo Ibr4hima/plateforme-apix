@@ -21,7 +21,7 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
     const items = total > 0 ? positifs.filter(d => d.valeur / total * 100 >= 0.05) : [];
     if (!items.length) return;
     const n = items.length;
-    const couleur = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(n > 1 ? i / (n - 1) : 0) as string;
+    const couleur = (i: number) => d3.interpolateRgb("var(--bleu-profond)", "var(--bleu-voile)")(n > 1 ? i / (n - 1) : 0) as string;
 
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
     const H = height ?? Math.max(230, n * 22 + 44);
@@ -49,8 +49,8 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
       .on("mouseout", function (_e, d: any) { d3.select(this).attr("d", arc(d) as string).attr("opacity", 0.9); hideD3Tooltip(tooltip); });
 
     // Total au centre
-    g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", `${bigFont}px`).style("font-weight", "800").style("fill", "#1a1a2e").text(fmtV(total));
-    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", `${Math.max(9.5, bigFont * 0.55)}px`).style("fill", "#9aa5b4").text("total");
+    g.append("text").attr("text-anchor", "middle").attr("dy", "-.05em").style("font-size", `${bigFont}px`).style("font-weight", "800").style("fill", "var(--encre)").text(fmtV(total));
+    g.append("text").attr("text-anchor", "middle").attr("dy", "1.5em").style("font-size", `${Math.max(9.5, bigFont * 0.55)}px`).style("fill", "var(--gris)").text("total");
 
     // Légende (part la plus forte en haut, couleur assortie)
     const lgFont = R >= 120 ? 13 : 11;
@@ -64,9 +64,9 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
       const pct = (d.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
       let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
       const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
-      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", couleur(i)).attr("stroke", "#E8E5E3").attr("stroke-width", 0.5);
-      row.append("text").attr("x", 18).attr("y", 0).attr("dy", "0.04em").style("font-size", `${lgFont}px`).style("fill", "#4a5568").text(lbl);
-      row.append("text").attr("x", rightX - lx).attr("y", 0).attr("dy", "0.04em").attr("text-anchor", "end").style("font-size", `${lgFont}px`).style("font-weight", "700").style("fill", "#1a1a2e").text(`${pct}%`);
+      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", couleur(i)).style("stroke", "var(--bordure-forte)").attr("stroke-width", 0.5);
+      row.append("text").attr("x", 18).attr("y", 0).attr("dy", "0.04em").style("font-size", `${lgFont}px`).style("fill", "var(--texte)").text(lbl);
+      row.append("text").attr("x", rightX - lx).attr("y", 0).attr("dy", "0.04em").attr("text-anchor", "end").style("font-size", `${lgFont}px`).style("font-weight", "700").style("fill", "var(--encre)").text(`${pct}%`);
       ly += rowH;
     });
   }, [data, fmtV, height]);

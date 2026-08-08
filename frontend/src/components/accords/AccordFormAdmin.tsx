@@ -57,42 +57,42 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
   };
 
   const inputStyle = {
-    width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB",
-    borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#1a1a2e",
+    width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+    borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--encre)",
     outline: "none", fontFamily: "var(--font-body)", boxSizing: "border-box" as const,
   };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: "#4a5568", marginBottom: 6, display: "block" };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 6, display: "block" };
   const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 4 };
 
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+        position: "fixed", inset: 0, background: "rgb(var(--ombre-rgb) / 0.4)",
         backdropFilter: "blur(6px)", display: "flex",
         alignItems: "center", justifyContent: "center",
         zIndex: 200, padding: 24,
       }}
     >
       <div style={{
-        background: "#FAFAF9", borderRadius: 24,
-        border: "1px solid #C5BFBB", width: "100%", maxWidth: 680,
+        background: "var(--carte-douce)", borderRadius: 24,
+        border: "1px solid var(--bordure-forte)", width: "100%", maxWidth: 680,
         maxHeight: "90vh", overflowY: "auto",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.15)",
+        boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.15)",
       }}>
-        <div style={{ height: 5, background: "linear-gradient(90deg, #004f91, #1a6ab0)", borderRadius: "24px 24px 0 0" }} />
+        <div style={{ height: 5, background: "linear-gradient(90deg, var(--bleu-action), var(--bleu-clair))", borderRadius: "24px 24px 0 0" }} />
 
         <div style={{ padding: "24px 28px" }}>
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <div>
-              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.25rem", color: "#1a1a2e" }}>
+              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.25rem", color: "var(--encre)" }}>
                 Nouvel accord / traité
               </h2>
-              <p style={{ fontSize: 13, color: "#9aa5b4", marginTop: 2 }}>Remplissez les informations de l'accord</p>
+              <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 2 }}>Remplissez les informations de l'accord</p>
             </div>
-            <button onClick={onClose} style={{ background: "#E8E5E3", border: "none", cursor: "pointer", borderRadius: 10, padding: 8 }}>
-              <X size={16} color="#4a5568" />
+            <button onClick={onClose} style={{ background: "var(--fond-creux2)", border: "none", cursor: "pointer", borderRadius: 10, padding: 8 }}>
+              <X size={16} color="var(--texte)" />
             </button>
           </div>
 
@@ -102,7 +102,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
             {/* Titre + Référence */}
             <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Titre <span style={{ color: "#ca631f" }}>*</span></label>
+                <label style={labelStyle}>Titre <span style={{ color: "var(--orange)" }}>*</span></label>
                 <input value={form.titre} onChange={e => update("titre", e.target.value)} placeholder="Intitulé complet de l'accord" style={inputStyle} />
               </div>
               <div style={fieldStyle}>
@@ -166,7 +166,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
 
             {/* Domaines */}
             <div style={fieldStyle}>
-              <label style={labelStyle}>Domaines couverts <span style={{ fontSize: 11, color: "#9aa5b4", fontWeight: 400 }}>(séparés par des virgules)</span></label>
+              <label style={labelStyle}>Domaines couverts <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 400 }}>(séparés par des virgules)</span></label>
               <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
             </div>
 
@@ -206,11 +206,11 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
               <label style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "12px 16px", borderRadius: 10, cursor: "pointer",
-                border: "2px dashed #C5BFBB", background: fichier ? "rgba(0,79,145,0.04)" : "#F2F0EF",
+                border: "2px dashed var(--bordure-forte)", background: fichier ? "rgb(var(--bleu-rgb) / 0.04)" : "var(--fond)",
                 transition: "all 0.2s",
               }}>
-                <Upload size={16} color={fichier ? "#004f91" : "#9aa5b4"} />
-                <span style={{ fontSize: 13, color: fichier ? "#004f91" : "#9aa5b4" }}>
+                <Upload size={16} color={fichier ? "var(--bleu)" : "var(--gris)"} />
+                <span style={{ fontSize: 13, color: fichier ? "var(--bleu)" : "var(--gris)" }}>
                   {fichier ? fichier.name : "Cliquer pour sélectionner un PDF"}
                 </span>
                 <input
@@ -227,14 +227,14 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
                 onChange={e => update("est_publie", e.target.checked)}
                 style={{ width: 16, height: 16, cursor: "pointer" }}
               />
-              <label htmlFor="est_publie" style={{ fontSize: 13, color: "#4a5568", cursor: "pointer" }}>
+              <label htmlFor="est_publie" style={{ fontSize: 13, color: "var(--texte)", cursor: "pointer" }}>
                 Publier sur le site public
               </label>
             </div>
 
             {/* Erreur */}
             {error && (
-              <div style={{ background: "#fee2e2", color: "#dc2626", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
+              <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
                 {error}
               </div>
             )}
@@ -242,15 +242,15 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
             {/* Boutons */}
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
               <button onClick={onClose} style={{
-                padding: "11px 22px", borderRadius: 12, border: "1px solid #C5BFBB",
-                background: "transparent", color: "#4a5568", fontSize: 14, fontWeight: 600, cursor: "pointer",
+                padding: "11px 22px", borderRadius: 12, border: "1px solid var(--bordure-forte)",
+                background: "transparent", color: "var(--texte)", fontSize: 14, fontWeight: 600, cursor: "pointer",
               }}>
                 Annuler
               </button>
               <button onClick={handleSubmit} disabled={loading || success} style={{
                 padding: "11px 28px", borderRadius: 12, border: "none",
-                background: success ? "#dcfce7" : "linear-gradient(135deg, #004f91, #003a6e)",
-                color: success ? "#15803d" : "#fff",
+                background: success ? "var(--vert-voile)" : "linear-gradient(135deg, var(--bleu-action), var(--bleu-nuit))",
+                color: success ? "var(--vert-fonce)" : "var(--sur-bleu)",
                 fontSize: 14, fontWeight: 600, cursor: loading ? "wait" : "pointer",
                 display: "flex", alignItems: "center", gap: 8,
                 transition: "all 0.2s",

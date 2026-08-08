@@ -28,7 +28,7 @@ export default function DrapeauPays({ iso, nom, taille = 16, sansIso = "globe" }
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={`/drapeaux/${iso.toLowerCase()}.svg`} alt="" title={nom}
       style={{ width: taille * 1.25, height: taille * 0.875, objectFit: "cover", borderRadius: 2.5,
-               boxShadow: "0 0 0 1px rgba(15,40,80,0.14)", flexShrink: 0 }} />;
+               boxShadow: "0 0 0 1px rgb(var(--ombre-rgb) / 0.14)", flexShrink: 0 }} />;
   }
   if (sansIso === "rien") return null;
   return <span title={nom} style={{ fontSize: taille - 1, lineHeight: 1, flexShrink: 0 }}>🌐</span>;

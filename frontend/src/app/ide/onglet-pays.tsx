@@ -44,7 +44,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
-  const couleur = "#004f91";
+  const couleur = "var(--bleu)";
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   const [erreur, setErreur] = useState(false);
@@ -124,9 +124,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const parAnneeS = new Map(rowsS.map(r => [r.annee, r.valeur]));
     const net = rowsE.filter(r => parAnneeS.has(r.annee))
       .map(r => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
-    const serieNet = [{ nom: "Flux nets", couleur: "#004f91", data: net }];
+    const serieNet = [{ nom: "Flux nets", couleur: "var(--bleu)", data: net }];
     const top10 = [...rowsE].sort((a, b) => b.valeur - a.valeur).slice(0, 10);
-    const serieTop = [{ nom: "Flux entrants", couleur: "#004f91", data: top10 }];
+    const serieTop = [{ nom: "Flux entrants", couleur: "var(--bleu)", data: top10 }];
     return { serieNet, top10, serieTop };
   })() : null;
 
@@ -190,20 +190,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     <div style={{ display:"flex", alignItems:"flex-start" }}>
 
         {/* Sidebar bande */}
-        <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"#fff", borderRight:"1px solid #E8E5E3", height:"100vh", overflowY:"auto" as const, position:"sticky" as const, top:0, display:"flex", flexDirection:"column" as const }}>
-          <style>{`::-webkit-scrollbar-thumb{background:#E8E5E3}::-webkit-scrollbar-thumb:hover{background:#C5BFBB}`}</style>
-          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(0,79,145,0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
-          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid #F2F0EF", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"#1a1a2e", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+        <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"var(--carte)", borderRight:"1px solid var(--bordure-forte)", height:"100vh", overflowY:"auto" as const, position:"sticky" as const, top:0, display:"flex", flexDirection:"column" as const }}>
+          <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
+          {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
+          <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
+            {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
-                <SlidersHorizontal size={14} style={{ color:"#004f91" }}/>
-                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+              <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
+                <SlidersHorizontal size={14} style={{ color:"var(--bleu)" }}/>
+                {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
               </button>
-              {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgba(220,38,38,0.08)", border:"1px solid rgba(220,38,38,0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(220,38,38,0.15)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="rgba(220,38,38,0.08)";}}>
-                <span className="material-symbols-outlined" style={{ fontSize:15, color:"#dc2626", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+              {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
+                <span className="material-symbols-outlined" style={{ fontSize:15, color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
               </button>}
             </div>
           </div>
@@ -211,38 +211,38 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               {/* Sélecteurs Vue + Type d'analyse */}
               <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
-                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+                <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid #E8E5E3", background:"#F8F7F6", fontSize:12, color:"#1a1a2e", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
-                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"#9aa5b4" }}/></button>}
+                  style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+                {searchPays&&<button onClick={()=>setSearchPays("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
               </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+              <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
               {/* Pays */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
-                  <span style={{ fontSize:10, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Pays</span>
+                  <span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>
                 </div>
                 {/* Sénégal épinglé */}
                 {(()=>{
                   const sel = paysSelec==="Sénégal";
-                  const col = "#004f91";
+                  const col = "var(--bleu-action)";
                   return (
                     <div style={{ marginBottom:8, marginLeft:6 }}>
                       <button onClick={()=>{ setPaysSelec("Sénégal"); setPaysComp(prev=>prev.filter(n=>n!=="Sénégal")); }}
                         style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
-                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                        onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background="var(--carte-douce)";}}
                         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
-                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, background:sel?"var(--bleu-action)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           
                         </div>
-                        <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400 }}>Sénégal</span>
-                        <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4", fontWeight:600, background:"#F2F0EF", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
+                        <span style={{ fontSize:12, color:"var(--texte)", fontWeight:sel?700:400 }}>Sénégal</span>
+                        <span style={{ marginLeft:"auto", fontSize:9, color:"var(--gris)", fontWeight:600, background:"var(--fond)", padding:"1px 5px", borderRadius:4 }}>Réf.</span>
                       </button>
                     </div>
                   );
                 })()}
-                <div style={{ height:1, background:"#F2F0EF", marginBottom:8 }}/>
+                <div style={{ height:1, background:"var(--fond)", marginBottom:8 }}/>
                 <div style={{ maxHeight:200, overflowY:"auto" as const }}>
                   {sortContinents(Object.keys(groupedPays)).map(continent => {
                     const isOpen = openConts.has(continent);
@@ -250,33 +250,33 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                     return (
                       <div key={continent} style={{ marginBottom:6 }}>
                         <button onClick={()=>toggleCont(continent)}
-                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgba(0,79,145,0.04)", border:"none", cursor:"pointer", marginBottom:3 }}>
-                          <span style={{ fontSize:10, fontWeight:700, color:"#004f91", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
-                          <ChevronDown size={11} style={{ color:"#004f91", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
+                          style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"5px 8px", borderRadius:7, background:"rgb(var(--bleu-rgb) / 0.04)", border:"none", cursor:"pointer", marginBottom:3 }}>
+                          <span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{continent}</span>
+                          <ChevronDown size={11} style={{ color:"var(--bleu)", transform:isOpen?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                         </button>
                         {isOpen&&Object.entries(zones).sort(([a],[b])=>a.localeCompare(b,"fr")).map(([zone,paysInZone]) => (
                           <div key={zone} style={{ marginLeft:6, marginBottom:4 }}>
-                            <p style={{ fontSize:9, fontWeight:600, color:"#C5BFBB", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
+                            <p style={{ fontSize:9, fontWeight:600, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", padding:"2px 8px", marginBottom:2 }}>{zone}</p>
                             {(paysInZone as any[]).map((p:any) => {
                               const sel = paysSelec === p.nom;
                               if (p.nom==="Sénégal") return (
                                 <div key={p.nom} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, width:"100%", opacity:0.35, cursor:"not-allowed" as const }}>
-                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, background:sel?"var(--bleu-action)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     
                                   </div>
-                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
-                                  <span style={{ marginLeft:"auto", fontSize:9, color:"#9aa5b4" }}>Réf.</span>
+                                  <span style={{ fontSize:12, color:"var(--texte)", fontWeight:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ marginLeft:"auto", fontSize:9, color:"var(--gris)" }}>Réf.</span>
                                 </div>
                               );
                               return (
                                 <button key={p.nom} onClick={()=>{ setPaysSelec(p.nom); setPaysComp(prev=>prev.filter(n=>n!==p.nom)); }}
                                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%" }}
-                                  onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="#F8F7F6";}}
+                                  onMouseEnter={e=>{if(!sel)(e.currentTarget as HTMLElement).style.background="var(--carte-douce)";}}
                                   onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";}}>
-                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"#004f91":"#C5BFBB"}`, background:sel?"#004f91":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                  <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, background:sel?"var(--bleu-action)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                                     
                                   </div>
-                                  <span style={{ fontSize:12, color:"#4a5568", fontWeight:sel?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
+                                  <span style={{ fontSize:12, color:"var(--texte)", fontWeight:sel?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</span>
                                 </button>
                               );
                             })}
@@ -285,19 +285,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       </div>
                     );
                   })}
-                  {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"#9aa5b4", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
+                  {Object.keys(groupedPays).length===0&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun pays trouvé</p>}
                 </div>
               </div>
-              <div style={{ height:1, background:"#F2F0EF", marginBottom:18 }}/>
+              <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
               {/* Période */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
-                <div style={{ display:"flex", gap:3, background:"#F2F0EF", borderRadius:9, padding:3, marginBottom:12 }}>
+                <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                     <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"#fff":"transparent", color:modeAnnees===m.v?"#1a1a2e":"#9aa5b4", boxShadow:modeAnnees===m.v?"0 1px 4px rgba(0,0,0,0.1)":"none", transition:"all 0.15s" }}>
+                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
                       {m.l}
                     </button>
                   ))}
@@ -309,11 +309,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                      <span style={{ fontSize:10, color:"#9aa5b4" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#004f91", background:"rgba(0,79,145,0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                     </div>
-                    <p style={{ fontSize:11, color:"#9aa5b4", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+                    <p style={{ fontSize:11, color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
                   </div>
                 ) : (
                   <div>
@@ -322,15 +322,15 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                         const sel=anneesSpec.includes(a);
                         return (
                           <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"#004f91":"#E8E5E3"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"#004f91":"#F8F7F6", color:sel?"#fff":"#4a5568", transition:"all 0.1s" }}>
+                            style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"var(--bleu-action)":"var(--carte-douce)", color:sel?"var(--sur-bleu)":"var(--texte)", transition:"all 0.1s" }}>
                             {a}
                           </button>
                         );
                       })}
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <span style={{ fontSize:11, color:"#4a5568" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                      {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"#9aa5b4", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                      <span style={{ fontSize:11, color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                      {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
                     </div>
                   </div>
                 )}
@@ -380,7 +380,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 ) : (
                   <>
                     <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
-                    <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"#1a1a2e" }}>{paysSelec}</h2>
+                    <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)" }}>{paysSelec}</h2>
                   </>
                 );
               })()}
@@ -406,19 +406,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
               <div key={c.label}
-                style={{ background:"#fff", borderRadius:14, padding:"13px 14px", border:"1px solid rgba(16,26,46,0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgba(0,79,145,0.35)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgba(16,26,46,0.12)"; }}>
+                style={{ background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
+                onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
-                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
-                  {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
+                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
+                  {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
                 </div>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{c.val}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
                 <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                   {c.delta != null && c.ref != null ? (<>
-                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"#188038":c.delta<0?"#dc2626":"#9aa5b4", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
-                    <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
-                  </>) : (c.ind ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{c.ind}</p> : null)}
+                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"var(--vert)":c.delta<0?"var(--danger)":"var(--gris)", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
+                    <span style={{ fontSize:9.5, color:"var(--gris)", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
+                  </>) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
                 </div>
               </div>
             )) : <>
@@ -429,26 +429,26 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={k.id} className="kpi-card" onClick={()=>setKpiActif(k)}
-                  style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
-                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgba(0,79,145,0.35)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgba(0,79,145,0.35)":"rgba(16,26,46,0.12)"; }}>
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
                   {(()=>{ const { main, suffix } = splitKpiTitre(k.label); return (
                     <div style={{ marginBottom:7, paddingRight:26 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"#004f91", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
-                        {k.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"#8a93a3", background:"#EEF1F6", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{k.annee}</span>}
+                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{main}</p>
+                        {k.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{k.annee}</span>}
                       </div>
-                      {k.annee == null && suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"#9aa5b4", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
+                      {k.annee == null && suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"var(--gris)", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
                     </div>
                   ); })()}
-                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"#1a1a2e", lineHeight:1 }}>{fmtKpi(k)}</p>
+                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{fmtKpi(k)}</p>
                   <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                     {delta != null && ref != null ? (<>
-                      <span style={{ fontSize:10, fontWeight:800, color:delta>0?"#188038":delta<0?"#dc2626":"#9aa5b4", whiteSpace:"nowrap" as const }}>{delta>0?"▲":delta<0?"▼":"="}&nbsp;{Math.abs(delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
-                      <span style={{ fontSize:9.5, color:"#9aa5b4", whiteSpace:"nowrap" as const }}>par rapport à {ref}</span>
-                    </>) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"#9aa5b4", lineHeight:1 }}>{indicatif}</p> : null)}
+                      <span style={{ fontSize:10, fontWeight:800, color:delta>0?"var(--vert)":delta<0?"var(--danger)":"var(--gris)", whiteSpace:"nowrap" as const }}>{delta>0?"▲":delta<0?"▼":"="}&nbsp;{Math.abs(delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
+                      <span style={{ fontSize:9.5, color:"var(--gris)", whiteSpace:"nowrap" as const }}>par rapport à {ref}</span>
+                    </>) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{indicatif}</p> : null)}
                   </div>
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}
@@ -462,11 +462,11 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={`empty-${i}`} data-picker-trigger onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
-                  style={{ position:"relative", background:"#fff", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"#004f91":"#E8E5E3"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
-                  onMouseEnter={e=>{ e.currentTarget.style.borderColor="#004f91"; }}
-                  onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="#E8E5E3"; }}>
-                  <span style={{ fontSize:20, color:pickerOuvert?"#004f91":"#C5BFBB", lineHeight:1 }}>+</span>
-                  <span style={{ fontSize:10, color:pickerOuvert?"#004f91":"#C5BFBB", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
+                  style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
+                  onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
+                  onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>
+                  <span style={{ fontSize:20, color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>
+                  <span style={{ fontSize:10, color:pickerOuvert?"var(--bleu)":"var(--gris)", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}
                       onPick={id=>remplacerKpi(slot,id)} onClose={()=>setPickerSlot(-1)}/>

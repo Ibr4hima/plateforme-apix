@@ -21,6 +21,7 @@
   --gris-fort: #6b7280;
   --gris: #9aa5b4;
   --sur-bleu: #FFFFFF;
+  --bleu-fixe: #004f91;
   --bleu: #004f91;
   --bleu-action: #004f91;
   --bleu-nuit: #003a6e;
@@ -55,16 +56,20 @@
   --pouce: #FFFFFF;
   --verre: rgba(255,255,255,0.65);
   --verre-fort: rgba(242,240,239,0.92);
+  --verre-barre: rgba(255,255,255,0.88);
+  --verre-opaque: rgba(255,255,255,0.96);
   --ombre-a1: 0.08;
   --ombre-a2: 0.16;
 
   --bleu-rgb: 0 79 145;
+  --bleuFixe-rgb: 0 79 145;
   --orange-rgb: 202 99 31;
   --vert-rgb: 24 128 56;
   --violet-rgb: 106 27 154;
   --danger-rgb: 220 38 38;
   --alerte-rgb: 180 83 9;
   --cyan-rgb: 8 145 178;
+  --carte-rgb: 255 255 255;
   --encre-rgb: 26 26 46;
   --ombre-rgb: 0 30 60;
   --gris-rgb: 122 138 164;
@@ -98,6 +103,7 @@
     --gris-fort: #9AA7B8;
     --gris: #8D9AAC;
     --sur-bleu: #FFFFFF;
+    --bleu-fixe: #004f91;
     --bleu: #85B9EC;
     --bleu-action: #2E64A6;
     --bleu-nuit: #16213A;
@@ -132,16 +138,20 @@
     --pouce: #DCE6F3;
     --verre: rgba(21,30,46,0.72);
     --verre-fort: rgba(11,18,32,0.92);
+    --verre-barre: rgba(13,21,36,0.86);
+    --verre-opaque: rgba(13,21,36,0.96);
     --ombre-a1: 0.34;
     --ombre-a2: 0.52;
 
     --bleu-rgb: 133 185 236;
+    --bleuFixe-rgb: 0 79 145;
     --orange-rgb: 255 164 92;
     --vert-rgb: 72 201 176;
     --violet-rgb: 199 155 235;
     --danger-rgb: 240 138 138;
     --alerte-rgb: 224 164 88;
     --cyan-rgb: 95 199 222;
+    --carte-rgb: 21 30 46;
     --encre-rgb: 237 241 247;
     --ombre-rgb: 0 0 0;
     --gris-rgb: 122 138 164;
@@ -173,6 +183,7 @@
   --gris-fort: #9AA7B8;
   --gris: #8D9AAC;
   --sur-bleu: #FFFFFF;
+  --bleu-fixe: #004f91;
   --bleu: #85B9EC;
   --bleu-action: #2E64A6;
   --bleu-nuit: #16213A;
@@ -207,16 +218,20 @@
   --pouce: #DCE6F3;
   --verre: rgba(21,30,46,0.72);
   --verre-fort: rgba(11,18,32,0.92);
+  --verre-barre: rgba(13,21,36,0.86);
+  --verre-opaque: rgba(13,21,36,0.96);
   --ombre-a1: 0.34;
   --ombre-a2: 0.52;
 
   --bleu-rgb: 133 185 236;
+  --bleuFixe-rgb: 0 79 145;
   --orange-rgb: 255 164 92;
   --vert-rgb: 72 201 176;
   --violet-rgb: 199 155 235;
   --danger-rgb: 240 138 138;
   --alerte-rgb: 224 164 88;
   --cyan-rgb: 95 199 222;
+  --carte-rgb: 21 30 46;
   --encre-rgb: 237 241 247;
   --ombre-rgb: 0 0 0;
   --gris-rgb: 122 138 164;

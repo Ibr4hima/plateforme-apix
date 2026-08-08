@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const SELECT_STYLE = {
-  width: "100%", background: "#F2F0EF", border: "1px solid #C5BFBB",
-  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "#1a1a2e",
+  width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
   outline: "none", fontFamily: "var(--font-google-sans)",
   cursor: "pointer", boxSizing: "border-box" as const,
 };
@@ -39,7 +39,7 @@ export function RegionSelect({ value, onChange, required, filterIds, disabledIds
         const sel = regions.find(r => r.id === parseInt(e.target.value));
         onChange(sel?.id || null, sel?.nom || "");
       }}
-      style={{ ...SELECT_STYLE, borderColor: required && !value ? "#dc2626" : "#C5BFBB" }}
+      style={{ ...SELECT_STYLE, borderColor: required && !value ? "var(--danger)" : "var(--bordure-forte)" }}
     >
       <option value="">{filterIds && filterIds.length > 0 ? `— ${filterIds.length} région${filterIds.length>1?"s":""} disponible${filterIds.length>1?"s":""} —` : "— Sélectionner —"}</option>
       {displayed.map(r => {
@@ -73,7 +73,7 @@ export function DepartementSelect({ regionId, value, onChange, required, disable
         const sel = departements.find(d => d.id === parseInt(e.target.value));
         onChange(sel?.id || null, sel?.nom || "");
       }}
-      style={{ ...SELECT_STYLE, opacity: departements.length ? 1 : 0.5, cursor: departements.length ? "pointer" : "not-allowed", borderColor: required && !value && regionId ? "#dc2626" : "#C5BFBB" }}
+      style={{ ...SELECT_STYLE, opacity: departements.length ? 1 : 0.5, cursor: departements.length ? "pointer" : "not-allowed", borderColor: required && !value && regionId ? "var(--danger)" : "var(--bordure-forte)" }}
     >
       <option value="">— Sélectionner —</option>
       {departements.map(d => {

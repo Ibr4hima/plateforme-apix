@@ -50,7 +50,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       let lx = 0;
       ln.forEach(c => {
         svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", col(c.i));
-        svg.append("text").attr("x", lx + 17).attr("y", ly).attr("dy", "0.32em").style("font-size", "11px").style("fill", "#4a5568").text(c.label);
+        svg.append("text").attr("x", lx + 17).attr("y", ly).attr("dy", "0.32em").style("font-size", "11px").style("fill", "var(--texte)").text(c.label);
         lx += c.w + 10;
       });
       ly += legRowH;
@@ -74,14 +74,14 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       present.forEach(({ res, ri, v }) => {
         const segW = (hasFloor ? floorPx : 0) + (Math.pow(v, exposant) / racSum) * reste;
         svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
-          .attr("fill", col(ri)).attr("stroke", "#fff").attr("stroke-width", 0.6).style("cursor", "pointer")
+          .attr("fill", col(ri)).style("stroke", "var(--carte)").attr("stroke-width", 0.6).style("cursor", "pointer")
           .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
           .on("mousemove", (e) => showD3Tooltip(tooltip, e))
           .on("mouseout", function () { d3.select(this).attr("opacity", 1); hideD3Tooltip(tooltip); });
         xc += segW;
       });
-      svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "#4a5568").text(p.nom);
-      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "#9aa5b4").text(fmtV(p.total));
+      svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "var(--texte)").text(p.nom);
+      svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "var(--gris)").text(fmtV(p.total));
     });
   }, [partenaires, ressources, fmtV, rowH, exposant]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);

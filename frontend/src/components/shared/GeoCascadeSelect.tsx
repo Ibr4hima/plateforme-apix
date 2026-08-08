@@ -31,10 +31,10 @@ function RadioItem({ label, selected, onToggle, color }: { label: string; select
   return (
     <button type="button" onClick={onToggle}
       style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 7, border: "none", cursor: "pointer", background: selected ? color + "12" : "transparent", width: "100%", textAlign: "left" as const, transition: "background 0.12s" }}
-      onMouseEnter={e => { if (!selected) e.currentTarget.style.background = "#F8F7F6"; }}
+      onMouseEnter={e => { if (!selected) e.currentTarget.style.background = "var(--carte-douce)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = selected ? color + "12" : "transparent"; }}>
-      <div style={{ width: 13, height: 13, borderRadius: "50%", border: `2px solid ${selected ? color : "#C5BFBB"}`, background: selected ? color : "transparent", flexShrink: 0, transition: "all 0.12s" }} />
-      <span style={{ fontSize: 12, color: selected ? "#1a1a2e" : "#4a5568", fontWeight: selected ? 600 : 400 }}>{label}</span>
+      <div style={{ width: 13, height: 13, borderRadius: "50%", border: `2px solid ${selected ? color : "var(--gris)"}`, background: selected ? color : "transparent", flexShrink: 0, transition: "all 0.12s" }} />
+      <span style={{ fontSize: 12, color: selected ? "var(--encre)" : "var(--texte)", fontWeight: selected ? 600 : 400 }}>{label}</span>
     </button>
   );
 }
@@ -43,12 +43,12 @@ function ColSection({ title, color, children, open, onToggle, count }: { title: 
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <button type="button" onClick={onToggle}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "8px 10px", background: count > 0 ? color + "08" : "#F8F7F6", border: `1px solid ${count > 0 ? color + "30" : "#E8E5E3"}`, borderRadius: 9, cursor: "pointer", marginBottom: open ? 4 : 0, transition: "all 0.15s" }}>
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "8px 10px", background: count > 0 ? color + "08" : "var(--carte-douce)", border: `1px solid ${count > 0 ? color + "30" : "var(--bordure-forte)"}`, borderRadius: 9, cursor: "pointer", marginBottom: open ? 4 : 0, transition: "all 0.15s" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: count > 0 ? color : "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>{title}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: count > 0 ? color : "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>{title}</span>
           {count > 0 && <span style={{ fontSize: 10, fontWeight: 700, color, background: color + "15", padding: "1px 6px", borderRadius: 999 }}>{count}</span>}
         </div>
-        {open ? <ChevronUp size={12} style={{ color: "#9aa5b4" }} /> : <ChevronDown size={12} style={{ color: "#9aa5b4" }} />}
+        {open ? <ChevronUp size={12} style={{ color: "var(--gris)" }} /> : <ChevronDown size={12} style={{ color: "var(--gris)" }} />}
       </button>
       {open && (
         <div style={{ border: `1px solid ${color}20`, borderRadius: 9, overflow: "hidden", maxHeight: 220, overflowY: "auto" as const }}>
@@ -91,9 +91,9 @@ export default function GeoCascadeSelect({ filterRegionIds, regionId, departemen
   const arrNom = arrondissements.find(a => a.id === arrondissementId)?.nom;
 
   const chips = [
-    regionId       && regNom ? { nom: regNom, color: "#004f91", clear: () => onChangeRegion(null) } : null,
-    departementId  && depNom ? { nom: depNom, color: "#ca631f", clear: () => onChangeDepartement(null) } : null,
-    arrondissementId && arrNom ? { nom: arrNom, color: "#188038", clear: () => onChangeArrondissement(null) } : null,
+    regionId       && regNom ? { nom: regNom, color: "var(--bleu)", clear: () => onChangeRegion(null) } : null,
+    departementId  && depNom ? { nom: depNom, color: "var(--orange)", clear: () => onChangeDepartement(null) } : null,
+    arrondissementId && arrNom ? { nom: arrNom, color: "var(--vert)", clear: () => onChangeArrondissement(null) } : null,
   ].filter(Boolean) as { nom: string; color: string; clear: () => void }[];
 
   return (
@@ -110,7 +110,7 @@ export default function GeoCascadeSelect({ filterRegionIds, regionId, departemen
             </span>
           ))}
           <button type="button" onClick={() => onChangeRegion(null)}
-            style={{ fontSize: 10, color: "#dc2626", background: "none", border: "none", cursor: "pointer", padding: "2px 4px" }}>
+            style={{ fontSize: 10, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", padding: "2px 4px" }}>
             Tout effacer
           </button>
         </div>
@@ -118,33 +118,33 @@ export default function GeoCascadeSelect({ filterRegionIds, regionId, departemen
 
       {/* Colonnes cascade */}
       <div style={{ display: "flex", gap: 8 }}>
-        <ColSection title="Région" color="#004f91" open={openReg} onToggle={() => setOpenReg(o => !o)} count={regionId ? 1 : 0}>
+        <ColSection title="Région" color="var(--bleu)" open={openReg} onToggle={() => setOpenReg(o => !o)} count={regionId ? 1 : 0}>
           {regionsAffichees.map(r => (
-            <RadioItem key={r.id} label={r.nom} selected={regionId === r.id} color="#004f91"
+            <RadioItem key={r.id} label={r.nom} selected={regionId === r.id} color="var(--bleu)"
               onToggle={() => onChangeRegion(regionId === r.id ? null : r.id)} />
           ))}
         </ColSection>
-        <ColSection title="Département" color="#ca631f" open={openDep} onToggle={() => setOpenDep(o => !o)} count={departementId ? 1 : 0}>
+        <ColSection title="Département" color="var(--orange)" open={openDep} onToggle={() => setOpenDep(o => !o)} count={departementId ? 1 : 0}>
           {!regionId
-            ? <p style={{ fontSize: 11, color: "#9aa5b4", padding: "10px 12px" }}>Choisir une région d&apos;abord</p>
+            ? <p style={{ fontSize: 11, color: "var(--gris)", padding: "10px 12px" }}>Choisir une région d&apos;abord</p>
             : (
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#004f91", padding: "6px 10px 3px", background: "rgba(0,79,145,0.05)", borderBottom: "1px solid rgba(0,79,145,0.1)" }}>{regNom}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", padding: "6px 10px 3px", background: "rgb(var(--bleu-rgb) / 0.05)", borderBottom: "1px solid rgb(var(--bleu-rgb) / 0.1)" }}>{regNom}</div>
                 {departements.map(d => (
-                  <RadioItem key={d.id} label={d.nom} selected={departementId === d.id} color="#ca631f"
+                  <RadioItem key={d.id} label={d.nom} selected={departementId === d.id} color="var(--orange)"
                     onToggle={() => onChangeDepartement(departementId === d.id ? null : d.id)} />
                 ))}
               </div>
             )}
         </ColSection>
-        <ColSection title="Arrondissement" color="#188038" open={openArr} onToggle={() => setOpenArr(o => !o)} count={arrondissementId ? 1 : 0}>
+        <ColSection title="Arrondissement" color="var(--vert)" open={openArr} onToggle={() => setOpenArr(o => !o)} count={arrondissementId ? 1 : 0}>
           {!departementId
-            ? <p style={{ fontSize: 11, color: "#9aa5b4", padding: "10px 12px" }}>Choisir un département d&apos;abord</p>
+            ? <p style={{ fontSize: 11, color: "var(--gris)", padding: "10px 12px" }}>Choisir un département d&apos;abord</p>
             : (
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#ca631f", padding: "6px 10px 3px", background: "rgba(202,99,31,0.05)", borderBottom: "1px solid rgba(202,99,31,0.1)" }}>{depNom}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--orange)", padding: "6px 10px 3px", background: "rgb(var(--orange-rgb) / 0.05)", borderBottom: "1px solid rgb(var(--orange-rgb) / 0.1)" }}>{depNom}</div>
                 {arrondissements.map(a => (
-                  <RadioItem key={a.id} label={a.nom} selected={arrondissementId === a.id} color="#188038"
+                  <RadioItem key={a.id} label={a.nom} selected={arrondissementId === a.id} color="var(--vert)"
                     onToggle={() => onChangeArrondissement(arrondissementId === a.id ? null : a.id)} />
                 ))}
               </div>

@@ -60,20 +60,20 @@ function formatValue(v: any, col: string): string {
 // ─── Badge coloré ────────────────────────────────────────────────────────────
 function Badge({ value }: { value: string }) {
   const map: Record<string, { bg: string; color: string }> = {
-    "vide":              { bg: "#fee2e2", color: "#dc2626" },
-    "pleine":            { bg: "#dcfce7", color: "#15803d" },
-    "partielle":         { bg: "#fef9c3", color: "#a16207" },
-    "en attente":        { bg: "#f1f5f9", color: "#64748b" },
-    "terminé":           { bg: "#f1f5f9", color: "#64748b" },
-    "en cours":          { bg: "#dbeafe", color: "#1d4ed8" },
-    "non démarré":       { bg: "#fef9c3", color: "#a16207" },
-    "très concentrée":   { bg: "#fce7f3", color: "#be185d" },
-    "très spécialisée":  { bg: "#fce7f3", color: "#be185d" },
-    "concentrée":        { bg: "#fee2e2", color: "#dc2626" },
-    "spécialisée":       { bg: "#fee2e2", color: "#dc2626" },
-    "modérée":           { bg: "#fef9c3", color: "#a16207" },
-    "diversifiée":       { bg: "#dcfce7", color: "#15803d" },
-    "nouvelle":          { bg: "#dbeafe", color: "#1d4ed8" },
+    "vide":              { bg: "var(--danger-voile)", color: "var(--danger)" },
+    "pleine":            { bg: "var(--vert-voile)", color: "var(--vert-fonce)" },
+    "partielle":         { bg: "var(--alerte-voile)", color: "var(--orange)" },
+    "en attente":        { bg: "var(--bleu-voile)", color: "var(--gris-fort)" },
+    "terminé":           { bg: "var(--bleu-voile)", color: "var(--gris-fort)" },
+    "en cours":          { bg: "var(--bleu-voile)", color: "var(--bleu)" },
+    "non démarré":       { bg: "var(--alerte-voile)", color: "var(--orange)" },
+    "très concentrée":   { bg: "var(--rose-voile)", color: "var(--rose)" },
+    "très spécialisée":  { bg: "var(--rose-voile)", color: "var(--rose)" },
+    "concentrée":        { bg: "var(--danger-voile)", color: "var(--danger)" },
+    "spécialisée":       { bg: "var(--danger-voile)", color: "var(--danger)" },
+    "modérée":           { bg: "var(--alerte-voile)", color: "var(--orange)" },
+    "diversifiée":       { bg: "var(--vert-voile)", color: "var(--vert-fonce)" },
+    "nouvelle":          { bg: "var(--bleu-voile)", color: "var(--bleu)" },
   };
   const lower = value.toLowerCase();
   const style = Object.entries(map).find(([k]) => lower.includes(k))?.[1];
@@ -211,41 +211,41 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
   return (
     <div style={{
       display: "flex", flexDirection: "column" as const,
-      background: "#fff", width: "100%",
+      background: "var(--carte)", width: "100%",
       borderRadius: embedded ? 0 : 14,
-      border: embedded ? "none" : "1px solid #ECEAE7",
+      border: embedded ? "none" : "1px solid var(--bordure)",
       boxShadow: embedded ? "none" : "var(--ombre-1)",
       overflow: "hidden",
     }}>
 
       {/* ── Header ── */}
-      <div style={{ padding: "16px 20px 14px", background: "#fff", borderBottom: "1px solid #F2F0EF" }}>
+      <div style={{ padding: "16px 20px 14px", background: "var(--carte)", borderBottom: "1px solid var(--bordure)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 800, color: "#1a1a2e", margin: 0, minWidth: 0 }}>{titre}</h2>
+          <h2 style={{ fontSize: 14, fontWeight: 800, color: "var(--encre)", margin: 0, minWidth: 0 }}>{titre}</h2>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
             <div style={{ position: "relative" as const }}>
-              <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+              <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
-                style={{ width: 150, paddingLeft: 27, paddingRight: 22, paddingTop: 6, paddingBottom: 6, borderRadius: 9, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 11.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const, transition: "border-color 0.15s, background 0.15s" }}
-                onFocus={e => { e.currentTarget.style.borderColor = "rgba(0,79,145,0.45)"; e.currentTarget.style.background = "#fff"; }}
-                onBlur={e => { e.currentTarget.style.borderColor = "#E8E5E3"; e.currentTarget.style.background = "#F8F7F6"; }} />
+                style={{ width: 150, paddingLeft: 27, paddingRight: 22, paddingTop: 6, paddingBottom: 6, borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 11.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const, transition: "border-color 0.15s, background 0.15s" }}
+                onFocus={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.45)"; e.currentTarget.style.background = "var(--carte)"; }}
+                onBlur={e => { e.currentTarget.style.borderColor = "var(--bordure-forte)"; e.currentTarget.style.background = "var(--carte-douce)"; }} />
               {search && <button onClick={() => setSearch("")}
-                style={{ position: "absolute" as const, right: 7, top: "50%", transform: "translateY(-50%)", background: "#ECEAE8", border: "none", cursor: "pointer", padding: 2, borderRadius: "50%", display: "flex" }}>
-                <X size={8} style={{ color: "#4a5568" }} />
+                style={{ position: "absolute" as const, right: 7, top: "50%", transform: "translateY(-50%)", background: "var(--fond-creux2)", border: "none", cursor: "pointer", padding: 2, borderRadius: "50%", display: "flex" }}>
+                <X size={8} style={{ color: "var(--texte)" }} />
               </button>}
             </div>
             <button onClick={exportXLSX} title={`Exporter ${sorted.length} lignes en Excel`}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
-                background: "#004f91", border: "none", borderRadius: 9, boxShadow: "0 3px 12px rgba(0,79,145,0.25)",
-                cursor: "pointer", fontSize: 11.5, color: "#fff", fontWeight: 700, fontFamily: "var(--font-google-sans)" }}>
+                background: "var(--bleu-action)", border: "none", borderRadius: 9, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)",
+                cursor: "pointer", fontSize: 11.5, color: "var(--sur-bleu)", fontWeight: 700, fontFamily: "var(--font-google-sans)" }}>
               <FileSpreadsheet size={12} /> Excel
             </button>
             {onClose && (
               <button onClick={onClose}
-                style={{ width: 28, height: 28, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-                <X size={13} color="#4a5568" />
+                style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+                <X size={13} color="var(--texte)" />
               </button>
             )}
           </div>
@@ -255,24 +255,24 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
       {/* ── Tableau ── */}
       <div style={{ overflowX: "auto" }}>
         {loading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 50, gap: 10, color: "#9aa5b4" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 50, gap: 10, color: "var(--gris)" }}>
             <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
             <span style={{ fontSize: 13 }}>Chargement…</span>
           </div>
         ) : error ? (
           <div style={{ padding: 40, textAlign: "center" as const }}>
-            <p style={{ fontSize: 13, color: "#dc2626" }}>Erreur lors du chargement.</p>
+            <p style={{ fontSize: 13, color: "var(--danger)" }}>Erreur lors du chargement.</p>
           </div>
         ) : sorted.length === 0 ? (
           <div style={{ padding: 50, textAlign: "center" as const }}>
-            <p style={{ fontSize: 13, color: "#9aa5b4" }}>
+            <p style={{ fontSize: 13, color: "var(--gris)" }}>
               {search ? `Aucun résultat pour "${search}"` : "Aucune donnée disponible."}
             </p>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, minWidth: 600 }}>
             <thead>
-              <tr style={{ background: "#FAFAF9" }}>
+              <tr style={{ background: "var(--carte-douce)" }}>
                 {columns.map(col => {
                   const { alignRight } = colMeta[col] || {};
                   const active = sortCol === col;
@@ -281,11 +281,11 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                       style={{
                         padding: "11px 16px",
                         textAlign: alignRight ? "right" as const : "left" as const,
-                        fontSize: 10, fontWeight: 800, color: active ? "#004f91" : "#4a5568",
+                        fontSize: 10, fontWeight: 800, color: active ? "var(--bleu)" : "var(--texte)",
                         textTransform: "uppercase" as const, letterSpacing: "0.1em",
                         whiteSpace: "nowrap", cursor: "pointer", userSelect: "none" as const,
-                        background: active ? "rgba(0,79,145,0.04)" : "#FAFAF9",
-                        borderBottom: active ? "2px solid #004f91" : "1px solid #F0EEEC",
+                        background: active ? "rgb(var(--bleu-rgb) / 0.04)" : "var(--carte-douce)",
+                        borderBottom: active ? "2px solid var(--bleu)" : "1px solid var(--bordure)",
                         position: "sticky" as const, top: 0, zIndex: 1,
                         transition: "background 0.12s, color 0.12s",
                       }}>
@@ -294,9 +294,9 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                         <span>{col}</span>
                         {active
                           ? (sortDir === "asc"
-                            ? <ChevronUp size={11} color="#004f91" />
-                            : <ChevronDown size={11} color="#004f91" />)
-                          : <ArrowUpDown size={10} color="#C5BFBB" />}
+                            ? <ChevronUp size={11} color="var(--bleu)" />
+                            : <ChevronDown size={11} color="var(--bleu)" />)
+                          : <ArrowUpDown size={10} color="var(--gris)" />}
                       </div>
                     </th>
                   );
@@ -306,9 +306,9 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
             <tbody>
               {displayed.map((row, i) => (
                 <tr key={i}
-                  style={{ borderBottom: "1px solid #F6F4F3", background: "#fff", transition: "background 0.1s" }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "#FAFAF9")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "#fff")}>
+                  style={{ borderBottom: "1px solid var(--filet)", background: "var(--carte)", transition: "background 0.1s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--carte-douce)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "var(--carte)")}>
                   {columns.map(col => {
                     const v = row[col];
                     const { isNum, isRank, isBadge, alignRight } = colMeta[col] || {};
@@ -317,7 +317,7 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
                       <td key={col} style={{
                         padding: "9px 16px",
                         textAlign: alignRight ? "right" as const : "left" as const,
-                        color: negatif ? "#dc2626" : "#4a5568",
+                        color: negatif ? "var(--danger)" : "var(--texte)",
                         fontWeight: isNum || isRank ? 600 : 500,
                         whiteSpace: "nowrap",
                         fontVariantNumeric: (isNum || isRank) ? "tabular-nums" : "normal",
@@ -335,26 +335,26 @@ export function AnalyticTable({ tableId, titre, description, onClose, embedded }
 
       {/* ── Footer ── */}
       {!loading && !error && sorted.length > 0 && (
-        <div style={{ padding: "10px 20px", borderTop: "1px solid #F2F0EF",
-          display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FCFBFA" }}>
-          <span style={{ fontSize: 11, color: "#9aa5b4" }}>
+        <div style={{ padding: "10px 20px", borderTop: "1px solid var(--bordure)",
+          display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--carte-douce)" }}>
+          <span style={{ fontSize: 11, color: "var(--gris)" }}>
             {displayed.length.toLocaleString("fr-FR")} / {sorted.length.toLocaleString("fr-FR")} ligne{sorted.length !== 1 ? "s" : ""}
             {search ? ` · filtrées sur ${data.length.toLocaleString("fr-FR")}` : ""}
           </span>
           {rowsLimit !== "Tout" && sorted.length > (rowsLimit as number) && (
             <button onClick={() => setRowsLimit("Tout")}
-              style={{ fontSize: 11, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.06)",
-                border: "1px solid rgba(0,79,145,0.18)", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
+              style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.06)",
+                border: "1px solid rgb(var(--bleu-rgb) / 0.18)", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
                 fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.12)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,79,145,0.06)"; }}>
+              onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.06)"; }}>
               Voir tout ({sorted.length.toLocaleString("fr-FR")})
             </button>
           )}
           {rowsLimit === "Tout" && (
             <button onClick={() => setRowsLimit(7)}
-              style={{ fontSize: 11, fontWeight: 600, color: "#4a5568", background: "#fff",
-                border: "1px solid #E4E1DE", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
+              style={{ fontSize: 11, fontWeight: 600, color: "var(--texte)", background: "var(--carte)",
+                border: "1px solid var(--bordure-forte)", borderRadius: 999, padding: "4px 12px", cursor: "pointer",
                 fontFamily: "var(--font-google-sans)" }}>
               Réduire
             </button>

@@ -18,10 +18,10 @@
 import React from "react";
 
 export type AccentNace = { trait: string; piste: string; voile: string };
-export const ACCENT_BLEU: AccentNace = { trait: "#004f91", piste: "rgba(0,79,145,0.18)", voile: "rgba(0,79,145,0.08)" };
-export const ACCENT_ORANGE: AccentNace = { trait: "#ca631f", piste: "rgba(202,99,31,0.20)", voile: "rgba(202,99,31,0.09)" };
-export const ACCENT_VERT: AccentNace = { trait: "#188038", piste: "rgba(24,128,56,0.20)", voile: "rgba(24,128,56,0.09)" };
-export const ACCENT_VIOLET: AccentNace = { trait: "#6b4fa1", piste: "rgba(107,79,161,0.20)", voile: "rgba(107,79,161,0.09)" };
+export const ACCENT_BLEU: AccentNace = { trait: "var(--bleu)", piste: "rgb(var(--bleu-rgb) / 0.18)", voile: "rgb(var(--bleu-rgb) / 0.08)" };
+export const ACCENT_ORANGE: AccentNace = { trait: "var(--orange)", piste: "rgb(var(--orange-rgb) / 0.20)", voile: "rgb(var(--orange-rgb) / 0.09)" };
+export const ACCENT_VERT: AccentNace = { trait: "var(--vert)", piste: "rgb(var(--vert-rgb) / 0.20)", voile: "rgb(var(--vert-rgb) / 0.09)" };
+export const ACCENT_VIOLET: AccentNace = { trait: "var(--violet)", piste: "rgb(var(--violet-rgb) / 0.20)", voile: "rgb(var(--violet-rgb) / 0.09)" };
 
 // Un accent complet à partir de la seule couleur de trait, pour les appelants
 // qui n'en manipulent qu'une (les cartes IDE, teintées par indicateur).
@@ -42,33 +42,33 @@ export function StylesCurseurNace() {
   return (
     <style>{`
       .nace-curseur { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px;
-        background: var(--nace-piste, rgba(0,79,145,0.18)); outline: none; cursor: pointer; }
+        background: var(--nace-piste, rgb(var(--bleu-rgb) / 0.18)); outline: none; cursor: pointer; }
       .nace-curseur::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px;
-        border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        border-radius: 50%; background: var(--nace-accent, var(--bleu-action)); border: 2.5px solid var(--carte); box-shadow: var(--ombre-1); cursor: grab; }
       .nace-curseur::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
       .nace-curseur::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%;
-        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
-      .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
+        background: var(--nace-accent, var(--bleu-action)); border: 2.5px solid var(--carte); box-shadow: var(--ombre-1); cursor: grab; }
+      .nace-curseur::-moz-range-track { height: 4px; border-radius: 999px; background: var(--nace-piste, rgb(var(--bleu-rgb) / 0.18)); }
       .nace-plage { position: relative; height: 16px; }
       .nace-plage .nace-piste { position: absolute; top: 6px; left: 0; right: 0; height: 4px;
-        border-radius: 999px; background: var(--nace-piste, rgba(0,79,145,0.18)); }
+        border-radius: 999px; background: var(--nace-piste, rgb(var(--bleu-rgb) / 0.18)); }
       .nace-plage .nace-remplie { position: absolute; top: 6px; height: 4px; border-radius: 999px;
-        background: var(--nace-accent, #004f91); opacity: 0.55; }
+        background: var(--nace-accent, var(--bleu-action)); opacity: 0.55; }
       .nace-plage input { position: absolute; top: 0; left: 0; width: 100%; height: 16px; margin: 0;
         -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
       .nace-plage input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto;
-        width: 15px; height: 15px; border-radius: 50%; background: var(--nace-accent, #004f91); border: 2.5px solid #fff;
+        width: 15px; height: 15px; border-radius: 50%; background: var(--nace-accent, var(--bleu-action)); border: 2.5px solid var(--carte);
         box-shadow: var(--ombre-1); cursor: grab; }
       .nace-plage input::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.12); }
       .nace-plage input::-moz-range-thumb { pointer-events: auto; width: 15px; height: 15px; border-radius: 50%;
-        background: var(--nace-accent, #004f91); border: 2.5px solid #fff; box-shadow: var(--ombre-1); cursor: grab; }
+        background: var(--nace-accent, var(--bleu-action)); border: 2.5px solid var(--carte); box-shadow: var(--ombre-1); cursor: grab; }
       .nace-plage input::-moz-range-track { height: 4px; background: transparent; }
     `}</style>
   );
 }
 
 const BORNE: React.CSSProperties = {
-  fontSize: 10, color: "#9aa5b4", fontWeight: 700, fontVariantNumeric: "tabular-nums",
+  fontSize: 10, color: "var(--gris)", fontWeight: 700, fontVariantNumeric: "tabular-nums",
   whiteSpace: "nowrap", flexShrink: 0,
 };
 

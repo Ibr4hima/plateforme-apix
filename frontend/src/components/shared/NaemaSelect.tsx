@@ -31,10 +31,10 @@ function CheckItem({ label, selected, onToggle, color }: { label:string; selecte
   return (
     <button onClick={onToggle}
       style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", cursor:"pointer", background:selected?color+"12":"transparent", width:"100%", textAlign:"left" as const, transition:"background 0.12s" }}
-      onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="#F8F7F6"; }}
+      onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="var(--carte-douce)"; }}
       onMouseLeave={e=>{ e.currentTarget.style.background=selected?color+"12":"transparent"; }}>
-      <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${selected?color:"#C5BFBB"}`, background:selected?color:"transparent", flexShrink:0, transition:"all 0.12s" }} />
-      <span style={{ fontSize:12, color:selected?"#1a1a2e":"#4a5568", fontWeight:selected?600:400 }}>{label}</span>
+      <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${selected?color:"var(--gris)"}`, background:selected?color:"transparent", flexShrink:0, transition:"all 0.12s" }} />
+      <span style={{ fontSize:12, color:selected?"var(--encre)":"var(--texte)", fontWeight:selected?600:400 }}>{label}</span>
     </button>
   );
 }
@@ -43,12 +43,12 @@ function ColSection({ title, color, children, open, onToggle, count }: { title:s
   return (
     <div style={{ flex:1, minWidth:0 }}>
       <button onClick={onToggle}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?color+"08":"#F8F7F6", border:`1px solid ${count>0?color+"30":"#E8E5E3"}`, borderRadius:9, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?color+"08":"var(--carte-douce)", border:`1px solid ${count>0?color+"30":"var(--bordure-forte)"}`, borderRadius:9, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <span style={{ fontSize:11, fontWeight:700, color:count>0?color:"#9aa5b4", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{title}</span>
+          <span style={{ fontSize:11, fontWeight:700, color:count>0?color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{title}</span>
           {count>0 && <span style={{ fontSize:10, fontWeight:700, color, background:color+"15", padding:"1px 6px", borderRadius:999 }}>{count}</span>}
         </div>
-        {open ? <ChevronUp size={12} style={{color:"#9aa5b4"}}/> : <ChevronDown size={12} style={{color:"#9aa5b4"}}/>}
+        {open ? <ChevronUp size={12} style={{color:"var(--gris)"}}/> : <ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
       {open && (
         <div style={{ border:`1px solid ${color}20`, borderRadius:9, overflow:"hidden", maxHeight:220, overflowY:"auto" as const }}>
@@ -114,9 +114,9 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
 
   // Tags de résumé
   const allSelected = [
-    ...secteurIds.map(id => ({ id, nom: secteurs.find(s=>s.id===id)?.nom||"", color:"#004f91" })),
-    ...brancheIds.map(id => ({ id, nom: branches.find(b=>b.id===id)?.nom||"", color:"#ca631f" })),
-    ...activiteIds.map(id => ({ id, nom: activites.find(a=>a.id===id)?.nom||"", color:"#188038" })),
+    ...secteurIds.map(id => ({ id, nom: secteurs.find(s=>s.id===id)?.nom||"", color:"var(--bleu)" })),
+    ...brancheIds.map(id => ({ id, nom: branches.find(b=>b.id===id)?.nom||"", color:"var(--orange)" })),
+    ...activiteIds.map(id => ({ id, nom: activites.find(a=>a.id===id)?.nom||"", color:"var(--vert)" })),
   ].filter(t=>t.nom);
 
   return (
@@ -128,8 +128,8 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
             <span key={`${t.color}-${t.id}`} style={{ display:"inline-flex", alignItems:"center", gap:4, background:t.color+"10", color:t.color, border:`1px solid ${t.color}25`, borderRadius:999, padding:"2px 8px", fontSize:11, fontWeight:600 }}>
               {t.nom}
               <button onClick={()=>{
-                if (t.color==="#004f91") toggleSec(t.id);
-                else if (t.color==="#ca631f") toggleBra(t.id);
+                if (t.color==="var(--bleu)") toggleSec(t.id);
+                else if (t.color==="var(--orange)") toggleBra(t.id);
                 else toggleAct(t.id);
               }} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex" }}>
                 <X size={10} style={{color:t.color}}/>
@@ -137,7 +137,7 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
             </span>
           ))}
           <button onClick={()=>{ onChangeSecteurs([]); onChangeBranches([]); onChangeActivites([]); }}
-            style={{ fontSize:10, color:"#dc2626", background:"none", border:"none", cursor:"pointer", padding:"2px 4px" }}>
+            style={{ fontSize:10, color:"var(--danger)", background:"none", border:"none", cursor:"pointer", padding:"2px 4px" }}>
             Tout effacer
           </button>
         </div>
@@ -145,36 +145,36 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
 
       {/* Colonnes cascade */}
       <div style={{ display:"flex", gap:8 }}>
-        <ColSection title="Secteur" color="#004f91" open={openSec} onToggle={()=>setOpenSec(o=>!o)} count={secteurIds.length}>
-          {secteurs.map(s => <CheckItem key={s.id} label={s.nom} selected={secteurIds.includes(s.id)} onToggle={()=>toggleSec(s.id)} color="#004f91"/>)}
+        <ColSection title="Secteur" color="var(--bleu)" open={openSec} onToggle={()=>setOpenSec(o=>!o)} count={secteurIds.length}>
+          {secteurs.map(s => <CheckItem key={s.id} label={s.nom} selected={secteurIds.includes(s.id)} onToggle={()=>toggleSec(s.id)} color="var(--bleu)"/>)}
         </ColSection>
-        <ColSection title="Branche" color="#ca631f" open={openBra} onToggle={()=>setOpenBra(o=>!o)} count={brancheIds.length}>
+        <ColSection title="Branche" color="var(--orange)" open={openBra} onToggle={()=>setOpenBra(o=>!o)} count={brancheIds.length}>
           {brasDispo.length === 0
-            ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
+            ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
             : secteurIds.map(secId => {
                 const secNom = secteurs.find(s=>s.id===secId)?.nom;
                 const brasDuSec = brasDispo.filter(b=>b.secteur_id===secId);
                 if (!brasDuSec.length) return null;
                 return (
                   <div key={secId}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#004f91",padding:"6px 10px 3px",background:"rgba(0,79,145,0.05)",borderBottom:"1px solid rgba(0,79,145,0.1)"}}>{secNom}</div>
-                    {brasDuSec.map(b => <CheckItem key={b.id} label={b.nom} selected={brancheIds.includes(b.id)} onToggle={()=>toggleBra(b.id)} color="#ca631f"/>)}
+                    <div style={{fontSize:10,fontWeight:700,color:"var(--bleu)",padding:"6px 10px 3px",background:"rgb(var(--bleu-rgb) / 0.05)",borderBottom:"1px solid rgb(var(--bleu-rgb) / 0.1)"}}>{secNom}</div>
+                    {brasDuSec.map(b => <CheckItem key={b.id} label={b.nom} selected={brancheIds.includes(b.id)} onToggle={()=>toggleBra(b.id)} color="var(--orange)"/>)}
                   </div>
                 );
               })
           }
         </ColSection>
-        <ColSection title="Activité" color="#188038" open={openAct} onToggle={()=>setOpenAct(o=>!o)} count={activiteIds.length}>
+        <ColSection title="Activité" color="var(--vert)" open={openAct} onToggle={()=>setOpenAct(o=>!o)} count={activiteIds.length}>
           {actsDispo.length === 0
-            ? <p style={{fontSize:11,color:"#9aa5b4",padding:"10px 12px"}}>Choisir une branche d'abord</p>
+            ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir une branche d'abord</p>
             : brancheIds.map(braId => {
                 const braNom = branches.find(b=>b.id===braId)?.nom;
                 const actsDeBra = actsDispo.filter(a=>a.branche_id===braId);
                 if (!actsDeBra.length) return null;
                 return (
                   <div key={braId}>
-                    <div style={{fontSize:10,fontWeight:700,color:"#ca631f",padding:"6px 10px 3px",background:"rgba(202,99,31,0.05)",borderBottom:"1px solid rgba(202,99,31,0.1)"}}>{braNom}</div>
-                    {actsDeBra.map(a => <CheckItem key={a.id} label={a.nom} selected={activiteIds.includes(a.id)} onToggle={()=>toggleAct(a.id)} color="#188038"/>)}
+                    <div style={{fontSize:10,fontWeight:700,color:"var(--orange)",padding:"6px 10px 3px",background:"rgb(var(--orange-rgb) / 0.05)",borderBottom:"1px solid rgb(var(--orange-rgb) / 0.1)"}}>{braNom}</div>
+                    {actsDeBra.map(a => <CheckItem key={a.id} label={a.nom} selected={activiteIds.includes(a.id)} onToggle={()=>toggleAct(a.id)} color="var(--vert)"/>)}
                   </div>
                 );
               })

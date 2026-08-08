@@ -231,15 +231,15 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
   const selectedPays = pays.find(p => p.code_iso2 === iso2);
 
   const IS: React.CSSProperties = {
-    background: "#fff", border: "1px solid #E4E1DE", borderRadius: 10,
-    padding: "9px 12px", fontSize: 13, color: "#1a1a2e", outline: "none",
+    background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10,
+    padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box",
   };
 
   // Bordure et halo du bloc unique selon l'état
-  const borderColor = isValid === false ? "#dc2626" : isValid === true ? "#188038" : (open || focused) ? "rgba(0,79,145,0.45)" : "#E4E1DE";
+  const borderColor = isValid === false ? "var(--danger)" : isValid === true ? "var(--vert)" : (open || focused) ? "rgb(var(--bleu-rgb) / 0.45)" : "var(--bordure-forte)";
   const halo = (open || focused)
-    ? (isValid === false ? "0 0 0 3px rgba(220,38,38,0.08)" : isValid === true ? "0 0 0 3px rgba(24,128,56,0.08)" : "0 0 0 3px rgba(0,79,145,0.10)")
+    ? (isValid === false ? "0 0 0 3px rgb(var(--danger-rgb) / 0.08)" : isValid === true ? "0 0 0 3px rgb(var(--vert-rgb) / 0.08)" : "0 0 0 3px rgb(var(--bleu-rgb) / 0.10)")
     : "none";
 
   // Exemple national du pays (sert de placeholder au champ numéro)
@@ -253,7 +253,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
       <div ref={ref} style={{ position:"relative", width:"100%", maxWidth:"100%" }}>
 
         {/* ── Bloc unique : pays (ISO3) · indicatif · numéro ── */}
-        <div style={{ display:"flex", alignItems:"center", height:42, background:"#fff",
+        <div style={{ display:"flex", alignItems:"center", height:42, background:"var(--carte)",
           border:`1px solid ${borderColor}`, borderRadius:10, overflow:"hidden",
           boxShadow:halo, transition:"border-color 0.18s, box-shadow 0.18s" }}>
 
@@ -261,30 +261,30 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
           <button type="button" onClick={() => setOpen(o => !o)} title={selectedPays?.nom_fr || "Choisir le pays"}
             style={{ display:"flex", alignItems:"center", gap:7, height:"100%", border:"none", cursor:"pointer",
               padding: iso2 ? "0 11px" : "0 14px", fontFamily:"var(--font-google-sans)",
-              background: iso2 ? "rgba(0,79,145,0.07)" : "transparent",
-              borderRight: iso2 ? "1px solid rgba(0,79,145,0.15)" : "none",
+              background: iso2 ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent",
+              borderRight: iso2 ? "1px solid rgb(var(--bleu-rgb) / 0.15)" : "none",
               transition:"background 0.15s",
               // Sans pays choisi, le bouton occupe tout le bloc (même gabarit que les
               // autres champs) — propriétés longhand uniquement (pas de raccourci
               // `flex` conditionnel : React interdit le mélange avec flexShrink)
               flexGrow: iso2 ? 0 : 1, flexShrink:0, flexBasis:"auto",
               justifyContent: iso2 ? "flex-start" : "space-between" }}
-            onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.12)" : "#F8F7F6"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgba(0,79,145,0.07)" : "transparent"; }}>
+            onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgb(var(--bleu-rgb) / 0.12)" : "var(--carte-douce)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent"; }}>
             {iso2 ? (
-              <span style={{ fontSize:12.5, fontWeight:800, color:"#004f91", letterSpacing:"0.05em" }}>
+              <span style={{ fontSize:12.5, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.05em" }}>
                 {selectedPays?.code_iso3 || iso2}
               </span>
             ) : (
-              <span style={{ fontSize:13, color:"#9aa5b4" }}>Sélectionner un pays</span>
+              <span style={{ fontSize:13, color:"var(--gris)" }}>Sélectionner un pays</span>
             )}
-            <ChevronDown size={12} style={{ color: iso2 ? "#004f91" : "#9aa5b4",
+            <ChevronDown size={12} style={{ color: iso2 ? "var(--bleu)" : "var(--gris)",
               transform:`rotate(${open?180:0}deg)`, transition:"transform 0.2s", flexShrink:0 }} />
           </button>
 
           {/* Indicatif */}
           {iso2 && indicatif !== "+" && (
-            <span style={{ paddingLeft:11, fontSize:13, fontWeight:700, color:"#004f91", whiteSpace:"nowrap", flexShrink:0 }}>
+            <span style={{ paddingLeft:11, fontSize:13, fontWeight:700, color:"var(--bleu)", whiteSpace:"nowrap", flexShrink:0 }}>
               {indicatif}
             </span>
           )}
@@ -296,20 +296,20 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
               onBlur={() => { setFocused(false); setTouched(true); }}
               placeholder={exempleNational || placeholder}
               style={{ flex:1, minWidth:110, background:"transparent", border:"none", outline:"none",
-                padding:"0 10px 0 8px", fontSize:13, color:"#1a1a2e",
+                padding:"0 10px 0 8px", fontSize:13, color:"var(--encre)",
                 fontFamily:"var(--font-google-sans)", height:"100%" }} />
           )}
-          {iso2 && isValid === true  && <span style={{ paddingRight:11, color:"#188038", fontSize:15, lineHeight:1 }}>✓</span>}
-          {iso2 && isValid === false && <span style={{ paddingRight:11, color:"#dc2626", fontSize:15, lineHeight:1 }}>✗</span>}
+          {iso2 && isValid === true  && <span style={{ paddingRight:11, color:"var(--vert)", fontSize:15, lineHeight:1 }}>✓</span>}
+          {iso2 && isValid === false && <span style={{ paddingRight:11, color:"var(--danger)", fontSize:15, lineHeight:1 }}>✗</span>}
         </div>
 
         {open && (
           <div style={{ position:"absolute", top:"calc(100% + 4px)", left:0, width:280, zIndex:500,
-            background:"#fff", border:"1px solid #E4E1DE", borderRadius:12,
-            boxShadow:"0 12px 40px rgba(0,30,60,0.16)", maxHeight:280, display:"flex", flexDirection:"column" }}>
-            <div style={{ padding:"8px 10px", borderBottom:"1px solid #F2F0EF", flexShrink:0 }}>
+            background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:12,
+            boxShadow:"0 12px 40px rgb(var(--ombre-rgb) / 0.16)", maxHeight:280, display:"flex", flexDirection:"column" }}>
+            <div style={{ padding:"8px 10px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
               <div style={{ position:"relative" }}>
-                <Search size={12} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }} />
+                <Search size={12} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
                 <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher…"
                   style={{ ...IS, paddingLeft:28, fontSize:12 }} />
@@ -322,17 +322,17 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
                   <div key={p.id} onMouseDown={e => { e.preventDefault(); handleSelectPays(p); }}
                     style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px",
                       cursor:"pointer", fontSize:13,
-                      background: p.code_iso2===iso2 ? "rgba(0,79,145,0.06)" : "transparent",
-                      color: p.code_iso2===iso2 ? "#004f91" : "#1a1a2e",
+                      background: p.code_iso2===iso2 ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
+                      color: p.code_iso2===iso2 ? "var(--bleu)" : "var(--encre)",
                       fontWeight: p.code_iso2===iso2 ? 600 : 400 }}
-                    onMouseEnter={e => { if(p.code_iso2!==iso2) e.currentTarget.style.background="#F8F7F6"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = p.code_iso2===iso2?"rgba(0,79,145,0.06)":"transparent"; }}>
+                    onMouseEnter={e => { if(p.code_iso2!==iso2) e.currentTarget.style.background="var(--carte-douce)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = p.code_iso2===iso2?"rgb(var(--bleu-rgb) / 0.06)":"transparent"; }}>
                     <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.nom_fr}</span>
-                    {ind !== "+" && <span style={{ fontSize:11, fontWeight:600, color:"#9aa5b4", flexShrink:0 }}>{ind}</span>}
+                    {ind !== "+" && <span style={{ fontSize:11, fontWeight:600, color:"var(--gris)", flexShrink:0 }}>{ind}</span>}
                   </div>
                 );
               })}
-              {filtered.length === 0 && <p style={{ padding:"12px", fontSize:13, color:"#9aa5b4", textAlign:"center" }}>Aucun résultat</p>}
+              {filtered.length === 0 && <p style={{ padding:"12px", fontSize:13, color:"var(--gris)", textAlign:"center" }}>Aucun résultat</p>}
             </div>
           </div>
         )}
@@ -340,10 +340,10 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
       {/* Messages sous le bloc */}
       {isValid === true && numType && (
-        <p style={{ fontSize:11, color:"#188038", marginTop:3 }}>{numType}</p>
+        <p style={{ fontSize:11, color:"var(--vert)", marginTop:3 }}>{numType}</p>
       )}
       {isValid === false && (
-        <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>
+        <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>
           {invalidMsg}
         </p>
       )}

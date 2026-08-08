@@ -6,7 +6,7 @@ import { authHeaders } from "@/lib/authHeaders";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const SEC: any = { fontSize: 11, fontWeight: 700, color: "#004f91", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid #E8E5E3" };
+const SEC: any = { fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--bordure-forte)" };
 
 type ImportRes = {
   bulletin: string; mois_couverts: string[]; valeurs: number; revisions: number;
@@ -98,40 +98,40 @@ export default function AdminCommerceExterieurPage() {
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1180, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", marginBottom: 4 }}>Commerce extérieur</h1>
-      <p style={{ fontSize: 13, color: "#888", marginBottom: 32 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--encre)", marginBottom: 4 }}>Commerce extérieur</h1>
+      <p style={{ fontSize: 13, color: "var(--gris-fort)", marginBottom: 32 }}>
         Importez le Bulletin Mensuel des Statistiques du Commerce Extérieur (ANSD). Les flux mensuels bruts sont
         extraits du PDF ; les cumuls, variations et parts sont recalculés à la volée selon les règles ANSD.
       </p>
 
       {/* ── Import d'un bulletin ── */}
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginBottom: 8 }}>
+      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginBottom: 8 }}>
         <div style={SEC}>Importer un bulletin ANSD</div>
         <div
           onClick={() => inputRef.current?.click()}
           onDragOver={e => { e.preventDefault(); setDrag(true); }}
           onDragLeave={() => setDrag(false)}
           onDrop={e => { e.preventDefault(); setDrag(false); pickFile(e.dataTransfer.files); }}
-          style={{ border: `2px dashed ${drag || file ? "#004f91" : "#C5BFBB"}`, borderRadius: 10, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "#E8F0FB" : file ? "#EEF4FB" : "#F9F8F7", transition: "all .15s" }}>
+          style={{ border: `2px dashed ${drag || file ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 10, padding: "24px", textAlign: "center", cursor: "pointer", background: drag ? "var(--bleu-voile)" : file ? "var(--bleu-voile)" : "var(--carte-douce)", transition: "all .15s" }}>
           <input ref={inputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={e => pickFile(e.target.files)} />
           {file ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <FileText size={18} color="#004f91" />
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#004f91" }}>{file.name}</span>
-              <span style={{ fontSize: 12, color: "#888" }}>({(file.size / 1024).toFixed(0)} Ko)</span>
-              <button onClick={e => { e.stopPropagation(); setFile(null); setRes(null); setErreur(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#999" }}><X size={14} /></button>
+              <FileText size={18} color="var(--bleu)" />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--bleu)" }}>{file.name}</span>
+              <span style={{ fontSize: 12, color: "var(--gris-fort)" }}>({(file.size / 1024).toFixed(0)} Ko)</span>
+              <button onClick={e => { e.stopPropagation(); setFile(null); setRes(null); setErreur(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--gris)" }}><X size={14} /></button>
             </div>
           ) : (
             <>
-              <UploadCloud size={22} color="#AAA" style={{ marginBottom: 6 }} />
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#666" }}>Déposez le bulletin PDF ou cliquez pour parcourir</div>
-              <div style={{ fontSize: 11, color: "#AAA", marginTop: 2 }}>Bulletin Mensuel des Statistiques du Commerce Extérieur (ANSD)</div>
+              <UploadCloud size={22} color="var(--gris)" style={{ marginBottom: 6 }} />
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--texte)" }}>Déposez le bulletin PDF ou cliquez pour parcourir</div>
+              <div style={{ fontSize: 11, color: "var(--gris)", marginTop: 2 }}>Bulletin Mensuel des Statistiques du Commerce Extérieur (ANSD)</div>
             </>
           )}
         </div>
 
         {res && (
-          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "#EDFBF1", border: "1px solid #B2EAC5", fontSize: 13, color: "#1a7a3c" }}>
+          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "var(--vert-voile)", border: "1px solid var(--vert-voile)", fontSize: 13, color: "var(--vert-fonce)" }}>
             ✓ Bulletin de <strong>{fmtMois(res.bulletin)}</strong> importé — mois couverts : {res.mois_couverts.map(fmtMois).join(", ")}.
             <div style={{ marginTop: 6 }}>
               <strong>{res.valeurs.toLocaleString("fr-FR")}</strong> valeurs écrites,{" "}
@@ -141,7 +141,7 @@ export default function AdminCommerceExterieurPage() {
               <ShieldCheck size={15} /> {res.rapport}
             </div>
             {res.avertissements.length > 0 && (
-              <div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8, background: "#FFF9F0", border: "1px solid #FAD7A0", color: "#B7661B" }}>
+              <div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8, background: "var(--orange-voile)", border: "1px solid var(--orange-voile)", color: "var(--orange)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, marginBottom: 4 }}>
                   <AlertTriangle size={14} /> Incohérences internes du bulletin
                 </div>
@@ -151,7 +151,7 @@ export default function AdminCommerceExterieurPage() {
               </div>
             )}
             {(res.pays_a_rattacher?.length ?? 0) > 0 && (
-              <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: "#FFF9F0", border: "1px solid #FAD7A0", color: "#B7661B" }}>
+              <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: "var(--orange-voile)", border: "1px solid var(--orange-voile)", color: "var(--orange)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 700, marginBottom: 4 }}>
                   <AlertTriangle size={14} /> {res.pays_a_rattacher!.length} libellé(s) pays sans correspondance au référentiel
                 </div>
@@ -161,7 +161,7 @@ export default function AdminCommerceExterieurPage() {
                   «&nbsp;Correspondance des pays&nbsp;» en bas de page — les regroupements ANSD
                   («&nbsp;LES PAYS DE…&nbsp;») restent volontairement non rattachés.
                 </div>
-                <div style={{ fontSize: 12, marginTop: 6, color: "#8a5514" }}>
+                <div style={{ fontSize: 12, marginTop: 6, color: "var(--orange)" }}>
                   {res.pays_a_rattacher!.join(" · ")}
                 </div>
               </div>
@@ -169,32 +169,32 @@ export default function AdminCommerceExterieurPage() {
           </div>
         )}
         {erreur && (
-          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "#FFF2F2", border: "1px solid #F5C6CB", fontSize: 13, color: "#c0392b", whiteSpace: "pre-wrap" }}>⚠ {erreur}</div>
+          <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: "var(--danger-voile)", border: "1px solid var(--danger-voile)", fontSize: 13, color: "var(--danger)", whiteSpace: "pre-wrap" }}>⚠ {erreur}</div>
         )}
 
         <button onClick={handleImport} disabled={importing || !file}
-          style={{ marginTop: 16, background: importing || !file ? "#ccc" : "#004f91", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !file ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          style={{ marginTop: 16, background: importing || !file ? "var(--bordure-forte)" : "var(--bleu-action)", color: "var(--sur-bleu)", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 13, fontWeight: 600, cursor: importing || !file ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
           {importing ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />}
           {importing ? "Import en cours…" : "Importer"}
         </button>
       </div>
-      <p style={{ fontSize: 12, color: "#888", margin: "0 4px 20px", display: "flex", alignItems: "center", gap: 6 }}>
-        <ShieldCheck size={14} color="#1a7a3c" style={{ flexShrink: 0 }} />
+      <p style={{ fontSize: 12, color: "var(--gris-fort)", margin: "0 4px 20px", display: "flex", alignItems: "center", gap: 6 }}>
+        <ShieldCheck size={14} color="var(--vert-fonce)" style={{ flexShrink: 0 }} />
         L'extraction est auto-vérifiée (≈ 4 000 contrôles croisés avec les tableaux dérivés du bulletin).
         Les 3 mois précédents sont automatiquement révisés à chaque import.
       </p>
 
       {/* ── Bulletins importés ── */}
-      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px" }}>
+      <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px" }}>
         <div style={SEC}>Bulletins importés</div>
         {bulletins.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 24, color: "#888", fontSize: 13 }}>Aucun bulletin importé pour le moment.</div>
+          <div style={{ textAlign: "center", padding: 24, color: "var(--gris-fort)", fontSize: 13 }}>Aucun bulletin importé pour le moment.</div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
+              <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
                 {["", "Mois du bulletin", "Fichier", "Importé le", "Mois couverts", "Valeurs", "Révisions"].map((h, i) => (
-                  <th key={i} style={{ padding: "10px 12px", textAlign: ["Valeurs", "Révisions"].includes(h) ? "right" as const : "left" as const, fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                  <th key={i} style={{ padding: "10px 12px", textAlign: ["Valeurs", "Révisions"].includes(h) ? "right" as const : "left" as const, fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -204,27 +204,27 @@ export default function AdminCommerceExterieurPage() {
                 return (
                   <Fragment key={b.periode}>
                     <tr onClick={() => setOuvert(estOuvert ? null : b.periode)}
-                      style={{ borderBottom: estOuvert ? "none" : "1px solid #F0EEEC", cursor: "pointer", background: estOuvert ? "#F5F8FD" : "transparent", transition: "background 0.12s" }}
-                      onMouseEnter={e => { if (!estOuvert) e.currentTarget.style.background = "#FAFAF9"; }}
+                      style={{ borderBottom: estOuvert ? "none" : "1px solid var(--bordure)", cursor: "pointer", background: estOuvert ? "var(--bleu-voile)" : "transparent", transition: "background 0.12s" }}
+                      onMouseEnter={e => { if (!estOuvert) e.currentTarget.style.background = "var(--carte-douce)"; }}
                       onMouseLeave={e => { if (!estOuvert) e.currentTarget.style.background = "transparent"; }}>
-                      <td style={{ padding: "8px 4px 8px 12px", width: 22, color: "#888" }}>
+                      <td style={{ padding: "8px 4px 8px 12px", width: 22, color: "var(--gris-fort)" }}>
                         {estOuvert ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "#1a1a2e", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtMois(b.periode)}</td>
-                      <td style={{ padding: "8px 12px", color: "#555" }}>{b.fichier_nom}</td>
-                      <td style={{ padding: "8px 12px", color: "#888", fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                      <td style={{ padding: "8px 12px", color: "var(--encre)", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtMois(b.periode)}</td>
+                      <td style={{ padding: "8px 12px", color: "var(--texte)" }}>{b.fichier_nom}</td>
+                      <td style={{ padding: "8px 12px", color: "var(--gris-fort)", fontSize: 12, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
                         {b.importe_le ? new Date(b.importe_le).toLocaleString("fr-FR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "–"}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "#666", fontSize: 12 }}>
+                      <td style={{ padding: "8px 12px", color: "var(--texte)", fontSize: 12 }}>
                         {b.mois_couverts?.length ? `${fmtMois(b.mois_couverts[0])} – ${fmtMois(b.mois_couverts[b.mois_couverts.length - 1])}` : "–"}
                       </td>
-                      <td style={{ padding: "8px 12px", color: "#666", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_valeurs ? b.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
-                      <td style={{ padding: "8px 12px", color: "#666", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_revisions ? b.nb_revisions.toLocaleString("fr-FR") : "–"}</td>
+                      <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_valeurs ? b.nb_valeurs.toLocaleString("fr-FR") : "–"}</td>
+                      <td style={{ padding: "8px 12px", color: "var(--texte)", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{b.nb_revisions ? b.nb_revisions.toLocaleString("fr-FR") : "–"}</td>
                     </tr>
                     {estOuvert && (
-                      <tr style={{ borderBottom: "1px solid #F0EEEC", background: "#F5F8FD" }}>
+                      <tr style={{ borderBottom: "1px solid var(--bordure)", background: "var(--bleu-voile)" }}>
                         <td colSpan={7} style={{ padding: "0 12px 12px" }}>
-                          <pre style={{ margin: 0, padding: "12px 14px", background: "#FAF9F8", border: "1px solid #E8E5E3", borderRadius: 8, fontSize: 11.5, lineHeight: 1.6, color: "#555", whiteSpace: "pre-wrap", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", maxHeight: 320, overflowY: "auto" }}>
+                          <pre style={{ margin: 0, padding: "12px 14px", background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, fontSize: 11.5, lineHeight: 1.6, color: "var(--texte)", whiteSpace: "pre-wrap", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", maxHeight: 320, overflowY: "auto" }}>
                             {b.rapport || "Rapport de vérification indisponible."}
                           </pre>
                         </td>
@@ -243,9 +243,9 @@ export default function AdminCommerceExterieurPage() {
         const sans = corresp.filter(c => c.pays_id === null);
         const visibles = filtreCorresp === "sans" ? sans : corresp;
         return (
-          <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E8E5E3", padding: "24px 28px", marginTop: 20 }}>
+          <div style={{ background: "var(--carte)", borderRadius: 12, border: "1px solid var(--bordure-forte)", padding: "24px 28px", marginTop: 20 }}>
             <div style={SEC}>Correspondance des pays</div>
-            <p style={{ fontSize: 12.5, color: "#888", marginBottom: 14, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 12.5, color: "var(--gris-fort)", marginBottom: 14, lineHeight: 1.6 }}>
               Les libellés « pays » du bulletin sont rapprochés automatiquement du référentiel à chaque import ;
               seuls les libellés <strong>rattachés</strong> apparaissent sur la page publique, sous le nom du référentiel
               (les regroupements ANSD — « LES PAYS DE L&apos;AFRIQUE DE L&apos;OUEST », etc. — restent volontairement non rattachés).
@@ -255,36 +255,36 @@ export default function AdminCommerceExterieurPage() {
               {([["sans", `Non rattachés (${sans.length})`], ["tous", `Tous (${corresp.length})`]] as const).map(([v, l]) => (
                 <button key={v} onClick={() => setFiltreCorresp(v)}
                   style={{ padding: "5px 14px", borderRadius: 999, border: "1px solid", cursor: "pointer", fontSize: 12, fontWeight: 700,
-                    background: filtreCorresp === v ? "#004f91" : "#fff",
-                    color: filtreCorresp === v ? "#fff" : "#4a5568",
-                    borderColor: filtreCorresp === v ? "#004f91" : "#E8E5E3" }}>
+                    background: filtreCorresp === v ? "var(--bleu-action)" : "var(--carte)",
+                    color: filtreCorresp === v ? "var(--sur-bleu)" : "var(--texte)",
+                    borderColor: filtreCorresp === v ? "var(--bleu)" : "var(--bordure-forte)" }}>
                   {l}
                 </button>
               ))}
             </div>
             {visibles.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 18, color: "#1a7a3c", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <div style={{ textAlign: "center", padding: 18, color: "var(--vert-fonce)", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                 <ShieldCheck size={15} /> Tous les libellés pays sont rattachés.
               </div>
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ borderBottom: "2px solid #E8E5E3" }}>
+                  <tr style={{ borderBottom: "2px solid var(--bordure-forte)" }}>
                     {["Libellé du bulletin", "Pays du référentiel"].map(h => (
-                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "#4a5568", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {visibles.map(c => (
-                    <tr key={c.libelle} style={{ borderBottom: "1px solid #F0EEEC" }}>
-                      <td style={{ padding: "7px 12px", color: "#1a1a2e", fontWeight: 600 }}>{c.libelle}</td>
+                    <tr key={c.libelle} style={{ borderBottom: "1px solid var(--bordure)" }}>
+                      <td style={{ padding: "7px 12px", color: "var(--encre)", fontWeight: 600 }}>{c.libelle}</td>
                       <td style={{ padding: "7px 12px", width: 320 }}>
                         <select value={c.pays_id ?? ""} disabled={enregistrant === c.libelle}
                           onChange={e => associer(c.libelle, e.target.value === "" ? null : Number(e.target.value))}
                           style={{ width: "100%", padding: "6px 10px", borderRadius: 8, fontSize: 12.5, fontFamily: "var(--font-google-sans)",
-                            border: `1px solid ${c.pays_id === null ? "#FAD7A0" : "#E8E5E3"}`,
-                            background: c.pays_id === null ? "#FFFdf5" : "#fff", color: c.pays_id === null ? "#B7661B" : "#1a1a2e", cursor: "pointer" }}>
+                            border: `1px solid ${c.pays_id === null ? "var(--orange-voile)" : "var(--bordure-forte)"}`,
+                            background: c.pays_id === null ? "var(--carte-douce)" : "var(--carte)", color: c.pays_id === null ? "var(--orange)" : "var(--encre)", cursor: "pointer" }}>
                           <option value="">— Non rattaché (exclu de l&apos;affichage) —</option>
                           {refPays.map(p => <option key={p.id} value={p.id}>{p.nom_fr}</option>)}
                         </select>

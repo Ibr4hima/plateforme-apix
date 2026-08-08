@@ -9,9 +9,9 @@ import { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, c
 import { confirmer } from "@/components/shared/Confirmation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const IS: any  = { background:"#F2F0EF", border:"1px solid #C5BFBB", borderRadius:8, padding:"9px 12px", fontSize:13, color:"#1a1a2e", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"#4a5568", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"#ca631f", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid #E8E5E3" };
+const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 // ── Select Zone d'investissement ──────────────────────────────────────────────
 function ZoneInvSelect({ value, onChange }: { value:string; onChange:(v:string)=>void }) {
@@ -30,7 +30,7 @@ function ZoneInvSelect({ value, onChange }: { value:string; onChange:(v:string)=
   return (
     <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
       <div>
-        <label style={{...LS, fontSize:11, color:"#9aa5b4"}}>Type de zone</label>
+        <label style={{...LS, fontSize:11, color:"var(--gris)"}}>Type de zone</label>
         <select value={type} onChange={e=>{ setType(e.target.value); onChange(""); }} style={IS}>
           <option value="">— Choisir un type —</option>
           {Object.entries(LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
@@ -38,8 +38,8 @@ function ZoneInvSelect({ value, onChange }: { value:string; onChange:(v:string)=
       </div>
       {type && (
         <div>
-          <label style={{...LS, fontSize:11, color:"#9aa5b4"}}>Zone spécifique</label>
-          {loading ? <p style={{fontSize:12,color:"#9aa5b4"}}>Chargement…</p>
+          <label style={{...LS, fontSize:11, color:"var(--gris)"}}>Zone spécifique</label>
+          {loading ? <p style={{fontSize:12,color:"var(--gris)"}}>Chargement…</p>
             : <select value={value||""} onChange={e=>onChange(e.target.value)} style={IS}>
                 <option value="">— Sélectionner —</option>
                 {zones.map((z:any)=><option key={z.id} value={z.id}>{z.nom_zone}</option>)}
@@ -57,16 +57,16 @@ const ERR_TEL   = "Format : +221701234567 (+ suivi de 12 chiffres)";
 const ERR_MAIL  = "Email invalide";
 
 function FieldErr({ msg }: { msg: string }) {
-  return <p style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>{msg}</p>;
+  return <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>{msg}</p>;
 }
 
 // ── Bouton ajout inline ───────────────────────────────────────────────────────
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed #C5BFBB", background:"transparent", color:"#9aa5b4", fontSize:12, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#ca631f"; e.currentTarget.style.color="#ca631f"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor="#C5BFBB"; e.currentTarget.style.color="#9aa5b4"; }}>
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"9px 14px", borderRadius:9, border:"2px dashed var(--bordure-forte)", background:"transparent", color:"var(--gris)", fontSize:12, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)" }}
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--orange)"; e.currentTarget.style.color="var(--orange)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
       <Plus size={13} /> {label}
     </button>
   );
@@ -77,11 +77,11 @@ function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()
 function BtnPlus({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?(title||"Ajouter"):(title||"Complétez d'abord l'entrée précédente")}
-      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgba(0,79,145,0.35)":"#D8D4D0"}`,
-        background:"rgba(255,255,255,0.7)", color:ok?"#004f91":"#C5BFBB", cursor:ok?"pointer":"not-allowed",
+      style={{ width:24, height:24, borderRadius:999, border:`1.5px dashed ${ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"}`,
+        background:"rgb(var(--carte-rgb) / 0.7)", color:ok?"var(--bleu)":"var(--gris)", cursor:ok?"pointer":"not-allowed",
         display:"inline-flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s", flexShrink:0 }}
-      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="#004f91"; e.currentTarget.style.background="rgba(0,79,145,0.08)"; } }}
-      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgba(0,79,145,0.35)":"#D8D4D0"; e.currentTarget.style.background="rgba(255,255,255,0.7)"; }}>
+      onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.08)"; } }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=ok?"rgb(var(--bleu-rgb) / 0.35)":"var(--bordure-forte)"; e.currentTarget.style.background="rgb(var(--carte-rgb) / 0.7)"; }}>
       <Plus size={13}/>
     </button>
   );
@@ -110,12 +110,12 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
   const remMail = (i: number) => upd("mails", (pf.mails||[]).filter((_:any,j:number)=>j!==i));
 
   return (
-    <div style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#ca631f" }}>Point focal {idx+1}</span>
-        <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
-          <X size={12} style={{ color:"#dc2626" }} />
+        <span style={{ fontSize:12, fontWeight:700, color:"var(--orange)" }}>Point focal {idx+1}</span>
+        <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
+          <X size={12} style={{ color:"var(--danger)" }} />
         </button>
       </div>
 
@@ -149,11 +149,11 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           <div key={i} style={{ display:"flex", gap:6, marginBottom:5 }}>
             <div style={{ flex:1 }}>
               <input value={tel} onChange={e=>updTel(i,e.target.value)} placeholder="+221701234567"
-                style={{...IS, borderColor: tel && !validTel(tel) ? "#dc2626" : "#C5BFBB"}}/>
+                style={{...IS, borderColor: tel && !validTel(tel) ? "var(--danger)" : "var(--bordure-forte)"}}/>
               {tel && !validTel(tel) && <FieldErr msg={ERR_TEL}/>}
             </div>
-            <button onClick={()=>remTel(i)} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"0 9px", flexShrink:0 }}>
-              <X size={12} style={{ color:"#dc2626" }}/>
+            <button onClick={()=>remTel(i)} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"0 9px", flexShrink:0 }}>
+              <X size={12} style={{ color:"var(--danger)" }}/>
             </button>
           </div>
         ))}
@@ -169,11 +169,11 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
           <div key={i} style={{ display:"flex", gap:6, marginBottom:5 }}>
             <div style={{ flex:1 }}>
               <input value={mail} onChange={e=>updMail(i,e.target.value)} placeholder="contact@domaine.sn"
-                style={{...IS, borderColor: mail && !validMail(mail) ? "#dc2626" : "#C5BFBB"}}/>
+                style={{...IS, borderColor: mail && !validMail(mail) ? "var(--danger)" : "var(--bordure-forte)"}}/>
               {mail && !validMail(mail) && <FieldErr msg={ERR_MAIL}/>}
             </div>
-            <button onClick={()=>remMail(i)} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"0 9px", flexShrink:0 }}>
-              <X size={12} style={{ color:"#dc2626" }}/>
+            <button onClick={()=>remMail(i)} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"0 9px", flexShrink:0 }}>
+              <X size={12} style={{ color:"var(--danger)" }}/>
             </button>
           </div>
         ))}
@@ -188,11 +188,11 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 }) {
   const upd = (k:string, v:any) => onChange({...porteur, [k]:v});
   return (
-    <div style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
+    <div style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"#004f91" }}>Porteur du projet {idx+1}</span>
-        <button onClick={onRemove} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
-          <X size={12} style={{ color:"#dc2626" }} />
+        <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Porteur du projet {idx+1}</span>
+        <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
+          <X size={12} style={{ color:"var(--danger)" }} />
         </button>
       </div>
       <div style={{ marginBottom:10 }}>
@@ -215,8 +215,8 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
               </div>
               {(porteur.telephones||[""]).length>1&&(
                 <button onClick={()=>upd("telephones",(porteur.telephones||[""]).filter((_:any,i:number)=>i!==ti))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px", marginTop:1 }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
             </div>
@@ -232,11 +232,11 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
           {(porteur.mails||[""]).map((mail:string, mi:number)=>(
             <div key={mi} style={{ display:"flex", gap:5, marginBottom:6 }}>
               <input type="text" value={mail} onChange={e=>{ const arr=[...(porteur.mails||[""])]; arr[mi]=e.target.value; upd("mails",arr); }}
-                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"#dc2626":"#C5BFBB"}}/>
+                placeholder="contact@domaine.sn" style={{...IS, borderColor: mail&&!validMail(mail)?"var(--danger)":"var(--bordure-forte)"}}/>
               {(porteur.mails||[""]).length>1&&(
                 <button onClick={()=>upd("mails",(porteur.mails||[""]).filter((_:any,i:number)=>i!==mi))}
-                  style={{ background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
-                  <X size={11} style={{ color:"#dc2626" }}/>
+                  style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:6, padding:"9px 7px" }}>
+                  <X size={11} style={{ color:"var(--danger)" }}/>
                 </button>
               )}
               {mail&&!validMail(mail)&&<FieldErr msg={ERR_MAIL}/>}
@@ -393,15 +393,15 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
   if (!open) return null;
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ background:"#FAFAF9", borderRadius:20, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid #C5BFBB", boxShadow:"var(--ombre-2)" }}>
-        <div style={{ height:4, background:"linear-gradient(90deg,#ca631f,#e07a3a)", borderRadius:"20px 20px 0 0" }} />
+      style={{ position:"fixed", inset:0, background:"rgb(var(--ombre-rgb) / 0.4)", backdropFilter:"blur(6px)", zIndex:200, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ background:"var(--carte-douce)", borderRadius:20, width:"100%", maxWidth:820, maxHeight:"92vh", overflowY:"auto", border:"1px solid var(--bordure-forte)", boxShadow:"var(--ombre-2)" }}>
+        <div style={{ height:4, background:"linear-gradient(90deg,var(--orange-action),var(--orange-action))", borderRadius:"20px 20px 0 0" }} />
         <div style={{ padding:"24px 32px 32px" }}>
 
           {/* Header modal */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"#1a1a2e" }}>{edit?"Modifier le projet":"Nouveau projet"}</h2>
-            <button onClick={onClose} style={{ background:"#F2F0EF", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="#4a5568"/></button>
+            <h2 style={{ fontWeight:800, fontSize:"1.2rem", color:"var(--encre)" }}>{edit?"Modifier le projet":"Nouveau projet"}</h2>
+            <button onClick={onClose} style={{ background:"var(--fond)", border:"none", cursor:"pointer", borderRadius:8, padding:7 }}><X size={15} color="var(--texte)"/></button>
           </div>
 
           {/* ── 1. Informations générales ── */}
@@ -428,9 +428,9 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
             <p style={SEC}>Investissement</p>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
               <button onClick={()=>upd("est_intervalle",!form.est_intervalle)}
-                style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, color:form.est_intervalle?"#ca631f":"#9aa5b4", background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${form.est_intervalle?"#ca631f":"#C5BFBB"}`, background:form.est_intervalle?"#ca631f":"#fff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  {form.est_intervalle && <Check size={10} color="#fff" strokeWidth={3}/>}
+                style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:600, color:form.est_intervalle?"var(--orange)":"var(--gris)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${form.est_intervalle?"var(--orange)":"var(--bordure-forte)"}`, background:form.est_intervalle?"var(--orange-action)":"var(--carte)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  {form.est_intervalle && <Check size={10} color="var(--sur-bleu)" strokeWidth={3}/>}
                 </div>
                 Montant sous forme d'intervalle
               </button>
@@ -549,14 +549,14 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
                 {fichiers.map((f:any)=>(
                   <div key={f.id} style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
                     <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgba(202,99,31,0.06)", border:"1px solid rgba(202,99,31,0.18)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"#ca631f", textDecoration:"none", fontWeight:500 }}>
+                      style={{ display:"inline-flex", alignItems:"center", gap:5, background:"rgb(var(--orange-rgb) / 0.06)", border:"1px solid rgb(var(--orange-rgb) / 0.18)", borderRadius:7, padding:"4px 10px", fontSize:11, color:"var(--orange)", textDecoration:"none", fontWeight:500 }}>
                       <FileText size={11}/> {f.titre||f.fichier_nom}
                     </a>
                     <button onClick={async()=>{
                       if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                       setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
-                    }} style={{ background:"rgba(220,38,38,0.08)", border:"none", cursor:"pointer", borderRadius:5, padding:"3px 5px", display:"flex", alignItems:"center" }}>
-                      <X size={10} style={{ color:"#dc2626" }}/>
+                    }} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:5, padding:"3px 5px", display:"flex", alignItems:"center" }}>
+                      <X size={10} style={{ color:"var(--danger)" }}/>
                     </button>
                   </div>
                 ))}
@@ -565,41 +565,41 @@ function ProjetModal({ open, onClose, edit, onSaved }: {
             {pdfQueue.length > 0 && (
               <div style={{ display:"flex", flexDirection:"column" as const, gap:5, marginBottom:8 }}>
                 {pdfQueue.map((p,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(124,58,237,0.05)", border:"1px solid rgba(124,58,237,0.2)", borderRadius:8, padding:"7px 12px" }}>
-                    <FileText size={13} style={{ color:"#7c3aed", flexShrink:0 }}/>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:8, padding:"7px 12px" }}>
+                    <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document"
-                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(124,58,237,0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))}
                       style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
-                      <X size={13} style={{ color:"#dc2626" }}/>
+                      <X size={13} style={{ color:"var(--danger)" }}/>
                     </button>
                   </div>
                 ))}
               </div>
             )}
-            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed #C5BFBB", background:"#F2F0EF" }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor="#ca631f"}
-              onMouseLeave={e=>e.currentTarget.style.borderColor="#C5BFBB"}>
-              <Upload size={14} color="#9aa5b4"/>
-              <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+            <label style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 14px", borderRadius:8, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--fond)" }}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--orange)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+              <Upload size={14} color="var(--gris)"/>
+              <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
               <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
                 const files = Array.from(e.target.files||[]);
                 setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f, titre:f.name.replace(/\.pdf$/i,"") }))]);
                 e.target.value="";
               }}/>
             </label>
-            {!edit && <p style={{ fontSize:11, color:"#9aa5b4", marginTop:6 }}>💡 Créez d'abord le projet, puis ajoutez les documents.</p>}
+            {!edit && <p style={{ fontSize:11, color:"var(--gris)", marginTop:6 }}>💡 Créez d'abord le projet, puis ajoutez les documents.</p>}
           </div>
 
-          {error && <p style={{ fontSize:12, color:"#dc2626", marginBottom:12 }}>{error}</p>}
+          {error && <p style={{ fontSize:12, color:"var(--danger)", marginBottom:12 }}>{error}</p>}
 
           <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-            <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid #C5BFBB", background:"#fff", color:"#4a5568", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
               Annuler
             </button>
             <button onClick={handleSave} disabled={saving||ok}
-              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:ok?"#059669":"#ca631f", color:"#fff", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:ok?"var(--vert-action)":"var(--orange-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:saving?"not-allowed":"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
               {saving?<><Loader2 size={14} style={{animation:"spin 1s linear infinite"}}/>Enregistrement…</>
                :ok?<><Check size={14}/>Enregistré!</>
                :<><Check size={14}/>{edit?"Modifier":"Créer le projet"}</>}
@@ -630,46 +630,46 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
   };
   const invest = fmtInvest();
   const LBL = ({children}:{children:React.ReactNode}) => (
-    <p style={{fontSize:10,fontWeight:700,color:"#9aa5b4",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
+    <p style={{fontSize:10,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:5}}>{children}</p>
   );
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"#FAFAF9",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid #E8E5E3",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,#E35336,#FFB0A1,#004f91)"}}/>
+      style={{position:"fixed",inset:0,background:"rgb(var(--ombre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{background:"var(--carte-douce)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid var(--bordure-forte)",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
+        <div style={{height:5,background:"linear-gradient(90deg,var(--danger-action),var(--danger-voile),var(--bleu-action))"}}/>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div style={{flex:1,paddingRight:16}}>
-              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"#1a1a2e",lineHeight:1.3,marginBottom:8}}>{p.titre_projet}</h2>
+              <h2 style={{fontWeight:800,fontSize:"1.15rem",color:"var(--encre)",lineHeight:1.3,marginBottom:8}}>{p.titre_projet}</h2>
               <div style={{display:"flex",gap:7,flexWrap:"wrap" as const}}>
-                {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"#E35336",background:"rgba(227,83,54,0.08)",border:"1px solid rgba(227,83,54,0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
-                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"#004f91",background:"rgba(0,79,145,0.08)",border:"1px solid rgba(0,79,145,0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
-                {(p.zone_nom||p.zone_investissement) && <span style={{fontSize:11,fontWeight:700,color:"#188038",background:"rgba(24,128,56,0.08)",border:"1px solid rgba(24,128,56,0.2)",padding:"2px 9px",borderRadius:999}}>{p.zone_nom||p.zone_investissement}</span>}
-                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"#15803d":"#9aa5b4",background:p.est_publie?"#dcfce7":"#F2F0EF",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
+                {p.region_nom && <span style={{fontSize:11,fontWeight:700,color:"var(--danger)",background:"rgb(var(--orange-rgb) / 0.08)",border:"1px solid rgb(var(--orange-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>Région de {p.region_nom}</span>}
+                {p.pole_nom   && <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>{p.pole_nom}</span>}
+                {(p.zone_nom||p.zone_investissement) && <span style={{fontSize:11,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",border:"1px solid rgb(var(--vert-rgb) / 0.2)",padding:"2px 9px",borderRadius:999}}>{p.zone_nom||p.zone_investissement}</span>}
+                <span style={{fontSize:11,fontWeight:700,color:p.est_publie?"var(--vert-fonce)":"var(--gris)",background:p.est_publie?"var(--vert-voile)":"var(--fond)",padding:"2px 9px",borderRadius:999}}>{p.est_publie?"Publié":"Non publié"}</span>
               </div>
             </div>
-            <button onClick={onClose} style={{background:"#F2F0EF",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="#4a5568"/></button>
+            <button onClick={onClose} style={{background:"var(--fond)",border:"none",cursor:"pointer",borderRadius:8,padding:7,flexShrink:0}}><X size={14} color="var(--texte)"/></button>
           </div>
 
           {p.description && (
-            <div style={{background:"rgba(227,83,54,0.04)",border:"1px solid rgba(227,83,54,0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
-              <p style={{fontSize:13,color:"#4a5568",lineHeight:1.7}}>{p.description}</p>
+            <div style={{background:"rgb(var(--orange-rgb) / 0.04)",border:"1px solid rgb(var(--orange-rgb) / 0.1)",borderRadius:10,padding:"12px 14px",marginBottom:18}}>
+              <p style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}>{p.description}</p>
             </div>
           )}
 
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             {invest && (
-              <div style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:10,padding:"12px 14px"}}>
                 <LBL>Investissement</LBL>
-                <p style={{fontSize:14,fontWeight:700,color:"#1a1a2e"}}>{invest}</p>
+                <p style={{fontSize:14,fontWeight:700,color:"var(--encre)"}}>{invest}</p>
               </div>
             )}
             {p.date_debut && (
-              <div style={{background:"#F8F7F6",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{background:"var(--carte-douce)",borderRadius:10,padding:"12px 14px"}}>
                 <LBL>Date de début</LBL>
-                <p style={{fontSize:13,fontWeight:600,color:"#1a1a2e"}}>{new Date(p.date_debut).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
+                <p style={{fontSize:13,fontWeight:600,color:"var(--encre)"}}>{new Date(p.date_debut).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p>
               </div>
             )}
           </div>
@@ -686,25 +686,25 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   return (
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasduSec.length?5:0}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:"#E35336",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"#E35336"}}>{sec.nom}</span>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:"var(--danger-action)",flexShrink:0}}/>
+                        <span style={{fontSize:12,fontWeight:700,color:"var(--danger)"}}>{sec.nom}</span>
                       </div>
                       {brasduSec.length > 0 && (
-                        <div style={{paddingLeft:20,borderLeft:"2px solid rgba(227,83,54,0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
+                        <div style={{paddingLeft:20,borderLeft:"2px solid rgb(var(--orange-rgb) / 0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
                           {brasduSec.map((bra:any)=>{
                             const actsDeBra = activites.filter((a:any)=>a.branche_id===bra.id && (p.activite_ids||[]).includes(a.id));
                             return (
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
-                                  <div style={{width:6,height:6,borderRadius:"50%",background:"#004f91",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"#004f91"}}>{bra.nom}</span>
+                                  <div style={{width:6,height:6,borderRadius:"50%",background:"var(--bleu-action)",flexShrink:0}}/>
+                                  <span style={{fontSize:11,fontWeight:600,color:"var(--bleu)"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any)=>(
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                                        <div style={{width:5,height:5,borderRadius:"50%",background:"#188038",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"#188038",fontWeight:500}}>{act.nom}</span>
+                                        <div style={{width:5,height:5,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
+                                        <span style={{fontSize:11,color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -727,10 +727,10 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Porteur{p.porteurs.length>1?"s":""} du projet</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.porteurs.map((porteur:any, i:number)=>(
-                  <div key={i} style={{background:"rgba(0,79,145,0.05)",borderRadius:10,padding:"12px 14px"}}>
-                    <p style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3}}>{porteur.nom}</p>
+                  <div key={i} style={{background:"rgb(var(--bleu-rgb) / 0.05)",borderRadius:10,padding:"12px 14px"}}>
+                    <p style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3}}>{porteur.nom}</p>
                     {(porteur.telephone||porteur.mail) && (
-                      <p style={{fontSize:12,color:"#4a5568"}}>{[porteur.telephone,porteur.mail].filter(Boolean).join(" · ")}</p>
+                      <p style={{fontSize:12,color:"var(--texte)"}}>{[porteur.telephone,porteur.mail].filter(Boolean).join(" · ")}</p>
                     )}
                   </div>
                 ))}
@@ -744,17 +744,17 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <LBL>Points focaux</LBL>
               <div style={{display:"flex",flexDirection:"column" as const,gap:6}}>
                 {p.points_focaux.map((pf:any)=>(
-                  <div key={pf.id||pf.ordre} style={{background:"#F8F7F6",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-                    <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(202,99,31,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>
-                      <User size={13} style={{color:"#ca631f"}}/>
+                  <div key={pf.id||pf.ordre} style={{background:"var(--carte-douce)",borderRadius:10,padding:"10px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
+                    <div style={{width:30,height:30,borderRadius:"50%",background:"rgb(var(--orange-rgb) / 0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>
+                      <User size={13} style={{color:"var(--orange)"}}/>
                     </div>
                     <div style={{flex:1}}>
-                      <p style={{fontWeight:600,fontSize:13,color:"#1a1a2e",marginBottom:3}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
+                      <p style={{fontWeight:600,fontSize:13,color:"var(--encre)",marginBottom:3}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
                       {(pf.telephones||[]).length > 0 && (
-                        <p style={{fontSize:11,color:"#9aa5b4",marginBottom:1}}>📞 {pf.telephones.join(" · ")}</p>
+                        <p style={{fontSize:11,color:"var(--gris)",marginBottom:1}}>📞 {pf.telephones.join(" · ")}</p>
                       )}
                       {(pf.mails||[]).length > 0 && (
-                        <p style={{fontSize:11,color:"#9aa5b4"}}>✉ {pf.mails.join(" · ")}</p>
+                        <p style={{fontSize:11,color:"var(--gris)"}}>✉ {pf.mails.join(" · ")}</p>
                       )}
                     </div>
                   </div>
@@ -770,7 +770,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <div style={{display:"flex",flexWrap:"wrap" as const,gap:6}}>
                 {p.fichiers.map((f:any)=>(
                   <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(227,83,54,0.06)",border:"1px solid rgba(227,83,54,0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"#E35336",textDecoration:"none",fontWeight:500}}>
+                    style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--orange-rgb) / 0.06)",border:"1px solid rgb(var(--orange-rgb) / 0.18)",borderRadius:7,padding:"4px 10px",fontSize:11,color:"var(--danger)",textDecoration:"none",fontWeight:500}}>
                     <FileText size={11}/> {f.titre||f.fichier_nom}
                   </a>
                 ))}
@@ -778,11 +778,11 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             </div>
           )}
 
-          <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid #F2F0EF",paddingTop:18}}>
-            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"#004f91",color:"#fff",fontWeight:700,cursor:"pointer",fontSize:13}}>
+          <div style={{display:"flex",gap:8,marginTop:20,justifyContent:"flex-end",borderTop:"1px solid var(--bordure)",paddingTop:18}}>
+            <button onClick={()=>{onClose();onEdit(p);}} style={{display:"flex",alignItems:"center",gap:6,padding:"9px 18px",borderRadius:9,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13}}>
               <Pencil size={13}/> Modifier
             </button>
-            <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid #C5BFBB",background:"transparent",color:"#4a5568",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
+            <button onClick={onClose} style={{padding:"9px 18px",borderRadius:9,border:"1px solid var(--bordure-forte)",background:"transparent",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13}}>Fermer</button>
           </div>
         </div>
       </div>
@@ -849,27 +849,27 @@ export default function ProjetsPage() {
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28 }}>
         <div>
-          <p style={{ fontSize:11, fontWeight:700, color:"#E35336", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
-          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"#1a1a2e" }}>Projets</h1>
-          <p style={{ color:"#9aa5b4", fontSize:13, marginTop:4 }}>{total} projet{total>1?"s":""}</p>
+          <p style={{ fontSize:11, fontWeight:700, color:"var(--danger)", letterSpacing:"0.15em", textTransform:"uppercase" as const, marginBottom:4 }}>Administration</p>
+          <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"var(--encre)" }}>Projets</h1>
+          <p style={{ color:"var(--gris)", fontSize:13, marginTop:4 }}>{total} projet{total>1?"s":""}</p>
         </div>
         <button onClick={()=>{ setEdit(null); setModal(true); }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#E35336,#c42d1a)", color:"#fff", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgba(227,83,54,0.3)" }}>
+          style={{ display:"flex", alignItems:"center", gap:7, padding:"11px 20px", borderRadius:12, border:"none", background:"linear-gradient(135deg,var(--danger-action),var(--danger-action))", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.3)" }}>
           <Plus size={15}/> Nouveau projet
         </button>
       </div>
 
       <div style={{ position:"relative" as const, marginBottom:24, maxWidth:400 }}>
-        <Search size={14} style={{ position:"absolute" as const, left:12, top:"50%", transform:"translateY(-50%)", color:"#9aa5b4" }}/>
+        <Search size={14} style={{ position:"absolute" as const, left:12, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
         <input value={q} onChange={e=>{ setQ(e.target.value); setPage(1); }} placeholder="Rechercher un projet…" style={{...IS, paddingLeft:36}}/>
       </div>
 
       {loading ? (
         <div style={{ display:"flex", justifyContent:"center", padding:60 }}>
-          <Loader2 size={28} style={{ color:"#9aa5b4", animation:"spin 1s linear infinite" }}/>
+          <Loader2 size={28} style={{ color:"var(--gris)", animation:"spin 1s linear infinite" }}/>
         </div>
       ) : projets.length===0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 0", color:"#9aa5b4" }}>
+        <div style={{ textAlign:"center" as const, padding:"80px 0", color:"var(--gris)" }}>
           <p style={{ fontSize:16, fontWeight:600 }}>Aucun projet</p>
           <p style={{ fontSize:13 }}>Créez votre premier projet</p>
         </div>
@@ -877,45 +877,45 @@ export default function ProjetsPage() {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))", gap:12 }}>
           {projets.map(p=>(
             <div key={p.id} onClick={()=>setVue(p)}
-              style={{ background:"#fff", border:"1px solid #E8E5E3", borderRadius:12, padding:"14px 16px", boxShadow:"var(--ombre-1)", borderLeft:`3px solid ${p.est_publie?"#E35336":"#C5BFBB"}`, cursor:"pointer", transition:"all 0.15s" }}
-              onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow="0 4px 16px rgba(227,83,54,0.12)"; ev.currentTarget.style.borderColor="#FFB0A1"; }}
-              onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.borderColor="#E8E5E3"; ev.currentTarget.style.borderLeftColor=p.est_publie?"#E35336":"#C5BFBB"; }}>
-              <div style={{fontWeight:700,fontSize:13,color:"#1a1a2e",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
+              style={{ background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:12, padding:"14px 16px", boxShadow:"var(--ombre-1)", borderLeft:`3px solid ${p.est_publie?"var(--danger)":"var(--bordure-forte)"}`, cursor:"pointer", transition:"all 0.15s" }}
+              onMouseEnter={ev=>{ ev.currentTarget.style.boxShadow="0 4px 16px rgb(var(--ombre-rgb) / 0.12)"; ev.currentTarget.style.borderColor="var(--danger-voile)"; }}
+              onMouseLeave={ev=>{ ev.currentTarget.style.boxShadow="var(--ombre-1)"; ev.currentTarget.style.borderColor="var(--bordure-forte)"; ev.currentTarget.style.borderLeftColor=p.est_publie?"var(--danger)":"var(--bordure-forte)"; }}>
+              <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
                 {p.titre_projet}
               </div>
               <div style={{ display:"flex", flexDirection:"column" as const, gap:3, marginBottom:12, marginTop:6 }}>
                 {p.region_nom && (
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#E35336", flexShrink:0 }}/>
-                    <span style={{ color:"#9aa5b4" }}>Région de {p.region_nom}</span>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--danger-action)", flexShrink:0 }}/>
+                    <span style={{ color:"var(--gris)" }}>Région de {p.region_nom}</span>
                   </div>
                 )}
                 {p.pole_nom && (
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#004f91", flexShrink:0 }}/>
-                    <span style={{ color:"#4a5568" }}>{p.pole_nom}</span>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }}/>
+                    <span style={{ color:"var(--texte)" }}>{p.pole_nom}</span>
                   </div>
                 )}
                 {p.date_debut && (
                   <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12 }}>
-                    <div style={{ width:6, height:6, borderRadius:"50%", background:"#059669", flexShrink:0 }}/>
-                    <span style={{ color:"#9aa5b4" }}>Début : {new Date(p.date_debut).toLocaleDateString("fr-FR")}</span>
+                    <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--vert-action)", flexShrink:0 }}/>
+                    <span style={{ color:"var(--gris)" }}>Début : {new Date(p.date_debut).toLocaleDateString("fr-FR")}</span>
                   </div>
                 )}
               </div>
-              <div style={{ display:"flex", gap:5, borderTop:"1px solid #F2F0EF", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
+              <div style={{ display:"flex", gap:5, borderTop:"1px solid var(--bordure)", paddingTop:10 }} onClick={ev=>ev.stopPropagation()}>
                 <button onClick={()=>{ setEdit(p); setModal(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgba(0,79,145,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"#004f91", fontWeight:600 }}>
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <button onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgba(21,128,61,0.07)":"rgba(156,163,175,0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"#15803d":"#6b7280", fontWeight:600 }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:4, background:p.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--gris-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 0", fontSize:11, color:p.est_publie?"var(--vert-fonce)":"var(--gris-fort)", fontWeight:600 }}
                   title={p.est_publie?"Visible dans la page Suivi — cliquer pour masquer":"Masqué — cliquer pour publier"}>
                   {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Publié</>:<><Eye size={12}/> Publier</>}
                 </button>
                 <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                  style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(220,38,38,0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
-                  {deleting===p.id?<Loader2 size={12} style={{color:"#dc2626",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"#dc2626"}}/>}
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:7, padding:"6px 9px" }}>
+                  {deleting===p.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
                 </button>
               </div>
             </div>

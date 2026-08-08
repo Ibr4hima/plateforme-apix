@@ -33,8 +33,8 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
 
     if (!data.length) return;
 
-    const COLOR_POS = "#188038";
-    const COLOR_NEG = "#A50E0E";
+    const COLOR_POS = "var(--vert)";
+    const COLOR_NEG = "var(--danger-fonce)";
     const rowH = mini ? 16 : 28;
     const W    = wrapRef.current.clientWidth || 500;
     const MT   = mini ? 4  : 26;
@@ -67,14 +67,14 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
       svg.append("g").attr("transform",`translate(0,${MT})`)
         .call(d3.axisTop(xPos).ticks(4).tickFormat(v=>v===0?"":fmt(+v)))
         .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
+          g.selectAll(".tick line").style("stroke","var(--filet)").attr("y2",data.length*rowH);
+          g.selectAll(".tick text").style("fill","var(--gris)").attr("font-size",9);});
       // Axe gauche (négatif) — inverser le signe pour l'affichage
       svg.append("g").attr("transform",`translate(0,${MT})`)
         .call(d3.axisTop(xNeg).ticks(3).tickFormat(v=>v===0?"":fmt(-(+v))))
         .call(g=>{g.select(".domain").remove();
-          g.selectAll(".tick line").attr("stroke","#f3f4f6").attr("y2",data.length*rowH);
-          g.selectAll(".tick text").attr("fill","#9aa5b4").attr("font-size",9);});
+          g.selectAll(".tick line").style("stroke","var(--filet)").attr("y2",data.length*rowH);
+          g.selectAll(".tick text").style("fill","var(--gris)").attr("font-size",9);});
     }
 
     // Barres
@@ -84,12 +84,12 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
       .attr("y",     d=>y(d.pays)!)
       .attr("width", d=>Math.max(1, Math.abs(xOf(d.net)-cx)))
       .attr("height",y.bandwidth())
-      .attr("fill",  d=>d.net>=0 ? COLOR_POS : COLOR_NEG);
+      .style("fill",  d=>d.net>=0 ? COLOR_POS : COLOR_NEG);
 
     // Règle X=0
     svg.append("line")
       .attr("x1",cx).attr("x2",cx).attr("y1",MT).attr("y2",MT+data.length*rowH)
-      .attr("stroke","#374151").attr("stroke-width",mini?0.8:1.2);
+      .style("stroke","var(--texte)").attr("stroke-width",mini?0.8:1.2);
 
     // Noms pays au centre — positifs à gauche du centre, négatifs à droite
     data.forEach(d=>{
@@ -104,7 +104,7 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
         .attr("text-anchor", isPos ? "end" : "start")
         .attr("font-size", mini ? 6 : 9.5)
         .attr("font-weight","600")
-        .attr("fill","#374151")
+        .style("fill","var(--encre)")
         .text(name);
     });
 
@@ -117,7 +117,7 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
         .attr("dy","0.35em")
         .attr("text-anchor",d=>d.net>=0?"start":"end")
         .attr("font-size",8).attr("font-weight","600")
-        .attr("fill",d=>d.net>=0?COLOR_POS:COLOR_NEG)
+        .style("fill",d=>d.net>=0?COLOR_POS:COLOR_NEG)
         .text(d=>fmt(d.net));
     }
   }, [donnees, annee, ind, mini]);
@@ -132,7 +132,7 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
 
   const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
   const Pill = ({label,active,onClick}:{label:string;active:boolean;onClick:()=>void}) => (
-    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"#004f91":"#F2F0EF",color:active?"#fff":"#9aa5b4",transition:"all 0.15s"}}>{label}</button>
+    <button onClick={onClick} style={{padding:"4px 10px",borderRadius:6,border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:active?"var(--bleu-action)":"var(--fond)",color:active?"var(--sur-bleu)":"var(--gris)",transition:"all 0.15s"}}>{label}</button>
   );
 
   return (
@@ -140,10 +140,10 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
       {!mini&&(
         <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap" as const,alignItems:"center"}}>
           <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
-            style={{fontSize:11,padding:"3px 8px",borderRadius:6,border:"1px solid #E8E5E3",background:"#F8F7F6",color:"#1a1a2e",cursor:"pointer",outline:"none"}}>
+            style={{fontSize:11,padding:"3px 8px",borderRadius:6,border:"1px solid var(--bordure-forte)",background:"var(--carte-douce)",color:"var(--encre)",cursor:"pointer",outline:"none"}}>
             {annees.map(a=><option key={a} value={a}>{a}</option>)}
           </select>
-          <div style={{width:1,background:"#E8E5E3",margin:"0 2px"}}/>
+          <div style={{width:1,background:"var(--fond-creux2)",margin:"0 2px"}}/>
           <Pill label="Flux net"  active={ind==="flux"}  onClick={()=>setInd("flux")}/>
           <Pill label="Stock net" active={ind==="stock"} onClick={()=>setInd("stock")}/>
         </div>

@@ -6,14 +6,14 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 
 const MODULES = [
-  { label: "Événements",   href: "/admin/evenements",   icon: Calendar,   color: "#004f91", apiKey: "evenements" },
-  { label: "Accords",      href: "/admin/accords",      icon: FileText,   color: "#7c3aed", apiKey: "accords"    },
-  { label: "Entreprises",  href: "/admin/entreprises",  icon: Building2,  color: "#ca631f", apiKey: "entreprises"},
-  { label: "Zones",        href: "/admin/zones",        icon: MapPin,     color: "#059669", apiKey: null         },
-  { label: "Opportunités", href: "/admin/opportunites", icon: Lightbulb,  color: "#d97706", apiKey: null         },
-  { label: "IDE",          href: "/admin/ide",          icon: TrendingUp, color: "#dc2626", apiKey: null         },
-  { label: "Intentions",   href: "/admin/intentions",   icon: Target,     color: "#0891b2", apiKey: null         },
-  { label: "Prospects",    href: "/admin/prospects",    icon: Globe,      color: "#65a30d", apiKey: null         },
+  { label: "Événements",   href: "/admin/evenements",   icon: Calendar,   color: "var(--bleu)", apiKey: "evenements" },
+  { label: "Accords",      href: "/admin/accords",      icon: FileText,   color: "var(--violet)", apiKey: "accords"    },
+  { label: "Entreprises",  href: "/admin/entreprises",  icon: Building2,  color: "var(--orange)", apiKey: "entreprises"},
+  { label: "Zones",        href: "/admin/zones",        icon: MapPin,     color: "var(--vert)", apiKey: null         },
+  { label: "Opportunités", href: "/admin/opportunites", icon: Lightbulb,  color: "var(--orange)", apiKey: null         },
+  { label: "IDE",          href: "/admin/ide",          icon: TrendingUp, color: "var(--danger)", apiKey: null         },
+  { label: "Intentions",   href: "/admin/intentions",   icon: Target,     color: "var(--cyan)", apiKey: null         },
+  { label: "Prospects",    href: "/admin/prospects",    icon: Globe,      color: "var(--alerte)", apiKey: null         },
 ];
 
 export default function AdminDashboard() {
@@ -39,16 +39,16 @@ export default function AdminDashboard() {
 
       {/* Header */}
       <div style={{ marginBottom: 40 }}>
-        <p style={{ fontSize: 13, color: "#9aa5b4", marginBottom: 6 }}>
+        <p style={{ fontSize: 13, color: "var(--gris)", marginBottom: 6 }}>
           {now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
         <h1 style={{
           fontFamily: "var(--font-google-sans)", fontWeight: 800,
-          fontSize: "2rem", color: "#1a1a2e", marginBottom: 6,
+          fontSize: "2rem", color: "var(--encre)", marginBottom: 6,
         }}>
           {greeting} 👋
         </h1>
-        <p style={{ color: "#4a5568", fontSize: 15 }}>
+        <p style={{ color: "var(--texte)", fontSize: 15 }}>
           Bienvenue dans l'espace d'administration de la plateforme APIX.
         </p>
       </div>
@@ -56,14 +56,14 @@ export default function AdminDashboard() {
       {/* Stats rapides */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 40 }}>
         {[
-          { label: "Événements",  value: counts.evenements  ?? "—", color: "#004f91", icon: Calendar  },
-          { label: "Accords",     value: counts.accords     ?? "—", color: "#7c3aed", icon: FileText  },
-          { label: "Entreprises", value: counts.entreprises ?? "—", color: "#ca631f", icon: Building2 },
+          { label: "Événements",  value: counts.evenements  ?? "—", color: "var(--bleu)", icon: Calendar  },
+          { label: "Accords",     value: counts.accords     ?? "—", color: "var(--violet)", icon: FileText  },
+          { label: "Entreprises", value: counts.entreprises ?? "—", color: "var(--orange)", icon: Building2 },
         ].map((s, i) => {
           const Icon = s.icon;
           return (
             <div key={i} style={{
-              background: "#fff", border: "1px solid #C5BFBB",
+              background: "var(--carte)", border: "1px solid var(--bordure-forte)",
               borderRadius: 16, padding: "20px 24px",
               display: "flex", alignItems: "center", gap: 14,
             }}>
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
                 <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: s.color }}>
                   {s.value}
                 </div>
-                <div style={{ fontSize: 12, color: "#9aa5b4" }}>{s.label}</div>
+                <div style={{ fontSize: 12, color: "var(--gris)" }}>{s.label}</div>
               </div>
             </div>
           );
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
 
       {/* Grille modules */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "#1a1a2e", marginBottom: 16 }}>
+        <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "var(--encre)", marginBottom: 16 }}>
           Accès rapide aux modules
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
             return (
               <Link key={m.href} href={m.href} style={{ textDecoration: "none" }}>
                 <div style={{
-                  background: "#fff", border: "1px solid #C5BFBB",
+                  background: "var(--carte)", border: "1px solid var(--bordure-forte)",
                   borderRadius: 14, padding: "18px 20px",
                   display: "flex", alignItems: "center", gap: 14,
                   transition: "all 0.2s", cursor: "pointer",
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
-                  e.currentTarget.style.borderColor = "#C5BFBB";
+                  e.currentTarget.style.borderColor = "var(--bordure-forte)";
                 }}>
                   <div style={{
                     width: 38, height: 38, borderRadius: 10,
@@ -120,15 +120,15 @@ export default function AdminDashboard() {
                     <Icon size={17} style={{ color: m.color }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a2e" }}>{m.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--encre)" }}>{m.label}</div>
                     {count !== null && (
-                      <div style={{ fontSize: 11, color: "#9aa5b4" }}>{count} enregistrement{count > 1 ? "s" : ""}</div>
+                      <div style={{ fontSize: 11, color: "var(--gris)" }}>{count} enregistrement{count > 1 ? "s" : ""}</div>
                     )}
                     {count === null && (
-                      <div style={{ fontSize: 11, color: "#C5BFBB" }}>À venir</div>
+                      <div style={{ fontSize: 11, color: "var(--gris)" }}>À venir</div>
                     )}
                   </div>
-                  <ArrowRight size={14} style={{ color: "#C5BFBB" }} />
+                  <ArrowRight size={14} style={{ color: "var(--gris)" }} />
                 </div>
               </Link>
             );

@@ -296,8 +296,8 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
               onChange={e=>{ const v=e.target.value; if(v===""||/^[1-9][0-9]*$/.test(v)) update("edition",v); }}
               onKeyDown={e=>{ if(["e","E","+","-",".",","].includes(e.key)) e.preventDefault(); }}
               placeholder="Ex : 5"
-              style={form.edition&&(isNaN(parseInt(form.edition))||parseInt(form.edition)<=0)?{ borderColor:"#dc2626" }:undefined} />
-            {form.edition&&parseInt(form.edition)>0&&<span style={{ fontSize:11, color:"#188038", marginTop:3, display:"block" }}>{ordinalEdition(parseInt(form.edition))}</span>}
+              style={form.edition&&(isNaN(parseInt(form.edition))||parseInt(form.edition)<=0)?{ borderColor:"var(--danger)" }:undefined} />
+            {form.edition&&parseInt(form.edition)>0&&<span style={{ fontSize:11, color:"var(--vert)", marginTop:3, display:"block" }}>{ordinalEdition(parseInt(form.edition))}</span>}
           </div>
         </FGrid>
         <FGrid cols={2}>
@@ -384,7 +384,7 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" as const, marginBottom:12 }}>
                 <FSegmented options={[{value:true,label:"Date unique"},{value:false,label:"Sur plusieurs jours"}]}
                   value={form.date_unique} onChange={v=>{ update("date_unique",v); if(v) update("date_fin",""); }} />
-                {grise && <span style={{ fontSize:11, color:"#9aa5b4" }}>Dates calculées depuis le prochain événement</span>}
+                {grise && <span style={{ fontSize:11, color:"var(--gris)" }}>Dates calculées depuis le prochain événement</span>}
               </div>
               {form.date_unique ? (
                 <div>
@@ -401,8 +401,8 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
                     <FLabel>Date de fin {obligatoire?"*":""}</FLabel>
                     <FInput type="date" value={form.date_fin} min={form.date_debut||undefined}
                       onChange={e=>update("date_fin",e.target.value)}
-                      style={form.date_fin&&form.date_fin<=form.date_debut?{ borderColor:"#dc2626" }:undefined} />
-                    {form.date_fin&&form.date_fin<=form.date_debut&&<span style={{ fontSize:11, color:"#dc2626", marginTop:3, display:"block" }}>La date de fin doit être après la date de début</span>}
+                      style={form.date_fin&&form.date_fin<=form.date_debut?{ borderColor:"var(--danger)" }:undefined} />
+                    {form.date_fin&&form.date_fin<=form.date_debut&&<span style={{ fontSize:11, color:"var(--danger)", marginTop:3, display:"block" }}>La date de fin doit être après la date de début</span>}
                   </div>
                 </FGrid>
               )}
@@ -472,34 +472,34 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
         {fichiers.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:8 }}>
             {fichiers.map((fi: any) => (
-              <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(0,79,145,0.05)", border:"1px solid rgba(0,79,145,0.15)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#004f91" }} />
+              <div key={fi.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--bleu)" }} />
                 <a href={`${API_BASE}/evenements/${editItem?.id}/fichiers/${fi.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"#1a1a2e", fontWeight:500, textDecoration:"none" }}>{fi.titre}</a>
-                <button onClick={()=>supprimerFichier(fi.id)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }} /></button>
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{fi.titre}</a>
+                <button onClick={()=>supprimerFichier(fi.id)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }} /></button>
               </div>
             ))}
           </div>
         )}
-        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed #E4E1DE", background:"#FAFAF9", transition:"border-color 0.15s" }}
-          onMouseEnter={e=>e.currentTarget.style.borderColor="#004f91"}
-          onMouseLeave={e=>e.currentTarget.style.borderColor="#E4E1DE"}>
-          <Upload size={14} color="#9aa5b4" />
-          <span style={{ fontSize:13, color:"#9aa5b4" }}>Ajouter un ou plusieurs PDF</span>
+        <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
+          onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
+          <Upload size={14} color="var(--gris)" />
+          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display:"none" }}
             onChange={e=>{ const files=Array.from(e.target.files||[]); setPdfQueue(prev=>[...prev, ...files.map(f=>({ file:f, titre:f.name.replace(/\.pdf$/i,"") }))]); e.target.value=""; }} />
         </label>
         {pdfQueue.length > 0 && (
           <div style={{ display:"flex", flexDirection:"column", gap:5, marginTop:8 }}>
             {pdfQueue.map((pq, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(106,27,154,0.05)", border:"1px solid rgba(106,27,154,0.2)", borderRadius:10, padding:"8px 12px" }}>
-                <FileText size={13} style={{ color:"#6A1B9A" }} />
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
+                <FileText size={13} style={{ color:"var(--violet)" }} />
                 <input value={pq.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{ ...x, titre:e.target.value }:x))} placeholder="Titre du document"
-                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgba(106,27,154,0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }} />
-                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"#dc2626" }} /></button>
+                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }} />
+                <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }} /></button>
               </div>
             ))}
-            <p style={{ fontSize:11, color:"#9aa5b4" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize:11, color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -551,9 +551,9 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   const estEnCours = statut === "en_cours";
   const estPasse   = statut === "termine";
   const accent = estProchain
-    ? { c: "#004f91", grad: "linear-gradient(90deg,#003a6e 0%,#004f91 60%,#1a6ab0 100%)", label: "Prochain événement", b: "rgba(0,79,145,0.45)", b2: "rgba(0,79,145,0.6)", sh: "0 4px 18px rgba(0,79,145,0.15)" }
+    ? { c: "var(--bleu)", grad: "linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)", label: "Prochain événement", b: "rgb(var(--bleu-rgb) / 0.45)", b2: "rgb(var(--bleu-rgb) / 0.6)", sh: "0 4px 18px rgb(var(--bleu-rgb) / 0.15)" }
     : estEnCours
-    ? { c: "#188038", grad: "linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)", label: "Événement en cours", b: "rgba(24,128,56,0.45)", b2: "rgba(24,128,56,0.6)", sh: "0 4px 18px rgba(24,128,56,0.15)" }
+    ? { c: "var(--vert)", grad: "linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label: "Événement en cours", b: "rgb(var(--vert-rgb) / 0.45)", b2: "rgb(var(--vert-rgb) / 0.6)", sh: "0 4px 18px rgb(var(--vert-rgb) / 0.15)" }
     : null;
   // Plage compacte (« 6 → 10 juin 2026 ») : une plage écrite en entier des deux
   // côtés déborde de la colonne et se fait tronquer.
@@ -579,15 +579,15 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
 
   return (
     <div {...carteCliquable(onVoir, `Ouvrir la fiche : ${e.nom_event}`)}
-      style={{ background: estPasse ? "#FBFAF9" : "#fff", border: accent ? `1.5px solid ${accent.b}` : "1px solid rgba(16,26,46,0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
+      style={{ background: estPasse ? "var(--carte-douce)" : "var(--carte)", border: accent ? `1.5px solid ${accent.b}` : "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
       onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; marquee(ev, false); }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = accent ? accent.sh : "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = accent ? accent.b : "rgba(16,26,46,0.12)"; marquee(ev, true); }}>
+      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = accent ? accent.sh : "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = accent ? accent.b : "rgb(var(--encre-rgb) / 0.12)"; marquee(ev, true); }}>
 
       {/* Bande d'accent : prochain événement (bleu) / en cours (vert) */}
       {accent && (
         <div style={{ display: "flex", alignItems: "center", gap: 7, background: accent.grad, padding: "6px 16px", flexShrink: 0 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{accent.label}</span>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--carte)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, color: "var(--sur-bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{accent.label}</span>
         </div>
       )}
 
@@ -596,7 +596,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</div>
-            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "#9aa5b4", marginTop: 3 }}>{sousTitre}</div>}
+            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
@@ -605,20 +605,20 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
         </div>
 
         {/* Date · Lieu en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid #F2F0EF", paddingTop: 13, marginTop: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           {/* La date prend un peu plus de place que le lieu, et rétrécit d'un
               cran sur les plages à cheval sur deux années — la seule forme qui
               ne tient pas dans la colonne (« 28 déc. 2026 → 3 janv. 2027 »). */}
           <div style={{ flex: 1.15, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Date</p>
-            <p data-marquee style={{ fontSize: (dateStr?.length ?? 0) > 22 ? 11 : 12.5, fontWeight: 700, color: dateStr ? txtC : "#C5BFBB", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date</p>
+            <p data-marquee style={{ fontSize: (dateStr?.length ?? 0) > 22 ? 11 : 12.5, fontWeight: 700, color: dateStr ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
               <span style={{ display: "inline-block" }}>{dateStr || "—"}</span>
             </p>
           </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "#F2F0EF", margin: "0 18px" }} />
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "#9aa5b4", textTransform: "uppercase" as const, marginBottom: 4 }}>Lieu</p>
-            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: lieu ? txtC : "#C5BFBB", overflow: "hidden", whiteSpace: "nowrap" as const }}>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Lieu</p>
+            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: lieu ? txtC : "var(--gris)", overflow: "hidden", whiteSpace: "nowrap" as const }}>
               <span style={{ display: "inline-block" }}>{lieu || "—"}</span>
             </p>
           </div>
@@ -627,27 +627,27 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
 
       {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
           Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid #F2F0EF" }}
+      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }}
         onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "#004f91", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(0,79,145,0.05)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           <Pencil size={12} /> Modifier
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "#188038" : "#ca631f", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgba(24,128,56,0.05)" : "rgba(202,99,31,0.06)"}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
         </button>
-        <div style={{ width: 1, background: "#F2F0EF" }} />
+        <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
           style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgba(220,38,38,0.05)"}
+          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "#dc2626", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "#dc2626" }} />}
+          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
         </button>
       </div>
     </div>
@@ -762,42 +762,42 @@ export default function EvenementsAdminPage() {
       <BarreTitre titre="Événements" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#ca631f", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgba(0,0,0,0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#FFF6EF"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "none"; }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-voile)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "none"; }}>
             <Plus size={15} /> Ajouter un événement
           </button>
         }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>{tous.length}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{tous.length}</span>
       </BarreTitre>
 
       {/* ── Barre d'outils + grille ── */}
       <div style={{ padding: "22px 32px 80px" }}>
         {!loading && !erreur && tous.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, background: "#fff",
-            border: "1px solid rgba(16,26,46,0.10)", borderRadius: 14, padding: "11px 14px", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, background: "var(--carte)",
+            border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, padding: "11px 14px", marginBottom: 16 }}>
             <ChampRecherche value={q} onChange={setQ} placeholder="Nom, organisateur, ville, pays…" style={{ width: 268 }} />
-            <Segments value={statutF} onChange={setStatutF} accent="#ca631f" options={[
+            <Segments value={statutF} onChange={setStatutF} accent="var(--orange)" options={[
               { v: "tous",     l: "Tous",     n: parStatut.tous },
               { v: "a_venir",  l: "À venir",  n: parStatut.a_venir },
               { v: "en_cours", l: "En cours", n: parStatut.en_cours },
               { v: "termine",  l: "Passés",   n: parStatut.termine },
             ] as const} />
-            <span style={{ width: 1, height: 22, background: "#F2F0EF" }} />
-            <Segments value={pubF} onChange={setPubF} accent="#ca631f" options={[
+            <span style={{ width: 1, height: 22, background: "var(--fond)" }} />
+            <Segments value={pubF} onChange={setPubF} accent="var(--orange)" options={[
               { v: "tous",    l: "Tous" },
               { v: "publies", l: "Publiés" },
               { v: "prives",  l: "Non publiés" },
             ] as const} />
             {nbFiltres > 0 && (
               <button onClick={reinit} title="Tout réinitialiser"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(220,38,38,0.07)",
-                  border: "1px solid rgba(220,38,38,0.20)", color: "#dc2626", borderRadius: 999, padding: "6px 13px",
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgb(var(--danger-rgb) / 0.07)",
+                  border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", borderRadius: 999, padding: "6px 13px",
                   fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
                 <X size={12} /> Réinitialiser
               </button>
             )}
-            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#9aa5b4", whiteSpace: "nowrap" as const }}>
+            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "var(--gris)", whiteSpace: "nowrap" as const }}>
               {liste.length === tous.length
                 ? `${tous.length} événement${tous.length > 1 ? "s" : ""}`
                 : `${liste.length} sur ${tous.length}`}
@@ -810,18 +810,18 @@ export default function EvenementsAdminPage() {
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : tous.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9aa5b4" }}>
+          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
             <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement enregistré</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun événement enregistré</p>
             <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un événement » pour commencer.</p>
           </div>
         ) : liste.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "70px 24px", color: "#9aa5b4" }}>
+          <div style={{ textAlign: "center", padding: "70px 24px", color: "var(--gris)" }}>
             <Search size={44} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "#4a5568" }}>Aucun événement pour ces filtres</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun événement pour ces filtres</p>
             <button onClick={reinit}
               style={{ marginTop: 14, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
-                color: "#ca631f", fontFamily: "var(--font-google-sans)", textDecoration: "underline" }}>
+                color: "var(--orange)", fontFamily: "var(--font-google-sans)", textDecoration: "underline" }}>
               Réinitialiser les filtres
             </button>
           </div>
@@ -840,7 +840,7 @@ export default function EvenementsAdminPage() {
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       <EvenementVueModal ev={vue} onClose={() => setVue(null)} actions={vue ? (
         <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgba(0,79,145,0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Pencil size={13} /> Modifier
         </button>
       ) : null} />

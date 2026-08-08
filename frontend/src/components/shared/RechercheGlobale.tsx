@@ -190,31 +190,31 @@ export default function RechercheGlobale() {
   let dernierGroupe = "";
   return createPortal(
     <div onClick={fermer}
-      style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
+      style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 900, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "13vh 24px 24px" }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}
-.rg-liste{scrollbar-width:thin;scrollbar-color:#D8D4D0 transparent;}
+.rg-liste{scrollbar-width:thin;scrollbar-color:var(--bordure-forte) transparent;}
 .rg-liste::-webkit-scrollbar{width:11px;}
 .rg-liste::-webkit-scrollbar-track{background:transparent;margin:16px 0;}
-.rg-liste::-webkit-scrollbar-thumb{background:#D8D4D0;border-radius:999px;border:3.5px solid #fff;background-clip:padding-box;}
-.rg-liste::-webkit-scrollbar-thumb:hover{background:#C0BAB5;border:3.5px solid #fff;background-clip:padding-box;}`}</style>
+.rg-liste::-webkit-scrollbar-thumb{background:var(--bordure-forte);border-radius:999px;border:3.5px solid var(--carte);background-clip:padding-box;}
+.rg-liste::-webkit-scrollbar-thumb:hover{background:var(--bordure-forte);border:3.5px solid var(--carte);background-clip:padding-box;}`}</style>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
-        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgba(255,255,255,0.97)", borderRadius: 999, border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 22px 60px rgba(2,20,38,0.38), 0 2px 8px rgba(2,20,38,0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 19, color: "#004f91", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgb(var(--carte-rgb) / 0.97)", borderRadius: 999, border: "1px solid rgb(var(--carte-rgb) / 0.55)", boxShadow: "0 22px 60px rgb(var(--ombre-rgb) / 0.38), 0 2px 8px rgb(var(--ombre-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "#1a1a2e", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
+            style={{ flex: 1, border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--encre)", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
         </div>
 
         {/* Résultats — carte détachée sous la barre */}
         {q.trim() && <div ref={listeRef} className="rg-liste"
-          style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "#fff", borderRadius: 22, boxShadow: "0 28px 70px rgba(2,20,38,0.32)", animation: "vueIn 0.14s ease" }}>
+          style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "var(--carte)", borderRadius: 22, boxShadow: "0 28px 70px rgb(var(--ombre-rgb) / 0.32)", animation: "vueIn 0.14s ease" }}>
           {index === null && q.trim() && (
-            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>Chargement de l'index…</p>
+            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "var(--gris)", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
           {resultats.length === 0 && q.trim() && index !== null && (
-            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "#9aa5b4", textAlign: "center" as const }}>
+            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "var(--gris)", textAlign: "center" as const }}>
               Aucun résultat pour « {q.trim()} »
             </p>
           )}
@@ -226,12 +226,12 @@ export default function RechercheGlobale() {
             return (
               <div key={`${r.type}-${r.nom}-${i}`}>
                 {entete && (
-                  <p style={{ fontSize: 9.5, fontWeight: 800, color: "#9aa5b4", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
+                  <p style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
                 )}
                 <button data-idx={i} onClick={() => choisir(r)} onMouseMove={() => setActif(i)}
-                  style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 12, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgba(0,79,145,0.06)" : "transparent" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 600, color: estActif ? "#004f91" : "#1a1a2e", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
-                  {r.sous && <span style={{ fontSize: 11, color: "#9aa5b4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
+                  style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 12, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: estActif ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
+                  {r.sous && <span style={{ fontSize: 11, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
                 </button>
               </div>
             );

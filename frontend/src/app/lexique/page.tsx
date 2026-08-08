@@ -56,7 +56,7 @@ export default function LexiquePage() {
   };
 
   return (
-    <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
       {/* Bandeau */}
       <BandeauDocument surtitre="APIX S.A — DIPE" titre={<>Lexique de l&apos;investissement</>}
         sousTitre={loading ? "Chargement…" : erreur ? "—" : `${termes.length} terme${termes.length > 1 ? "s" : ""} technique${termes.length > 1 ? "s" : ""} expliqué${termes.length > 1 ? "s" : ""}`}
@@ -72,10 +72,10 @@ export default function LexiquePage() {
                     fontSize: 11.5, fontWeight: 800, fontFamily: "var(--font-google-sans)",
                     background: present ? "rgba(255,255,255,0.13)" : "transparent",
                     borderColor: present ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)",
-                    color: present ? "#fff" : "rgba(255,255,255,0.28)",
+                    color: present ? "var(--sur-bleu)" : "rgba(255,255,255,0.28)",
                     transition: "background 0.14s, border-color 0.14s", flexShrink: 0 }}
-                  onMouseEnter={(e) => { if (present) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = BLEU; } }}
-                  onMouseLeave={(e) => { if (present) { e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.color = "#fff"; } }}>
+                  onMouseEnter={(e) => { if (present) { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.color = BLEU; } }}
+                  onMouseLeave={(e) => { if (present) { e.currentTarget.style.background = "rgba(255,255,255,0.13)"; e.currentTarget.style.color = "var(--sur-bleu)"; } }}>
                   {L}
                 </button>
               );
@@ -89,7 +89,7 @@ export default function LexiquePage() {
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
+                <div key={i} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "15px 18px" }}>
                   <Skeleton w={`${30 + (i * 13) % 30}%`} h={14} r={6} style={{ marginBottom: 10 }} />
                   <Skeleton w="92%" h={10} r={5} style={{ marginBottom: 7 }} />
                   <Skeleton w="80%" h={10} r={5} />
@@ -99,22 +99,22 @@ export default function LexiquePage() {
           ) : erreur ? (
             <ErreurChargement onRetry={charger} />
           ) : total === 0 ? (
-            <p style={{ color: "#9aa5b4", fontSize: 14, textAlign: "center", marginTop: 60 }}>
+            <p style={{ color: "var(--gris)", fontSize: 14, textAlign: "center", marginTop: 60 }}>
               {termes.length === 0 ? "Aucun terme n'est encore publié." : "Aucun terme ne correspond à votre recherche."}
             </p>
           ) : groupes.map(([lettre, arr]) => (
             <div key={lettre} id={`lettre-${lettre}`} style={{ scrollMarginTop: 20, marginBottom: 30 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 16px" }}>
                 <span style={{ fontSize: 26, fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
-                <div style={{ flex: 1, height: 1, background: "#EDEAE6" }} />
+                <div style={{ flex: 1, height: 1, background: "var(--fond-creux2)" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {arr.map((t) => (
-                  <div key={t.id} style={{ background: "#FAFAF9", border: "1px solid #F0EEEC", borderRadius: 12, padding: "15px 18px" }}>
+                  <div key={t.id} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "15px 18px" }}>
                     <div style={{ marginBottom: 7 }}>
                       <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
                     </div>
-                    <p style={{ fontSize: 13.5, color: "#4a5568", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
+                    <p style={{ fontSize: 13.5, color: "var(--texte)", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
                   </div>
                 ))}
               </div>

@@ -53,26 +53,26 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
     : (prev.length >= MAX ? prev : [...prev, id]));
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(2,20,38,0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
-        <div style={{ height: 4, background: "linear-gradient(90deg,#003a6e,#1a6ab0)", flexShrink: 0 }} />
-        <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid #F2F0EF", flexShrink: 0 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+        <div style={{ height: 4, background: "linear-gradient(90deg,var(--bleu-nuit),var(--bleu-clair))", flexShrink: 0 }} />
+        <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1a1a2e", margin: 0 }}>Fiche Pays</h2>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", background: "rgba(0,79,145,0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
+              <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0 }}>Fiche Pays</h2>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
             </div>
-            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "#F5F4F3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#ECEAE8"; }} onMouseLeave={e => { e.currentTarget.style.background = "#F5F4F3"; }}>
-              <X size={14} color="#4a5568" />
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
+              <X size={14} color="var(--texte)" />
             </button>
           </div>
           <div style={{ position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9aa5b4" }} />
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…" autoFocus
-              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid #E8E5E3", background: "#F8F7F6", fontSize: 12.5, color: "#1a1a2e", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
-            {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "#9aa5b4" }} /></button>}
+              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+            {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, padding: "12px 18px" }}>
@@ -86,46 +86,46 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               <div style={{ marginBottom: 8, marginLeft: 6 }}>
                 <button onClick={() => { if (removable) setSel(prev => prev.filter(x => x !== senId)); else if (canAdd) setSel(prev => [...prev, senId]); }}
                   style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left", width: "100%" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#F8F7F6"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                  <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "#C5BFBB"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: "#4a5568", fontWeight: on ? 700 : 400 }}>Sénégal</span>
-                  <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4", fontWeight: 600, background: "#F2F0EF", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                  <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: on ? 700 : 400 }}>Sénégal</span>
+                  <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                 </button>
               </div>
             );
           })()}
-          <div style={{ height: 1, background: "#F2F0EF", marginBottom: 8 }} />
+          <div style={{ height: 1, background: "var(--fond)", marginBottom: 8 }} />
           {sortContinents(Object.keys(grouped)).map(continent => {
             const isOpen = openConts.has(continent);
             const zones = grouped[continent];
             return (
               <div key={continent} style={{ marginBottom: 6 }}>
                 <button onClick={() => toggleCont(continent)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgba(0,79,145,0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#004f91", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
-                  <ChevronDown size={11} style={{ color: "#004f91", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgb(var(--bleu-rgb) / 0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
+                  <ChevronDown size={11} style={{ color: "var(--bleu)", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
                 </button>
                 {isOpen && Object.entries(zones).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([zone, paysInZone]) => (
                   <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
-                    <p style={{ fontSize: 9, fontWeight: 600, color: "#C5BFBB", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
                     {paysInZone.map(p => {
                       const on = sel.includes(p.id);
-                      const col = on ? couleur(p.id) : "#C5BFBB";
+                      const col = on ? couleur(p.id) : "var(--gris)";
                       const disabled = !on && sel.length >= MAX;
                       if (p.id === senId) return (
                         <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
-                          <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "#C5BFBB"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, color: "#4a5568", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                          <span style={{ marginLeft: "auto", fontSize: 9, color: "#9aa5b4" }}>Réf.</span>
+                          <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)" }}>Réf.</span>
                         </div>
                       );
                       return (
                         <button key={p.id} onClick={() => clickPays(p.id)}
                           style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: disabled ? "not-allowed" : "pointer", background: "transparent", textAlign: "left", width: "100%", opacity: disabled ? 0.4 : 1 }}
-                          onMouseEnter={e => { if (!disabled && !on) e.currentTarget.style.background = "#F8F7F6"; }}
+                          onMouseEnter={e => { if (!disabled && !on) e.currentTarget.style.background = "var(--carte-douce)"; }}
                           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                          <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "#C5BFBB"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, color: "#4a5568", fontWeight: on ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                          <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
+                          <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: on ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
                         </button>
                       );
                     })}
@@ -134,9 +134,9 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               </div>
             );
           })}
-          {Object.keys(grouped).length === 0 && <p style={{ fontSize: 12, color: "#9aa5b4", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+          {Object.keys(grouped).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
         </div>
-        <div style={{ padding: "14px 22px", borderTop: "1px solid #F2F0EF", background: "#FCFBFA", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
+        <div style={{ padding: "14px 22px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {sel.map(id => { const p = pays.find(x => x.id === id); const canRemove = sel.length > 1; return p ? (
               <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${couleur(id)}12`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
@@ -151,7 +151,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           </div>
           <button onClick={() => sel.length === MAX && ouvrirFiche(sel)} disabled={sel.length !== MAX}
             title={sel.length !== MAX ? "Sélectionnez deux pays" : undefined}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.4, boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.4, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
             Générer la fiche
           </button>
         </div>
@@ -207,7 +207,7 @@ export default function FichePaysLauncher({ textColor, textHover }: { textColor:
   return (
     <button onClick={() => window.dispatchEvent(new Event("apix:fiche-pays-picker"))}
       style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,79,145,0.07)"; e.currentTarget.style.color = textHover; }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
       Fiche Pays
     </button>

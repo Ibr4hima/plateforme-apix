@@ -16,11 +16,11 @@ export default function BandeauDocument({ surtitre, titre, sousTitre, outils }: 
   outils?: React.ReactNode; // rangée sous le titre : onglets, recherche, index…
 }) {
   return (
-    <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "32px 40px 92px" }}>
+    <div data-bandeau style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)", padding: "32px 40px 92px" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 0 }}>
-            <div style={{ width: 54, height: 66, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}>
+            <div style={{ width: 54, height: 66, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", filter: "drop-shadow(0 2px 6px rgb(var(--ombre-rgb) / 0.25))" }}>
               <Image src="/armoiries_senegal.svg" alt="Armoiries du Sénégal" width={54} height={66} style={{ height: 64, width: "auto", objectFit: "contain" }} />
             </div>
             <div style={{ minWidth: 0 }}>
@@ -49,8 +49,8 @@ export function RechercheBandeau({ q, setQ, ariaLabel = "Rechercher" }: {
     <div style={{ position: "relative", width: "min(300px, 100%)", flexShrink: 0 }}>
       <Search size={14} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.6)" }} />
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher" aria-label={ariaLabel}
-        style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: "9px 34px 9px 38px", fontSize: 13, color: "#fff", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
-        onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
+        style={{ width: "100%", background: "rgba(255,255,255,0.13)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: "9px 34px 9px 38px", fontSize: 13, color: "var(--sur-bleu)", outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" }}
+        onFocus={(e) => { e.currentTarget.style.borderColor = "rgb(var(--carte-rgb) / 0.55)"; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; }}
         onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)"; e.currentTarget.style.background = "rgba(255,255,255,0.13)"; }} />
       {q && <button onClick={() => setQ("")} aria-label="Effacer la recherche"
         style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex" }}>

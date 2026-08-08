@@ -9,10 +9,14 @@ import { useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const ORANGE = "#ca631f";
-const ORANGE_FONCE = "#a34e15";
-const DEGRADE = "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)";
-const ENCRE = "#2b2018";
+// L'orange sert ici de deux façons : encre (puces, numéros) et aplat plein
+// (bouton flottant, bulles de l'utilisateur). La nuit, la première
+// s'éclaircit et le second s'assombrit — d'où deux jetons distincts.
+const ORANGE = "var(--orange)";
+const ORANGE_APLAT = "var(--orange-action)";
+const ORANGE_FONCE = "var(--orange-fonce)";
+const DEGRADE = "var(--degrade-chat)";
+const ENCRE = "var(--encre)";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -41,7 +45,7 @@ function inline(texte: string, cle: string): React.ReactNode[] {
       parts.push(<strong key={`${cle}b${i}`} style={{ color: ENCRE }}>{tok.slice(2, -2)}</strong>);
     } else {
       parts.push(
-        <code key={`${cle}c${i}`} style={{ background: "rgba(202,99,31,0.08)", padding: "1px 5px", borderRadius: 5, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, monospace" }}>
+        <code key={`${cle}c${i}`} style={{ background: "rgb(var(--orange-rgb) / 0.08)", padding: "1px 5px", borderRadius: 5, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, monospace" }}>
           {tok.slice(1, -1)}
         </code>,
       );
@@ -83,7 +87,7 @@ function formater(texte: string): React.ReactNode {
             <thead>
               <tr>
                 {entete.map((hc, ci) => (
-                  <th key={ci} style={{ textAlign: "left", padding: "6px 9px", background: "rgba(202,99,31,0.10)", color: ENCRE, fontWeight: 700, borderBottom: "1px solid rgba(202,99,31,0.22)", whiteSpace: "nowrap" }}>
+                  <th key={ci} style={{ textAlign: "left", padding: "6px 9px", background: "rgb(var(--orange-rgb) / 0.10)", color: ENCRE, fontWeight: 700, borderBottom: "1px solid rgb(var(--orange-rgb) / 0.22)", whiteSpace: "nowrap" }}>
                     {inline(hc, `th${k}${ci}`)}
                   </th>
                 ))}
@@ -93,7 +97,7 @@ function formater(texte: string): React.ReactNode {
               {rangs.map((r, ri) => (
                 <tr key={ri}>
                   {r.map((c, ci) => (
-                    <td key={ci} style={{ padding: "6px 9px", borderBottom: "1px solid rgba(0,0,0,0.06)", color: "#3d3128", verticalAlign: "top" }}>
+                    <td key={ci} style={{ padding: "6px 9px", borderBottom: "1px solid rgb(var(--ombre-rgb) / 0.06)", color: "var(--encre)", verticalAlign: "top" }}>
                       {inline(c, `td${k}${ri}${ci}`)}
                     </td>
                   ))}
@@ -307,15 +311,15 @@ export default function ChatWidget() {
         }
         @keyframes apixPulse { 0%,60%,100% { opacity: .25 } 30% { opacity: 1 } }
         @keyframes apixHalo {
-          0%,100% { box-shadow: 0 0 0 0 rgba(202,99,31,0); }
-          50%     { box-shadow: 0 0 0 7px rgba(202,99,31,0.08); }
+          0%,100% { box-shadow: 0 0 0 0 rgb(var(--ombre-rgb) / 0); }
+          50%     { box-shadow: 0 0 0 7px rgb(var(--ombre-rgb) / 0.08); }
         }
         .apix-chat-fil::-webkit-scrollbar { width: 5px; }
-        .apix-chat-fil::-webkit-scrollbar-thumb { background: rgba(202,99,31,0.25); border-radius: 99px; }
+        .apix-chat-fil::-webkit-scrollbar-thumb { background: rgb(var(--orange-rgb) / 0.25); border-radius: 99px; }
         .apix-chat-fil::-webkit-scrollbar-track { background: transparent; }
         .apix-chat-saisie:focus {
-          border-color: rgba(202,99,31,0.55) !important;
-          box-shadow: 0 0 0 3px rgba(202,99,31,0.12);
+          border-color: rgb(var(--orange-rgb) / 0.55) !important;
+          box-shadow: 0 0 0 3px rgb(var(--ombre-rgb) / 0.12);
         }
       `}</style>
 
@@ -333,14 +337,14 @@ export default function ChatWidget() {
             padding: 0,
             borderRadius: 14,
             background:
-              "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03)), #fdfaf7",
-            border: "1px solid rgba(202,99,31,0.16)",
+              "linear-gradient(180deg, rgb(var(--orange-rgb) / 0.10), rgb(var(--orange-rgb) / 0.03)), var(--carte-douce)",
+            border: "1px solid rgb(var(--orange-rgb) / 0.16)",
             cursor: "pointer",
             zIndex: 60,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
+            filter: "drop-shadow(0 4px 12px rgb(var(--ombre-rgb) / 0.16))",
             transition: "transform 0.2s cubic-bezier(.34,1.56,.64,1)",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
@@ -361,14 +365,14 @@ export default function ChatWidget() {
             bottom: 20,
             width: "min(410px, calc(100vw - 40px))",
             height: "min(600px, calc(100vh - 104px))",
-            background: "#fff",
+            background: "var(--carte)",
             borderRadius: 22,
-            boxShadow: "0 24px 70px rgba(74,40,12,0.28), 0 4px 18px rgba(74,40,12,0.12)",
+            boxShadow: "0 24px 70px rgb(var(--ombre-rgb) / 0.28), 0 4px 18px rgb(var(--ombre-rgb) / 0.12)",
             zIndex: 60,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            border: "1px solid rgba(202,99,31,0.14)",
+            border: "1px solid rgb(var(--orange-rgb) / 0.14)",
             animation: `${sortie ? "apixChatOut" : "apixChatIn"} 0.24s cubic-bezier(.32,.72,.28,1.05) both`,
             transformOrigin: "bottom right",
           }}
@@ -377,7 +381,7 @@ export default function ChatWidget() {
           <div
             style={{
               background: DEGRADE,
-              color: "#fff",
+              color: "var(--sur-bleu)",
               padding: "15px 16px",
               display: "flex",
               alignItems: "center",
@@ -389,12 +393,12 @@ export default function ChatWidget() {
                 width: 36,
                 height: 36,
                 borderRadius: 11,
-                background: "rgba(255,255,255,0.92)",
+                background: "rgb(var(--carte-rgb) / 0.92)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
+                boxShadow: "0 2px 8px rgb(var(--ombre-rgb) / 0.14)",
               }}
             >
               <LogoClaude size={23} />
@@ -411,7 +415,7 @@ export default function ChatWidget() {
               style={{
                 background: "rgba(255,255,255,0.16)",
                 border: "none",
-                color: "#fff",
+                color: "var(--sur-bleu)",
                 width: 30,
                 height: 30,
                 borderRadius: 9,
@@ -447,7 +451,7 @@ export default function ChatWidget() {
               display: "flex",
               flexDirection: "column",
               gap: 12,
-              background: "linear-gradient(180deg,#fdfaf7 0%,#faf5f0 100%)",
+              background: "linear-gradient(180deg,var(--carte-douce) 0%,var(--champ) 100%)",
             }}
           >
             {messages.length === 0 && (
@@ -464,8 +468,8 @@ export default function ChatWidget() {
                     height: 62,
                     margin: "0 auto 18px",
                     borderRadius: 20,
-                    background: "linear-gradient(180deg, rgba(202,99,31,0.10), rgba(202,99,31,0.03))",
-                    border: "1px solid rgba(202,99,31,0.16)",
+                    background: "linear-gradient(180deg, rgb(var(--orange-rgb) / 0.10), rgb(var(--orange-rgb) / 0.03))",
+                    border: "1px solid rgb(var(--orange-rgb) / 0.16)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -485,7 +489,7 @@ export default function ChatWidget() {
                 >
                   {accueil.titre}
                 </div>
-                <div style={{ fontSize: 13.5, color: "#8a7563", marginTop: 6, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13.5, color: "var(--gris-fort)", marginTop: 6, lineHeight: 1.5 }}>
                   {accueil.accroche}
                 </div>
               </div>
@@ -503,14 +507,14 @@ export default function ChatWidget() {
                 >
                   <div
                     style={{
-                      background: `linear-gradient(150deg, ${ORANGE} 0%, #e0803c 130%)`,
-                      color: "#fff",
+                      background: `linear-gradient(150deg, ${ORANGE_APLAT} 0%, var(--orange-fonce) 130%)`,
+                      color: "var(--sur-bleu)",
                       padding: "10px 14px",
                       borderRadius: "16px 16px 5px 16px",
                       fontSize: 13.5,
                       lineHeight: 1.55,
                       whiteSpace: "pre-wrap",
-                      boxShadow: "0 3px 10px rgba(202,99,31,0.22)",
+                      boxShadow: "0 3px 10px rgb(var(--ombre-rgb) / 0.22)",
                     }}
                   >
                     {m.content}
@@ -527,14 +531,14 @@ export default function ChatWidget() {
                 >
                   <div
                     style={{
-                      background: "#fff",
-                      color: "#3d3128",
+                      background: "var(--carte)",
+                      color: "var(--encre)",
                       padding: "11px 14px",
                       borderRadius: "16px 16px 16px 5px",
                       fontSize: 13.5,
                       lineHeight: 1.6,
-                      border: "1px solid rgba(202,99,31,0.10)",
-                      boxShadow: "0 2px 8px rgba(74,40,12,0.05)",
+                      border: "1px solid rgb(var(--orange-rgb) / 0.10)",
+                      boxShadow: "0 2px 8px rgb(var(--ombre-rgb) / 0.05)",
                       display: "flex",
                       flexDirection: "column",
                       gap: 4,
@@ -550,12 +554,12 @@ export default function ChatWidget() {
           {/* Saisie */}
           <div
             style={{
-              borderTop: "1px solid rgba(202,99,31,0.10)",
+              borderTop: "1px solid rgb(var(--orange-rgb) / 0.10)",
               padding: 12,
               display: "flex",
               gap: 9,
               alignItems: "flex-end",
-              background: "#fff",
+              background: "var(--carte)",
             }}
           >
             <textarea
@@ -575,7 +579,7 @@ export default function ChatWidget() {
                 flex: 1,
                 resize: "none",
                 maxHeight: 110,
-                border: "1px solid rgba(43,32,24,0.14)",
+                border: "1px solid rgb(var(--encre-rgb) / 0.14)",
                 borderRadius: 13,
                 padding: "11px 13px",
                 fontSize: 13.5,
@@ -583,7 +587,7 @@ export default function ChatWidget() {
                 outline: "none",
                 lineHeight: 1.4,
                 color: ENCRE,
-                background: "#fdfbf9",
+                background: "var(--carte-douce)",
                 transition: "border-color 0.15s, box-shadow 0.15s",
               }}
             />
@@ -598,15 +602,15 @@ export default function ChatWidget() {
                 border: "none",
                 background:
                   enCours || !saisie.trim()
-                    ? "rgba(202,99,31,0.18)"
-                    : `linear-gradient(150deg, ${ORANGE}, ${ORANGE_FONCE})`,
-                color: "#fff",
+                    ? "rgb(var(--orange-rgb) / 0.18)"
+                    : `linear-gradient(150deg, ${ORANGE_APLAT}, ${ORANGE_FONCE})`,
+                color: "var(--sur-bleu)",
                 cursor: enCours || !saisie.trim() ? "default" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: enCours || !saisie.trim() ? "none" : "0 3px 10px rgba(202,99,31,0.32)",
+                boxShadow: enCours || !saisie.trim() ? "none" : "0 3px 10px rgb(var(--ombre-rgb) / 0.32)",
                 transition: "all 0.18s",
               }}
               onMouseEnter={(e) => {
@@ -618,7 +622,7 @@ export default function ChatWidget() {
                 className="material-symbols-outlined"
                 style={{
                   fontSize: 20,
-                  color: enCours || !saisie.trim() ? "rgba(202,99,31,0.5)" : "#fff",
+                  color: enCours || !saisie.trim() ? "rgb(var(--orange-rgb) / 0.5)" : "var(--sur-bleu)",
                   fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
                   lineHeight: 1,
                   transition: "color 0.18s",
@@ -639,7 +643,7 @@ export default function ChatWidget() {
 const CLAUDE_PATH =
   "m7.75 26.27 7.77-4.36.13-.38-.13-.21h-.38l-1.3-.08-4.44-.12-3.85-.16-3.73-.2-.94-.2-.88-1.16.09-.58.79-.53 1.13.1 2.5.17 3.75.26 2.72.16 4.03.42h.64l.09-.26-.22-.16-.17-.16-3.88-2.63-4.2-2.78-2.2-1.6-1.19-.81-.6-.76-.26-1.66 1.08-1.19 1.45.1.37.1 1.47 1.13 3.14 2.43 4.1 3.02.6.5.24-.17.03-.12-.27-.45-2.23-4.03-2.38-4.1-1.06-1.7-.28-1.02c-.1-.42-.17-.77-.17-1.2l1.23-1.67.68-.22 1.64.22.69.6 1.02 2.33 1.65 3.67 2.56 4.99.75 1.48.4 1.37.15.42h.26v-.24l.21-2.81.39-3.45.38-4.44.13-1.25.62-1.5 1.23-.81.96.46.79 1.13-.11.73-.47 3.05-.92 4.78-.6 3.2h.35l.4-.4 1.62-2.15 2.72-3.4 1.2-1.35 1.4-1.49.9-.71h1.7l1.25 1.86-.56 1.92-1.75 2.22-1.45 1.88-2.08 2.8-1.3 2.24.12.18.31-.03 4.7-1 2.54-.46 3.03-.52 1.37.64.15.65-.54 1.33-3.24.8-3.8.76-5.66 1.34-.07.05.08.1 2.55.24 1.09.06h2.67l4.97.37 1.3.86.78 1.05-.13.8-2 1.02-2.7-.64-6.3-1.5-2.16-.54h-.3v.18l1.8 1.76 3.3 2.98 4.13 3.84.21.95-.53.75-.56-.08-3.63-2.73-1.4-1.23-3.17-2.67h-.21v.28l.73 1.07 3.86 5.8.2 1.78-.28.58-1 .35-1.1-.2-2.26-3.17-2.33-3.57-1.88-3.2-.23.13-1.11 11.95-.52.61-1.2.46-1-.76-.53-1.23.53-2.43.64-3.17.52-2.52.47-3.13.28-1.04-.02-.07-.23.03-2.36 3.24-3.59 4.85-2.84 3.04-.68.27-1.18-.61.11-1.09.66-.97 3.93-5 2.37-3.1 1.53-1.79-.01-.26h-.09l-10.44 6.78-1.86.24-.8-.75.1-1.23.38-.4 3.14-2.16z";
 
-export function LogoClaude({ size = 22, couleur = "#ca631f" }: { size?: number; couleur?: string }) {
+export function LogoClaude({ size = 22, couleur = "var(--orange)" }: { size?: number; couleur?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 -0.01 39.5 39.53" fill={couleur}>
       <path d={CLAUDE_PATH} />
@@ -657,7 +661,7 @@ function Points() {
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: ORANGE,
+            background: ORANGE_APLAT,
             animation: "apixPulse 1s infinite",
             animationDelay: `${i * 0.15}s`,
           }}

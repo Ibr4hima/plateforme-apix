@@ -14,19 +14,19 @@ export default function ErreurChargement({ onRetry, message, compact = false }: 
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: compact ? "36px 24px" : "80px 24px", textAlign: "center" }}>
-      <span style={{ width: compact ? 44 : 54, height: compact ? 44 : 54, borderRadius: "50%", background: "rgba(220,38,38,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <WifiOff size={compact ? 19 : 23} style={{ color: "#dc2626" }} />
+      <span style={{ width: compact ? 44 : 54, height: compact ? 44 : 54, borderRadius: "50%", background: "rgb(var(--danger-rgb) / 0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <WifiOff size={compact ? 19 : 23} style={{ color: "var(--danger)" }} />
       </span>
       <div>
-        <p style={{ fontSize: compact ? 14 : 16, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>
+        <p style={{ fontSize: compact ? 14 : 16, fontWeight: 700, color: "var(--encre)", margin: 0 }}>
           {message || "Impossible de charger les données"}
         </p>
-        <p style={{ fontSize: compact ? 12 : 13, color: "#9aa5b4", margin: "6px 0 0" }}>
+        <p style={{ fontSize: compact ? 12 : 13, color: "var(--gris)", margin: "6px 0 0" }}>
           Vérifiez votre connexion, puis réessayez.
         </p>
       </div>
       <button onClick={onRetry}
-        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: compact ? "8px 18px" : "10px 22px", borderRadius: 10, border: "none", background: "#004f91", color: "#fff", fontSize: compact ? 12 : 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgba(0,79,145,0.25)", fontFamily: "var(--font-google-sans)", transition: "transform 0.15s" }}
+        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: compact ? "8px 18px" : "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: compact ? 12 : 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", transition: "transform 0.15s" }}
         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
         onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}>
         <RefreshCw size={13} /> Réessayer

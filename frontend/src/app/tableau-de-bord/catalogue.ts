@@ -13,18 +13,18 @@ export const CATALOGUE: Visualisation[] = [
 ];
 
 export const KPIS_DISPONIBLES = [
-  { id: "entreprises_total",  label: "Total entreprises",           icon: "Building2",  color: "#ca631f" },
-  { id: "zones_total",        label: "Zones d'investissement",      icon: "MapPin",     color: "#004f91" },
-  { id: "poles_total",        label: "Pôles territoriaux",          icon: "MapPin",     color: "#0891b2" },
-  { id: "accords_total",      label: "Accords & Traités",           icon: "Handshake",  color: "#059669" },
-  { id: "accords_vigueur",    label: "Accords en vigueur",          icon: "Handshake",  color: "#15803d" },
-  { id: "evenements_total",   label: "Événements répertoriés",      icon: "Calendar",   color: "#7c3aed" },
-  { id: "evenements_a_venir", label: "Événements à venir",          icon: "Calendar",   color: "#d97706" },
-  { id: "prospects_total",    label: "Prospects suivis",            icon: "TrendingUp", color: "#E35336" },
-  { id: "projets_total",      label: "Projets",                     icon: "Layers",     color: "#6366f1" },
-  { id: "intentions_total",   label: "Intentions d'investissement", icon: "Target",     color: "#0891b2" },
-  { id: "intentions_usd",     label: "Montant intentions (USD)",    icon: "DollarSign", color: "#ca631f" },
-  { id: "zone_ent_total",     label: "Entreprises en zone",         icon: "Building2",  color: "#188038" },
+  { id: "entreprises_total",  label: "Total entreprises",           icon: "Building2",  color: "var(--orange)" },
+  { id: "zones_total",        label: "Zones d'investissement",      icon: "MapPin",     color: "var(--bleu)" },
+  { id: "poles_total",        label: "Pôles territoriaux",          icon: "MapPin",     color: "var(--cyan)" },
+  { id: "accords_total",      label: "Accords & Traités",           icon: "Handshake",  color: "var(--vert)" },
+  { id: "accords_vigueur",    label: "Accords en vigueur",          icon: "Handshake",  color: "var(--vert-fonce)" },
+  { id: "evenements_total",   label: "Événements répertoriés",      icon: "Calendar",   color: "var(--violet)" },
+  { id: "evenements_a_venir", label: "Événements à venir",          icon: "Calendar",   color: "var(--orange)" },
+  { id: "prospects_total",    label: "Prospects suivis",            icon: "TrendingUp", color: "var(--danger)" },
+  { id: "projets_total",      label: "Projets",                     icon: "Layers",     color: "var(--bleu)" },
+  { id: "intentions_total",   label: "Intentions d'investissement", icon: "Target",     color: "var(--cyan)" },
+  { id: "intentions_usd",     label: "Montant intentions (USD)",    icon: "DollarSign", color: "var(--orange)" },
+  { id: "zone_ent_total",     label: "Entreprises en zone",         icon: "Building2",  color: "var(--vert)" },
 ];
 
 export const CATEGORIES: { key: string; label: string; color: string }[] = [];

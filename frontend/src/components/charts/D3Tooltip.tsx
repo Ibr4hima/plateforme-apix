@@ -12,8 +12,8 @@ export default function D3Tooltip() {
       style={{
         position: "fixed",
         pointerEvents: "none",
-        background: "rgba(16,26,46,0.94)",
-        color: "#fff",
+        background: "rgb(var(--encre-rgb) / 0.94)",
+        color: "var(--sur-bleu)",
         borderRadius: 10,
         padding: "9px 13px",
         fontSize: 12,

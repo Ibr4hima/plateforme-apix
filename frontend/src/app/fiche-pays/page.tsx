@@ -64,18 +64,18 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
     <select value={valeur ?? ""} onChange={e => onChange(Number(e.target.value))}
       style={{ appearance: "none", padding: "8px 34px 8px 16px", borderRadius: 999, cursor: "pointer",
         background: `rgba(255,255,255,0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center`,
-        border: "1px solid rgba(255,255,255,0.28)", color: "#fff", fontSize: 13, fontWeight: 700,
+        border: "1px solid rgba(255,255,255,0.28)", color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700,
         fontFamily: "var(--font-google-sans)", outline: "none", maxWidth: 240, textOverflow: "ellipsis" }}>
       {[...Object.keys(parContinent)].sort((a, b) => {
         const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
         if (ia === -1 && ib === -1) return a.localeCompare(b, "fr");
         if (ia === -1) return 1; if (ib === -1) return -1; return ia - ib;
       }).map(cont => (
-        <optgroup key={cont} label={cont} style={{ color: "#1a1a2e" }}>
+        <optgroup key={cont} label={cont} style={{ color: "var(--encre)" }}>
           {parContinent[cont].map(p => {
             const emoji = drapeauEmoji(p.code_iso2);
             return (
-              <option key={p.id} value={p.id} disabled={p.id === exclure} style={{ color: "#1a1a2e" }}>
+              <option key={p.id} value={p.id} disabled={p.id === exclure} style={{ color: "var(--encre)" }}>
                 {emoji ? `${emoji}  ${p.nom}` : p.nom}
               </option>
             );
@@ -178,13 +178,13 @@ function ContenuFichePays() {
   // badgé à côté, éléments listés en badges assortis au fond.
   const BlocContexte = ({ Icone, titre, count, items }: { Icone: any; titre: string; count: number; items: Item[] }) => (
     <div className="ds-carte" style={{ ...fond_bleu, padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-      <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgb(var(--bleu-rgb) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <Icone size={19} color={BLEU} />
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
           <span style={{ ...TITRE_SEC, margin: 0, fontSize: 9.5 }}>{titre}</span>
-          <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgba(0,79,145,0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
+          <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgb(var(--bleu-rgb) / 0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
@@ -192,7 +192,7 @@ function ContenuFichePays() {
               style={{ ...badge_bleu, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
               onMouseEnter={ev => { if (it.onClick) { const s = badgeSurvol("bleu"); ev.currentTarget.style.background = s.background; ev.currentTarget.style.borderColor = s.borderColor; } }}
               onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = badge_bleu.background as string; ev.currentTarget.style.border = badge_bleu.border as string; } }}>
-              {it.label}{it.suffixe ? <span style={{ color: "#9aa5b4", fontWeight: 500 }}>· {it.suffixe}</span> : null}
+              {it.label}{it.suffixe ? <span style={{ color: "var(--gris)", fontWeight: 500 }}>· {it.suffixe}</span> : null}
             </span>
           ))}
         </div>
@@ -203,9 +203,9 @@ function ContenuFichePays() {
   const a = cols[0], b = cols[1];
 
   return (
-    <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, #F7F6F5)", minHeight: "100vh" }}>
+    <div style={{ fontFamily: "var(--font-google-sans)", background: "var(--ds-fond, var(--champ))", minHeight: "100vh" }}>
       {/* ── Bandeau exécutif : titre + sélecteurs de pays ── */}
-      <div data-bandeau style={{ background: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)", color: "#fff", padding: "34px 40px 88px" }}>
+      <div data-bandeau style={{ background: "var(--degrade-hero)", color: "var(--sur-bleu)", padding: "34px 40px 88px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
@@ -223,7 +223,7 @@ function ContenuFichePays() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
                   {[0, 1].map(pos => (
                     <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "#7db4e8" : "#f0a36b", flexShrink: 0 }} />
+                      <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
                       <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
                         onChange={id => setIds(prev => {
                           if (!prev) return prev;
@@ -257,7 +257,7 @@ function ContenuFichePays() {
                 <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
                 <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
                 <div style={{ marginTop: 8, minHeight: 15 }}>
-                  <span style={{ fontSize: 10, color: "#9aa5b4" }}>{k.note}</span>
+                  <span style={{ fontSize: 10, color: "var(--gris)" }}>{k.note}</span>
                 </div>
               </div>
             ))}
@@ -291,9 +291,9 @@ function ContenuFichePays() {
             <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th style={{ padding: "0 12px 10px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "#6b7684", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid #E6E9EF" }}>Indicateur</th>
+                  <th style={{ padding: "0 12px 10px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>Indicateur</th>
                   {cols.map((c: any, i: number) => (
-                    <th key={c.id} style={{ padding: "0 12px 10px", textAlign: "right", borderBottom: "2px solid #E6E9EF" }}>
+                    <th key={c.id} style={{ padding: "0 12px 10px", textAlign: "right", borderBottom: "2px solid var(--bleu-voile)" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 800, color: COULEURS[i % 2] }}>
                         <Drapeau iso={c.code_iso2} nom={c.nom} taille={15} />{c.nom}
                       </span>
@@ -315,22 +315,22 @@ function ContenuFichePays() {
                         if (vals.length >= 2 && Math.max(...vals) !== Math.min(...vals)) maxVal = Math.max(...vals);
                       }
                       return (
-                        <tr key={ind.code} style={{ borderBottom: "1px solid #F3F5F8", background: ri % 2 ? "rgba(15,40,80,0.018)" : "transparent" }}>
+                        <tr key={ind.code} style={{ borderBottom: "1px solid var(--filet)", background: ri % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
                           <td style={{ padding: "10px 12px" }}>
                             <div style={{ fontSize: 12.5, fontWeight: 650, color: ENCRE }}>{ind.libelle}</div>
-                            <div style={{ fontSize: 10.5, color: "#9aa5b4" }}>{ind.unite}</div>
+                            <div style={{ fontSize: 10.5, color: "var(--gris)" }}>{ind.unite}</div>
                           </td>
                           {cols.map((c: any) => {
                             const cell = getCell(c.id, ind.code);
                             const v = cell?.valeur;
                             const estMax = maxVal !== null && v === maxVal;
-                            const couleur = v === null || v === undefined ? "#C5BFBB"
-                              : estMax ? (teinte === "rouge" ? "#dc2626" : "#188038")
+                            const couleur = v === null || v === undefined ? "var(--gris)"
+                              : estMax ? (teinte === "rouge" ? "var(--danger)" : "var(--vert)")
                               : ENCRE;
                             return (
                               <td key={c.id} className="ds-donnee" style={{ padding: "10px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                                 <span style={{ fontSize: 13, fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite)}</span>
-                                {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "#C5BFBB" }}>{cell.annee}</span>}
+                                {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "var(--gris)" }}>{cell.annee}</span>}
                               </td>
                             );
                           })}
@@ -354,18 +354,18 @@ function ContenuFichePays() {
             const hasRes = res && res.length > 0;
             return (
               <div className="ds-carte" style={{ overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "15px 20px", borderBottom: hasRes ? "1px solid #F3F5F8" : "none" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "15px 20px", borderBottom: hasRes ? "1px solid var(--filet)" : "none" }}>
                   <div style={{ minWidth: 0 }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: ENCRE }}>
                       <span style={{ fontWeight: 800, color: col }}>{de}</span>
-                      <ArrowRight size={13} style={{ color: "#c5bfbb", flexShrink: 0 }} />
+                      <ArrowRight size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
                       <span>{vers}</span>
                     </span>
-                    {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "#9aa5b4", marginTop: 3, display: "block" }}>soit <strong style={{ color: "#6b7684" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
+                    {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "var(--gris)", marginTop: 3, display: "block" }}>soit <strong style={{ color: "var(--gris-fort)" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <div className="ds-donnee" style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
-                    <div style={{ fontSize: 8.5, fontWeight: 700, color: "#c5bfbb", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
+                    <div style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
                   </div>
                 </div>
                 {hasRes && (
@@ -375,10 +375,10 @@ function ContenuFichePays() {
                       return (
                         <div key={r.ressource}>
                           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 }}>
-                            <span style={{ fontSize: 11.5, color: "#4a5568", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
-                            <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "#2d3540", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "#b0aaa4", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
+                            <span style={{ fontSize: 11.5, color: "var(--texte)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
+                            <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "var(--encre)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "var(--gris)", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
                           </div>
-                          <div style={{ height: 7, background: "#EEF1F6", borderRadius: 99, overflow: "hidden" }}>
+                          <div style={{ height: 7, background: "var(--bleu-voile)", borderRadius: 99, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 99 }} />
                           </div>
                         </div>
@@ -391,18 +391,18 @@ function ContenuFichePays() {
           };
           return (
             <div style={{ marginTop: 18 }}>
-              <p style={TITRE_SEC}>Échanges bilatéraux{periodeBilat ? <span style={{ color: "#9aa5b4", letterSpacing: "0.06em" }}> · {periodeBilat}</span> : ""}</p>
+              <p style={TITRE_SEC}>Échanges bilatéraux{periodeBilat ? <span style={{ color: "var(--gris)", letterSpacing: "0.06em" }}> · {periodeBilat}</span> : ""}</p>
               <div style={{ display: "grid", gap: 12 }}>
                 <BlocDir de={a.nom} vers={b.nom} col={BLEU} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
                 <BlocDir de={b.nom} vers={a.nom} col={ORANGE} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
               </div>
-              <div className="ds-carte" style={{ marginTop: 12, padding: "16px 20px", background: "linear-gradient(180deg,rgba(0,79,145,0.06),rgba(0,79,145,0.02))", border: "1px solid rgba(0,79,145,0.16)", display: "flex", alignItems: "center", gap: 14 }}>
-                <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,79,145,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div className="ds-carte" style={{ marginTop: 12, padding: "16px 20px", background: "linear-gradient(180deg,rgb(var(--bleu-rgb) / 0.06),rgb(var(--bleu-rgb) / 0.02))", border: "1px solid rgb(var(--bleu-rgb) / 0.16)", display: "flex", alignItems: "center", gap: 14 }}>
+                <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgb(var(--bleu-rgb) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Scale size={19} color={BLEU} />
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ ...TITRE_SEC, margin: "0 0 3px", fontSize: 9.5 }}>Balance commerciale</div>
-                  <div style={{ fontSize: 12.5, color: "#4a5568", lineHeight: 1.45 }}>
+                  <div style={{ fontSize: 12.5, color: "var(--texte)", lineHeight: 1.45 }}>
                     {diff === 0
                       ? <>Échanges <strong style={{ color: ENCRE }}>équilibrés</strong> entre {a.nom} et {b.nom}.</>
                       : <>Excédentaire en faveur de <strong style={{ color: diff >= 0 ? BLEU : ORANGE }}>{gagnant.nom}</strong>, déficitaire pour {perdant.nom}.</>}
@@ -419,11 +419,11 @@ function ContenuFichePays() {
         })()}
 
         {/* ── Pied méthodologique ── */}
-        <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid #E2E6EC", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-          <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, lineHeight: 1.6, maxWidth: 760 }}>
+        <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid var(--bleu-voile)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <p style={{ fontSize: 10.5, color: "var(--gris)", margin: 0, lineHeight: 1.6, maxWidth: 760 }}>
             APIX S.A — DIPE, Direction de l&apos;Intelligence et des Perspectives Économiques.
           </p>
-          <p style={{ fontSize: 10.5, color: "#8a93a3", margin: 0, whiteSpace: "nowrap" }}>
+          <p style={{ fontSize: 10.5, color: "var(--gris)", margin: 0, whiteSpace: "nowrap" }}>
             Mise à jour le {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
           </p>
         </div>
