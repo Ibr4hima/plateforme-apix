@@ -38,7 +38,7 @@ export default function RootLayout({
             utilisateur en mode sombre. Voir lib/apparence.ts. */}
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_APPARENCE }} />
         {/* Les icônes Material Symbols sont AUTO-HÉBERGÉES : la police
-            subsettée (nos 35 glyphes, 41 Ko) vit dans public/polices et sa
+            subsettée (nos 37 glyphes, 43 Ko) vit dans public/polices et sa
             @font-face dans globals.css. Aucune requête ne part vers Google —
             question de souveraineté autant que de latence. Pour AJOUTER une
             icône, régénérer le woff2 : l'URL css2 à interroger (avec le

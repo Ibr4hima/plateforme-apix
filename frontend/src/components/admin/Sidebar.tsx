@@ -89,7 +89,7 @@ export default function Sidebar() {
             alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800 }}>A</span>
         ) : (
           <>
-            <Image src="/logo_apix.png" alt="APIX" width={78} height={26}
+            <Image className="logo-apix" src="/logo_apix.png" alt="APIX" width={78} height={26}
               style={{ height: 26, width: "auto", objectFit: "contain", flexShrink: 0 }} />
             <span style={{ fontSize: 8.5, fontWeight: 800, color: ORANGE, letterSpacing: "0.16em",
               textTransform: "uppercase", background: "rgb(var(--orange-rgb) / 0.10)", padding: "3px 7px",

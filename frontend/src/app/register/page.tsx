@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from "lucide-react"
+import BasculeApparence from "@/components/layout/BasculeApparence";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
@@ -125,6 +126,19 @@ export default function RegisterPage() {
         .login-link::after{content:"";position:absolute;left:0;bottom:-1px;width:0;height:1.5px;background:var(--bleu-action);transition:width .2s}
         .login-link:hover::after{width:100%}
       `}</style>
+
+      {/* Ces pages n'ont pas de barre de navigation : sans cette commande, on
+          ne pourrait pas changer d'apparence avant de s'être connecté. Le fond
+          y est bleu nuit dans les deux schémas, d'où l'icône blanche. */}
+      <BasculeApparence
+        couleur="rgba(255,255,255,0.85)"
+        style={{
+          position: "absolute", top: 20, right: 20, zIndex: 3,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
+          background: "rgba(255,255,255,0.10)",
+          border: "1px solid rgba(255,255,255,0.22)",
+        }} />
 
       {/* Trame fine + halos dérivants, contenus dans la zone bleue */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden", maskImage: "linear-gradient(180deg,rgb(var(--ombre-rgb) / 1) 0%,rgba(0,0,0,1) 42%,transparent 60%)", WebkitMaskImage: "linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 42%,transparent 60%)" }}>

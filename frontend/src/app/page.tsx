@@ -252,7 +252,7 @@ export default function HomePage() {
       <section className="lp-pad" style={{background:"var(--carte)",borderTop:"1px solid var(--bordure)",padding:"56px 60px"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap" as const,gap:40}}>
           <div style={{display:"flex",alignItems:"center",gap:20}}>
-            <Image src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
+            <Image className="logo-apix" src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
             <div style={{width:1,height:36,background:"var(--fond-creux2)"}}/>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>

@@ -418,7 +418,7 @@ export default function Navbar() {
 
           {/* ── Logo ── */}
           <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
-            <Image src="/logo_apix.png" alt="APIX Sénégal" width={120} height={44}
+            <Image className="logo-apix" src="/logo_apix.png" alt="APIX Sénégal" width={120} height={44}
               style={{ height: 38, width: "auto", objectFit: "contain" }} priority />
           </Link>
 
