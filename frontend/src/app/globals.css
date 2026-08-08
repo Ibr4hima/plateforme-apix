@@ -317,6 +317,18 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
+/* Le temps d'un changement d'apparence, toutes les transitions sont coupées.
+   Les couleurs sont animées un peu partout (boutons, cartes, chips, liens) :
+   sans cela, basculer déclencherait ces centaines de transitions d'un coup et
+   la page ondulerait pendant un tiers de seconde au lieu de changer d'état.
+   L'attribut est posé puis retiré deux trames plus tard — voir
+   lib/apparence.ts. */
+:root[data-bascule] *,
+:root[data-bascule] *::before,
+:root[data-bascule] *::after {
+  transition: none !important;
+}
+
 body {
   background-color: var(--fond);
   color: var(--text-primary);

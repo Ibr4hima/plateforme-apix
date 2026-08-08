@@ -10,8 +10,13 @@ import TransitionPage from "@/components/layout/TransitionPage";
 import D3Tooltip from "@/components/charts/D3Tooltip";
 import { SessionProvider } from "next-auth/react";
 import { useState } from "react";
+import { useSuivreSysteme } from "@/lib/apparence";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  // Tant que l'utilisateur n'a rien choisi, la page suit le réglage de
+  // l'appareil — y compris s'il change pendant qu'elle est ouverte.
+  useSuivreSysteme();
+
   // Client créé une seule fois par session navigateur (useState et non module :
   // évite de partager le cache entre requêtes en cas de rendu serveur)
   const [queryClient] = useState(() => new QueryClient({

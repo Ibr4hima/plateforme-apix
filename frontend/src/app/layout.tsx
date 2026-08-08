@@ -1,4 +1,5 @@
 import Providers from "@/components/layout/Providers";
+import { SCRIPT_APPARENCE } from "@/lib/apparenceAmorce";
 import type { Metadata } from "next";
 import { Google_Sans } from "next/font/google";
 import "./globals.css";
@@ -30,8 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={googleSans.variable}>
+    <html lang="fr" className={googleSans.variable} suppressHydrationWarning>
       <head>
+        {/* Le schéma d'apparence est appliqué AVANT la première peinture :
+            attendre l'hydratation ferait clignoter une page blanche devant un
+            utilisateur en mode sombre. Voir lib/apparence.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_APPARENCE }} />
         {/* Les icônes Material Symbols sont AUTO-HÉBERGÉES : la police
             subsettée (nos 35 glyphes, 41 Ko) vit dans public/polices et sa
             @font-face dans globals.css. Aucune requête ne part vers Google —
