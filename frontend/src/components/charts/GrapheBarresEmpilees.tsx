@@ -4,12 +4,16 @@ import { useCallback, useEffect, useRef } from "react";
 import { d3 } from "@/lib/d3lazy";
 import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
+import { useRampeBleue } from "@/lib/couleurs";
 
 // ── Barres horizontales empilées (par partenaire × ressource) ─────────────────
 export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, exposant = 0.5, showLegend = true }: {
   partenaires: { nom: string; total: number; valeurs: number[] }[]; ressources: string[];
   fmt?: (v: number | null) => string; rowH?: number; exposant?: number; showLegend?: boolean;
 }) {
+  // Seule couleur que CSS ne peut pas porter : d3 décompose les bornes de la
+  // rampe en canaux. D'où ce crochet — et le redessin au changement de schéma.
+  const rampe = useRampeBleue();
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -22,7 +26,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
     const mctx = document.createElement("canvas").getContext("2d")!;
     // Rampe bleue comme l'anneau : ressource la plus lourde (index 0) = plus foncé.
     const nRes = ressources.length;
-    const col = (i: number) => d3.interpolateRgb("#003468", "#EDF4FB")(nRes > 1 ? i / (nRes - 1) : 0) as string;
+    const col = (i: number) => d3.interpolateRgb(rampe[0], rampe[1])(nRes > 1 ? i / (nRes - 1) : 0) as string;
 
     // Légende des ressources (chips, avec retour à la ligne) — masquée sur la carte
     const legRowH = 20;
@@ -49,7 +53,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
     lines.forEach(ln => {
       let lx = 0;
       ln.forEach(c => {
-        svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", col(c.i));
+        svg.append("rect").attr("x", lx).attr("y", ly - 9).attr("width", 11).attr("height", 11).attr("rx", 2).style("fill", col(c.i));
         svg.append("text").attr("x", lx + 17).attr("y", ly).attr("dy", "0.32em").style("font-size", "11px").style("fill", "var(--texte)").text(c.label);
         lx += c.w + 10;
       });
@@ -74,7 +78,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       present.forEach(({ res, ri, v }) => {
         const segW = (hasFloor ? floorPx : 0) + (Math.pow(v, exposant) / racSum) * reste;
         svg.append("rect").attr("x", xc).attr("y", y(p.nom)!).attr("width", Math.max(0.5, segW)).attr("height", y.bandwidth())
-          .attr("fill", col(ri)).style("stroke", "var(--carte)").attr("stroke-width", 0.6).style("cursor", "pointer")
+          .style("fill", col(ri)).style("stroke", "var(--carte)").attr("stroke-width", 0.6).style("cursor", "pointer")
           .on("mouseover", function (e) { d3.select(this).attr("opacity", 0.82); showD3Tooltip(tooltip, e, `<strong>${p.nom} — ${res}</strong><br/>${fmtV(v)} · ${(v / p.total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
           .on("mousemove", (e) => showD3Tooltip(tooltip, e))
           .on("mouseout", function () { d3.select(this).attr("opacity", 1); hideD3Tooltip(tooltip); });
@@ -83,7 +87,7 @@ export function GrapheBarresEmpilees({ partenaires, ressources, fmt, rowH = 36, 
       svg.append("text").attr("x", M.left - 8).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").attr("text-anchor", "end").style("font-size", "11px").style("fill", "var(--texte)").text(p.nom);
       svg.append("text").attr("x", x(p.total) + 6).attr("y", y(p.nom)! + y.bandwidth() / 2).attr("dy", "0.35em").style("font-size", "10.5px").style("font-weight", "700").style("fill", "var(--gris)").text(fmtV(p.total));
     });
-  }, [partenaires, ressources, fmtV, rowH, exposant]);
+  }, [partenaires, ressources, fmtV, rowH, exposant, rampe]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", display: "block" }} /></div>;

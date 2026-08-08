@@ -31,7 +31,7 @@ export function GrapheBarresH({ data, fmt, couleur = "var(--bleu)", rowH = 34, e
 
     svg.selectAll("rect.bar").data(data).enter().append("rect")
       .attr("x", M.left).attr("y", d => y(d.label)!).attr("height", y.bandwidth())
-      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).attr("fill", couleur)
+      .attr("width", d => Math.max(2, x(d.valeur) - M.left)).style("fill", couleur)
       .style("cursor", "pointer")
       .on("mouseover", (e, d) => { d3.select(e.currentTarget as any).attr("opacity", 0.8); showD3Tooltip(tooltip, e, `<strong>${d.label}</strong><br/>${fmtV(d.valeur)}`); })
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))

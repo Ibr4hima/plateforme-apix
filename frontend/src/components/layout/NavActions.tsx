@@ -95,7 +95,7 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
     return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); window.removeEventListener("keydown", onKey); };
   }, [userOpen]);
 
-  const icoColor = onDark ? "#fff" : "#004f91";
+  const icoColor = onDark ? "var(--sur-bleu)" : "var(--bleu)";
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>

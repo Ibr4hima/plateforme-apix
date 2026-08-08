@@ -4,10 +4,15 @@ import { useCallback, useEffect, useRef } from "react";
 import { d3 } from "@/lib/d3lazy";
 import { fmtCompact as fmtValGen } from "@/lib/format";
 import { showD3Tooltip, hideD3Tooltip } from "@/components/charts/outilsTooltip";
+import { useRampeBleue } from "@/lib/couleurs";
 
 // ── Anneau de composition (style tableau de bord, légende latérale) ────────────
-// Rampe bleue #003468 (part la plus élevée) → #EDF4FB (la plus faible).
+// Rampe bleue, de la part la plus élevée à la plus faible. Ses bornes sont
+// interpolées en JavaScript et dépendent donc du schéma (useRampeBleue).
 export function GrapheDonut({ data, fmt, height }: { data: { label: string; valeur: number }[]; fmt?: (v: number | null) => string; height?: number }) {
+  // Seule couleur que CSS ne peut pas porter : d3 décompose les bornes de la
+  // rampe en canaux. D'où ce crochet — et le redessin au changement de schéma.
+  const rampe = useRampeBleue();
   const ref = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fmtV = fmt || fmtValGen;
@@ -21,7 +26,7 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
     const items = total > 0 ? positifs.filter(d => d.valeur / total * 100 >= 0.05) : [];
     if (!items.length) return;
     const n = items.length;
-    const couleur = (i: number) => d3.interpolateRgb("var(--bleu-profond)", "var(--bleu-voile)")(n > 1 ? i / (n - 1) : 0) as string;
+    const couleur = (i: number) => d3.interpolateRgb(rampe[0], rampe[1])(n > 1 ? i / (n - 1) : 0) as string;
 
     const W = wrapRef.current.clientWidth || el.parentElement?.clientWidth || 600;
     const H = height ?? Math.max(230, n * 22 + 44);
@@ -42,7 +47,7 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
     const g = svg.append("g").attr("transform", `translate(${cx},${cy})`);
 
     g.selectAll("path").data(pie(items)).enter().append("path")
-      .attr("d", arc as any).attr("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
+      .attr("d", arc as any).style("fill", (_d, i) => couleur(i)).attr("opacity", 0.9)
       .style("cursor", "pointer")
       .on("mouseover", function (e, d: any) { d3.select(this).attr("d", arcH(d) as string).attr("opacity", 1); showD3Tooltip(tooltip, e, `<strong>${d.data.label}</strong><br/>${fmtV(d.data.valeur)} · ${(d.data.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`); })
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
@@ -64,12 +69,12 @@ export function GrapheDonut({ data, fmt, height }: { data: { label: string; vale
       const pct = (d.valeur / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
       let lbl = d.label; if (lbl.length > maxc) lbl = lbl.slice(0, maxc - 1) + "…";
       const row = legend.append("g").attr("transform", `translate(${lx},${ly})`);
-      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).attr("fill", couleur(i)).style("stroke", "var(--bordure-forte)").attr("stroke-width", 0.5);
+      row.append("rect").attr("x", 0).attr("y", -8).attr("width", 11).attr("height", 11).attr("rx", 2).style("fill", couleur(i)).style("stroke", "var(--bordure-forte)").attr("stroke-width", 0.5);
       row.append("text").attr("x", 18).attr("y", 0).attr("dy", "0.04em").style("font-size", `${lgFont}px`).style("fill", "var(--texte)").text(lbl);
       row.append("text").attr("x", rightX - lx).attr("y", 0).attr("dy", "0.04em").attr("text-anchor", "end").style("font-size", `${lgFont}px`).style("font-weight", "700").style("fill", "var(--encre)").text(`${pct}%`);
       ly += rowH;
     });
-  }, [data, fmtV, height]);
+  }, [data, fmtV, height, rampe]);
   useEffect(() => { if (!wrapRef.current) return; const ro = new ResizeObserver(() => draw()); ro.observe(wrapRef.current); return () => ro.disconnect(); }, [draw]);
   useEffect(() => { draw(); }, [draw]);
   return <div ref={wrapRef} style={{ position: "relative" }}><svg ref={ref} style={{ width: "100%", height, display: "block" }} /></div>;

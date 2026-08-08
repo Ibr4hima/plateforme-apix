@@ -13,6 +13,7 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNaema } from "@/lib/referentiels";
+import { voile } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -30,9 +31,9 @@ interface Props {
 function CheckItem({ label, selected, onToggle, color }: { label:string; selected:boolean; onToggle:()=>void; color:string }) {
   return (
     <button onClick={onToggle}
-      style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", cursor:"pointer", background:selected?color+"12":"transparent", width:"100%", textAlign:"left" as const, transition:"background 0.12s" }}
+      style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 10px", borderRadius:7, border:"none", cursor:"pointer", background:selected?voile(color, 7):"transparent", width:"100%", textAlign:"left" as const, transition:"background 0.12s" }}
       onMouseEnter={e=>{ if(!selected) e.currentTarget.style.background="var(--carte-douce)"; }}
-      onMouseLeave={e=>{ e.currentTarget.style.background=selected?color+"12":"transparent"; }}>
+      onMouseLeave={e=>{ e.currentTarget.style.background=selected?voile(color, 7):"transparent"; }}>
       <div style={{ width:13, height:13, borderRadius:"50%", border:`2px solid ${selected?color:"var(--gris)"}`, background:selected?color:"transparent", flexShrink:0, transition:"all 0.12s" }} />
       <span style={{ fontSize:12, color:selected?"var(--encre)":"var(--texte)", fontWeight:selected?600:400 }}>{label}</span>
     </button>
@@ -43,15 +44,15 @@ function ColSection({ title, color, children, open, onToggle, count }: { title:s
   return (
     <div style={{ flex:1, minWidth:0 }}>
       <button onClick={onToggle}
-        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?color+"08":"var(--carte-douce)", border:`1px solid ${count>0?color+"30":"var(--bordure-forte)"}`, borderRadius:9, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
+        style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", padding:"8px 10px", background:count>0?voile(color, 3):"var(--carte-douce)", border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`, borderRadius:9, cursor:"pointer", marginBottom:open?4:0, transition:"all 0.15s" }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <span style={{ fontSize:11, fontWeight:700, color:count>0?color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>{title}</span>
-          {count>0 && <span style={{ fontSize:10, fontWeight:700, color, background:color+"15", padding:"1px 6px", borderRadius:999 }}>{count}</span>}
+          {count>0 && <span style={{ fontSize:10, fontWeight:700, color, background:voile(color, 8), padding:"1px 6px", borderRadius:999 }}>{count}</span>}
         </div>
         {open ? <ChevronUp size={12} style={{color:"var(--gris)"}}/> : <ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
       {open && (
-        <div style={{ border:`1px solid ${color}20`, borderRadius:9, overflow:"hidden", maxHeight:220, overflowY:"auto" as const }}>
+        <div style={{ border:`1px solid ${voile(color, 13)}`, borderRadius:9, overflow:"hidden", maxHeight:220, overflowY:"auto" as const }}>
           {children}
         </div>
       )}
@@ -125,7 +126,7 @@ export default function NaemaSelect({ secteurIds, brancheIds, activiteIds, onCha
       {allSelected.length > 0 && (
         <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginBottom:10 }}>
           {allSelected.map(t => (
-            <span key={`${t.color}-${t.id}`} style={{ display:"inline-flex", alignItems:"center", gap:4, background:t.color+"10", color:t.color, border:`1px solid ${t.color}25`, borderRadius:999, padding:"2px 8px", fontSize:11, fontWeight:600 }}>
+            <span key={`${t.color}-${t.id}`} style={{ display:"inline-flex", alignItems:"center", gap:4, background:voile(t.color, 6), color:t.color, border:`1px solid ${voile(t.color, 15)}`, borderRadius:999, padding:"2px 8px", fontSize:11, fontWeight:600 }}>
               {t.nom}
               <button onClick={()=>{
                 if (t.color==="var(--bleu)") toggleSec(t.id);

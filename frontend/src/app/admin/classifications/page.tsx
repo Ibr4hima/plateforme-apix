@@ -3,6 +3,7 @@
 import { Check, Link2, Loader2, Search, Unlink, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -79,7 +80,7 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
                 Lier à NAEMA · {systeme.toUpperCase()}
               </p>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <code style={{ fontSize: 13, fontWeight: 800, color, background: `${color}14`, padding: "2px 8px", borderRadius: 6 }}>{classe.full_code}</code>
+                <code style={{ fontSize: 13, fontWeight: 800, color, background: `${voile(color, 8)}`, padding: "2px 8px", borderRadius: 6 }}>{classe.full_code}</code>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)" }}>{classe.libelle}</span>
               </div>
               <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 4 }}>{selected.length} activité{selected.length > 1 ? "s" : ""} sélectionnée{selected.length > 1 ? "s" : ""}</p>
@@ -101,13 +102,13 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
             const sel = selected.includes(act.id);
             return (
               <button key={act.id} onClick={() => toggle(act.id)}
-                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: sel ? `${color}0d` : "transparent", textAlign: "left", marginBottom: 2 }}
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: sel ? `${voile(color, 5)}` : "transparent", textAlign: "left", marginBottom: 2 }}
                 onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "var(--carte-douce)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = sel ? `${color}0d` : "transparent"; }}>
+                onMouseLeave={e => { e.currentTarget.style.background = sel ? `${voile(color, 5)}` : "transparent"; }}>
                 <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${sel ? color : "var(--gris)"}`, background: sel ? color : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>
                   {sel && <svg width="10" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 </div>
-                <code style={{ fontSize: 10, fontWeight: 700, color: sel ? color : "var(--gris)", background: sel ? `${color}14` : "var(--fond)", padding: "1px 6px", borderRadius: 4, flexShrink: 0 }}>{act.naema_code}</code>
+                <code style={{ fontSize: 10, fontWeight: 700, color: sel ? color : "var(--gris)", background: sel ? `${voile(color, 8)}` : "var(--fond)", padding: "1px 6px", borderRadius: 4, flexShrink: 0 }}>{act.naema_code}</code>
                 <span style={{ fontSize: 13, color: sel ? "var(--encre)" : "var(--texte)", fontWeight: sel ? 600 : 400 }}>{act.nom}</span>
               </button>
             );
@@ -224,10 +225,10 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             const code = fullCode(cls);
             return (
               <button key={cls.id} onClick={() => selectClass(cls)}
-                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: isSelected ? `${color}0f` : "transparent", cursor: "pointer", textAlign: "left", borderLeft: `3px solid ${isSelected ? color : "transparent"}`, borderBottom: "1px solid var(--filet)" }}
+                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: isSelected ? `${voile(color, 6)}` : "transparent", cursor: "pointer", textAlign: "left", borderLeft: `3px solid ${isSelected ? color : "transparent"}`, borderBottom: "1px solid var(--filet)" }}
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${color}0f` : "transparent"; }}>
-                <code style={{ fontSize: 10, fontWeight: 700, color: isSelected ? color : "var(--gris)", background: isSelected ? `${color}14` : "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
+                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${voile(color, 6)}` : "transparent"; }}>
+                <code style={{ fontSize: 10, fontWeight: 700, color: isSelected ? color : "var(--gris)", background: isSelected ? `${voile(color, 8)}` : "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
                 <span style={{ fontSize: 12, color: isSelected ? "var(--encre)" : "var(--texte)", fontWeight: isSelected ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.libelle}</span>
                 {cls.nb_correspondances > 0 && (
                   <span style={{ fontSize: 10, fontWeight: 700, color: "var(--vert)", background: "rgb(var(--vert-rgb) / 0.12)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{cls.nb_correspondances}</span>
@@ -245,7 +246,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid var(--bordure)", background: "var(--carte)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <code style={{ fontSize: 14, fontWeight: 800, color, background: `${color}12`, padding: "3px 10px", borderRadius: 6 }}>{fullCode(selectedClass)}</code>
+                  <code style={{ fontSize: 14, fontWeight: 800, color, background: `${voile(color, 7)}`, padding: "3px 10px", borderRadius: 6 }}>{fullCode(selectedClass)}</code>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", marginTop: 6, lineHeight: 1.4, maxWidth: 480 }}>{selectedClass.libelle}</p>
                   <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 4 }}>{corrs.length} activité{corrs.length > 1 ? "s" : ""} NAEMA liée{corrs.length > 1 ? "s" : ""}</p>
                 </div>

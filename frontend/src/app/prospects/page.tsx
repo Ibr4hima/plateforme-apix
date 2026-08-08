@@ -30,8 +30,8 @@ const STATUT_BADGE: Record<string, React.CSSProperties> = {
   "En attente":           badge_gris,
 };
 const STATUT_COULEUR: Record<string, string> = {
-  "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
-  "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
+  "En cours": "var(--vert)", "À recontacter": "var(--bleu)", "Installation à venir": "var(--vert)",
+  "Inactif": "var(--danger)", "Décliné": "var(--gris)", "En attente": "var(--gris)",
 };
 
 // ── Carte prospect ────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         : { label: "Conclusion", value: null });
 
   const badgeStatut = badge ? (STATUT_BADGE[badge.label] || badge_gris) : null;
-  const hoverC = badge ? (STATUT_COULEUR[badge.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
+  const hoverC = badge ? (STATUT_COULEUR[badge.label] || "var(--gris)") : "rgb(var(--bleu-rgb) / 0.33)";
 
   return (
     <div {...(onOpen ? carteCliquable(onOpen, `Ouvrir la fiche : ${p.nom}`) : {})}

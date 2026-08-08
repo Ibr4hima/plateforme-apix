@@ -12,7 +12,7 @@ import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import { badgePole, poleAccent } from "@/lib/couleurs";
+import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -22,26 +22,12 @@ const TYPE_ZONES = [
   { key: "ZFI", label: "Zones Franches Industrielles",          code: "ZFI", color: "var(--vert)", bg: "rgb(var(--vert-rgb) / 0.06)",  border: "rgb(var(--vert-rgb) / 0.2)" },
 ];
 
-// Couleurs des pôles territoriaux — identiques à la page publique
-// (VueTerritorialeSenegal), indexées par nom normalisé.
-const POLE_COULEURS: Record<string, string> = {
-  "dakar": "var(--bleu)",          // bleu clair
-  "thies": "var(--bleu)",          // bleu-teal
-  "diourbel louga": "#9DDEC2", // menthe
-  "centre": "#B4DE9D",         // vert tendre
-  "nord": "#D2DE9D",           // vert-jaune
-  "nord est": "#E6DE9D",       // jaune doux
-  "sud": "#E6C79D",            // pêche
-  "sud est": "#E6AC9D",        // corail clair
-};
-const normPole = (s: string) =>
-  (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/pole/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
-const getPoleColor = (nom: string) => POLE_COULEURS[normPole(nom)] || "#E8E5E3";
-// Assombrit une couleur pastel pour obtenir un texte lisible de la même teinte
-const darken = (hex: string, f = 0.42) => {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgb(${Math.round(((n >> 16) & 255) * f)},${Math.round(((n >> 8) & 255) * f)},${Math.round((n & 255) * f)})`;
-};
+// Couleurs des pôles : une seule source, lib/couleurs — la copie locale avait
+// divergé de la page publique.
+const getPoleColor = (nom: string) => POLE_COULEURS[normPole(nom)] || "var(--bordure-forte)";
+// Texte lisible de la même teinte sur un fond voilé : color-mix assombrit sans
+// avoir à décomposer la couleur en canaux, ce qu'un jeton ne permettrait pas.
+const darken = (couleur: string) => `color-mix(in srgb, ${couleur} 62%, var(--encre))`;
 
 const EMPTY_ZONE_FORM = {
   nom_zone: "", description: "",
@@ -739,7 +725,7 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
           <div style={{ minWidth:0 }}>
             <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{z.nom_zone}</h2>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
-              <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:800, letterSpacing:"0.04em", color:t.color, background:`${t.color}12`, padding:"3px 10px", borderRadius:999 }}>{t.code}</span>
+              <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:800, letterSpacing:"0.04em", color:t.color, background:`${voile(t.color, 7)}`, padding:"3px 10px", borderRadius:999 }}>{t.code}</span>
               {z.pole_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{z.pole_nom}</span>}
             </div>
           </div>
@@ -1021,25 +1007,25 @@ export default function GestionZonesPage() {
               const GRADS: Record<string,string> = {
                 "var(--bleu)":"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)",
                 "var(--orange)":"linear-gradient(90deg,var(--orange) 0%,var(--orange) 60%,var(--orange) 100%)",
-                "var(--vert)":"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,#2aa14e 100%)",
+                "var(--vert)":"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)",
               };
               const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
               return (
                 <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
-                  style={{ background: "var(--carte)", border: `1.5px solid ${c}${active ? "99" : "73"}`, borderRadius: 14, cursor: "pointer",
+                  style={{ background: "var(--carte)", border: `1.5px solid ${voile(c, active ? 60 : 45)}`, borderRadius: 14, cursor: "pointer",
                     transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-                    boxShadow: active ? `0 12px 28px ${c}2e` : `0 4px 18px ${c}26`,
+                    boxShadow: active ? `0 12px 28px ${voile(c, 18)}` : `0 4px 18px ${voile(c, 15)}`,
                     transform: active ? "translateY(-2px)" : "none",
                     display: "flex", flexDirection: "column" as const, overflow: "hidden", minWidth: 0 }}
                   onMouseEnter={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${c}2e`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${c}99`; }
+                    if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${voile(c, 18)}`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${voile(c, 60)}`; }
                     // Titre trop long : glisse pour révéler la fin
                     const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                     const span = box?.firstElementChild as HTMLElement | null;
                     if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
                   }}
                   onMouseLeave={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${c}26`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${c}73`; }
+                    if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${voile(c, 15)}`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${voile(c, 45)}`; }
                     const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                     if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                   }}>
@@ -1063,11 +1049,11 @@ export default function GestionZonesPage() {
 
                     {/* Compteurs libellés */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                      <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
+                      <div style={{ background: `${voile(c, 4)}`, border: `1px solid ${voile(c, 12)}`, borderRadius: 10, padding: "8px 11px" }}>
                         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
                         <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "var(--encre)" : "var(--gris)" }}>{nbEnt}</p>
                       </div>
-                      <div style={{ background: `${c}0A`, border: `1px solid ${c}1F`, borderRadius: 10, padding: "8px 11px" }}>
+                      <div style={{ background: `${voile(c, 4)}`, border: `1px solid ${voile(c, 12)}`, borderRadius: 10, padding: "8px 11px" }}>
                         <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
                         <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "var(--encre)" : "var(--gris)" }}>{zDuT.length}</p>
                       </div>
@@ -1078,7 +1064,7 @@ export default function GestionZonesPage() {
                   <div style={{ display: "flex", borderTop: "1px solid var(--bordure)" }}>
                     <button className="ro-w" onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
                       style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                      onMouseEnter={ev => ev.currentTarget.style.background = `${c}0D`}
+                      onMouseEnter={ev => ev.currentTarget.style.background = `${voile(c, 5)}`}
                       onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
                       <Plus size={13} /> Ajouter une {t.code}
                     </button>
@@ -1102,16 +1088,16 @@ export default function GestionZonesPage() {
               <>
               {/* En-tête du type sélectionné — même bandeau que la page publique */}
               <div style={{ display: "flex", alignItems: "center", gap: 15, padding: "15px 20px", marginBottom: 20, borderRadius: 16,
-                background: `linear-gradient(100deg, ${t.color}14 0%, ${t.color}06 42%, rgba(255,255,255,0) 100%)`,
-                border: `1px solid ${t.color}22` }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--carte)", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${t.color}1a` }}>
+                background: `linear-gradient(100deg, ${voile(t.color, 8)} 0%, ${voile(t.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                border: `1px solid ${voile(t.color, 13)}` }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--carte)", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${voile(t.color, 10)}` }}>
                   <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.02em", color: t.color }}>{t.code}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 9.5, fontWeight: 700, color: t.color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>Type de zone</div>
                   <div style={{ fontWeight: 800, fontSize: 16, color: "var(--encre)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{t.label}</div>
                 </div>
-                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${t.color}40` }}>
+                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${voile(t.color, 25)}` }}>
                   {zDuT.length} zone{zDuT.length > 1 ? "s" : ""}
                 </span>
               </div>
@@ -1119,7 +1105,7 @@ export default function GestionZonesPage() {
               <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
                 {zDuT.map(z => {
                   // Accent de survol = couleur du pôle (comme la page publique)
-                  const hoverC = z.pole_nom ? poleAccent(z.pole_nom) : `${t.color}55`;
+                  const hoverC = z.pole_nom ? poleAccent(z.pole_nom) : `${voile(t.color, 33)}`;
                   const nbEnt = z.entreprises?.length || 0;
                   return (
                   <div key={z.id} onClick={() => setVueId(z.id)}

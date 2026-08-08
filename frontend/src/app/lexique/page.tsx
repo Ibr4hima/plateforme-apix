@@ -12,7 +12,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import BandeauDocument, { RechercheBandeau } from "@/components/shared/BandeauDocument";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
+const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 

@@ -18,7 +18,7 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const BLEU = "#004f91", ENCRE = "#101a2e";
+const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
 const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
 
 // Formatage : lib/format est LA source — les copies locales qui vivaient ici
@@ -33,7 +33,7 @@ const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: B
 function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }) {
   if (v == null || !isFinite(v)) return null;
   const pos = v > 0, neg = v < 0;
-  const col = surFonce ? (pos ? "var(--vert)" : neg ? "var(--danger-voile)" : "rgba(255,255,255,0.7)") : (pos ? "#188038" : neg ? "#dc2626" : "#9aa5b4");
+  const col = surFonce ? (pos ? "var(--vert)" : neg ? "var(--danger-voile)" : "rgba(255,255,255,0.7)") : (pos ? "var(--vert)" : neg ? "var(--danger)" : "var(--gris)");
   return (
     <span style={{ fontSize: 11.5, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
       {pos ? "▲" : neg ? "▼" : "="}&nbsp;{nf(Math.abs(v), 1)} %
@@ -177,7 +177,7 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
   const total = enTop.reduce((t, r) => t + Math.max(0, r.valeur), 0);
   const max = Math.max(1e-9, ...enTop.map((r) => r.valeur));
   const estSen = (r: LigneTopZone) => r.pays === "Sénégal" || r.pays === "Senegal";
-  const fondSen = "linear-gradient(90deg, rgba(0,79,145,0.10), rgba(0,79,145,0.02))";
+  const fondSen = "linear-gradient(90deg, rgb(var(--bleu-rgb) / 0.10), rgb(var(--bleu-rgb) / 0.02))";
   return (
     <div className="ds-carte" style={{ padding: "20px 22px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>

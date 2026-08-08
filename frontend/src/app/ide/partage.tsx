@@ -2,7 +2,7 @@
 import { useEchap } from "@/lib/useEchap";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe } from "@/lib/couleurs";
+import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
 import { X, Plus, Table, ChevronDown, FileSpreadsheet, Pin } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
@@ -415,7 +415,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
   const Ligne = ({ annee, epinglee }: { annee: number; epinglee: boolean }) => {
     const v = valMap.get(annee);
     return (
-      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? accent + "0F" : "transparent", transition: "background 0.12s" }}>
+      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? voile(accent, 6) : "transparent", transition: "background 0.12s" }}>
         {/* Épingle : pleine sur les lignes figées, fantôme au survol des autres */}
         <button className={epinglee ? undefined : "pin-fantome"} onClick={() => togglePin(annee)}
           aria-label={epinglee ? `Désépingler ${annee}` : `Épingler ${annee}`} title={epinglee ? "Désépingler" : "Épingler cette année"}
@@ -453,7 +453,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
             <button onClick={() => togglePin(anCurseur)}
               title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
-                background: epingles.includes(anCurseur) ? accent : accent + "14", color: epingles.includes(anCurseur) ? "var(--sur-bleu)" : accent, fontFamily: "var(--font-google-sans)" }}>
+                background: epingles.includes(anCurseur) ? accent : voile(accent, 8), color: epingles.includes(anCurseur) ? "var(--sur-bleu)" : accent, fontFamily: "var(--font-google-sans)" }}>
               <Pin size={10} fill={epingles.includes(anCurseur) ? "var(--sur-bleu)" : "none"} />
               {epingles.includes(anCurseur) ? "Épinglée" : "Épingler"}
             </button>
@@ -478,7 +478,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
 
           {/* Bilan de comparaison entre années épinglées */}
           {bilan && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: accent + "0D", border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: voile(accent, 5), border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
               <span style={{ fontWeight: 800, color: accent }}>{bilan.de}</span>
               <span style={{ color: "var(--gris)" }}>({fmtNombre(bilan.v0)})</span>
               <span style={{ color: "var(--gris)" }}>→</span>
@@ -666,7 +666,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                   return (
                     <span key={p.nom} title={p.label||p.nom}
                       onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
-                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${p.couleur}0D`, border:`1px solid ${p.couleur}2E`, fontSize:10.5, fontWeight:700, color:p.couleur, minWidth:0 }}>
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(p.couleur, 5)}`, border:`1px solid ${voile(p.couleur, 18)}`, fontSize:10.5, fontWeight:700, color:p.couleur, minWidth:0 }}>
                       <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block", flexShrink:0 }} />
                       <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
                         <span style={{ display:"inline-block" }}>{p.abrege||p.nom}</span>
@@ -812,9 +812,9 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
   const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
   const isPos = kpi.valeur !== null && kpi.valeur > 0;
   const isNeg = kpi.valeur !== null && kpi.valeur < 0;
-  const signalColor = isTrend ? (isPos?"#188038":isNeg?"#dc2626":"#9aa5b4") : couleur;
-  const signalBg    = isTrend ? (isPos?"rgba(24,128,56,0.06)":isNeg?"rgba(220,38,38,0.05)":"#FAFAF9") : "rgba(0,79,145,0.04)";
-  const signalBorder= isTrend ? (isPos?"rgba(24,128,56,0.18)":isNeg?"rgba(220,38,38,0.18)":"#F0EEEC") : "rgba(0,79,145,0.10)";
+  const signalColor = isTrend ? (isPos?"var(--vert)":isNeg?"var(--danger)":"var(--gris)") : couleur;
+  const signalBg    = isTrend ? (isPos?"rgb(var(--vert-rgb) / 0.06)":isNeg?"rgb(var(--danger-rgb) / 0.05)":"var(--carte-douce)") : "rgb(var(--bleu-rgb) / 0.04)";
+  const signalBorder= isTrend ? (isPos?"rgb(var(--vert-rgb) / 0.18)":isNeg?"rgb(var(--danger-rgb) / 0.18)":"var(--bordure)") : "rgb(var(--bleu-rgb) / 0.10)";
   const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
   const { main: titreMain, suffix: titreSuffix } = splitKpiTitre(kpi.label);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
@@ -833,7 +833,7 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
             <div style={{ flex:1, minWidth:0 }}>
               <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35 }}>{titreMain}</h2>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:couleur, background:`${couleur}12`, border:`1px solid ${couleur}30` }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:couleur, background:`${voile(couleur, 7)}`, border:`1px solid ${voile(couleur, 19)}` }}>
                   <span style={{ width:7, height:7, borderRadius:"50%", background:couleur, display:"inline-block" }} />
                   {pays}
                 </span>
@@ -968,7 +968,7 @@ export function BdefRow({ label, niveau, selected, onSelect, expandable, expande
   onSelect:()=>void; expandable?:boolean; expanded?:boolean; onToggle?:()=>void;
 }) {
   const st = (niveau && BDEF_NIVEAU_STYLE[niveau]) || { color:"var(--bleu)", fs:12.5, fw:600, base:"var(--encre)" };
-  const selBg = `${st.color}10`;
+  const selBg = `${voile(st.color, 6)}`;
   const dotColor = niveau ? st.color : "var(--gris)";
   return (
     <div style={{ display:"flex", alignItems:"center", gap:2 }}>
@@ -981,7 +981,7 @@ export function BdefRow({ label, niveau, selected, onSelect, expandable, expande
         style={{ display:"flex", alignItems:"center", gap:9, padding:"6px 9px", borderRadius:8, border:"none", cursor:"pointer", background:(selected&&!niveau)?selBg:"transparent", textAlign:"left" as const, width:"100%" }}
         onMouseEnter={e=>{if(!(selected&&!niveau))(e.currentTarget as HTMLElement).style.background="var(--champ)";}}
         onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background=(selected&&!niveau)?selBg:"transparent";}}>
-        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:dotColor+"99"}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
+        <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${selected?st.color:voile(dotColor, 60)}`, background:selected?st.color:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.12s" }}>
           {selected&&!niveau&&<div style={{ width:3, height:3, borderRadius:"50%", background:"var(--carte)" }}/>}
         </div>
         <span style={{ fontSize:st.fs, color:"var(--texte)", fontWeight:selected?700:400, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, letterSpacing:niveau==="macro_secteur"?"-0.01em":"0" }}>{label}</span>

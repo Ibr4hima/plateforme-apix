@@ -10,7 +10,7 @@ import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
-import { badgePole, poleAccent } from "@/lib/couleurs";
+import { badgePole, poleAccent, voile } from "@/lib/couleurs";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -50,25 +50,25 @@ function ZonesParType({ zones }: { zones: any[] }) {
           const GRADS: Record<string,string> = {
             "var(--bleu)":"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)",
             "var(--orange)":"linear-gradient(90deg,var(--orange) 0%,var(--orange) 60%,var(--orange) 100%)",
-            "#188038":"linear-gradient(90deg,#0d5c26 0%,#188038 60%,#2aa14e 100%)",
+            "var(--vert)":"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)",
           };
           const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
           return (
             <div key={t.type} {...carteCliquable(() => setSelectedType(active ? null : t.type))}
-              style={{ background:"var(--carte)", border:`1.5px solid ${c}${active ? "99" : "73"}`, borderRadius:14, cursor:"pointer",
+              style={{ background:"var(--carte)", border:`1.5px solid ${voile(c, active ? 60 : 45)}`, borderRadius:14, cursor:"pointer",
                 transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-                boxShadow: active ? `0 12px 28px ${c}2e` : `0 4px 18px ${c}26`,
+                boxShadow: active ? `0 12px 28px ${voile(c, 18)}` : `0 4px 18px ${voile(c, 15)}`,
                 transform: active ? "translateY(-2px)" : "none",
                 display:"flex", flexDirection:"column" as const, overflow:"hidden", minWidth:0 }}
               onMouseEnter={ev => {
-                if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${c}2e`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${c}99`; }
+                if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${voile(c, 18)}`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${voile(c, 60)}`; }
                 // Titre trop long : glisse pour révéler la fin
                 const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                 const span = box?.firstElementChild as HTMLElement | null;
                 if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
               }}
               onMouseLeave={ev => {
-                if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${c}26`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${c}73`; }
+                if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${voile(c, 15)}`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${voile(c, 45)}`; }
                 const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
                 if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
               }}>
@@ -92,11 +92,11 @@ function ZonesParType({ zones }: { zones: any[] }) {
 
                 {/* Compteurs libellés */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
-                  <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
+                  <div style={{ background:`${voile(c, 4)}`, border:`1px solid ${voile(c, 12)}`, borderRadius:10, padding:"8px 11px" }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
                     <p style={{ fontSize:14, fontWeight:800, color:entreprises>0?"var(--encre)":"var(--gris)" }}>{entreprises}</p>
                   </div>
-                  <div style={{ background:`${c}0A`, border:`1px solid ${c}1F`, borderRadius:10, padding:"8px 11px" }}>
+                  <div style={{ background:`${voile(c, 4)}`, border:`1px solid ${voile(c, 12)}`, borderRadius:10, padding:"8px 11px" }}>
                     <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Zone{t.zones.length>1?"s":""}</p>
                     <p style={{ fontSize:14, fontWeight:800, color:t.zones.length>0?"var(--encre)":"var(--gris)" }}>{t.zones.length}</p>
                   </div>
@@ -106,7 +106,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               {/* Action */}
               <div style={{ display:"flex", borderTop:"1px solid var(--bordure)" }}>
                 <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:c, fontWeight:700, transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background=`${c}0D`}
+                  onMouseEnter={ev=>ev.currentTarget.style.background=`${voile(c, 5)}`}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   {active ? "Affiché" : "Voir les zones"} <ChevronRight size={13}/>
                 </div>
@@ -120,16 +120,16 @@ function ZonesParType({ zones }: { zones: any[] }) {
       {selectedInfo && (
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:15, padding:"15px 20px", marginBottom:20, borderRadius:16,
-            background:`linear-gradient(100deg, ${selectedInfo.meta.color}14 0%, ${selectedInfo.meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-            border:`1px solid ${selectedInfo.meta.color}22` }}>
-            <div style={{ width:44, height:44, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"var(--carte)", border:`1px solid ${selectedInfo.meta.border}`, boxShadow:`0 2px 6px ${selectedInfo.meta.color}1a` }}>
+            background:`linear-gradient(100deg, ${voile(selectedInfo.meta.color, 8)} 0%, ${voile(selectedInfo.meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+            border:`1px solid ${voile(selectedInfo.meta.color, 13)}` }}>
+            <div style={{ width:44, height:44, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"var(--carte)", border:`1px solid ${selectedInfo.meta.border}`, boxShadow:`0 2px 6px ${voile(selectedInfo.meta.color, 10)}` }}>
               <span style={{ fontSize:12, fontWeight:800, letterSpacing:"0.02em", color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
             </div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontSize:9.5, fontWeight:700, color:selectedInfo.meta.color, textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:3 }}>Type de zone</div>
               <div style={{ fontWeight:800, fontSize:16, color:"var(--encre)", lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{selectedInfo.meta.label}</div>
             </div>
-            <span style={{ display:"inline-flex", alignItems:"center", fontSize:12.5, fontWeight:700, color:"var(--sur-bleu)", background:selectedInfo.meta.color, padding:"6px 15px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, boxShadow:`0 2px 8px ${selectedInfo.meta.color}40` }}>
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize:12.5, fontWeight:700, color:"var(--sur-bleu)", background:selectedInfo.meta.color, padding:"6px 15px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, boxShadow:`0 2px 8px ${voile(selectedInfo.meta.color, 25)}` }}>
               {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
             </span>
           </div>
@@ -147,7 +147,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
 // ── Grande card zone (ouvre le modal détail) ──────────────────────────────────
 function ZoneBigCard({ zone, color="var(--bleu)", onClick }: { zone:any; color?:string; onClick:()=>void }) {
   const entreprises = (zone.entreprises||[]).length;
-  const hoverC = zone.pole_nom ? poleAccent(zone.pole_nom) : `${color}55`;
+  const hoverC = zone.pole_nom ? poleAccent(zone.pole_nom) : `${voile(color, 33)}`;
   return (
     <div {...carteCliquable(onClick)}
       style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", padding:"18px 20px 16px", display:"flex", flexDirection:"column" as const, gap:13 }}

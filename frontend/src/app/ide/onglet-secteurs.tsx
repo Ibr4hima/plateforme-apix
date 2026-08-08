@@ -289,7 +289,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                 const sel = selecIds.includes(id);
                 const disabled = !sel && selecIds.length >= 4;
                 const colIdx = selecIds.indexOf(id);
-                const col = colIdx >= 0 ? COMP_PALETTE[colIdx % COMP_PALETTE.length] : "#004f91";
+                const col = colIdx >= 0 ? COMP_PALETTE[colIdx % COMP_PALETTE.length] : "var(--bleu)";
                 return (
                   <div key={id} onClick={()=>{ if(!disabled) toggleSecteur(id); }}
                     style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}

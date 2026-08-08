@@ -12,7 +12,7 @@ const DEGRADES = {
   bleu:   "var(--degrade-hero)",
   orange: "var(--degrade-hero-orange)",
 };
-const HALOS = { bleu: "rgba(26,106,176,0.45)", orange: "rgba(226,143,70,0.45)" };
+const HALOS = { bleu: "rgb(var(--bleu-rgb) / 0.45)", orange: "rgb(var(--orange-rgb) / 0.45)" };
 
 export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
   titre: React.ReactNode;

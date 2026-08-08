@@ -13,7 +13,7 @@ import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
+const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 
 function toRoman(n: number): string {
   const vals: [number, string][] = [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];

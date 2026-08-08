@@ -520,11 +520,11 @@ const ROLE_BADGE: Record<string, React.CSSProperties> = {
   "Sponsor":         badge_ambre,
 };
 const ROLE_ACCENT: Record<string, string> = {
-  "Organisateur": "#188038", "Co-organisateur": "#188038",
-  "Participant": "#ca631f", "Partenaire": "#004f91",
-  "Invité": "#6A1B9A", "Sponsor": "#a16207",
+  "Organisateur": "var(--vert)", "Co-organisateur": "var(--vert)",
+  "Participant": "var(--orange)", "Partenaire": "var(--bleu)",
+  "Invité": "var(--violet)", "Sponsor": "var(--ambre)",
 };
-const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#004f91";
+const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "var(--bleu)";
 
 // Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
 function dansCombien(e: any): string | null {
@@ -561,7 +561,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
     ? fmtPlageDates(e.date_debut, e.date_fin)
     : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
-  const txtC = estPasse ? "#4a5568" : "#1a1a2e";
+  const txtC = estPasse ? "var(--texte)" : "var(--encre)";
   const hoverC = accent ? accent.c : accentRole(e.role_apix);
   const sousTitre = statut === "a_venir"
     ? (dansCombien(e) ?? (e.edition != null ? ordinalEdition(e.edition) : null))

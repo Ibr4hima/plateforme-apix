@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useNaema } from "@/lib/referentiels";
+import { voile } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -12,7 +13,7 @@ function Tag({ label, color, onRemove }: { label: string; color: string; onRemov
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 5,
-      background: color + "15", color, border: `1px solid ${color}30`,
+      background: voile(color, 8), color, border: `1px solid ${voile(color, 19)}`,
       borderRadius: 999, padding: "3px 10px", fontSize: 12, fontWeight: 600,
     }}>
       {label}
@@ -70,8 +71,8 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
-          background: "var(--carte)", border: `1px solid ${color}40`, borderRadius: 10,
-          boxShadow: `0 8px 32px rgb(var(--ombre-rgb) / 0.12), 0 0 0 1px ${color}15`,
+          background: "var(--carte)", border: `1px solid ${voile(color, 25)}`, borderRadius: 10,
+          boxShadow: `0 8px 32px rgb(var(--ombre-rgb) / 0.12), 0 0 0 1px ${voile(color, 8)}`,
           maxHeight: 260, overflowY: "auto",
         }}>
           {items.length === 0 ? (
@@ -85,11 +86,11 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "10px 14px", cursor: "pointer",
-                  background: isSelected ? color + "0d" : "transparent",
+                  background: isSelected ? voile(color, 5) : "transparent",
                   borderBottom: "1px solid var(--bordure)",
                 }}
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? color + "0d" : "transparent"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? voile(color, 5) : "transparent"; }}
               >
                 <div style={{
                   width: 17, height: 17, borderRadius: 4, flexShrink: 0,

@@ -21,7 +21,7 @@ import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
-const BLEU = "#004f91", ORANGE = "#ca631f", ENCRE = "#101a2e";
+const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const COULEURS = [BLEU, ORANGE];
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 

@@ -28,7 +28,7 @@ export function GrapheConcentration({ points, height = 200 }: { points: { rang: 
     const grad = svg.append("defs").append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
     grad.append("stop").attr("offset", "0%").style("stop-color", "var(--bleu)").attr("stop-opacity", 0.12);
     grad.append("stop").attr("offset", "100%").style("stop-color", "var(--bleu)").attr("stop-opacity", 0);
-    svg.append("path").datum(pts).attr("fill", `url(#${gid})`)
+    svg.append("path").datum(pts).style("fill", `url(#${gid})`)
       .attr("d", d3.area<any>().x(d => x(d.rang)).y0(y(0)).y1(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
 
     // Lollipops : part individuelle de chaque débouché (tige fine + pastille)
@@ -42,14 +42,14 @@ export function GrapheConcentration({ points, height = 200 }: { points: { rang: 
       .style("fill", "var(--bleu)").style("pointer-events", "none");
 
     // Courbe cumulée par-dessus
-    svg.append("path").datum(pts).attr("fill", "none").style("stroke", "var(--bleu)").attr("stroke-width", 2.2)
+    svg.append("path").datum(pts).style("fill", "none").style("stroke", "var(--bleu)").attr("stroke-width", 2.2)
       .attr("d", d3.line<any>().x(d => x(d.rang)).y(d => y(d.part_cumulee)).curve(d3.curveMonotoneX));
 
     // Cibles de survol (colonne complète)
     const bw = Math.max(6, (x(1) - x(0)) * 0.9);
     svg.selectAll("rect.hit").data(points).enter().append("rect")
       .attr("x", d => x(d.rang) - bw / 2).attr("y", M.top).attr("width", bw).attr("height", H - M.bottom - M.top)
-      .attr("fill", "transparent").style("cursor", "pointer")
+      .style("fill", "transparent").style("cursor", "pointer")
       .on("mouseover", (e, d) => showD3Tooltip(tooltip, e, `<strong>Top ${d.rang} — ${d.nom}</strong><br/>Part : ${d.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % · Cumulé : ${d.part_cumulee.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`))
       .on("mousemove", (e) => showD3Tooltip(tooltip, e))
       .on("mouseout", () => hideD3Tooltip(tooltip));

@@ -6,6 +6,7 @@
 
 import { useRef, useState } from "react";
 import { CheckCircle, Search, UploadCloud, X } from "lucide-react";
+import { voile } from "@/lib/couleurs";
 
 // ── Jetons ────────────────────────────────────────────────────────────────────
 export const CARTE: React.CSSProperties = { background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, boxShadow: "none" };
@@ -38,7 +39,7 @@ export function Carte({ titre, aide, extra, children, accent, style }: {
 }) {
   const c = accent || "var(--bleu)";
   return (
-    <div style={{ ...CARTE, borderColor: accent ? `${accent}55` : (CARTE.border as string), padding: "22px 26px", ...style }}>
+    <div style={{ ...CARTE, borderColor: accent ? `${voile(accent, 33)}` : (CARTE.border as string), padding: "22px 26px", ...style }}>
       {titre && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
           <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
@@ -53,7 +54,7 @@ export function Carte({ titre, aide, extra, children, accent, style }: {
 
 // Pluriel automatique, sauf mots déjà invariables (« pays »)
 export const Compteur = ({ n, mot, couleur = "var(--bleu)" }: { n: number; mot: string; couleur?: string }) => (
-  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${couleur}12`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${voile(couleur, 7)}`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
     {n.toLocaleString("fr-FR")} {mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
   </span>
 );
@@ -115,7 +116,7 @@ export function Segments<T extends string>({ options, value, onChange, accent = 
             {o.l}
             {o.n != null && (
               <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, padding: "3px 6px", borderRadius: 999,
-                background: actif ? `${accent}14` : "rgb(var(--gris-rgb) / 0.16)", color: actif ? accent : "var(--gris)" }}>{o.n}</span>
+                background: actif ? `${voile(accent, 8)}` : "rgb(var(--gris-rgb) / 0.16)", color: actif ? accent : "var(--gris)" }}>{o.n}</span>
             )}
           </button>
         );
@@ -128,7 +129,7 @@ export function Segments<T extends string>({ options, value, onChange, accent = 
 export const Avis = ({ ton, children }: { ton: "ok" | "erreur" | "info"; children: React.ReactNode }) => {
   const c = ton === "ok" ? "var(--vert)" : ton === "erreur" ? "var(--danger)" : "var(--bleu)";
   return (
-    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${c}0F`, border: `1px solid ${c}33`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
+    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${voile(c, 6)}`, border: `1px solid ${voile(c, 20)}`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
       {children}
     </div>
   );

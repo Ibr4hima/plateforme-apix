@@ -59,7 +59,7 @@ export function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: bool
       .attr("y",     (d:any)=>y(d.pays)!)
       .attr("width", (d:any)=>Math.max(2, x(d.valeur)-M.left))
       .attr("height",y.bandwidth())
-      .attr("fill",  COMP_PALETTE[0]);
+      .style("fill",  COMP_PALETTE[0]);
 
     svg.selectAll<SVGTextElement,any>("text.val")
       .data(data).enter().append("text")
@@ -72,7 +72,7 @@ export function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: bool
       .attr("text-anchor",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"end":"start")
       .attr("font-size", mini ? 7 : 11)
       .attr("font-weight","600")
-      .attr("fill",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"white":COMP_PALETTE[0])
+      .style("fill",(d:any)=>(x(d.valeur)-M.left)>=minLabelInside?"white":COMP_PALETTE[0])
       .text((d:any)=>fmtLabel(d.valeur));
 
     // Étiquette ISO3 à gauche de la barre

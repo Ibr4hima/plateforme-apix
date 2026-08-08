@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Couleur de chaque rôle (badges) : dev et admin en bleu, admin+ en vert, agent en orange
-const ROLE_COLORS: Record<string, string> = { dev: "#004f91", admin: "#004f91", admin_plus: "#188038", agent: "#ca631f" };
+const ROLE_COLORS: Record<string, string> = { dev: "var(--bleu)", admin: "var(--bleu)", admin_plus: "var(--vert)", agent: "var(--orange)" };
 const ROLE_LABELS: Record<string, string> = { dev: "Développeur", admin: "Admin", admin_plus: "Admin+", agent: "Agent" };
 
 const ROLES: { v: string; l: string; desc: string }[] = [
@@ -173,7 +174,7 @@ export default function UtilisateursAdminPage() {
                       {(() => {
                         const c = ROLE_COLORS[u.role] || "var(--texte)";
                         const badge = (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: c, background: `${c}14`, padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: c, background: `${voile(c, 8)}`, padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
                             {ROLE_LABELS[u.role] || u.role}
                             {!estDev && <ChevronDown size={11} style={{ opacity: 0.7 }}/>}
                           </span>

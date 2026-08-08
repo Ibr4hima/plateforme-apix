@@ -9,10 +9,11 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+import { voile } from "@/lib/couleurs";
 
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
-const BDEF_CAT_COULEURS = ["#004f91","#ca631f","#188038","#7c3aed","#0891b2","#dc2626","#d97706","#059669"];
+const BDEF_CAT_COULEURS = ["var(--bleu)","var(--orange)","var(--vert)","var(--violet)","var(--cyan)","var(--danger)","var(--alerte)","var(--emeraude)"];
 
 function fmtBdef(v: number|null, unite: string, short = false): string {
   if (v === null || v === undefined || isNaN(v)) return "N/A";
@@ -75,7 +76,7 @@ const BDEF_GRAPHES_DEFAUT = [
   "liq_fdr", "sf_pression_fisc", "sf_autonomie", "rent_ebe",
 ];
 // Couleurs distinctes pour la comparaison macro-secteurs sur la vue globale
-const BDEF_MACRO_COULEURS = ["#004f91", "#ca631f", "#188038", "#6A1B9A"];
+const BDEF_MACRO_COULEURS = ["var(--bleu)", "var(--orange)", "var(--vert)", "var(--violet)"];
 
 // ── Modal tableau BDEF ────────────────────────────────────────────────────────
 function ModalBdefTable({ open, onClose, blocs, annees }: {
@@ -152,7 +153,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                   return (
                     <span key={b.libelle} title={b.libelle}
                       onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
-                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${b.couleur}0D`, border:`1px solid ${b.couleur}2E`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(b.couleur, 5)}`, border:`1px solid ${voile(b.couleur, 18)}`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
                       <span style={{ width:7, height:7, borderRadius:"50%", background:b.couleur, display:"inline-block", flexShrink:0 }} />
                       <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
                         <span style={{ display:"inline-block" }}>{b.libelle}</span>
@@ -253,9 +254,9 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   const isTaux = ind.unite === "%" || ind.unite === "ratio";
   const isPos  = v !== null && v > 0;
   const isNeg  = v !== null && v < 0;
-  const signalColor  = isNeg ? "#dc2626" : "#004f91";
-  const signalBg     = isNeg ? "rgba(220,38,38,0.05)" : "rgba(0,79,145,0.04)";
-  const signalBorder = isNeg ? "rgba(220,38,38,0.18)" : "rgba(0,79,145,0.10)";
+  const signalColor  = isNeg ? "var(--danger)" : "var(--bleu)";
+  const signalBg     = isNeg ? "rgb(var(--danger-rgb) / 0.05)" : "rgb(var(--bleu-rgb) / 0.04)";
+  const signalBorder = isNeg ? "rgb(var(--danger-rgb) / 0.18)" : "rgb(var(--bleu-rgb) / 0.10)";
   const definition = defBdef(ind.code, ind.libelle);
   const historique = annees.filter(a=>ind.valeurs[a]!=null).slice(-5);
   // Échelle commune de l'historique : unité affichée à côté du titre, valeurs nues dans les blocs
@@ -585,7 +586,7 @@ function OngletNational() {
                   const sel = compSelec.includes(n.id);
                   const disabled = !sel && compSelec.length>=4;
                   const colIdx = compSelec.indexOf(n.id);
-                  const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "#004f91";
+                  const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "var(--bleu)";
                   return (
                     <div key={n.id} onClick={()=>{ if(!disabled) toggleComp(n.id); }}
                       style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
@@ -675,7 +676,7 @@ function OngletNational() {
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
               <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
-              {sel.niveau!=="global"&&(()=>{ const c=BDEF_NIVEAU_STYLE[sel.niveau]?.color||"var(--bleu)"; return <span style={{ fontSize:10, fontWeight:700, color:c, background:`${c}1a`, padding:"1px 6px", borderRadius:999 }}>1</span>; })()}
+              {sel.niveau!=="global"&&(()=>{ const c=BDEF_NIVEAU_STYLE[sel.niveau]?.color||"var(--bleu)"; return <span style={{ fontSize:10, fontWeight:700, color:c, background:`${voile(c, 10)}`, padding:"1px 6px", borderRadius:999 }}>1</span>; })()}
             </div>
 
             {/* Global */}

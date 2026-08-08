@@ -1,6 +1,68 @@
 // ── Export d'un graphe SVG (téléchargement SVG / PNG) ─────────────────────────
+//
+// ── Les variables CSS ne survivent pas à la sérialisation ────────────────────
+// Les graphes portent leurs couleurs en var(--…), ce qui leur permet de suivre
+// l'apparence sans être redessinés. Mais un SVG détaché du document — sérialisé
+// dans un Blob, puis rechargé comme image — n'a plus accès à la feuille de
+// style : ces variables ne valent plus rien et tout ressortirait en noir.
+// Avant de sérialiser, on fige donc les couleurs CALCULÉES sur le clone.
+//
+// Et on les fige dans le schéma CLAIR, quel que soit celui de l'écran : un
+// export a vocation à être collé dans un document sur fond blanc, où les
+// accents éclaircis de la nuit seraient délavés. Le basculement est momentané
+// et ne provoque aucun rendu — rien n'est peint entre-temps, la main n'étant
+// jamais rendue à la boucle d'événements.
+
+const PROPS_COULEUR = ["fill", "stroke", "stop-color", "color"] as const;
+
+function enSchemaClair<T>(action: () => T): T {
+  const racine = document.documentElement;
+  const avant = racine.dataset.theme;
+  racine.dataset.theme = "light";
+  try {
+    return action();
+  } finally {
+    if (avant === undefined) delete racine.dataset.theme;
+    else racine.dataset.theme = avant;
+  }
+}
+
+/** Recopie sur le clone les couleurs résolues de l'original. */
+function figerCouleurs(source: SVGSVGElement, clone: SVGSVGElement) {
+  enSchemaClair(() => {
+    const origines = [source, ...source.querySelectorAll<SVGElement>("*")];
+    const copies = [clone, ...clone.querySelectorAll<SVGElement>("*")];
+    origines.forEach((el, i) => {
+      const copie = copies[i];
+      if (!copie) return;
+      const calcule = getComputedStyle(el);
+      for (const prop of PROPS_COULEUR) {
+        const v = calcule.getPropertyValue(prop);
+        if (v && v !== "none") copie.style.setProperty(prop, v);
+      }
+    });
+  });
+}
+
+/**
+ * La valeur d'une couleur qui peut être un var(--…) — pour le canevas, qui ne
+ * sait pas les lire. Résolue elle aussi dans le schéma clair.
+ */
+export function couleurFigee(couleur: string): string {
+  if (!couleur || !couleur.includes("var(")) return couleur;
+  return enSchemaClair(() => {
+    const sonde = document.createElement("span");
+    sonde.style.cssText = `display:none;color:${couleur}`;
+    document.body.appendChild(sonde);
+    const v = getComputedStyle(sonde).color;
+    sonde.remove();
+    return v || couleur;
+  });
+}
+
 export function downloadSVG(svgEl: SVGSVGElement, filename: string) {
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
+  figerCouleurs(svgEl, clone);
   clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   // Fond blanc pour PNG
   const bg = document.createElementNS("http://www.w3.org/2000/svg","rect");
@@ -15,6 +77,7 @@ export function downloadSVG(svgEl: SVGSVGElement, filename: string) {
 export function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { titre?: string; annees?: string; legende?: { nom: string; couleur: string }[] }) {
   const SCALE = 3; // suréchantillonnage : rendu net, identique au modal
   const clone = svgEl.cloneNode(true) as SVGSVGElement;
+  figerCouleurs(svgEl, clone);
   clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   const W = svgEl.viewBox.baseVal.width || 800;
   const H = svgEl.viewBox.baseVal.height || 400;
@@ -32,7 +95,8 @@ export function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { tit
     const FONT   = "'Google Sans','Product Sans',Arial,sans-serif";
     const titre  = opts?.titre  || "";
     const annees = opts?.annees || "";
-    const legende = opts?.legende || [];
+    // Le canevas ne lit pas les variables CSS : la légende arrive résolue.
+    const legende = (opts?.legende || []).map(l => ({ ...l, couleur: couleurFigee(l.couleur) }));
 
     // ── Mesure du bandeau (titre + badge d'années + légende, avec retours à la ligne)
     const mctx = document.createElement("canvas").getContext("2d")!;
@@ -88,8 +152,14 @@ export function downloadPNG(svgEl: SVGSVGElement, filename: string, opts?: { tit
       legLines.forEach(line => {
         let lx = PAD;
         line.forEach(l => {
-          ctx.fillStyle = l.couleur + "1F";
+          // Le voile de la pilule passe par globalAlpha et non par un suffixe
+          // hexadécimal : les couleurs arrivent désormais résolues, donc sous
+          // la forme « rgb(0, 79, 145) », à laquelle on ne peut rien concaténer
+          // — fillStyle aurait silencieusement gardé la couleur précédente.
+          ctx.globalAlpha = 0.12;
+          ctx.fillStyle = l.couleur;
           ctx.beginPath(); ctx.roundRect(lx, ly - 10, l.w, 20, 999); ctx.fill();
+          ctx.globalAlpha = 1;
           ctx.fillStyle = l.couleur;
           ctx.fillText(l.nom, lx + 11, ly + 0.5);
           lx += l.w + 8;

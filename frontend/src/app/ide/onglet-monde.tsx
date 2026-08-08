@@ -68,7 +68,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
               const podium = rang <= 3;
               const sen = estSen(r);
               const horsTop = rang > 10;
-              const fondSen = "linear-gradient(90deg, rgba(0,79,145,0.10), rgba(0,79,145,0.02))";
+              const fondSen = "linear-gradient(90deg, rgb(var(--bleu-rgb) / 0.10), rgb(var(--bleu-rgb) / 0.02))";
               return (
                 <Fragment key={r.pays}>
                   {/* Filet « … » avant le Sénégal ajouté hors top 10 */}
@@ -484,7 +484,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           {(() => {
             const Item = ({ g }: { g: {code:string; nom_fr:string}; }) => {
               const sel = grpSelec.includes(g.code);
-              const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "#C5BFBB";
+              const col = sel ? COMP_PALETTE[grpSelec.indexOf(g.code)] : "var(--bordure-forte)";
               return (
                 <button key={g.code} onClick={()=>toggle(g.code)} title={g.nom_fr}
                   style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 8px", borderRadius:7, border:"none", cursor:"pointer", background:"transparent", textAlign:"left" as const, width:"100%", marginBottom:1 }}

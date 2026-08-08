@@ -12,7 +12,7 @@ import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
-import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris } from "@/lib/couleurs";
+import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris, voile } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { computeStatutEvenement } from "@/lib/statuts";
 import EvenementVueModal, { MOIS, ordinal, ROLE_PILL, ROLES_APIX } from "@/components/shared/EvenementVueModal";
@@ -40,11 +40,11 @@ function BadgeRole({ role }: { role:string }) {
 }
 // Accent de survol des cards = couleur du rôle (assortie au badge)
 const ROLE_ACCENT: Record<string, string> = {
-  "Organisateur": "#188038", "Co-organisateur": "#188038",
-  "Participant": "#ca631f", "Partenaire": "#004f91",
-  "Invité": "#6A1B9A", "Sponsor": "#a16207",
+  "Organisateur": "var(--vert)", "Co-organisateur": "var(--vert)",
+  "Participant": "var(--orange)", "Partenaire": "var(--bleu)",
+  "Invité": "var(--violet)", "Sponsor": "var(--ambre)",
 };
-const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "#004f91";
+const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "var(--bleu)";
 
 
 
@@ -113,13 +113,13 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
     const accent = estProchain
       ? { grad:"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)", label:"Prochain événement", b:"rgb(var(--bleu-rgb) / 0.45)", b2:"rgb(var(--bleu-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--bleu-rgb) / 0.15)" }
       : estEnCours
-      ? { grad:"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label:"Événement en cours", b:"rgba(24,128,56,0.45)", b2:"rgba(24,128,56,0.6)", sh:"0 4px 18px rgba(24,128,56,0.15)" }
+      ? { grad:"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label:"Événement en cours", b:"rgb(var(--vert-rgb) / 0.45)", b2:"rgb(var(--vert-rgb) / 0.6)", sh:"0 4px 18px rgb(var(--vert-rgb) / 0.15)" }
       : null;
     const dateStr = e.date_debut
       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)
       : e.prochain_mois||e.prochain_annee ? `${e.prochain_jour?e.prochain_jour+" ":""}${e.prochain_mois?MOIS[(e.prochain_mois||1)-1]+" ":""}${e.prochain_annee||""}`.trim() : null;
     const lieu = [e.ville,e.pays_hote_nom].filter(Boolean).join(", ");
-    const txtC  = estPasse ? "#4a5568" : "#1a1a2e";
+    const txtC  = estPasse ? "var(--texte)" : "var(--encre)";
     const hoverC = accent ? null : accentRole(e.role_apix);
     return (
       <div {...carteCliquable(()=>onOpen(e))}
@@ -196,7 +196,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
                       ? <div style={{width:15,height:15,borderRadius:"50%",background:"var(--bleu-action)",border:"3px solid var(--bordure)",animation:"pulseHalo 1.8s ease-out infinite",position:"relative" as const,zIndex:1}}/>
                       : statut==="en_cours"
                       ? <div style={{width:15,height:15,borderRadius:"50%",background:"var(--vert-action)",border:"3px solid var(--bordure)",animation:"pulseHaloVert 1.8s ease-out infinite",position:"relative" as const,zIndex:1}}/>
-                      : <div style={{width:13,height:13,borderRadius:"50%",background:st?st.c:"var(--bleu)",border:"3px solid var(--bordure)",boxShadow:`0 0 0 1px ${st?st.c:"var(--bleu)"}44`,position:"relative" as const,zIndex:1}}/>}
+                      : <div style={{width:13,height:13,borderRadius:"50%",background:st?st.c:"var(--bleu)",border:"3px solid var(--bordure)",boxShadow:`0 0 0 1px ${voile(st?st.c:"var(--bleu)", 27)}`,position:"relative" as const,zIndex:1}}/>}
                   </div>
                   <div style={{minWidth:0}}>{!gauche&&<Carte e={e}/>}</div>
                 </div>

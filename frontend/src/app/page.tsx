@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { voile } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -182,7 +183,7 @@ export default function HomePage() {
             {MODULES.map((m,i)=>(
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"var(--carte)",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div style={{width:40,height:40,borderRadius:10,background:`${m.color}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:40,height:40,borderRadius:10,background:`${voile(m.color, 6)}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
                       <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
                     </div>
                     <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"var(--gris)",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>

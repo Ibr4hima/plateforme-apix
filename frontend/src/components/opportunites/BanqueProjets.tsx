@@ -787,7 +787,7 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
         <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
           {projets.map(p=>{
             // Accent de survol = couleur du pôle territoire (comme la page publique)
-            const hoverC = p.pole_nom ? poleAccent(p.pole_nom) : "rgba(0,79,145,0.33)";
+            const hoverC = p.pole_nom ? poleAccent(p.pole_nom) : "rgb(var(--bleu-rgb) / 0.33)";
             return (
             <div key={p.id} onClick={()=>setVue(p)}
               style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden", opacity:p.est_publie===false?0.85:1 }}

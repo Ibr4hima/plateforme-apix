@@ -121,7 +121,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .attr("x", d => getX(d)).attr("width", getW())
           .attr("y", d => d.valeur >= 0 ? ys(d.valeur) : ys(0))
           .attr("height", d => Math.abs(ys(d.valeur) - ys(0)))
-          .attr("fill", s.couleur).style("cursor", "pointer")
+          .style("fill", s.couleur).style("cursor", "pointer")
           .on("mouseover", (e, d) => {
             d3.select(e.currentTarget as SVGRectElement).attr("opacity", 0.75);
             montrerTooltip(tooltip, e, `<strong>${fmtXv(d.annee)}${nbSeries > 1 ? " — " + s.nom : ""}</strong><br/>${fmtV(d.valeur)}`);
@@ -162,33 +162,33 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const areaBase = ys(Math.max(ys.domain()[0], 0));
         const gid = `${uid}-a${si}`;
         const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
-        grad.append("stop").attr("offset", "0%").attr("stop-color", s.couleur).attr("stop-opacity", 0.28);
-        grad.append("stop").attr("offset", "55%").attr("stop-color", s.couleur).attr("stop-opacity", 0.07);
-        grad.append("stop").attr("offset", "100%").attr("stop-color", s.couleur).attr("stop-opacity", 0);
+        grad.append("stop").attr("offset", "0%").style("stop-color", s.couleur).attr("stop-opacity", 0.28);
+        grad.append("stop").attr("offset", "55%").style("stop-color", s.couleur).attr("stop-opacity", 0.07);
+        grad.append("stop").attr("offset", "100%").style("stop-color", s.couleur).attr("stop-opacity", 0);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y0(areaBase).y1(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         const dLigne = d3.line<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         // Aire en dégradé riche
-        if (montrerAire) svg.append("path").attr("fill", `url(#${gid})`).attr("d", dAire);
+        if (montrerAire) svg.append("path").style("fill", `url(#${gid})`).attr("d", dAire);
         if (!pointille) {
           // Ombre portée de la ligne
-          svg.append("path").attr("fill", "none")
-            .attr("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
+          svg.append("path").style("fill", "none")
+            .style("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
             .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
             .attr("transform", "translate(0,6)").attr("filter", `url(#${idOmbre})`).attr("opacity", 0.22)
             .attr("d", dLigne);
           // Glow
-          svg.append("path").attr("fill", "none")
-            .attr("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
+          svg.append("path").style("fill", "none")
+            .style("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
             .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
             .attr("filter", `url(#${idGlow})`).attr("opacity", 0.14)
             .attr("d", dLigne);
         }
         // La ligne
-        svg.append("path").attr("fill", "none")
-          .attr("stroke", s.couleur).attr("stroke-width", pointille ? Math.max(1.6, epaisseur - 0.4) : epaisseur)
+        svg.append("path").style("fill", "none")
+          .style("stroke", s.couleur).attr("stroke-width", pointille ? Math.max(1.6, epaisseur - 0.4) : epaisseur)
           .attr("stroke-linejoin", "round").attr("stroke-linecap", pointille ? "butt" : "round")
           .attr("stroke-dasharray", s.dash || null)
           .attr("opacity", pointille ? 0.85 : 1)
@@ -199,9 +199,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const fin = valid[valid.length - 1];
           const gFin = svg.append("g");
           gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
-            .attr("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
+            .style("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
           gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
-            .attr("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.6);
+            .style("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.6);
 
           // Points décoratifs
           const nb = valid.length;
@@ -209,7 +209,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           if (showDots && rBase > 0) {
             svg.selectAll(`.p${gid}`).data(valid).enter().append("circle")
               .attr("cx", d => xLin(d.annee)).attr("cy", d => ys(d.valeur)).attr("r", rBase)
-              .style("fill", "var(--sur-bleu)").attr("stroke", s.couleur).attr("stroke-width", 1.5)
+              .style("fill", "var(--sur-bleu)").style("stroke", s.couleur).attr("stroke-width", 1.5)
               .style("pointer-events", "none");
           }
         }
@@ -224,9 +224,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const px = xLin(pic.annee), py = yScales[0](pic.valeur);
           gPic = svg.append("g");
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 7.5)
-            .attr("fill", series[0].couleur).attr("opacity", 0.2).attr("filter", `url(#${idGlow})`);
+            .style("fill", series[0].couleur).attr("opacity", 0.2).attr("filter", `url(#${idGlow})`);
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 4.5)
-            .attr("fill", "none").attr("stroke", series[0].couleur).attr("stroke-width", 1.7);
+            .style("fill", "none").style("stroke", series[0].couleur).attr("stroke-width", 1.7);
           const libelle = `PIC · ${fmtXv(pic.annee)}`;
           const lw = libelle.length * 6.4 + 16;
           const cx = Math.min(Math.max(px - lw / 2, M.left), W - M.right - lw);
@@ -237,7 +237,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
             .attr("filter", `drop-shadow(0 3px 6px rgb(var(--ombre-rgb) / 0.10))`);
           chip.append("text").attr("x", cx + lw / 2).attr("y", cy + 12.5).attr("text-anchor", "middle")
             .style("font-size", "8.5px").style("font-weight", "700").style("letter-spacing", "0.8px")
-            .attr("fill", series[0].couleur).text(libelle);
+            .style("fill", series[0].couleur).text(libelle);
         }
       }
 
@@ -248,8 +248,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         .style("stroke", "rgb(var(--encre-rgb) / 0.30)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
       const pointsCurseur = series.map(s => {
         const g = gCurseur.append("g");
-        g.append("circle").attr("r", 7.5).attr("fill", s.couleur).attr("opacity", 0.25).attr("filter", `url(#${idGlow})`);
-        g.append("circle").attr("r", 4.2).attr("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.8);
+        g.append("circle").attr("r", 7.5).style("fill", s.couleur).attr("opacity", 0.25).attr("filter", `url(#${idGlow})`);
+        g.append("circle").attr("r", 4.2).style("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.8);
         return g;
       });
 
@@ -289,7 +289,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       svg.append("rect")
         .attr("x", M.left).attr("y", M.top)
         .attr("width", Math.max(0, W - M.left - M.right)).attr("height", Math.max(0, H - M.top - M.bottom))
-        .attr("fill", "transparent").style("cursor", "crosshair")
+        .style("fill", "transparent").style("cursor", "crosshair")
         .on("mousemove", viser)
         .on("mouseleave", () => {
           derniereAnnee = null;

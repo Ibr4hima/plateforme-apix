@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, Check, ChevronRight, ChevronDown } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import { voile } from "@/lib/couleurs";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -114,7 +115,7 @@ export default function AdminNaema() {
     outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
   };
 
-  const SECTEUR_COLORS = ["#ca631f", "#004f91", "#059669"];
+  const SECTEUR_COLORS = ["var(--orange)", "var(--bleu)", "var(--emeraude)"];
 
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400, gap: 12, color: "var(--gris)" }}>
@@ -159,13 +160,13 @@ export default function AdminNaema() {
                   display: "flex", alignItems: "center", gap: 14,
                   padding: "18px 24px", cursor: "pointer",
                   borderLeft: `4px solid ${color}`,
-                  background: isExpanded ? `${color}06` : "var(--carte)",
+                  background: isExpanded ? `${voile(color, 2)}` : "var(--carte)",
                   transition: "background 0.2s",
                 }}
               >
                 <div style={{
                   width: 36, height: 36, borderRadius: 10,
-                  background: `${color}15`,
+                  background: `${voile(color, 8)}`,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
                   <span style={{ fontSize: 12, fontWeight: 800, color }}>{sec.code}</span>
@@ -183,7 +184,7 @@ export default function AdminNaema() {
                   onClick={e => { e.stopPropagation(); openCreateBranche(sec.id); }}
                   style={{
                     display: "flex", alignItems: "center", gap: 5,
-                    background: `${color}12`, border: "none", cursor: "pointer",
+                    background: `${voile(color, 7)}`, border: "none", cursor: "pointer",
                     borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color,
                   }}
                 >
@@ -223,7 +224,7 @@ export default function AdminNaema() {
                             >
                               <span style={{
                                 fontSize: 10, fontWeight: 700, color,
-                                background: `${color}12`, padding: "2px 8px", borderRadius: 999,
+                                background: `${voile(color, 7)}`, padding: "2px 8px", borderRadius: 999,
                                 flexShrink: 0,
                               }}>
                                 {branch.code}

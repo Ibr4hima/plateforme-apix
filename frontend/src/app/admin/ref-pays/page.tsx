@@ -6,6 +6,7 @@ import {
   Plus, Search, Trash2, Users, X, Check, AlertTriangle
 } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -18,17 +19,17 @@ const BTN_S: any = { display:"flex", alignItems:"center", gap:6, padding:"10px 2
 const CONTINENTS  = ["Afrique","Amérique","Asie","Europe","Océanie"];
 const NIVEAUX     = ["Revenu élevé","Revenu intermédiaire supérieur","Revenu intermédiaire inférieur","Revenu faible","Non classifié"];
 const REVENU_COLOR: Record<string,string> = {
-  "Revenu élevé":"#004f91",
-  "Revenu intermédiaire supérieur":"#188038",
-  "Revenu intermédiaire inférieur":"#ca631f",
-  "Revenu faible":"#dc2626",
-  "Non classifié":"#9aa5b4",
+  "Revenu élevé":"var(--bleu)",
+  "Revenu intermédiaire supérieur":"var(--vert)",
+  "Revenu intermédiaire inférieur":"var(--orange)",
+  "Revenu faible":"var(--danger)",
+  "Non classifié":"var(--gris)",
 };
 
 // ── Composants utilitaires ─────────────────────────────────────────────────────
 function Badge({ label, color="var(--gris)" }: { label:string; color?:string }) {
   return (
-    <span style={{ fontSize:10.5, fontWeight:700, color, background:`${color}12`, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
+    <span style={{ fontSize:10.5, fontWeight:700, color, background:`${voile(color, 7)}`, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
       {label}
     </span>
   );

@@ -9,7 +9,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { type Terme } from "@/lib/lexique";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const BLEU = "#004f91", ENCRE = "#101a2e";
+const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
 
 const IS: React.CSSProperties = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", fontSize: 13.5, color: ENCRE, outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 const LS: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };

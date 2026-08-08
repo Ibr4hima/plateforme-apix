@@ -5,6 +5,7 @@
 // Style unique, aligné sur les jetons du design system.
 
 import React from "react";
+import { voile } from "@/lib/couleurs";
 
 export type SerieLegende = { nom: string; couleur: string };
 
@@ -13,7 +14,7 @@ export function LegendeChip({ couleur, nom, point = true }: { couleur: string; n
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700,
       padding: point ? "2px 9px 2px 7px" : "2px 9px", borderRadius: 999,
-      color: couleur, background: `${couleur}12`, border: `1px solid ${couleur}30`,
+      color: couleur, background: `${voile(couleur, 7)}`, border: `1px solid ${voile(couleur, 19)}`,
       whiteSpace: "nowrap", lineHeight: 1.4,
     }}>
       {point && <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, flexShrink: 0 }} />}

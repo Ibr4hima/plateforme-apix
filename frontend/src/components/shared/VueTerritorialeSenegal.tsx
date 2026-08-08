@@ -8,20 +8,20 @@ import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const REGION_PALETTE: Record<string, string> = {
-  "Dakar":       "#9DC3E6", // bleu ciel
-  "Thiès":       "#B4DE9D", // vert tendre
-  "Diourbel":    "#E6C79D", // pêche
-  "Louga":       "#9DDEC2", // menthe
-  "Saint-Louis": "#C9B8E6", // lilas doux
-  "Matam":       "#E6DE9D", // jaune doux
-  "Tambacounda": "#9DD3DE", // teal
-  "Kédougou":    "#E6AC9D", // corail
-  "Fatick":      "#D2DE9D", // vert-jaune
-  "Kaolack":     "#9DB0E6", // bleu pervenche
-  "Kaffrine":    "#E6B8D2", // rose doux
-  "Kolda":       "#BEE6C2", // vert pâle
-  "Sédhiou":     "#E6D4B0", // sable
-  "Ziguinchor":  "#A8DEDE", // aqua
+  "Dakar":       "var(--reg-dakar)", // bleu ciel
+  "Thiès":       "var(--reg-thies)", // vert tendre
+  "Diourbel":    "var(--reg-diourbel)", // pêche
+  "Louga":       "var(--reg-louga)", // menthe
+  "Saint-Louis": "var(--reg-saint-louis)", // lilas doux
+  "Matam":       "var(--reg-matam)", // jaune doux
+  "Tambacounda": "var(--reg-tambacounda)", // teal
+  "Kédougou":    "var(--reg-kedougou)", // corail
+  "Fatick":      "var(--reg-fatick)", // vert-jaune
+  "Kaolack":     "var(--reg-kaolack)", // bleu pervenche
+  "Kaffrine":    "var(--reg-kaffrine)", // rose doux
+  "Kolda":       "var(--reg-kolda)", // vert pâle
+  "Sédhiou":     "var(--reg-sedhiou)", // sable
+  "Ziguinchor":  "var(--reg-ziguinchor)", // aqua
 };
 
 // Parser la localisation : "Kaolack, Fatick et Kaffrine" → ["Kaolack","Fatick","Kaffrine"]
@@ -37,7 +37,7 @@ const NAME_MAP: Record<string, string> = {
 
 // Couleurs des pôles : centralisées dans lib/couleurs (ré-exportées ici pour
 // ne pas casser les imports existants des pages)
-import { POLE_COULEURS, normPole, badge_bleu, badge_orange, badgePole } from "@/lib/couleurs";
+import { POLE_COULEURS, normPole, badge_bleu, badge_orange, badgePole, voile } from "@/lib/couleurs";
 import FicheModal, { FicheBloc, FicheDocs, FicheSection } from "@/components/shared/FicheModal";
 export { POLE_COULEURS, normPole };
 
@@ -107,7 +107,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
   // Couleur par pôle : table fixe par nom (fallback gris).
   const getPoleColor = (poleId: number) => {
     const p = poles.find(x => x.id === poleId);
-    return (p && POLE_COULEURS[normPole(p.pole_territoire)]) || "#E8E5E3";
+    return (p && POLE_COULEURS[normPole(p.pole_territoire)]) || "var(--fond-creux2)";
   };
 
 
@@ -171,9 +171,9 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
 
         const pathEl = g.append("path")
           .attr("d", pathGen(feature))
-          .attr("fill", color)
+          .style("fill", color)
           .attr("fill-opacity", 0.95)
-          .attr("stroke", mode === "region" ? "var(--texte)" : "none")
+          .style("stroke", mode === "region" ? "var(--texte)" : "none")
           .attr("stroke-width", 0.5)
           .attr("stroke-linejoin", "round")
           .style("transition", "filter 0.15s");
@@ -212,7 +212,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             (a: any, b: any) => poleIdOfGeom(a) !== poleIdOfGeom(b)
           ))
           .attr("d", pathGen)
-          .attr("fill", "none")
+          .style("fill", "none")
           .style("stroke", "var(--texte)")
           .attr("stroke-width", 0.6)
           .attr("stroke-linejoin", "round");
@@ -221,7 +221,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         svg.append("path")
           .datum(mesh(topo, topo.objects.sen, (a: any, b: any) => a === b))
           .attr("d", pathGen)
-          .attr("fill", "none")
+          .style("fill", "none")
           .style("stroke", "var(--texte)")
           .attr("stroke-width", 0.9)
           .attr("stroke-linejoin", "round");
@@ -237,8 +237,8 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           svg.append("path")
             .datum(merged)
             .attr("d", pathGen)
-            .attr("fill", "transparent")
-            .attr("stroke", "none")
+            .style("fill", "transparent")
+            .style("stroke", "none")
             .style("cursor", "pointer")
             .on("mouseenter", function(event: MouseEvent) {
               polePathsMap.get(pole.id)?.forEach(p => d3.select(p).style("filter", "brightness(0.82)"));
@@ -370,7 +370,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
             <div style={{ display:"flex", flexDirection:"column" as const, gap:8 }}>
               {Object.entries(REGION_PALETTE).map(([nom, color]) => (
                 <div key={nom} onClick={() => onRegionClickRef.current ? onRegionClickRef.current(nom) : setActiveRegion(prev => prev === nom ? null : nom)}
-                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"4px 8px", borderRadius:8, background: activeRegion===nom ? color+"55" : "transparent", transition:"background 0.15s" }}>
+                  style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer", padding:"4px 8px", borderRadius:8, background: activeRegion===nom ? voile(color, 33) : "transparent", transition:"background 0.15s" }}>
                   <div style={{ width:12, height:12, borderRadius:3, background:color, flexShrink:0, border:"1px solid rgb(var(--ombre-rgb) / 0.08)" }}/>
                   <span style={{ fontSize:12, color:"var(--encre)", lineHeight:1.3 }}>{nom}</span>
                 </div>
@@ -421,13 +421,13 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
               <FicheSection titre="Zones d'investissement" count={poleZones.length}>
                 <div style={{ display:"flex", flexDirection:"column" as const, gap:6 }}>
                   {poleZones.map((z:any)=>{
-                    const tc=z.type_zone==="ZES"?"#004f91":z.type_zone==="ZAI"?"#ca631f":"#188038";
+                    const tc=z.type_zone==="ZES"?"var(--bleu)":z.type_zone==="ZAI"?"var(--orange)":"var(--vert)";
                     const nbEnts=(z.entreprises||[]).filter((ze:any)=>ze.statut==="installee").length;
                     return (
                       <div key={z.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:"var(--carte-douce)", borderRadius:12, border:"1px solid var(--bordure)", fontSize:12 }}>
-                        <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:tc+"12", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
+                        <span style={{ fontSize:9.5, fontWeight:800, letterSpacing:"0.04em", color:tc, background:voile(tc, 7), padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{z.type_zone}</span>
                         <span style={{ color:"var(--encre)", fontWeight:600, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{z.nom_zone}</span>
-                        <span style={{ fontSize:11, fontWeight:700, color:tc, background:tc+"12", padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
+                        <span style={{ fontSize:11, fontWeight:700, color:tc, background:voile(tc, 7), padding:"2px 9px", borderRadius:99, flexShrink:0 }}>{nbEnts} ent.</span>
                       </div>
                     );
                   })}

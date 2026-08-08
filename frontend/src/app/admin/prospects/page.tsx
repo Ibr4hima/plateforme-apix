@@ -12,7 +12,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { badge_bleu, badge_vert, badge_rouge, badge_gris } from "@/lib/couleurs";
+import { badge_bleu, badge_vert, badge_rouge, badge_gris, voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -190,8 +190,8 @@ const STATUT_BADGE: Record<string, React.CSSProperties> = {
   "En attente":           badge_gris,
 };
 const STATUT_HEX: Record<string, string> = {
-  "En cours": "#188038", "À recontacter": "#004f91", "Installation à venir": "#188038",
-  "Inactif": "#dc2626", "Décliné": "#9aa5b4", "En attente": "#9aa5b4",
+  "En cours": "var(--vert)", "À recontacter": "var(--bleu)", "Installation à venir": "var(--vert)",
+  "Inactif": "var(--danger)", "Décliné": "var(--gris)", "En attente": "var(--gris)",
 };
 
 type PointFocal = { prenom:string; nom:string; telephones:string[]; mails:string[]; est_principal:boolean };
@@ -1386,7 +1386,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                       return (
                         <Fragment key={e.id}>
                         <div style={{ paddingLeft:22, position:"relative" as const }}>
-                          <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                          <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
                           <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
 
                             {/* En-tête : date déclarée + actions */}
@@ -1492,7 +1492,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               {readOnly && estFige(p) && (()=>{
                 const currentNum = (p.cycles?.length || 0) + 1;
                 const inst = p.issue === "installe";
-                const col  = inst ? "#0D652D" : "#6b7280";
+                const col  = inst ? "var(--vert-fonce)" : "var(--gris-fort)";
                 const synId = -1;
                 const isOpen = openCycles.has(synId);
                 const echsCourant = echangesDuCycle(p, null);
@@ -1521,7 +1521,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                                 {[...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
-                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
                                     <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
@@ -1592,7 +1592,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               })()}
               {[...p.cycles].sort((a:any,b:any)=>b.cycle_num-a.cycle_num).map((cy:any)=>{
                 const inst = cy.issue==="installe";
-                const col  = inst ? "#0D652D" : "#6b7280";
+                const col  = inst ? "var(--vert-fonce)" : "var(--gris-fort)";
                 const isOpen = openCycles.has(cy.id);
                 const echangesCy    = echangesDuCycle(p, cy);
                 const contraintesCy = contraintesDuCycle(p, cy);
@@ -1627,7 +1627,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                               <div style={{ display:"flex", flexDirection:"column" as const, gap:10 }}>
                                 {[...echangesCy].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).map((e:any)=>(
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
-                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${accent}44` }}/>
+                                    <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
                                     <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
                                       <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
@@ -1875,7 +1875,7 @@ export default function ProspectsPage() {
                     : { label:"Conclusion", value: null })
                 : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
               // Accent de survol = couleur du statut (comme la page publique)
-              const hoverC = activite ? (STATUT_HEX[activite.label] || "#9aa5b4") : "rgba(0,79,145,0.33)";
+              const hoverC = activite ? (STATUT_HEX[activite.label] || "var(--gris)") : "rgb(var(--bleu-rgb) / 0.33)";
               const badgeStatut = activite ? (STATUT_BADGE[activite.label] || badge_gris) : null;
               return (
                 <div key={p.id} onClick={()=>setVue(p)}
@@ -1975,9 +1975,9 @@ export default function ProspectsPage() {
                         <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
                           <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
                           <div style={{ display:"flex", gap:6, marginBottom:10 }}>
-                            {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"#6b7280"}].map(({val,lbl,col})=>(
+                            {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"var(--gris-fort)"}].map(({val,lbl,col})=>(
                               <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
-                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${col}18`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
+                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${voile(col, 9)}`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
                                 {lbl}
                               </button>
                             ))}

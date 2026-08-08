@@ -427,7 +427,7 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
   const statut = computeStatut(a);
   const st = statut ? STATUT_CARTE[statut] : null;
   const estExpire = statut === "expire";
-  const txtC = estExpire ? "#4a5568" : "#1a1a2e";
+  const txtC = estExpire ? "var(--texte)" : "var(--encre)";
   const accent = st ? st.accent : "var(--gris)";
   // Date secondaire : expiration si renseignée, sinon entrée en vigueur
   const dateSec = a.date_expiration

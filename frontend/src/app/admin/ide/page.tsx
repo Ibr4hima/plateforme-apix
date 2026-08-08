@@ -339,7 +339,7 @@ export default function AdminIdePage() {
                 </div>
               ))}
               <button onClick={handleAssocierEtReimporter} disabled={associating || !Object.values(associations).some(v => v.id)}
-                style={{ ...btnPrincipal(!associating && Object.values(associations).some(v => v.id), "#ca631f"), marginTop: 6, alignSelf: "flex-start" }}>
+                style={{ ...btnPrincipal(!associating && Object.values(associations).some(v => v.id), "var(--orange)"), marginTop: 6, alignSelf: "flex-start" }}>
                 {associating ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} /> : <Link2 size={15} />}
                 {associating ? "Association en cours…" : "Associer et réimporter"}
               </button>

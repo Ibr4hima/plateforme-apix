@@ -8,6 +8,7 @@
 
 import { ChevronDown, ChevronUp, Search } from "lucide-react";
 import { useId, useState } from "react";
+import { voile } from "@/lib/couleurs";
 
 type Item = string | { value: string; label: string };
 
@@ -47,7 +48,7 @@ function LigneOption({ sel, couleur, texte, onClick }: {
 }
 
 const badgeCompte = (n: number, couleur: string, fond?: string) =>
-  n > 0 ? <span style={{fontSize:10,fontWeight:700,color:couleur,background:fond||couleur+"18",padding:"1px 6px",borderRadius:999}}>{n}</span> : null;
+  n > 0 ? <span style={{fontSize:10,fontWeight:700,color:couleur,background:fond||voile(couleur, 9),padding:"1px 6px",borderRadius:999}}>{n}</span> : null;
 
 export function SideFilter({ label, items, selected, onToggle, color, colorOf, searchable = false, format, listMaxHeight, marginBottom = 18 }: {
   label: string; items: Item[]; selected: string[]; onToggle: (v: string) => void; color: string;
@@ -116,7 +117,7 @@ function CascadeFilter({ titre, niveaux, marginBottom }: {
           if (i > 0 && (niveaux[i-1].sel.length === 0 || n.items.length === 0)) return null;
           const { couleur } = NIVEAUX[i];
           return (
-            <div key={n.label} style={i===0?undefined:{paddingLeft:12*i,borderLeft:`2px solid ${NIVEAUX[i-1].couleur}26`}}>
+            <div key={n.label} style={i===0?undefined:{paddingLeft:12*i,borderLeft:`2px solid ${voile(NIVEAUX[i-1].couleur, 15)}`}}>
               <p style={{fontSize:10,fontWeight:700,color:couleur,marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{n.label}</p>
               <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:n.maxHeight,overflowY:n.maxHeight?"auto" as const:undefined}}>
                 {n.items.map((it:any)=>(

@@ -11,8 +11,8 @@ import { fmtCompact as fmtValGen } from "@/lib/format";
 
 // Couleurs du sens des échanges, communes aux onglets Commerce extérieur et
 // Flux bilatéraux : bleu = exportations, orange = importations.
-export const NACE_BLEU = "#004f91";
-export const NACE_ORANGE = "#ca631f";
+export const NACE_BLEU = "var(--bleu)";
+export const NACE_ORANGE = "var(--orange)";
 
 export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 

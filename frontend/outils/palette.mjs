@@ -95,10 +95,60 @@ export const JETONS = {
   alerteAction: { clair: "#b45309", sombre: "#8A5A1A" },
   alerteVoile:  { clair: "#FFF9F0", sombre: "rgba(224,164,88,0.11)" },
 
+  // ── Les teintes catégorielles ──
+  // Elles ne décrivent pas une surface mais une IDENTITÉ : un pôle, un secteur,
+  // une série de graphe. Même principe que les accents — la nuit, elles montent
+  // en luminosité jusqu'à repasser le seuil de lisibilité sur le fond de
+  // minuit. Valeurs alignées sur la table NUIT de l'application.
   cyan:         { clair: "#0891b2", sombre: "#5FC7DE" },
+  sarcelle:     { clair: "#0e7490", sombre: "#58C6CE" },
+  indigo:       { clair: "#4338ca", sombre: "#9AA0F0" },
+  olive:        { clair: "#4d7c0f", sombre: "#9FCA5E" },
+  ambre:        { clair: "#a16207", sombre: "#DCA84B" },
+  emeraude:     { clair: "#1b9e77", sombre: "#4FD1AE" },
+  prune:        { clair: "#7b3294", sombre: "#C79BEB" },
+  azur:         { clair: "#2a8fb0", sombre: "#5FC2DC" },
+  framboise:    { clair: "#d6336c", sombre: "#E67C99" },
+  or:           { clair: "#b8860b", sombre: "#E4C55F" },
+  bleuroi:      { clair: "#3b4cc0", sombre: "#9AA0F0" },
   cyanFonce:    { clair: "#0e7490", sombre: "#2A6A5E" },
   rose:         { clair: "#be185d", sombre: "#EE8AB0" },
   roseVoile:    { clair: "#FCE7F3", sombre: "rgba(238,138,176,0.11)" },
+
+  // Trois teintes propres aux badges de statut (composant Badge)
+  terracotta:   { clair: "#E35336", sombre: "#F0836A" },
+  rouille:      { clair: "#B7410E", sombre: "#E08A5C" },
+  jaune:        { clair: "#FBBC04", sombre: "#F5CE5B" },
+
+  // ── Les quatorze régions du Sénégal ──
+  // Pastels de jour, resaturés la nuit — même raison que les pôles.
+  regDakar:       { clair: "#9DC3E6", sombre: "#6FB2E8" },
+  regThies:       { clair: "#B4DE9D", sombre: "#7ACF85" },
+  regDiourbel:    { clair: "#E6C79D", sombre: "#EDAA62" },
+  regLouga:       { clair: "#9DDEC2", sombre: "#4FD1AE" },
+  regSaintLouis:  { clair: "#C9B8E6", sombre: "#B79BE8" },
+  regMatam:       { clair: "#E6DE9D", sombre: "#CBD35C" },
+  regTambacounda: { clair: "#9DD3DE", sombre: "#5FC2DC" },
+  regKedougou:    { clair: "#E6AC9D", sombre: "#F09571" },
+  regFatick:      { clair: "#D2DE9D", sombre: "#A8D268" },
+  regKaolack:     { clair: "#9DB0E6", sombre: "#8FA6E8" },
+  regKaffrine:    { clair: "#E6B8D2", sombre: "#DC8AC4" },
+  regKolda:       { clair: "#BEE6C2", sombre: "#7ACF85" },
+  regSedhiou:     { clair: "#E6D4B0", sombre: "#E4C55F" },
+  regZiguinchor:  { clair: "#A8DEDE", sombre: "#58C6CE" },
+
+  // ── Les huit pôles territoriaux ──
+  // Pastels de jour, repris de la carte. La nuit ils sont RESATURÉS et non
+  // éclaircis : un pastel posé sur du minuit se délave et les huit pôles
+  // finissent par se ressembler.
+  poleDakar:        { clair: "#9DC3E6", sombre: "#6FB2E8" },
+  poleThies:        { clair: "#9DD3DE", sombre: "#5FC2DC" },
+  poleDiourbelLouga:{ clair: "#9DDEC2", sombre: "#4FD1AE" },
+  poleCentre:       { clair: "#B4DE9D", sombre: "#7ACF85" },
+  poleNord:         { clair: "#D2DE9D", sombre: "#A8D268" },
+  poleNordEst:      { clair: "#E6DE9D", sombre: "#CBD35C" },
+  poleSud:          { clair: "#E6C79D", sombre: "#EDAA62" },
+  poleSudEst:       { clair: "#E6AC9D", sombre: "#F09571" },
 
   // ── Grilles de graphes ──
   grille:       { clair: "#F0EEEB", sombre: "#243044" },
@@ -145,6 +195,14 @@ export const TRIPLETS = {
   // recherche, menus déroulants), qui étaient écrits en blanc translucide et
   // seraient donc restés blancs la nuit.
   carte:  { clair: "255 255 255", sombre: "21 30 46" },
+  // Les catégorielles servent aussi de fonds voilés et de bordures de badge,
+  // à opacité variable : d'où leur triplet.
+  sarcelle: { clair: "14 116 144", sombre: "88 198 206" },
+  indigo:   { clair: "67 56 202",  sombre: "154 160 240" },
+  olive:    { clair: "77 124 15",  sombre: "159 202 94" },
+  ambre:    { clair: "161 98 7",   sombre: "220 168 75" },
+  rose:     { clair: "190 24 93",  sombre: "238 138 176" },
+  or:       { clair: "184 134 11", sombre: "228 197 95" },
   // L'encre translucide : filets, pastilles neutres, voiles gris.
   encre:  { clair: "26 26 46",   sombre: "237 241 247" },
   // Les ombres. De jour un bleu d'encre très sombre ; de nuit le noir pur —

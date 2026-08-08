@@ -13,6 +13,7 @@ import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/comp
 import ProjetVueModal from "@/components/shared/ProjetVueModal";
 import PotentialiteVueModal from "@/components/shared/PotentialiteVueModal";
 import AvantageVueModal from "@/components/shared/AvantageVueModal";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -266,9 +267,9 @@ export default function OpportunitesPage() {
                       const pct = total>0 ? Math.round(count/total*100) : 0;
                       return (
                         <div key={n.key} {...(count>0?carteCliquable(()=>setSelectedNiveau(selectedNiveau===n.key?null:n.key)):{})}
-                          style={{background:"var(--carte)",border:selectedNiveau===n.key?`1.5px solid ${n.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${n.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                          style={{background:"var(--carte)",border:selectedNiveau===n.key?`1.5px solid ${voile(n.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(n.color, 53)}`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                           {/* Niveau */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -305,9 +306,9 @@ export default function OpportunitesPage() {
                       const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                       const bandeau = (
                         <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
-                          background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                          border:`1px solid ${meta.color}22`}}>
-                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                          background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                          border:`1px solid ${voile(meta.color, 13)}`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                             <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
@@ -343,7 +344,7 @@ export default function OpportunitesPage() {
                               <div {...carteCliquable(()=>setPotSel(p))}
                                 style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                   const span = box?.firstElementChild as HTMLElement | null;
@@ -379,9 +380,9 @@ export default function OpportunitesPage() {
                               <div key={cle}>
                                 {/* Bandeau du rattachement territorial */}
                                 <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                                  background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                                  border:`1px solid ${meta.color}22`}}>
-                                  <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                                  background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                                  border:`1px solid ${voile(meta.color, 13)}`}}>
+                                  <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                                     <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                                   </div>
                                   <div style={{minWidth:0,flex:1}}>
@@ -432,9 +433,9 @@ export default function OpportunitesPage() {
                       const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
                       return (
                         <div key={s.key} {...(count>0?carteCliquable(()=>setSelectedSecAvg(selectedSecAvg===s.key?null:s.key)):{})}
-                          style={{background:"var(--carte)",border:selectedSecAvg===s.key?`1.5px solid ${s.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
-                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${s.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                          style={{background:"var(--carte)",border:selectedSecAvg===s.key?`1.5px solid ${voile(s.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(s.color, 53)}`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${voile(s.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                           {/* Secteur */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -480,9 +481,9 @@ export default function OpportunitesPage() {
                           <div key={bra.id}>
                             {/* Bandeau de la branche */}
                             <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                              background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                              border:`1px solid ${meta.color}22`}}>
-                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                              background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                              border:`1px solid ${voile(meta.color, 13)}`}}>
+                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                                 <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                               </div>
                               <div style={{minWidth:0,flex:1}}>
@@ -497,7 +498,7 @@ export default function OpportunitesPage() {
                                   <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
                                     style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
                                     onMouseEnter={ev=>{
-                                      ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                      ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                                       // Nom trop long : glisse pour révéler la fin
                                       const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                       const span = box?.firstElementChild as HTMLElement | null;

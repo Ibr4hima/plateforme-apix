@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet, ShieldCheck, AlertTriangle, RefreshCw } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -81,7 +82,7 @@ function ScoreBadge({ score }: { score: number | null }) {
   if (score == null) return null;
   const color = score >= 90 ? "var(--vert-fonce)" : score >= 80 ? "var(--orange)" : "var(--danger)";
   const bg    = score >= 90 ? "var(--vert-voile)" : score >= 80 ? "var(--orange-voile)" : "var(--danger-voile)";
-  return <span style={{ background: bg, color, border: `1px solid ${color}33`, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
+  return <span style={{ background: bg, color, border: `1px solid ${voile(color, 20)}`, borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{score.toFixed(0)} %</span>;
 }
 
 // ── Jauge de score de qualité ─────────────────────────────────────────────────
@@ -89,7 +90,7 @@ function ScoreGauge({ score }: { score: number }) {
   const color = score >= 95 ? "var(--vert-fonce)" : score >= 80 ? "var(--orange)" : "var(--danger)";
   const bg    = score >= 95 ? "var(--vert-voile)" : score >= 80 ? "var(--orange-voile)" : "var(--danger-voile)";
   return (
-    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${color}33`, borderRadius: 10, padding: "12px 18px" }}>
+    <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${voile(color, 20)}`, borderRadius: 10, padding: "12px 18px" }}>
       <ShieldCheck size={26} color={color} />
       <div>
         <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{score.toFixed(1)} %</div>

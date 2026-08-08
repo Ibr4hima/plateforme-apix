@@ -3,7 +3,7 @@ import { useEchap } from "@/lib/useEchap";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
-import { PALETTE_COMPARAISON as PALETTE, badgeDe } from "@/lib/couleurs";
+import { PALETTE_COMPARAISON as PALETTE, badgeDe, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt } from "@/lib/format";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -132,9 +132,9 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
     const pct = `${variation > 0 ? "+" : ""}${variation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
     return `En ${annee}, ${pays} affiche ${val} (${sens} de ${pct} par rapport à l'année précédente) pour l'indicateur « ${ind.libelle} ».`;
   })();
-  const trendColor = isPos ? "#188038" : isNeg ? "#dc2626" : "#9aa5b4";
-  const trendBg = isPos ? "rgba(24,128,56,0.06)" : isNeg ? "rgba(220,38,38,0.05)" : "#FAFAF9";
-  const trendBorder = isPos ? "rgba(24,128,56,0.18)" : isNeg ? "rgba(220,38,38,0.18)" : "#F0EEEC";
+  const trendColor = isPos ? "var(--vert)" : isNeg ? "var(--danger)" : "var(--gris)";
+  const trendBg = isPos ? "rgb(var(--vert-rgb) / 0.06)" : isNeg ? "rgb(var(--danger-rgb) / 0.05)" : "var(--carte-douce)";
+  const trendBorder = isPos ? "rgb(var(--vert-rgb) / 0.18)" : isNeg ? "rgb(var(--danger-rgb) / 0.18)" : "var(--bordure)";
   const SecTitle = ({ children }: { children: any }) => (
     <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
   );
@@ -148,7 +148,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
             <div style={{ flex: 1, minWidth: 0 }}>
               <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35 }}>{ind.libelle}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: couleur, background: `${couleur}12`, border: `1px solid ${couleur}30` }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: couleur, background: `${voile(couleur, 7)}`, border: `1px solid ${voile(couleur, 19)}` }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block" }} />{pays}
                 </span>
                 <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "var(--texte)", background: "var(--champ)" }}>{ind.unite}</span>
@@ -237,7 +237,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", minWidth: 0 }}>
                 {paysSelectionnes.map(p => (
-                  <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 999, background: `${p.couleur}0D`, border: `1px solid ${p.couleur}2E`, fontSize: 10.5, fontWeight: 700, color: p.couleur }}>
+                  <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 999, background: `${voile(p.couleur, 5)}`, border: `1px solid ${voile(p.couleur, 18)}`, fontSize: 10.5, fontWeight: 700, color: p.couleur }}>
                     <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.couleur, display: "inline-block", flexShrink: 0 }} />{p.nom}
                   </span>
                 ))}
@@ -545,7 +545,7 @@ export default function StatistiquesPage() {
               {/* Sénégal épinglé (référence) */}
               {senId !== null && (() => {
                 const sel = selection.includes(senId);
-                const col = sel ? couleurPays(senId) : "#C5BFBB";
+                const col = sel ? couleurPays(senId) : "var(--bordure-forte)";
                 return (
                   <div style={{ marginBottom: 8, marginLeft: 6 }}>
                     <button onClick={() => clickPays(senId)}

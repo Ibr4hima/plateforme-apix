@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Calendar, FileText, Building2, TrendingUp, Target, Globe, MapPin, Lightbulb, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { voile } from "@/lib/couleurs";
 
 const MODULES = [
   { label: "Événements",   href: "/admin/evenements",   icon: Calendar,   color: "var(--bleu)", apiKey: "evenements" },
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
             }}>
               <div style={{
                 width: 44, height: 44, borderRadius: 12,
-                background: s.color + "15",
+                background: voile(s.color, 8),
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <Icon size={20} style={{ color: s.color }} />
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
                 }}>
                   <div style={{
                     width: 38, height: 38, borderRadius: 10,
-                    background: m.color + "15",
+                    background: voile(m.color, 8),
                     display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>
                     <Icon size={17} style={{ color: m.color }} />

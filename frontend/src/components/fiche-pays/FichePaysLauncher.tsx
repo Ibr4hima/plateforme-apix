@@ -7,9 +7,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
+import { voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"];
+const PALETTE = ["var(--bleu)", "var(--orange)", "var(--vert)", "var(--violet)", "var(--cyan)", "var(--danger)", "var(--ambre)", "var(--indigo)"];
 
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };
 
@@ -79,7 +80,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           {/* Sénégal épinglé (référence) */}
           {senId !== null && (() => {
             const on = sel.includes(senId);
-            const col = on ? couleur(senId) : "#C5BFBB";
+            const col = on ? couleur(senId) : "var(--bordure-forte)";
             const removable = on && sel.length > 1;
             const canAdd = !on && sel.length < MAX;
             return (
@@ -139,11 +140,11 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
         <div style={{ padding: "14px 22px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {sel.map(id => { const p = pays.find(x => x.id === id); const canRemove = sel.length > 1; return p ? (
-              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${couleur(id)}12`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
+              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${voile(couleur(id), 7)}`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
                 {p.nom}
                 <button onClick={() => canRemove && setSel(prev => prev.filter(x => x !== id))} disabled={!canRemove} title={canRemove ? `Retirer ${p.nom}` : "Au moins un pays requis"}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15, height: 15, borderRadius: "50%", border: "none", padding: 0, background: "transparent", color: couleur(id), cursor: canRemove ? "pointer" : "not-allowed", opacity: canRemove ? 1 : 0.35 }}
-                  onMouseEnter={e => { if (canRemove) e.currentTarget.style.background = `${couleur(id)}22`; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                  onMouseEnter={e => { if (canRemove) e.currentTarget.style.background = `${voile(couleur(id), 13)}`; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                   <X size={10} strokeWidth={2.6} />
                 </button>
               </span>

@@ -11,7 +11,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { badge_gris } from "@/lib/couleurs";
+import { badge_gris, voile } from "@/lib/couleurs";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -434,21 +434,21 @@ function AvantageModal({ open, onClose, edit, onSaved }:
   // Colonne de sélection simple (cascade Secteur → Branche → Activité)
   const AvgCol = ({ title, color, open: colOpen, onToggle, count, children }: any) => (
     <div style={{flex:1,minWidth:0}}>
-      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?color+"08":"var(--carte-douce)",border:`1px solid ${count>0?color+"30":"var(--bordure-forte)"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
+      <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?voile(color, 3):"var(--carte-douce)",border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           <span style={{fontSize:11,fontWeight:700,color:count>0?color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
-          {count>0&&<span style={{fontSize:10,fontWeight:700,color,background:color+"15",padding:"1px 6px",borderRadius:999}}>1</span>}
+          {count>0&&<span style={{fontSize:10,fontWeight:700,color,background:voile(color, 8),padding:"1px 6px",borderRadius:999}}>1</span>}
         </div>
         {colOpen?<ChevronUp size={12} style={{color:"var(--gris)"}}/>:<ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
-      {colOpen&&<div style={{border:`1px solid ${color}20`,borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>{children}</div>}
+      {colOpen&&<div style={{border:`1px solid ${voile(color, 13)}`,borderRadius:9,overflow:"hidden",maxHeight:200,overflowY:"auto" as const}}>{children}</div>}
     </div>
   );
   const AvgItem = ({ label, sel, color, disabled, onClick }: any) => (
     <button onClick={onClick} disabled={disabled}
-      style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",border:"none",cursor:disabled?"not-allowed":"pointer",background:sel?color+"12":"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s",opacity:disabled?0.45:1}}
+      style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",border:"none",cursor:disabled?"not-allowed":"pointer",background:sel?voile(color, 7):"transparent",width:"100%",textAlign:"left" as const,transition:"background 0.12s",opacity:disabled?0.45:1}}
       onMouseEnter={e=>{if(!sel&&!disabled)e.currentTarget.style.background="var(--carte-douce)";}}
-      onMouseLeave={e=>{e.currentTarget.style.background=sel?color+"12":"transparent";}}>
+      onMouseLeave={e=>{e.currentTarget.style.background=sel?voile(color, 7):"transparent";}}>
       <div style={{width:13,height:13,borderRadius:"50%",border:`2px solid ${sel?color:"var(--gris)"}`,background:sel?color:"transparent",flexShrink:0,transition:"all 0.12s"}}/>
       <span style={{fontSize:12,color:sel?"var(--encre)":"var(--texte)",fontWeight:sel?600:400}}>{label}</span>
     </button>
@@ -617,12 +617,12 @@ function TextTicker({ text, speed=25, delay=2.5 }: {text:string; speed?:number; 
 // Composant accordéon avantages groupés par secteur → branche → activité
 // ══════════════════════════════════════════════════════════════════════════════
 
-const SECTEUR_COLORS = ["#ca631f","#004f91","#059669","#0D652D","#0891b2","#d97706","#E35336","#188038"];
+const SECTEUR_COLORS = ["var(--orange)","var(--bleu)","var(--emeraude)","var(--vert-fonce)","var(--cyan)","var(--alerte)","var(--terracotta)","var(--vert)"];
 const secColor = (nom:string) => {
   const n = nom.toLowerCase();
-  if (n.includes("primaire"))   return "#E35336";
-  if (n.includes("secondaire")) return "#0F52BA";
-  if (n.includes("tertiaire"))  return "#0D652D";
+  if (n.includes("primaire"))   return "var(--terracotta)";
+  if (n.includes("secondaire")) return "var(--bleuroi)";
+  if (n.includes("tertiaire"))  return "var(--vert-fonce)";
   return SECTEUR_COLORS[0];
 };
 
@@ -659,7 +659,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
               {sec.items.map((a:any) => (
                 <div key={a.id} onClick={()=>onVue(a)}
                   style={{background:"var(--carte)",borderTop:"1px solid var(--bordure-forte)",borderRight:"1px solid var(--bordure-forte)",borderBottom:"1px solid var(--bordure-forte)",borderLeft:`3px solid ${a.est_publie?color:"var(--gris)"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"var(--ombre-1)",minWidth:0}}
-                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${color}18`;ev.currentTarget.style.borderTopColor=`${color}50`;ev.currentTarget.style.borderRightColor=`${color}50`;ev.currentTarget.style.borderBottomColor=`${color}50`;}}
+                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${voile(color, 9)}`;ev.currentTarget.style.borderTopColor=`${voile(color, 31)}`;ev.currentTarget.style.borderRightColor=`${voile(color, 31)}`;ev.currentTarget.style.borderBottomColor=`${voile(color, 31)}`;}}
                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.borderTopColor="var(--bordure-forte)";ev.currentTarget.style.borderRightColor="var(--bordure-forte)";ev.currentTarget.style.borderBottomColor="var(--bordure-forte)";}}>
                   <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
                   <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
@@ -669,7 +669,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                   {(a.selections||[]).length>0&&(
                     <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
                       {(a.selections||[]).slice(0,3).map((s:any)=>(
-                        <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${color}10`,border:`1px solid ${color}25`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
+                        <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${voile(color, 6)}`,border:`1px solid ${voile(color, 15)}`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
                       ))}
                       {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"var(--gris)"}}>+{(a.selections||[]).length-3}</span>}
                     </div>
@@ -708,9 +708,9 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
 }) {
   // Couleur du niveau (palette du site)
   const NIVEAU_COLORS: Record<string,string> = {
-    pole:"#004f91", region:"#ca631f", departement:"#188038", arrondissement:"#6A1B9A",
+    pole:"var(--bleu)", region:"var(--orange)", departement:"var(--vert)", arrondissement:"var(--violet)",
   };
-  const nivColor = NIVEAU_COLORS[p.niveau] || "#004f91";
+  const nivColor = NIVEAU_COLORS[p.niveau] || "var(--bleu)";
   const zoneNom = p.pole_nom||p.region_nom||p.departement_nom||p.arrondissement_nom||"";
   const [fichiers,  setFichiers]  = useState<any[]>(p.fichiers||[]);
   const [secteurs,  setSecteurs]  = useState<any[]>([]);
@@ -1168,9 +1168,9 @@ export default function OpportunitesAdminPage() {
                 return (
                   // Clic = bascule : les fiches se déplient sous les cards
                   <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(actif?null:n.key)}
-                    style={{background:"var(--carte)",border:actif?`1.5px solid ${n.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${n.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${n.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${n.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${n.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                    style={{background:"var(--carte)",border:actif?`1.5px solid ${voile(n.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${voile(n.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(n.color, 53)}`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${voile(n.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${voile(n.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Niveau */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1208,9 +1208,9 @@ export default function OpportunitesAdminPage() {
                 const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
                 const bandeauNiveau = (
                   <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 14px",borderRadius:16,
-                    background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                    border:`1px solid ${meta.color}22`}}>
-                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                    background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                    border:`1px solid ${voile(meta.color, 13)}`}}>
+                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                       <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                     </div>
                     <div style={{minWidth:0,flex:1}}>
@@ -1248,7 +1248,7 @@ export default function OpportunitesAdminPage() {
                     <div onClick={()=>setPotVue(p)}
                       style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:p.est_publie===false?0.7:1}}
                       onMouseEnter={ev=>{
-                        ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                        ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                         // Nom trop long : glisse pour révéler la fin
                         const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                         const span = box?.firstElementChild as HTMLElement | null;
@@ -1309,9 +1309,9 @@ export default function OpportunitesAdminPage() {
                         <div key={cle}>
                           {/* Bandeau du rattachement territorial */}
                           <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                            background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                            border:`1px solid ${meta.color}22`}}>
-                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                            background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                            border:`1px solid ${voile(meta.color, 13)}`}}>
+                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                               <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                             </div>
                             <div style={{minWidth:0,flex:1}}>
@@ -1365,9 +1365,9 @@ export default function OpportunitesAdminPage() {
                 return (
                   // Clic = bascule : les branches se déplient sous les cards
                   <div key={s.key} onClick={()=>count>0&&setSelectedSec(actif?null:s.key)}
-                    style={{background:"var(--carte)",border:actif?`1.5px solid ${s.color}88`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${s.color}26`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${s.color}88`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${s.color}26`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${s.color}88`:"rgb(var(--encre-rgb) / 0.12)";}}>
+                    style={{background:"var(--carte)",border:actif?`1.5px solid ${voile(s.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${voile(s.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(s.color, 53)}`;}}}
+                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${voile(s.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${voile(s.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
                     {/* Secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
@@ -1416,9 +1416,9 @@ export default function OpportunitesAdminPage() {
                       <div key={bra.id}>
                         {/* Bandeau de la branche */}
                         <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                          background:`linear-gradient(100deg, ${meta.color}14 0%, ${meta.color}06 42%, rgba(255,255,255,0) 100%)`,
-                          border:`1px solid ${meta.color}22`}}>
-                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${meta.color}33`,boxShadow:`0 2px 6px ${meta.color}1a`}}>
+                          background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                          border:`1px solid ${voile(meta.color, 13)}`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
                             <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
@@ -1433,7 +1433,7 @@ export default function OpportunitesAdminPage() {
                               <div key={a.id} onClick={()=>setAvgVue(a)}
                                 style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
                                 onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor=`${meta.color}55`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
                                   // Nom trop long : glisse pour révéler la fin
                                   const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
                                   const span = box?.firstElementChild as HTMLElement | null;

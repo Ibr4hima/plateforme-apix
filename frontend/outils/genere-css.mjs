@@ -16,7 +16,9 @@ function bloc(schema) {
   const l = [];
   for (const [jeton, v] of Object.entries(JETONS)) l.push(ligne(nomCss(jeton), v[schema]));
   l.push("");
-  for (const [nom, v] of Object.entries(TRIPLETS)) l.push(ligne(`--${nom}-rgb`, v[schema]));
+  // nomCss et non le nom brut : sans quoi bleuFixe donnerait --bleuFixe-rgb,
+  // que personne n'écrirait à la main.
+  for (const [nom, v] of Object.entries(TRIPLETS)) l.push(ligne(`${nomCss(nom)}-rgb`, v[schema]));
   l.push(ligne("--gris-rgb", GRIS_ALPHA));
   l.push("");
   for (const [nom, v] of Object.entries(DEGRADES)) l.push(ligne(nomCss(nom), v[schema]));

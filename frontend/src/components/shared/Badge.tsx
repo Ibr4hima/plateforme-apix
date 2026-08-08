@@ -4,10 +4,10 @@ const VARIANTS = {
   green:      { bg:"rgb(var(--vert-rgb) / 0.1)",    text:"var(--vert-fonce)", border:"rgb(var(--vert-rgb) / 0.2)"    },
   blue:       { bg:"rgb(var(--bleu-rgb) / 0.1)",     text:"var(--bleu-profond)", border:"rgb(var(--bleu-rgb) / 0.2)"     },
   orange:     { bg:"rgb(var(--orange-rgb) / 0.1)",    text:"var(--orange-profond)", border:"rgb(var(--orange-rgb) / 0.2)"    },
-  yellow:     { bg:"rgba(228,217,111,0.28)", text:"var(--orange-profond)", border:"rgba(200,185,50,0.35)"  },
-  teal:       { bg:"rgba(168,195,188,0.3)",  text:"var(--cyan-fonce)", border:"rgba(140,175,165,0.45)" },
+  yellow:     { bg:"rgb(var(--or-rgb) / 0.22)", text:"var(--orange-profond)", border:"rgb(var(--or-rgb) / 0.35)"  },
+  teal:       { bg:"rgb(var(--sarcelle-rgb) / 0.16)",  text:"var(--cyan-fonce)", border:"rgb(var(--sarcelle-rgb) / 0.30)" },
   purple:     { bg:"rgb(var(--violet-rgb) / 0.1)",   text:"var(--violet-action)", border:"rgb(var(--violet-rgb) / 0.2)"   },
-  lavender:   { bg:"rgba(211,211,255,0.45)", text:"var(--violet-action)", border:"rgba(180,180,255,0.55)" },
+  lavender:   { bg:"rgb(var(--indigo-rgb) / 0.14)", text:"var(--violet-action)", border:"rgb(var(--indigo-rgb) / 0.28)" },
   red:        { bg:"rgb(var(--danger-rgb) / 0.1)",    text:"var(--danger-action)", border:"rgb(var(--danger-rgb) / 0.2)"    },
   gray:       { bg:"rgb(var(--gris-rgb) / 0.1)",  text:"var(--texte)", border:"rgb(var(--gris-rgb) / 0.2)"  },
   navy:       { bg:"rgb(var(--encre-rgb) / 0.08)",    text:"var(--encre)", border:"rgb(var(--encre-rgb) / 0.15)"    },
@@ -25,11 +25,11 @@ export type BadgeVariant = keyof typeof VARIANTS;
 // Utiliser ces constantes partout où l'on a besoin de la couleur seule
 export const COLORS = {
   vert:       "var(--vert-fonce)",
-  terracotta: "#E35336",
-  bleu:       "#0F52BA",
-  rouille:    "#B7410E",
-  jaune:      "#FBBC04",
-  jaune_text: "#8A6100", // version contrastée pour texte sur fond clair
+  terracotta: "var(--terracotta)",
+  bleu:       "var(--bleuroi)",
+  rouille:    "var(--rouille)",
+  jaune:      "var(--jaune)",
+  jaune_text: "var(--ambre)", // version contrastée pour texte sur fond clair
 } as const;
 
 interface BadgeProps {
