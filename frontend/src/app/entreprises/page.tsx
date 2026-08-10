@@ -8,6 +8,7 @@ import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import VueTerritorialeSenegal from "@/components/shared/VueTerritorialeSenegal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards, SkeletonChart } from "@/components/shared/Skeleton";
+import { GRILLE_CARTES, MIN_CARTE } from "@/lib/grilles";
 import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -198,7 +199,7 @@ export default function EntreprisesPage() {
           {/* Grille */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
-              <SkeletonCards n={6} cols={2} height={200}/>
+              <SkeletonCards n={6} min={MIN_CARTE} height={200}/>
             ):erreur?(
               <ErreurChargement onRetry={()=>charger()}/>
             ):entreprises.length===0?(
@@ -210,7 +211,7 @@ export default function EntreprisesPage() {
               </div>
             ):(
               <>
-              <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+              <div className="charge-in" style={GRILLE_CARTES}>
                 {entreprises.map(e=>{
                   // Couleur du pôle : jetons partagés du design system.
                   const accentPole = poleAccent(e.pole_territoire_nom||"");

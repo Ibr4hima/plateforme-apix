@@ -65,9 +65,12 @@ export function SkeletonRows({ n = 8, h = 38 }: { n?: number; h?: number }) {
 }
 
 // Grille de cartes (listes publiques : événements, accords, zones…)
-export function SkeletonCards({ n = 6, cols = 3, height = 190 }: { n?: number; cols?: number; height?: number }) {
+// `min` : largeur minimale d'une carte, pour suivre une grille auto-fill. Le
+// squelette doit compter les mêmes colonnes que la grille qu'il annonce, sinon
+// la page saute au moment où les données arrivent.
+export function SkeletonCards({ n = 6, cols = 3, min, height = 190 }: { n?: number; cols?: number; min?: number; height?: number }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: min ? `repeat(auto-fill, minmax(${min}px, 1fr))` : `repeat(${cols},1fr)`, gap: 16 }}>
       {Array.from({ length: n }).map((_, i) => (
         <div key={i} style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 14, padding: 18, height, boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 10 }}>
           <Skeleton w="55%" h={12} r={5} />

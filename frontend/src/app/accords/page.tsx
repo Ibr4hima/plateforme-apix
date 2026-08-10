@@ -5,6 +5,7 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
+import { GRILLE_CARTES, MIN_CARTE } from "@/lib/grilles";
 import { ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -266,7 +267,7 @@ export default function AccordsPage() {
           {/* Grille accords */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading ? (
-              <SkeletonCards n={6} cols={2} height={200}/>
+              <SkeletonCards n={6} min={MIN_CARTE} height={200}/>
             ) : erreur ? (
               <ErreurChargement onRetry={()=>charger()}/>
             ) : accords.length===0 ? (
@@ -278,7 +279,7 @@ export default function AccordsPage() {
               </div>
             ) : (
               <>
-              <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
+              <div className="charge-in" style={GRILLE_CARTES}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);
                   // Badges du design system : en vigueur vert, signé bleu,
