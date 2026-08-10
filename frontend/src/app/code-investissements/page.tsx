@@ -116,16 +116,18 @@ export default function CodeInvestissementsPage() {
       <BandeauDocument surtitre="République du Sénégal" titre="Lois & Règlementations"
         sousTitre={loading ? "Chargement…" : erreur ? "—" : `${titreDoc} · ${chapitres.length} chapitre${chapitres.length > 1 ? "s" : ""} · ${nbArticles} article${nbArticles > 1 ? "s" : ""}`}
         outils={<>
-          {/* Les deux textes en chips séparées (le pattern des lentilles),
-              teintées bleu / orange sur le bandeau */}
+          {/* Les deux textes en chips séparées (le pattern des lentilles).
+              Même bleu pour les deux à l'état actif : la couleur ne distingue
+              pas deux textes de même nature, elle marque la sélection — et
+              l'orange, ici, se lisait comme un second sens. */}
           <div role="tablist" aria-label="Texte" style={{ display: "inline-flex", gap: 8 }}>
-            {([["code", "Code des investissements", BLEU], ["modalites", "Modalités d'application", ORANGE]] as const).map(([key, label, couleur]) => {
+            {([["code", "Code des investissements"], ["modalites", "Modalités d'application"]] as const).map(([key, label]) => {
               const actif = loi === key;
               return (
                 <button key={key} role="tab" aria-selected={actif} onClick={() => setLoi(key)}
                   style={{ padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: actif ? 800 : 600,
                     border: `1px solid ${actif ? "var(--carte)" : "rgba(255,255,255,0.30)"}`,
-                    background: actif ? "var(--carte)" : "rgba(255,255,255,0.08)", color: actif ? couleur : "rgba(255,255,255,0.80)",
+                    background: actif ? "var(--carte)" : "rgba(255,255,255,0.08)", color: actif ? BLEU : "rgba(255,255,255,0.80)",
                     transition: "background 0.16s, color 0.16s, border-color 0.16s", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                   {label}
                 </button>
