@@ -99,43 +99,20 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
 
 
 
-// ── Définitions & interprétations des indicateurs ─────────────────────────────
-const DEF_INDICATEUR: Record<string, string> = {
-  population: "Nombre total d'habitants du pays au 1er juillet de l'année considérée.",
-  superficie: "Superficie terrestre totale du pays, exprimée en kilomètres carrés.",
-  densite: "Nombre moyen d'habitants par kilomètre carré (population ÷ superficie).",
-  pib: "Produit intérieur brut : valeur totale des biens et services produits sur une année, en dollars courants.",
-  pib_hab: "PIB rapporté au nombre d'habitants (PIB ÷ population), en dollars courants.",
-  croissance_pib: "Taux de croissance annuel du PIB réel, en pourcentage.",
-  importations_marchandises: "Valeur totale des marchandises importées sur l'année, en dollars.",
-  exportations_marchandises: "Valeur totale des marchandises exportées sur l'année, en dollars.",
-  importations_services: "Valeur totale des services importés sur l'année, en dollars.",
-  exportations_services: "Valeur totale des services exportés sur l'année, en dollars.",
-  balance_marchandises: "Solde du commerce de marchandises (exportations − importations).",
-  balance_services: "Solde du commerce de services (exportations − importations).",
-};
-
-function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null; pays: string; couleur: string; onClose: () => void }) {
+/**
+ * La fiche d'un KPI — alignée sur celle des IDE (ide/partage.tsx).
+ *
+ * Elle portait une définition de l'indicateur, une phrase d'interprétation et
+ * trois pastilles (l'unité, le millésime, un jugement « Positif / Négatif »).
+ * Tout cela redisait ce que la valeur montre déjà : l'unité est dans le
+ * chiffre, l'année passe au titre, et « Positif » n'ajoute rien à un
+ * pourcentage signé. Reste ce qu'on vient chercher — la valeur, et les années
+ * qui précèdent pour la situer.
+ */
+function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null; pays: string; couleur: string; onClose: () => void }) {
   useEchap(!!kpi, onClose);
   if (!kpi) return null;
-  const { ind, valeur, annee, precedent } = kpi;
-  const def = DEF_INDICATEUR[ind.code] || `${ind.libelle} — ${ind.unite}.`;
-  let variation: number | null = null;
-  if (valeur !== null && precedent !== null && precedent !== 0) variation = ((valeur - precedent) / Math.abs(precedent)) * 100;
-  const isPos = variation !== null && variation > 0.05;
-  const isNeg = variation !== null && variation < -0.05;
-  const signalColor = couleur;
-  const interpret = (() => {
-    if (valeur === null) return "Donnée non disponible pour cet indicateur sur la période sélectionnée.";
-    const val = fmt(valeur, ind.unite, ind.code);
-    if (variation === null) return `En ${annee}, ${pays} affiche ${val} pour l'indicateur « ${ind.libelle} ».`;
-    const sens = isPos ? "en hausse" : isNeg ? "en baisse" : "stable";
-    const pct = `${variation > 0 ? "+" : ""}${variation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
-    return `En ${annee}, ${pays} affiche ${val} (${sens} de ${pct} par rapport à l'année précédente) pour l'indicateur « ${ind.libelle} ».`;
-  })();
-  const trendColor = isPos ? "var(--vert)" : isNeg ? "var(--danger)" : "var(--gris)";
-  const trendBg = isPos ? "rgb(var(--vert-rgb) / 0.06)" : isNeg ? "rgb(var(--danger-rgb) / 0.05)" : "var(--carte-douce)";
-  const trendBorder = isPos ? "rgb(var(--vert-rgb) / 0.18)" : isNeg ? "rgb(var(--danger-rgb) / 0.18)" : "var(--bordure)";
+  const { ind, valeur, annee, historique } = kpi;
   const SecTitle = ({ children }: { children: any }) => (
     <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
   );
@@ -146,18 +123,13 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
         <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35 }}>{ind.libelle}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: couleur, background: `${voile(couleur, 7)}`, border: `1px solid ${voile(couleur, 19)}` }}>
-                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, display: "inline-block" }} />{pays}
-                </span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "var(--texte)", background: "var(--champ)" }}>{ind.unite}</span>
-                {variation !== null && (
-                  <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: trendColor, background: trendBg, border: `1px solid ${trendBorder}` }}>{isPos ? "Positif" : isNeg ? "Négatif" : "Stable"}</span>
-                )}
-                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 999, color: "var(--texte)", background: "var(--champ)" }}>{annee}</span>
-              </div>
+            {/* L'année rejoint le titre, le pays la même ligne — comme dans la
+                fiche des IDE. */}
+            <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35, minWidth: 0 }}>
+                {ind.libelle}<span style={{ color: "var(--gris-fort)" }}>{` · ${annee}`}</span>
+              </h2>
+              <span style={{ ...badgeDe(couleur), whiteSpace: "nowrap" }}>{pays}</span>
             </div>
             <button onClick={onClose} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
@@ -168,21 +140,26 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
         <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 22 }}>
           <div>
             <SecTitle>Valeur</SecTitle>
-            <div style={{ background: trendBg, border: `1px solid ${trendBorder}`, borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
+            <div style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
+              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: couleur, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
               <span style={{ fontSize: 13, color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
             </div>
           </div>
-          <div>
-            <SecTitle>Interprétation</SecTitle>
-            <div style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "14px 18px" }}>
-              <p style={{ fontSize: 13, color: "var(--encre)", lineHeight: 1.75 }}>{interpret}</p>
+          {historique.length > 0 && (
+            <div>
+              <SecTitle>Historique des valeurs</SecTitle>
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${historique.length},1fr)`, gap: 8 }}>
+                {historique.map(p => (
+                  <div key={p.annee} style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", margin: "0 0 3px" }}>{p.annee}</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {fmt(p.v, ind.unite, ind.code)}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div>
-            <SecTitle>Définition</SecTitle>
-            <p style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.65 }}>{def}</p>
-          </div>
+          )}
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
           <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
@@ -343,7 +320,7 @@ export default function StatistiquesPage() {
   const [errDonnees, setErrDonnees] = useState(false);
   const [tickDonnees, setTickDonnees] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [kpiActif, setKpiActif] = useState<{ ind: Indicateur; valeur: number | null; annee: number; precedent: number | null } | null>(null);
+  const [kpiActif, setKpiActif] = useState<{ ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null>(null);
   const [showTable, setShowTable] = useState(false);
   // Barre latérale
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -460,6 +437,14 @@ export default function StatistiquesPage() {
 
   const valeur = (paysId: number, code: string, annee: number) =>
     donnees.find(d => d.pays_id === paysId && d.indicateur === code && d.annee === annee)?.valeur ?? null;
+
+  // Les quatre années qui précèdent celle du KPI, pour la fiche détaillée. Les
+  // millésimes sans donnée sont écartés plutôt qu'affichés à « — » : une case
+  // vide n'apprend rien et déséquilibre la grille.
+  const histo = (code: string) =>
+    [refAnnee - 4, refAnnee - 3, refAnnee - 2, refAnnee - 1]
+      .map(a => ({ annee: a, v: selection.length ? valeur(selection[0], code, a) : null }))
+      .filter((p): p is { annee: number; v: number } => p.v !== null);
 
   // Indicateurs proposés au remplacement (non épinglés), liste à plat
   const pickerItems: PickerItem[] = indicateurs.filter(i => !kpisEpingles.includes(i.code)).map(i => ({
@@ -743,7 +728,7 @@ export default function StatistiquesPage() {
                             ? ((v - prec) / Math.abs(prec)) * 100 : null;
                           const pickerOuvert = pickerSlot === slot;
                           return (
-                            <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
+                            <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, historique: histo(ind.code) })}
                               style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1px solid ${pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0, zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
                               onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"; }}>
