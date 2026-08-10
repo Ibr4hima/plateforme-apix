@@ -1242,6 +1242,7 @@ async def commerce_repartition(
     ressources: Optional[str] = Query(default=None),
     limite: int = Query(default=10, ge=1, le=50),
     recherche: Optional[str] = Query(default=None),
+    epingles: Optional[str] = Query(default=None),
 ):
     """Ventilation par partenaire ET par ressource (barres empilées).
 
@@ -1249,6 +1250,11 @@ async def commerce_repartition(
     reste calculé sur TOUS les partenaires, et chaque ligne renvoyee porte son
     rang réel — c'est l'information qu'on vient chercher en tapant un pays qui
     ne figure pas dans les dix premiers.
+
+    `epingles` (noms séparés par « | ») force la présence de partenaires dans la
+    réponse, hors du top et hors du résultat de recherche. Ils suivent la
+    période et la direction comme les autres : c'est le serveur qui les
+    recalcule, la page ne garde jamais de valeurs figées.
     """
     from sqlalchemy import and_ as _and
     from collections import defaultdict
@@ -1300,13 +1306,21 @@ async def commerce_repartition(
         libs = {code: lib for code, lib in rl}
 
     q = _norm(recherche or "")
-    if q:
-        # La recherche porte sur le nom : il faut donc les noms de TOUS les
-        # partenaires, pas seulement ceux du top.
+    # Les epingles arrivent en noms separes par « | » : la virgule appartient
+    # deja a des noms de pays (« Bonaire, Saint-Eustache et Saba »).
+    pins = {_norm(x) for x in (epingles or "").split("|") if x.strip()}
+
+    if q or pins:
+        # Chercher ou epingler porte sur le NOM : il faut donc les noms de TOUS
+        # les partenaires, pas seulement ceux du top.
         rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(classement)))).all() if classement else []
         noms = {rid: nom for rid, nom, _ in rn}
         iso2 = {rid: c for rid, _, c in rn}
-        top_pids = [pid for pid in classement if q in _norm(noms.get(pid) or "")][:limite]
+        base = [pid for pid in classement if q in _norm(noms.get(pid) or "")][:limite] if q else classement[:limite]
+        # Les epinglés s'ajoutent a la page, meme hors du top et meme quand la
+        # recherche les exclut : c'est tout l'interet d'epingler.
+        top_pids = base + [pid for pid in classement
+                           if _norm(noms.get(pid) or "") in pins and pid not in base]
     else:
         top_pids = classement[:limite]
         noms = {}

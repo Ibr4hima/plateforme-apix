@@ -6,7 +6,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
+import { ChevronDown, FileSpreadsheet, Loader2, Pin, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
@@ -227,6 +227,13 @@ function CommercePanel() {
   // partenaires et renvoie ceux dont le nom correspond, avec leur rang réel.
   const [rechPart, setRechPart] = useState("");
   const rechPartD = useDebounced(rechPart, 300);
+  // Partenaires épinglés, par nom : ils restent affichés quels que soient le
+  // top, la recherche ou l'année. Le serveur les recalcule à chaque requête —
+  // la page ne conserve aucune valeur figée.
+  const [partEpingles, setPartEpingles] = useState<string[]>([]);
+  const clefEpingles = partEpingles.join("|");
+  const togglePin = (nom: string) =>
+    setPartEpingles(prev => prev.includes(nom) ? prev.filter(n => n !== nom) : [...prev, nom]);
   // Vue Cumul / année des deux tableaux : année choisie + données dédiées
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
@@ -300,9 +307,10 @@ function CommercePanel() {
     if (!selId) { setRepart(null); return; }
     const p = paramsFlux();
     if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
+    if (clefEpingles) p.set("epingles", clefEpingles);
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
-  }, [selId, paramsFlux, rechPartD]);
+  }, [selId, paramsFlux, rechPartD, clefEpingles]);
 
   // Données d'une année précise pour les tableaux (bascule Cumul / année)
   const anneePoidsD = useDebounced(anneePoids, 250);
@@ -322,10 +330,11 @@ function CommercePanel() {
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
+    if (clefEpingles) p.set("epingles", clefEpingles);
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(d => setRepartAnnee({ annee, data: d }))
       .catch(() => setRepartAnnee({ annee, data: null }));
-  }, [vue, selId, anneeRepartD, ressSel, ressources.length, rechPartD]);
+  }, [vue, selId, anneeRepartD, ressSel, ressources.length, rechPartD, clefEpingles]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -675,18 +684,27 @@ function CommercePanel() {
                 <div style={carte}>
                   <div style={enTete}>
                     <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
-                    <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} expDir={expDir} />
+                    <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} />
                     <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} accent={accent} />
                   </div>
-                  {anneeRepart !== null && chargRepartAnnee
-                    ? <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
-                    : parts.length > 0
-                    ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent} />
-                    : rechPart.trim()
-                    ? <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>
-                        Aucun{expDir ? "e destination" : "e origine"} ne correspond à « {rechPart.trim()} »{anneeRepart !== null ? ` en ${anneeRepart}` : ""}.
-                      </p>
-                    : anneeRepart !== null && <Vide annee={anneeRepart} />}
+                  {anneeRepart !== null && chargRepartAnnee ? (
+                    <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
+                  ) : (
+                    <>
+                      {/* Une recherche sans résultat se dit même lorsque le
+                          tableau n'est pas vide : les lignes qui restent sont
+                          les épinglées, pas des correspondances. */}
+                      {rechPart.trim() && parts.every(p => partEpingles.includes(p.nom)) && (
+                        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: parts.length ? "4px 0 12px" : "22px 0" }}>
+                          Aucun pays ne correspond à « {rechPart.trim()} »{anneeRepart !== null ? ` en ${anneeRepart}` : ""}.
+                        </p>
+                      )}
+                      {parts.length > 0
+                        ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent}
+                            epingles={partEpingles} onPin={togglePin} />
+                        : !rechPart.trim() && anneeRepart !== null && <Vide annee={anneeRepart} />}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -706,15 +724,14 @@ function CommercePanel() {
 // Belgique. Le champ interroge le classement entier et ramène les lignes
 // correspondantes, rang réel compris — c'est le serveur qui cherche, la page
 // n'a jamais que dix lignes en mémoire.
-function ChampRecherchePartenaire({ valeur, onChange, expDir }: {
-  valeur: string; onChange: (v: string) => void; expDir: boolean;
+function ChampRecherchePartenaire({ valeur, onChange }: {
+  valeur: string; onChange: (v: string) => void;
 }) {
   return (
     <span style={{ position: "relative", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
       <Search size={12} style={{ position: "absolute", left: 9, color: "var(--gris)", pointerEvents: "none" }} />
       <input value={valeur} onChange={e => onChange(e.target.value)}
-        placeholder={expDir ? "Rechercher une destination…" : "Rechercher une origine…"}
-        aria-label={expDir ? "Rechercher une destination" : "Rechercher une origine"}
+        placeholder="Rechercher un pays" aria-label="Rechercher un pays"
         style={{ width: 196, padding: "6px 24px 6px 27px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 11.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
       {valeur && (
         <button onClick={() => onChange("")} aria-label="Effacer la recherche"
@@ -786,19 +803,31 @@ function TableauPoidsRessources({ data, total, accent }: {
 }
 
 // ── Tableau des flux par partenaire et ressource (Flux bilatéraux) ────────────
-// Matrice fixe pays × ressources : rang (top 3 en bleu), drapeau, lignes
-// zébrées, plus grande valeur de chaque pays en vert, colonne Total en bleu.
-
-
-function TableauPartenairesRessources({ partenaires, ressources, accent }: {
+// Matrice pays × ressources : rang (top 3 en bleu), drapeau, lignes zébrées,
+// plus grande valeur de chaque pays en vert, colonne Total en bleu.
+//
+// Les partenaires épinglés remontent en tête, séparés du reste par un filet —
+// même geste que le tableau des années de la page IDE. Épingler sert à garder
+// sous les yeux un pays cherché hors du top pendant qu'on fait varier la
+// période ou qu'on cherche le suivant ; les valeurs restent celles du serveur,
+// rien n'est figé côté page.
+function TableauPartenairesRessources({ partenaires, ressources, accent, epingles, onPin }: {
   partenaires: PartenaireRessources[]; ressources: string[]; accent: AccentNace;
+  epingles: string[]; onPin: (nom: string) => void;
 }) {
+  const pins = partenaires.filter(p => epingles.includes(p.nom));
+  const libres = partenaires.filter(p => !epingles.includes(p.nom));
+  const lignes = [...pins, ...libres];
   return (
     <div style={{ overflowX: "auto" }}>
+      <style>{`.ligne-part .pin-fantome{opacity:0;transition:opacity .12s}
+.ligne-part:hover .pin-fantome{opacity:1}
+.ligne-part .pin-fantome:focus-visible{opacity:1}`}</style>
       <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 560 }}>
         <thead>
           <tr>
-            <th style={{ textAlign: "left", padding: "8px 6px 8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)", width: 34 }}>#</th>
+            <th style={{ borderBottom: "1px solid var(--bordure)", width: 22 }}><span className="sr-only">Épinglé</span></th>
+            <th style={{ textAlign: "left", padding: "8px 6px 8px 4px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)", width: 34 }}>#</th>
             <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)" }}>Pays</th>
             {ressources.map(r => (
               <th key={r} style={{ textAlign: "right", padding: "8px 10px", fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em", color: "var(--gris)", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" }}>{r}</th>
@@ -807,34 +836,47 @@ function TableauPartenairesRessources({ partenaires, ressources, accent }: {
           </tr>
         </thead>
         <tbody>
-          {partenaires.map((p, i) => {
+          {lignes.map((p, i) => {
             // Ressource dominante du partenaire : sa valeur ressort en vert
             const vMax = Math.max(0, ...p.valeurs.map(v => v ?? 0));
+            const epingle = epingles.includes(p.nom);
             const zebre = i % 2 === 1;
+            const fond = epingle ? accent.voile : zebre ? "var(--carte-douce)" : "transparent";
             // Le rang vient du serveur : lors d'une recherche, la 37e destination
             // reste la 37e, elle ne devient pas la 1re parce qu'elle est seule.
             const rang = p.rang ?? i + 1;
             const podium = rang <= 3;
+            // Le filet qui sépare les épinglés du reste du classement.
+            const bordure = i === pins.length - 1 && libres.length > 0
+              ? "2px solid var(--bordure-forte)" : "1px solid var(--bordure)";
             return (
-            <tr key={p.nom} style={{ background: zebre ? "var(--carte-douce)" : "transparent", transition: "background 0.12s" }}
+            <tr key={p.nom} className="ligne-part" style={{ background: fond, transition: "background 0.12s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = accent.voile; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = zebre ? "var(--carte-douce)" : "transparent"; }}>
-              <td style={{ padding: "7px 6px 7px 10px", borderBottom: "1px solid var(--bordure)" }}>
+              onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = fond; }}>
+              <td style={{ padding: "7px 0 7px 8px", borderBottom: bordure }}>
+                <button className={epingle ? undefined : "pin-fantome"} onClick={() => onPin(p.nom)}
+                  aria-label={epingle ? `Désépingler ${p.nom}` : `Épingler ${p.nom}`}
+                  title={epingle ? "Désépingler" : "Épingler ce pays en tête du tableau"}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epingle ? accent.trait : "var(--gris)" }}>
+                  <Pin size={11} fill={epingle ? accent.trait : "none"} />
+                </button>
+              </td>
+              <td style={{ padding: "7px 6px 7px 4px", borderBottom: bordure }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%",
                   background: podium ? accent.trait : "var(--sur-bleu)", color: podium ? "var(--sur-bleu)" : "var(--gris)", fontSize: rang > 99 ? 9 : 10.5, fontWeight: 800 }}>{rang}</span>
               </td>
-              <td style={{ padding: "7px 10px", borderBottom: "1px solid var(--bordure)" }}>
+              <td style={{ padding: "7px 10px", borderBottom: bordure }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
                   <DrapeauPays iso={p.code_iso2} nom={p.nom} />
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--encre)", whiteSpace: "nowrap" }}>{p.nom}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: epingle ? 800 : 700, color: "var(--encre)", whiteSpace: "nowrap" }}>{p.nom}</span>
                 </span>
               </td>
               {ressources.map((r, ri) => {
                 const v = p.valeurs[ri] ?? 0;
                 const dominante = v > 0 && v === vMax;
-                return <td key={r} style={{ padding: "7px 10px", fontSize: 11.5, fontWeight: dominante ? 800 : v > 0 ? 600 : 400, color: dominante ? "var(--vert)" : v > 0 ? "var(--encre)" : "var(--gris)", textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid var(--bordure)", fontVariantNumeric: "tabular-nums" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
+                return <td key={r} style={{ padding: "7px 10px", fontSize: 11.5, fontWeight: dominante ? 800 : v > 0 ? 600 : 400, color: dominante ? "var(--vert)" : v > 0 ? "var(--encre)" : "var(--gris)", textAlign: "right", whiteSpace: "nowrap", borderBottom: bordure, fontVariantNumeric: "tabular-nums" }}>{v > 0 ? fmtUSD(v) : "—"}</td>;
               })}
-              <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 800, color: accent.trait, textAlign: "right", whiteSpace: "nowrap", borderBottom: "1px solid var(--bordure)", fontVariantNumeric: "tabular-nums" }}>{fmtUSD(p.total)}</td>
+              <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 800, color: accent.trait, textAlign: "right", whiteSpace: "nowrap", borderBottom: bordure, fontVariantNumeric: "tabular-nums" }}>{fmtUSD(p.total)}</td>
             </tr>
             );
           })}
