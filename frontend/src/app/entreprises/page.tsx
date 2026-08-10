@@ -156,7 +156,8 @@ export default function EntreprisesPage() {
   const togglePole    =(v:string)=>setPolesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions onDark home flouFond/>}
         droite={onglet==="liste" ? (
@@ -178,7 +179,7 @@ export default function EntreprisesPage() {
         </section>
       )}
 
-      {onglet==="liste" && <div style={{display:"flex",alignItems:"flex-start"}}>
+      {onglet==="liste" && <div style={{display:"flex",flex:1,minHeight:0}}>
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
@@ -194,7 +195,7 @@ export default function EntreprisesPage() {
                 <SideFilter label="Pôle territoire" color="var(--bleu)" items={poles} selected={polesSel} onToggle={togglePole} listMaxHeight={180}/></>}
           </PanneauFiltres>
           {/* Grille */}
-          <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
               <SkeletonCards n={6} cols={2} height={200}/>
             ):erreur?(

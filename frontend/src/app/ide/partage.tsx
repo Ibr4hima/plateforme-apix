@@ -915,9 +915,17 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
 }
 
 // ── Helpers pays groupés ──────────────────────────────────────────────────────
-const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
+const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie"];
+/**
+ * Les continents à présenter, dans l'ordre.
+ *
+ * « Autre » est écarté : c'est le fourre-tout des entrées sans continent
+ * renseigné — pour l'essentiel des agrégats de la CNUCED, pas des pays. Un
+ * pays qui s'y trouverait deviendrait invisible dans la barre de filtres ;
+ * c'est alors la donnée qu'il faut corriger, pas la liste.
+ */
 export function sortContinents(conts: string[]) {
-  return [...conts].sort((a, b) => {
+  return [...conts].filter(c => c !== "Autre").sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
     if (ia === -1 && ib === -1) return a.localeCompare(b, "fr");
     if (ia === -1) return 1; if (ib === -1) return -1;

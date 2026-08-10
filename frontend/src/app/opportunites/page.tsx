@@ -154,7 +154,8 @@ export default function OpportunitesPage() {
     .replace(/^(.)/, (_:string,c:string) => c.toUpperCase());
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark home flouFond/>}>
@@ -162,7 +163,7 @@ export default function OpportunitesPage() {
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
-      <div style={{display:"flex",alignItems:"flex-start"}}>
+      <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar (filtres uniquement sur la Banque de projets) */}
           {onglet==="projets"&&<PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={!!hasFilterProj} onReinit={reinit}
@@ -190,7 +191,7 @@ export default function OpportunitesPage() {
           </PanneauFiltres>}
 
           {/* Contenu principal */}
-          <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
 
             {/* ── Onglet Projets ── */}
             {onglet==="projets"&&(

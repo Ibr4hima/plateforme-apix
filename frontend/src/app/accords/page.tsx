@@ -147,7 +147,8 @@ export default function AccordsPage() {
   const autresPays = paysDistincts.filter((p:any)=>p.nom!=="Sénégal").sort((a:any,b:any)=>a.nom.localeCompare(b.nom,"fr"));
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>}>
@@ -173,7 +174,7 @@ export default function AccordsPage() {
       </div>
       ) : (
       /* Layout sidebar + contenu */
-      <div style={{display:"flex",alignItems:"flex-start"}}>
+      <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
@@ -262,7 +263,7 @@ export default function AccordsPage() {
           </PanneauFiltres>
 
           {/* Grille accords */}
-          <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading ? (
               <SkeletonCards n={6} cols={2} height={200}/>
             ) : erreur ? (

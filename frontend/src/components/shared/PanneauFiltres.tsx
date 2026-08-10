@@ -28,8 +28,13 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
 
   return (
     <aside style={{ width: ouvert ? largeur : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s",
-      background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100vh", overflowY: "auto",
-      position: "sticky", top: 0, display: "flex", flexDirection: "column" }}>
+      background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)",
+      // La rangée qui le porte a la hauteur de la fenêtre : le panneau la
+      // remplit et défile pour son propre compte. overscroll-behavior empêche
+      // le défilement de se propager à la page quand on arrive en bout de
+      // liste — c'est ce qui rend les deux zones vraiment indépendantes.
+      height: "100%", overflowY: "auto", overscrollBehavior: "contain",
+      display: "flex", flexDirection: "column" }}>
       <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
       {ouvert && <div onMouseDown={startResize}
         style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10,

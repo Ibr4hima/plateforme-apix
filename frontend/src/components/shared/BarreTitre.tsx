@@ -30,7 +30,7 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
   pleineLargeur?: boolean;     // aligne le contenu sur une page pleine largeur (sans colonne de filtres)
 }) {
   return (
-    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: FONDS[ton], position: "relative", overflow: "hidden" }}>
+    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: FONDS[ton], position: "relative", overflow: "hidden", flexShrink: 0 }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>

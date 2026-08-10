@@ -320,7 +320,8 @@ export default function EvenementsPage() {
   const toggleActivite = (v:string) => setActivitesSel(p=>p.includes(v)?p.filter(x=>x!==v):[...p,v]);
 
   return (
-    <main style={{minHeight:"100vh",background:"var(--champ)",fontFamily:"var(--font-google-sans)"}}>
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
@@ -338,7 +339,7 @@ export default function EvenementsPage() {
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
-      <div style={{display:"flex",alignItems:"flex-start"}}>
+      <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar bande */}
           <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
@@ -363,7 +364,7 @@ export default function EvenementsPage() {
           </PanneauFiltres>
 
           {/* Grille */}
-          <div style={{flex:1,minWidth:0,padding:"36px 40px 80px"}}>
+          <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
               <SkeletonCards n={6} cols={2} height={220}/>
             ):erreur?(

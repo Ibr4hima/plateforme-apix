@@ -35,7 +35,12 @@ export default function IdePage() {
   if (!d3Pret) return <div style={{ minHeight:"100vh", background:"var(--champ)" }}/>;
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
+    // La page occupe exactement la fenêtre et ne défile pas elle-même : le
+    // bandeau et les onglets restent en place, et le défilement appartient aux
+    // deux colonnes du dessous, chacune la sienne. 100dvh et non 100vh — sur
+    // mobile, la barre d'adresse rétractable fausse la seconde.
+    <div style={{ height:"100dvh", display:"flex", flexDirection:"column" as const, overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       {/* Les curseurs de la page viennent du module commun, qui apporte sa
           propre feuille de style ; il ne reste ici que l'animation d'attente. */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
@@ -46,7 +51,7 @@ export default function IdePage() {
 
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
-        <div style={{ background:"var(--carte)", position:"sticky" as const, top:0, zIndex:10, flexShrink:0, borderBottom:"1px solid var(--bordure)" }}>
+        <div style={{ background:"var(--carte)", zIndex:10, flexShrink:0, borderBottom:"1px solid var(--bordure)" }}>
           <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px" }}>
 
             {/* Niveau 1 : Réalisés / Projetés — segmented control du site */}
@@ -66,7 +71,11 @@ export default function IdePage() {
         </div>
       )}
 
-      {/* ── Contenu — IDE ────────────────────────────────────────────────────── */}
+      {/* ── Contenu ─────────────────────────────────────────────────────────── */}
+      {/* minHeight:0 est indispensable : sans lui, un enfant flex refuse de
+          devenir plus petit que son contenu et la zone déborde au lieu de
+          défiler. */}
+      <div style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column" as const }}>
       {ongletPrincipal === "ide" && (
         <>
           {/* Investissements réalisés (CNUCED) */}
@@ -99,8 +108,8 @@ export default function IdePage() {
         </>
       )}
 
-      {/* ── Contenu — Investissements nationaux ──────────────────────────────── */}
       {ongletPrincipal === "national" && <OngletNational />}
+      </div>
     </div>
   );
 }

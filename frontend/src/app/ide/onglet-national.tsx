@@ -525,9 +525,9 @@ function OngletNational() {
   const span = Math.max(1, bornes[1]-bornes[0]);
 
   return (
-    <div style={{ display:"flex", alignItems:"flex-start" }}>
+    <div style={{ display:"flex", flex:1, minHeight:0 }}>
       {/* Sidebar */}
-      <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"var(--carte)", borderRight:"1px solid var(--bordure-forte)", height:"100vh", overflowY:"auto" as const, position:"sticky" as const, top:0, display:"flex", flexDirection:"column" as const }}>
+      <aside style={{ width:sidebarOpen?sidebarWidth:52, flexShrink:0, transition:isResizing.current?"none":"width 0.25s", background:"var(--carte)", borderRight:"1px solid var(--bordure-forte)", height:"100%", overflowY:"auto" as const, overscrollBehavior:"contain" as const, display:"flex", flexDirection:"column" as const }}>
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
         {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
@@ -775,7 +775,7 @@ function OngletNational() {
       </aside>
 
       {/* Zone principale */}
-      <div style={{ flex:1, minWidth:0, padding:"36px 40px 80px" }}>
+      <div style={{ flex:1, minWidth:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const, padding:"36px 40px 80px" }}>
         {sousVue==="comparative" ? (
           /* ── Analyse comparative ── */
           (()=>{

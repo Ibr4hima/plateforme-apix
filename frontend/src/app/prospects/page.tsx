@@ -213,7 +213,8 @@ export default function ProspectsPage() {
   const nbFiltres = (recherche ? 1 : 0) + paysSel.length + secteursSel.length + statutSel.length;
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--champ)", fontFamily: "var(--font-google-sans)" }}>
+    <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
+      background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ── */}
       <BarreTitre titre="Prospects" compact actions={<NavActions onDark home flouFond/>}>
@@ -225,7 +226,7 @@ export default function ProspectsPage() {
       </BarreTitre>
 
       {/* ── Corps : sidebar + grille ── */}
-      <div style={{ display: "flex", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {/* Sidebar */}
         <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
           recherche={recherche} setRecherche={setRecherche}>
@@ -236,7 +237,7 @@ export default function ProspectsPage() {
         </PanneauFiltres>
 
         {/* Grille */}
-        <div style={{ flex: 1, minWidth: 0, padding: "36px 40px 80px" }}>
+        <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "36px 40px 80px" }}>
           {loading ? (
             <SkeletonCards n={9} cols={3} height={200} />
           ) : erreur ? (
