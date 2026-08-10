@@ -5,16 +5,20 @@
 // Style unique, aligné sur les jetons du design system.
 
 import React from "react";
-import { voile } from "@/lib/couleurs";
+import { badgeDe } from "@/lib/couleurs";
 
 export type SerieLegende = { nom: string; couleur: string };
 
 export function LegendeChip({ couleur, nom, point = true }: { couleur: string; nom: string; point?: boolean }) {
+  // Le badge de la palette (badgeDe), et non un habillage local : pour une
+  // série bleue, la pastille est alors exactement le badge_bleu du reste de la
+  // plateforme. La couleur, elle, reste celle de la SÉRIE — c'est ce qui relie
+  // la pastille à sa courbe, et une comparaison multi-pays s'écroulerait si
+  // toutes les pastilles étaient bleues.
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 700,
-      padding: point ? "2px 9px 2px 7px" : "2px 9px", borderRadius: 999,
-      color: couleur, background: `${voile(couleur, 7)}`, border: `1px solid ${voile(couleur, 19)}`,
+      ...badgeDe(couleur),
+      gap: point ? 6 : 0,
       whiteSpace: "nowrap", lineHeight: 1.4,
     }}>
       {point && <span style={{ width: 7, height: 7, borderRadius: "50%", background: couleur, flexShrink: 0 }} />}

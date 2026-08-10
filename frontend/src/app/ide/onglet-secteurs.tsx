@@ -466,7 +466,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               const seulGrapheValeur = typeAnalyse === "comparative" && SERIES.filter(x => x.unite !== "nombre").length === 1;
               return (
               <div key={g.id} style={seulGrapheValeur ? { gridColumn: "1 / -1" } : undefined}>
-              <GrapheCard titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
+              <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                 <GrapheMultiPays series={g.series} height={seulGrapheValeur?260:SERIES.length===2?220:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>

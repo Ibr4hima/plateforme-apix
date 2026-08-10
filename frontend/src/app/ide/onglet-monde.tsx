@@ -244,11 +244,11 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
 
       {/* Totaux mondiaux */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
-        <GrapheCard titre={L.serieE} sous_titre="M$ USD · CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
+        <GrapheCard titre={L.serieE} unite="M$ USD" source="CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesE} height={340}/>}>
           <GrapheMultiPays series={seriesE} height={160}/>
         </GrapheCard>
-        <GrapheCard titre={L.serieS} sous_titre="M$ USD · CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
+        <GrapheCard titre={L.serieS} unite="M$ USD" source="CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesS} height={340}/>}>
           <GrapheMultiPays series={seriesS} height={160}/>
         </GrapheCard>
@@ -631,7 +631,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <div className="charge-in">
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · Somme pays membres · CNUCED`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
+              <GrapheCard key={g.id} titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" sous_titre="Somme des pays membres" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                 <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
@@ -640,11 +640,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
           {modeDetail && !stActif && (
             <div style={{ marginTop:28, display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Flux IDE entrant · dernière année · M$ USD" grapheId="hbar" hideSousTitre
+              <GrapheCard titre={`Flux entrant — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} unite="M$ USD" source="CNUCED" sous_titre="Flux IDE entrant · dernière année" grapheId="hbar" hideSousTitre
                 fullChildren={<HBarChart donnees={donneesDetail}/>}>
                 <HBarChart donnees={donneesDetail} mini/>
               </GrapheCard>
-              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar" hideSousTitre
+              <GrapheCard titre={`Ent. vs Sort. — Top 10 · ${grpAvecCouleur[0]?.abrege ?? ''}`} unite="M$ USD" source="CNUCED" sous_titre="Top 10 · net entrant − sortant · vert positif / rouge négatif" grapheId="divbar" hideSousTitre
                 fullChildren={<DivergingBars donnees={donneesDetail}/>}>
                 <DivergingBars donnees={donneesDetail} mini/>
               </GrapheCard>

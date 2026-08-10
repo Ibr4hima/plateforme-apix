@@ -496,7 +496,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 if (stActif && g.unite === "nombre" && estComparatif)
                   return <CarteTableauComparatif key={`${g.id}-${paysAvecCouleur.map(p=>p.nom).join(",")}`} titre={g.titre} series={g.series}/>;
                 return (
-                <GrapheCard key={g.id} titre={g.titre} sous_titre={`${g.unite==="nombre"?"Nombre":"M$ USD"} · CNUCED · ${perMin}–${perMax}`} series={g.series} grapheId={g.id} hideLegend hideSousTitre
+                <GrapheCard key={g.id} titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                   <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
@@ -504,12 +504,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               })}
               {grapheExtras && <>
                 {/* Flux nets = entrants − sortants */}
-                <GrapheCard titre="Flux nets des IDE · entrants − sortants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
+                <GrapheCard titre="Flux nets des IDE · entrants − sortants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={grapheExtras.serieNet} height={340}/>}>
                   <GrapheMultiPays series={grapheExtras.serieNet} height={145}/>
                 </GrapheCard>
                 {/* Top 10 des années par flux entrants */}
-                <GrapheCard titre="Top 10 des années · flux entrants" sous_titre={`M$ USD · CNUCED · ${perMin}–${perMax}`} series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
+                <GrapheCard titre="Top 10 des années · flux entrants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
                   fullChildren={<TopAnneesFlux rows={grapheExtras.top10} grand/>}>
                   <TopAnneesFlux rows={grapheExtras.top10}/>
                 </GrapheCard>

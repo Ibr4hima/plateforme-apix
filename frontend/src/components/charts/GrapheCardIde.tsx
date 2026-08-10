@@ -6,7 +6,11 @@ import { GrapheModal } from "@/components/charts/GrapheModalIde";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 // ── Card graphe miniature (page IDE) ──────────────────────────────────────────
-export function GrapheCard({ titre, sous_titre, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
+export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
+  // La carte, elle, n'a ni pied ni place pour trois lignes : unité, source et
+  // note s'y recomposent en une seule légende discrète. Les ANNÉES n'y figurent
+  // plus — la modale les porte déjà en pastille.
+  const legende = [unite, source, sous_titre].filter(Boolean).join(" · ");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -26,7 +30,7 @@ export function GrapheCard({ titre, sous_titre, children, fullChildren, analyse,
             {!hideLegend && series?.length > 0 && (
               <LegendeGraphe series={series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))} style={{ marginTop: 5 }} />
             )}
-            {!hideSousTitre && sous_titre && <p style={{ fontSize:10.5, color:"var(--gris)", marginTop:4 }}>{sous_titre}</p>}
+            {!hideSousTitre && legende && <p style={{ fontSize:10.5, color:"var(--gris)", marginTop:4 }}>{legende}</p>}
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
             {analyse && <span style={{ fontSize:9, fontWeight:800, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>}
@@ -38,7 +42,7 @@ export function GrapheCard({ titre, sous_titre, children, fullChildren, analyse,
         <div style={{ pointerEvents:"none" }}>{children}</div>
       </div>
 
-      <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} analyse={analyse} series={series} grapheId={grapheId}>
+      <GrapheModal open={open} onClose={()=>setOpen(false)} titre={titre} sous_titre={sous_titre} unite={unite} source={source} analyse={analyse} series={series} grapheId={grapheId}>
         {fullChildren || children}
       </GrapheModal>
     </>
