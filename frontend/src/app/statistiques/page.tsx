@@ -743,10 +743,12 @@ export default function StatistiquesPage() {
                               <BtnSwapKpi ouvert={pickerOuvert} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)} />
                               <div style={{ marginBottom: 7, paddingRight: 26 }}>
                                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>Dernière année</p>
+                                {/* L'année en chiffres plutôt que « Dernière année » : le
+                                    millésime est l'information utile, la périphrase ne l'est
+                                    pas — et elle obligeait à répéter « en YYYY » sous la valeur. */}
+                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", marginTop: 2, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>{refAnnee}</p>
                               </div>
                               <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
-                              <p style={{ fontSize: 10, color: "var(--gris)", marginTop: 5, lineHeight: 1 }}>en {refAnnee}</p>
                               {pickerOuvert && (
                                 <PickerKpi items={pickerItems} alignDroite={slot >= 2}
                                   onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
