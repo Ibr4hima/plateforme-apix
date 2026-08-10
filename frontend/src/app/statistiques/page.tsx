@@ -488,7 +488,8 @@ export default function StatistiquesPage() {
   if (!d3Pret) return <main style={{ minHeight: "100vh", background: "var(--champ)" }}/>;
 
   return (
-    <main style={{ minHeight: "100vh", background: "var(--champ)", fontFamily: "var(--font-google-sans)" }}>
+    <main style={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden",
+      background: "var(--champ)", fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .drs-thumb{-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;padding:0;position:absolute;top:0;left:0;width:100%;pointer-events:none}
 .drs-thumb::-webkit-slider-runnable-track{background:transparent;height:4px}
@@ -503,14 +504,20 @@ export default function StatistiquesPage() {
         ]} value={mode} onChange={setMode} />
       </BarreTitre>
 
+      {/* Sous le bandeau, la hauteur restante. Les deux modes à barre latérale
+          y posent leurs deux colonnes ; le commerce extérieur, qui n'en a pas,
+          reçoit ici son propre conteneur défilant. */}
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       {mode === "exterieur" ? (
-        <CommerceExterieurPanel />
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}>
+          <CommerceExterieurPanel />
+        </div>
       ) : mode === "commerce" ? (
         <CommercePanel />
       ) : (
-      <div style={{ display: "flex", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         {/* ── Barre de filtre ── */}
-        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100vh", overflowY: "auto", position: "sticky", top: 0, display: "flex", flexDirection: "column" }}>
+        <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100%", overflowY: "auto", overscrollBehavior: "contain", display: "flex", flexDirection: "column" }}>
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
           {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
           <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid var(--bordure)", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
@@ -660,7 +667,7 @@ export default function StatistiquesPage() {
         </aside>
 
         {/* Zone principale */}
-        <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
+        <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px" }}>
           {loading ? (
             <div style={{ display: "grid", gap: 18 }}>
               <SkeletonKPIs n={5} />
@@ -788,6 +795,7 @@ export default function StatistiquesPage() {
         </div>
       </div>
       )}
+      </div>
 
       <MiniModalKpi kpi={kpiActif} pays={kpiActif ? paysNom(selection[0]) : ""} couleur="var(--bleu)" onClose={() => setKpiActif(null)} />
       <ModalDonnees open={showTable} onClose={() => setShowTable(false)} donnees={donnees} indicateurs={indicateurs}

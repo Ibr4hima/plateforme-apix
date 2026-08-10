@@ -347,23 +347,30 @@ function CommercePanel() {
   const ressFiltrees = ressources.filter(r => !qRess || (r.libelle || r.nom_en).toLowerCase().includes(qRess.toLowerCase()));
 
   if (loading) return (
-    <div style={{ padding: "32px 40px 80px", display: "grid", gap: 18 }}>
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px", display: "grid", gap: 18 }}>
       <SkeletonKPIs n={5} />
       <SkeletonChartGrid n={2} cols={2} height={320} />
     </div>
   );
-  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  // Les retours anticipés sont des enfants directs de la colonne de hauteur
+  // fixe : sans conteneur défilant, un contenu un peu haut déborderait au lieu
+  // de défiler.
+  if (erreur) return (
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}>
+      <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+    </div>
+  );
   if (!annees.length) return (
-    <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
       <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucune donnée commerciale</p>
       <p style={{ fontSize: 14, marginTop: 6 }}>Les flux bilatéraux seront disponibles après import dans l&apos;administration.</p>
     </div>
   );
 
   return (
-    <div className="charge-in" style={{ display: "flex", alignItems: "flex-start" }}>
+    <div className="charge-in" style={{ display: "flex", flex: 1, minHeight: 0 }}>
       {/* ── Barre de filtre ── */}
-      <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100vh", overflowY: "auto", position: "sticky", top: 0, display: "flex", flexDirection: "column" }}>
+      <aside style={{ width: sidebarOpen ? sidebarWidth : 52, flexShrink: 0, transition: isResizing.current ? "none" : "width 0.25s", background: "var(--carte)", borderRight: "1px solid var(--bordure-forte)", height: "100%", overflowY: "auto", overscrollBehavior: "contain", display: "flex", flexDirection: "column" }}>
         {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
         <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid var(--bordure)", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
           {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
@@ -514,7 +521,7 @@ function CommercePanel() {
           parle, sans qu'il faille relire la bascule. Le panneau de filtres
           reste bleu : il sélectionne, il ne montre pas de donnée. */}
       {(() => { const accent = vue === "exportateur" ? ACCENT_BLEU : ACCENT_ORANGE; return (
-      <div style={{ flex: 1, minWidth: 0, padding: "32px 40px 80px" }}>
+      <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "32px 40px 80px" }}>
         {/* Header : pays → bascule Exportations/Importations → période */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: accent.trait, flexShrink: 0 }} />
