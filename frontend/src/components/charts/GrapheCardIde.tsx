@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Maximize2 } from "lucide-react";
 import { GrapheModal } from "@/components/charts/GrapheModalIde";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
@@ -32,12 +31,9 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
             )}
             {!hideSousTitre && legende && <p style={{ fontSize:10.5, color:"var(--gris)", marginTop:4 }}>{legende}</p>}
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
-            {analyse && <span style={{ fontSize:9, fontWeight:800, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>}
-            <span style={{ width:26, height:26, borderRadius:8, background:"var(--champ)", display:"inline-flex", alignItems:"center", justifyContent:"center" }}>
-              <Maximize2 size={11} style={{ color:"var(--gris)" }} />
-            </span>
-          </div>
+          {analyse && <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
+            <span style={{ fontSize:9, fontWeight:800, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, letterSpacing:"0.08em" }}>ANALYSE</span>
+          </div>}
         </div>
         <div style={{ pointerEvents:"none" }}>{children}</div>
       </div>

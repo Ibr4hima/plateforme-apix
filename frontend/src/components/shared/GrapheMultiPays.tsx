@@ -1,6 +1,6 @@
 "use client";
 
-// Graphe multi-séries signature — courbes avec glow et ombre portée
+// Graphe multi-séries — courbes nettes : un trait, une aire dégradée, rien de plus
 // (filtres SVG), aires en dégradé riche, curseur aimanté année par année
 // (ligne + points + tooltip avec delta vs année précédente), annotation
 // du pic historique en mono-série. Rendu STATIQUE : aucune animation
@@ -68,7 +68,12 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
     const spanRatio = Math.max(...serieRanges.map(r => r.span)) / Math.max(1, Math.min(...serieRanges.map(r => r.span)));
     const useDual = dualAxis === false ? false : (type === "line" && series.length >= 2 && spanRatio > 4);
 
-    const M = { top: 12, right: useDual ? 58 : 20, bottom: 34, left: 64 };
+    // La marge gauche n'est pas devinée : elle se MESURE sur la plus large
+    // étiquette de l'axe. Une valeur fixe est forcément trop courte pour
+    // « 25 000 » et trop large pour « 4k » — et c'est le second cas qui se
+    // produisait, laissant un vide sur la gauche que rien ne compensait à
+    // droite. Le graphe s'y trouve maintenant centré dans sa carte.
+    const M: { top: number; right: number; bottom: number; left: number } = { top: 12, right: useDual ? 58 : 22, bottom: 34, left: 64 };
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
 
     const allAnnees = [...new Set(allData.map(d => d.annee))].sort((a, b) => a - b);
@@ -87,6 +92,17 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           return series.map(() => shared);
         })();
     const y = yScales[0];
+
+    // d3 pose l'étiquette à 9 px à gauche de l'axe, alignée à droite : il faut
+    // sa largeur, plus ce décalage, plus un peu d'air.
+    const largeurEtiquette = (valeurs: number[]) => {
+      const ctx = document.createElement("canvas").getContext("2d");
+      if (!ctx) return 30;
+      ctx.font = "10px 'Google Sans', 'Product Sans', Arial, sans-serif";
+      return Math.max(...valeurs.map(v => ctx.measureText(fmtAxe(v)).width));
+    };
+    M.left = Math.round(Math.max(26, largeurEtiquette(y.ticks(4)) + 13));
+    if (useDual) M.right = Math.round(Math.max(26, largeurEtiquette(yScales[1].ticks(4)) + 13));
 
     const xBand = d3.scaleBand().domain(allAnnees.map(String)).range([M.left, W - M.right]).padding(0.18);
     const xLin = d3.scaleLinear().domain([allAnnees[0], allAnnees[allAnnees.length - 1]]).range([M.left, W - M.right]);
@@ -143,12 +159,10 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
     // ── COURBES SIGNATURE ──
     } else {
       const epaisseur = lineWidth ?? (series.length === 1 ? 2.6 : 2.2);
-      // Filtres partagés : ombre portée et glow
-      const idOmbre = `${uid}-ombre`, idGlow = `${uid}-glow`;
-      const fOmbre = defs.append("filter").attr("id", idOmbre).attr("x", "-40%").attr("y", "-40%").attr("width", "180%").attr("height", "220%");
-      fOmbre.append("feGaussianBlur").attr("in", "SourceGraphic").attr("stdDeviation", 4);
-      const fGlow = defs.append("filter").attr("id", idGlow).attr("x", "-40%").attr("y", "-40%").attr("width", "180%").attr("height", "220%");
-      fGlow.append("feGaussianBlur").attr("in", "SourceGraphic").attr("stdDeviation", 3);
+      // Ni ombre portée ni halo : la courbe se lit à son tracé. Les deux
+      // filtres gaussiens qui la doublaient épaississaient visuellement le
+      // trait de trois fois sa largeur et brouillaient les inflexions — c'est
+      // précisément ce qu'on demande à un graphe de montrer.
 
       series.forEach((s, si) => {
         const ys = yScales[si];
@@ -162,8 +176,8 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const areaBase = ys(Math.max(ys.domain()[0], 0));
         const gid = `${uid}-a${si}`;
         const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
-        grad.append("stop").attr("offset", "0%").style("stop-color", s.couleur).attr("stop-opacity", 0.28);
-        grad.append("stop").attr("offset", "55%").style("stop-color", s.couleur).attr("stop-opacity", 0.07);
+        grad.append("stop").attr("offset", "0%").style("stop-color", s.couleur).attr("stop-opacity", 0.20);
+        grad.append("stop").attr("offset", "55%").style("stop-color", s.couleur).attr("stop-opacity", 0.05);
         grad.append("stop").attr("offset", "100%").style("stop-color", s.couleur).attr("stop-opacity", 0);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
@@ -172,20 +186,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         // Aire en dégradé riche
         if (montrerAire) svg.append("path").style("fill", `url(#${gid})`).attr("d", dAire);
-        if (!pointille) {
-          // Ombre portée de la ligne
-          svg.append("path").style("fill", "none")
-            .style("stroke", s.couleur).attr("stroke-width", epaisseur + 0.5)
-            .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
-            .attr("transform", "translate(0,6)").attr("filter", `url(#${idOmbre})`).attr("opacity", 0.22)
-            .attr("d", dLigne);
-          // Glow
-          svg.append("path").style("fill", "none")
-            .style("stroke", s.couleur).attr("stroke-width", epaisseur * 3.2)
-            .attr("stroke-linejoin", "round").attr("stroke-linecap", "round")
-            .attr("filter", `url(#${idGlow})`).attr("opacity", 0.14)
-            .attr("d", dLigne);
-        }
         // La ligne
         svg.append("path").style("fill", "none")
           .style("stroke", s.couleur).attr("stroke-width", pointille ? Math.max(1.6, epaisseur - 0.4) : epaisseur)
@@ -195,11 +195,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .attr("d", dLigne);
 
         if (!pointille) {
-          // Point terminal souligné d'un halo
+          // Point terminal : un simple disque cerné de la couleur de carte
           const fin = valid[valid.length - 1];
           const gFin = svg.append("g");
-          gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 7)
-            .style("fill", s.couleur).attr("opacity", 0.3).attr("filter", `url(#${idGlow})`);
           gFin.append("circle").attr("cx", xLin(fin.annee)).attr("cy", ys(fin.valeur)).attr("r", 3.6)
             .style("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.6);
 
@@ -224,7 +222,6 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const px = xLin(pic.annee), py = yScales[0](pic.valeur);
           gPic = svg.append("g");
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 7.5)
-            .style("fill", series[0].couleur).attr("opacity", 0.2).attr("filter", `url(#${idGlow})`);
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 4.5)
             .style("fill", "none").style("stroke", series[0].couleur).attr("stroke-width", 1.7);
           const libelle = `PIC · ${fmtXv(pic.annee)}`;
@@ -234,7 +231,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const chip = gPic.append("g");
           chip.append("rect").attr("x", cx).attr("y", cy).attr("rx", 9).attr("width", lw).attr("height", 18)
             .style("fill", "var(--sur-bleu)").style("stroke", "rgb(var(--encre-rgb) / 0.16)").attr("stroke-width", 0.75)
-            .attr("filter", `drop-shadow(0 3px 6px rgb(var(--ombre-rgb) / 0.10))`);
+
           chip.append("text").attr("x", cx + lw / 2).attr("y", cy + 12.5).attr("text-anchor", "middle")
             .style("font-size", "8.5px").style("font-weight", "700").style("letter-spacing", "0.8px")
             .style("fill", series[0].couleur).text(libelle);
@@ -248,7 +245,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         .style("stroke", "rgb(var(--encre-rgb) / 0.30)").attr("stroke-width", 1).attr("stroke-dasharray", "3,3");
       const pointsCurseur = series.map(s => {
         const g = gCurseur.append("g");
-        g.append("circle").attr("r", 7.5).style("fill", s.couleur).attr("opacity", 0.25).attr("filter", `url(#${idGlow})`);
+        // Un anneau translucide plutôt qu'un halo flouté : même rôle — signaler
+        // le point visé — pour un tracé net.
+        g.append("circle").attr("r", 7.5).style("fill", "none").style("stroke", s.couleur).attr("stroke-width", 1.5).attr("opacity", 0.35);
         g.append("circle").attr("r", 4.2).style("fill", s.couleur).style("stroke", "var(--carte)").attr("stroke-width", 1.8);
         return g;
       });
