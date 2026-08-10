@@ -1241,8 +1241,15 @@ async def commerce_repartition(
     annees: Optional[str] = Query(default=None),
     ressources: Optional[str] = Query(default=None),
     limite: int = Query(default=10, ge=1, le=50),
+    recherche: Optional[str] = Query(default=None),
 ):
-    """Ventilation par partenaire ET par ressource (barres empilées)."""
+    """Ventilation par partenaire ET par ressource (barres empilées).
+
+    `recherche` cherche un partenaire par son nom au-delà du top : le classement
+    reste calculé sur TOUS les partenaires, et chaque ligne renvoyee porte son
+    rang réel — c'est l'information qu'on vient chercher en tapant un pays qui
+    ne figure pas dans les dix premiers.
+    """
     from sqlalchemy import and_ as _and
     from collections import defaultdict
 
@@ -1281,25 +1288,40 @@ async def commerce_repartition(
         res_tot[r.res] += v
         cell[(r.pid, r.res)] += v
 
-    top_pids = sorted(part_tot, key=lambda p: part_tot[p], reverse=True)[:limite]
+    # Le classement porte sur tous les partenaires, pas sur la page renvoyée :
+    # sans quoi un pays cherché hors du top n'aurait pas de rang à afficher.
+    classement = sorted(part_tot, key=lambda p: part_tot[p], reverse=True)
+    rangs = {pid: i + 1 for i, pid in enumerate(classement)}
     res_order = sorted(res_tot, key=lambda r: res_tot[r], reverse=True)
 
     libs = {}
     if res_order:
         rl = (await db.execute(select(StatRessource.nom_en, StatRessource.libelle).where(StatRessource.nom_en.in_(res_order)))).all()
         libs = {code: lib for code, lib in rl}
-    noms = {}
-    iso2 = {}
-    if top_pids:
-        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(top_pids)))).all()
+
+    q = _norm(recherche or "")
+    if q:
+        # La recherche porte sur le nom : il faut donc les noms de TOUS les
+        # partenaires, pas seulement ceux du top.
+        rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(classement)))).all() if classement else []
         noms = {rid: nom for rid, nom, _ in rn}
         iso2 = {rid: c for rid, _, c in rn}
+        top_pids = [pid for pid in classement if q in _norm(noms.get(pid) or "")][:limite]
+    else:
+        top_pids = classement[:limite]
+        noms = {}
+        iso2 = {}
+        if top_pids:
+            rn = (await db.execute(select(RefPays.id, RefPays.nom_fr, RefPays.code_iso2).where(RefPays.id.in_(top_pids)))).all()
+            noms = {rid: nom for rid, nom, _ in rn}
+            iso2 = {rid: c for rid, _, c in rn}
 
     ressources_labels = [libs.get(r) or r for r in res_order]
     partenaires = [
         {
             "nom": noms.get(pid) or "—",
             "code_iso2": iso2.get(pid),
+            "rang": rangs.get(pid),
             "total": part_tot[pid],
             "valeurs": [cell.get((pid, res), 0.0) for res in res_order],
         }

@@ -5,7 +5,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, FileSpreadsheet, Loader2, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurseur, varsAccent } from "@/components/shared/CurseurNace";
 import { demarrerRedimension } from "@/lib/redimension";
@@ -16,6 +16,10 @@ import { API, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORA
 
 // ── Panneau Flux bilatéraux (données commerciales) ────────────────────────────
 type OptionPaysCom = { id: number; nom: string; code_iso3: string | null; continent: string | null; region_geo: string | null };
+/** Une ligne du tableau partenaire × ressource. `rang` est le rang du
+ *  partenaire dans le classement COMPLET, pas sa position dans la page — c'est
+ *  ce qui donne son sens à une recherche hors du top 10. */
+type PartenaireRessources = { nom: string; code_iso2?: string | null; rang?: number | null; total: number; valeurs: number[] };
 // ── Modal « Tableau de données » des flux bilatéraux ──────────────────────────
 function ModalDonneesCommerce({ open, onClose, selId, vue, nomPays, anneesTabs }: {
   open: boolean; onClose: () => void; selId: number | null; vue: "exportateur" | "importateur";
@@ -218,7 +222,11 @@ function CommercePanel() {
   const [chargKpis, setChargKpis] = useState(false);
   const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
   const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
-  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[] } | null>(null);
+  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: PartenaireRessources[] } | null>(null);
+  // Recherche d'un partenaire hors du top 10 : le serveur classe tous les
+  // partenaires et renvoie ceux dont le nom correspond, avec leur rang réel.
+  const [rechPart, setRechPart] = useState("");
+  const rechPartD = useDebounced(rechPart, 300);
   // Vue Cumul / année des deux tableaux : année choisie + données dédiées
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
@@ -269,18 +277,32 @@ function CommercePanel() {
       .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
   }, [selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
 
-  // Tops (débouchés / ressources) — dépend de la direction (vue)
-  useEffect(() => {
-    if (!selId) { setTops(null); setRepart(null); return; }
+  // Les paramètres communs aux deux tableaux — pays, direction, période,
+  // ressources cochées.
+  const paramsFlux = useCallback(() => {
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
     if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
     else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
+    return p;
+  }, [selId, vue, modeAnnees, anneesSpecD, anneeMinD, anneeMaxD, ressources.length, ressSel]);
+
+  // Tops (débouchés / ressources) — dépend de la direction (vue)
+  useEffect(() => {
+    if (!selId) { setTops(null); return; }
+    fetch(`${API}/statistiques/commerce/tops?${paramsFlux().toString()}`)
       .then(r => r.json()).then(setTops).catch(() => setTops(null));
+  }, [selId, paramsFlux]);
+
+  // Répartition partenaire × ressource — la recherche d'un partenaire la relance
+  // seule, sans reprendre le tableau des ressources qui ne la connaît pas.
+  useEffect(() => {
+    if (!selId) { setRepart(null); return; }
+    const p = paramsFlux();
+    if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
-  }, [vue, selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
+  }, [selId, paramsFlux, rechPartD]);
 
   // Données d'une année précise pour les tableaux (bascule Cumul / année)
   const anneePoidsD = useDebounced(anneePoids, 250);
@@ -299,10 +321,11 @@ function CommercePanel() {
     const annee = anneeRepartD;
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
+    if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
     fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
       .then(r => r.json()).then(d => setRepartAnnee({ annee, data: d }))
       .catch(() => setRepartAnnee({ annee, data: null }));
-  }, [vue, selId, anneeRepartD, ressSel, ressources.length]);
+  }, [vue, selId, anneeRepartD, ressSel, ressources.length, rechPartD]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -645,16 +668,24 @@ function CommercePanel() {
                     : anneePoids !== null && <Vide annee={anneePoids} />}
                 </div>
               )}
-              {(repart?.partenaires?.length || 0) > 0 && (
+              {/* La carte reste montée pendant une recherche infructueuse :
+                  sinon le champ disparaîtrait avec elle, et l'on ne pourrait
+                  plus corriger sa saisie. */}
+              {((repart?.partenaires?.length || 0) > 0 || rechPart.trim()) && (
                 <div style={carte}>
                   <div style={enTete}>
                     <h3 style={titreStyle}>{expDir ? "Exportations par destination et ressource" : "Importations par origine et ressource"}</h3>
+                    <ChampRecherchePartenaire valeur={rechPart} onChange={setRechPart} expDir={expDir} />
                     <BarreCumulAnnee annees={anneesTabs} annee={anneeRepart} onAnnee={setAnneeRepart} accent={accent} />
                   </div>
                   {anneeRepart !== null && chargRepartAnnee
                     ? <SkeletonRows n={Math.max(3, parts.length || 6)} h={30} />
                     : parts.length > 0
                     ? <TableauPartenairesRessources partenaires={parts} ressources={resLabels} accent={accent} />
+                    : rechPart.trim()
+                    ? <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "22px 0" }}>
+                        Aucun{expDir ? "e destination" : "e origine"} ne correspond à « {rechPart.trim()} »{anneeRepart !== null ? ` en ${anneeRepart}` : ""}.
+                      </p>
                     : anneeRepart !== null && <Vide annee={anneeRepart} />}
                 </div>
               )}
@@ -666,6 +697,32 @@ function CommercePanel() {
       <ModalDonneesCommerce open={showTable} onClose={() => setShowTable(false)} selId={selId} vue={vue}
         nomPays={selPays?.nom || "—"} anneesTabs={anneesTabs} />
     </div>
+  );
+}
+
+// ── Recherche d'un partenaire dans le tableau des flux ────────────────────────
+// Le tableau montre les dix premiers partenaires. Au-delà, il fallait ouvrir le
+// tableau de données complet pour savoir ce que le Sénégal exporte vers la
+// Belgique. Le champ interroge le classement entier et ramène les lignes
+// correspondantes, rang réel compris — c'est le serveur qui cherche, la page
+// n'a jamais que dix lignes en mémoire.
+function ChampRecherchePartenaire({ valeur, onChange, expDir }: {
+  valeur: string; onChange: (v: string) => void; expDir: boolean;
+}) {
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", flexShrink: 0 }}>
+      <Search size={12} style={{ position: "absolute", left: 9, color: "var(--gris)", pointerEvents: "none" }} />
+      <input value={valeur} onChange={e => onChange(e.target.value)}
+        placeholder={expDir ? "Rechercher une destination…" : "Rechercher une origine…"}
+        aria-label={expDir ? "Rechercher une destination" : "Rechercher une origine"}
+        style={{ width: 196, padding: "6px 24px 6px 27px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 11.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+      {valeur && (
+        <button onClick={() => onChange("")} aria-label="Effacer la recherche"
+          style={{ position: "absolute", right: 8, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+          <X size={11} style={{ color: "var(--gris)" }} />
+        </button>
+      )}
+    </span>
   );
 }
 
@@ -734,8 +791,7 @@ function TableauPoidsRessources({ data, total, accent }: {
 
 
 function TableauPartenairesRessources({ partenaires, ressources, accent }: {
-  partenaires: { nom: string; code_iso2?: string | null; total: number; valeurs: number[] }[];
-  ressources: string[]; accent: AccentNace;
+  partenaires: PartenaireRessources[]; ressources: string[]; accent: AccentNace;
 }) {
   return (
     <div style={{ overflowX: "auto" }}>
@@ -755,14 +811,17 @@ function TableauPartenairesRessources({ partenaires, ressources, accent }: {
             // Ressource dominante du partenaire : sa valeur ressort en vert
             const vMax = Math.max(0, ...p.valeurs.map(v => v ?? 0));
             const zebre = i % 2 === 1;
-            const podium = i < 3;
+            // Le rang vient du serveur : lors d'une recherche, la 37e destination
+            // reste la 37e, elle ne devient pas la 1re parce qu'elle est seule.
+            const rang = p.rang ?? i + 1;
+            const podium = rang <= 3;
             return (
             <tr key={p.nom} style={{ background: zebre ? "var(--carte-douce)" : "transparent", transition: "background 0.12s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = accent.voile; }}
               onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = zebre ? "var(--carte-douce)" : "transparent"; }}>
               <td style={{ padding: "7px 6px 7px 10px", borderBottom: "1px solid var(--bordure)" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%",
-                  background: podium ? accent.trait : "var(--sur-bleu)", color: podium ? "var(--sur-bleu)" : "var(--gris)", fontSize: 10.5, fontWeight: 800 }}>{i + 1}</span>
+                  background: podium ? accent.trait : "var(--sur-bleu)", color: podium ? "var(--sur-bleu)" : "var(--gris)", fontSize: rang > 99 ? 9 : 10.5, fontWeight: 800 }}>{rang}</span>
               </td>
               <td style={{ padding: "7px 10px", borderBottom: "1px solid var(--bordure)" }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
