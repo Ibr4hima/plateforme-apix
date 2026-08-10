@@ -1,6 +1,6 @@
 "use client";
 
-import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
@@ -165,7 +165,7 @@ export default function EntreprisesPage() {
             icon={triDate==="desc"?<ArrowDownUp size={13} color="var(--sur-bleu)"/>:<ArrowUpDown size={13} color="var(--sur-bleu)"/>}
             onClick={()=>setTriDate(triDate==="desc"?"asc":"desc")}/>
         ) : null}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises"},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste des entreprises",count:entreprises.length},{v:"territoire",l:"Vue territoriale"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
       {/* Vue territoriale */}
@@ -210,7 +210,6 @@ export default function EntreprisesPage() {
               </div>
             ):(
               <>
-              <CompteurResultats n={entreprises.length} singulier="entreprise" pluriel="entreprises" />
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {entreprises.map(e=>{
                   // Couleur du pôle : jetons partagés du design system.

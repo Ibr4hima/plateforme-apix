@@ -5,7 +5,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { Building2 } from "lucide-react";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
-import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
@@ -251,7 +251,6 @@ export default function ProspectsPage() {
             </div>
           ) : (
             <>
-            <CompteurResultats n={listeCourante.length} singulier="prospect" />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))", gap: 14 }}>
               {listeCourante.map(p => <CarteProspect key={p.id} p={p} onglet={onglet} onOpen={() => { setSelecInfos(false); setSelec(p); }} onOpenInfos={() => { setSelecInfos(true); setSelec(p); }} />)}
             </div>

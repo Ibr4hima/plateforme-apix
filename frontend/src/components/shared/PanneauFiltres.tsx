@@ -83,14 +83,6 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
  * Compteur de résultats sous filtre — les trois pages n'en affichaient aucun :
  * après un filtrage, impossible de savoir combien la liste comptait d'entrées.
  */
-export function CompteurResultats({ n, singulier, pluriel }: { n: number; singulier: string; pluriel?: string }) {
-  return (
-    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--gris)", margin: "0 0 12px" }}>
-      {n.toLocaleString("fr-FR")} {n > 1 ? (pluriel ?? singulier + "s") : singulier}
-    </p>
-  );
-}
-
 /**
  * Props clavier d'une carte cliquable : Entrée et Espace équivalent au clic.
  *

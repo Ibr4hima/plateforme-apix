@@ -1,6 +1,6 @@
 "use client";
 
-import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -335,7 +335,7 @@ export default function EvenementsPage() {
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
             icon={<span className="material-symbols-outlined" style={{fontSize:16,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
-        <BarreTitreSegment options={[{v:"liste",l:"Liste"},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
+        <BarreTitreSegment options={[{v:"liste",l:"Liste",count:evenements.length},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -380,7 +380,6 @@ export default function EvenementsPage() {
               <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>
             ):(
               <>
-                <CompteurResultats n={evenements.length} singulier="événement" />
                 <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                   {evenements.map(e=>{
                     const dateStr = e.date_debut

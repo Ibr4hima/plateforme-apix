@@ -1,6 +1,6 @@
 "use client";
 
-import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -153,7 +153,7 @@ export default function AccordsPage() {
       {/* Hero */}
       <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>}>
         <BarreTitreSegment options={[
-          {v:"tbi",   l:"Traités Bilatéraux d'Investissement"},
+          {v:"tbi",   l:"Traités Bilatéraux d'Investissement", count: accords.length},
           {v:"inter", l:"Traités Internationaux", badge:"Bientôt"},
         ]} value={typeTraite} onChange={setTypeTraite}/>
       </BarreTitre>
@@ -278,7 +278,6 @@ export default function AccordsPage() {
               </div>
             ) : (
               <>
-              <CompteurResultats n={accords.length} singulier="accord" pluriel="accords" />
               <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:14}}>
                 {accords.map(a=>{
                   const statut = computeStatut(a);

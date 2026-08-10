@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 import { fetchTous } from "@/lib/fetchTous";
 import { useEtatUrl } from "@/lib/useEtatUrl";
-import PanneauFiltres, { CompteurResultats, carteCliquable } from "@/components/shared/PanneauFiltres";
+import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
 import ProjetVueModal from "@/components/shared/ProjetVueModal";
 import PotentialiteVueModal from "@/components/shared/PotentialiteVueModal";
@@ -159,7 +159,7 @@ export default function OpportunitesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
       <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark home flouFond/>}>
-        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets"},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
+        <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:projetsFiltres.length},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
       {/* Layout sidebar + contenu */}
@@ -207,7 +207,6 @@ export default function OpportunitesPage() {
                   </div>
                 ) : (
                   <>
-                  <CompteurResultats n={projetsFiltres.length} singulier="projet"/>
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
                     {projetsFiltres.map(p=>{
                       return (
