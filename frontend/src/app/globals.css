@@ -88,6 +88,9 @@
   --pole-sud-est: #E6AC9D;
   --grille: #F0EEEB;
   --grille-zero: #DDD9D4;
+  --halo-clair: rgba(255,255,255,0.07);
+  --halo-bleu: rgba(0,79,145,0.50);
+  --halo-orange: rgba(202,99,31,0.45);
   --pouce: #FFFFFF;
   --verre: rgba(255,255,255,0.65);
   --verre-fort: rgba(242,240,239,0.92);
@@ -115,13 +118,13 @@
   --ombre-rgb: 0 30 60;
   --gris-rgb: 122 138 164;
 
-  --degrade-hero: #004f91;
-  --degrade-hero-orange: #ca631f;
+  --degrade-hero: linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%);
+  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%);
   --degrade-filet: linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%);
   --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
   --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
   --degrade-pastille: linear-gradient(135deg,#004f91,#1a6ab0);
-  --degrade-texte: linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%);
+  --degrade-texte: linear-gradient(135deg,#ca631f 0%,#e8935a 100%);
   --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%);
 }
 
@@ -212,6 +215,9 @@
     --pole-sud-est: #F09571;
     --grille: #243044;
     --grille-zero: #33415A;
+    --halo-clair: transparent;
+    --halo-bleu: transparent;
+    --halo-orange: transparent;
     --pouce: #DCE6F3;
     --verre: rgba(21,30,46,0.72);
     --verre-fort: rgba(11,18,32,0.92);
@@ -334,6 +340,9 @@
   --pole-sud-est: #F09571;
   --grille: #243044;
   --grille-zero: #33415A;
+  --halo-clair: transparent;
+  --halo-bleu: transparent;
+  --halo-orange: transparent;
   --pouce: #DCE6F3;
   --verre: rgba(21,30,46,0.72);
   --verre-fort: rgba(11,18,32,0.92);

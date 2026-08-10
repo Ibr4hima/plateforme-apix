@@ -154,6 +154,16 @@ export const JETONS = {
   grille:       { clair: "#F0EEEB", sombre: "#243044" },
   grilleZero:   { clair: "#DDD9D4", sombre: "#33415A" },
 
+  // ── Les halos des bandeaux ──
+  // Deux grands cercles flous posés sur le bandeau, qui lui donnent son relief
+  // de jour. De NUIT ils valent « transparent » : sur un aplat de minuit, un
+  // halo à 45 % recrée exactement le dégradé qu'on a retiré. Les éteindre par
+  // la couleur plutôt que par le rendu conditionnel garde le balisage
+  // identique dans les deux schémas.
+  haloClair:    { clair: "rgba(255,255,255,0.07)", sombre: "transparent" },
+  haloBleu:     { clair: "rgba(0,79,145,0.50)", sombre: "transparent" },
+  haloOrange:   { clair: "rgba(202,99,31,0.45)", sombre: "transparent" },
+
   // ── Divers ──
   // Le pouce d'un curseur doit se détacher de sa piste : blanc le jour, blanc
   // bleuté la nuit — surtout pas la couleur des cartes, qui le ferait
@@ -235,18 +245,22 @@ export const GRIS_ALPHA = "122 138 164";
 // (#16213A → #22406A) : une marche d'élévation au-dessus des cartes, la
 // couleur restant au contenu.
 export const DEGRADES = {
-  // ── Les bandeaux de hero : un APLAT, pas un dégradé ─────────────────────────
-  // Ils restent nommés « degrade » parce que la valeur est consommée comme un
-  // fond et que le nom est employé sur sept écrans ; ce qu'ils portent, en
-  // revanche, est une couleur pleine. Le bleu APIX de jour, et de nuit le bleu
-  // de minuit du hero de l'application — une simple marche d'élévation
-  // au-dessus des cartes, la couleur restant au contenu.
+  // ── Les bandeaux de hero ────────────────────────────────────────────────────
+  // Deux traitements, un par schéma, et c'est voulu.
+  //
+  // De JOUR, le dégradé historique du site : il porte la profondeur du bleu
+  // APIX et c'est l'image que la plateforme donne d'elle-même.
+  //
+  // De NUIT, un aplat. Le dégradé n'y apportait rien — entre #16213A et
+  // #22406A, l'écart est trop faible pour se lire comme une matière, et les
+  // halos qui l'accompagnaient venaient éclaircir un bandeau qui doit rester
+  // une simple marche d'élévation au-dessus des cartes.
   degradeHero: {
-    clair: "#004f91",
+    clair: "linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%)",
     sombre: "#16213A",
   },
   degradeHeroOrange: {
-    clair: "#ca631f",
+    clair: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%)",
     sombre: "#6B3D18",
   },
   degradeFilet: {
@@ -269,11 +283,12 @@ export const DEGRADES = {
   // plateforme : il part de l'orange de la maison et monte vers un abricot.
   // De nuit, les deux bornes montent avec le reste — un dégradé sombre sur un
   // hero sombre ne se verrait pas.
-  // Les deux bornes sont DÉRIVÉES de --orange : la seconde en est un
-  // éclaircissement. Rien à tenir à jour de part et d'autre, et le dégradé
-  // suit l'apparence sans valeur propre — c'est --orange qui bascule.
+  // Le mot vedette du titre d'accueil, seul dégradé de TEXTE de la plateforme.
+  // De jour, les valeurs historiques du site. De nuit, une dérivation de
+  // --orange : sa seconde borne en est un éclaircissement, ce qui évite d'avoir
+  // à maintenir un abricot de nuit à côté de l'orange de nuit.
   degradeTexte: {
-    clair: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
+    clair: "linear-gradient(135deg,#ca631f 0%,#e8935a 100%)",
     sombre: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
   },
   degradeChat: {
