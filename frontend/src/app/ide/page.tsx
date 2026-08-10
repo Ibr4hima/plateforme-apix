@@ -92,7 +92,8 @@ export default function IdePage() {
           )}
           {/* Investissements projetés (FDI Markets) */}
           {section === "projetes" && (
-            <div style={{ maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const }}>
+            <div style={{ flex:1, minHeight:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const,
+              maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const, width:"100%" }}>
               <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
                 <div style={{ width:64, height:64, borderRadius:16, background:"rgb(var(--bleu-rgb) / 0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <span style={{ fontSize:32 }}>📈</span>

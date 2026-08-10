@@ -170,7 +170,8 @@ export default function EntreprisesPage() {
 
       {/* Vue territoriale */}
       {onglet==="territoire" && (
-        <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
+        <section style={{flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain",
+          padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto",width:"100%"}}>
           {loading ? (
             <SkeletonChart height={520}/>
           ) : (
