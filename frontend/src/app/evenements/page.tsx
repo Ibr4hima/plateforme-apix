@@ -5,7 +5,7 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreBadge, BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { GRILLE_CARTES, MIN_CARTE } from "@/lib/grilles";
+import { grilleCartes, COLONNES_OUVERT, COLONNES_REPLIE } from "@/lib/grilles";
 import { CalendarDays } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
@@ -224,6 +224,8 @@ export default function EvenementsPage() {
   const gate = useAuthGate();
   const [tous,        setTous]        = useState<any[]>([]);
   const [loading,     setLoading]     = useState(true);
+  // Barre de filtres repliée : la grille prend une colonne de plus.
+  const [filtresOuverts, setFiltresOuverts] = useState(true);
   const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
@@ -343,7 +345,7 @@ export default function EvenementsPage() {
       <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar bande */}
-          <PanneauFiltres nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
+          <PanneauFiltres onPli={setFiltresOuverts} nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
                 <div style={{marginBottom:18}}>
                   <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
@@ -367,7 +369,7 @@ export default function EvenementsPage() {
           {/* Grille */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",overscrollBehavior:"contain",padding:"36px 40px 80px"}}>
             {loading?(
-              <SkeletonCards n={6} min={MIN_CARTE} height={220}/>
+              <SkeletonCards n={6} cols={filtresOuverts ? COLONNES_OUVERT : COLONNES_REPLIE} height={220}/>
             ):erreur?(
               <ErreurChargement onRetry={()=>charger()}/>
             ):evenements.length===0?(
@@ -381,7 +383,7 @@ export default function EvenementsPage() {
               <FriseChronologique evenements={evenements} onOpen={(e:any)=>gate(()=>setSelec(e))} prochainId={prochainId}/>
             ):(
               <>
-                <div className="charge-in" style={GRILLE_CARTES}>
+                <div className="charge-in" style={grilleCartes(filtresOuverts)}>
                   {evenements.map(e=>{
                     const dateStr = e.date_debut
                       ? (e.date_debut===e.date_fin||!e.date_fin ? fmtDate(e.date_debut) : `${fmtDate(e.date_debut)} → ${fmtDate(e.date_fin)}`)

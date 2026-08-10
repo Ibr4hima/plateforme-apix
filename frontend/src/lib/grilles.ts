@@ -4,22 +4,25 @@ import type { CSSProperties } from "react";
  * La grille des cartes des pages à barre de filtres — entreprises, accords,
  * événements.
  *
- * Elle était figée à deux colonnes. Replier la barre de filtres libérait alors
- * 230 px qui ne servaient à rien : les deux cartes s'étiraient au lieu qu'une
- * troisième apparaisse. Même chose en élargissant la barre à la poignée, ou sur
- * un écran étroit où deux colonnes deviennent illisibles.
+ * Elle était figée à deux colonnes : replier la barre libérait 230 px qui ne
+ * servaient à rien, les deux cartes s'étiraient au lieu qu'une troisième
+ * apparaisse.
  *
- * `auto-fill` répond à la largeur RÉELLE de la zone, quelle qu'en soit la
- * cause : plus d'état à faire remonter du panneau vers la page, et le cas du
- * panneau redimensionné est traité par la même règle.
+ * Une grille `auto-fill` avait d'abord été essayée : elle répond à la largeur
+ * réelle de la zone, donc au pli comme au redimensionnement de la barre. Mais
+ * le nombre de colonnes y dépend alors de la fenêtre, et sur un écran d'environ
+ * 1100 px — le cas courant sur les postes de la Présidence — le pli ne suffit
+ * pas à faire tenir la troisième : à l'écran, rien ne bougeait. Le nombre de
+ * colonnes est donc décidé par l'état de la barre, pas par une largeur seuil.
  *
- * Le seuil de 360 px est choisi pour que, sur un écran de bureau courant, la
- * troisième colonne apparaisse quand la barre se replie et pas avant.
+ * `minmax(0, 1fr)` plutôt que `1fr` : sans cela une carte au contenu large
+ * (un nom d'entreprise sans espace) élargit sa colonne au détriment des autres.
  */
-export const MIN_CARTE = 360;
+export const COLONNES_OUVERT = 2;
+export const COLONNES_REPLIE = 3;
 
-export const GRILLE_CARTES: CSSProperties = {
+export const grilleCartes = (filtresOuverts: boolean): CSSProperties => ({
   display: "grid",
-  gridTemplateColumns: `repeat(auto-fill, minmax(${MIN_CARTE}px, 1fr))`,
+  gridTemplateColumns: `repeat(${filtresOuverts ? COLONNES_OUVERT : COLONNES_REPLIE}, minmax(0, 1fr))`,
   gap: 14,
-};
+});

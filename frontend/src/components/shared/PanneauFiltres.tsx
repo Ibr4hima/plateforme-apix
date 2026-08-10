@@ -13,15 +13,19 @@ import { useRef, useState } from "react";
 import { demarrerRedimension } from "@/lib/redimension";
 
 export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
-  recherche, setRecherche, children }: {
+  recherche, setRecherche, onPli, children }: {
   nbFiltres: number;
   aDesFiltres: boolean;
   onReinit: () => void;
   recherche: string;
   setRecherche: (v: string) => void;
+  /** Prévenu à chaque pli / dépli — la grille de cartes s'en sert pour prendre
+   *  une colonne de plus quand la place se libère. */
+  onPli?: (ouvert: boolean) => void;
   children: React.ReactNode;
 }) {
   const [ouvert, setOuvert] = useState(true);
+  const basculer = () => setOuvert(o => { onPli?.(!o); return !o; });
   const [largeur, setLargeur] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, largeur, setLargeur, isResizing, 200, 520);
@@ -45,7 +49,7 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
         display: "flex", alignItems: "center", justifyContent: ouvert ? "space-between" : "center", flexShrink: 0 }}>
         {ouvert && <span style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button onClick={() => setOuvert(o => !o)} aria-label={ouvert ? "Réduire les filtres" : "Afficher les filtres"}
+          <button onClick={basculer} aria-label={ouvert ? "Réduire les filtres" : "Afficher les filtres"}
             style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px",
               display: "flex", alignItems: "center", gap: 5 }}>
             <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
