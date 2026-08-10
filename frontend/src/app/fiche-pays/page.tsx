@@ -329,7 +329,7 @@ function ContenuFichePays() {
                               : ENCRE;
                             return (
                               <td key={c.id} className="ds-donnee" style={{ padding: "10px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                                <span style={{ fontSize: 13, fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite)}</span>
+                                <span style={{ fontSize: 13, fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite, ind.code)}</span>
                                 {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "var(--gris)" }}>{cell.annee}</span>}
                               </td>
                             );

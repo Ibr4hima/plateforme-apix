@@ -73,12 +73,25 @@ export function fmtAxe(v: number): string {
   return `${Math.round(v)}`;
 }
 
-// Valeur avec unité métier (fiches et cartes KPI des indicateurs)
-export function fmtUnite(valeur: number | null | undefined, unite: string): string {
+// Les grandeurs « par habitant » s'écrivent en entier — 2 873,6 $ et non
+// 2,9 k $. L'abréviation gagne trois caractères et perd l'information : entre
+// deux pays, l'écart de PIB par habitant se joue sur les centaines. Le partage
+// se fait par CODE d'indicateur et non par unité, car « USD » sert aussi aux
+// flux de commerce extérieur, qui se comptent en milliards et se lisent mieux
+// abrégés.
+const PAR_HABITANT = new Set(["pib_hab"]);
+
+// Valeur avec unité métier (fiches et cartes KPI des indicateurs).
+// `code` est facultatif : il ne sert qu'aux indicateurs dont le rendu ne se
+// déduit pas de la seule unité.
+export function fmtUnite(valeur: number | null | undefined, unite: string, code?: string): string {
   if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
   const v = valeur;
   if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)} %`;
-  if (unite === "USD") return fmtUSD(v);
+  if (unite === "USD") {
+    if (code && PAR_HABITANT.has(code)) return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} $`;
+    return fmtUSD(v);
+  }
   if (unite === "Md USD") return `${nf1(v)} Md $`;
   if (unite === "hab/km²") return `${nf1(v)} hab/km²`;
   if (unite === "km²") return `${Math.round(v).toLocaleString("fr-FR")} km²`;

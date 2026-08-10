@@ -12,6 +12,7 @@ import { ChevronDown, FileSpreadsheet, Plus, Search, SlidersHorizontal, Table, X
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
+import Variation from "@/components/shared/Variation";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import CommerceExterieurPanel from "./commerce-exterieur";
 import CommercePanel from "./flux-bilateraux";
@@ -126,7 +127,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
   const signalColor = couleur;
   const interpret = (() => {
     if (valeur === null) return "Donnée non disponible pour cet indicateur sur la période sélectionnée.";
-    const val = fmt(valeur, ind.unite);
+    const val = fmt(valeur, ind.unite, ind.code);
     if (variation === null) return `En ${annee}, ${pays} affiche ${val} pour l'indicateur « ${ind.libelle} ».`;
     const sens = isPos ? "en hausse" : isNeg ? "en baisse" : "stable";
     const pct = `${variation > 0 ? "+" : ""}${variation.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
@@ -168,7 +169,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background: trendBg, border: `1px solid ${trendBorder}`, borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite)}</span>
+              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: signalColor, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
               <span style={{ fontSize: 13, color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
             </div>
           </div>
@@ -278,7 +279,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                       </td>
                       {annees.map(a => {
                         const v = val(pays.id, ind.code, a);
-                        const display = v !== null && v !== undefined ? fmt(v, ind.unite) : "—";
+                        const display = v !== null && v !== undefined ? fmt(v, ind.unite, ind.code) : "—";
                         const color = v === null || v === undefined ? "var(--gris)" : (ind.unite === "%" && v < 0) ? "var(--danger)" : "var(--texte)";
                         return (
                           <td key={a} style={{ padding: "9px 12px", textAlign: "right", fontSize: 12, color, fontWeight: v !== null && v !== undefined ? 600 : 400, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{display}</td>
@@ -463,7 +464,7 @@ export default function StatistiquesPage() {
   // Indicateurs proposés au remplacement (non épinglés), liste à plat
   const pickerItems: PickerItem[] = indicateurs.filter(i => !kpisEpingles.includes(i.code)).map(i => ({
     id: i.code, label: i.libelle, badge: refAnnee ? String(refAnnee) : null,
-    valeur: fmt(selection.length ? valeur(selection[0], i.code, refAnnee) : null, i.unite),
+    valeur: fmt(selection.length ? valeur(selection[0], i.code, refAnnee) : null, i.unite, i.code),
     title: i.libelle,
   }));
 
@@ -734,6 +735,12 @@ export default function StatistiquesPage() {
                         {indicateursAffiches.map((ind, slot) => {
                           const v = valeur(selection[0], ind.code, refAnnee);
                           const prec = valeur(selection[0], ind.code, refAnnee - 1);
+                          // La superficie est la seule grandeur sans dimension
+                          // temporelle — elle est stockée sans année, et une
+                          // « variation » des frontières du pays n'aurait aucun
+                          // sens. Partout ailleurs on compare à n−1.
+                          const varPct = ind.code !== "superficie" && v !== null && prec !== null && prec !== 0
+                            ? ((v - prec) / Math.abs(prec)) * 100 : null;
                           const pickerOuvert = pickerSlot === slot;
                           return (
                             <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, precedent: prec })}
@@ -748,7 +755,12 @@ export default function StatistiquesPage() {
                                     pas — et elle obligeait à répéter « en YYYY » sous la valeur. */}
                                 <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", marginTop: 2, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>{refAnnee}</p>
                               </div>
-                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite)}</p>
+                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite, ind.code)}</p>
+                              {varPct !== null && (
+                                <div style={{ marginTop: 6 }}>
+                                  <Variation valeur={varPct} annee={refAnnee - 1} />
+                                </div>
+                              )}
                               {pickerOuvert && (
                                 <PickerKpi items={pickerItems} alignDroite={slot >= 2}
                                   onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />
@@ -782,8 +794,8 @@ export default function StatistiquesPage() {
                         const series = selection.map(id => ({ nom: paysNom(id), couleur: couleurPays(id), data: anneesActives.map(a => ({ annee: a, valeur: valeur(id, ind.code, a) })) }));
                         return (
                           <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={`stat_${estComparatif ? "cmp_" : ""}${ind.code}`} hideLegend hideSousTitre
-                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} lineWidth={estComparatif ? 1.6 : undefined} />}>
-                            <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite)} showDots={!estComparatif} lineWidth={estComparatif ? 1.4 : undefined} />
+                            fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={(v: number | null) => fmt(v, ind.unite, ind.code)} lineWidth={estComparatif ? 1.6 : undefined} />}>
+                            <GrapheMultiPays series={series} height={145} type="line" fmt={(v: number | null) => fmt(v, ind.unite, ind.code)} showDots={!estComparatif} lineWidth={estComparatif ? 1.4 : undefined} />
                           </GrapheCard>
                         );
                       })}

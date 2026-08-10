@@ -45,7 +45,10 @@ def _completer_derives(par_pays_annee: dict) -> None:
         if pop and surf and surf > 0:
             vals["densite"] = round(pop / surf, 2)
         if pop and pib and pop > 0:
-            vals["pib_hab"] = round(pib / pop, 1)  # pib en USD bruts
+            # Deux décimales : le PIB par habitant s'affiche en entier côté
+            # plateforme (2 873,65 $ et non 2,9 k $), arrondir au dixième
+            # supprimerait une décimale qui a un sens à cette échelle.
+            vals["pib_hab"] = round(pib / pop, 2)  # pib en USD bruts
         im, ex = vals.get("importations_marchandises"), vals.get("exportations_marchandises")
         if im is not None and ex is not None:
             vals["balance_marchandises"] = round(ex - im, 1)
