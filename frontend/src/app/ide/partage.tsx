@@ -817,6 +817,13 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
   const signalBorder= isTrend ? (isPos?"rgb(var(--vert-rgb) / 0.18)":isNeg?"rgb(var(--danger-rgb) / 0.18)":"var(--bordure)") : "rgb(var(--bleu-rgb) / 0.10)";
   const trendLabel  = isTrend ? (isPos?"Positif":isNeg?"Négatif":"Neutre") : null;
   const { main: titreMain, suffix: titreSuffix } = splitKpiTitre(kpi.label);
+  // « dernière année » ne dit rien que la date du titre ne dise déjà.
+  const precision = titreSuffix === "dernière année" ? null : titreSuffix;
+  // Les quatre années qui précèdent celle du KPI — la dernière y figure déjà,
+  // en grand, dans la section Valeur.
+  const historique = (kpi.serie ?? [])
+    .filter(p => kpi.annee == null || p.annee < kpi.annee)
+    .slice(-4);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
     <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
@@ -831,28 +838,31 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35 }}>{titreMain}</h2>
-              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:couleur, background:`${voile(couleur, 7)}`, border:`1px solid ${voile(couleur, 19)}` }}>
-                  <span style={{ width:7, height:7, borderRadius:"50%", background:couleur, display:"inline-block" }} />
-                  {pays}
-                </span>
-                {titreSuffix && (
-                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
-                    {titreSuffix}
-                  </span>
-                )}
-                {trendLabel && (
-                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
-                    {trendLabel}
-                  </span>
-                )}
-                {kpi.annee && (
-                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
-                    {kpi.annee}
-                  </span>
-                )}
+              {/* L'année rejoint le titre, et le pays la même ligne. La
+                  précision « dernière année » disparaît : la date la dit mieux.
+                  Les autres précisions — « (vs N-1) », « (5 ans) » — portent du
+                  sens et restent. */}
+              <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
+                  {titreMain}
+                  {kpi.annee && <span style={{ color:"var(--gris-fort)" }}>{` · ${kpi.annee}`}</span>}
+                </h2>
+                <span style={{ ...badgeDe(couleur), whiteSpace:"nowrap" as const }}>{pays}</span>
               </div>
+              {(precision || trendLabel) && (
+                <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
+                  {precision && (
+                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
+                      {precision}
+                    </span>
+                  )}
+                  {trendLabel && (
+                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
+                      {trendLabel}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <button onClick={onClose} aria-label="Fermer" style={{ width:32, height:32, borderRadius:"50%", background:"var(--champ)", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="var(--fond-creux2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--champ)";}}>
@@ -870,15 +880,26 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
               {kpi.annee && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {kpi.annee}</span>}
             </div>
           </div>
+          {historique.length > 0 && (
+            <div>
+              <SecTitle>Historique récent</SecTitle>
+              <div style={{ display:"grid", gridTemplateColumns:`repeat(${historique.length},1fr)`, gap:8 }}>
+                {historique.map(p => (
+                  <div key={p.annee} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{p.annee}</p>
+                    <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>
+                      {fmtKpi({ ...kpi, valeur: p.v })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <SecTitle>Interprétation</SecTitle>
             <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
               <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{interp}</p>
             </div>
-          </div>
-          <div>
-            <SecTitle>Définition</SecTitle>
-            <p style={{ fontSize:12, color:"var(--gris)", lineHeight:1.65 }}>{kpi.description}</p>
           </div>
         </div>
 

@@ -17,6 +17,10 @@ export interface KpiResult {
   annee?: number;
   description: string;
   format: "monnaie" | "pourcentage" | "ratio" | "entier" | "annee" | "monnaie_signe";
+  /** La série annuelle dont ce KPI est le dernier point — absente pour les
+      indicateurs dérivés (croissances, ratios, cumuls), qui n'en ont pas. Elle
+      alimente l'historique récent de la fiche. */
+  serie?: { annee: number; v: number }[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -126,17 +130,17 @@ export function calculerKpis(donnees: DonneesIDE[]): KpiResult[] {
 
   const R: KpiResult[] = [];
 
-  const add = (id:string,label:string,categorie:string,valeur:number|null,unite:string,annee:number|undefined,description:string,format:KpiResult["format"]) => {
-    R.push({id,label,categorie,valeur,unite,annee,description,format});
+  const add = (id:string,label:string,categorie:string,valeur:number|null,unite:string,annee:number|undefined,description:string,format:KpiResult["format"],serie?:{annee:number;v:number}[]) => {
+    R.push({id,label,categorie,valeur,unite,annee,description,format,serie});
   };
 
   // ── 1. Valeurs annuelles ──────────────────────────────────────────────────
-  add("fe_last","Flux entrants — dernière année","Valeurs annuelles",lastFE?.v??null,"M$",lastFE?.annee,"Montant des flux d'IDE entrants pour la dernière année disponible","monnaie");
-  add("fs_last","Flux sortants — dernière année","Valeurs annuelles",lastFS?.v??null,"M$",lastFS?.annee,"Montant des flux d'IDE sortants pour la dernière année disponible","monnaie");
-  add("fn_last","Flux nets — dernière année","Valeurs annuelles",lastFE&&lastFS?lastFE.v-lastFS.v:null,"M$",lastFE?.annee,"Flux entrants moins flux sortants","monnaie_signe");
-  add("se_last","Stock entrant — dernière année","Valeurs annuelles",lastSE?.v??null,"M$",lastSE?.annee,"Stock d'IDE entrant cumulé","monnaie");
-  add("ss_last","Stock sortant — dernière année","Valeurs annuelles",lastSS?.v??null,"M$",lastSS?.annee,"Stock d'IDE sortant cumulé","monnaie");
-  add("sn_last","Stock net — dernière année","Valeurs annuelles",lastSE&&lastSS?lastSE.v-lastSS.v:null,"M$",lastSE?.annee,"Stock entrant moins stock sortant","monnaie_signe");
+  add("fe_last","Flux entrants — dernière année","Valeurs annuelles",lastFE?.v??null,"M$",lastFE?.annee,"Montant des flux d'IDE entrants pour la dernière année disponible","monnaie",FE);
+  add("fs_last","Flux sortants — dernière année","Valeurs annuelles",lastFS?.v??null,"M$",lastFS?.annee,"Montant des flux d'IDE sortants pour la dernière année disponible","monnaie",FS);
+  add("fn_last","Flux nets — dernière année","Valeurs annuelles",lastFE&&lastFS?lastFE.v-lastFS.v:null,"M$",lastFE?.annee,"Flux entrants moins flux sortants","monnaie_signe",vFN);
+  add("se_last","Stock entrant — dernière année","Valeurs annuelles",lastSE?.v??null,"M$",lastSE?.annee,"Stock d'IDE entrant cumulé","monnaie",SE);
+  add("ss_last","Stock sortant — dernière année","Valeurs annuelles",lastSS?.v??null,"M$",lastSS?.annee,"Stock d'IDE sortant cumulé","monnaie",SS);
+  add("sn_last","Stock net — dernière année","Valeurs annuelles",lastSE&&lastSS?lastSE.v-lastSS.v:null,"M$",lastSE?.annee,"Stock entrant moins stock sortant","monnaie_signe",vSN);
 
   // ── 2. Cumulés ────────────────────────────────────────────────────────────
   add("fe_cum","Flux entrants cumulés","Cumulés",vFE.reduce((a,b)=>a+b,0)||null,"M$",undefined,"Somme de tous les flux entrants sur la période","monnaie");
