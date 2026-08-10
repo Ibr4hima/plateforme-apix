@@ -8,7 +8,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+import { API, BadgePeriode, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
 import { voile } from "@/lib/couleurs";
 
 
@@ -789,9 +789,9 @@ function OngletNational() {
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:compSelec.length>0?10:20, flexWrap:"wrap" as const }}>
               <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
                 <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)", margin:0 }}>Analyse comparative {typeLabel}</h2>
-                {anneesComp.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
+                {anneesComp.length>0&&<BadgePeriode>
                   {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
-                </span>}
+                </BadgePeriode>}
               </div>
               {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
                 <Table size={14}/> Tableau de données
@@ -854,9 +854,12 @@ function OngletNational() {
             {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"var(--fond)", border:"1px solid var(--bordure-forte)", fontSize:9, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
               {BDEF_NIVEAU_LABEL[sel.niveau]}
             </span>}
-            {anneesAffichees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"5px 13px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
+            {/* Même pastille de période que l'onglet IDE : les deux titres se
+                lisent côte à côte dans la navigation, deux dessins pour la
+                même information se voyaient. */}
+            {anneesAffichees.length>0&&<BadgePeriode>
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
-            </span>}
+            </BadgePeriode>}
           </div>
           {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
             <Table size={14}/> Tableau de données
