@@ -12,6 +12,7 @@ import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees } from "./partage";
+import Variation from "@/components/shared/Variation";
 
 
 // ── Onglet Monde ──────────────────────────────────────────────────────────────
@@ -233,10 +234,9 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
             </div>
             <p title={c.texte ? c.val : undefined} style={{ fontSize: c.texte ? "0.98rem" : "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
             <div style={{ marginTop: 5, minHeight: 12, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" as const }}>
-              {c.delta != null && c.ref != null ? (<>
-                <span style={{ fontSize: 10, fontWeight: 800, color: c.delta > 0 ? "var(--vert)" : c.delta < 0 ? "var(--danger)" : "var(--gris)", whiteSpace: "nowrap" as const }}>{c.delta > 0 ? "▲" : c.delta < 0 ? "▼" : "="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}&nbsp;%</span>
-                <span style={{ fontSize: 9.5, color: "var(--gris)", whiteSpace: "nowrap" as const }}>par rapport à {c.ref}</span>
-              </>) : (c.sous ? <p style={{ fontSize: 10, color: "var(--gris)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
+              {c.delta != null && c.ref != null ? (
+                  <Variation valeur={c.delta} annee={c.ref} taille={10} />
+                ) : (c.sous ? <p style={{ fontSize: 10, color: "var(--gris)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
             </div>
           </div>
         ))}

@@ -11,6 +11,7 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
+import Variation from "@/components/shared/Variation";
 
 
 function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { paysDispo: any[]; showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
@@ -431,10 +432,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 </div>
                 <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
                 <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
-                  {c.delta != null && c.ref != null ? (<>
-                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"var(--vert)":c.delta<0?"var(--danger)":"var(--gris)", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
-                    <span style={{ fontSize:9.5, color:"var(--gris)", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
-                  </>) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
+                  {c.delta != null && c.ref != null ? (
+                    <Variation valeur={c.delta} annee={c.ref} taille={10} />
+                  ) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
                 </div>
               </div>
             )) : <>
@@ -461,10 +461,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   ); })()}
                   <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{fmtKpi(k)}</p>
                   <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
-                    {delta != null && ref != null ? (<>
-                      <span style={{ fontSize:10, fontWeight:800, color:delta>0?"var(--vert)":delta<0?"var(--danger)":"var(--gris)", whiteSpace:"nowrap" as const }}>{delta>0?"▲":delta<0?"▼":"="}&nbsp;{Math.abs(delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
-                      <span style={{ fontSize:9.5, color:"var(--gris)", whiteSpace:"nowrap" as const }}>par rapport à {ref}</span>
-                    </>) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{indicatif}</p> : null)}
+                    {delta != null && ref != null ? (
+                    <Variation valeur={delta} annee={ref} taille={10} />
+                  ) : (k.annee == null && indicatif ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{indicatif}</p> : null)}
                   </div>
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}

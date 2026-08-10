@@ -16,6 +16,7 @@ import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import Variation from "@/components/shared/Variation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
@@ -30,15 +31,10 @@ const getJSON = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)
 // ── Petits blocs de présentation ──────────────────────────────────────────────
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
-function Delta({ v, surFonce = false }: { v: number | null; surFonce?: boolean }) {
-  if (v == null || !isFinite(v)) return null;
-  const pos = v > 0, neg = v < 0;
-  const col = surFonce ? (pos ? "var(--vert)" : neg ? "var(--danger-voile)" : "rgba(255,255,255,0.7)") : (pos ? "var(--vert)" : neg ? "var(--danger)" : "var(--gris)");
-  return (
-    <span style={{ fontSize: 11.5, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-      {pos ? "▲" : neg ? "▼" : "="}&nbsp;{nf(Math.abs(v), 1)} %
-    </span>
-  );
+function Delta({ v, surFonce }: { v: number | null | undefined; surFonce?: boolean }) {
+  // Enveloppe du composant commun : ce fichier appelle Delta à une dizaine
+  // d'endroits, il n'y a pas de raison de les réécrire tous.
+  return <Variation valeur={v} taille={11.5} surFonce={surFonce} />;
 }
 
 function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: { label: string; valeur: string; tag?: string; delta?: number | null; rouge?: boolean; sousLabel?: string; refAnnee?: number | string | null; texte?: boolean }) {
@@ -56,8 +52,7 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
       <p className="ds-donnee" style={styleValeur}>{valeur}</p>
       <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         {sousLabel && <span style={{ fontSize: 10.5, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
-        {delta != null && <Delta v={delta} />}
-        {refAnnee != null && <span style={{ fontSize: 10.5, color: "var(--gris)", whiteSpace: "nowrap" }}>par rapport à {refAnnee}</span>}
+        {delta != null && <Variation valeur={delta} annee={refAnnee != null ? Number(refAnnee) : null} taille={11.5} />}
       </div>
     </div>
   );
@@ -293,13 +288,11 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
   portees?: { avant: boolean; apres: boolean };
 }) {
   const avecRang = !!(portee && onPortee);
-  const Variation = ({ court }: { court: boolean }) => delta == null ? null : (
-    <span style={{ fontSize: 11.5, fontWeight: 800, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
-      color: delta > 0 ? "var(--vert)" : delta < 0 ? "var(--danger)" : "var(--gris)" }}>
-      {delta > 0 ? "▲" : delta < 0 ? "▼" : "="}&nbsp;{nf(Math.abs(delta), 1)} %
-      {annee != null && <span style={{ fontWeight: 600, color: "var(--gris)" }}>{court ? ` vs ${annee - 1}` : ` par rapport à ${annee - 1}`}</span>}
-    </span>
-  );
+  // Le composant partagé, présenté sur une ligne. `court` n'a plus d'objet
+  // depuis que la référence s'écrit « vs 2024 » dans les deux cas — il reste
+  // pour ne pas toucher aux points d'appel.
+  const VariationLigne = (_: { court?: boolean }) =>
+    delta == null ? null : <Variation valeur={delta} annee={annee != null ? annee - 1 : null} taille={11.5} />;
   return (
     <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -321,7 +314,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
             <p className="ds-donnee" style={{ fontSize: "1.6rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
-            {avecRang && <Variation court />}
+            {avecRang && <VariationLigne />}
           </div>
           <div style={{ marginTop: 9, minHeight: 20, display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
             {avecRang ? (
@@ -329,7 +322,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
                 libelle={<>{rang != null ? `${rang}ᵉ · ` : ""}{portee!.abrege}</>}
                 onPrec={portees?.avant ? () => onPortee!(-1) : undefined}
                 onSuiv={portees?.apres ? () => onPortee!(1) : undefined} />
-            ) : <Variation court={false} />}
+            ) : <VariationLigne />}
           </div>
         </>
       )}

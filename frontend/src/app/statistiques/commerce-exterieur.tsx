@@ -9,6 +9,7 @@ import { ChevronRight, FileSpreadsheet, Loader2, Search, X } from "lucide-react"
 import { ACCENT_BLEU, StylesCurseurNace, pastilleCurseur, varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { API, NACE_BLEU, NACE_ORANGE } from "./partage";
+import Variation from "@/components/shared/Variation";
 
 
 // ── Panneau Commerce extérieur (Sénégal uniquement) ──────────────────────────
@@ -66,6 +67,9 @@ function CelluleStat({ v, an, fmt, large, attenue }: {
     </span>
   );
 }
+// Variation en CELLULE DE TABLEAU : le triangle y reste, faute de place pour
+// une icône, et parce que des dizaines de lignes alignées se lisent mieux avec
+// un signe de largeur fixe. Les cartes KPI, elles, utilisent <Variation>.
 function VariationNace({ v }: { v: number | null }) {
   if (v == null || !isFinite(v)) return <span style={{ fontSize: 10.5, color: "var(--gris)" }}>—</span>;
   const pos = v > 0, neg = v < 0;
@@ -1433,7 +1437,7 @@ function CommerceExterieurPanel() {
             </div>
             <p className="ds-donnee" style={{ fontSize: "1.2rem", fontWeight: 800, color: k.rouge ? "var(--danger)" : "var(--encre)", lineHeight: 1.15, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.valeur}</p>
             <div style={{ marginTop: 6, minHeight: 14, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              {k.variation != null && <><VariationNace v={k.variation} /><span style={{ fontSize: 10, color: "var(--gris)" }}>par rapport à {an - 1}</span></>}
+              {k.variation != null && <Variation valeur={k.variation} annee={an - 1} taille={11} />}
               {"sous" in k && k.sous && <span style={{ fontSize: 10, color: "var(--gris)" }}>{k.sous}</span>}
             </div>
           </div>

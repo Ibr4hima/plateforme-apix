@@ -8,6 +8,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow } from "./partage";
+import Variation from "@/components/shared/Variation";
 
 
 // ── Vue Secteurs (analyse sectorielle CNUCED) ─────────────────────────────────
@@ -429,10 +430,9 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                 </div>
                 <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
                 <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
-                  {c.delta != null && c.ref != null ? (<>
-                    <span style={{ fontSize:10, fontWeight:800, color:c.delta>0?"var(--vert)":c.delta<0?"var(--danger)":"var(--gris)", whiteSpace:"nowrap" as const }}>{c.delta>0?"▲":c.delta<0?"▼":"="}&nbsp;{Math.abs(c.delta).toLocaleString("fr-FR",{maximumFractionDigits:1})}&nbsp;%</span>
-                    <span style={{ fontSize:9.5, color:"var(--gris)", whiteSpace:"nowrap" as const }}>par rapport à {c.ref}</span>
-                  </>) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
+                  {c.delta != null && c.ref != null ? (
+                  <Variation valeur={c.delta} annee={c.ref} taille={10} />
+                ) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
                 </div>
               </div>
             ))}
