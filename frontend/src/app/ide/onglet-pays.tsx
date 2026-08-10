@@ -113,21 +113,37 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     series: buildSerie(s.dir, s.ind),
   }));
 
-  // Graphes d'analyse des flux (vue Pays, flux & stocks, hors comparatif) :
-  // flux nets et top 10 des années par flux entrants — pays de référence.
+  // Graphes d'analyse (vue Pays, flux & stocks, hors comparatif) : soldes nets
+  // des flux et des stocks, et top 10 des années dans les deux sens — pays de
+  // référence.
   const grapheExtras = (!stActif && !estComparatif) ? (() => {
-    const fluxDe = (dir: string) => donneesRef
-      .filter((d: any) => d.direction === dir && d.indicateur === "flux" && d.valeur !== null)
+    const serieDe = (dir: string, ind: string) => donneesRef
+      .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee) as { annee: number; valeur: number }[];
-    const rowsE = fluxDe("entrant"), rowsS = fluxDe("sortant");
+    // Un solde n'a de sens que sur les années où les DEUX sens sont connus :
+    // soustraire une valeur manquante reviendrait à la compter pour zéro.
+    const solde = (entrant: { annee: number; valeur: number }[], sortant: { annee: number; valeur: number }[]) => {
+      const parAnnee = new Map(sortant.map(r => [r.annee, r.valeur]));
+      return entrant.filter(r => parAnnee.has(r.annee))
+        .map(r => ({ annee: r.annee, valeur: r.valeur - (parAnnee.get(r.annee) as number) }));
+    };
+    const rowsE = serieDe("entrant", "flux"), rowsS = serieDe("sortant", "flux");
+    const stockE = serieDe("entrant", "stock"), stockS = serieDe("sortant", "stock");
     if (!rowsE.length) return null;
-    const parAnneeS = new Map(rowsS.map(r => [r.annee, r.valeur]));
-    const net = rowsE.filter(r => parAnneeS.has(r.annee))
-      .map(r => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
-    const serieNet = [{ nom: "Flux nets", couleur: "var(--bleu)", data: net }];
-    const top10 = [...rowsE].sort((a, b) => b.valeur - a.valeur).slice(0, 10);
+
+    const serieNet = [{ nom: "Flux nets", couleur: "var(--bleu)", data: solde(rowsE, rowsS) }];
+    const soldeStock = solde(stockE, stockS);
+    const serieStockNet = soldeStock.length
+      ? [{ nom: "Stocks nets", couleur: "var(--bleu)", data: soldeStock }] : null;
+
+    const dixPremieres = (rs: { annee: number; valeur: number }[]) =>
+      [...rs].sort((a, b) => b.valeur - a.valeur).slice(0, 10);
+    const top10 = dixPremieres(rowsE);
     const serieTop = [{ nom: "Flux entrants", couleur: "var(--bleu)", data: top10 }];
-    return { serieNet, top10, serieTop };
+    const top10S = rowsS.length ? dixPremieres(rowsS) : null;
+    const serieTopS = top10S ? [{ nom: "Flux sortants", couleur: "var(--bleu)", data: top10S }] : null;
+
+    return { serieNet, serieStockNet, top10, serieTop, top10S, serieTopS };
   })() : null;
 
   // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que
@@ -503,16 +519,28 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 );
               })}
               {grapheExtras && <>
-                {/* Flux nets = entrants − sortants */}
-                <GrapheCard titre="Flux nets des IDE · entrants − sortants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
+                {/* Soldes nets : entrants − sortants, pour les flux puis les stocks */}
+                <GrapheCard titre="Flux nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={grapheExtras.serieNet} height={340}/>}>
                   <GrapheMultiPays series={grapheExtras.serieNet} height={145}/>
                 </GrapheCard>
+                {grapheExtras.serieStockNet && (
+                  <GrapheCard titre="Stocks nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieStockNet} grapheId="fluxstock-stocknet" hideLegend hideSousTitre
+                    fullChildren={<GrapheMultiPays series={grapheExtras.serieStockNet} height={340}/>}>
+                    <GrapheMultiPays series={grapheExtras.serieStockNet} height={145}/>
+                  </GrapheCard>
+                )}
                 {/* Top 10 des années par flux entrants */}
                 <GrapheCard titre="Top 10 des années · flux entrants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
                   fullChildren={<TopAnneesFlux rows={grapheExtras.top10} grand/>}>
                   <TopAnneesFlux rows={grapheExtras.top10}/>
                 </GrapheCard>
+                {grapheExtras.top10S && (
+                  <GrapheCard titre="Top 10 des années · flux sortants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTopS} grapheId="fluxstock-top10-sortants" hideLegend hideSousTitre
+                    fullChildren={<TopAnneesFlux rows={grapheExtras.top10S} grand/>}>
+                    <TopAnneesFlux rows={grapheExtras.top10S}/>
+                  </GrapheCard>
+                )}
               </>}
             </div>
           )}

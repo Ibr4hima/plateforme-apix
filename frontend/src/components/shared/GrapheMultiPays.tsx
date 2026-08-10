@@ -24,7 +24,7 @@ export type SerieGraphe = {
   aire?: boolean;
 };
 
-export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, lineWidth, dualAxis }: {
+export default function GrapheMultiPays({ series, height = 280, type = "line", fmt, fmtX, showDots = true, lineWidth, dualAxis, epure }: {
   series: SerieGraphe[];
   height?: number;
   type?: "line" | "bar";
@@ -37,6 +37,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
   lineWidth?: number;
   /** false = jamais de double axe (séries de même unité, échelle partagée). */
   dualAxis?: boolean;
+  /** Vignette : ni axe des ordonnées, ni graduations d'années intermédiaires.
+      Par défaut, déduit de la hauteur (moins de 200 px = vignette). */
+  epure?: boolean;
 }) {
   const pret = useD3Pret();
   const ref = useRef<SVGSVGElement>(null);
@@ -73,6 +76,11 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
     // « 25 000 » et trop large pour « 4k » — et c'est le second cas qui se
     // produisait, laissant un vide sur la gauche que rien ne compensait à
     // droite. Le graphe s'y trouve maintenant centré dans sa carte.
+    // Une vignette de carte n'a pas à porter l'appareil complet d'un graphe :
+    // on y garde la forme de la courbe, ses bornes de temps et sa grille, et
+    // on laisse les valeurs chiffrées à la vue agrandie. Le seuil suit la
+    // hauteur — en dessous de 200 px, c'est une vignette.
+    const epureEff = epure ?? (H < 200);
     const M: { top: number; right: number; bottom: number; left: number } = { top: 12, right: useDual ? 58 : 22, bottom: 34, left: 64 };
     const svg = d3.select(el).attr("viewBox", `0 0 ${W} ${H}`).attr("preserveAspectRatio", "xMidYMid meet");
 
@@ -101,8 +109,10 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       ctx.font = "10px 'Google Sans', 'Product Sans', Arial, sans-serif";
       return Math.max(...valeurs.map(v => ctx.measureText(fmtAxe(v)).width));
     };
-    M.left = Math.round(Math.max(26, largeurEtiquette(y.ticks(4)) + 13));
-    if (useDual) M.right = Math.round(Math.max(26, largeurEtiquette(yScales[1].ticks(4)) + 13));
+    // Sans axe des ordonnées, plus rien à réserver à gauche.
+    M.left = epureEff ? 8 : Math.round(Math.max(26, largeurEtiquette(y.ticks(4)) + 13));
+    if (useDual && !epureEff) M.right = Math.round(Math.max(26, largeurEtiquette(yScales[1].ticks(4)) + 13));
+    if (epureEff) M.right = 12;
 
     const xBand = d3.scaleBand().domain(allAnnees.map(String)).range([M.left, W - M.right]).padding(0.18);
     const xLin = d3.scaleLinear().domain([allAnnees[0], allAnnees[allAnnees.length - 1]]).range([M.left, W - M.right]);
@@ -149,7 +159,9 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
 
       const maxTicks = Math.floor((W - M.left - M.right) / 28);
       const step = Math.ceil(allAnnees.length / maxTicks);
-      const tickVals = allAnnees.filter((_, i) => i % step === 0).map(String);
+      const tickVals = epureEff && allAnnees.length > 1
+        ? [String(allAnnees[0]), String(allAnnees[allAnnees.length - 1])]
+        : allAnnees.filter((_, i) => i % step === 0).map(String);
       svg.append("g").attr("transform", `translate(0,${H - M.bottom})`)
         .call(d3.axisBottom(xBand).tickValues(tickVals).tickFormat((t: any) => fmtXv(Number(t))).tickSizeOuter(0))
         .call(g => g.select(".domain").style("stroke", "var(--bordure-forte)"))
@@ -221,7 +233,12 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const pic = valid.reduce((m, p) => (p.valeur > m.valeur ? p : m));
           const px = xLin(pic.annee), py = yScales[0](pic.valeur);
           gPic = svg.append("g");
+          // Un anneau translucide, comme le point de survol — et non un halo
+          // flouté. (Ce cercle avait perdu sa déclaration de remplissage lors
+          // du nettoyage des filtres et retombait sur le noir par défaut.)
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 7.5)
+            .style("fill", "none").style("stroke", series[0].couleur)
+            .attr("stroke-width", 1.2).attr("opacity", 0.35);
           gPic.append("circle").attr("cx", px).attr("cy", py).attr("r", 4.5)
             .style("fill", "none").style("stroke", series[0].couleur).attr("stroke-width", 1.7);
           const libelle = `PIC · ${fmtXv(pic.annee)}`;
@@ -300,7 +317,10 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       // Ticks années entières, plafonnées
       const maxTicksLine = Math.max(2, Math.min(7, Math.floor((W - M.left - M.right) / 42)));
       let tickAnnees = allAnnees;
-      if (allAnnees.length > maxTicksLine) {
+      // En vignette, les deux bornes suffisent : elles disent la période, et
+      // les graduations intermédiaires ne se lisent pas à cette taille.
+      if (epureEff && allAnnees.length > 1) tickAnnees = [allAnnees[0], allAnnees[allAnnees.length - 1]];
+      else if (allAnnees.length > maxTicksLine) {
         const stepA = Math.ceil((allAnnees.length - 1) / (maxTicksLine - 1));
         tickAnnees = allAnnees.filter((_, i) => i % stepA === 0);
         const last = allAnnees[allAnnees.length - 1];
@@ -313,22 +333,22 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
     }
 
-    // ── Axe Y gauche (série 0) ──
-    svg.append("g").attr("transform", `translate(${M.left},0)`)
+    // ── Axe Y gauche (série 0) — absent des vignettes ──
+    if (!epureEff) svg.append("g").attr("transform", `translate(${M.left},0)`)
       .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
       .call(g => g.select(".domain").remove())
       .call(g => g.selectAll("line").remove())
       .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "var(--gris)").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
 
     // ── Axe Y droit (série 1) si double axe ──
-    if (useDual) {
+    if (useDual && !epureEff) {
       svg.append("g").attr("transform", `translate(${W - M.right},0)`)
         .call(d3.axisRight(yScales[1]).ticks(4).tickFormat(fmtAxis))
         .call(g => g.select(".domain").remove())
         .call(g => g.selectAll("line").remove())
         .call(g => g.selectAll("text").style("fill", series[1].couleur).style("font-size", "10px").style("font-weight", "600"));
     }
-  }, [pret, series, type, height, fmtV, showDots, lineWidth]);
+  }, [pret, series, type, height, fmtV, showDots, lineWidth, epure]);
 
   useEffect(() => {
     if (!wrapRef.current) return;
