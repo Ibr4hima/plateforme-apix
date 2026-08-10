@@ -22,8 +22,17 @@ export type Donnee = { pays_id: number; pays: string; annee: number; indicateur:
 
 // ── Regroupement des pays par continent ───────────────────────────────────────
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
-export function sortContinents(conts: string[]) {
-  return [...conts].sort((a, b) => {
+/**
+ * Les continents à présenter, dans l'ordre.
+ *
+ * `sansAutre` retire le groupe « Autre » de la liste — c'est le fourre-tout des
+ * entrées sans continent renseigné, pour l'essentiel des agrégats de la CNUCED
+ * (« Bunkers », zones économiques…) plutôt que des pays. Le masquer ne masque
+ * QUE le filtre : ces entrées continuent d'alimenter les données, et
+ * apparaissent normalement comme partenaires dans les tableaux et les graphes.
+ */
+export function sortContinents(conts: string[], sansAutre = false) {
+  return [...conts].filter(c => !sansAutre || c !== "Autre").sort((a, b) => {
     const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
     if (ia === -1 && ib === -1) return a.localeCompare(b, "fr");
     if (ia === -1) return 1; if (ib === -1) return -1;

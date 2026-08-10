@@ -419,7 +419,10 @@ function CommercePanel() {
             })()}
             <div style={{ height: 1, background: "var(--fond)", marginBottom: 8 }} />
             <div style={{ maxHeight: 220, overflowY: "auto" }}>
-              {sortContinents(Object.keys(groupedPays)).map(continent => {
+              {/* « Autre » ne figure pas dans le filtre : ce sont des agrégats,
+                  pas des pays de référence. Ils restent dans les données —
+                  « Bunkers » tient sa place dans les tableaux de destinations. */}
+              {sortContinents(Object.keys(groupedPays), true).map(continent => {
                 const isOpen = openConts.has(continent);
                 const zones = groupedPays[continent];
                 return (
