@@ -25,7 +25,10 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
   children: React.ReactNode;
 }) {
   const [ouvert, setOuvert] = useState(true);
-  const basculer = () => setOuvert(o => { onPli?.(!o); return !o; });
+  // Le parent est prévenu DEPUIS le gestionnaire de clic, pas depuis la
+  // fonction de mise à jour : React exécute celle-ci pendant le rendu, et y
+  // appeler le setState d'un autre composant est interdit.
+  const basculer = () => { const suivant = !ouvert; setOuvert(suivant); onPli?.(suivant); };
   const [largeur, setLargeur] = useState(280);
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, largeur, setLargeur, isResizing, 200, 520);
