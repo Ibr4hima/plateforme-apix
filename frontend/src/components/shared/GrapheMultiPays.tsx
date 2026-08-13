@@ -201,14 +201,14 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         // dans le SVG : l'export sérialise pattern et masque tels quels, et le
         // gel des couleurs (outilsExport) résout le jeton du point.
         const pid = `${uid}-t${si}`, mid = `${uid}-m${si}`;
-        // Pas de 3,1 px, points de 0,65 : une trame FINE et serrée — c'est le
-        // grain qui remplit l'aire, et sa finesse qui rend le dégradé de
-        // densité lisible (de gros points en fondu font des taches ; des
-        // petits font une matière).
+        // Pas de 2,4 px : une trame fine et TRÈS serrée — c'est le grain qui
+        // remplit l'aire, et sa finesse qui rend le dégradé de densité lisible
+        // (de gros points en fondu font des taches ; des petits font une
+        // matière).
         const pat = defs.append("pattern").attr("id", pid)
-          .attr("width", 3.1).attr("height", 3.1)
+          .attr("width", 2.4).attr("height", 2.4)
           .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)");
-        pat.append("circle").attr("cx", 1.55).attr("cy", 1.55).attr("r", epureEff ? 0.55 : 0.65)
+        pat.append("circle").attr("cx", 1.2).attr("cy", 1.2).attr("r", epureEff ? 0.5 : 0.58)
           .style("fill", s.couleur);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
@@ -236,12 +236,12 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .attr("filter", `url(#${filtId})`);
         gMasque.append("path").attr("d", dLigne)
           .attr("fill", "none").attr("stroke", "#fff")
-          .attr("stroke-opacity", epureEff ? 0.42 : 0.48)
+          .attr("stroke-opacity", epureEff ? 0.55 : 0.64)
           .attr("stroke-width", hTrace * 1.5)
           .attr("stroke-linejoin", "round");
         gMasque.append("path").attr("d", dLigne)
           .attr("fill", "none").attr("stroke", "#fff")
-          .attr("stroke-opacity", epureEff ? 0.65 : 0.75)
+          .attr("stroke-opacity", epureEff ? 0.82 : 0.94)
           .attr("stroke-width", hTrace * 0.55)
           .attr("stroke-linejoin", "round");
         // L'extinction au pied : un voile noir peint PAR-DESSUS les traits du
@@ -251,8 +251,10 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const kgrad = defs.append("linearGradient").attr("id", `${mid}k`)
           .attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
         kgrad.append("stop").attr("offset", "0%").attr("stop-color", "#000").attr("stop-opacity", 0);
-        kgrad.append("stop").attr("offset", "48%").attr("stop-color", "#000").attr("stop-opacity", 0.18);
-        kgrad.append("stop").attr("offset", "100%").attr("stop-color", "#000").attr("stop-opacity", 0.92);
+        kgrad.append("stop").attr("offset", "32%").attr("stop-color", "#000").attr("stop-opacity", 0.05);
+        kgrad.append("stop").attr("offset", "58%").attr("stop-color", "#000").attr("stop-opacity", 0.22);
+        kgrad.append("stop").attr("offset", "80%").attr("stop-color", "#000").attr("stop-opacity", 0.55);
+        kgrad.append("stop").attr("offset", "100%").attr("stop-color", "#000").attr("stop-opacity", 0.95);
         d3.select(gMasque.node()!.parentNode as Element)
           .append("path").attr("d", dAire).attr("fill", `url(#${mid}k)`);
 

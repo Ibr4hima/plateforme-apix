@@ -908,7 +908,7 @@ function OngletNational() {
                   {/* Le nombre reste d'un bloc ; l'unité passe à la ligne quand
                       la carte se resserre, plutôt que d'être tronquée en
                       « FC… » — une unité coupée ne veut plus rien dire. */}
-                  <p style={{ fontSize:"1.3rem", fontWeight:800, color:"var(--encre)", lineHeight:1.1, display:"flex", flexWrap:"wrap" as const, alignItems:"baseline", columnGap:4, minWidth:0 }}>
+                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"var(--encre)", lineHeight:1.15, display:"flex", flexWrap:"wrap" as const, alignItems:"baseline", columnGap:4, minWidth:0 }}>
                     <span style={{ whiteSpace:"nowrap" as const }}>{parts.nombre}</span>
                     {parts.unite && <span style={{ fontSize:"0.72em", fontWeight:700, color:"var(--gris-fort)", whiteSpace:"nowrap" as const }}>{parts.unite}</span>}
                   </p>

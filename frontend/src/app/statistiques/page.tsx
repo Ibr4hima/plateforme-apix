@@ -737,7 +737,7 @@ export default function StatistiquesPage() {
                                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
                                 <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{refAnnee}</span>
                               </div>
-                              <p style={{ fontSize: "1.3rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1.1 }}>{fmt(v, ind.unite, ind.code)}</p>
+                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite, ind.code)}</p>
                               {varPct !== null && (
                                 <div style={{ marginTop: 6 }}>
                                   <Variation valeur={varPct} annee={refAnnee - 1} />

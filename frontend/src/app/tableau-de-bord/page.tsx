@@ -44,8 +44,8 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
   // Valeur textuelle longue (nom de ressource, de pays…) : police réduite,
   // retour à la ligne sur 2 lignes plutôt qu'un texte tronqué.
   const styleValeur: React.CSSProperties = texte
-    ? { fontSize: "1.3rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
-    : { fontSize: "1.85rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+    ? { fontSize: "1.15rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
+    : { fontSize: "1.65rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
