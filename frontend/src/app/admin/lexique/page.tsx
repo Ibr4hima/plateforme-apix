@@ -11,8 +11,8 @@ import { type Terme } from "@/lib/lexique";
 import { API_BASE as API } from "@/lib/api";
 const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
 
-const IS: React.CSSProperties = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", fontSize: "var(--t-135)", color: ENCRE, outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-const LS: React.CSSProperties = { fontSize: "var(--t-11)", fontWeight: 700, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
+const IS: React.CSSProperties = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", fontSize: 13.5, color: ENCRE, outline: "none", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+const LS: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
 
 // ── Modal ajout / édition ─────────────────────────────────────────────────────
 function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: () => void; onSaved: () => void }) {
@@ -52,7 +52,7 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.5)", backdropFilter: "blur(6px)", zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ background: "var(--carte)", borderRadius: 18, width: "100%", maxWidth: 560, boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid var(--bordure)" }}>
-          <h2 style={{ margin: 0, fontSize: "var(--t-r105)", fontWeight: 800, color: ENCRE }}>{edit ? "Modifier le terme" : "Nouveau terme"}</h2>
+          <h2 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: ENCRE }}>{edit ? "Modifier le terme" : "Nouveau terme"}</h2>
           <button onClick={onClose} aria-label="Fermer" style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X size={15} color="var(--texte)" />
           </button>
@@ -66,22 +66,22 @@ function ModalTerme({ edit, onClose, onSaved }: { edit: Terme | null; onClose: (
             <label style={LS}>Définition</label>
             <textarea style={{ ...IS, minHeight: 120, resize: "vertical", lineHeight: 1.6 }} value={form.definition} onChange={e => setForm(f => ({ ...f, definition: e.target.value }))} placeholder="Définition claire et concise…" />
           </div>
-          <label style={{ display: "flex", alignItems: "center", gap: 9, fontSize: "var(--t-13)", color: "var(--texte)", cursor: "pointer" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: "var(--texte)", cursor: "pointer" }}>
             <input type="checkbox" checked={form.actif} onChange={e => setForm(f => ({ ...f, actif: e.target.checked }))} style={{ width: 16, height: 16, accentColor: BLEU }} />
             Visible sur la page publique
           </label>
-          {err && <p style={{ color: "var(--danger)", fontSize: "var(--t-125)", margin: 0 }}>{err}</p>}
+          {err && <p style={{ color: "var(--danger)", fontSize: 12.5, margin: 0 }}>{err}</p>}
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "14px 22px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)" }}>
-          <span style={{ fontSize: "var(--t-12)", color: "var(--vert)", fontWeight: 600 }}>{!edit && ajoutes > 0 ? `${ajoutes} terme${ajoutes > 1 ? "s" : ""} ajouté${ajoutes > 1 ? "s" : ""}` : ""}</span>
+          <span style={{ fontSize: 12, color: "var(--vert)", fontWeight: 600 }}>{!edit && ajoutes > 0 ? `${ajoutes} terme${ajoutes > 1 ? "s" : ""} ajouté${ajoutes > 1 ? "s" : ""}` : ""}</span>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>{!edit && ajoutes > 0 ? "Terminer" : "Annuler"}</button>
+            <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", color: "var(--texte)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>{!edit && ajoutes > 0 ? "Terminer" : "Annuler"}</button>
             {!edit && (
-              <button onClick={() => enregistrer(true)} disabled={saving} style={{ padding: "9px 18px", borderRadius: 10, border: `1px solid ${BLEU}`, background: "var(--carte)", color: BLEU, fontSize: "var(--t-13)", fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)" }}>
+              <button onClick={() => enregistrer(true)} disabled={saving} style={{ padding: "9px 18px", borderRadius: 10, border: `1px solid ${BLEU}`, background: "var(--carte)", color: BLEU, fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)" }}>
                 Ajouter &amp; continuer
               </button>
             )}
-            <button onClick={() => enregistrer(false)} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: BLEU, color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+            <button onClick={() => enregistrer(false)} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: BLEU, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
               {saving ? "Enregistrement…" : edit ? "Enregistrer" : "Ajouter"}
             </button>
           </div>
@@ -128,12 +128,12 @@ export default function AdminLexiquePage() {
       {/* En-tête */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 22 }}>
         <div>
-          <p style={{ fontSize: "var(--t-11)", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--gris)", margin: "0 0 6px" }}>Référentiels</p>
-          <h1 style={{ margin: 0, fontSize: "var(--t-r175)", fontWeight: 800, color: ENCRE }}>Lexique de l&apos;investissement</h1>
-          <p style={{ fontSize: "var(--t-13)", color: "var(--gris-fort)", margin: "6px 0 0" }}>{termes.length} terme{termes.length > 1 ? "s" : ""} · alimente la page publique <b>/lexique</b></p>
+          <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--gris)", margin: "0 0 6px" }}>Référentiels</p>
+          <h1 style={{ margin: 0, fontSize: "1.7rem", fontWeight: 800, color: ENCRE }}>Lexique de l&apos;investissement</h1>
+          <p style={{ fontSize: 13, color: "var(--gris-fort)", margin: "6px 0 0" }}>{termes.length} terme{termes.length > 1 ? "s" : ""} · alimente la page publique <b>/lexique</b></p>
         </div>
         <button onClick={() => { setEdit(null); setModal(true); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, border: "none", background: BLEU, color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 10, border: "none", background: BLEU, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Plus size={16} /> Nouveau terme
         </button>
       </div>
@@ -150,19 +150,19 @@ export default function AdminLexiquePage() {
       <div className="ds-carte" style={{ overflow: "hidden", border: "1px solid rgb(var(--encre-rgb) / 0.10)" }}>
         <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 0, padding: "11px 18px", borderBottom: "1px solid var(--bordure)", background: "var(--carte-douce)" }}>
           {["Terme", "Définition", ""].map((h, i) => (
-            <span key={i} style={{ fontSize: "var(--t-10)", fontWeight: 800, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</span>
+            <span key={i} style={{ fontSize: 10, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</span>
           ))}
         </div>
         {loading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "var(--gris)", fontSize: "var(--t-135)" }}>Chargement…</div>
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--gris)", fontSize: 13.5 }}>Chargement…</div>
         ) : liste.length === 0 ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "var(--gris)", fontSize: "var(--t-135)" }}>Aucun terme.</div>
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--gris)", fontSize: 13.5 }}>Aucun terme.</div>
         ) : liste.map(t => (
           <div key={t.id} style={{ display: "grid", gridTemplateColumns: COLS, gap: 0, padding: "13px 18px", borderBottom: "1px solid var(--bordure)", alignItems: "center", opacity: t.actif === false ? 0.5 : 1 }}>
-            <span style={{ fontSize: "var(--t-135)", fontWeight: 700, color: ENCRE, paddingRight: 12 }}>
-              {t.terme}{t.actif === false && <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--gris)", marginLeft: 7 }}>(masqué)</span>}
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: ENCRE, paddingRight: 12 }}>
+              {t.terme}{t.actif === false && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", marginLeft: 7 }}>(masqué)</span>}
             </span>
-            <span style={{ fontSize: "var(--t-125)", color: t.definition?.trim() ? "var(--gris-fort)" : "var(--orange)", fontStyle: t.definition?.trim() ? "normal" : "italic", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", paddingRight: 12 }}>{t.definition?.trim() || "Définition à compléter"}</span>
+            <span style={{ fontSize: 12.5, color: t.definition?.trim() ? "var(--gris-fort)" : "var(--orange)", fontStyle: t.definition?.trim() ? "normal" : "italic", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", paddingRight: 12 }}>{t.definition?.trim() || "Définition à compléter"}</span>
             <span style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
               <button onClick={() => { setEdit(t); setModal(true); }} title="Modifier"
                 style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--bleu-voile)", background: "var(--carte)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: BLEU }}>
@@ -184,11 +184,11 @@ export default function AdminLexiquePage() {
         <div onClick={e => { if (e.target === e.currentTarget) setASupprimer(null); }}
           style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.5)", backdropFilter: "blur(6px)", zIndex: 950, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ background: "var(--carte)", borderRadius: 16, width: "100%", maxWidth: 420, padding: "24px", boxShadow: "var(--ombre-2)" }}>
-            <h3 style={{ margin: "0 0 8px", fontSize: "var(--t-r105)", fontWeight: 800, color: ENCRE }}>Supprimer ce terme ?</h3>
-            <p style={{ margin: "0 0 20px", fontSize: "var(--t-135)", color: "var(--gris-fort)" }}>« {aSupprimer.terme} » sera retiré définitivement du lexique.</p>
+            <h3 style={{ margin: "0 0 8px", fontSize: "1.05rem", fontWeight: 800, color: ENCRE }}>Supprimer ce terme ?</h3>
+            <p style={{ margin: "0 0 20px", fontSize: 13.5, color: "var(--gris-fort)" }}>« {aSupprimer.terme} » sera retiré définitivement du lexique.</p>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button onClick={() => setASupprimer(null)} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Annuler</button>
-              <button onClick={() => supprimer(aSupprimer)} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Supprimer</button>
+              <button onClick={() => setASupprimer(null)} style={{ padding: "9px 18px", borderRadius: 10, border: "1px solid var(--bleu-voile)", background: "var(--carte)", color: "var(--texte)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Annuler</button>
+              <button onClick={() => supprimer(aSupprimer)} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Supprimer</button>
             </div>
           </div>
         </div>

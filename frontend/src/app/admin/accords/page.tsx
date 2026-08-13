@@ -75,23 +75,23 @@ function BoutonAjoutPays({ allPays, exclusIds, onPick, fermerApresChoix = false 
           border: "1px solid var(--bordure-forte)", borderRadius: 12, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
           <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
             <input ref={inputRef} className="fui-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: "var(--t-125)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
             {groupes.map(([continent, pays]: any) => (
               <div key={continent}>
-                <div style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
                 {pays.map((p: any) => (
                   <button key={p.id} onClick={() => { onPick(p); setQ(""); if (fermerApresChoix) setOpen(false); else inputRef.current?.focus(); }}
                     style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid var(--bordure)", transition: "background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize: "var(--t-12)", color: "var(--encre)", fontWeight: 500 }}>{p.nom_fr}</span>
+                    <span style={{ fontSize: 12, color: "var(--encre)", fontWeight: 500 }}>{p.nom_fr}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {dispo.length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
           </div>
         </div>
       )}
@@ -282,7 +282,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           <BoutonAjoutPays allPays={allPays} exclusIds={[senIdRef, tbiAutreId].filter(Boolean) as number[]} fermerApresChoix
             onPick={p=>update("pays_ids",senIdRef?[senIdRef,p.id]:[p.id])} />
         </div>
-        {tbiTitre&&<p style={{fontSize: "var(--t-12)",color:"var(--gris)",marginTop:12}}>Titre de l&apos;accord : <strong style={{color:"var(--encre)"}}>{tbiTitre}</strong></p>}
+        {tbiTitre&&<p style={{fontSize:12,color:"var(--gris)",marginTop:12}}>Titre de l&apos;accord : <strong style={{color:"var(--encre)"}}>{tbiTitre}</strong></p>}
       </FSection>
       ) : (<>
       {/* Parties signataires */}
@@ -311,9 +311,9 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
         ) : (
           <>
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:6,marginBottom:8}}>
-              <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--bleu-rgb) / 0.1)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize: "var(--t-12)",fontWeight:600}}>APIX S.A</span>
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--bleu-rgb) / 0.1)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>APIX S.A</span>
               {(form.orgs as string[]).map((org:string)=>(
-                <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--orange-rgb) / 0.1)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize: "var(--t-12)",fontWeight:600}}>
+                <span key={org} style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgb(var(--orange-rgb) / 0.1)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.2)",borderRadius:999,padding:"3px 10px",fontSize:12,fontWeight:600}}>
                   {org}<button onClick={()=>update("orgs",(form.orgs as string[]).filter((x:string)=>x!==org))} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10}/></button>
                 </span>
               ))}
@@ -363,7 +363,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
               <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize: "var(--t-13)",flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{ await fetch(`${API_BASE}/accords/${editItem?.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()}); setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id)); }}
                   style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
@@ -374,7 +374,7 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
-          <span style={{fontSize: "var(--t-13)",color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
+          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
             const files=Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -388,11 +388,11 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                   placeholder="Titre du document"
-                  style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize: "var(--t-125)",padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                  style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}><X size={13} style={{color:"var(--danger)"}}/></button>
               </div>
             ))}
-            <p style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{fontSize:11,color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -448,8 +448,8 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
         {/* Titre + ancienneté du statut | publication & statut */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: "var(--t-15)", color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{a.titre}</div>
-            {sousTitre && <div style={{ fontSize: "var(--t-11)", fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
+            <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{a.titre}</div>
+            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "flex-end" }}>
             {a.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
@@ -460,13 +460,13 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
         {/* Dates en rangée épurée */}
         <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
-            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: a.date_signature ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: a.date_signature ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
           </div>
           <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
-            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: dateSec.vide ? "var(--gris)" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
+            <p style={{ fontSize: 12.5, fontWeight: 700, color: dateSec.vide ? "var(--gris)" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
           </div>
         </div>
       </div>
@@ -474,14 +474,14 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
       {/* Actions d'administration */}
       <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: "var(--t-115)", color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
           onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           <Pencil size={12} /> Modifier
         </button>
         <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: "var(--t-115)", color: a.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: a.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
           onMouseEnter={ev => ev.currentTarget.style.background = a.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : a.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
@@ -554,13 +554,13 @@ export default function AdminAccords() {
       <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: "var(--t-13)", padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
             onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-voile)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "none"; }}>
             <Plus size={15} /> Ajouter un accord
           </button>
         }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: "var(--t-12)", fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{accords.length}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{accords.length}</span>
       </BarreTitre>
 
       {/* ── Grille pleine largeur (3 colonnes) ── */}
@@ -572,8 +572,8 @@ export default function AdminAccords() {
         ) : accords.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
             <FileText size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: "var(--t-16)", fontWeight: 600, color: "var(--texte)" }}>Aucun accord enregistré</p>
-            <p style={{ fontSize: "var(--t-14)", marginTop: 6 }}>Cliquez sur « Ajouter un accord » pour commencer.</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun accord enregistré</p>
+            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un accord » pour commencer.</p>
           </div>
         ) : (
           <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
@@ -590,7 +590,7 @@ export default function AdminAccords() {
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       {vue && <AccordVueModal accord={vue} onClose={() => setVue(null)} actions={
         <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: "var(--t-13)", fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Pencil size={13} /> Modifier
         </button>
       } />}

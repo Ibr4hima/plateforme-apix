@@ -58,7 +58,7 @@ export default function PaysMultiSelect({
 
   const inputBase = {
     background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-    borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)",
+    borderRadius: 8, padding: "9px 12px", fontSize: 13,
     color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)",
     width: "100%", boxSizing: "border-box" as const,
@@ -80,7 +80,7 @@ export default function PaysMultiSelect({
               return (
                 <span key={nom} style={{ display: "inline-flex", alignItems: "center", gap: 4,
                   background: "rgb(var(--bleu-rgb) / 0.08)", color: "var(--bleu)",
-                  borderRadius: 6, padding: "2px 8px", fontSize: "var(--t-12)", fontWeight: 500 }}>
+                  borderRadius: 6, padding: "2px 8px", fontSize: 12, fontWeight: 500 }}>
                   {nom}
                   <button onClick={e => { e.stopPropagation(); toggle(nom); }}
                     style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: "var(--bleu)", marginLeft: 2 }}>
@@ -111,17 +111,17 @@ export default function PaysMultiSelect({
               <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
               <input autoFocus placeholder="Rechercher un pays..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                style={{ ...inputBase, paddingLeft: 28, fontSize: "var(--t-12)" }} />
+                style={{ ...inputBase, paddingLeft: 28, fontSize: 12 }} />
             </div>
             {selected.length > 0 && (
-              <div style={{ fontSize: "var(--t-11)", color: "var(--bleu)", marginTop: 5, fontWeight: 500 }}>
+              <div style={{ fontSize: 11, color: "var(--bleu)", marginTop: 5, fontWeight: 500 }}>
                 {selected.length} pays sélectionné{selected.length > 1 ? "s" : ""}
               </div>
             )}
           </div>
           {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([continent, list]) => (
             <div key={continent}>
-              <div style={{ padding: "6px 12px 3px", fontSize: "var(--t-10)", fontWeight: 700,
+              <div style={{ padding: "6px 12px 3px", fontSize: 10, fontWeight: 700,
                 color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", background: "var(--carte-douce)" }}>
                 {continent}
               </div>
@@ -130,18 +130,18 @@ export default function PaysMultiSelect({
                 if (excludeNom && p.nom_fr === excludeNom) {
                   return (
                     <div key={p.id} title="Déjà choisi comme pays hôte"
-                      style={{ padding: "9px 14px", cursor: "not-allowed", fontSize: "var(--t-13)",
+                      style={{ padding: "9px 14px", cursor: "not-allowed", fontSize: 13,
                         display: "flex", alignItems: "center", gap: 10, opacity: 0.55 }}>
                       <div style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, border: "2px solid var(--bordure-forte)", background: "transparent" }} />
                       <span style={{ color: "var(--gris)", fontWeight: 400 }}>{p.nom_fr}</span>
-                      <span style={{ marginLeft: "auto", fontSize: "var(--t-95)", fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pays hôte</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9.5, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pays hôte</span>
                     </div>
                   );
                 }
                 return (
                   <div key={p.id}
                     onMouseDown={e => { e.preventDefault(); toggle(p.nom_fr); }}
-                    style={{ padding: "9px 14px", cursor: "pointer", fontSize: "var(--t-13)",
+                    style={{ padding: "9px 14px", cursor: "pointer", fontSize: 13,
                       display: "flex", alignItems: "center", gap: 10,
                       background: isSelected ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
                       transition: "background 0.1s" }}
@@ -164,7 +164,7 @@ export default function PaysMultiSelect({
             </div>
           ))}
           {filtered.length === 0 && (
-            <div style={{ padding: "14px", fontSize: "var(--t-13)", color: "var(--gris)", textAlign: "center" }}>Aucun pays trouvé</div>
+            <div style={{ padding: "14px", fontSize: 13, color: "var(--gris)", textAlign: "center" }}>Aucun pays trouvé</div>
           )}
         </div>
       )}

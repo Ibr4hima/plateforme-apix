@@ -75,23 +75,23 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
           border: "1px solid var(--bordure-forte)", borderRadius: 12, background: "var(--carte)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
           <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: "var(--t-125)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", boxSizing: "border-box" as const, background: "var(--carte)", borderWidth: 1, borderStyle: "solid", borderColor: "var(--bordure-forte)", borderRadius: 9, padding: "8px 11px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight: 240, overflowY: "auto" as const }}>
             {groupes.map(([continent, liste]) => (
               <div key={continent}>
-                <div style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.04)", padding: "5px 12px", letterSpacing: "0.1em", textTransform: "uppercase" as const, position: "sticky" as const, top: 0 }}>{continent}</div>
                 {liste.map(p => (
                   <button key={p.id} onClick={() => { onPick(p.id); setQ(""); inputRef.current?.focus(); }}
                     style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 14px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" as const, borderBottom: "1px solid var(--bordure)", transition: "background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize: "var(--t-12)", color: "var(--encre)", fontWeight: 500 }}>{p.nom}</span>
+                    <span style={{ fontSize: 12, color: "var(--encre)", fontWeight: 500 }}>{p.nom}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {dispo.length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
+            {dispo.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "14px 0" }}>Aucun pays trouvé</p>}
           </div>
         </div>
       )}
@@ -118,7 +118,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
   if (!kpi) return null;
   const { ind, valeur, annee, historique } = kpi;
   const SecTitle = ({ children }: { children: any }) => (
-    <p style={{ fontSize: "var(--t-105)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
+    <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>{children}</p>
   );
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
@@ -130,7 +130,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
             {/* L'année rejoint le titre, le pays la même ligne — comme dans la
                 fiche des IDE. */}
             <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <h2 style={{ fontWeight: 800, fontSize: "var(--t-r110)", color: "var(--encre)", margin: 0, lineHeight: 1.35, minWidth: 0 }}>
+              <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35, minWidth: 0 }}>
                 {ind.libelle}<span style={{ color: "var(--gris-fort)" }}>{` · ${annee}`}</span>
               </h2>
               <span style={{ ...badgeDe(couleur), whiteSpace: "nowrap" }}>{pays}</span>
@@ -145,8 +145,8 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 12, padding: "16px 18px", display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontSize: "var(--t-r220)", fontWeight: 800, color: couleur, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
-              <span style={{ fontSize: "var(--t-13)", color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
+              <span style={{ fontSize: "2.2rem", fontWeight: 800, color: couleur, lineHeight: 1, letterSpacing: "-0.02em" }}>{fmt(valeur, ind.unite, ind.code)}</span>
+              <span style={{ fontSize: 13, color: "var(--gris)", fontWeight: 500 }}>en {annee}</span>
             </div>
           </div>
           {historique.length > 0 && (
@@ -155,8 +155,8 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${historique.length},1fr)`, gap: 8 }}>
                 {historique.map(p => (
                   <div key={p.annee} style={{ background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius: 10, padding: "8px 11px", minWidth: 0 }}>
-                    <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", margin: "0 0 3px" }}>{p.annee}</p>
-                    <p style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", margin: "0 0 3px" }}>{p.annee}</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {fmt(p.v, ind.unite, ind.code)}
                     </p>
                   </div>
@@ -166,7 +166,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
           )}
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-125)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
         </div>
       </div>
     </div>
@@ -215,12 +215,12 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <h2 style={{ fontWeight: 800, fontSize: "var(--t-r110)", color: "var(--encre)", margin: 0, lineHeight: 1.35, flexShrink: 0 }}>Tableau de données</h2>
-                {annees.length > 0 && <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, background: "var(--fond-creux2)", border: "1px solid var(--bordure-forte)", fontSize: "var(--t-105)", fontWeight: 700, color: "var(--encre)", letterSpacing: "0.02em", flexShrink: 0 }}>{annees[0]} — {annees[annees.length - 1]}</span>}
+                <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", margin: 0, lineHeight: 1.35, flexShrink: 0 }}>Tableau de données</h2>
+                {annees.length > 0 && <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, background: "var(--fond-creux2)", border: "1px solid var(--bordure-forte)", fontSize: 10.5, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.02em", flexShrink: 0 }}>{annees[0]} — {annees[annees.length - 1]}</span>}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap", minWidth: 0 }}>
                 {paysSelectionnes.map(p => (
-                  <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 999, background: `${voile(p.couleur, 5)}`, border: `1px solid ${voile(p.couleur, 18)}`, fontSize: "var(--t-105)", fontWeight: 700, color: p.couleur }}>
+                  <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 999, background: `${voile(p.couleur, 5)}`, border: `1px solid ${voile(p.couleur, 18)}`, fontSize: 10.5, fontWeight: 700, color: p.couleur }}>
                     <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.couleur, display: "inline-block", flexShrink: 0 }} />{p.nom}
                   </span>
                 ))}
@@ -233,11 +233,11 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
           </div>
         </div>
         <div style={{ overflowY: "auto", flex: 1, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--t-12)" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead style={{ position: "sticky", top: 0, zIndex: 2 }}>
               <tr style={{ background: "var(--carte-douce)" }}>
-                <th style={{ padding: "11px 28px", textAlign: "left", fontSize: "var(--t-10)", fontWeight: 800, color: "var(--texte)", letterSpacing: "0.1em", textTransform: "uppercase", position: "sticky", left: 0, background: "var(--carte-douce)", borderRight: "1px solid var(--bordure)", borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap", minWidth: 200 }}>Indicateur</th>
-                {annees.map(a => <th key={a} style={{ padding: "11px 12px", fontSize: "var(--t-10)", fontWeight: 800, color: "var(--texte)", letterSpacing: "0.06em", textAlign: "right", minWidth: 90, borderBottom: "1px solid var(--bordure)" }}>{a}</th>)}
+                <th style={{ padding: "11px 28px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", letterSpacing: "0.1em", textTransform: "uppercase", position: "sticky", left: 0, background: "var(--carte-douce)", borderRight: "1px solid var(--bordure)", borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap", minWidth: 200 }}>Indicateur</th>
+                {annees.map(a => <th key={a} style={{ padding: "11px 12px", fontSize: 10, fontWeight: 800, color: "var(--texte)", letterSpacing: "0.06em", textAlign: "right", minWidth: 90, borderBottom: "1px solid var(--bordure)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -247,7 +247,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                     <td colSpan={annees.length + 1} style={{ padding: "12px 28px 6px", background: "var(--carte)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", background: pays.couleur, flexShrink: 0 }} />
-                        <span style={{ fontSize: "var(--t-125)", fontWeight: 800, color: pays.couleur }}>{pays.nom}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: pays.couleur }}>{pays.nom}</span>
                       </div>
                     </td>
                   </tr>
@@ -257,14 +257,14 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
                       onMouseEnter={e => e.currentTarget.style.background = "var(--carte-douce)"}
                       onMouseLeave={e => e.currentTarget.style.background = "var(--carte)"}>
                       <td style={{ padding: "9px 28px 9px 44px", position: "sticky", left: 0, background: "inherit", borderRight: "1px solid var(--bordure)", whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "var(--gris)", fontSize: "var(--t-11)" }}>· {ind.unite}</span></span>
+                        <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 500 }}>{ind.libelle} <span style={{ color: "var(--gris)", fontSize: 11 }}>· {ind.unite}</span></span>
                       </td>
                       {annees.map(a => {
                         const v = val(pays.id, ind.code, a);
                         const display = v !== null && v !== undefined ? fmt(v, ind.unite, ind.code) : "—";
                         const color = v === null || v === undefined ? "var(--gris)" : (ind.unite === "%" && v < 0) ? "var(--danger)" : "var(--texte)";
                         return (
-                          <td key={a} style={{ padding: "9px 12px", textAlign: "right", fontSize: "var(--t-12)", color, fontWeight: v !== null && v !== undefined ? 600 : 400, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{display}</td>
+                          <td key={a} style={{ padding: "9px 12px", textAlign: "right", fontSize: 12, color, fontWeight: v !== null && v !== undefined ? 600 : 400, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{display}</td>
                         );
                       })}
                     </tr>
@@ -275,11 +275,11 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
           </table>
         </div>
         <div style={{ padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
-          <span style={{ fontSize: "var(--t-11)", color: "var(--gris)" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
+          <span style={{ fontSize: 11, color: "var(--gris)" }}>{paysSelectionnes.length} pays · {indicateurs.length} indicateurs · {annees.length} années</span>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-125)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+            <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
             <button onClick={() => exportXLSXStat(donnees, indicateurs, paysSelectionnes, annees, periode)}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
               <FileSpreadsheet size={13} /> Excel
             </button>
           </div>
@@ -308,7 +308,7 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
   }, [dep]);
   return (
     <button ref={ref} onClick={onClick} title="Tableau de données"
-      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: mode === "icone" ? 0 : 7, padding: mode === "icone" ? "8px 10px" : "8px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--bleu)", fontSize: "var(--t-125)", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
+      style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: mode === "icone" ? 0 : 7, padding: mode === "icone" ? "8px 10px" : "8px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
       onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
       <Table size={14} />{mode !== "icone" && <span>{mode === "full" ? "Tableau de données" : "Données"}</span>}
     </button>
@@ -463,7 +463,7 @@ export default function StatistiquesPage() {
     setPeriodeTouchee(false); setKpisEpingles(kpiDefautSet.length ? kpiDefautSet : indicateurs.map(i => i.code).slice(0, MAX_KPI));
   };
 
-  const LBL: any = { fontSize: "var(--t-11)", fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" };
+  const LBL: any = { fontSize: 11, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em" };
 
   // d3 est chargé dans un chunk séparé : on attend qu'il soit prêt avant de
   // rendre quoi que ce soit qui dessine (les données, elles, se chargent en parallèle)
@@ -504,11 +504,11 @@ export default function StatistiquesPage() {
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
           {sidebarOpen && <div onMouseDown={startResize} style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 4, cursor: "col-resize", zIndex: 10, background: "transparent" }} onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.5)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
           <div style={{ padding: sidebarOpen ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid var(--bordure)", display: "flex", alignItems: "center", justifyContent: sidebarOpen ? "space-between" : "center", flexShrink: 0 }}>
-            {sidebarOpen && <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
+            {sidebarOpen && <span style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <button onClick={() => setSidebarOpen(o => !o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
                 <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
-                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
+                {sidebarOpen && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
               </button>
               {sidebarOpen && hasFilter && <button onClick={reinit} title="Tout réinitialiser" style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", cursor: "pointer", borderRadius: 999, padding: "5px", display: "flex", alignItems: "center" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.15)"; }}
@@ -522,7 +522,7 @@ export default function StatistiquesPage() {
             <div style={{ position: "relative", marginBottom: 18 }}>
               <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
               <input value={searchPays} onChange={e => setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
-                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: "var(--t-12)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+                style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
               {searchPays && <button onClick={() => setSearchPays("")} aria-label="Effacer la recherche" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
             </div>
             <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
@@ -530,7 +530,7 @@ export default function StatistiquesPage() {
             <div style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={LBL}>Pays</span>
-                <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{`${selection.length}/${MAX_SEL}`}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{`${selection.length}/${MAX_SEL}`}</span>
               </div>
               {/* Sénégal épinglé (référence) */}
               {senId !== null && (() => {
@@ -543,8 +543,8 @@ export default function StatistiquesPage() {
                       onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                       <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                      <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
-                      <span style={{ marginLeft: "auto", fontSize: "var(--t-9)", color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400 }}>Sénégal</span>
+                      <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                     </button>
                   </div>
                 );
@@ -558,12 +558,12 @@ export default function StatistiquesPage() {
                     <div key={continent} style={{ marginBottom: 6 }}>
                       <button onClick={() => toggleCont(continent)}
                         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgb(var(--bleu-rgb) / 0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
-                        <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
                         <ChevronDown size={11} style={{ color: "var(--bleu)", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
                       </button>
                       {isOpen && Object.entries(zones).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([zone, paysInZone]) => (
                         <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
-                          <p style={{ fontSize: "var(--t-9)", fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
+                          <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
                           {paysInZone.map(p => {
                             const sel = selection.includes(p.id);
                             const col = sel ? couleurPays(p.id) : "var(--gris)";
@@ -571,8 +571,8 @@ export default function StatistiquesPage() {
                             if (p.id === senId) return (
                               <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                                 <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                                <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                                <span style={{ marginLeft: "auto", fontSize: "var(--t-9)", color: "var(--gris)" }}>Réf.</span>
+                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                                <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)" }}>Réf.</span>
                               </div>
                             );
                             return (
@@ -581,7 +581,7 @@ export default function StatistiquesPage() {
                                 onMouseEnter={e => { if (!disabled && !sel) e.currentTarget.style.background = "var(--carte-douce)"; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                                 <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${sel ? col : "var(--bordure-forte)"}`, background: sel ? col : "transparent", flexShrink: 0 }} />
-                                <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
                               </button>
                             );
                           })}
@@ -590,7 +590,7 @@ export default function StatistiquesPage() {
                     </div>
                   );
                 })}
-                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+                {Object.keys(groupedPays).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
               </div>
             </div>
             <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
@@ -602,7 +602,7 @@ export default function StatistiquesPage() {
               <div style={{ display: "flex", gap: 3, background: "var(--fond)", borderRadius: 9, padding: 3, marginBottom: 12 }}>
                 {[{ v: "plage", l: "Plage" }, { v: "specifiques", l: "Années" }].map(m => (
                   <button key={m.v} onClick={() => setModeAnnees(m.v as "plage" | "specifiques")}
-                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: "var(--t-12)", fontWeight: 600, background: modeAnnees === m.v ? "var(--carte)" : "transparent", color: modeAnnees === m.v ? "var(--encre)" : "var(--gris)", boxShadow: modeAnnees === m.v ? "0 1px 4px rgb(var(--ombre-rgb) / 0.1)" : "none", transition: "all 0.15s" }}>
+                    style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, background: modeAnnees === m.v ? "var(--carte)" : "transparent", color: modeAnnees === m.v ? "var(--encre)" : "var(--gris)", boxShadow: modeAnnees === m.v ? "0 1px 4px rgb(var(--ombre-rgb) / 0.1)" : "none", transition: "all 0.15s" }}>
                     {m.l}
                   </button>
                 ))}
@@ -620,11 +620,11 @@ export default function StatistiquesPage() {
                       className="drs-thumb" style={{ zIndex: 3 } as any} />
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
-                    <span style={{ fontSize: "var(--t-10)", color: "var(--gris)" }}>—</span>
-                    <span style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMin}</span>
+                    <span style={{ fontSize: 10, color: "var(--gris)" }}>—</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "2px 8px", borderRadius: 6 }}>{anneeMax}</span>
                   </div>
-                  <p style={{ fontSize: "var(--t-11)", color: "var(--gris)", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
+                  <p style={{ fontSize: 11, color: "var(--gris)", textAlign: "center" }}>{anneeMax - anneeMin + 1} année{anneeMax - anneeMin + 1 > 1 ? "s" : ""}</p>
                 </div>
               ) : (
                 <div>
@@ -633,15 +633,15 @@ export default function StatistiquesPage() {
                       const sel = anneesSpec.includes(a);
                       return (
                         <button key={a} onClick={() => { setPeriodeTouchee(true); setAnneesSpec(prev => sel ? prev.filter(x => x !== a) : [...prev, a].sort()); }}
-                          style={{ padding: "5px 0", borderRadius: 5, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: "var(--t-10)", fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
+                          style={{ padding: "5px 0", borderRadius: 5, border: `1px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`, cursor: "pointer", fontSize: 10, fontWeight: sel ? 700 : 400, textAlign: "center", background: sel ? "var(--bleu-action)" : "var(--carte-douce)", color: sel ? "var(--sur-bleu)" : "var(--texte)", transition: "all 0.1s" }}>
                           {a}
                         </button>
                       );
                     })}
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: "var(--t-11)", color: "var(--texte)" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
-                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: "var(--t-11)", color: "var(--gris)", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
+                    <span style={{ fontSize: 11, color: "var(--texte)" }}>{anneesSpec.length > 0 ? `${anneesSpec.length} année${anneesSpec.length > 1 ? "s" : ""}` : ""}</span>
+                    {anneesSpec.length > 0 && <button onClick={() => setAnneesSpec([])} style={{ fontSize: 11, color: "var(--gris)", background: "none", border: "none", cursor: "pointer" }}>Effacer</button>}
                   </div>
                 </div>
               )}
@@ -660,8 +660,8 @@ export default function StatistiquesPage() {
             <ErreurChargement onRetry={() => { qPays.refetch(); qIndicateurs.refetch(); }} />
           ) : !selection.length ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
-              <p style={{ fontSize: "var(--t-16)", fontWeight: 600, color: "var(--texte)" }}>Sélectionnez un pays</p>
-              <p style={{ fontSize: "var(--t-14)", marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Sélectionnez un pays</p>
+              <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
           ) : errDonnees ? (
             <ErreurChargement onRetry={() => qDonnees.refetch()} />
@@ -698,7 +698,7 @@ export default function StatistiquesPage() {
                       ) : (
                         <>
                           <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
-                          <h2 style={{ fontWeight: 800, fontSize: "var(--t-r130)", color: "var(--encre)", margin: 0 }}>{paysNom(selection[0])}</h2>
+                          <h2 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--encre)", margin: 0 }}>{paysNom(selection[0])}</h2>
                         </>
                       )}
                       <BtnAjoutPays pays={pays} exclus={selection} plein={selection.length >= MAX_SEL} onPick={clickPays} onOpenChange={setPopoverOpen} />
@@ -731,13 +731,13 @@ export default function StatistiquesPage() {
                               onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"; }}>
                               <BtnSwapKpi ouvert={pickerOuvert} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)} />
                               <div style={{ marginBottom: 7, paddingRight: 26 }}>
-                                <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
+                                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
                                 {/* L'année en chiffres plutôt que « Dernière année » : le
                                     millésime est l'information utile, la périphrase ne l'est
                                     pas — et elle obligeait à répéter « en YYYY » sous la valeur. */}
-                                <p style={{ fontSize: "var(--t-85)", fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", marginTop: 2, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>{refAnnee}</p>
+                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", marginTop: 2, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>{refAnnee}</p>
                               </div>
-                              <p style={{ fontSize: "var(--t-r110)", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite, ind.code)}</p>
+                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite, ind.code)}</p>
                               {varPct !== null && (
                                 <div style={{ marginTop: 6 }}>
                                   <Variation valeur={varPct} annee={refAnnee - 1} />
@@ -758,8 +758,8 @@ export default function StatistiquesPage() {
                               style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "var(--bleu)" : "var(--bordure-forte)"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--bleu)"; }}
                               onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}>
-                              <span style={{ fontSize: "var(--t-20)", color: pickerOuvert ? "var(--bleu)" : "var(--gris)", lineHeight: 1 }}>+</span>
-                              <span style={{ fontSize: "var(--t-10)", color: pickerOuvert ? "var(--bleu)" : "var(--gris)", textAlign: "center", lineHeight: 1.5 }}>Ajouter un<br />indicateur</span>
+                              <span style={{ fontSize: 20, color: pickerOuvert ? "var(--bleu)" : "var(--gris)", lineHeight: 1 }}>+</span>
+                              <span style={{ fontSize: 10, color: pickerOuvert ? "var(--bleu)" : "var(--gris)", textAlign: "center", lineHeight: 1.5 }}>Ajouter un<br />indicateur</span>
                               {pickerOuvert && (
                                 <PickerKpi items={pickerItems} alignDroite={slot >= 2}
                                   onPick={c => remplacerKpi(slot, c)} onClose={() => setPickerSlot(-1)} />

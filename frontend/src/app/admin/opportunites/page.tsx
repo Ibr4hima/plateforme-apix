@@ -28,9 +28,9 @@ const SECTEURS_AVGS = [
   {key:"tertiaire",  label:"Secteur Tertiaire",  color:"var(--bleu)"},
 ] as const;
 
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize: "var(--t-13)", color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize: "var(--t-12)", fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
-const SEC: any = { fontSize: "var(--t-11)", fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
+const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 const NIVEAUX = [
   { value:"pole",           label:"Pôle territoire" },
@@ -207,8 +207,8 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
       {/* Zone géographique — titre fixe en mode édition, sélection en mode création */}
       {edit ? (
         <div style={{ padding:"14px 18px", background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:12 }}>
-          <div style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
-          <div style={{ fontSize: "var(--t-16)", fontWeight:700, color:"var(--encre)" }}>{titreAuto() || edit.titre}</div>
+          <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:6 }}>Fiche de potentialités</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"var(--encre)" }}>{titreAuto() || edit.titre}</div>
         </div>
       ) : (
         <FSection title="Zone géographique">
@@ -221,7 +221,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
             // Note « n déjà défini(s) » commune aux 4 niveaux (les entrées
             // restent visibles dans les listes, grisées et non sélectionnables)
             const NoteDefinis = ({ n, libelle, fem }: { n:number; libelle:string; fem?:boolean }) => n>0 ? (
-              <p style={{fontSize: "var(--t-11)",color:"var(--gris)",marginTop:4}}>
+              <p style={{fontSize:11,color:"var(--gris)",marginTop:4}}>
                 {n} {libelle}{n>1?"s":""} déjà défini{fem?"e":""}{n>1?"s":""} — modifiable{n>1?"s":""} depuis la liste
               </p>
             ) : null;
@@ -306,7 +306,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
               <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/opportunites/potentialites/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: "var(--t-13)", flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/opportunites/potentialites/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -319,7 +319,7 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
-          <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
+          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
             const files = Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -332,13 +332,13 @@ function PotentialiteModal({ open, onClose, edit, poles, onSaved }:
               <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize: "var(--t-125)", padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
                   <X size={13} style={{color:"var(--danger)"}}/>
                 </button>
               </div>
             ))}
-            <p style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize:11, color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -436,8 +436,8 @@ function AvantageModal({ open, onClose, edit, onSaved }:
     <div style={{flex:1,minWidth:0}}>
       <button onClick={onToggle} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"8px 10px",background:count>0?voile(color, 3):"var(--carte-douce)",border:`1px solid ${count>0?voile(color, 19):"var(--bordure-forte)"}`,borderRadius:9,cursor:"pointer",marginBottom:colOpen?4:0,transition:"all 0.15s"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize: "var(--t-11)",fontWeight:700,color:count>0?color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
-          {count>0&&<span style={{fontSize: "var(--t-10)",fontWeight:700,color,background:voile(color, 8),padding:"1px 6px",borderRadius:999}}>1</span>}
+          <span style={{fontSize:11,fontWeight:700,color:count>0?color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{title}</span>
+          {count>0&&<span style={{fontSize:10,fontWeight:700,color,background:voile(color, 8),padding:"1px 6px",borderRadius:999}}>1</span>}
         </div>
         {colOpen?<ChevronUp size={12} style={{color:"var(--gris)"}}/>:<ChevronDown size={12} style={{color:"var(--gris)"}}/>}
       </button>
@@ -450,7 +450,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
       onMouseEnter={e=>{if(!sel&&!disabled)e.currentTarget.style.background="var(--carte-douce)";}}
       onMouseLeave={e=>{e.currentTarget.style.background=sel?voile(color, 7):"transparent";}}>
       <div style={{width:13,height:13,borderRadius:"50%",border:`2px solid ${sel?color:"var(--gris)"}`,background:sel?color:"transparent",flexShrink:0,transition:"all 0.12s"}}/>
-      <span style={{fontSize: "var(--t-12)",color:sel?"var(--encre)":"var(--texte)",fontWeight:sel?600:400}}>{label}</span>
+      <span style={{fontSize:12,color:sel?"var(--encre)":"var(--texte)",fontWeight:sel?600:400}}>{label}</span>
     </button>
   );
 
@@ -467,11 +467,11 @@ function AvantageModal({ open, onClose, edit, onSaved }:
       {/* Activité concernée */}
       {edit ? (
         <div style={{padding:"14px 18px",background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:12}}>
-          <div style={{fontSize: "var(--t-10)",fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
+          <div style={{fontSize:10,fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.12em",marginBottom:8}}>Activité choisie</div>
           <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap" as const}}>
-            {edit.secteur_nom&&<span style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
-            {edit.branche_nom&&<><span style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>›</span><span style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
-            {edit.activite_nom&&<><span style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>›</span><span style={{fontSize: "var(--t-12)",fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.1)",border:"1px solid rgb(var(--vert-rgb) / 0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
+            {edit.secteur_nom&&<span style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.secteur_nom}</span>}
+            {edit.branche_nom&&<><span style={{fontSize:11,color:"var(--gris)"}}>›</span><span style={{fontSize:11,fontWeight:600,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:99}}>{edit.branche_nom}</span></>}
+            {edit.activite_nom&&<><span style={{fontSize:11,color:"var(--gris)"}}>›</span><span style={{fontSize:12,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.1)",border:"1px solid rgb(var(--vert-rgb) / 0.25)",padding:"4px 12px",borderRadius:99}}>{edit.activite_nom}</span></>}
           </div>
         </div>
       ) : (
@@ -479,15 +479,15 @@ function AvantageModal({ open, onClose, edit, onSaved }:
           {/* Chips de résumé */}
           {(form.secteur_id||form.branche_id||form.activite_id) && (
             <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:10}}>
-              {form.secteur_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.06)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize: "var(--t-11)",fontWeight:600}}>
+              {form.secteur_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.06)",color:"var(--bleu)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {secteurs.find((s:any)=>s.id===form.secteur_id)?.nom||""}
                 <button onClick={()=>{upd("secteur_id",null);upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--bleu)"}}/></button>
               </span>}
-              {form.branche_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--orange-rgb) / 0.06)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize: "var(--t-11)",fontWeight:600}}>
+              {form.branche_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--orange-rgb) / 0.06)",color:"var(--orange)",border:"1px solid rgb(var(--orange-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {branches.find((b:any)=>b.id===form.branche_id)?.nom||""}
                 <button onClick={()=>{upd("branche_id",null);upd("activite_id",null);}} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--orange)"}}/></button>
               </span>}
-              {form.activite_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--vert-rgb) / 0.06)",color:"var(--vert)",border:"1px solid rgb(var(--vert-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize: "var(--t-11)",fontWeight:600}}>
+              {form.activite_id&&<span style={{display:"inline-flex",alignItems:"center",gap:4,background:"rgb(var(--vert-rgb) / 0.06)",color:"var(--vert)",border:"1px solid rgb(var(--vert-rgb) / 0.15)",borderRadius:999,padding:"2px 8px",fontSize:11,fontWeight:600}}>
                 {activites.find((a:any)=>a.id===form.activite_id)?.nom||""}
                 <button onClick={()=>upd("activite_id",null)} style={{background:"none",border:"none",cursor:"pointer",padding:0,display:"flex"}}><X size={10} style={{color:"var(--vert)"}}/></button>
               </span>}
@@ -504,7 +504,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             </AvgCol>
             <AvgCol title="Branche" color="var(--orange)" open={openBra} onToggle={()=>setOpenBra((o:boolean)=>!o)} count={form.branche_id?1:0}>
               {brasDispo.length===0
-                ? <p style={{fontSize: "var(--t-11)",color:"var(--gris)",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
+                ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir un secteur d'abord</p>
                 : brasDispo.map((b:any)=>{
                     const sel = form.branche_id===b.id;
                     return <AvgItem key={b.id} label={b.nom} sel={sel} color="var(--orange)"
@@ -513,7 +513,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
             </AvgCol>
             <AvgCol title="Activité" color="var(--vert)" open={openAct} onToggle={()=>setOpenAct((o:boolean)=>!o)} count={form.activite_id?1:0}>
               {actsDispo.length===0
-                ? <p style={{fontSize: "var(--t-11)",color:"var(--gris)",padding:"10px 12px"}}>Choisir une branche d'abord</p>
+                ? <p style={{fontSize:11,color:"var(--gris)",padding:"10px 12px"}}>Choisir une branche d'abord</p>
                 : actsDispo.map((a:any)=>{
                     const sel = form.activite_id===a.id;
                     const used = usedActivites.includes(a.id);
@@ -538,7 +538,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
               <div key={f.id} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
                 <a href={`${API}/opportunites/avantages/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{fontSize: "var(--t-13)",flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
+                  style={{fontSize:13,flex:1,color:"var(--encre)",fontWeight:500,textDecoration:"none"}}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if(edit?.id) await fetch(`${API}/opportunites/avantages/${edit.id}/fichiers/${f.id}`,{method:"DELETE",headers:await authHeaders()});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -551,7 +551,7 @@ function AvantageModal({ open, onClose, edit, onSaved }:
           onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--bordure-forte)";}}>
           <Upload size={14} color="var(--gris)"/>
-          <span style={{fontSize: "var(--t-13)",color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
+          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{display:"none"}} onChange={e=>{
             const files=Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -564,13 +564,13 @@ function AvantageModal({ open, onClose, edit, onSaved }:
               <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--violet-rgb) / 0.05)",border:"1px solid rgb(var(--violet-rgb) / 0.2)",borderRadius:10,padding:"8px 12px"}}>
                 <FileText size={13} style={{color:"var(--violet)",flexShrink:0}}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize: "var(--t-125)",padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
+                  placeholder="Titre du document" style={{flex:1,background:"transparent",border:"none",borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)",outline:"none",fontSize:12.5,padding:"2px 0",fontFamily:"var(--font-google-sans)"}}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:0}}>
                   <X size={13} style={{color:"var(--danger)"}}/>
                 </button>
               </div>
             ))}
-            <p style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{fontSize:11,color:"var(--gris)"}}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -652,7 +652,7 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
             {/* Header secteur */}
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
               <div style={{width:3,height:20,borderRadius:2,background:color,flexShrink:0}}/>
-              <span style={{fontSize: "var(--t-13)",fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
+              <span style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
             </div>
             {/* Grille de cards */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
@@ -661,27 +661,27 @@ function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, 
                   style={{background:"var(--carte)",borderTop:"1px solid var(--bordure-forte)",borderRight:"1px solid var(--bordure-forte)",borderBottom:"1px solid var(--bordure-forte)",borderLeft:`3px solid ${a.est_publie?color:"var(--gris)"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"var(--ombre-1)",minWidth:0}}
                   onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${voile(color, 9)}`;ev.currentTarget.style.borderTopColor=`${voile(color, 31)}`;ev.currentTarget.style.borderRightColor=`${voile(color, 31)}`;ev.currentTarget.style.borderBottomColor=`${voile(color, 31)}`;}}
                   onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.borderTopColor="var(--bordure-forte)";ev.currentTarget.style.borderRightColor="var(--bordure-forte)";ev.currentTarget.style.borderBottomColor="var(--bordure-forte)";}}>
-                  <div style={{fontWeight:700,fontSize: "var(--t-13)",color:"var(--encre)",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
+                  <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
                   <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                    {a.secteur_nom&&<span style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>{a.secteur_nom}</span>}
-                    {a.branche_nom&&<><span style={{fontSize: "var(--t-10)",color:"var(--gris)"}}>›</span><span style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>{a.branche_nom}</span></>}
+                    {a.secteur_nom&&<span style={{fontSize:11,color:"var(--gris)"}}>{a.secteur_nom}</span>}
+                    {a.branche_nom&&<><span style={{fontSize:10,color:"var(--gris)"}}>›</span><span style={{fontSize:11,color:"var(--gris)"}}>{a.branche_nom}</span></>}
                   </div>
                   {(a.selections||[]).length>0&&(
                     <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
                       {(a.selections||[]).slice(0,3).map((s:any)=>(
-                        <span key={s.id} style={{fontSize: "var(--t-10)",fontWeight:600,color,background:`${voile(color, 6)}`,border:`1px solid ${voile(color, 15)}`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
+                        <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${voile(color, 6)}`,border:`1px solid ${voile(color, 15)}`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
                       ))}
-                      {(a.selections||[]).length>3&&<span style={{fontSize: "var(--t-10)",color:"var(--gris)"}}>+{(a.selections||[]).length-3}</span>}
+                      {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"var(--gris)"}}>+{(a.selections||[]).length-3}</span>}
                     </div>
                   )}
-                  {(a.fichiers||[]).length>0&&<div style={{fontSize: "var(--t-11)",color:"var(--gris)",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
+                  {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"var(--gris)",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
                   <div style={{display:"flex",gap:5,borderTop:"1px solid var(--bordure)",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
                     <button className="ro-w" onClick={()=>onEdit(a)}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize: "var(--t-11)",color:"var(--bleu)",fontWeight:600}}>
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"var(--bleu)",fontWeight:600}}>
                       <Pencil size={11}/> Modifier
                     </button>
                     <button onClick={()=>onToggle(a)} disabled={avgToggle===a.id}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--gris-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize: "var(--t-11)",color:a.est_publie?"var(--vert)":"var(--gris-fort)",fontWeight:600}}>
+                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--gris-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"var(--vert)":"var(--gris-fort)",fontWeight:600}}>
                       {avgToggle===a.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={11}/> Public</>:<><Eye size={11}/> Publier</>}
                     </button>
                     <button className="ro-w" onClick={()=>onDelete(a.id)} disabled={avgDel===a.id}
@@ -731,7 +731,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   }, [p.id]);
 
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
 
   return (
@@ -748,12 +748,12 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
             <h2 title={p.titre}
               onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
               onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-              style={{fontWeight:800,fontSize: "var(--t-r110)",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
               <span style={{display:"inline-block"}}>{p.titre}</span>
             </h2>
             {zoneNom&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-                <span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:nivColor,background:`${nivColor}12`,padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
+                <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:nivColor,background:`${nivColor}12`,padding:"3px 10px",borderRadius:999}}>{zoneNom}</span>
               </div>
             )}
           </div>
@@ -781,7 +781,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
                         <div style={{width:8,height:8,borderRadius:"50%",background:"var(--bleu-action)",flexShrink:0}}/>
-                        <span style={{fontSize: "var(--t-12)",fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
+                        <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
                         <div style={{paddingLeft:20,borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
@@ -791,14 +791,14 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
                                   <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)",flexShrink:0}}/>
-                                  <span style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
+                                  <span style={{fontSize:11,fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
                                         <div style={{width:5,height:5,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
-                                        <span style={{fontSize: "var(--t-11)",color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
+                                        <span style={{fontSize:11,color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -821,7 +821,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
               <SecTitle>Description</SecTitle>
               <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc} [data-rte] ol{padding-left:20px;list-style-type:decimal} [data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte style={{fontSize: "var(--t-13)",color:"var(--texte)",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
+                <div data-rte style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}} dangerouslySetInnerHTML={{__html:p.description}}/>
               </div>
             </section>
           )}
@@ -835,7 +835,7 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
                   <a key={f.id} href={`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
-                    <span style={{fontSize: "var(--t-125)",color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -847,11 +847,11 @@ function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -874,7 +874,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
   },[a.id]);
 
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
 
   return (
@@ -891,16 +891,16 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
             <h2 title={data.activite_nom}
               onMouseEnter={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;const d=sp.scrollWidth-ev.currentTarget.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
               onMouseLeave={ev=>{const sp=ev.currentTarget.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-              style={{fontWeight:800,fontSize: "var(--t-r110)",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
+              style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3,overflow:"hidden",whiteSpace:"nowrap" as const,margin:0}}>
               <span style={{display:"inline-block"}}>{data.activite_nom}</span>
             </h2>
             <div style={{display:"flex",gap:6,marginTop:8,minWidth:0}}>
-              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>{data.secteur_nom}</span>}
+              {data.secteur_nom&&<span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999,whiteSpace:"nowrap" as const,flexShrink:0}}>{data.secteur_nom}</span>}
               {data.branche_nom&&(
                 <span title={data.branche_nom}
                   onMouseEnter={ev=>{const box=ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null;const sp=box?.firstElementChild as HTMLElement|null;if(!box||!sp)return;const d=sp.scrollWidth-box.clientWidth;if(d>0){sp.style.transition=`transform ${Math.max(0.6,d/40)}s ease`;sp.style.transform=`translateX(-${d}px)`;}}}
                   onMouseLeave={ev=>{const sp=(ev.currentTarget.querySelector("[data-marquee]") as HTMLElement|null)?.firstElementChild as HTMLElement|null;if(!sp)return;sp.style.transition="transform 0.4s ease";sp.style.transform="translateX(0)";}}
-                  style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999,minWidth:0}}>
+                  style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999,minWidth:0}}>
                   <span data-marquee style={{overflow:"hidden",whiteSpace:"nowrap" as const,minWidth:0}}>
                     <span style={{display:"inline-block"}}>{data.branche_nom}</span>
                   </span>
@@ -928,9 +928,9 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
                   <div key={s.id} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:s.commentaire?6:0}}>
                       <div style={{width:8,height:8,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
-                      <span style={{fontSize: "var(--t-13)",fontWeight:700,color:"var(--vert)"}}>{s.type_libelle}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:"var(--vert)"}}>{s.type_libelle}</span>
                     </div>
-                    {s.commentaire&&<p style={{fontSize: "var(--t-13)",color:"var(--texte)",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
+                    {s.commentaire&&<p style={{fontSize:13,color:"var(--texte)",lineHeight:1.7,marginLeft:14,whiteSpace:"pre-wrap" as const}}>{s.commentaire}</p>}
                   </div>
                 ))}
               </div>
@@ -943,7 +943,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
               <SecTitle>Description</SecTitle>
               <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize: "var(--t-13)",color:"var(--texte)",lineHeight:1.7}}/>
+                <div data-rte dangerouslySetInnerHTML={{__html:data.avantages}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
               </div>
             </section>
           )}
@@ -957,7 +957,7 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
                   <a key={f.id} href={`${API}/opportunites/avantages/${data.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
-                    <span style={{fontSize: "var(--t-125)",color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -969,11 +969,11 @@ function AvantageVueModal({ avg: a, onClose, onEdit, onSaved }: {
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(data);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -1131,7 +1131,7 @@ export default function OpportunitesAdminPage() {
       <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={actionOnglet.onClick}
-            style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--carte)",color:"var(--orange)",fontWeight:700,fontSize: "var(--t-13)",padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
+            style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--carte)",color:"var(--orange)",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
             onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
             onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
             <Plus size={15}/> {actionOnglet.label}
@@ -1175,13 +1175,13 @@ export default function OpportunitesAdminPage() {
                     {/* Niveau */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
                       <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
-                      <span style={{fontSize: "var(--t-105)",fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
                     </div>
 
                     {/* Compteur principal */}
                     <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize: "var(--t-r200)",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
-                      <span style={{fontSize: "var(--t-12)",fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
                     </div>
 
                     {/* Couverture des fiches */}
@@ -1189,7 +1189,7 @@ export default function OpportunitesAdminPage() {
                       <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                         <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
-                      <p style={{fontSize: "var(--t-11)",fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                         {count>0
                           ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                           : "Aucune fiche définie"}
@@ -1211,15 +1211,15 @@ export default function OpportunitesAdminPage() {
                     background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                     border:`1px solid ${voile(meta.color, 13)}`}}>
                     <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                      <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
+                      <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                     </div>
                     <div style={{minWidth:0,flex:1}}>
-                      <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
-                      <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                      <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
+                      <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
                     </div>
                   </div>
                 );
-                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize: "var(--t-13)"}}>Aucune fiche</p></div></>;
+                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
 
                 // Rattachements géographiques via le référentiel déjà chargé
                 const regionDuDept = (nom:string) => {
@@ -1260,10 +1260,10 @@ export default function OpportunitesAdminPage() {
                         if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                       }}>
                       <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                      <div data-marquee style={{flex:1,minWidth:0,fontSize: "var(--t-125)",fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                         <span style={{display:"inline-block"}}>{potTitle(p)}</span>
                       </div>
-                      {nbActs>0&&<span style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
                       {/* Actions d'administration */}
                       <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
                         <button onClick={()=>{setPotEdit(p);setPotModal(true);}} title="Modifier"
@@ -1312,11 +1312,11 @@ export default function OpportunitesAdminPage() {
                             background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                             border:`1px solid ${voile(meta.color, 13)}`}}>
                             <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                              <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
+                              <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                             </div>
                             <div style={{minWidth:0,flex:1}}>
-                              <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
-                              <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                              <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                              <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
                             </div>
                           </div>
                           {/* Fiches du groupe */}
@@ -1347,8 +1347,8 @@ export default function OpportunitesAdminPage() {
           ) : avgs.length===0 ? (
             <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
               <Award size={48} style={{marginBottom:16,opacity:0.3}}/>
-              <p style={{fontSize: "var(--t-16)",fontWeight:600,color:"var(--texte)"}}>Aucun avantage enregistré</p>
-              <p style={{fontSize: "var(--t-14)",marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
+              <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun avantage enregistré</p>
+              <p style={{fontSize:14,marginTop:6}}>Cliquez sur « Nouvel avantage » pour commencer.</p>
             </div>
           ) : (
             <>
@@ -1372,13 +1372,13 @@ export default function OpportunitesAdminPage() {
                     {/* Secteur */}
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
                       <span style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0}}/>
-                      <span style={{fontSize: "var(--t-105)",fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
+                      <span style={{fontSize:10.5,fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
                     </div>
 
                     {/* Compteur principal */}
                     <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize: "var(--t-r200)",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
-                      <span style={{fontSize: "var(--t-12)",fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
+                      <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
+                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
                     </div>
 
                     {/* Couverture des avantages */}
@@ -1386,7 +1386,7 @@ export default function OpportunitesAdminPage() {
                       <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                         <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                       </div>
-                      <p style={{fontSize: "var(--t-11)",fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                         {count>0
                           ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                           : "Aucun avantage défini"}
@@ -1419,11 +1419,11 @@ export default function OpportunitesAdminPage() {
                           background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                           border:`1px solid ${voile(meta.color, 13)}`}}>
                           <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                            <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
+                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
-                            <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
-                            <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
                           </div>
                         </div>
                         {/* Activités de la branche */}
@@ -1445,7 +1445,7 @@ export default function OpportunitesAdminPage() {
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
                                 <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                <div data-marquee style={{flex:1,minWidth:0,fontSize: "var(--t-125)",fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                 </div>
                                 {/* Actions d'administration */}

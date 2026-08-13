@@ -206,20 +206,20 @@ export default function RechercheGlobale() {
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgb(var(--carte-rgb) / 0.97)", borderRadius: 999, border: "1px solid rgb(var(--carte-rgb) / 0.55)", boxShadow: "0 22px 60px rgb(var(--ombre-rgb) / 0.38), 0 2px 8px rgb(var(--ombre-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: "var(--t-20)", color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1, flexShrink: 0 }}>search</span>
           <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)}
             placeholder="Rechercher"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: "var(--t-15)", fontWeight: 500, color: "var(--encre)", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
+            style={{ flex: 1, border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--encre)", fontFamily: "var(--font-google-sans)", background: "transparent", letterSpacing: "-0.01em" }} />
         </div>
 
         {/* Résultats — carte détachée sous la barre */}
         {q.trim() && <div ref={listeRef} className="rg-liste"
           style={{ overflowY: "auto", padding: "8px 12px 12px", marginTop: 10, background: "var(--carte)", borderRadius: 22, boxShadow: "0 28px 70px rgb(var(--ombre-rgb) / 0.32)", animation: "vueIn 0.14s ease" }}>
           {index === null && q.trim() && (
-            <p style={{ padding: "22px 16px", fontSize: "var(--t-125)", color: "var(--gris)", textAlign: "center" as const }}>Chargement de l'index…</p>
+            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "var(--gris)", textAlign: "center" as const }}>Chargement de l'index…</p>
           )}
           {resultats.length === 0 && q.trim() && index !== null && (
-            <p style={{ padding: "22px 16px", fontSize: "var(--t-125)", color: "var(--gris)", textAlign: "center" as const }}>
+            <p style={{ padding: "22px 16px", fontSize: 12.5, color: "var(--gris)", textAlign: "center" as const }}>
               Aucun résultat pour « {q.trim()} »
             </p>
           )}
@@ -231,12 +231,12 @@ export default function RechercheGlobale() {
             return (
               <div key={`${r.type}-${r.nom}-${i}`}>
                 {entete && (
-                  <p style={{ fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
+                  <p style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.12em", padding: "12px 14px 5px" }}>{grp.label}</p>
                 )}
                 <button data-idx={i} onClick={() => choisir(r)} onMouseMove={() => setActif(i)}
                   style={{ display: "flex", alignItems: "baseline", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 12, border: "none", cursor: "pointer", textAlign: "left" as const, background: estActif ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent" }}>
-                  <span style={{ fontSize: "var(--t-135)", fontWeight: 600, color: estActif ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
-                  {r.sous && <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: estActif ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "color 0.1s" }}>{r.nom}</span>
+                  {r.sous && <span style={{ fontSize: 11, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 0 }}>{r.sous}</span>}
                 </button>
               </div>
             );

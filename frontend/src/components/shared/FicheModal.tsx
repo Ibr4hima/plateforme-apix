@@ -52,7 +52,7 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "var(--t-r110)", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
+            <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
             {badges && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8, minWidth: 0 }}>{badges}</div>}
           </div>
           <button onClick={onClose} aria-label="Fermer"
@@ -71,7 +71,7 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
         {/* Pied */}
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", flexShrink: 0 }}>
           <button onClick={onClose}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: "var(--t-13)", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)" }}>
             Fermer
           </button>
           {actions}
@@ -85,7 +85,7 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
 export function FicheSection({ titre, count, children }: { titre: React.ReactNode; count?: number; children: React.ReactNode }) {
   return (
     <section>
-      <p style={{ fontSize: "var(--t-105)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>
+      <p style={{ fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 10 }}>
         {titre}{typeof count === "number" ? <span style={{ color: "var(--gris)", fontWeight: 700, marginLeft: 7 }}>{count}</span> : null}
       </p>
       {children}
@@ -102,18 +102,18 @@ export function FicheGrille({ children }: { children: React.ReactNode }) {
 export function FicheBloc({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
     <div style={{ ...fond_bleu, borderRadius: 12, padding: "9px 12px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
-      <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
       {children}
     </div>
   );
 }
 export function FicheValeur({ children, vide, fort }: { children?: React.ReactNode; vide?: boolean; fort?: boolean }) {
-  return <p style={{ fontSize: fort ? "var(--t-13)" : "var(--t-125)", fontWeight: fort ? 700 : 600, color: vide ? "var(--gris)" : "var(--encre)" }}>{children}</p>;
+  return <p style={{ fontSize: fort ? 13 : 12.5, fontWeight: fort ? 700 : 600, color: vide ? "var(--gris)" : "var(--encre)" }}>{children}</p>;
 }
 export function FicheLien({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <a href={href.startsWith("http") ? href : `https://${href}`} target="_blank" rel="noopener noreferrer"
-      style={{ fontSize: "var(--t-125)", fontWeight: 600, color: "var(--bleu)", textDecoration: "none", wordBreak: "break-all" }}>
+      style={{ fontSize: 12.5, fontWeight: 600, color: "var(--bleu)", textDecoration: "none", wordBreak: "break-all" }}>
       {children}
     </a>
   );
@@ -128,7 +128,7 @@ export function FicheCarteNeutre({ children, style }: { children: React.ReactNod
 export function FicheTexteRiche({ html }: { html: string }) {
   return (
     <FicheCarteNeutre style={{ padding: "13px 15px" }}>
-      <div data-rte dangerouslySetInnerHTML={{ __html: html }} style={{ fontSize: "var(--t-13)", color: "var(--texte)", lineHeight: 1.7 }} />
+      <div data-rte dangerouslySetInnerHTML={{ __html: html }} style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7 }} />
     </FicheCarteNeutre>
   );
 }
@@ -156,7 +156,7 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
             onMouseEnter={ev => (ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)")}
             onMouseLeave={ev => (ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.16)")}>
             <FileText size={13} style={{ color: "var(--bleu)", flexShrink: 0 }} />
-            <span style={{ fontSize: "var(--t-125)", color: "var(--bleu)", fontWeight: 600 }}>{f.titre || f.fichier_nom || f.nom || "Document"}</span>
+            <span style={{ fontSize: 12.5, color: "var(--bleu)", fontWeight: 600 }}>{f.titre || f.fichier_nom || f.nom || "Document"}</span>
           </a>
         ))}
       </div>
@@ -174,7 +174,7 @@ export function FicheArbre({ data }: { data: Niveau[] }) {
         <div key={sec.cle}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: sec.enfants?.length ? 5 : 0 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
-            <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--bleu)" }}>{sec.nom}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--bleu)" }}>{sec.nom}</span>
           </div>
           {!!sec.enfants?.length && (
             <div style={{ paddingLeft: 20, borderLeft: "2px solid rgb(var(--bleu-rgb) / 0.15)", display: "flex", flexDirection: "column", gap: 5 }}>
@@ -182,14 +182,14 @@ export function FicheArbre({ data }: { data: Niveau[] }) {
                 <div key={bra.cle}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: bra.enfants?.length ? 4 : 0 }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--orange-action)", flexShrink: 0 }} />
-                    <span style={{ fontSize: "var(--t-11)", fontWeight: 600, color: "var(--orange)" }}>{bra.nom}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--orange)" }}>{bra.nom}</span>
                   </div>
                   {!!bra.enfants?.length && (
                     <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 3 }}>
                       {bra.enfants.map(act => (
                         <div key={act.cle} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--vert-action)", flexShrink: 0 }} />
-                          <span style={{ fontSize: "var(--t-11)", color: "var(--vert)", fontWeight: 500 }}>{act.nom}</span>
+                          <span style={{ fontSize: 11, color: "var(--vert)", fontWeight: 500 }}>{act.nom}</span>
                         </div>
                       ))}
                     </div>

@@ -100,7 +100,7 @@ export function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: bool
   const annees = [...new Set(donnees.map((d:any)=>d.annee as number))].sort((a,b)=>b-a);
 
   const Pill = ({ label, active, onClick }: { label:string; active:boolean; onClick:()=>void }) => (
-    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize: "var(--t-11)", fontWeight:600, background:active?"var(--bleu-action)":"var(--fond)", color:active?"var(--sur-bleu)":"var(--gris)", transition:"all 0.15s" }}>{label}</button>
+    <button onClick={onClick} style={{ padding:"4px 10px", borderRadius:6, border:"none", cursor:"pointer", fontSize:11, fontWeight:600, background:active?"var(--bleu-action)":"var(--fond)", color:active?"var(--sur-bleu)":"var(--gris)", transition:"all 0.15s" }}>{label}</button>
   );
 
   return (
@@ -108,7 +108,7 @@ export function HBarChart({ donnees, mini=false }: { donnees: any[]; mini?: bool
       {!mini && (
         <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" as const, alignItems:"center" }}>
           <select value={annee??annees[0]} onChange={e=>setAnnee(Number(e.target.value))}
-            style={{ fontSize: "var(--t-11)", padding:"3px 8px", borderRadius:6, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--encre)", cursor:"pointer", outline:"none" }}>
+            style={{ fontSize:11, padding:"3px 8px", borderRadius:6, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--encre)", cursor:"pointer", outline:"none" }}>
             {annees.map(a=><option key={a} value={a}>{a}</option>)}
           </select>
           <div style={{ width:1, background:"var(--fond-creux2)", margin:"0 2px" }}/>

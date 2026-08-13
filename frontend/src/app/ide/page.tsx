@@ -60,7 +60,7 @@ export default function IdePage() {
                 {v:"projetes", l:"Investissements projetés"},
               ] as const).map(s=>(
                 <button key={s.v} onClick={()=>setSection(s.v)}
-                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize: "var(--t-125)", fontWeight:700, background:section===s.v?"var(--carte)":"transparent", color:section===s.v?"var(--bleu)":"var(--gris)", boxShadow:section===s.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
+                  style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, background:section===s.v?"var(--carte)":"transparent", color:section===s.v?"var(--bleu)":"var(--gris)", boxShadow:section===s.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.10)":"none", fontFamily:"var(--font-google-sans)", transition:"all 0.15s", whiteSpace:"nowrap" as const }}>
                   {s.l}
                 </button>
               ))}
@@ -95,12 +95,12 @@ export default function IdePage() {
               maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const, width:"100%" }}>
               <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
                 <div style={{ width:64, height:64, borderRadius:16, background:"rgb(var(--bleu-rgb) / 0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize: "var(--t-32)" }}>📈</span>
+                  <span style={{ fontSize:32 }}>📈</span>
                 </div>
-                <h2 style={{ fontWeight:800, fontSize: "var(--t-r140)", color:"var(--encre)" }}>FDI Markets</h2>
-                <p style={{ fontSize: "var(--t-14)", color:"var(--gris)", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
+                <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"var(--encre)" }}>FDI Markets</h2>
+                <p style={{ fontSize:14, color:"var(--gris)", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
                 <div style={{ background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.2)", borderRadius:10, padding:"10px 20px" }}>
-                  <span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--bleu)" }}>Disponible prochainement</span>
+                  <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Disponible prochainement</span>
                 </div>
               </div>
             </div>

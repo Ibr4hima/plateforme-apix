@@ -178,8 +178,8 @@ export default function OpportunitesPage() {
                   <ErreurChargement onRetry={()=>chargerProjets()}/>
                 ) : projetsFiltres.length===0 ? (
                   <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
-                    <p style={{fontSize: "var(--t-16)",fontWeight:600,color:"var(--texte)"}}>Aucun projet trouvé</p>
-                    <p style={{fontSize: "var(--t-14)",marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                    <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun projet trouvé</p>
+                    <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                   </div>
                 ) : (
                   <>
@@ -198,20 +198,20 @@ export default function OpportunitesPage() {
 
                         {/* Titre + pôle territoire en sous-titre */}
                         <div style={{minWidth:0}}>
-                          <div style={{fontWeight:800,fontSize: "var(--t-15)",color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
-                          {p.pole_nom&&<div style={{fontSize: "var(--t-11)",fontWeight:500,color:"var(--gris)",marginTop:3}}>{p.pole_nom}</div>}
+                          <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+                          {p.pole_nom&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{p.pole_nom}</div>}
                         </div>
 
                         {/* Région · Département en rangée épurée */}
                         <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                           <div style={{flex:1,minWidth:0}}>
-                            <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
-                            <p style={{fontSize: "var(--t-125)",fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
                           </div>
                           <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                           <div style={{flex:1,minWidth:0}}>
-                            <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
-                            <p style={{fontSize: "var(--t-125)",fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
                           </div>
                         </div>
                       </div>
@@ -250,13 +250,13 @@ export default function OpportunitesPage() {
                           {/* Niveau */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
                             <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
-                            <span style={{fontSize: "var(--t-105)",fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
+                            <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
                           </div>
 
                           {/* Compteur principal */}
                           <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                            <span style={{fontSize: "var(--t-r200)",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
-                            <span style={{fontSize: "var(--t-12)",fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
+                            <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
                           </div>
 
                           {/* Couverture des fiches */}
@@ -264,7 +264,7 @@ export default function OpportunitesPage() {
                             <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                               <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                             </div>
-                            <p style={{fontSize: "var(--t-11)",fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                            <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                               {count>0
                                 ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                                 : "Aucune fiche définie"}
@@ -285,15 +285,15 @@ export default function OpportunitesPage() {
                           background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                           border:`1px solid ${voile(meta.color, 13)}`}}>
                           <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                            <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
+                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
                           </div>
                           <div style={{minWidth:0,flex:1}}>
-                            <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
-                            <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
+                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
                           </div>
                         </div>
                       );
-                      if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize: "var(--t-13)"}}>Aucune fiche</p></div></>;
+                      if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
                       // Rattachements géographiques via le référentiel déjà chargé
                       const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
                       const deptDeArr = (nom:string) => {
@@ -332,10 +332,10 @@ export default function OpportunitesPage() {
                                   if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                 }}>
                                 <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                <div data-marquee style={{flex:1,minWidth:0,fontSize: "var(--t-125)",fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                   <span style={{display:"inline-block"}}>{potTitle(p)}</span>
                                 </div>
-                                {nbActs>0&&<span style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                                {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
                               </div>
                             );
                           };
@@ -359,11 +359,11 @@ export default function OpportunitesPage() {
                                   background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                                   border:`1px solid ${voile(meta.color, 13)}`}}>
                                   <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                                    <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
+                                    <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
                                   </div>
                                   <div style={{minWidth:0,flex:1}}>
-                                    <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
-                                    <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                                    <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                                    <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
                                   </div>
                                 </div>
                                 {/* Fiches du groupe */}
@@ -416,13 +416,13 @@ export default function OpportunitesPage() {
                           {/* Secteur */}
                           <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
                             <span style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0}}/>
-                            <span style={{fontSize: "var(--t-105)",fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
+                            <span style={{fontSize:10.5,fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
                           </div>
 
                           {/* Compteur principal */}
                           <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                            <span style={{fontSize: "var(--t-r200)",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
-                            <span style={{fontSize: "var(--t-12)",fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
+                            <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
                           </div>
 
                           {/* Couverture des avantages */}
@@ -430,7 +430,7 @@ export default function OpportunitesPage() {
                             <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
                               <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
                             </div>
-                            <p style={{fontSize: "var(--t-11)",fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                            <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
                               {count>0
                                 ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
                                 : "Aucun avantage défini"}
@@ -460,11 +460,11 @@ export default function OpportunitesPage() {
                               background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
                               border:`1px solid ${voile(meta.color, 13)}`}}>
                               <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                                <span style={{fontSize: "var(--t-14)",fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
+                                <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
                               </div>
                               <div style={{minWidth:0,flex:1}}>
-                                <p style={{fontSize: "var(--t-95)",fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
-                                <div style={{fontWeight:800,fontSize: "var(--t-16)",color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                                <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                                <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
                               </div>
                             </div>
                             {/* Activités de la branche */}
@@ -486,7 +486,7 @@ export default function OpportunitesPage() {
                                       if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
                                     }}>
                                     <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                    <div data-marquee style={{flex:1,minWidth:0,fontSize: "var(--t-125)",fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                    <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                       <span style={{display:"inline-block"}}>{a.activite_nom}</span>
                                     </div>
                                   </div>

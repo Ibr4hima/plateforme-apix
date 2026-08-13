@@ -43,7 +43,7 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
       </div>
       <div style={{ maxWidth: pleineLargeur ? "none" : 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
         <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
-        <h1 style={{ fontWeight: 800, fontSize: "var(--t-r130)", color: "var(--sur-bleu)", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
+        <h1 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--sur-bleu)", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
         {children}
         {(droite || actions) && (
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -66,13 +66,13 @@ export function BarreTitreSegment<T extends string>({ options, value, onChange }
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: "var(--t-12)", fontWeight: 700, background: actif ? "var(--sur-bleu)" : "transparent", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: actif ? "var(--sur-bleu)" : "transparent", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
             {o.l}
             {o.count != null && o.count > 0 && (
-              <span style={{ fontSize: "var(--t-105)", fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.count}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.count}</span>
             )}
             {o.badge && (
-              <span style={{ fontSize: "var(--t-9)", fontWeight: 800, lineHeight: 1, padding: "3px 7px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase", background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.badge}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, lineHeight: 1, padding: "3px 7px", borderRadius: 999, letterSpacing: "0.06em", textTransform: "uppercase", background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.badge}</span>
             )}
           </button>
         );
@@ -94,8 +94,8 @@ export function BarreTitreBadge({ label, detail, onClick, icon }: {
       {icon
         ? <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
         : <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />}
-      <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--sur-bleu)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
-      {detail && <span style={{ fontSize: "var(--t-12)", fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
+      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
+      {detail && <span style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
     </button>
   );
 }

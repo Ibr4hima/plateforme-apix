@@ -18,15 +18,15 @@ export default function ErreurChargement({ onRetry, message, compact = false }: 
         <WifiOff size={compact ? 19 : 23} style={{ color: "var(--danger)" }} />
       </span>
       <div>
-        <p style={{ fontSize: compact ? "var(--t-14)" : "var(--t-16)", fontWeight: 700, color: "var(--encre)", margin: 0 }}>
+        <p style={{ fontSize: compact ? 14 : 16, fontWeight: 700, color: "var(--encre)", margin: 0 }}>
           {message || "Impossible de charger les données"}
         </p>
-        <p style={{ fontSize: compact ? "var(--t-12)" : "var(--t-13)", color: "var(--gris)", margin: "6px 0 0" }}>
+        <p style={{ fontSize: compact ? 12 : 13, color: "var(--gris)", margin: "6px 0 0" }}>
           Vérifiez votre connexion, puis réessayez.
         </p>
       </div>
       <button onClick={onRetry}
-        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: compact ? "8px 18px" : "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: compact ? "var(--t-12)" : "var(--t-13)", fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", transition: "transform 0.15s" }}
+        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: compact ? "8px 18px" : "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: compact ? 12 : 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", transition: "transform 0.15s" }}
         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
         onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}>
         <RefreshCw size={13} /> Réessayer

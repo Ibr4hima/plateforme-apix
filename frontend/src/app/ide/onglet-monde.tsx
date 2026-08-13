@@ -41,7 +41,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
   return (
     <div style={{ background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-        <h3 style={{ fontWeight: 700, fontSize: "var(--t-135)", color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
@@ -53,14 +53,14 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
       {chargement ? (
         <SkeletonRows n={Math.max(4, rows.length || 8)} h={26} />
       ) : rows.length === 0 ? (
-        <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "18px 0" }}>{annee !== null ? `Aucune donnée pour ${annee}.` : "Aucune donnée"}</p>
+        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "18px 0" }}>{annee !== null ? `Aucune donnée pour ${annee}.` : "Aucune donnée"}</p>
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 22, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const }}>Pays</span>
-            <span style={{ width: 74, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Valeur</span>
-            <span style={{ width: 44, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
+            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const }}>Pays</span>
+            <span style={{ width: 74, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Valeur</span>
+            <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
             <span style={{ width: "26%", flexShrink: 0 }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
@@ -76,7 +76,7 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
                   {/* Filet « … » avant le Sénégal ajouté hors top 10 */}
                   {horsTop && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                      <span style={{ width: 22, textAlign: "center" as const, color: "var(--gris)", fontSize: "var(--t-12)", fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                      <span style={{ width: 22, textAlign: "center" as const, color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
                       <span style={{ flex: 1, height: 1, background: "var(--fond)" }} />
                     </div>
                   )}
@@ -88,15 +88,15 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
                     onMouseLeave={e => { if (!sen) e.currentTarget.style.background = zebre ? "var(--carte-douce)" : "transparent"; }}>
                     <span style={{ width: 22, flexShrink: 0 }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
-                        background: sen ? "var(--bleu-action)" : podium ? "var(--bleu-action)" : "var(--fond-creux)", color: sen || podium ? "var(--sur-bleu)" : "var(--gris)", fontSize: "var(--t-10)", fontWeight: 800 }}>{rang}</span>
+                        background: sen ? "var(--bleu-action)" : podium ? "var(--bleu-action)" : "var(--fond-creux)", color: sen || podium ? "var(--sur-bleu)" : "var(--gris)", fontSize: 10, fontWeight: 800 }}>{rang}</span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
                       <DrapeauPays taille={15} iso={r.code_iso2} nom={r.pays} />
-                      <span title={r.pays} style={{ fontSize: "var(--t-12)", fontWeight: sen ? 800 : 700, color: sen ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
-                      {sen && horsTop && <span style={{ fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{rang}ᵉ DU CLASSEMENT</span>}
+                      <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 700, color: sen ? "var(--bleu)" : "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.pays}</span>
+                      {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{rang}ᵉ DU CLASSEMENT</span>}
                     </span>
-                    <span style={{ width: 74, fontSize: "var(--t-115)", fontWeight: 800, color: "var(--bleu)", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.valeur)}</span>
-                    <span style={{ width: 44, fontSize: "var(--t-10)", fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
+                    <span style={{ width: 74, fontSize: 11.5, fontWeight: 800, color: "var(--bleu)", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.valeur)}</span>
+                    <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
                       {total > 0 ? `${(Math.max(0, r.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
                     </span>
                     <div style={{ width: "26%", height: 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
@@ -200,7 +200,7 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
   const sS = donnees?.series?.sortant || [];
   if (!sE.length && !sS.length) return (
     <div style={{ textAlign: "center" as const, padding: "80px 24px", color: "var(--gris)" }}>
-      <p style={{ fontSize: "var(--t-14)", lineHeight: 1.7 }}>Aucune donnée {zone ? `pour ${zone}` : "mondiale"} dans cette catégorie.</p>
+      <p style={{ fontSize: 14, lineHeight: 1.7 }}>Aucune donnée {zone ? `pour ${zone}` : "mondiale"} dans cette catégorie.</p>
     </div>
   );
 
@@ -230,14 +230,14 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
             onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, flexWrap: "wrap" as const }}>
-              <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase" as const, lineHeight: 1.4 }}>{c.label}</p>
-              {c.annee != null && <span style={{ fontSize: "var(--t-85)", fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{c.annee}</span>}
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase" as const, lineHeight: 1.4 }}>{c.label}</p>
+              {c.annee != null && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{c.annee}</span>}
             </div>
-            <p title={c.texte ? c.val : undefined} style={{ fontSize: c.texte ? "var(--t-16)" : "var(--t-r110)", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
+            <p title={c.texte ? c.val : undefined} style={{ fontSize: c.texte ? "0.98rem" : "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.val}</p>
             <div style={{ marginTop: 5, minHeight: 12, display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" as const }}>
               {c.delta != null && c.ref != null ? (
                   <Variation valeur={c.delta} annee={c.ref} taille={10} />
-                ) : (c.sous ? <p style={{ fontSize: "var(--t-10)", color: "var(--gris)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
+                ) : (c.sous ? <p style={{ fontSize: 10, color: "var(--gris)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.sous}</p> : null)}
             </div>
           </div>
         ))}
@@ -384,16 +384,16 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
         {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-          {sidebarOpen&&<span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
             <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
               <SlidersHorizontal size={14} style={{ color:"var(--bleu)" }}/>
-              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
+              {sidebarOpen&&nbFiltres>0&&<span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.15)", borderRadius:999, padding:"1px 5px" }}>{nbFiltres}</span>}
             </button>
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
-              <span className="material-symbols-outlined" style={{ fontSize: "var(--t-15)", color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+              <span className="material-symbols-outlined" style={{ fontSize:15, color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
             </button>}
           </div>
         </div>
@@ -405,7 +405,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <div style={{ position:"relative" as const, marginBottom:18 }}>
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
             <input value={searchGrp} onChange={e=>setSearchGrp(e.target.value)} placeholder="Rechercher un groupement…"
-              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize: "var(--t-12)", color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
             {searchGrp&&<button onClick={()=>setSearchGrp("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
           </div>
           <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
@@ -413,12 +413,12 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           {/* Période */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                 <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize: "var(--t-12)", fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
+                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
                   {m.l}
                 </button>
               ))}
@@ -430,11 +430,11 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                     onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                  <span style={{ fontSize: "var(--t-10)", color:"var(--gris)" }}>—</span>
-                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                 </div>
-                <p style={{ fontSize: "var(--t-11)", color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+                <p style={{ fontSize:11, color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
               </div>
             ) : (
               <div>
@@ -443,15 +443,15 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                     const sel=anneesSpec.includes(a);
                     return (
                       <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-10)", fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"var(--bleu-action)":"var(--carte-douce)", color:sel?"var(--sur-bleu)":"var(--texte)", transition:"all 0.1s" }}>
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"var(--bleu-action)":"var(--carte-douce)", color:sel?"var(--sur-bleu)":"var(--texte)", transition:"all 0.1s" }}>
                         {a}
                       </button>
                     );
                   })}
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize: "var(--t-11)", color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize: "var(--t-11)", color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                  <span style={{ fontSize:11, color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
                 </div>
               </div>
             )}
@@ -467,7 +467,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               <div style={{ width:11, height:11, borderRadius:"50%", border:`2px solid ${mondeSel?"var(--bleu)":"var(--bordure-forte)"}`, background:mondeSel?"var(--bleu-action)":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 {mondeSel&&<div style={{ width:3.5, height:3.5, borderRadius:"50%", background:"var(--carte)" }}/>}
               </div>
-              <span style={{ fontSize: "var(--t-13)", color:"var(--encre)", fontWeight:mondeSel?700:500 }}>Monde</span>
+              <span style={{ fontSize:13, color:"var(--encre)", fontWeight:mondeSel?700:500 }}>Monde</span>
             </button>
           ); })()}
           <div style={{ height:1, background:"var(--fond)", marginBottom:12 }}/>
@@ -496,7 +496,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
                   </div>
                   <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0, flex:1 }}>
-                    <span style={{ display:"inline-block", fontSize: "var(--t-12)", color:"var(--texte)", fontWeight:sel?700:400 }}>{(g as any).categorie === "groupe" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
+                    <span style={{ display:"inline-block", fontSize:12, color:"var(--texte)", fontWeight:sel?700:400 }}>{(g as any).categorie === "groupe" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
                   </span>
                 </button>
               );
@@ -504,7 +504,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
 
             const SectionTitle = ({ label }: { label: string }) => (
               <div style={{ display:"flex", alignItems:"center", marginBottom:6, marginTop:2 }}>
-                <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
+                <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{label}</span>
               </div>
             );
 
@@ -522,7 +522,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                   <div style={{ display:"flex", gap:6, marginBottom:8 }}>
                     {([{v:"continent",l:"Continents"},{v:"region",l:"Régions"}] as const).map(o=>(
                       <button key={o.v} onClick={()=>{ if(contMode!==o.v){ setContMode(o.v); if(familleActive==="cont") setGrpSelec([]); } }}
-                        style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${contMode===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-115)", fontWeight:contMode===o.v?700:500, background:contMode===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:contMode===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
+                        style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${contMode===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11.5, fontWeight:contMode===o.v?700:500, background:contMode===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:contMode===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
                         {o.l}
                       </button>
                     ))}
@@ -538,7 +538,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                             {/* Bandeau continent dépliable (comme les groupes BDEF) */}
                             <button onClick={()=>setContExpanded(prev=>({ ...prev, [cont.code]: !expanded }))}
                               style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgb(var(--bleu-rgb) / 0.04)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 9px", marginBottom:2 }}>
-                              <span style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{cont.nom_fr}</span>
+                              <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{cont.nom_fr}</span>
                               {expanded ? <ChevronDown size={12} style={{ color:"var(--bleu)", flexShrink:0 }}/> : <ChevronRight size={12} style={{ color:"var(--bleu)", flexShrink:0 }}/>}
                             </button>
                             {expanded && <div style={{ paddingLeft:6, marginBottom:2 }}>{visRegs.map(r => <Item key={r.code} g={r}/>)}</div>}
@@ -556,7 +556,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
                 </>}
 
                 {!showContSection && !showGrpSection && q &&
-                  <p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
+                  <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
               </>
             );
           })()}
@@ -588,7 +588,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
               /* Monde ou sélection unique : le titre EST le choix */
               <>
                 <div style={{ width:10, height:10, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }} />
-                <h2 style={{ fontWeight:800, fontSize: "var(--t-r130)", color:"var(--encre)", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
+                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)", margin:0 }}>{grpAvecCouleur[0]?.label ?? "Monde"}</h2>
               </>
             )}
             <BtnAjoutGroupement groupements={groupements} exclus={grpSelec}

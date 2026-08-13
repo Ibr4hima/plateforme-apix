@@ -10,26 +10,26 @@ import { voile } from "@/lib/couleurs";
 
 // ── Jetons ────────────────────────────────────────────────────────────────────
 export const CARTE: React.CSSProperties = { background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, boxShadow: "none" };
-export const IS: React.CSSProperties = { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+export const IS: React.CSSProperties = { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 // Tableaux : en-tête discret sur fond ivoire, lignes séparées par un filet fin
-export const TH: React.CSSProperties = { padding: "11px 14px", fontSize: "var(--t-95)", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gris)", background: "var(--carte-douce)", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--bordure)", position: "sticky", top: 0, zIndex: 1 };
-export const TD: React.CSSProperties = { padding: "11px 14px", fontSize: "var(--t-125)", color: "var(--encre)", verticalAlign: "middle", borderTop: "1px solid var(--bordure)" };
+export const TH: React.CSSProperties = { padding: "11px 14px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gris)", background: "var(--carte-douce)", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--bordure)", position: "sticky", top: 0, zIndex: 1 };
+export const TD: React.CSSProperties = { padding: "11px 14px", fontSize: 12.5, color: "var(--encre)", verticalAlign: "middle", borderTop: "1px solid var(--bordure)" };
 export const NUM: React.CSSProperties = { fontVariantNumeric: "tabular-nums" };
 
 export const btnPrincipal = (actif: boolean, couleur = "var(--bleu)"): React.CSSProperties => ({
   background: actif ? couleur : "var(--bordure-forte)", color: "var(--sur-bleu)", border: "none", borderRadius: 999,
-  padding: "11px 24px", fontSize: "var(--t-13)", fontWeight: 700, cursor: actif ? "pointer" : "not-allowed",
+  padding: "11px 24px", fontSize: 13, fontWeight: 700, cursor: actif ? "pointer" : "not-allowed",
   display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--font-google-sans)",
   boxShadow: actif && couleur === "var(--bleu)" ? "0 3px 12px rgb(var(--bleu-rgb) / 0.25)" : "none", transition: "background 0.15s",
 });
 export const btnDanger: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 7, background: "rgb(var(--danger-rgb) / 0.07)",
   border: "1px solid rgb(var(--danger-rgb) / 0.2)", color: "var(--danger)", borderRadius: 999, padding: "9px 16px",
-  fontSize: "var(--t-125)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
+  fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
 };
 export const btnSecondaire: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 7, background: "var(--carte)", border: "1px solid var(--bordure-forte)",
-  borderRadius: 999, padding: "9px 16px", fontSize: "var(--t-125)", fontWeight: 600, color: "var(--encre)",
+  borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 600, color: "var(--encre)",
   cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap",
 };
 
@@ -42,11 +42,11 @@ export function Carte({ titre, aide, extra, children, accent, style }: {
     <div style={{ ...CARTE, borderColor: accent ? `${voile(accent, 33)}` : (CARTE.border as string), padding: "22px 26px", ...style }}>
       {titre && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: "var(--t-105)", fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
           {extra}
         </div>
       )}
-      {aide && <p style={{ fontSize: "var(--t-125)", color: "var(--gris)", lineHeight: 1.6, marginBottom: 16 }}>{aide}</p>}
+      {aide && <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, marginBottom: 16 }}>{aide}</p>}
       {children}
     </div>
   );
@@ -54,7 +54,7 @@ export function Carte({ titre, aide, extra, children, accent, style }: {
 
 // Pluriel automatique, sauf mots déjà invariables (« pays »)
 export const Compteur = ({ n, mot, couleur = "var(--bleu)" }: { n: number; mot: string; couleur?: string }) => (
-  <span style={{ fontSize: "var(--t-115)", fontWeight: 700, color: couleur, background: `${voile(couleur, 7)}`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+  <span style={{ fontSize: 11.5, fontWeight: 700, color: couleur, background: `${voile(couleur, 7)}`, padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
     {n.toLocaleString("fr-FR")} {mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
   </span>
 );
@@ -110,12 +110,12 @@ export function Segments<T extends string>({ options, value, onChange, accent = 
         return (
           <button key={o.v} onClick={() => onChange(o.v)} aria-pressed={actif}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: o.n != null ? "6px 11px 6px 14px" : "6px 15px",
-              borderRadius: 999, border: "none", cursor: "pointer", fontSize: "var(--t-12)", fontWeight: 700, whiteSpace: "nowrap",
+              borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
               background: actif ? "var(--carte)" : "transparent", color: actif ? accent : "var(--gris)",
               boxShadow: actif ? "0 1px 4px rgb(var(--ombre-rgb) / 0.10)" : "none", fontFamily: "var(--font-google-sans)", transition: "all 0.15s" }}>
             {o.l}
             {o.n != null && (
-              <span style={{ fontSize: "var(--t-10)", fontWeight: 800, lineHeight: 1, padding: "3px 6px", borderRadius: 999,
+              <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, padding: "3px 6px", borderRadius: 999,
                 background: actif ? `${voile(accent, 8)}` : "rgb(var(--gris-rgb) / 0.16)", color: actif ? accent : "var(--gris)" }}>{o.n}</span>
             )}
           </button>
@@ -129,7 +129,7 @@ export function Segments<T extends string>({ options, value, onChange, accent = 
 export const Avis = ({ ton, children }: { ton: "ok" | "erreur" | "info"; children: React.ReactNode }) => {
   const c = ton === "ok" ? "var(--vert)" : ton === "erreur" ? "var(--danger)" : "var(--bleu)";
   return (
-    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${voile(c, 6)}`, border: `1px solid ${voile(c, 20)}`, fontSize: "var(--t-125)", color: c, lineHeight: 1.6 }}>
+    <div style={{ padding: "11px 15px", borderRadius: 12, background: `${voile(c, 6)}`, border: `1px solid ${voile(c, 20)}`, fontSize: 12.5, color: c, lineHeight: 1.6 }}>
       {children}
     </div>
   );
@@ -151,13 +151,13 @@ export function FileZone({ files, onChange, label, hint, compact }: {
         style={{ border: `1.5px dashed ${actif ? "var(--bleu)" : "var(--bordure-forte)"}`, borderRadius: 14, padding: compact ? "16px 14px" : "28px 16px", textAlign: "center", cursor: "pointer", background: drag ? "rgb(var(--bleu-rgb) / 0.06)" : actif ? "rgb(var(--bleu-rgb) / 0.03)" : "var(--carte)", transition: "all .15s" }}>
         <input ref={inputRef} type="file" accept=".csv,.xlsx,.xls" multiple style={{ display: "none" }} onChange={e => addFiles(e.target.files)} />
         <UploadCloud size={compact ? 18 : 22} color={actif ? "var(--bleu)" : "var(--gris)"} style={{ marginBottom: compact ? 5 : 7 }} />
-        <div style={{ fontSize: compact ? "var(--t-125)" : "var(--t-13)", fontWeight: 700, color: actif ? "var(--bleu)" : "var(--texte)" }}>{label || "Déposez le ou les fichiers Excel / CSV"}</div>
-        <div style={{ fontSize: "var(--t-115)", color: "var(--gris)", marginTop: 3, lineHeight: 1.5 }}>{hint}</div>
+        <div style={{ fontSize: compact ? 12.5 : 13, fontWeight: 700, color: actif ? "var(--bleu)" : "var(--texte)" }}>{label || "Déposez le ou les fichiers Excel / CSV"}</div>
+        <div style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 3, lineHeight: 1.5 }}>{hint}</div>
       </div>
       {files.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {files.map((f, i) => (
-            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.12)", borderRadius: 10, padding: "6px 11px", fontSize: "var(--t-12)" }}>
+            <div key={f.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgb(var(--bleu-rgb) / 0.04)", border: "1px solid rgb(var(--bleu-rgb) / 0.12)", borderRadius: 10, padding: "6px 11px", fontSize: 12 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                 <CheckCircle size={12} color="var(--bleu)" style={{ flexShrink: 0 }} />
                 <span style={{ color: "var(--encre)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>

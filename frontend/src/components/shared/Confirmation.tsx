@@ -63,20 +63,20 @@ export default function ConfirmationHote() {
         style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
         <div style={{ height: 4, background: "var(--danger-action)", flexShrink: 0 }} />
         <div style={{ padding: "22px 26px 18px" }}>
-          <h2 style={{ fontWeight: 800, fontSize: "var(--t-r105)", color: "var(--encre)", margin: 0, lineHeight: 1.3 }}>
+          <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0, lineHeight: 1.3 }}>
             {demande.titre || "Confirmation"}
           </h2>
-          <p style={{ fontSize: "var(--t-135)", color: "var(--texte)", lineHeight: 1.65, marginTop: 10, whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: 13.5, color: "var(--texte)", lineHeight: 1.65, marginTop: 10, whiteSpace: "pre-line" }}>
             {demande.message}
           </p>
         </div>
         <div style={{ padding: "14px 26px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", gap: 10 }}>
           <button onClick={() => repondre(false)} autoFocus
-            style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-125)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
             Annuler
           </button>
           <button onClick={() => repondre(true)}
-            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--danger-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
             {demande.boutonOk || "Confirmer"}
           </button>
         </div>

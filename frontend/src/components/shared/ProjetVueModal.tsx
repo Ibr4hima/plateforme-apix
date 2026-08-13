@@ -27,7 +27,7 @@ export default function ProjetVueModal({ projet: p, secteurs, branches, activite
   // Carte d'une personne (porteur ou point focal) : nom + pastilles de contact
   const CartePersonne = ({ nom, tels, mails }: { nom: string; tels: string[]; mails: string[] }) => (
     <FicheCarteNeutre style={{ padding: "11px 14px" }}>
-      {nom && <p style={{ fontWeight: 700, fontSize: "var(--t-13)", color: "var(--encre)" }}>{nom}</p>}
+      {nom && <p style={{ fontWeight: 700, fontSize: 13, color: "var(--encre)" }}>{nom}</p>}
       <FicheContacts tels={tels} mails={mails} />
     </FicheCarteNeutre>
   );

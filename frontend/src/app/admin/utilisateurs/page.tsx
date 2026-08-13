@@ -39,9 +39,9 @@ const MODULE_LABELS: Record<string, string> = {
   "code-investissement":  "Code des investissements",
 };
 
-const TH: React.CSSProperties = { padding: "12px 14px", textAlign: "left", fontSize: "var(--t-10)", fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" };
+const TH: React.CSSProperties = { padding: "12px 14px", textAlign: "left", fontSize: 10, fontWeight: 800, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" };
 const TD: React.CSSProperties = { padding: "10px 14px", verticalAlign: "middle" };
-const INPUT: React.CSSProperties = { width: "100%", minWidth: 90, background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "7px 10px", fontSize: "var(--t-125)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" };
+const INPUT: React.CSSProperties = { width: "100%", minWidth: 90, background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "7px 10px", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" };
 
 export default function UtilisateursAdminPage() {
   const { data: session } = useSession();
@@ -119,11 +119,11 @@ export default function UtilisateursAdminPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       <div style={{ marginBottom: 8 }}>
-        <h1 style={{ fontWeight: 800, fontSize: "var(--t-r175)", color: "var(--encre)" }}>Utilisateurs &amp; accès</h1>
+        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "var(--encre)" }}>Utilisateurs &amp; accès</h1>
       </div>
 
       {error && (
-        <div style={{ background: "rgb(var(--danger-rgb) / 0.06)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", fontSize: "var(--t-125)", fontWeight: 500, padding: "9px 13px", borderRadius: 10, margin: "14px 0" }}>{error}</div>
+        <div style={{ background: "rgb(var(--danger-rgb) / 0.06)", border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", fontSize: 12.5, fontWeight: 500, padding: "9px 13px", borderRadius: 10, margin: "14px 0" }}>{error}</div>
       )}
 
       {loading ? (
@@ -167,14 +167,14 @@ export default function UtilisateursAdminPage() {
                     </td>
                     {/* Email */}
                     <td style={TD}>
-                      <span style={{ fontSize: "var(--t-125)", fontWeight: 600, color: "var(--encre)", whiteSpace: "nowrap" }}>{u.email}</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)", whiteSpace: "nowrap" }}>{u.email}</span>
                     </td>
                     {/* Rôle */}
                     <td style={TD}>
                       {(() => {
                         const c = ROLE_COLORS[u.role] || "var(--texte)";
                         const badge = (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--t-105)", fontWeight: 700, color: c, background: `${voile(c, 8)}`, padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: c, background: `${voile(c, 8)}`, padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>
                             {ROLE_LABELS[u.role] || u.role}
                             {!estDev && <ChevronDown size={11} style={{ opacity: 0.7 }}/>}
                           </span>
@@ -196,19 +196,19 @@ export default function UtilisateursAdminPage() {
                     {/* Accès admin (admin_plus) : menu déroulant à cases */}
                     <td style={{ ...TD, position: "relative" }}>
                       {estDev ? (
-                        <span style={{ display: "inline-flex", alignItems: "center", fontSize: "var(--t-105)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>Tout</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "4px 12px", borderRadius: 999, whiteSpace: "nowrap" }}>Tout</span>
                       ) : u.role !== "admin_plus" ? (
-                        <span style={{ fontSize: "var(--t-115)", color: "var(--gris)" }}>—</span>
+                        <span style={{ fontSize: 11.5, color: "var(--gris)" }}>—</span>
                       ) : (
                         <div ref={accesOpen === u.id ? popRef : undefined} style={{ position: "relative", display: "inline-block" }}>
                           <button onClick={() => setAccesOpen(o => o === u.id ? null : u.id)}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", borderRadius: 999, padding: "4px 12px", fontSize: "var(--t-105)", fontWeight: 700, color: "var(--bleu)", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", borderRadius: 999, padding: "4px 12px", fontSize: 10.5, fontWeight: 700, color: "var(--bleu)", cursor: "pointer", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                             {(u.modules || []).length ? `${u.modules.length} page${u.modules.length > 1 ? "s" : ""}` : "Aucune page"}
                             <ChevronDown size={12} style={{ transform: accesOpen === u.id ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}/>
                           </button>
                           {accesOpen === u.id && (
                             <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 50, width: 240, background: "var(--carte)", border: "1px solid rgb(var(--ombre-rgb) / 0.08)", borderRadius: 12, padding: 6, boxShadow: "0 16px 48px rgb(var(--ombre-rgb) / 0.16)" }}>
-                              <p style={{ margin: 0, padding: "6px 10px 8px", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)" }}>Pages admin éditables</p>
+                              <p style={{ margin: 0, padding: "6px 10px 8px", fontSize: 9.5, fontWeight: 800, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", borderBottom: "1px solid var(--bordure)" }}>Pages admin éditables</p>
                               {modules.map(slug => {
                                 const on = (u.modules || []).includes(slug);
                                 return (
@@ -219,7 +219,7 @@ export default function UtilisateursAdminPage() {
                                     <span style={{ width: 15, height: 15, borderRadius: 4, border: `1.5px solid ${on ? "var(--bleu)" : "var(--bordure-forte)"}`, background: on ? "var(--bleu-action)" : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                       {on && <Check size={10} color="var(--sur-bleu)"/>}
                                     </span>
-                                    <span style={{ fontSize: "var(--t-12)", fontWeight: on ? 700 : 500, color: on ? "var(--bleu)" : "var(--texte)" }}>{MODULE_LABELS[slug] || slug}</span>
+                                    <span style={{ fontSize: 12, fontWeight: on ? 700 : 500, color: on ? "var(--bleu)" : "var(--texte)" }}>{MODULE_LABELS[slug] || slug}</span>
                                   </button>
                                 );
                               })}
@@ -231,11 +231,11 @@ export default function UtilisateursAdminPage() {
                     {/* Statut */}
                     <td style={TD}>
                       {estDev ? (
-                        <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--vert)", whiteSpace: "nowrap" }}>Actif</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--vert)", whiteSpace: "nowrap" }}>Actif</span>
                       ) : (
                         <button onClick={() => patcher(u, { is_active: !u.is_active })}
                           title={u.is_active ? "Cliquer pour désactiver" : "Compte en attente — cliquer pour activer"}
-                          style={{ padding: 0, border: "none", background: "none", cursor: "pointer", fontSize: "var(--t-12)", fontWeight: 700, color: u.is_active ? "var(--vert)" : "var(--orange)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
+                          style={{ padding: 0, border: "none", background: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, color: u.is_active ? "var(--vert)" : "var(--orange)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap" }}>
                           {u.is_active ? "Actif" : "En attente"}
                         </button>
                       )}
@@ -260,7 +260,7 @@ export default function UtilisateursAdminPage() {
               })}
             </tbody>
           </table>
-          {users.length === 0 && <p style={{ color: "var(--gris)", fontSize: "var(--t-14)", textAlign: "center", padding: "40px 0" }}>Aucun utilisateur enregistré</p>}
+          {users.length === 0 && <p style={{ color: "var(--gris)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>Aucun utilisateur enregistré</p>}
         </div>
       )}
     </div>

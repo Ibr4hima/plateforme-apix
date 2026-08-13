@@ -57,7 +57,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex =
             {e.mail && (
               <FicheBloc label={e.mail.includes(",") ? "Emails" : "Email"}>
                 {e.mail.split(",").map((m: string, i: number) => (
-                  <p key={i} style={{ fontSize: "var(--t-125)", fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m.trim()}</p>
+                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m.trim()}</p>
                 ))}
               </FicheBloc>
             )}
@@ -77,7 +77,7 @@ export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex =
         <FicheSection titre="Points focaux">
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {e.points_focaux.map((pf: any, i: number) => (
-              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: "var(--t-12)" }}>
+              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 700, color: "var(--encre)" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
                   {pf.poste && <span style={{ color: "var(--gris)" }}>{pf.poste}</span>}

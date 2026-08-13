@@ -130,18 +130,18 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
     <div style={{ paddingLeft: 22, position: "relative" as const }}>
       <div style={{ position: "absolute" as const, left: 1, top: 16, width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", border: "2px solid var(--carte)", boxShadow: "0 0 0 1px rgb(var(--ombre-rgb) / 0.27)" }}/>
       <FicheCarteNeutre style={{ padding: "13px 15px" }}>
-        <div style={{ fontSize: "var(--t-13)", fontWeight: 800, color: "var(--encre)" }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--encre)" }}>
           {new Date(e.date_echange).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
         </div>
         {(e.canal || e.interlocuteur || e.contact_par) && (
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6, marginTop: 8 }}>
             {e.canal && (() => { const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--t-105)", fontWeight: 700, color: "var(--texte)", background: "var(--champ)", padding: "3px 10px", borderRadius: 999 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: "var(--texte)", background: "var(--champ)", padding: "3px 10px", borderRadius: 999 }}>
                 <CIcon size={11} style={{ flexShrink: 0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
               </span>
             ); })()}
             {(e.interlocuteur || e.contact_par) && (
-              <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", fontWeight: 500 }}>
+              <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 500 }}>
                 {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
               </span>
             )}
@@ -149,7 +149,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
         )}
         {e.commentaire && (
           <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 10, padding: "10px 13px", marginTop: 10 }}>
-            <div data-rte className="cr-rte" style={{ fontSize: "var(--t-12)", color: "var(--texte)", lineHeight: 1.6 }}
+            <div data-rte className="cr-rte" style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.6 }}
               dangerouslySetInnerHTML={{ __html: e.commentaire }}/>
           </div>
         )}
@@ -165,7 +165,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             ))}
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--t-105)", color: "var(--gris)", marginTop: 10, paddingTop: 9, borderTop: "1px solid var(--bordure)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10.5, color: "var(--gris)", marginTop: 10, paddingTop: 9, borderTop: "1px solid var(--bordure)" }}>
           <Clock size={11} style={{ flexShrink: 0 }}/>
           <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
         </div>
@@ -187,7 +187,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   const Contraintes = ({ items }: { items: any[] }) => (
     <div style={{ display: "flex", flexDirection: "column" as const, gap: 5 }}>
       {items.map((c: any) => (
-        <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: "var(--t-12)", color: "var(--texte)" }}>
+        <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "var(--texte)" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0, marginTop: 6 }}/>
           <span style={{ lineHeight: 1.5 }}>{c.description.replace(/<[^>]+>/g, "").trim()}</span>
         </div>
@@ -204,27 +204,27 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
       <div style={{ border: "1px solid var(--bordure)", borderRadius: 12, overflow: "hidden" as const }}>
         <button onClick={() => toggleCycle(id)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: isOpen ? "var(--carte-douce)" : "var(--carte)", border: "none", cursor: "pointer", textAlign: "left" as const }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>
-            <span style={{ fontSize: "var(--t-11)", fontWeight: 700, color: col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
-            {concluLe && <span style={{ fontSize: "var(--t-11)", color: "var(--gris)" }}>· Conclu le {new Date(concluLe).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span>}
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>Cycle {num}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
+            {concluLe && <span style={{ fontSize: 11, color: "var(--gris)" }}>· Conclu le {new Date(concluLe).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span>}
           </div>
           {isOpen ? <ChevronUp size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/> : <ChevronDown size={14} style={{ color: "var(--gris)", flexShrink: 0 }}/>}
         </button>
         {isOpen && (
           <div style={{ borderTop: "1px solid var(--bordure)", padding: "16px 16px", background: "var(--carte)", display: "flex", flexDirection: "column" as const, gap: 14 }}>
             {commentaire && (
-              <div data-rte style={{ fontSize: "var(--t-13)", color: "var(--texte)", lineHeight: 1.7, fontStyle: "italic" }}
+              <div data-rte style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7, fontStyle: "italic" }}
                 dangerouslySetInnerHTML={{ __html: commentaire }}/>
             )}
             {echanges.length > 0 && (
               <div>
-                <p style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--gris)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Historique</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>Historique</p>
                 <Timeline echanges={echanges}/>
               </div>
             )}
             {contraintes.length > 0 && (
               <div>
-                <p style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
                   {contraintes.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                 </p>
                 <Contraintes items={contraintes}/>
@@ -246,7 +246,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
         {onglet !== "cibles" && badge && <span style={STATUT_BADGE[badge.label] || badge_gris}>{badge.label}</span>}
         {p.siege_nom && <span style={badge_bleu}>{p.siege_nom}</span>}
       </>}>
-      <style>{`.cr-rte, .cr-rte *{font-size:var(--t-12) !important; line-height:1.6 !important;}`}</style>
+      <style>{`.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
 
       {/* ── Onglet ciblés : fiche ── */}
       {onglet === "cibles" && <>
@@ -263,7 +263,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             {mails.length > 0 && (
               <FicheBloc label={mails.length > 1 ? "Emails" : "Email"}>
                 {mails.map((m: string, i: number) => (
-                  <p key={i} style={{ fontSize: "var(--t-125)", fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m}</p>
+                  <p key={i} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)", wordBreak: "break-all" }}>{m}</p>
                 ))}
               </FicheBloc>
             )}
@@ -285,10 +285,10 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
         <FicheSection titre="Points focaux">
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {p.points_focaux.map((pf: any, i: number) => (
-              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: "var(--t-12)" }}>
+              <FicheCarteNeutre key={i} style={{ padding: "11px 14px", fontSize: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <span style={{ fontWeight: 700, color: "var(--encre)" }}>{[pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                  {pf.est_principal && <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
+                  {pf.est_principal && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.08)", borderRadius: 999, padding: "2px 8px" }}>Principal</span>}
                 </div>
                 <FicheContacts tels={(pf.telephones || []).filter(Boolean)} mails={(pf.mails || []).filter(Boolean)} />
               </FicheCarteNeutre>
@@ -306,7 +306,7 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
             {echsCourant.length > 0 && <Timeline echanges={echsCourant}/>}
             {contrCourant.length > 0 && (
               <div style={{ marginTop: echsCourant.length ? 18 : 0, paddingTop: echsCourant.length ? 16 : 0, borderTop: echsCourant.length ? "1px solid var(--bordure)" : "none" }}>
-                <p style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
                   {contrCourant.length === 1 ? "Contrainte exprimée" : "Contraintes exprimées"}
                 </p>
                 <Contraintes items={contrCourant}/>

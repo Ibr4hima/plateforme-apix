@@ -63,8 +63,8 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
         <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <h2 style={{ fontWeight: 800, fontSize: "var(--t-r105)", color: "var(--encre)", margin: 0 }}>Fiche Pays</h2>
-              <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
+              <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0 }}>Fiche Pays</h2>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>{sel.length}/{MAX}</span>
             </div>
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", background: "var(--champ)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
               onMouseEnter={e => { e.currentTarget.style.background = "var(--fond-creux2)"; }} onMouseLeave={e => { e.currentTarget.style.background = "var(--champ)"; }}>
@@ -74,7 +74,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           <div style={{ position: "relative" }}>
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher un pays…" autoFocus
-              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: "var(--t-125)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+              style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 9, paddingBottom: 9, borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12.5, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
             {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={11} style={{ color: "var(--gris)" }} /></button>}
           </div>
         </div>
@@ -91,8 +91,8 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
                   style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, border: "none", cursor: "pointer", background: "transparent", textAlign: "left", width: "100%" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "var(--carte-douce)"; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                   <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                  <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: on ? 700 : 400 }}>Sénégal</span>
-                  <span style={{ marginLeft: "auto", fontSize: "var(--t-9)", color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                  <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: on ? 700 : 400 }}>Sénégal</span>
+                  <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)", fontWeight: 600, background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                 </button>
               </div>
             );
@@ -105,12 +105,12 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               <div key={continent} style={{ marginBottom: 6 }}>
                 <button onClick={() => toggleCont(continent)}
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px", borderRadius: 7, background: "rgb(var(--bleu-rgb) / 0.04)", border: "none", cursor: "pointer", marginBottom: 3 }}>
-                  <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{continent}</span>
                   <ChevronDown size={11} style={{ color: "var(--bleu)", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
                 </button>
                 {isOpen && Object.entries(zones).sort(([a], [b]) => a.localeCompare(b, "fr")).map(([zone, paysInZone]) => (
                   <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
-                    <p style={{ fontSize: "var(--t-9)", fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.1em", padding: "2px 8px", marginBottom: 2 }}>{zone}</p>
                     {paysInZone.map(p => {
                       const on = sel.includes(p.id);
                       const col = on ? couleur(p.id) : "var(--gris)";
@@ -118,8 +118,8 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
                       if (p.id === senId) return (
                         <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7, width: "100%", opacity: 0.35, cursor: "not-allowed" }}>
                           <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                          <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
-                          <span style={{ marginLeft: "auto", fontSize: "var(--t-9)", color: "var(--gris)" }}>Réf.</span>
+                          <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--gris)" }}>Réf.</span>
                         </div>
                       );
                       return (
@@ -128,7 +128,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
                           onMouseEnter={e => { if (!disabled && !on) e.currentTarget.style.background = "var(--carte-douce)"; }}
                           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
                           <div style={{ width: 9, height: 9, borderRadius: "50%", border: `2px solid ${on ? col : "var(--bordure-forte)"}`, background: on ? col : "transparent", flexShrink: 0 }} />
-                          <span style={{ fontSize: "var(--t-12)", color: "var(--texte)", fontWeight: on ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
+                          <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: on ? 700 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</span>
                         </button>
                       );
                     })}
@@ -137,12 +137,12 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
               </div>
             );
           })}
-          {Object.keys(grouped).length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
+          {Object.keys(grouped).length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center", padding: "8px 0" }}>Aucun pays trouvé</p>}
         </div>
         <div style={{ padding: "14px 22px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0, gap: 10 }}>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {sel.map(id => { const p = pays.find(x => x.id === id); const canRemove = sel.length > 1; return p ? (
-              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: "var(--t-105)", fontWeight: 700, color: couleur(id), background: `${voile(couleur(id), 7)}`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
+              <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, color: couleur(id), background: `${voile(couleur(id), 7)}`, padding: "3px 5px 3px 9px", borderRadius: 999 }}>
                 {p.nom}
                 <button onClick={() => canRemove && setSel(prev => prev.filter(x => x !== id))} disabled={!canRemove} title={canRemove ? `Retirer ${p.nom}` : "Au moins un pays requis"}
                   style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15, height: 15, borderRadius: "50%", border: "none", padding: 0, background: "transparent", color: couleur(id), cursor: canRemove ? "pointer" : "not-allowed", opacity: canRemove ? 1 : 0.35 }}
@@ -154,7 +154,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
           </div>
           <button onClick={() => sel.length === MAX && ouvrirFiche(sel)} disabled={sel.length !== MAX}
             title={sel.length !== MAX ? "Sélectionnez deux pays" : undefined}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight: 700, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.4, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: sel.length === MAX ? "pointer" : "not-allowed", opacity: sel.length === MAX ? 1 : 0.4, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)", whiteSpace: "nowrap", flexShrink: 0 }}>
             Générer la fiche
           </button>
         </div>
@@ -209,7 +209,7 @@ export function FichePaysPickerGlobal() {
 export default function FichePaysLauncher({ textColor, textHover }: { textColor: string; textHover: string }) {
   return (
     <button onClick={() => window.dispatchEvent(new Event("apix:fiche-pays-picker"))}
-      style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: "var(--t-14)", fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
+      style={{ display: "flex", alignItems: "center", height: 36, padding: "0 14px", borderRadius: 10, color: textColor, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-google-sans)", transition: "all 0.15s", letterSpacing: "-0.01em" }}
       onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.color = textHover; }}
       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = textColor; }}>
       Fiche Pays

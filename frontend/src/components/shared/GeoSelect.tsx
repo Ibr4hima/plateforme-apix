@@ -6,7 +6,7 @@ import { API_BASE } from "@/lib/api";
 
 const SELECT_STYLE = {
   width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-  borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)",
+  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
   outline: "none", fontFamily: "var(--font-google-sans)",
   cursor: "pointer", boxSizing: "border-box" as const,
 };

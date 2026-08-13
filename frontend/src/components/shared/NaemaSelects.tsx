@@ -14,7 +14,7 @@ function Tag({ label, color, onRemove }: { label: string; color: string; onRemov
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 5,
       background: voile(color, 8), color, border: `1px solid ${voile(color, 19)}`,
-      borderRadius: 999, padding: "3px 10px", fontSize: "var(--t-12)", fontWeight: 600,
+      borderRadius: 999, padding: "3px 10px", fontSize: 12, fontWeight: 600,
     }}>
       {label}
       <button
@@ -42,7 +42,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
   }, []);
 
   if (disabled) return (
-    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 14px", fontSize: "var(--t-13)", color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--gris)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <span>{placeholder}</span>
       <ChevronDown size={14} style={{ color: "var(--gris)" }} />
     </div>
@@ -54,7 +54,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
         onClick={() => setOpen(o => !o)}
         style={{
           background: "var(--fond)", border: `1px solid ${open ? color : "var(--gris)"}`,
-          borderRadius: 10, padding: "9px 14px", fontSize: "var(--t-13)", color: "var(--encre)",
+          borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "var(--encre)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           cursor: "pointer", transition: "border-color 0.2s", userSelect: "none" as const,
         }}
@@ -76,7 +76,7 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
           maxHeight: 260, overflowY: "auto",
         }}>
           {items.length === 0 ? (
-            <div style={{ padding: "14px", fontSize: "var(--t-13)", color: "var(--gris)", textAlign: "center" }}>Aucun élément</div>
+            <div style={{ padding: "14px", fontSize: 13, color: "var(--gris)", textAlign: "center" }}>Aucun élément</div>
           ) : items.map(item => {
             const isSelected = selected.includes(item.id);
             return (
@@ -105,8 +105,8 @@ function MultiDropdown({ items, selected, onToggle, placeholder, color, disabled
                     </svg>
                   )}
                 </div>
-                <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", minWidth: 55, flexShrink: 0 }}>{item.code}</span>
-                <span style={{ fontSize: "var(--t-13)", color: isSelected ? "var(--encre)" : "var(--texte)", lineHeight: 1.3, fontWeight: isSelected ? 600 : 400 }}>{item.nom}</span>
+                <span style={{ fontSize: 11, color: "var(--gris)", minWidth: 55, flexShrink: 0 }}>{item.code}</span>
+                <span style={{ fontSize: 13, color: isSelected ? "var(--encre)" : "var(--texte)", lineHeight: 1.3, fontWeight: isSelected ? 600 : 400 }}>{item.nom}</span>
               </div>
             );
           })}
@@ -192,17 +192,17 @@ export function NaemaCascadeMulti({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <Filter size={13} style={{ color: "var(--orange)" }} />
-          <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--texte)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Filtrer par activité NAEMA
           </span>
           {totalSelection > 0 && (
-            <span style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.12)", padding: "2px 8px", borderRadius: 999 }}>
               {totalSelection} filtre{totalSelection > 1 ? "s" : ""}
             </span>
           )}
         </div>
         {totalSelection > 0 && (
-          <button onClick={reinitialiser} style={{ fontSize: "var(--t-12)", color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
+          <button onClick={reinitialiser} style={{ fontSize: 12, color: "var(--danger)", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
             Réinitialiser
           </button>
         )}
@@ -212,7 +212,7 @@ export function NaemaCascadeMulti({
 
         {/* Secteurs */}
         <div>
-          <label style={{ fontSize: "var(--t-11)", fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+          <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
             Secteur(s)
           </label>
           <MultiDropdown
@@ -232,7 +232,7 @@ export function NaemaCascadeMulti({
         {/* Branches */}
         {selSecIds.length > 0 && (
           <div>
-            <label style={{ fontSize: "var(--t-11)", fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
               Branche(s)
             </label>
             <MultiDropdown
@@ -253,7 +253,7 @@ export function NaemaCascadeMulti({
         {/* Activités */}
         {selBraIds.length > 0 && (
           <div>
-            <label style={{ fontSize: "var(--t-11)", fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5, display: "block" }}>
               Activité(s)
             </label>
             <MultiDropdown
@@ -280,7 +280,7 @@ export function NaemaCascadeMulti({
             style={{
               display: "flex", alignItems: "center", gap: 6,
               background: "linear-gradient(135deg, var(--orange-action), var(--orange-fonce))",
-              color: "var(--sur-bleu)", fontWeight: 600, fontSize: "var(--t-13)",
+              color: "var(--sur-bleu)", fontWeight: 600, fontSize: 13,
               padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer",
               boxShadow: "0 4px 12px rgb(var(--ombre-rgb) / 0.3)",
             }}
@@ -341,8 +341,8 @@ export function NaemaCascade({
     else setActivites([]);
   }, [brancheId]);
 
-  const s = { width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
-  const dL = { fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
+  const s = { width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", fontFamily: "var(--font-google-sans)", cursor: "pointer", boxSizing: "border-box" as const };
+  const dL = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
   const dF = { display: "flex", flexDirection: "column" as const, gap: 3 };
 
   return (

@@ -45,7 +45,7 @@ function inline(texte: string, cle: string): React.ReactNode[] {
       parts.push(<strong key={`${cle}b${i}`} style={{ color: ENCRE }}>{tok.slice(2, -2)}</strong>);
     } else {
       parts.push(
-        <code key={`${cle}c${i}`} style={{ background: "rgb(var(--orange-rgb) / 0.08)", padding: "1px 5px", borderRadius: 5, fontSize: "var(--t-125)", fontFamily: "ui-monospace, SFMono-Regular, monospace" }}>
+        <code key={`${cle}c${i}`} style={{ background: "rgb(var(--orange-rgb) / 0.08)", padding: "1px 5px", borderRadius: 5, fontSize: 12.5, fontFamily: "ui-monospace, SFMono-Regular, monospace" }}>
           {tok.slice(1, -1)}
         </code>,
       );
@@ -83,7 +83,7 @@ function formater(texte: string): React.ReactNode {
       }
       blocs.push(
         <div key={`tb${k++}`} style={{ overflowX: "auto", margin: "6px 0" }}>
-          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "var(--t-125)" }}>
+          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12.5 }}>
             <thead>
               <tr>
                 {entete.map((hc, ci) => (
@@ -113,7 +113,7 @@ function formater(texte: string): React.ReactNode {
     // Titre  #..####
     const h = t.match(/^(#{1,4})\s+(.*)$/);
     if (h) {
-      blocs.push(<div key={`h${k++}`} style={{ fontWeight: 700, color: ENCRE, fontSize: "var(--t-14)", margin: "6px 0 2px" }}>{inline(h[2], `hh${k}`)}</div>);
+      blocs.push(<div key={`h${k++}`} style={{ fontWeight: 700, color: ENCRE, fontSize: 14.5, margin: "6px 0 2px" }}>{inline(h[2], `hh${k}`)}</div>);
       i++;
       continue;
     }
@@ -404,7 +404,7 @@ export default function ChatWidget() {
               <LogoClaude size={23} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: "var(--t-15)", letterSpacing: "0.01em" }}>
+              <div style={{ fontWeight: 700, fontSize: 15.5, letterSpacing: "0.01em" }}>
                 Assistant IA
               </div>
             </div>
@@ -420,7 +420,7 @@ export default function ChatWidget() {
                 height: 30,
                 borderRadius: 9,
                 cursor: "pointer",
-                fontSize: "var(--t-18)",
+                fontSize: 17,
                 lineHeight: 1,
                 display: "flex",
                 alignItems: "center",
@@ -480,7 +480,7 @@ export default function ChatWidget() {
                 </div>
                 <div
                   style={{
-                    fontSize: "var(--t-22)",
+                    fontSize: 21,
                     fontWeight: 700,
                     color: ENCRE,
                     letterSpacing: "-0.01em",
@@ -489,7 +489,7 @@ export default function ChatWidget() {
                 >
                   {accueil.titre}
                 </div>
-                <div style={{ fontSize: "var(--t-135)", color: "var(--gris-fort)", marginTop: 6, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13.5, color: "var(--gris-fort)", marginTop: 6, lineHeight: 1.5 }}>
                   {accueil.accroche}
                 </div>
               </div>
@@ -511,7 +511,7 @@ export default function ChatWidget() {
                       color: "var(--sur-bleu)",
                       padding: "10px 14px",
                       borderRadius: "16px 16px 5px 16px",
-                      fontSize: "var(--t-135)",
+                      fontSize: 13.5,
                       lineHeight: 1.55,
                       whiteSpace: "pre-wrap",
                       boxShadow: "0 3px 10px rgb(var(--ombre-rgb) / 0.22)",
@@ -535,7 +535,7 @@ export default function ChatWidget() {
                       color: "var(--encre)",
                       padding: "11px 14px",
                       borderRadius: "16px 16px 16px 5px",
-                      fontSize: "var(--t-135)",
+                      fontSize: 13.5,
                       lineHeight: 1.6,
                       border: "1px solid rgb(var(--orange-rgb) / 0.10)",
                       boxShadow: "0 2px 8px rgb(var(--ombre-rgb) / 0.05)",
@@ -582,7 +582,7 @@ export default function ChatWidget() {
                 border: "1px solid rgb(var(--encre-rgb) / 0.14)",
                 borderRadius: 13,
                 padding: "11px 13px",
-                fontSize: "var(--t-135)",
+                fontSize: 13.5,
                 fontFamily: "inherit",
                 outline: "none",
                 lineHeight: 1.4,
@@ -621,7 +621,7 @@ export default function ChatWidget() {
               <span
                 className="material-symbols-outlined"
                 style={{
-                  fontSize: "var(--t-20)",
+                  fontSize: 20,
                   color: enCours || !saisie.trim() ? "rgb(var(--orange-rgb) / 0.5)" : "var(--sur-bleu)",
                   fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24",
                   lineHeight: 1,

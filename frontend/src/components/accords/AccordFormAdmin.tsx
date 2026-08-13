@@ -60,10 +60,10 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
 
   const inputStyle = {
     width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-    borderRadius: 10, padding: "10px 14px", fontSize: "var(--t-13)", color: "var(--encre)",
+    borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--encre)",
     outline: "none", fontFamily: "var(--font-body)", boxSizing: "border-box" as const,
   };
-  const labelStyle = { fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)", marginBottom: 6, display: "block" };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 6, display: "block" };
   const fieldStyle = { display: "flex", flexDirection: "column" as const, gap: 4 };
 
   return (
@@ -88,10 +88,10 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
             <div>
-              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "var(--t-r120)", color: "var(--encre)" }}>
+              <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.25rem", color: "var(--encre)" }}>
                 Nouvel accord / traité
               </h2>
-              <p style={{ fontSize: "var(--t-13)", color: "var(--gris)", marginTop: 2 }}>Remplissez les informations de l'accord</p>
+              <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 2 }}>Remplissez les informations de l'accord</p>
             </div>
             <button onClick={onClose} style={{ background: "var(--fond-creux2)", border: "none", cursor: "pointer", borderRadius: 10, padding: 8 }}>
               <X size={16} color="var(--texte)" />
@@ -168,7 +168,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
 
             {/* Domaines */}
             <div style={fieldStyle}>
-              <label style={labelStyle}>Domaines couverts <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", fontWeight: 400 }}>(séparés par des virgules)</span></label>
+              <label style={labelStyle}>Domaines couverts <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 400 }}>(séparés par des virgules)</span></label>
               <input value={form.domaines_couverts} onChange={e => update("domaines_couverts", e.target.value)} placeholder="Ex: Investissement, Commerce, Fiscalité" style={inputStyle} />
             </div>
 
@@ -212,7 +212,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
                 transition: "all 0.2s",
               }}>
                 <Upload size={16} color={fichier ? "var(--bleu)" : "var(--gris)"} />
-                <span style={{ fontSize: "var(--t-13)", color: fichier ? "var(--bleu)" : "var(--gris)" }}>
+                <span style={{ fontSize: 13, color: fichier ? "var(--bleu)" : "var(--gris)" }}>
                   {fichier ? fichier.name : "Cliquer pour sélectionner un PDF"}
                 </span>
                 <input
@@ -229,14 +229,14 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
                 onChange={e => update("est_publie", e.target.checked)}
                 style={{ width: 16, height: 16, cursor: "pointer" }}
               />
-              <label htmlFor="est_publie" style={{ fontSize: "var(--t-13)", color: "var(--texte)", cursor: "pointer" }}>
+              <label htmlFor="est_publie" style={{ fontSize: 13, color: "var(--texte)", cursor: "pointer" }}>
                 Publier sur le site public
               </label>
             </div>
 
             {/* Erreur */}
             {error && (
-              <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 10, fontSize: "var(--t-13)" }}>
+              <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 10, fontSize: 13 }}>
                 {error}
               </div>
             )}
@@ -245,7 +245,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 8 }}>
               <button onClick={onClose} style={{
                 padding: "11px 22px", borderRadius: 12, border: "1px solid var(--bordure-forte)",
-                background: "transparent", color: "var(--texte)", fontSize: "var(--t-14)", fontWeight: 600, cursor: "pointer",
+                background: "transparent", color: "var(--texte)", fontSize: 14, fontWeight: 600, cursor: "pointer",
               }}>
                 Annuler
               </button>
@@ -253,7 +253,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
                 padding: "11px 28px", borderRadius: 12, border: "none",
                 background: success ? "var(--vert-voile)" : "linear-gradient(135deg, var(--bleu-action), var(--bleu-nuit))",
                 color: success ? "var(--vert-fonce)" : "var(--sur-bleu)",
-                fontSize: "var(--t-14)", fontWeight: 600, cursor: loading ? "wait" : "pointer",
+                fontSize: 14, fontWeight: 600, cursor: loading ? "wait" : "pointer",
                 display: "flex", alignItems: "center", gap: 8,
                 transition: "all 0.2s",
               }}>

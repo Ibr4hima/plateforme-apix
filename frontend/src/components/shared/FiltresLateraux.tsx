@@ -23,7 +23,7 @@ function EnteteRepliable({ label, badges, open, onToggle, controlsId }: {
     <button onClick={onToggle} aria-expanded={open} aria-controls={controlsId}
       style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
       <div style={{display:"flex",alignItems:"center",gap:6}}>
-        <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
+        <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{label}</span>
         {badges}
       </div>
       <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -42,13 +42,13 @@ function LigneOption({ sel, couleur, texte, onClick }: {
       onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
       onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
       <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?couleur:"var(--gris)"}`,background:sel?couleur:"transparent",flexShrink:0}}/>
-      <span style={{fontSize: "var(--t-12)",color:sel?couleur:"var(--texte)",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
+      <span style={{fontSize:12,color:sel?couleur:"var(--texte)",fontWeight:sel?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{texte}</span>
     </button>
   );
 }
 
 const badgeCompte = (n: number, couleur: string, fond?: string) =>
-  n > 0 ? <span style={{fontSize: "var(--t-10)",fontWeight:700,color:couleur,background:fond||voile(couleur, 9),padding:"1px 6px",borderRadius:999}}>{n}</span> : null;
+  n > 0 ? <span style={{fontSize:10,fontWeight:700,color:couleur,background:fond||voile(couleur, 9),padding:"1px 6px",borderRadius:999}}>{n}</span> : null;
 
 export function SideFilter({ label, items, selected, onToggle, color, colorOf, searchable = false, format, listMaxHeight, marginBottom = 18 }: {
   label: string; items: Item[]; selected: string[]; onToggle: (v: string) => void; color: string;
@@ -69,7 +69,7 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
           {searchable&&<div style={{position:"relative" as const,marginBottom:6}}>
             <Search size={11} style={{position:"absolute" as const,left:8,top:"50%",transform:"translateY(-50%)",color:"var(--gris)"}}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" aria-label={`Rechercher dans ${label}`}
-              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid var(--bordure-forte)",background:"var(--carte-douce)",fontSize: "var(--t-11)",outline:"none",boxSizing:"border-box" as const}}/>
+              style={{width:"100%",paddingLeft:24,paddingRight:8,paddingTop:6,paddingBottom:6,borderRadius:7,border:"1px solid var(--bordure-forte)",background:"var(--carte-douce)",fontSize:11,outline:"none",boxSizing:"border-box" as const}}/>
           </div>}
           <div id={idContenu} style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:listMaxHeight,overflowY:listMaxHeight?"auto" as const:undefined}}>
             {filtered.map(item=>(
@@ -87,7 +87,7 @@ export function SideFilter({ label, items, selected, onToggle, color, colorOf, s
 export function BoutonEffacerFiltres({ onClick }: { onClick: () => void }) {
   return (
     <button onClick={onClick}
-      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:600,fontSize: "var(--t-13)",cursor:"pointer"}}>
+      style={{marginTop:16,padding:"8px 18px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:600,fontSize:13,cursor:"pointer"}}>
       Effacer les filtres
     </button>
   );
@@ -118,7 +118,7 @@ function CascadeFilter({ titre, niveaux, marginBottom }: {
           const { couleur } = NIVEAUX[i];
           return (
             <div key={n.label} style={i===0?undefined:{paddingLeft:12*i,borderLeft:`2px solid ${voile(NIVEAUX[i-1].couleur, 15)}`}}>
-              <p style={{fontSize: "var(--t-10)",fontWeight:700,color:couleur,marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{n.label}</p>
+              <p style={{fontSize:10,fontWeight:700,color:couleur,marginBottom:4,textTransform:"uppercase" as const,letterSpacing:"0.08em"}}>{n.label}</p>
               <div style={{display:"flex",flexDirection:"column" as const,gap:2,maxHeight:n.maxHeight,overflowY:n.maxHeight?"auto" as const:undefined}}>
                 {n.items.map((it:any)=>(
                   <LigneOption key={it.nom} sel={n.sel.includes(it.nom)} couleur={couleur}

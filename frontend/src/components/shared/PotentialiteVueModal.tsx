@@ -56,7 +56,7 @@ export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: 
               const color = COMP_PALETTE[ci % COMP_PALETTE.length];
               return (
                 <FicheCarteNeutre key={cat}>
-                  <div style={{ fontSize: "var(--t-105)", fontWeight: 700, color, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>{cat}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>{cat}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                     {items.map((item, i) => <span key={i} style={badgeDe(color)}>{item}</span>)}
                   </div>

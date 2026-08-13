@@ -40,16 +40,16 @@ export default function AdminDashboard() {
 
       {/* Header */}
       <div style={{ marginBottom: 40 }}>
-        <p style={{ fontSize: "var(--t-13)", color: "var(--gris)", marginBottom: 6 }}>
+        <p style={{ fontSize: 13, color: "var(--gris)", marginBottom: 6 }}>
           {now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
         <h1 style={{
           fontFamily: "var(--font-google-sans)", fontWeight: 800,
-          fontSize: "var(--t-r200)", color: "var(--encre)", marginBottom: 6,
+          fontSize: "2rem", color: "var(--encre)", marginBottom: 6,
         }}>
           {greeting} 👋
         </h1>
-        <p style={{ color: "var(--texte)", fontSize: "var(--t-15)" }}>
+        <p style={{ color: "var(--texte)", fontSize: 15 }}>
           Bienvenue dans l'espace d'administration de la plateforme APIX.
         </p>
       </div>
@@ -76,10 +76,10 @@ export default function AdminDashboard() {
                 <Icon size={20} style={{ color: s.color }} />
               </div>
               <div>
-                <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "var(--t-r175)", color: s.color }}>
+                <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: s.color }}>
                   {s.value}
                 </div>
-                <div style={{ fontSize: "var(--t-12)", color: "var(--gris)" }}>{s.label}</div>
+                <div style={{ fontSize: 12, color: "var(--gris)" }}>{s.label}</div>
               </div>
             </div>
           );
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
 
       {/* Grille modules */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "var(--t-r110)", color: "var(--encre)", marginBottom: 16 }}>
+        <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "var(--encre)", marginBottom: 16 }}>
           Accès rapide aux modules
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
@@ -121,12 +121,12 @@ export default function AdminDashboard() {
                     <Icon size={17} style={{ color: m.color }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "var(--t-14)", fontWeight: 600, color: "var(--encre)" }}>{m.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--encre)" }}>{m.label}</div>
                     {count !== null && (
-                      <div style={{ fontSize: "var(--t-11)", color: "var(--gris)" }}>{count} enregistrement{count > 1 ? "s" : ""}</div>
+                      <div style={{ fontSize: 11, color: "var(--gris)" }}>{count} enregistrement{count > 1 ? "s" : ""}</div>
                     )}
                     {count === null && (
-                      <div style={{ fontSize: "var(--t-11)", color: "var(--gris)" }}>À venir</div>
+                      <div style={{ fontSize: 11, color: "var(--gris)" }}>À venir</div>
                     )}
                   </div>
                   <ArrowRight size={14} style={{ color: "var(--gris)" }} />

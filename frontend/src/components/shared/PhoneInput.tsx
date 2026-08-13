@@ -232,7 +232,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
   const IS: React.CSSProperties = {
     background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10,
-    padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)", outline: "none",
+    padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)", width: "100%", boxSizing: "border-box",
   };
 
@@ -272,11 +272,11 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
             onMouseEnter={e => { e.currentTarget.style.background = iso2 ? "rgb(var(--bleu-rgb) / 0.12)" : "var(--carte-douce)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = iso2 ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent"; }}>
             {iso2 ? (
-              <span style={{ fontSize: "var(--t-125)", fontWeight:800, color:"var(--bleu)", letterSpacing:"0.05em" }}>
+              <span style={{ fontSize:12.5, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.05em" }}>
                 {selectedPays?.code_iso3 || iso2}
               </span>
             ) : (
-              <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>Sélectionner un pays</span>
+              <span style={{ fontSize:13, color:"var(--gris)" }}>Sélectionner un pays</span>
             )}
             <ChevronDown size={12} style={{ color: iso2 ? "var(--bleu)" : "var(--gris)",
               transform:`rotate(${open?180:0}deg)`, transition:"transform 0.2s", flexShrink:0 }} />
@@ -284,7 +284,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
           {/* Indicatif */}
           {iso2 && indicatif !== "+" && (
-            <span style={{ paddingLeft:11, fontSize: "var(--t-13)", fontWeight:700, color:"var(--bleu)", whiteSpace:"nowrap", flexShrink:0 }}>
+            <span style={{ paddingLeft:11, fontSize:13, fontWeight:700, color:"var(--bleu)", whiteSpace:"nowrap", flexShrink:0 }}>
               {indicatif}
             </span>
           )}
@@ -296,11 +296,11 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
               onBlur={() => { setFocused(false); setTouched(true); }}
               placeholder={exempleNational || placeholder}
               style={{ flex:1, minWidth:110, background:"transparent", border:"none", outline:"none",
-                padding:"0 10px 0 8px", fontSize: "var(--t-13)", color:"var(--encre)",
+                padding:"0 10px 0 8px", fontSize:13, color:"var(--encre)",
                 fontFamily:"var(--font-google-sans)", height:"100%" }} />
           )}
-          {iso2 && isValid === true  && <span style={{ paddingRight:11, color:"var(--vert)", fontSize: "var(--t-15)", lineHeight:1 }}>✓</span>}
-          {iso2 && isValid === false && <span style={{ paddingRight:11, color:"var(--danger)", fontSize: "var(--t-15)", lineHeight:1 }}>✗</span>}
+          {iso2 && isValid === true  && <span style={{ paddingRight:11, color:"var(--vert)", fontSize:15, lineHeight:1 }}>✓</span>}
+          {iso2 && isValid === false && <span style={{ paddingRight:11, color:"var(--danger)", fontSize:15, lineHeight:1 }}>✗</span>}
         </div>
 
         {open && (
@@ -312,7 +312,7 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
                 <Search size={12} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
                 <input autoFocus value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher…"
-                  style={{ ...IS, paddingLeft:28, fontSize: "var(--t-12)" }} />
+                  style={{ ...IS, paddingLeft:28, fontSize:12 }} />
               </div>
             </div>
             <div style={{ overflowY:"auto", flex:1 }}>
@@ -321,18 +321,18 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
                 return (
                   <div key={p.id} onMouseDown={e => { e.preventDefault(); handleSelectPays(p); }}
                     style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px",
-                      cursor:"pointer", fontSize: "var(--t-13)",
+                      cursor:"pointer", fontSize:13,
                       background: p.code_iso2===iso2 ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
                       color: p.code_iso2===iso2 ? "var(--bleu)" : "var(--encre)",
                       fontWeight: p.code_iso2===iso2 ? 600 : 400 }}
                     onMouseEnter={e => { if(p.code_iso2!==iso2) e.currentTarget.style.background="var(--carte-douce)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = p.code_iso2===iso2?"rgb(var(--bleu-rgb) / 0.06)":"transparent"; }}>
                     <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.nom_fr}</span>
-                    {ind !== "+" && <span style={{ fontSize: "var(--t-11)", fontWeight:600, color:"var(--gris)", flexShrink:0 }}>{ind}</span>}
+                    {ind !== "+" && <span style={{ fontSize:11, fontWeight:600, color:"var(--gris)", flexShrink:0 }}>{ind}</span>}
                   </div>
                 );
               })}
-              {filtered.length === 0 && <p style={{ padding:"12px", fontSize: "var(--t-13)", color:"var(--gris)", textAlign:"center" }}>Aucun résultat</p>}
+              {filtered.length === 0 && <p style={{ padding:"12px", fontSize:13, color:"var(--gris)", textAlign:"center" }}>Aucun résultat</p>}
             </div>
           </div>
         )}
@@ -340,10 +340,10 @@ export default function PhoneInput({ value, onChange, placeholder = "Numéro" }:
 
       {/* Messages sous le bloc */}
       {isValid === true && numType && (
-        <p style={{ fontSize: "var(--t-11)", color:"var(--vert)", marginTop:3 }}>{numType}</p>
+        <p style={{ fontSize:11, color:"var(--vert)", marginTop:3 }}>{numType}</p>
       )}
       {isValid === false && (
-        <p style={{ fontSize: "var(--t-11)", color:"var(--danger)", marginTop:3 }}>
+        <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>
           {invalidMsg}
         </p>
       )}
