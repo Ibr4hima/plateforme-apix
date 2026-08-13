@@ -32,6 +32,17 @@ const j = (url: string) => fetch(url).then(r => {
  *  useMemo/useEffect qui en dépendent. */
 export const VIDE: readonly any[] = [];
 
+/**
+ * Le couple clé + chargeur d'une ressource, pour composer avec `useQueries`
+ * (éventails de requêtes). MÊME clé que useDonnees : une ressource déjà vue
+ * par l'un est servie du cache à l'autre — l'éventail macro-secteurs de la vue
+ * globale et l'analyse comparative partagent ainsi leurs téléchargements.
+ */
+export const requeteDonnees = (url: string) => ({
+  queryKey: ["donnees", url] as const,
+  queryFn: () => j(url),
+});
+
 export function useDonnees<T = any>(url: string | null, opts?: {
   /** Garde la réponse précédente pendant qu'une nouvelle URL charge — pour les
    *  requêtes pilotées par un curseur ou une sélection, où un squelette à
@@ -40,8 +51,7 @@ export function useDonnees<T = any>(url: string | null, opts?: {
   garder?: boolean;
 }) {
   return useQuery<T>({
-    queryKey: ["donnees", url],
-    queryFn: () => j(url!),
+    ...requeteDonnees(url ?? ""),
     enabled: url !== null,
     placeholderData: opts?.garder ? keepPreviousData : undefined,
   });

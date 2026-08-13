@@ -1,6 +1,6 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
-import { Fragment, useEffect, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { X, Plus, Table, ChevronDown, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -9,7 +9,8 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, BadgePeriode, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
-import { useDonnees } from "@/lib/donnees";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
+import { useQueries } from "@tanstack/react-query";
 import { voile } from "@/lib/couleurs";
 
 
@@ -353,11 +354,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
 }
 
 function OngletNational() {
-  const [refs, setRefs]               = useState<BdefRefs|null>(null);
   const [sel, setSel]                 = useState<BdefSel>({ niveau:"global", cible_id:null, libelle:"Global des secteurs" });
-  const [indicateurs, setIndicateurs] = useState<BdefIndic[]>([]);
-  const [anneesData, setAnneesData]   = useState<number[]>([]);
-  const [loading, setLoading]         = useState(true);
 
   // Vue : sectorielle | comparative
   const [sousVue, setSousVue]         = useState<"sectorielle"|"comparative">("sectorielle");
@@ -365,12 +362,9 @@ function OngletNational() {
   const [compType, setCompType]       = useState<"macro_secteur"|"groupe"|"secteur">("macro_secteur");
   const [compSelec, setCompSelec]     = useState<number[]>([]);
   const compInit = useRef(false);
-  const [compData, setCompData]       = useState<Record<number,BdefIndic[]>>({});
-  const [compAnneesData, setCompAnneesData] = useState<number[]>([]);
   const [compSearch, setCompSearch]   = useState("");
   const [compCatOuverts, setCompCatOuverts] = useState<Set<string>>(new Set());
   const toggleCompCat = (k:string) => setCompCatOuverts(p=>{ const n=new Set(p); n.has(k)?n.delete(k):n.add(k); return n; });
-  const [loadingComp, setLoadingComp] = useState(false);
 
   // Période (bornes dérivées des données)
   const [bornes, setBornes]           = useState<[number,number]>([2019,2024]);
@@ -394,73 +388,59 @@ function OngletNational() {
   const [kpiActif, setKpiActif]         = useState<BdefIndic | null>(null);
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot, setPickerSlot]     = useState(-1);
-  // Données des macro-secteurs (uniquement chargées pour la vue globale)
-  const [macroIndicateurs, setMacroIndicateurs] = useState<{id:number;libelle:string;inds:BdefIndic[]}[]>([]);
 
   // Couleur d'accent du panneau de droite = couleur du niveau sélectionné
   const couleur = (sel.niveau && BDEF_NIVEAU_STYLE[sel.niveau]?.color) || "var(--bleu)";
 
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 540);
 
-  // Référentiel BDEF en cache pour la session. Le flux principal (valeurs +
-  // éventail macro-secteurs) garde son orchestration à étages : il passera au
-  // cache dans un passage dédié, pas au détour d'un balayage.
+  // ── Toutes les données BDEF viennent du cache React Query ────────────────
+  // Chaque ressource /bdef/valeurs a sa clé-URL : la vue globale, l'éventail
+  // macro-secteurs et l'analyse comparative PARTAGENT leurs téléchargements —
+  // comparer les macro-secteurs après la vue globale ne recharge rien.
+  const urlValeurs = (niveau: string, cible: number | null) =>
+    `${API}/bdef/valeurs?` + (niveau === "global" ? "niveau=global" : `niveau=${niveau}&cible_id=${cible}`);
+
   const { data: refsData } = useDonnees<BdefRefs>(`${API}/bdef/secteurs`);
-  useEffect(()=>{ if (refsData) setRefs(refsData); }, [refsData]);
+  const refs = refsData ?? null;
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
-  const charger = useCallback(async()=>{
-    setLoading(true); setErreur(false);
-    try {
-      const qs = sel.niveau==="global" ? `niveau=global` : `niveau=${sel.niveau}&cible_id=${sel.cible_id}`;
-      const d = await fetch(`${API}/bdef/valeurs?${qs}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
-      setIndicateurs(d?.indicateurs||[]);
-      setAnneesData(d?.annees||[]);
-      if (sel.niveau==="global" && refs) {
-        const macros = await Promise.all(
-          refs.macro_secteur.map(m=>
-            fetch(`${API}/bdef/valeurs?niveau=macro_secteur&cible_id=${m.id}`)
-              .then(r=>r.json())
-              .then((md:any)=>({ id:m.id, libelle:m.libelle, inds:(md?.indicateurs||[]) as BdefIndic[] }))
-              .catch(()=>({ id:m.id, libelle:m.libelle, inds:[] as BdefIndic[] }))
-          )
-        );
-        setMacroIndicateurs(macros);
-      } else {
-        setMacroIndicateurs([]);
-      }
-    } catch(e){ console.error(e); setErreur(true); setIndicateurs([]); setAnneesData([]); setMacroIndicateurs([]); }
-    finally { setLoading(false); }
-  }, [sel, refs, tick]);
-  useEffect(()=>{ charger(); }, [charger]);
+  // Valeurs de la sélection ; `garder` évite le squelette à chaque changement
+  // de nœud dans l'arbre.
+  const qValeurs = useDonnees<{ indicateurs: BdefIndic[]; annees: number[] }>(
+    urlValeurs(sel.niveau, sel.cible_id), { garder: true });
+  const indicateurs = useMemo(() => qValeurs.data?.indicateurs ?? [], [qValeurs.data]);
+  const anneesData = useMemo(() => qValeurs.data?.annees ?? [], [qValeurs.data]);
+  const loading = qValeurs.isPending;
+  const erreur = qValeurs.isError;
 
-  // Chargement comparatif : quand compSelec ou compType change
-  useEffect(()=>{
-    if (sousVue!=="comparative" || compSelec.length===0) return;
-    let cancelled = false;
-    (async()=>{
-      setLoadingComp(true);
-      const results = await Promise.all(
-        compSelec.map(id=>
-          fetch(`${API}/bdef/valeurs?niveau=${compType}&cible_id=${id}`)
-            .then(r=>r.json())
-            .then((d:any)=>({ id, inds:(d?.indicateurs||[]) as BdefIndic[], annees:(d?.annees||[]) as number[] }))
-            .catch(()=>({ id, inds:[] as BdefIndic[], annees:[] as number[] }))
-        )
-      );
-      if (!cancelled) {
-        const newData: Record<number,BdefIndic[]> = {};
-        let allAnnees: number[] = [];
-        results.forEach(r=>{ newData[r.id]=r.inds; allAnnees=[...new Set([...allAnnees,...r.annees])].sort(); });
-        setCompData(newData);
-        setCompAnneesData(allAnnees);
-      }
-      setLoadingComp(false);
-    })();
-    return ()=>{ cancelled=true; };
-  }, [compSelec, compType, sousVue]);
+  // Éventail macro-secteurs (vue globale). Tout-ou-rien, comme l'ancien
+  // Promise.all : les graphes basculent d'un coup, pas macro par macro ; un
+  // sous-chargement en échec vaut « pas de données » et ne bloque pas les
+  // autres.
+  const listeMacros = sel.niveau === "global" && refs ? refs.macro_secteur : [];
+  const macroIndicateurs = useQueries({
+    queries: listeMacros.map(m => requeteDonnees(urlValeurs("macro_secteur", m.id))),
+    combine: rs => rs.every(r => r.data !== undefined || r.isError)
+      ? listeMacros.map((m, i) => ({ id: m.id, libelle: m.libelle, inds: ((rs[i].data as any)?.indicateurs ?? []) as BdefIndic[] }))
+      : [],
+  });
+
+  // Analyse comparative : un éventail par entité sélectionnée, mêmes clés.
+  const listeComp = sousVue === "comparative" ? compSelec : [];
+  const comp = useQueries({
+    queries: listeComp.map(id => requeteDonnees(urlValeurs(compType, id))),
+    combine: rs => {
+      const pret = rs.length > 0 && rs.every(r => r.data !== undefined || r.isError);
+      const data: Record<number, BdefIndic[]> = {};
+      let annees: number[] = [];
+      if (pret) listeComp.forEach((id, i) => {
+        data[id] = ((rs[i].data as any)?.indicateurs ?? []) as BdefIndic[];
+        annees = [...new Set([...annees, ...(((rs[i].data as any)?.annees ?? []) as number[])])].sort((x, y) => x - y);
+      });
+      return { data, annees, chargement: rs.some(r => r.isPending) };
+    },
+  });
+  const compData = comp.data, compAnneesData = comp.annees, loadingComp = comp.chargement;
 
   // Sélection par défaut : les 4 macro-secteurs (une seule fois, dès que refs est chargé)
   useEffect(()=>{
@@ -523,7 +503,7 @@ function OngletNational() {
     ? compSelec.length>0 || periodeFiltree
     : sel.niveau!=="global" || periodeFiltree;
   const reinit = () => {
-    if (sousVue==="comparative") { setCompSelec([]); setCompData({}); setCompType("macro_secteur"); }
+    if (sousVue==="comparative") { setCompSelec([]); setCompType("macro_secteur"); }
     else { choisir("global",null); }
     setModeAnnees("plage"); setAnneeMin(bornes[0]); setAnneeMax(bornes[1]); setAnneesSpec([]); setSearch("");
   };
@@ -570,7 +550,7 @@ function OngletNational() {
                 <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
                 <div style={{ display:"flex", gap:6 }}>
                   {([{v:"macro_secteur",l:"Macro-sect."},{v:"groupe",l:"Groupes"},{v:"secteur",l:"Secteurs"}] as const).map(o=>(
-                    <button key={o.v} onClick={()=>{ setCompType(o.v); setCompSelec([]); setCompData({}); }}
+                    <button key={o.v} onClick={()=>{ setCompType(o.v); setCompSelec([]); }}
                       style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compType===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11.5, fontWeight:compType===o.v?700:500, background:compType===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compType===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
                       {o.l}
                     </button>
@@ -922,7 +902,7 @@ function OngletNational() {
         {loading ? (
           <SkeletonChartGrid n={8} cols={2} height={215}/>
         ) : erreur ? (
-          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+          <ErreurChargement onRetry={() => qValeurs.refetch()} />
         ) : indicateurs.length===0 ? (
           <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"var(--gris)" }}>
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>

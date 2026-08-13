@@ -9,6 +9,7 @@ import { ChevronRight, FileSpreadsheet, Loader2, Search, X } from "lucide-react"
 import { ACCENT_BLEU, StylesCurseurNace, pastilleCurseur, varsAccent, CurseurAnneeNace as CurseurAnneeCommun, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { badge_bleu, badge_orange } from "@/lib/couleurs";
 import { API, NACE_BLEU, NACE_ORANGE } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
@@ -1248,10 +1249,13 @@ function ProduitsNace({ periode, famille, setFamille, sens, mesure, setMesure,
 }
 
 function CommerceExterieurPanel() {
-  const [data, setData] = useState<NaceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
+  // Les huit familles NACE viennent du cache React Query : revenir sur
+  // l'onglet raffiche sans squelette. Seule la famille principale bloque la
+  // page ; les autres sections apparaissent chacune à l'arrivée de la sienne.
+  const qData = useDonnees<NaceData>(`${API}/nace/principaux-produits`);
+  const data = qData.data ?? null;
+  const loading = qData.isPending;
+  const erreur = qData.isError;
   // Une période par section, et non une seule pour tout l'onglet : on veut
   // pouvoir tenir un millésime sur les produits pendant qu'on en parcourt un
   // autre sur les zones. `null` = dernière année disponible, que l'on ne
@@ -1269,7 +1273,8 @@ function CommerceExterieurPanel() {
   // Groupement affiché en section 04. `null` = le premier de la liste, la
   // section n'ayant pas à présumer de ce que contient le référentiel.
   const [grpSel, setGrpSel] = useState<string | null>(null);
-  const [groupements, setGroupements] = useState<Groupement[]>([]);
+  const { data: groupementsData } = useDonnees<Groupement[]>(`${API}/nace/groupements`);
+  const groupements = useMemo(() => Array.isArray(groupementsData) ? groupementsData : [], [groupementsData]);
   // Bascules de la section Produits : nomenclature, sens, unité.
   const [prodFamille, setProdFamille] = useState<NaceFamille>("principaux");
   const [prodSens, setProdSens] = useState<ZoneSens>("export");
@@ -1282,36 +1287,17 @@ function CommerceExterieurPanel() {
 
   // Sections dédiées, non bloquantes : produits regroupés, groupes
   // d'utilisation et chapitres SH (repliés par défaut, 96 postes par sens)
-  const [reg, setReg] = useState<NaceData | null>(null);
-  const [gu, setGu] = useState<NaceDataGU | null>(null);
-  const [cont, setCont] = useState<NaceDataCont | null>(null);
-  const [reg2, setReg2] = useState<NaceDataReg | null>(null);
-  const [pys, setPys] = useState<NaceDataPays | null>(null);
+  const reg = useDonnees<NaceData>(`${API}/nace/produits-regroupes`).data ?? null;
+  const gu = useDonnees<NaceDataGU>(`${API}/nace/groupes-utilisation`).data ?? null;
+  const chap = useDonnees<NaceDataChap>(`${API}/nace/chapitres`).data ?? null;
+  const cont = useDonnees<NaceDataCont>(`${API}/nace/continents`).data ?? null;
+  const reg2 = useDonnees<NaceDataReg>(`${API}/nace/regions`).data ?? null;
   // La famille pays est la plus lourde des sept (tous partenaires, toutes
   // années) : sans indicateur dédié, la section 03 surgirait après coup et
   // ferait sauter la page. On lui réserve sa place le temps du chargement.
-  const [pysEnCours, setPysEnCours] = useState(true);
-  const [chap, setChap] = useState<NaceDataChap | null>(null);
-  useEffect(() => {
-    setLoading(true); setErreur(false);
-    fetch(`${API}/nace/principaux-produits`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setData).catch(() => setErreur(true)).finally(() => setLoading(false));
-    fetch(`${API}/nace/produits-regroupes`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setReg).catch(() => setReg(null));
-    fetch(`${API}/nace/groupes-utilisation`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setGu).catch(() => setGu(null));
-    fetch(`${API}/nace/chapitres`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setChap).catch(() => setChap(null));
-    fetch(`${API}/nace/continents`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setCont).catch(() => setCont(null));
-    fetch(`${API}/nace/regions`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setReg2).catch(() => setReg2(null));
-    setPysEnCours(true);
-    fetch(`${API}/nace/pays`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setPys).catch(() => setPys(null)).finally(() => setPysEnCours(false));
-    fetch(`${API}/nace/groupements`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(d => setGroupements(Array.isArray(d) ? d : [])).catch(() => setGroupements([]));
-  }, [tick]);
+  const qPys = useDonnees<NaceDataPays>(`${API}/nace/pays`);
+  const pys = qPys.data ?? null;
+  const pysEnCours = qPys.isPending;
 
   const annees = data?.annees ?? [];
   const dernier = annees[annees.length - 1] ?? 0;
@@ -1381,7 +1367,7 @@ function CommerceExterieurPanel() {
       <SkeletonRows n={8} h={32} />
     </div>
   );
-  if (erreur) return <ErreurChargement onRetry={() => setTick(t => t + 1)} />;
+  if (erreur) return <ErreurChargement onRetry={() => qData.refetch()} />;
   if (!data || !data.disponible) return <CommerceExterieurAttente />;
 
   const expTot = totalDe("export", an), impTot = totalDe("import", an);

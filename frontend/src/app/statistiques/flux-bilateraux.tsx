@@ -11,6 +11,7 @@ import { ACCENT_BLEU, ACCENT_ORANGE, AccentNace, StylesCurseurNace, pastilleCurs
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import { API, sortContinents, BadgePeriode, GrapheMultiPays, NACE_BLEU, NACE_ORANGE } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 
 
 
@@ -186,11 +187,15 @@ const VUES_COM: { v: "exportateur" | "importateur"; l: string }[] = [
 ];
 function CommercePanel() {
   const [vue, setVue] = useState<"exportateur" | "importateur">("exportateur");
-  const [annees, setAnnees] = useState<number[]>([]);
-  const [ressources, setRessources] = useState<{ nom_en: string; libelle: string }[]>([]);
-  const [paysOpts, setPaysOpts] = useState<OptionPaysCom[]>([]);
+  // Le référentiel des filtres (années, ressources, pays) vient du cache React
+  // Query ; les états ci-dessous qui en découlent (sélections, bornes) sont
+  // initialisés à son arrivée, une seule fois.
+  const qFiltres = useDonnees<{ annees: number[]; ressources: { nom_en: string; libelle: string }[]; pays: OptionPaysCom[] }>(`${API}/statistiques/commerce/filtres`);
+  const annees = useMemo(() => (qFiltres.data?.annees ?? []).slice().sort((a: number, b: number) => a - b), [qFiltres.data]);
+  const ressources = useMemo(() => qFiltres.data?.ressources ?? [], [qFiltres.data]);
+  const paysOpts = useMemo(() => qFiltres.data?.pays ?? [], [qFiltres.data]);
   const [selId, setSelId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const loading = qFiltres.isPending;
   // Barre latérale
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -218,11 +223,6 @@ function CommercePanel() {
   const [q, setQ] = useState("");
   const [qDeb, setQDeb] = useState("");
   const [chargTable, setChargTable] = useState(false);
-  const [kpis, setKpis] = useState<any>(null);
-  const [chargKpis, setChargKpis] = useState(false);
-  const [balance, setBalance] = useState<{ annee: number; exportations: number; importations: number; balance: number }[]>([]);
-  const [tops, setTops] = useState<{ partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number } | null>(null);
-  const [repart, setRepart] = useState<{ ressources: string[]; partenaires: PartenaireRessources[] } | null>(null);
   // Recherche d'un partenaire hors du top 10 : le serveur classe tous les
   // partenaires et renvoie ceux dont le nom correspond, avec leur rang réel.
   const [rechPart, setRechPart] = useState("");
@@ -237,104 +237,88 @@ function CommercePanel() {
   // Vue Cumul / année des deux tableaux : année choisie + données dédiées
   const [anneePoids, setAnneePoids] = useState<number | null>(null);
   const [anneeRepart, setAnneeRepart] = useState<number | null>(null);
-  const [topsAnnee, setTopsAnnee] = useState<{ annee: number; data: typeof tops } | null>(null);
-  const [repartAnnee, setRepartAnnee] = useState<{ annee: number; data: typeof repart } | null>(null);
   const [showTable, setShowTable] = useState(false);
   const TAILLE = 50;
 
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
+  // ── Initialisation à l'arrivée du référentiel (une seule fois) ───────────
+  const filtresInit = useRef(false);
   useEffect(() => {
-    setLoading(true); setErreur(false);
-    fetch(`${API}/statistiques/commerce/filtres`).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(d => {
-      const ann: number[] = (d.annees || []).slice().sort((a: number, b: number) => a - b);
-      setAnnees(ann); setRessources(d.ressources || []); setPaysOpts(d.pays || []);
-      setRessSel((d.ressources || []).map((r: any) => r.nom_en));
-      if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); }
-      const sen = (d.pays || []).find((p: any) => p.code_iso3 === "SEN");
-      setSelId(sen ? sen.id : (d.pays && d.pays[0] ? d.pays[0].id : null));
-    }).catch(() => setErreur(true)).finally(() => setLoading(false));
-  }, [tick]);
+    const d = qFiltres.data;
+    if (filtresInit.current || !d) return;
+    filtresInit.current = true;
+    const ann: number[] = (d.annees || []).slice().sort((a: number, b: number) => a - b);
+    setRessSel((d.ressources || []).map((r: any) => r.nom_en));
+    if (ann.length) { setBornes([ann[0], ann[ann.length - 1]]); setAnneeMin(ann[0]); setAnneeMax(ann[ann.length - 1]); }
+    const sen = (d.pays || []).find((p: any) => p.code_iso3 === "SEN");
+    setSelId(sen ? sen.id : (d.pays && d.pays[0] ? d.pays[0].id : null));
+  }, [qFiltres.data]);
+  const erreur = qFiltres.isError;
 
-  // KPIs agrégés (période + ressources, hors recherche texte)
-  useEffect(() => {
-    if (!selId) { setKpis(null); return; }
-    setChargKpis(true);
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
-    if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
-    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
-    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    fetch(`${API}/statistiques/commerce/kpis?${p.toString()}`)
-      .then(r => r.json()).then(setKpis).catch(() => setKpis(null))
-      .finally(() => setChargKpis(false));
-  }, [vue, selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
-
-  // Balance commerciale (exp − imp) — indépendante de la vue
-  useEffect(() => {
-    if (!selId) { setBalance([]); return; }
-    const p = new URLSearchParams({ pays_id: String(selId) });
-    if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
-    else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
-    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    fetch(`${API}/statistiques/commerce/balance?${p.toString()}`)
-      .then(r => r.json()).then(d => setBalance(Array.isArray(d) ? d : [])).catch(() => setBalance([]));
-  }, [selId, modeAnnees, anneeMinD, anneeMaxD, anneesSpecD, ressSel, ressources.length]);
-
-  // Les paramètres communs aux deux tableaux — pays, direction, période,
-  // ressources cochées.
-  const paramsFlux = useCallback(() => {
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue });
+  // ── Les données de la page, chacune sous sa clé-URL ──────────────────────
+  // `garder` maintient l'affichage pendant les transitions (période tirée au
+  // curseur, changement de direction) ; une combinaison déjà vue est servie du
+  // cache sans réseau.
+  const paramsPeriode = (avecVue: boolean) => {
+    const p = new URLSearchParams(avecVue ? { pays_id: String(selId), direction: vue } : { pays_id: String(selId) });
     if (modeAnnees === "specifiques") { if (anneesSpecD.length) p.set("annees", anneesSpecD.join(",")); }
     else { p.set("annee_min", String(anneeMinD)); p.set("annee_max", String(anneeMaxD)); }
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
     return p;
-  }, [selId, vue, modeAnnees, anneesSpecD, anneeMinD, anneeMaxD, ressources.length, ressSel]);
+  };
 
-  // Tops (débouchés / ressources) — dépend de la direction (vue)
-  useEffect(() => {
-    if (!selId) { setTops(null); return; }
-    fetch(`${API}/statistiques/commerce/tops?${paramsFlux().toString()}`)
-      .then(r => r.json()).then(setTops).catch(() => setTops(null));
-  }, [selId, paramsFlux]);
+  const qKpis = useDonnees<any>(selId ? `${API}/statistiques/commerce/kpis?${paramsPeriode(true)}` : null, { garder: true });
+  const kpis = selId ? qKpis.data ?? null : null;
+  const chargKpis = qKpis.isFetching;
 
-  // Répartition partenaire × ressource — la recherche d'un partenaire la relance
-  // seule, sans reprendre le tableau des ressources qui ne la connaît pas.
-  useEffect(() => {
-    if (!selId) { setRepart(null); return; }
-    const p = paramsFlux();
+  const qBalance = useDonnees<any>(selId ? `${API}/statistiques/commerce/balance?${paramsPeriode(false)}` : null, { garder: true });
+  const balance = useMemo(() => (selId && Array.isArray(qBalance.data) ? qBalance.data : []) as { annee: number; exportations: number; importations: number; balance: number }[], [selId, qBalance.data]);
+
+  type TopsCom = { partenaires: { nom: string; valeur: number }[]; ressources: { ressource: string; valeur: number }[]; total: number };
+  type RepartCom = { ressources: string[]; partenaires: PartenaireRessources[] };
+  const qTops = useDonnees<TopsCom>(
+    selId ? `${API}/statistiques/commerce/tops?${paramsPeriode(true)}` : null, { garder: true });
+  const tops = selId ? qTops.data ?? null : null;
+
+  // La recherche d'un partenaire et les épingles ne concernent que la
+  // répartition : leur clé ne touche pas le tableau des ressources.
+  const urlRepart = (() => {
+    if (!selId) return null;
+    const p = paramsPeriode(true);
     if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
     if (clefEpingles) p.set("epingles", clefEpingles);
-    fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
-      .then(r => r.json()).then(setRepart).catch(() => setRepart(null));
-  }, [selId, paramsFlux, rechPartD, clefEpingles]);
+    return `${API}/statistiques/commerce/repartition?${p}`;
+  })();
+  const qRepart = useDonnees<RepartCom>(urlRepart, { garder: true });
+  const repart = selId ? qRepart.data ?? null : null;
 
-  // Données d'une année précise pour les tableaux (bascule Cumul / année)
+  // ── Vue « année précise » des deux tableaux (bascule Cumul / année) ──────
+  // Pas de `garder` : au changement d'année le tableau repasse par son
+  // squelette, comme avant — c'est le signal que le millésime a changé.
   const anneePoidsD = useDebounced(anneePoids, 250);
   const anneeRepartD = useDebounced(anneeRepart, 250);
-  useEffect(() => {
-    if (!selId || anneePoidsD === null) { setTopsAnnee(null); return; }
-    const annee = anneePoidsD;
+  const urlAnnee = (annee: number | null, repartition: boolean) => {
+    if (!selId || annee === null) return null;
     const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
     if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    fetch(`${API}/statistiques/commerce/tops?${p.toString()}`)
-      .then(r => r.json()).then(d => setTopsAnnee({ annee, data: d }))
-      .catch(() => setTopsAnnee({ annee, data: null }));
-  }, [vue, selId, anneePoidsD, ressSel, ressources.length]);
-  useEffect(() => {
-    if (!selId || anneeRepartD === null) { setRepartAnnee(null); return; }
-    const annee = anneeRepartD;
-    const p = new URLSearchParams({ pays_id: String(selId), direction: vue, annees: String(annee) });
-    if (ressources.length && ressSel.length && ressSel.length < ressources.length) p.set("ressources", ressSel.join(","));
-    if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
-    if (clefEpingles) p.set("epingles", clefEpingles);
-    fetch(`${API}/statistiques/commerce/repartition?${p.toString()}`)
-      .then(r => r.json()).then(d => setRepartAnnee({ annee, data: d }))
-      .catch(() => setRepartAnnee({ annee, data: null }));
-  }, [vue, selId, anneeRepartD, ressSel, ressources.length, rechPartD, clefEpingles]);
+    if (repartition) {
+      if (rechPartD.trim()) p.set("recherche", rechPartD.trim());
+      if (clefEpingles) p.set("epingles", clefEpingles);
+    }
+    return `${API}/statistiques/commerce/${repartition ? "repartition" : "tops"}?${p}`;
+  };
+  const qTopsAnnee = useDonnees<TopsCom>(urlAnnee(anneePoidsD, false));
+  const topsAnnee = useMemo(() => anneePoidsD === null ? null
+    : qTopsAnnee.isError ? { annee: anneePoidsD, data: null }
+    : qTopsAnnee.data !== undefined ? { annee: anneePoidsD, data: qTopsAnnee.data } : null,
+    [anneePoidsD, qTopsAnnee.data, qTopsAnnee.isError]);
+  const qRepartAnnee = useDonnees<RepartCom>(urlAnnee(anneeRepartD, true));
+  const repartAnnee = useMemo(() => anneeRepartD === null ? null
+    : qRepartAnnee.isError ? { annee: anneeRepartD, data: null }
+    : qRepartAnnee.data !== undefined ? { annee: anneeRepartD, data: qRepartAnnee.data } : null,
+    [anneeRepartD, qRepartAnnee.data, qRepartAnnee.isError]);
 
   const span = Math.max(1, bornes[1] - bornes[0]);
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
@@ -389,7 +373,7 @@ function CommercePanel() {
   // de défiler.
   if (erreur) return (
     <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}>
-      <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+      <ErreurChargement onRetry={() => qFiltres.refetch()} />
     </div>
   );
   if (!annees.length) return (

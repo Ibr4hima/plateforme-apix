@@ -20,6 +20,7 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE as API } from "@/lib/api";
+import { useDonnees } from "@/lib/donnees";
 
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const COULEURS = [BLEU, ORANGE];
@@ -88,29 +89,18 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
 
 function ContenuFichePays() {
   const params = useSearchParams();
-  const [pays, setPays] = useState<Pays[]>([]);
   const [ids, setIds] = useState<[number, number] | null>(null);
-  const [data, setData] = useState<any>(null);
-  const [ideFlux, setIdeFlux] = useState<any>(null);
-  const [bilat, setBilat] = useState<any>(null);
-  const [entSiege, setEntSiege] = useState<any>(null);
   const [accordOuvert, setAccordOuvert] = useState<any>(null);
   const [entOuverte, setEntOuverte] = useState<any>(null);
-  // Échecs des deux requêtes structurantes : sans elles la page resterait en
-  // squelette pour toujours — on montre l'état d'erreur avec relance.
-  const [errPays, setErrPays] = useState(false);
-  const [tickPays, setTickPays] = useState(0);
-  const [errData, setErrData] = useState(false);
-  const [tickFiche, setTickFiche] = useState(0);
+
+  // Toute la fiche vient du cache React Query, clé = le duo de pays : revenir
+  // sur une comparaison déjà vue raffiche sans squelette. `garder` maintient le
+  // tableau pendant qu'un nouveau duo charge.
+  const qPays = useDonnees<Pays[]>(`${API}/statistiques/pays`);
+  const pays = useMemo(() => qPays.data ?? [], [qPays.data]);
+  const errPays = qPays.isError;
 
   const senId = useMemo(() => pays.find(p => p.code_iso3 === "SEN")?.id ?? null, [pays]);
-
-  // Liste des pays puis sélection initiale : URL ?pays=a,b sinon Sénégal × 1er pays
-  useEffect(() => {
-    setErrPays(false);
-    fetch(`${API}/statistiques/pays`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(setPays).catch(() => setErrPays(true));
-  }, [tickPays]);
   useEffect(() => {
     if (!pays.length || ids) return;
     const brut = (params.get("pays") || "").split(",").map(Number).filter(n => pays.some(p => p.id === n));
@@ -120,20 +110,21 @@ function ContenuFichePays() {
     setIds([sen, autre]);
   }, [pays, ids, params]);
 
-  // Données de la fiche — rechargées à chaque changement de sélection
+  // L'URL suit la sélection — F5 et lien partagé rouvrent le même duo.
   useEffect(() => {
-    if (!ids) return;
-    window.history.replaceState(null, "", `/fiche-pays?pays=${ids.join(",")}`);
-    setData(null); setBilat(null); setEntSiege(null); setIdeFlux(null); setErrData(false);
-    fetch(`${API}/statistiques/comparaison?pays=${ids.join(",")}`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(setData).catch(() => setErrData(true));
-    fetch(`${API}/statistiques/ide_flux?pays=${ids.join(",")}`).then(r => r.json()).then(setIdeFlux).catch(() => setIdeFlux({}));
-    fetch(`${API}/statistiques/commerce/bilateral?pays_a=${ids[0]}&pays_b=${ids[1]}`).then(r => r.json()).then(setBilat).catch(() => setBilat(null));
-    const autre = senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) : null;
-    if (autre != null) {
-      fetch(`${API}/statistiques/entreprises-siege?pays_id=${autre}`).then(r => r.json()).then(setEntSiege).catch(() => setEntSiege(null));
-    }
-  }, [ids, senId, tickFiche]);
+    if (ids) window.history.replaceState(null, "", `/fiche-pays?pays=${ids.join(",")}`);
+  }, [ids]);
+
+  const qData = useDonnees<any>(ids ? `${API}/statistiques/comparaison?pays=${ids.join(",")}` : null, { garder: true });
+  const data = ids ? qData.data ?? null : null;
+  const errData = qData.isError;
+  const qIdeFlux = useDonnees<any>(ids ? `${API}/statistiques/ide_flux?pays=${ids.join(",")}` : null, { garder: true });
+  const ideFlux = ids ? (qIdeFlux.data ?? (qIdeFlux.isError ? {} : null)) : null;
+  const qBilat = useDonnees<any>(ids ? `${API}/statistiques/commerce/bilateral?pays_a=${ids[0]}&pays_b=${ids[1]}` : null, { garder: true });
+  const bilat = ids ? qBilat.data ?? null : null;
+  const autreId = ids && senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) ?? null : null;
+  const qEntSiege = useDonnees<any>(autreId != null ? `${API}/statistiques/entreprises-siege?pays_id=${autreId}` : null, { garder: true });
+  const entSiege = autreId != null ? qEntSiege.data ?? null : null;
 
   const ouvrirEntreprise = (id: number) => {
     fetch(`${API}/entreprises/${id}`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -156,7 +147,6 @@ function ContenuFichePays() {
   };
 
   const nomDe = (id: number | null) => pays.find(p => p.id === id)?.nom ?? "";
-  const autreId = senId !== null && ids?.includes(senId) ? ids.find(i => i !== senId) ?? null : null;
   const grps = bilat?.groupements_communs || [];
   const accs = bilat?.accords || [];
   const ents = (autreId !== null && entSiege?.entreprises) || [];
@@ -246,7 +236,7 @@ function ContenuFichePays() {
         {/* ── KPIs relationnels chevauchant le bandeau ── */}
         {errPays && !ids ? (
           <div className="ds-carte" style={{ marginTop: -52 }}>
-            <ErreurChargement onRetry={() => setTickPays(t => t + 1)} />
+            <ErreurChargement onRetry={() => qPays.refetch()} />
           </div>
         ) : !ids ? (
           <div style={{ marginTop: -52 }}><SkeletonKPIs n={4} /></div>
@@ -286,7 +276,7 @@ function ContenuFichePays() {
         {!(errPays && !ids) && <div className="ds-carte" style={{ marginTop: 18, padding: "20px 24px" }}>
           <p style={TITRE_SEC}>Indicateurs comparés</p>
           {!data ? (
-            errData ? <ErreurChargement compact onRetry={() => setTickFiche(t => t + 1)} /> : <SkeletonRows n={10} h={34} />
+            errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={10} h={34} />
           ) : (
             <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>

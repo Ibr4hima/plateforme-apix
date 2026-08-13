@@ -19,6 +19,8 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import Variation from "@/components/shared/Variation";
 
 import { API_BASE as API } from "@/lib/api";
+import { requeteDonnees, useDonnees } from "@/lib/donnees";
+import { keepPreviousData, useQuery, useQueries } from "@tanstack/react-query";
 const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
 const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
 
@@ -27,6 +29,7 @@ const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
 // décimale sur les mêmes flux). fmtMd s'appelle désormais fmtFCFA, son unité
 // d'entrée (FCFA bruts) étant dans le nom.
 const getJSON = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
 
 // ── Petits blocs de présentation ──────────────────────────────────────────────
 const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
@@ -429,15 +432,18 @@ export default function TableauDeBordPage() {
   // Dans l'URL comme partout ailleurs : F5 et lien partagé conservent l'onglet.
   const [onglet, setOnglet] = useEtatUrl<"viz" | "tables">("onglet", "viz", ["viz", "tables"]);
 
-  // Données
-  const [ideFlux, setIdeFlux] = useState<any[]>([]);
-  const [ideStock, setIdeStock] = useState<any[]>([]);
-  const [ideFluxSort, setIdeFluxSort] = useState<any[]>([]);
-  const [ideStockSort, setIdeStockSort] = useState<any[]>([]);
-  const [bilat, setBilat] = useState<any>(null);
-  const [bilatTops, setBilatTops] = useState<any>(null);
-  const [bilatBalance, setBilatBalance] = useState<any[]>([]);
-  const [bilatRepart, setBilatRepart] = useState<any>(null);
+  // ── Données — tout vient du cache React Query ─────────────────────────────
+  // Le tableau de bord agrège une dizaine de ressources ; chacune a sa clé-URL
+  // et survit à la navigation : rouvrir la page en réunion est instantané.
+  const tableau = (v: unknown) => (Array.isArray(v) ? v : []) as any[];
+  const qIdeFlux      = useDonnees<any[]>(`${API}/ide/cnuced?direction=entrant&indicateur=flux`);
+  const qIdeStock     = useDonnees<any[]>(`${API}/ide/cnuced?direction=entrant&indicateur=stock`);
+  const qIdeFluxSort  = useDonnees<any[]>(`${API}/ide/cnuced?direction=sortant&indicateur=flux`);
+  const qIdeStockSort = useDonnees<any[]>(`${API}/ide/cnuced?direction=sortant&indicateur=stock`);
+  const ideFlux = useMemo(() => tableau(qIdeFlux.data), [qIdeFlux.data]);
+  const ideStock = useMemo(() => tableau(qIdeStock.data), [qIdeStock.data]);
+  const ideFluxSort = useMemo(() => tableau(qIdeFluxSort.data), [qIdeFluxSort.data]);
+  const ideStockSort = useMemo(() => tableau(qIdeStockSort.data), [qIdeStockSort.data]);
   const [bilatDir, setBilatDir] = useState<"exportateur" | "importateur">("exportateur");
   const [commCtx, setCommCtx] = useState<{ id: number; amin: number; amax: number } | null>(null);
   // Année sélectionnée au curseur de la section (null = dernière disponible)
@@ -445,72 +451,54 @@ export default function TableauDeBordPage() {
   const bilatAnnee = bilatAnneeSel ?? commCtx?.amax ?? null;
   // Commerce extérieur : Notes d'analyse du commerce extérieur (NACE, ANSD),
   // la même source que l'onglet dédié — annuelle, et non plus mensuelle.
-  const [naceProd, setNaceProd] = useState<any>(null);   // totaux et séries
-  const [nacePays, setNacePays] = useState<any>(null);   // partenaires
-  const [naceGU, setNaceGU] = useState<any>(null);       // groupes d'utilisation
+  const naceProd = useDonnees<any>(`${API}/nace/principaux-produits`).data ?? null;
+  const naceGU = useDonnees<any>(`${API}/nace/groupes-utilisation`).data ?? null;
+  const nacePays = useDonnees<any>(`${API}/nace/pays`).data ?? null;
   const [comAnneeSel, setComAnneeSel] = useState<number | null>(null);
   const [comDir, setComDir] = useState<"export" | "import">("export");
-  const [socio, setSocio] = useState<any[]>([]);
-  const [socioPays, setSocioPays] = useState<string>("Sénégal");
 
+  // Flux bilatéraux : l'id du Sénégal et les bornes viennent du référentiel.
+  const qFiltresCom = useDonnees<any>(`${API}/statistiques/commerce/filtres`);
   useEffect(() => {
-    getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=flux`).then((d) => setIdeFlux(Array.isArray(d) ? d : []));
-    getJSON(`${API}/ide/cnuced?direction=entrant&indicateur=stock`).then((d) => setIdeStock(Array.isArray(d) ? d : []));
-    getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=flux`).then((d) => setIdeFluxSort(Array.isArray(d) ? d : []));
-    getJSON(`${API}/ide/cnuced?direction=sortant&indicateur=stock`).then((d) => setIdeStockSort(Array.isArray(d) ? d : []));
-    getJSON(`${API}/nace/principaux-produits`).then(setNaceProd);
-    getJSON(`${API}/nace/groupes-utilisation`).then(setNaceGU);
-    getJSON(`${API}/nace/pays`).then(setNacePays);
+    const f = qFiltresCom.data;
+    if (!f) return;
+    const sen = (f.pays || []).find((p: any) => p.code_iso3 === "SEN");
+    const annees: number[] = (f.annees || []).slice().sort((a: number, b: number) => a - b);
+    if (sen && annees.length) setCommCtx({ id: sen.id, amin: annees[0], amax: annees[annees.length - 1] });
+  }, [qFiltresCom.data]);
+  const qBilatBalance = useDonnees<any[]>(
+    commCtx ? `${API}/statistiques/commerce/balance?pays_id=${commCtx.id}&annee_min=${commCtx.amin}&annee_max=${commCtx.amax}` : null);
+  const bilatBalance = useMemo(() => tableau(qBilatBalance.data), [qBilatBalance.data]);
 
-    // Flux bilatéraux : résoudre l'id du Sénégal puis charger la balance ;
-    // KPIs/tops dépendent de la direction → effet dédié ci-dessous.
-    getJSON(`${API}/statistiques/commerce/filtres`).then((f) => {
-      const sen = (f?.pays || []).find((p: any) => p.code_iso3 === "SEN");
-      const annees: number[] = (f?.annees || []).slice().sort((a: number, b: number) => a - b);
-      if (!sen || annees.length === 0) return;
-      const amax = annees[annees.length - 1], amin = annees[0];
-      setCommCtx({ id: sen.id, amin, amax });
-      getJSON(`${API}/statistiques/commerce/balance?pays_id=${sen.id}&annee_min=${amin}&annee_max=${amax}`).then((d) => setBilatBalance(Array.isArray(d) ? d : []));
-    });
+  // Socio-économique : id Sénégal puis données, chacun sous sa clé.
+  const qPaysStat = useDonnees<any[]>(`${API}/statistiques/pays`);
+  const senStat = useMemo(() => (qPaysStat.data || []).find((p: any) => p.code_iso3 === "SEN") ?? null, [qPaysStat.data]);
+  const socioPays = senStat?.nom || "Sénégal";
+  const qSocio = useDonnees<any[]>(senStat ? `${API}/statistiques/donnees?pays=${senStat.id}&annee_min=1960&annee_max=2100` : null);
+  const socio = useMemo(() => tableau(qSocio.data), [qSocio.data]);
 
-    // Socio-économique : id Sénégal puis données
-    getJSON(`${API}/statistiques/pays`).then((pays) => {
-      const sen = (pays || []).find((p: any) => p.code_iso3 === "SEN");
-      if (!sen) return;
-      setSocioPays(sen.nom || "Sénégal");
-      getJSON(`${API}/statistiques/donnees?pays=${sen.id}&annee_min=1960&annee_max=2100`).then((d) => setSocio(Array.isArray(d) ? d : []));
-    });
-  }, []);
-
-  // Flux bilatéraux : KPIs, tops et répartition dépendent de la direction et
-  // de l'année. Chaque triplet n'est demandé qu'UNE fois par session — glisser
-  // le curseur sur dix ans tirait trois requêtes par cran, et revenir sur une
-  // année déjà vue re-payait tout. Le cache est un ref : le remplir ne doit
-  // pas re-rendre, seule l'arrivée des données affichées le fait.
-  const bilatCache = useRef<Map<string, { kpis: any; tops: any; repart: any }>>(new Map());
-  useEffect(() => {
-    if (!commCtx || bilatAnnee == null) return;
-    const cle = `${bilatDir}|${bilatAnnee}`;
-    const poser = (d: { kpis: any; tops: any; repart: any }) => {
-      setBilat(d.kpis); setBilatTops(d.tops); setBilatRepart(d.repart);
-    };
-    const connu = bilatCache.current.get(cle);
-    if (connu) { poser(connu); return; }
-    const base = `pays_id=${commCtx.id}&direction=${bilatDir}`;
-    const an = `annee_min=${bilatAnnee}&annee_max=${bilatAnnee}`;
-    let annule = false;
-    Promise.all([
-      getJSON(`${API}/statistiques/commerce/kpis?${base}&${an}`),
-      getJSON(`${API}/statistiques/commerce/tops?${base}&${an}&limite=8`),
-      getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`),
-    ]).then(([kpis, tops, repart]) => {
-      const d = { kpis, tops, repart };
-      bilatCache.current.set(cle, d);
-      // Réponse d'une sélection dépassée : mise en cache, mais pas affichée.
-      if (!annule) poser(d);
-    });
-    return () => { annule = true; };
-  }, [commCtx, bilatDir, bilatAnnee]);
+  // Flux bilatéraux : KPIs, tops et répartition vont ensemble — UNE entrée de
+  // cache par (direction, année), remplie par un Promise.all pour que les
+  // trois cartes basculent d'un coup, jamais en ordre dispersé. `garder`
+  // maintient le triplet précédent pendant qu'un cran de curseur charge.
+  const qBilat = useQuery({
+    queryKey: ["bilat-triplet", commCtx?.id ?? 0, bilatDir, bilatAnnee ?? 0],
+    enabled: !!commCtx && bilatAnnee != null,
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const base = `pays_id=${commCtx!.id}&direction=${bilatDir}`;
+      const an = `annee_min=${bilatAnnee}&annee_max=${bilatAnnee}`;
+      const [kpis, tops, repart] = await Promise.all([
+        getJSON(`${API}/statistiques/commerce/kpis?${base}&${an}`),
+        getJSON(`${API}/statistiques/commerce/tops?${base}&${an}&limite=8`),
+        getJSON(`${API}/statistiques/commerce/repartition?${base}&${an}&limite=6`),
+      ]);
+      return { kpis, tops, repart };
+    },
+  });
+  const bilat = qBilat.data?.kpis ?? null;
+  const bilatTops = qBilat.data?.tops ?? null;
+  const bilatRepart = qBilat.data?.repart ?? null;
 
   // Commerce extérieur (NACE) : année choisie au curseur, dernière par défaut.
   // Tout se calcule côté client à partir des trois familles déjà chargées —
@@ -629,8 +617,8 @@ export default function TableauDeBordPage() {
   // Groupements du Sénégal : résolution des codes puis top 10 des pays par
   // zone à l'année du curseur. Réponses estampillées de leur année : tant que
   // l'année affichée n'a pas sa réponse, la carte montre un squelette.
-  const [grpMonde, setGrpMonde] = useState<{ code: string; nom_fr: string; categorie: string }[]>([]);
-  useEffect(() => { getJSON(`${API}/ide/monde/groupements`).then((d) => setGrpMonde(Array.isArray(d) ? d : [])); }, []);
+  const qGrpMonde = useDonnees<{ code: string; nom_fr: string; categorie: string }[]>(`${API}/ide/monde/groupements`);
+  const grpMonde = useMemo(() => tableau(qGrpMonde.data) as { code: string; nom_fr: string; categorie: string }[], [qGrpMonde.data]);
   const zonesSen = useMemo(
     () => ZONES_SEN.map((z) => { const g = grpMonde.find(z.trouve); return g ? { cle: z.cle, titre: z.titre, abrege: z.abrege, code: g.code, nomComplet: g.nom_fr } : null; })
       .filter(Boolean) as { cle: string; titre: string; abrege: string; code: string; nomComplet: string }[],
@@ -642,21 +630,21 @@ export default function TableauDeBordPage() {
   // demandé qu'une fois — naviguer d'une année à l'autre puis revenir ne
   // relance rien. Un code vide vaut le monde entier : l'API classe alors tous
   // les pays, sans restriction de groupement.
-  const [classements, setClassements] = useState<Record<string, { entrant: LigneTopZone[]; sortant: LigneTopZone[] }>>({});
-  const enVol = useRef<Set<string>>(new Set());
   const cleClass = (code: string, annee: number) => `${code || "MONDE"}|${annee}`;
   const [besoins, setBesoins] = useState<{ code: string; annee: number }[]>([]);
-  useEffect(() => {
-    besoins.forEach(({ code, annee }) => {
-      const k = cleClass(code, annee);
-      if (classements[k] || enVol.current.has(k)) return;
-      enVol.current.add(k);
-      const q = code ? `&code=${encodeURIComponent(code)}` : "";
-      getJSON(`${API}/ide/monde/global?indicateur=flux${q}&annees=${annee}`)
-        .then((d) => setClassements((p) => ({ ...p, [k]: d?.tops ?? { entrant: [], sortant: [] } })))
-        .finally(() => enVol.current.delete(k));
-    });
-  }, [besoins, classements]);
+  const classements = useQueries({
+    queries: besoins.map(({ code, annee }) => requeteDonnees(
+      `${API}/ide/monde/global?indicateur=flux${code ? `&code=${encodeURIComponent(code)}` : ""}&annees=${annee}`)),
+    combine: rs => {
+      const m: Record<string, { entrant: LigneTopZone[]; sortant: LigneTopZone[] }> = {};
+      besoins.forEach((b, i) => {
+        const r = rs[i];
+        if (r.data !== undefined || r.isError)
+          m[cleClass(b.code, b.annee)] = (r.data as any)?.tops ?? { entrant: [], sortant: [] };
+      });
+      return m;
+    },
+  });
   // Enregistre un couple à charger. Le tableau de besoins ne grandit que sur
   // du nouveau, sinon l'effet ci-dessus se rappellerait sans fin.
   const exigerClassement = useCallback((code: string, annee: number | null) => {
