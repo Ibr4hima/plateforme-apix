@@ -2,11 +2,11 @@
 
 // ── Fiche modale des pages publiques — une seule coquille pour toutes les
 // fiches (entreprise, événement, accord, projet, potentialité, avantage,
-// zone, prospect) : voile flouté, panneau à filet fin, en-tête titre +
-// pastilles, corps en sections, pied « Fermer » (+ actions en admin).
+// zone, prospect) : voile flouté, panneau à filet fin, en-tête au titre seul,
+// corps en sections, pied « Fermer » (+ actions en admin).
 //
 // Jetons : pastilles = badge_bleu/orange/vert/violet… (lib/couleurs),
-// blocs libellés = aplat --bleu-voile, sans bordure.
+// blocs libellés = FICHE_BLOC (bleu à 4 %, filet à 10 %).
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -15,9 +15,8 @@ import { badge_bleu, badge_vert } from "@/lib/couleurs";
 import { fmtPhone } from "@/lib/telephone";
 
 // ── Coquille ──────────────────────────────────────────────────────────────────
-export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWidth = 640, actions, children }: {
+export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 640, actions, children }: {
   titre: React.ReactNode;
-  badges?: React.ReactNode;      // rangée de pastilles sous le titre (badge_* de lib/couleurs)
   onClose: () => void;
   zIndex?: number;
   maxWidth?: number;
@@ -49,9 +48,13 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
 
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
+          {/* Le titre, seul. La rangée de pastilles qui vivait ici — forme
+              juridique, pôle, région, statut… — est descendue dans la section
+              Informations, en blocs libellés : une pastille grise disait
+              « Société Anonyme » sans dire de QUOI il s'agissait, et le lecteur
+              devait deviner la nature de chaque jeton à sa couleur. */}
           <div style={{ minWidth: 0, flex: 1 }}>
             <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
-            {badges && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8, minWidth: 0 }}>{badges}</div>}
           </div>
           <button onClick={onClose} aria-label="Fermer"
             style={{ background: "var(--champ)", border: "none", cursor: "pointer", borderRadius: 99, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
@@ -96,14 +99,20 @@ export function FicheGrille({ children }: { children: React.ReactNode }) {
   return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>{children}</div>;
 }
 
-// ── Bloc libellé sur aplat bleu ───────────────────────────────────────────────
-// Un aplat franc (--bleu-voile) et pas de bordure, là où un dégradé de 6 % à
-// 2 % cerné d'un filet faisait un bloc mou : deux valeurs de bleu et un trait
-// pour dire une seule chose — « ceci est un champ ». L'aplat suffit à le dire,
-// et il tient aussi bien de nuit, où le jeton porte sa propre transparence.
+// ── Bloc libellé ──────────────────────────────────────────────────────────────
+// Le bleu des fiches KPI : un fond à 4 % et un filet à 10 %. Assez pour poser
+// le champ, assez discret pour que la valeur reste le premier plan — et le
+// MÊME bleu d'un bout à l'autre de la plateforme, fiches de données comme
+// fiches d'entité.
+export const FICHE_BLOC: React.CSSProperties = {
+  background: "rgb(var(--bleu-rgb) / 0.04)",
+  border: "1px solid rgb(var(--bleu-rgb) / 0.10)",
+  borderRadius: 12,
+};
+
 export function FicheBloc({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <div style={{ background: "var(--bleu-voile)", borderRadius: 12, padding: "10px 13px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
+    <div style={{ ...FICHE_BLOC, padding: "10px 13px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
       <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", marginBottom: 4 }}>{label}</p>
       {children}
     </div>
@@ -154,9 +163,9 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {fichiers.map((f: any) => (
           <a key={f.id} href={hrefDe(f)} target="_blank" rel="noopener noreferrer"
-            style={{ background: "var(--bleu-voile)", display: "flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "10px 13px", textDecoration: "none", transition: "background 0.15s" }}
-            onMouseEnter={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.13)")}
-            onMouseLeave={ev => (ev.currentTarget.style.background = "var(--bleu-voile)")}>
+            style={{ ...FICHE_BLOC, display: "flex", alignItems: "center", gap: 8, padding: "10px 13px", textDecoration: "none", transition: "background 0.15s" }}
+            onMouseEnter={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.10)")}
+            onMouseLeave={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.04)")}>
             <FileText size={13} style={{ color: "var(--bleu)", flexShrink: 0 }} />
             <span style={{ fontSize: 12.5, color: "var(--bleu)", fontWeight: 600 }}>{f.titre || f.fichier_nom || f.nom || "Document"}</span>
           </a>

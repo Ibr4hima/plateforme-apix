@@ -4,8 +4,7 @@
 // recherche globale (⌘K). Bâtie sur la fiche modale commune (FicheModal).
 
 import { useEffect, useState } from "react";
-import { badge_bleu, badge_orange } from "@/lib/couleurs";
-import FicheModal, { FicheCarteNeutre, FicheDocs, FicheSection, FicheTexteRiche } from "@/components/shared/FicheModal";
+import FicheModal, { FicheBloc, FicheCarteNeutre, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -18,13 +17,17 @@ export default function AvantageVueModal({ avg: a, onClose }: { avg:any; onClose
   }, [a.id]);
 
   return (
-    <FicheModal titre={data.activite_nom} onClose={onClose}
-      badges={<>
-        {data.secteur_nom && <span style={badge_bleu}>{data.secteur_nom}</span>}
-        {data.branche_nom && <span style={{ ...badge_orange, minWidth: 0 }} title={data.branche_nom}>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{data.branche_nom}</span>
-        </span>}
-      </>}>
+    <FicheModal titre={data.activite_nom} onClose={onClose}>
+
+      {/* Rattachement — secteur et branche, anciennes pastilles du titre */}
+      {(data.secteur_nom || data.branche_nom) && (
+        <FicheSection titre="Rattachement">
+          <FicheGrille>
+            {data.secteur_nom && <FicheBloc label="Secteur"><FicheValeur>{data.secteur_nom}</FicheValeur></FicheBloc>}
+            {data.branche_nom && <FicheBloc label="Branche"><FicheValeur>{data.branche_nom}</FicheValeur></FicheBloc>}
+          </FicheGrille>
+        </FicheSection>
+      )}
 
       {/* Avantages sélectionnés */}
       {(data.selections || []).length > 0 && (

@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useNaema } from "@/lib/referentiels";
 import { COMP_PALETTE, badgeDe, badge_bleu, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import FicheModal, { FicheArbreNaema, FicheCarteNeutre, FicheDocs, FicheSection, FicheTexteRiche } from "@/components/shared/FicheModal";
+import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -38,7 +38,18 @@ export default function PotentialiteVueModal({ pot: p, refAvantages, onClose }: 
 
   return (
     <FicheModal titre={p.titre} onClose={onClose} maxWidth={660}
-      badges={zoneNom ? <span style={NIVEAU_BADGE[p.niveau] || badge_bleu}>{zoneNom}</span> : undefined}>
+>
+
+      {/* Zone — ancienne pastille du titre, désormais nommée */}
+      {zoneNom && (
+        <FicheSection titre="Zone">
+          <FicheGrille>
+            <FicheBloc label={p.niveau ? String(p.niveau).charAt(0).toUpperCase() + String(p.niveau).slice(1) : "Zone"} full>
+              <FicheValeur>{zoneNom}</FicheValeur>
+            </FicheBloc>
+          </FicheGrille>
+        </FicheSection>
+      )}
 
       {/* Activités porteuses — cascade NAEMA */}
       {(p.secteur_ids?.length > 0 || p.branche_ids?.length > 0) && (

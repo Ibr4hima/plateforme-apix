@@ -6,7 +6,7 @@
 import { useNaema } from "@/lib/referentiels";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { badge_bleu, badge_gris, badge_orange, badgePole } from "@/lib/couleurs";
+import { badge_orange } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts, FicheGrille, FicheLien, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
 
 // `actions` : boutons additionnels dans le pied (ex. « Modifier » en admin).
@@ -27,16 +27,15 @@ export default function EntreprisePublicModal({ entreprise: e, onClose, zIndex =
   const paysStr = e.siege_pays_nom || e.pays || null;
 
   return (
-    <FicheModal titre={e.nom} onClose={onClose} zIndex={zIndex} actions={actions}
-      badges={<>
-        {e.forme_juridique && <span style={badge_gris}>{e.forme_juridique}</span>}
-        {e.pole_territoire_nom && <span style={badgePole(e.pole_territoire_nom)}>{e.pole_territoire_nom}</span>}
-        {e.region_nom && <span style={badge_bleu}>Région de {e.region_nom}</span>}
-      </>}>
+    <FicheModal titre={e.nom} onClose={onClose} zIndex={zIndex} actions={actions}>
 
-      {/* Informations */}
+      {/* Informations — les anciennes pastilles de l'en-tête ouvrent la
+          section : un champ nommé vaut mieux qu'un jeton coloré à décoder. */}
       <FicheSection titre="Informations">
         <FicheGrille>
+          {e.forme_juridique && <FicheBloc label="Forme juridique"><FicheValeur>{e.forme_juridique}</FicheValeur></FicheBloc>}
+          {e.pole_territoire_nom && <FicheBloc label="Pôle territoire"><FicheValeur>{e.pole_territoire_nom}</FicheValeur></FicheBloc>}
+          {e.region_nom && <FicheBloc label="Région"><FicheValeur>{e.region_nom}</FicheValeur></FicheBloc>}
           {e.date_creation && <FicheBloc label="Création"><FicheValeur>{fmtDateLong(e.date_creation)}</FicheValeur></FicheBloc>}
           {paysStr && <FicheBloc label="Pays du siège"><FicheValeur>{paysStr}</FicheValeur></FicheBloc>}
           {locStr && <FicheBloc label="Localisation"><FicheValeur>{locStr}</FicheValeur></FicheBloc>}

@@ -67,16 +67,15 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
   const entInvitees: string[] = (e.entreprises_invitees || "").split(",").map((s: string) => s.trim()).filter(Boolean);
 
   return (
-    <FicheModal titre={e.nom_event} onClose={onClose} actions={actions}
-      badges={<>
-        {stV && <span style={stV.style}>{stV.label}</span>}
-        {e.edition != null && <span style={badge_gris}>{ordinal(e.edition)}</span>}
-        {e.role_apix && <span style={ROLE_BADGE[e.role_apix] || badge_gris}>{ROLES_APIX[e.role_apix] || e.role_apix}</span>}
-      </>}>
+    <FicheModal titre={e.nom_event} onClose={onClose} actions={actions}>
 
-      {/* Informations */}
+      {/* Informations — statut, édition et rôle APIX, anciennes pastilles du
+          titre, ouvrent la section sous leur propre nom. */}
       <FicheSection titre="Informations">
         <FicheGrille>
+          {stV && <FicheBloc label="Statut"><FicheValeur>{stV.label}</FicheValeur></FicheBloc>}
+          {e.edition != null && <FicheBloc label="Édition"><FicheValeur>{ordinal(e.edition)}</FicheValeur></FicheBloc>}
+          {e.role_apix && <FicheBloc label="Rôle APIX"><FicheValeur>{ROLES_APIX[e.role_apix] || e.role_apix}</FicheValeur></FicheBloc>}
           {dateStr && (
             <FicheBloc label="Date">
               <FicheValeur>{dateStr}</FicheValeur>

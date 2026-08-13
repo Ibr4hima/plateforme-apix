@@ -37,8 +37,8 @@ const NAME_MAP: Record<string, string> = {
 
 // Couleurs des pôles : centralisées dans lib/couleurs (ré-exportées ici pour
 // ne pas casser les imports existants des pages)
-import { POLE_COULEURS, normPole, badge_bleu, badge_orange, badgePole, voile } from "@/lib/couleurs";
-import FicheModal, { FicheBloc, FicheDocs, FicheSection } from "@/components/shared/FicheModal";
+import { POLE_COULEURS, normPole, voile } from "@/lib/couleurs";
+import FicheModal, { FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
 export { POLE_COULEURS, normPole };
 
 type Compteurs = { primaire: number; secondaire: number; tertiaire: number };
@@ -405,11 +405,16 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
           counts.primaire += s.primaire; counts.secondaire += s.secondaire; counts.tertiaire += s.tertiaire;
         });
         return (
-          <FicheModal titre={activePole.pole_territoire} onClose={()=>setActivePole(null)} maxWidth={560}
-            badges={<>
-              <span style={badgePole(activePole.pole_territoire)}>Pôle territorial</span>
-              {regions.map((r:string) => <span key={r} style={badge_bleu}>{r}</span>)}
-            </>}>
+          <FicheModal titre={activePole.pole_territoire} onClose={()=>setActivePole(null)} maxWidth={560}>
+
+            {/* Composition — l'échelle et les régions couvertes, anciennes
+                pastilles du titre */}
+            <FicheSection titre="Composition">
+              <FicheGrille>
+                <FicheBloc label="Échelle"><FicheValeur>Pôle territorial</FicheValeur></FicheBloc>
+                {regions.length > 0 && <FicheBloc label={`Région${regions.length>1?"s":""}`}><FicheValeur>{regions.join(", ")}</FicheValeur></FicheBloc>}
+              </FicheGrille>
+            </FicheSection>
 
             {/* Entreprises installées */}
             <FicheBloc label={`Entreprise${nbInst!==1?"s":""} installée${nbInst!==1?"s":""}`}>
@@ -451,8 +456,7 @@ export default function VueTerritorialeSenegal({ zones, mode = "pole", onPoleCli
         const stats = regionStats[activeRegion];
         const total = stats?.total || 0;
         return (
-          <FicheModal titre={activeRegion} onClose={()=>setActiveRegion(null)} maxWidth={480}
-            badges={<span style={badge_orange}>Région</span>}>
+          <FicheModal titre={activeRegion} onClose={()=>setActiveRegion(null)} maxWidth={480}>
 
             {/* Total entreprises */}
             <FicheBloc label={`Entreprise${total!==1?"s":""} formalisée${total!==1?"s":""}`}>

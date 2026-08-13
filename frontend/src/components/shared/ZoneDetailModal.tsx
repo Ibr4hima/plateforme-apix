@@ -9,7 +9,6 @@ import { ZONE_TYPE_META } from "@/components/shared/zoneTypes";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaema } from "@/lib/referentiels";
 import { fmtDate } from "@/lib/format";
-import { badgeDe, badgePole } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE } from "@/lib/api";
@@ -58,16 +57,15 @@ export default function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:(
 
   return (
     <>
-      <FicheModal titre={zone.nom_zone} onClose={onClose} zIndex={500}
-        badges={<>
-          <span style={{ ...badgeDe(meta.color), fontWeight: 800, letterSpacing: "0.04em" }}>{zone.type_zone}</span>
-          {zone.pole_nom && <span style={badgePole(zone.pole_nom)}>{zone.pole_nom}</span>}
-        </>}>
+      <FicheModal titre={zone.nom_zone} onClose={onClose} zIndex={500}>
 
-        {/* Informations */}
-        {(zone.date_creation||zone.superficie||locStr||zone.decret_creation)&&(
+        {/* Informations — type de zone et pôle, anciennes pastilles du titre,
+            ouvrent la section sous leur propre nom. */}
+        {(zone.type_zone||zone.pole_nom||zone.date_creation||zone.superficie||locStr||zone.decret_creation)&&(
           <FicheSection titre="Informations">
             <FicheGrille>
+              {zone.type_zone && <FicheBloc label="Type de zone"><FicheValeur>{zone.type_zone}</FicheValeur></FicheBloc>}
+              {zone.pole_nom && <FicheBloc label="Pôle territoire"><FicheValeur>{zone.pole_nom}</FicheValeur></FicheBloc>}
               {locStr && <FicheBloc label="Localisation"><FicheValeur>{locStr}</FicheValeur></FicheBloc>}
               {zone.superficie && <FicheBloc label="Superficie"><FicheValeur>{Number(zone.superficie).toLocaleString("fr-FR")} ha</FicheValeur></FicheBloc>}
               {zone.date_creation && <FicheBloc label="Création"><FicheValeur>{fmtDate(zone.date_creation)}</FicheValeur></FicheBloc>}

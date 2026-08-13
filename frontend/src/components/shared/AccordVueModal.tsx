@@ -45,11 +45,18 @@ export default function AccordVueModal({ accord:a, onClose, zIndex = 400, action
   const hasNaema = secIds.length > 0 || braIds.length > 0 || actIds.length > 0;
 
   return (
-    <FicheModal titre={a.titre} onClose={onClose} zIndex={zIndex} actions={actions}
-      badges={<>
-        {stV && <span style={stV.style}>{stV.label}</span>}
-        {a.reference && <span style={badge_gris}>{a.reference}</span>}
-      </>}>
+    <FicheModal titre={a.titre} onClose={onClose} zIndex={zIndex} actions={actions}>
+
+      {/* Informations — statut et référence, qui vivaient en pastilles sous le
+          titre, sont ici nommés. */}
+      {(stV || a.reference) && (
+        <FicheSection titre="Informations">
+          <FicheGrille>
+            {stV && <FicheBloc label="Statut"><FicheValeur>{stV.label}</FicheValeur></FicheBloc>}
+            {a.reference && <FicheBloc label="Référence"><FicheValeur>{a.reference}</FicheValeur></FicheBloc>}
+          </FicheGrille>
+        </FicheSection>
+      )}
 
       {/* Dates */}
       <FicheSection titre="Dates">

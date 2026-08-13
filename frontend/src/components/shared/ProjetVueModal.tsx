@@ -3,7 +3,6 @@
 // Fiche projet d'investissement — page Opportunités et recherche globale (⌘K).
 // Bâtie sur la fiche modale commune (FicheModal).
 
-import { badge_bleu, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
 import { API_BASE as API } from "@/lib/api";
@@ -34,12 +33,21 @@ export default function ProjetVueModal({ projet: p, secteurs, branches, activite
 
   return (
     <FicheModal titre={p.titre_projet} onClose={onClose} maxWidth={680}
-      badges={<>
-        {p.pole_nom && <span style={badge_bleu}>{p.pole_nom}</span>}
-        {p.region_nom && <span style={badge_orange}>Région de {p.region_nom}</span>}
-        {p.departement_nom && <span style={badge_vert}>Département de {p.departement_nom}</span>}
-        {p.arrondissement_nom && <span style={badge_violet}>Arrondissement de {p.arrondissement_nom}</span>}
-      </>}>
+>
+
+      {/* Localisation — les quatre échelons portaient chacun leur couleur en
+          pastille ; ils sont ici nommés, dans l'ordre du plus large au plus
+          fin. */}
+      {(p.pole_nom || p.region_nom || p.departement_nom || p.arrondissement_nom) && (
+        <FicheSection titre="Localisation">
+          <FicheGrille>
+            {p.pole_nom && <FicheBloc label="Pôle territoire"><FicheValeur>{p.pole_nom}</FicheValeur></FicheBloc>}
+            {p.region_nom && <FicheBloc label="Région"><FicheValeur>{p.region_nom}</FicheValeur></FicheBloc>}
+            {p.departement_nom && <FicheBloc label="Département"><FicheValeur>{p.departement_nom}</FicheValeur></FicheBloc>}
+            {p.arrondissement_nom && <FicheBloc label="Arrondissement"><FicheValeur>{p.arrondissement_nom}</FicheValeur></FicheBloc>}
+          </FicheGrille>
+        </FicheSection>
+      )}
 
       {/* Investissement / Date */}
       {(invest || p.date_debut) && (

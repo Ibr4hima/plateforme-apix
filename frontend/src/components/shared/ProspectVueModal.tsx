@@ -241,12 +241,18 @@ export default function ProspectVueModal({ p, onglet, onClose }: { p: any; ongle
   const cyclesTries = [...(p.cycles || [])].sort((a: any, b: any) => b.cycle_num - a.cycle_num);
 
   return (
-    <FicheModal titre={p.nom} onClose={onClose} zIndex={500} maxWidth={720}
-      badges={<>
-        {onglet !== "cibles" && badge && <span style={STATUT_BADGE[badge.label] || badge_gris}>{badge.label}</span>}
-        {p.siege_nom && <span style={badge_bleu}>{p.siege_nom}</span>}
-      </>}>
+    <FicheModal titre={p.nom} onClose={onClose} zIndex={500} maxWidth={720}>
       <style>{`.cr-rte, .cr-rte *{font-size:12px !important; line-height:1.6 !important;}`}</style>
+
+      {/* Informations — statut et pays du siège, anciennes pastilles du titre */}
+      {((onglet !== "cibles" && badge) || p.siege_nom) && (
+        <FicheSection titre="Informations">
+          <FicheGrille>
+            {onglet !== "cibles" && badge && <FicheBloc label="Statut"><FicheValeur>{badge.label}</FicheValeur></FicheBloc>}
+            {p.siege_nom && <FicheBloc label="Pays du siège"><FicheValeur>{p.siege_nom}</FicheValeur></FicheBloc>}
+          </FicheGrille>
+        </FicheSection>
+      )}
 
       {/* ── Onglet ciblés : fiche ── */}
       {onglet === "cibles" && <>
