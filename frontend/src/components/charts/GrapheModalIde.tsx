@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { X } from "lucide-react";
 import { downloadPNG } from "@/components/charts/outilsExport";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
@@ -34,11 +35,12 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
     .filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))
     .map((s:any)=>({ nom: s.nom, couleur: s.couleur }));
 
+  const dial = useDialogue(open);
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center", padding:32 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div role="dialog" aria-modal="true" aria-label={titre} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dial} aria-label={titre} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1100, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }} />
 
         {/* En-tête fixe */}

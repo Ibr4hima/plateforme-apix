@@ -7,6 +7,7 @@
 // retombe sur window.confirm pour ne jamais bloquer une action.
 
 import { useEffect, useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { createPortal } from "react-dom";
 
 type Options = { titre?: string; boutonOk?: string };
@@ -49,13 +50,16 @@ export default function ConfirmationHote() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  // Contrat clavier : piège de Tab, focus pris puis restitué au déclencheur.
+  const dial = useDialogue(monte && !!demande);
+
   if (!monte || !demande) return null;
 
   return createPortal(
     <div onClick={() => repondre(false)}
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} role="alertdialog" aria-modal="true"
+      <div {...dial} onClick={e => e.stopPropagation()} role="alertdialog"
         style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
         <div style={{ height: 4, background: "var(--danger-action)", flexShrink: 0 }} />
         <div style={{ padding: "22px 26px 18px" }}>

@@ -5,6 +5,7 @@
 // page /fiche-pays où l'on peut ensuite changer les pays sans quitter.
 
 import { useEffect, useMemo, useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 import { voile } from "@/lib/couleurs";
@@ -32,6 +33,7 @@ function ouvrirFiche(ids: number[]) {
 function FichePaysPicker({ pays, senId, initial, onClose }: {
   pays: Pays[]; senId: number | null; initial: number[]; onClose: () => void;
 }) {
+  const dial = useDialogue(true);
   const MAX = 2;
   const [sel, setSel] = useState<number[]>(initial.length ? initial.slice(0, MAX) : (senId ? [senId] : []));
   const [search, setSearch] = useState("");
@@ -56,7 +58,7 @@ function FichePaysPicker({ pays, senId, initial, onClose }: {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+      <div {...dial} aria-label="Choisir deux pays à comparer" onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 400, maxHeight: "84vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "linear-gradient(90deg,var(--bleu-nuit),var(--bleu-clair))", flexShrink: 0 }} />
         <div style={{ padding: "18px 22px 12px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>

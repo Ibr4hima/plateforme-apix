@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { Pencil, Trash2, Loader2, X, Check, Eye, EyeOff, FileText, Upload, Plus, Layers } from "lucide-react";
 import { parsePhoneNumber } from "libphonenumber-js";
 
@@ -509,6 +510,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
 function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onEdit }: {
   projet:any; secteurs:any[]; branches:any[]; activites:any[]; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
+  const dial = useDialogue(true);
   const fmtInvest = () => {
     const sym = devSymbole(p.devise_code, p.devise_symbole);
     if (!p.investissement_est_intervalle) return p.investissement ? `${Number(p.investissement).toLocaleString("fr-FR")} ${sym}` : null;
@@ -532,7 +534,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgb(var(--encre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
+      <div {...dial} aria-label="Fiche du projet" style={{background:"var(--carte)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"92vh",display:"flex",flexDirection:"column" as const,overflow:"hidden",boxShadow:"var(--ombre-2)",animation:"vueIn 0.22s ease"}}>
         {/* Liseré d'accent */}
         <div style={{height:4,background:"var(--bleu-action)",flexShrink:0}}/>
 

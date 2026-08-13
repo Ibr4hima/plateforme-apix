@@ -11,6 +11,7 @@ import NavActions from "@/components/layout/NavActions";
 import BasculeApparence from "@/components/layout/BasculeApparence";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 import { useEffect, useRef, useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -25,6 +26,7 @@ const numArt = (n: number) => String(n);
 
 // ── Modal Code des investissements — refonte institutionnelle ─────────────────
 function CodeModal({ onClose }: { onClose: () => void }) {
+  const dial = useDialogue(true);
   const [onglet,       setOnglet]      = useState<"code" | "modalites">("code");
   const base = onglet === "code"
     ? `${API}/code-investissement`
@@ -111,7 +113,7 @@ function CodeModal({ onClose }: { onClose: () => void }) {
     <div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.5)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
 
-      <div role="dialog" aria-modal="true" aria-label={pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")} style={{ background:"var(--carte)", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgb(var(--ombre-rgb) / 0.3)" }}>
+      <div {...dial} aria-label={pdfInfo?.titre || (onglet === "code" ? "Code des investissements" : "Modalités d'application")} style={{ background:"var(--carte)", borderRadius:18, width:"100%", maxWidth:1080, height:"90vh", display:"flex", flexDirection:"column", overflow:"hidden", boxShadow:"0 40px 100px rgb(var(--ombre-rgb) / 0.3)" }}>
 
         {/* ── Header ── */}
         <div style={{ padding:"20px 28px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", gap:16, flexShrink:0 }}>

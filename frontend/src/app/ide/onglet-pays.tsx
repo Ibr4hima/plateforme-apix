@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, SlidersHorizontal, Search } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
@@ -440,7 +441,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const { delta, ref } = getVariation(k);
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={k.id} className="kpi-card" onClick={()=>setKpiActif(k)}
+                <div key={k.id} className="kpi-card" {...carteCliquable(()=>setKpiActif(k))}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -472,7 +473,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const slot = kpisCards.length + i;
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={`empty-${i}`} data-picker-trigger onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
+                <div key={`empty-${i}`} data-picker-trigger {...carteCliquable(()=>setPickerSlot(pickerOuvert?-1:slot), "Ajouter un indicateur")}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>

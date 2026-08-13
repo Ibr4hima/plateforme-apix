@@ -8,6 +8,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { createPortal } from "react-dom";
 // fuse.js vient du paquet npm — une copie identique (fuse.esm.js v6.6.2) a
 // longtemps vécu dans src/lib, chargée en double dans le bundle.
@@ -187,6 +188,8 @@ export default function RechercheGlobale() {
     listeRef.current?.querySelector<HTMLElement>(`[data-idx="${actif}"]`)?.scrollIntoView({ block: "nearest" });
   }, [actif]);
 
+  const dial = useDialogue(monte && ouvert);
+
   if (!monte || !ouvert) return null;
 
   let dernierGroupe = "";
@@ -199,7 +202,7 @@ export default function RechercheGlobale() {
 .rg-liste::-webkit-scrollbar-track{background:transparent;margin:16px 0;}
 .rg-liste::-webkit-scrollbar-thumb{background:var(--bordure-forte);border-radius:999px;border:3.5px solid var(--carte);background-clip:padding-box;}
 .rg-liste::-webkit-scrollbar-thumb:hover{background:var(--bordure-forte);border:3.5px solid var(--carte);background-clip:padding-box;}`}</style>
-      <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" onKeyDown={onKeyDown}
+      <div {...dial} aria-label="Recherche globale" onClick={e => e.stopPropagation()} onKeyDown={onKeyDown}
         style={{ width: "100%", maxWidth: 510, display: "flex", flexDirection: "column" as const, maxHeight: "66vh", animation: "vueIn 0.16s ease" }}>
         {/* Barre de recherche — pilule flottante */}
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "0 19px", height: 47, background: "rgb(var(--carte-rgb) / 0.97)", borderRadius: 999, border: "1px solid rgb(var(--carte-rgb) / 0.55)", boxShadow: "0 22px 60px rgb(var(--ombre-rgb) / 0.38), 0 2px 8px rgb(var(--ombre-rgb) / 0.14), inset 0 1px 0 rgba(255,255,255,0.9)", flexShrink: 0 }}>

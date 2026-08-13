@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { AlertCircle, Check, Loader2, X } from "lucide-react";
 
 export const FORM_COLORS = { primary: "var(--bleu)", accent: "var(--orange)", success: "var(--vert)", extra: "var(--violet)" };
@@ -187,6 +188,8 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
   // (Sélectionner du texte dans un champ puis relâcher hors du modal ne doit
   // pas fermer et perdre la saisie.)
   const downSurFond = React.useRef(false);
+  // Contrat clavier : piège de Tab, focus pris puis restitué au déclencheur.
+  const dial = useDialogue(open);
 
   if (!open) return null;
   return (
@@ -202,7 +205,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
-      <div role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
+      <div {...dial} aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height: 4, background: "var(--degrade-filet)", flexShrink: 0 }} />
 

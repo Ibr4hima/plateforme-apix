@@ -1,6 +1,8 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
+import { useDialogue } from "@/lib/dialogue";
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { X, Plus, Table, ChevronDown, SlidersHorizontal, Search, FileSpreadsheet } from "lucide-react";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -85,6 +87,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   open:boolean; onClose:()=>void; blocs:{libelle:string; couleur:string; indicateurs:BdefIndic[]}[]; annees:number[];
 }) {
   useEchap(open, onClose);
+  const dialTable = useDialogue(open, "Tableau de données BDEF");
   if (!open) return null;
   const parCatDe = (indicateurs:BdefIndic[]) => {
     const parCat: {cat:string; inds:BdefIndic[]}[] = [];
@@ -129,7 +132,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -250,6 +253,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   ind: BdefIndic | null; annees: number[]; libelle: string; onClose: ()=>void;
 }) {
   useEchap(!!ind, onClose);
+  const dialKpi = useDialogue(!!ind, "Fiche de l'indicateur");
   if (!ind) return null;
   const lastA  = annees.length ? annees[annees.length - 1] : null;
   const v      = lastA !== null ? (ind.valeurs[lastA] ?? null) : null;
@@ -278,7 +282,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -573,7 +577,7 @@ function OngletNational() {
                   const colIdx = compSelec.indexOf(n.id);
                   const col = colIdx>=0 ? BDEF_MACRO_COULEURS[colIdx%BDEF_MACRO_COULEURS.length] : "var(--bleu)";
                   return (
-                    <div key={n.id} onClick={()=>{ if(!disabled) toggleComp(n.id); }}
+                    <div key={n.id} {...carteCliquable(()=>{ if(!disabled) toggleComp(n.id); })} aria-disabled={disabled||undefined}
                       style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 8px", borderRadius:6, background:"transparent", opacity:disabled?0.35:1, cursor:disabled?"not-allowed":"pointer", transition:"background 0.1s" }}
                       onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background="var(--carte-douce)"; }}
                       onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="transparent"; }}>
@@ -861,7 +865,7 @@ function OngletNational() {
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={code} className="kpi-card" onClick={()=>ind&&setKpiActif(ind)}
+                <div key={code} className="kpi-card" {...carteCliquable(()=>{ if (ind) setKpiActif(ind); }, ind ? `${ind.libelle} — voir la fiche` : undefined)}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{e.currentTarget.style.boxShadow="var(--ombre-1)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)";}}
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
@@ -881,7 +885,7 @@ function OngletNational() {
               const slot = kpisEpingles.length + i;
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={`empty-${i}`} data-picker-trigger onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}
+                <div key={`empty-${i}`} data-picker-trigger {...carteCliquable(()=>setPickerSlot(pickerOuvert?-1:slot), "Ajouter un indicateur")}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>

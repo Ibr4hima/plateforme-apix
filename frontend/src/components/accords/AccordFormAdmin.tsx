@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { X, Upload, Check, Loader2 } from "lucide-react";
 
 import { API_BASE as API } from "@/lib/api";
@@ -14,6 +15,7 @@ const STATUTS = [
 ];
 
 export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const dial = useDialogue(true);
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState(false);
   const [error,   setError]     = useState("");
@@ -74,7 +76,7 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
         zIndex: 200, padding: 24,
       }}
     >
-      <div style={{
+      <div {...dial} aria-label="Nouvel accord ou traité" style={{
         background: "var(--carte-douce)", borderRadius: 24,
         border: "1px solid var(--bordure-forte)", width: "100%", maxWidth: 680,
         maxHeight: "90vh", overflowY: "auto",

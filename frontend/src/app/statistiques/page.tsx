@@ -1,5 +1,6 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
+import { useDialogue } from "@/lib/dialogue";
 import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonKPIs, SkeletonChartGrid } from "@/components/shared/Skeleton";
@@ -7,6 +8,7 @@ import { PALETTE_COMPARAISON as PALETTE, badgeDe, voile } from "@/lib/couleurs";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fmtUnite as fmt } from "@/lib/format";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { ChevronDown, FileSpreadsheet, Plus, Search, SlidersHorizontal, Table, X } from "lucide-react";
 import { useEtatUrl } from "@/lib/useEtatUrl";
@@ -112,6 +114,7 @@ function BtnAjoutPays({ pays, exclus, plein, onPick, onOpenChange }: {
  */
 function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null; pays: string; couleur: string; onClose: () => void }) {
   useEchap(!!kpi, onClose);
+  const dialKpi = useDialogue(!!kpi, "Fiche de l'indicateur");
   if (!kpi) return null;
   const { ind, valeur, annee, historique } = kpi;
   const SecTitle = ({ children }: { children: any }) => (
@@ -120,7 +123,7 @@ function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: { ind: Indicateur;
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 700, display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+      <div {...dialKpi} onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
@@ -198,6 +201,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
   paysSelectionnes: { id: number; nom: string; couleur: string }[]; annees: number[];
 }) {
   useEchap(open, onClose);
+  const dialTable = useDialogue(open, "Tableau de données");
   if (!open) return null;
   const periode = annees.length ? `${annees[0]}_${annees[annees.length - 1]}` : "all";
   const val = (pid: number, code: string, a: number) =>
@@ -205,7 +209,7 @@ function ModalDonnees({ open, onClose, donnees, indicateurs, paysSelectionnes, a
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 1200, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e => e.stopPropagation()} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 1200, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
         <div style={{ padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
@@ -721,7 +725,7 @@ export default function StatistiquesPage() {
                             ? ((v - prec) / Math.abs(prec)) * 100 : null;
                           const pickerOuvert = pickerSlot === slot;
                           return (
-                            <div key={ind.code} className="kpi-card" onClick={() => setKpiActif({ ind, valeur: v, annee: refAnnee, historique: histo(ind.code) })}
+                            <div key={ind.code} className="kpi-card" {...carteCliquable(() => setKpiActif({ ind, valeur: v, annee: refAnnee, historique: histo(ind.code) }), `${ind.libelle} — voir la fiche`)}
                               style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1px solid ${pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"}`, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", minWidth: 0, zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
                               onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -750,7 +754,7 @@ export default function StatistiquesPage() {
                           const slot = indicateursAffiches.length + i;
                           const pickerOuvert = pickerSlot === slot;
                           return (
-                            <div key={`empty-${i}`} data-picker-trigger onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)}
+                            <div key={`empty-${i}`} data-picker-trigger {...carteCliquable(() => setPickerSlot(pickerOuvert ? -1 : slot), "Ajouter un indicateur")}
                               style={{ position: "relative", background: "var(--carte)", borderRadius: 14, padding: "13px 14px", border: `1.5px dashed ${pickerOuvert ? "var(--bleu)" : "var(--bordure-forte)"}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, minHeight: 90, cursor: "pointer", transition: "border-color 0.15s", zIndex: pickerOuvert ? 5 : undefined }}
                               onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--bleu)"; }}
                               onMouseLeave={e => { if (!pickerOuvert) e.currentTarget.style.borderColor = "var(--bordure-forte)"; }}>

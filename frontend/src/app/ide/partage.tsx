@@ -1,5 +1,6 @@
 "use client";
 import { useEchap } from "@/lib/useEchap";
+import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
@@ -633,6 +634,7 @@ async function exportXLSX(donnees: any[], paysSelectionnes: any[], periode: stri
 // ── Modal données ─────────────────────────────────────────────────────────────
 export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousType = "fluxstock", entite = "pays" }: any) {
   useEchap(open, onClose);
+  const dialTable = useDialogue(open, "Tableau de données");
   if (!open) return null;
   const annees = [...new Set(donnees.map((d:any)=>d.annee))].sort() as number[];
   const periode = annees.length ? `${annees[0]}_${annees[annees.length-1]}` : "all";
@@ -641,7 +643,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:600, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialTable} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:1200, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }} />
 
         {/* En-tête fixe */}
@@ -808,6 +810,7 @@ export function splitKpiTitre(label: string): { main: string; suffix: string | n
 // ── Mini modal KPI ────────────────────────────────────────────────────────────
 export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
   useEchap(!!kpi, onClose);
+  const dialKpi = useDialogue(!!kpi, "Fiche du KPI");
   if (!kpi) return null;
   const interp = interpreterKpi(kpi, pays, couleur);
   const isTrend = ["g_fe","g_se","cagr_fe","mom_fe","trend_fe","vs_moy_fe","accel_fe","tv5_fe","tv10_fe"].includes(kpi.id);
@@ -832,7 +835,7 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgb(var(--encre-rgb) / 0.45)", backdropFilter:"blur(8px)", zIndex:700, display:"flex", alignItems:"center", justifyContent:"center", padding:40 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
+      <div {...dialKpi} onClick={e=>e.stopPropagation()} style={{ background:"var(--carte)", borderRadius:20, width:"100%", maxWidth:560, maxHeight:"92vh", display:"flex", flexDirection:"column" as const, overflow:"hidden", boxShadow:"var(--ombre-2)", animation:"vueIn 0.22s ease" }}>
         <div style={{ height:4, background:"var(--bleu-action)", flexShrink:0 }} />
 
         {/* En-tête fixe */}

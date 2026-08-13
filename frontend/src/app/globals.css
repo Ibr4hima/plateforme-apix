@@ -582,6 +582,9 @@ body {
   outline-offset: 2px;
   border-radius: var(--rayon-sm);
 }
+/* Le panneau d'une modale prend le focus à l'ouverture (lib/dialogue) : c'est
+   un point de départ pour Tab, pas une cible d'action — pas d'anneau. */
+[role="dialog"]:focus, [role="alertdialog"]:focus { outline: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -10,6 +10,7 @@
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useDialogue } from "@/lib/dialogue";
 import { fond_bleu, badge_bleu, badge_vert } from "@/lib/couleurs";
 import { fmtPhone } from "@/lib/telephone";
 
@@ -26,6 +27,8 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
   // Fermer seulement si le clic a COMMENCÉ sur le voile : une sélection de
   // texte qui déborde du panneau ne doit pas fermer la fiche.
   const downSurFond = useRef(false);
+  // Contrat clavier des modales : piège de Tab, focus pris puis restitué.
+  const dial = useDialogue(true);
 
   // Échap ferme la fiche
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}
 [data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-      <div onClick={e => e.stopPropagation()}
+      <div {...dial} aria-labelledby="fiche-modal-titre" onClick={e => e.stopPropagation()}
         style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.22s ease" }}>
         {/* Liseré d'accent */}
         <div style={{ height: 4, background: "var(--bleu-action)", flexShrink: 0 }} />
@@ -49,7 +52,7 @@ export default function FicheModal({ titre, badges, onClose, zIndex = 400, maxWi
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 28px 16px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
+            <h2 id="fiche-modal-titre" style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)", lineHeight: 1.3, margin: 0 }}>{titre}</h2>
             {badges && <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8, minWidth: 0 }}>{badges}</div>}
           </div>
           <button onClick={onClose} aria-label="Fermer"
