@@ -7,7 +7,7 @@ import { SignJWT, jwtVerify } from "jose"
 // Auth secret partagé avec le backend (HS256)
 const secret = new TextEncoder().encode(process.env.AUTH_SECRET!)
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+import { API_BASE as API_URL } from "@/lib/api"
 
 // Microsoft Entra ID n'est activé que si les vraies valeurs Azure sont fournies
 // (pas les PLACEHOLDER). Tant que ce n'est pas le cas, on s'appuie sur la

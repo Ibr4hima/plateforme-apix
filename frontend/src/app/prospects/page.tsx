@@ -16,7 +16,7 @@ import { SideFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLat
 import { useFicheUrl } from "@/lib/ficheUrl";
 import ProspectVueModal, { ilYa, badgeProspect } from "@/components/shared/ProspectVueModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // ── Statuts : un seul mapping jeton + couleur, partagé par les cartes et le
 // filtre. Trois copies vivaient dans ce fichier, dont deux recréées à chaque

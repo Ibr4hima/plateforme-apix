@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { voile } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // ── Compteur animé ─────────────────────────────────────────────────────────────
 function AnimatedCounter({ target, suffix="", decimals=0 }: { target:number; suffix?:string; decimals?:number }) {

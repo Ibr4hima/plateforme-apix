@@ -15,7 +15,7 @@ import AvantageVueModal from "@/components/shared/AvantageVueModal";
 import ZoneDetailModal from "@/components/shared/ZoneDetailModal";
 import { useNaema } from "@/lib/referentiels";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 export default function FichesGlobales() {
   const [entreprise, setEntreprise] = useState<any>(null);

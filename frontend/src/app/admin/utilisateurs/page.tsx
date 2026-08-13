@@ -6,7 +6,7 @@ import { Check, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // Couleur de chaque rôle (badges) : dev et admin en bleu, admin+ en vert, agent en orange
 const ROLE_COLORS: Record<string, string> = { dev: "var(--bleu)", admin: "var(--bleu)", admin_plus: "var(--vert)", agent: "var(--orange)" };

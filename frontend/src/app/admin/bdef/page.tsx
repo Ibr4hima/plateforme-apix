@@ -6,7 +6,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--bordure-forte)" };
 const IS: any  = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };

@@ -14,7 +14,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris, voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 function fmtPhone(raw: string): string {
   if (!raw) return raw;

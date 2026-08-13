@@ -20,7 +20,7 @@ import { badgePole, poleAccent } from "@/lib/couleurs";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
   minYear: number; maxYear: number; startYear: number; endYear: number;

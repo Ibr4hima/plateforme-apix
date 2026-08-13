@@ -10,7 +10,7 @@ import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 import { badge_bleu, badge_gris, badge_vert } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // fmtDate : centralisé dans lib/format (ré-exporté pour les imports existants)
 export { fmtDate } from "@/lib/format";

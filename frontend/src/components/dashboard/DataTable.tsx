@@ -3,7 +3,7 @@
 import { ArrowUpDown, ChevronDown, ChevronUp, FileSpreadsheet, Loader2, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 const ROWS_OPTIONS = [7, 15, 25, 50, 100, "Tout"];
 
 // ─── Détection types de colonne ───────────────────────────────────────────────

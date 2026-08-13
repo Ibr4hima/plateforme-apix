@@ -13,7 +13,7 @@ import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_gris, voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // Niveaux et secteurs — mêmes libellés et couleurs que la page publique
 const NIVEAUX_POTS = [

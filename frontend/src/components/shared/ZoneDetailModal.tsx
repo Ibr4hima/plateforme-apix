@@ -12,7 +12,7 @@ import { fmtDate } from "@/lib/format";
 import { badgeDe, badgePole } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 export default function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:()=>void }) {
   const gate = useAuthGate();

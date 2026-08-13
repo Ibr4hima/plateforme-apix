@@ -18,7 +18,7 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import Variation from "@/components/shared/Variation";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 const BLEU = "var(--bleu)", ENCRE = "var(--encre)";
 const SOCIO_KPIS = ["pib", "population", "pib_hab", "croissance_pib"];
 

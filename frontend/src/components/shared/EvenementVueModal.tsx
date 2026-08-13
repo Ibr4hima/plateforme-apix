@@ -8,7 +8,7 @@ import { computeStatutEvenement } from "@/lib/statuts";
 import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
 import FicheModal, { FicheArbre, FicheBloc, FicheDocs, FicheGrille, FicheSection, FicheTexteRiche, FicheValeur } from "@/components/shared/FicheModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 export const MOIS = ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
 

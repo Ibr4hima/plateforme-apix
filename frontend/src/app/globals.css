@@ -653,6 +653,22 @@ body {
 .mod-card:hover .mod-num { color: var(--mod-couleur, var(--bleu)); }
 
 
+/* ── Police de repli ajustée sur Google Sans ─────────────────────────────────
+   next/font ne connaît pas les métriques de Google Sans (avertissement au
+   build : « Failed to find font override values ») et ne générait donc aucun
+   repli ajusté — le texte sautait au chargement de la vraie police. Ces
+   valeurs sont MESURÉES dans Chromium (canvas, texte français représentatif,
+   Google Sans chargée contre Arial), pas estimées. Le layout référence cette
+   famille via l'option `fallback` de next/font. */
+@font-face {
+  font-family: "Google Sans Fallback";
+  src: local("Arial");
+  size-adjust: 98.77%;
+  ascent-override: 97%;
+  descent-override: 29%;
+  line-gap-override: 0%;
+}
+
 /* ── Icônes Material Symbols, auto-hébergées ─────────────────────────────────
    Police subsettée sur les 39 glyphes de l'application (45 Ko), servie depuis
    public/polices : aucune requête vers fonts.googleapis.com. Pour ajouter une

@@ -10,7 +10,8 @@ import { IconeCached } from "@/components/shared/PickerKpi";
 import { accentDe, CurseurAnneeNace } from "@/components/shared/CurseurNace";
 
 
-export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
+export { API };
 
 // Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
 export const fmtVal = fmtMillionsUSD;

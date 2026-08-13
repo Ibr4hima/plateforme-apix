@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // ── Sélecteur multiple de régions ─────────────────────────────────────────────
 function RegionsMultiSelect({

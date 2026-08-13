@@ -14,7 +14,7 @@ import { fmtCompact as fmtValGen } from "@/lib/format";
 export const NACE_BLEU = "var(--bleu)";
 export const NACE_ORANGE = "var(--orange)";
 
-export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export { API_BASE as API } from "@/lib/api";
 
 export type Indicateur = { code: string; libelle: string; unite: string; categorie: string; ordre: number; derive: boolean };
 export type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };

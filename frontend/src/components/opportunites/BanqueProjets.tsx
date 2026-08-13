@@ -29,7 +29,7 @@ function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void;
   );
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
 const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
 const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };

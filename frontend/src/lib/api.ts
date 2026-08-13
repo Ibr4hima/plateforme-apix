@@ -1,4 +1,26 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+/**
+ * L'adresse de l'API — LE point de vérité, exporté pour toute la plateforme.
+ *
+ * Soixante fichiers redéclaraient ce fallback chacun pour soi. Le danger était
+ * silencieux : NEXT_PUBLIC_API_URL est inliné au build, et s'il manque en
+ * production, le fallback vise `localhost` — c'est-à-dire la machine DE
+ * L'UTILISATEUR. La plateforme démarrait alors normalement et échouait sans un
+ * mot. Le défaut de configuration se signale désormais en clair dans la
+ * console, dès le chargement.
+ */
+export const API_BASE = (() => {
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (url) return url;
+  if (process.env.NODE_ENV === "production") {
+    // Visible au premier coup d'œil dans la console du navigateur comme dans
+    // les logs du serveur : un déploiement sans API configurée n'est pas sain.
+    console.error(
+      "[APIX] NEXT_PUBLIC_API_URL n'est pas défini : repli sur http://localhost:8000, " +
+      "qui ne peut pas fonctionner en production. Corriger la configuration de déploiement.",
+    );
+  }
+  return "http://localhost:8000/api/v1";
+})();
 
 /**
  * Récupère le JWT NextAuth depuis le cookie de session (côté serveur uniquement).

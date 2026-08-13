@@ -13,7 +13,7 @@ import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { voile } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 interface GeoItem { id: number; nom: string; region_id?: number; departement_id?: number; }
 

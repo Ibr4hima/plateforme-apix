@@ -11,7 +11,7 @@ import {
   IS, NUM, TD, TH, btnDanger, btnPrincipal,
 } from "@/components/admin/UIAdmin";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 type Indicateur = { code: string; libelle: string; unite: string; derive: boolean };
 type RefPays    = { id: number; nom_fr: string; code_iso3: string | null };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 const SELECT_STYLE = {
   width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",

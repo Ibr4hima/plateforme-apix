@@ -6,7 +6,7 @@ import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { voile } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 export default function AdminNaema() {
   const [secteurs,       setSecteurs]       = useState<any[]>([]);

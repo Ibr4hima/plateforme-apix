@@ -15,7 +15,7 @@ import PotentialiteVueModal from "@/components/shared/PotentialiteVueModal";
 import AvantageVueModal from "@/components/shared/AvantageVueModal";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 
 // Secteurs économiques des avantages & incitations

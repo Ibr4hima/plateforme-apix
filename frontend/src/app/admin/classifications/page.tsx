@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // ─── Hook : charger activités NAEMA enrichies (code S1-B1-A1) ────────────────
 function useActivitesNAEMA() {

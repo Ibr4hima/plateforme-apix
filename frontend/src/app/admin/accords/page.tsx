@@ -16,7 +16,7 @@ import { confirmer } from "@/components/shared/Confirmation";
 import { fmtDate as fmtDateLib } from "@/lib/format";
 import { computeStatutAccord as computeStatut } from "@/lib/statuts";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 const SENEGAL = "Sénégal";
 const APIX    = "APIX S.A";

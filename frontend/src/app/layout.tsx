@@ -9,6 +9,12 @@ const googleSans = Google_Sans({
   weight: ["400", "500", "600", "700"],
   variable: "--font-google-sans",
   display: "swap",
+  // next/font n'a pas les métriques de Google Sans : son repli automatique
+  // échouait au build (« Failed to find font override values ») et le texte
+  // sautait au chargement. Le repli est fourni à la main — « Google Sans
+  // Fallback », un Arial redimensionné aux métriques mesurées, dans globals.css.
+  adjustFontFallback: false,
+  fallback: ["Google Sans Fallback", "sans-serif"],
 });
 
 export const metadata: Metadata = {

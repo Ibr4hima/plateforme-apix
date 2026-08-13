@@ -7,7 +7,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // L'orange sert ici de deux façons : encre (puces, numéros) et aplat plein
 // (bouton flottant, bulles de l'utilisateur). La nuit, la première

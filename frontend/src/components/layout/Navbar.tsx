@@ -12,7 +12,7 @@ import BasculeApparence from "@/components/layout/BasculeApparence";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 import { useEffect, useRef, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // ── Numérotation ──────────────────────────────────────────────────────────────
 function toRomanNum(n: number): string {

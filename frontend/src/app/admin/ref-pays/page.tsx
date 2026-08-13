@@ -8,7 +8,7 @@ import {
 import { authHeaders } from "@/lib/authHeaders";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // ── Styles partagés ────────────────────────────────────────────────────────────
 const IS: any = { background:"var(--carte-douce)", border:"1px solid var(--bordure-forte)", borderRadius:9, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };

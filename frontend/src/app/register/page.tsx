@@ -7,7 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from "lucide-react"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+import { API_BASE as API_URL } from "@/lib/api"
 
 // ── Création de compte — même scène que la connexion ──────────────────────────
 export default function RegisterPage() {

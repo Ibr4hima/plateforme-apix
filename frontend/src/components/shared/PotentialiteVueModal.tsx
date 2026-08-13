@@ -8,7 +8,7 @@ import { useNaema } from "@/lib/referentiels";
 import { COMP_PALETTE, badgeDe, badge_bleu, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheCarteNeutre, FicheDocs, FicheSection, FicheTexteRiche } from "@/components/shared/FicheModal";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 // Pastille du niveau territorial — mêmes teintes que les cards de la page
 const NIVEAU_BADGE: Record<string, React.CSSProperties> = {

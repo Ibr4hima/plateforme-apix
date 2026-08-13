@@ -9,7 +9,7 @@ import { ChevronDown, Search } from "lucide-react";
 import { parsePhoneNumberWithError, isValidPhoneNumber, validatePhoneNumberLength, AsYouType, CountryCode, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/mobile/examples";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // Indicatifs depuis libphonenumber-js (on importe getCountryCallingCode)
 function getIndicatif(iso2: string): string {

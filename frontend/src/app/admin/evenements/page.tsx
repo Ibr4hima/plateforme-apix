@@ -21,7 +21,7 @@ import { ChampRecherche, Segments } from "@/components/admin/UIAdmin";
 import { fmtPlageDates } from "@/lib/format";
 import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 function ordinalEdition(n: number): string {
   return n === 1 ? "1ère édition" : `${n}ème édition`;

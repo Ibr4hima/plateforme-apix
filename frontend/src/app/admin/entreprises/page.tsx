@@ -17,7 +17,7 @@ import { fetchTous } from "@/lib/fetchTous";
 import { fmtDate } from "@/lib/format";
 import { badgePole, poleAccent, badge_gris } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 const FORMES_JURIDIQUES = [
   "Société en nom collectif (SNC)", "Société en commandite simple (SCS)",

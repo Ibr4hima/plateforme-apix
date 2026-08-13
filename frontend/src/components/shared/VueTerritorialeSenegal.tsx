@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useRefPolesTerritoires, useRefSecteurs } from "@/lib/referentiels";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 const REGION_PALETTE: Record<string, string> = {
   "Dakar":       "var(--reg-dakar)", // bleu ciel

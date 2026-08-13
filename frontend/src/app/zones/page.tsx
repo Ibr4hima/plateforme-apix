@@ -13,7 +13,7 @@ import { useEtatUrl } from "@/lib/useEtatUrl";
 import { badgePole, poleAccent, voile } from "@/lib/couleurs";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {

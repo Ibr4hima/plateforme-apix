@@ -5,7 +5,7 @@ import { X, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import { useNaema } from "@/lib/referentiels";
 import { voile } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 interface NaemaItem { id: number; code: string; nom: string; secteur_id?: number; branche_id?: number; }
 

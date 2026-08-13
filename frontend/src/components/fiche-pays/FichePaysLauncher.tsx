@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 import { voile } from "@/lib/couleurs";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 const PALETTE = ["var(--bleu)", "var(--orange)", "var(--vert)", "var(--violet)", "var(--cyan)", "var(--danger)", "var(--ambre)", "var(--indigo)"];
 
 type Pays = { id: number; nom: string; code_iso3: string; continent: string; region_geo: string | null };

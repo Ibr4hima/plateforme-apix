@@ -19,7 +19,7 @@ import { computeStatutEvenement } from "@/lib/statuts";
 import EvenementVueModal, { MOIS, ordinal, ROLE_PILL, ROLES_APIX } from "@/components/shared/EvenementVueModal";
 import { useFicheUrl } from "@/lib/ficheUrl";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // Badges de rôle APIX sur les cards — jetons du design system :
 // organisation vert, participant orange, partenaire bleu, invité violet,

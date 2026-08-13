@@ -19,7 +19,7 @@ import { fond_bleu, badge_bleu, badgeSurvol } from "@/lib/couleurs";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const COULEURS = [BLEU, ORANGE];

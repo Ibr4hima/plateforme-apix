@@ -11,7 +11,7 @@ import { fmtPhone } from "@/lib/telephone";
 import { badge_bleu, badge_gris, badge_rouge, badge_vert } from "@/lib/couleurs";
 import FicheModal, { FicheArbreNaema, FicheBloc, FicheCarteNeutre, FicheContacts, FicheGrille, FicheLien, FicheSection, FicheValeur } from "@/components/shared/FicheModal";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 // Ancienneté relative : « Il y a 3 jours / 2 mois / 1 an », « Aujourd'hui »
 export function ilYa(dstr: string | null): string | null {

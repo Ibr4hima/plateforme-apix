@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useNaema } from "@/lib/referentiels";
 import { voile } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 interface RefItem { id: number; nom: string; secteur_id?: number; branche_id?: number; }
 

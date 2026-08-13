@@ -11,7 +11,7 @@ import {
   IS, NUM, TD, TH, btnDanger, btnPrincipal, btnSecondaire,
 } from "@/components/admin/UIAdmin";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 type RefPays     = { id: number; nom_fr: string; code_iso2: string | null };
 type StatPays    = { ref_pays_id: number; pays: string; code_iso2: string | null; series: Record<string, { annee_min: number; annee_max: number; nb: number }> };

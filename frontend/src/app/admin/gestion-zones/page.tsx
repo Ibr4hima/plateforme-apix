@@ -14,7 +14,7 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/couleurs";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE } from "@/lib/api";
 
 const TYPE_ZONES = [
   { key: "ZES", label: "Zones Économiques Spéciales",           code: "ZES", color: "var(--bleu)", bg: "rgb(var(--bleu-rgb) / 0.06)",  border: "rgb(var(--bleu-rgb) / 0.2)" },

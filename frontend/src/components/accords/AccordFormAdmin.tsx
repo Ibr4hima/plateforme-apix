@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Upload, Check, Loader2 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 const STATUTS = [
   { value: "en_vigueur",        label: "En vigueur"        },
