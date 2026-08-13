@@ -201,12 +201,14 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         // dans le SVG : l'export sérialise pattern et masque tels quels, et le
         // gel des couleurs (outilsExport) résout le jeton du point.
         const pid = `${uid}-t${si}`, mid = `${uid}-m${si}`;
-        // Pas de 4,6 px : la trame est dense — c'est elle qui remplit l'aire,
-        // le dégradé n'est qu'un fond de teint.
+        // Pas de 3,1 px, points de 0,65 : une trame FINE et serrée — c'est le
+        // grain qui remplit l'aire, et sa finesse qui rend le dégradé de
+        // densité lisible (de gros points en fondu font des taches ; des
+        // petits font une matière).
         const pat = defs.append("pattern").attr("id", pid)
-          .attr("width", 4.6).attr("height", 4.6)
+          .attr("width", 3.1).attr("height", 3.1)
           .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)");
-        pat.append("circle").attr("cx", 2.3).attr("cy", 2.3).attr("r", epureEff ? 0.85 : 1.0)
+        pat.append("circle").attr("cx", 1.55).attr("cy", 1.55).attr("r", epureEff ? 0.55 : 0.65)
           .style("fill", s.couleur);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
@@ -234,13 +236,13 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .attr("filter", `url(#${filtId})`);
         gMasque.append("path").attr("d", dLigne)
           .attr("fill", "none").attr("stroke", "#fff")
-          .attr("stroke-opacity", epureEff ? 0.35 : 0.4)
+          .attr("stroke-opacity", epureEff ? 0.42 : 0.48)
           .attr("stroke-width", hTrace * 1.5)
           .attr("stroke-linejoin", "round");
         gMasque.append("path").attr("d", dLigne)
           .attr("fill", "none").attr("stroke", "#fff")
-          .attr("stroke-opacity", epureEff ? 0.55 : 0.62)
-          .attr("stroke-width", hTrace * 0.6)
+          .attr("stroke-opacity", epureEff ? 0.65 : 0.75)
+          .attr("stroke-width", hTrace * 0.55)
           .attr("stroke-linejoin", "round");
         // L'extinction au pied : un voile noir peint PAR-DESSUS les traits du
         // masque, transparent en haut de l'aire et presque opaque à sa base
