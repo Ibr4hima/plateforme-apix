@@ -13,7 +13,7 @@ import { ArrowDownUp, ArrowUpDown, Building2, ChevronDown, ChevronUp, X } from "
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useGeoArbre, useNaemaArbre, useRefFormesJuridiques, useRefPolesEntreprises } from "@/lib/referentiels";
-import { fetchTous } from "@/lib/fetchTous";
+import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { badgePole, poleAccent } from "@/lib/couleurs";
@@ -67,11 +67,12 @@ export default function EntreprisesPage() {
   const gate = useAuthGate();
   const [onglet,      setOnglet]      = useEtatUrl<"liste"|"territoire">("onglet", "liste", ["liste","territoire"]);
   const [triDate,     setTriDate]     = useEtatUrl<"desc"|"asc">("tri", "desc", ["desc","asc"]);
-  const [tous,        setTous]        = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
+  // Le contenu vient du cache React Query : revenir sur la page déjà visitée
+  // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
+  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/entreprises`);
+  const tous = (tousData ?? VIDE) as any[];
   // Barre de filtres repliée : la grille prend une colonne de plus.
   const [filtresOuverts, setFiltresOuverts] = useState(true);
-  const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
   const [formeOpts,   setFormeOpts]   = useState<string[]>([]);
@@ -104,16 +105,6 @@ export default function EntreprisesPage() {
   useEffect(()=>{ setRegions(geoArbre); },[geoArbre]);
   useEffect(()=>{ setPoles((((polesData as any[])||[])).map((p:any)=>p.nom)); },[polesData]);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance
-  const charger = useCallback(async()=>{
-    setLoading(true); setErreur(false);
-    try {
-      setTous(await fetchTous(`${API_BASE}/entreprises`));
-    } catch(e){console.error(e); setErreur(true);}
-    finally{setLoading(false);}
-  },[]);
-
-  useEffect(()=>{charger();},[charger]);
 
   useEffect(()=>{
     if (dateInitRef.current||tous.length===0) return;

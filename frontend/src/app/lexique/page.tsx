@@ -5,33 +5,23 @@
 // termes sont stockés en base, édités depuis /admin/lexique et servis par
 // l'API GET /lexique.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { type Terme } from "@/lib/lexique";
 import { Skeleton } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import BandeauDocument, { RechercheBandeau } from "@/components/shared/BandeauDocument";
 
 import { API_BASE as API } from "@/lib/api";
+import { useDonnees } from "@/lib/donnees";
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function LexiquePage() {
   const [q, setQ] = useState("");
-  const [termes, setTermes] = useState<Terme[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [erreur, setErreur] = useState(false);
-
-  // En cas d'échec, état d'erreur avec relance plutôt qu'un « aucun terme »
-  // trompeur.
-  const charger = useCallback(() => {
-    setLoading(true); setErreur(false);
-    fetch(`${API}/lexique`).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then((d) => setTermes(Array.isArray(d) ? d : []))
-      .catch(() => setErreur(true))
-      .finally(() => setLoading(false));
-  }, []);
-  useEffect(() => { charger(); }, [charger]);
+  // Termes servis par le cache React Query : retour instantané sur la page.
+  const { data: termesData, isPending: loading, isError: erreur, refetch: charger } = useDonnees<Terme[]>(`${API}/lexique`);
+  const termes = useMemo(() => Array.isArray(termesData) ? termesData : [], [termesData]);
 
   // Termes filtrés (recherche), triés puis groupés par 1ʳᵉ lettre
   const { groupes, lettresPresentes } = useMemo(() => {

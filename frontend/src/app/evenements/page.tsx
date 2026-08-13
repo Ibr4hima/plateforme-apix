@@ -10,7 +10,7 @@ import { CalendarDays } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
-import { fetchTous } from "@/lib/fetchTous";
+import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { badge_vert, badge_orange, badge_bleu, badge_violet, badge_ambre, badge_gris, voile } from "@/lib/couleurs";
@@ -222,11 +222,12 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
 
 export default function EvenementsPage() {
   const gate = useAuthGate();
-  const [tous,        setTous]        = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
+  // Le contenu vient du cache React Query : revenir sur la page déjà visitée
+  // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
+  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/evenements`);
+  const tous = (tousData ?? VIDE) as any[];
   // Barre de filtres repliée : la grille prend une colonne de plus.
   const [filtresOuverts, setFiltresOuverts] = useState(true);
-  const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
   const [paysHotes,   setPaysHotes]   = useState<{nom:string;code_iso2:string}[]>([]);
@@ -255,16 +256,6 @@ export default function EvenementsPage() {
       });
   },[refPaysData]);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance
-  const charger = useCallback(async()=>{
-    setLoading(true); setErreur(false);
-    try {
-      setTous(await fetchTous(`${API_BASE}/evenements`));
-    } catch(e){ console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  },[]);
-
-  useEffect(()=>{ charger(); },[charger]);
 
   const evenements = useMemo(() => tous.filter(e=>{
     if (recherche) {

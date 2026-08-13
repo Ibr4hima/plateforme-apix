@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
-import { fetchTous } from "@/lib/fetchTous";
+import { useDonnees, useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
@@ -33,11 +33,12 @@ const dureeDepuis = (dstr:string): string => {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function AccordsPage() {
   const gate = useAuthGate();
-  const [tous,        setTous]        = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
+  // Le contenu vient du cache React Query : revenir sur la page déjà visitée
+  // est instantané, le rafraîchissement se fait en arrière-plan (lib/donnees).
+  const { data: tousData, isPending: loading, isError: erreur, refetch: charger } = useTous(`${API_BASE}/accords`);
+  const tous = (tousData ?? VIDE) as any[];
   // Barre de filtres repliée : la grille prend une colonne de plus.
   const [filtresOuverts, setFiltresOuverts] = useState(true);
-  const [erreur,      setErreur]      = useState(false);
   const [selec,       setSelec]       = useState<any>(null);
   useFicheUrl(tous, setSelec);   // ouverture directe depuis la recherche globale (⌘K)
 
@@ -61,21 +62,9 @@ export default function AccordsPage() {
   const { data: paysData } = useRefPays();
   useEffect(()=>{ setSecteurs(naemaArbre); },[naemaArbre]);
   useEffect(()=>{ setAllPays((paysData as any[])||[]); },[paysData]);
-  useEffect(()=>{
-    fetch(`${API_BASE}/accords/parties-distinctes`).then(r=>r.json())
-      .then(d=>setPaysDistincts(d?.pays||[])).catch(()=>{});
-  },[]);
+  const { data: partiesData } = useDonnees(`${API_BASE}/accords/parties-distinctes`);
+  useEffect(()=>{ setPaysDistincts(partiesData?.pays||[]); },[partiesData]);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance
-  const charger = useCallback(async()=>{
-    setLoading(true); setErreur(false);
-    try {
-      setTous(await fetchTous(`${API_BASE}/accords`));
-    } catch(e){console.error(e); setErreur(true);}
-    finally{setLoading(false);}
-  },[]);
-
-  useEffect(()=>{charger();},[charger]);
 
   const getPaysNoms = (a:any, max=2): string => {
     let noms: string[] = [];

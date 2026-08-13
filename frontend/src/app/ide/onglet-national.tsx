@@ -9,6 +9,7 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, BadgePeriode, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 import { voile } from "@/lib/couleurs";
 
 
@@ -401,7 +402,11 @@ function OngletNational() {
 
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 540);
 
-  useEffect(()=>{ fetch(`${API}/bdef/secteurs`).then(r=>r.json()).then((d:BdefRefs)=>setRefs(d)).catch(()=>{}); }, []);
+  // Référentiel BDEF en cache pour la session. Le flux principal (valeurs +
+  // éventail macro-secteurs) garde son orchestration à étages : il passera au
+  // cache dans un passage dédié, pas au détour d'un balayage.
+  const { data: refsData } = useDonnees<BdefRefs>(`${API}/bdef/secteurs`);
+  useEffect(()=>{ if (refsData) setRefs(refsData); }, [refsData]);
 
   // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
   const [erreur, setErreur] = useState(false);

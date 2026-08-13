@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, SlidersHorizontal, Search } from "lucide-react";
 import { calculerKpis, fmtKpi, KPI_DEFAUT, type KpiResult } from "@/lib/ideKpis";
@@ -11,6 +11,7 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
@@ -21,8 +22,6 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const [paysComp,    setPaysComp]    = useState<string[]>([]);
   // Popover d'ajout ouvert → le contenu (KPIs + graphes) est flouté derrière
   const [compOpen,    setCompOpen]    = useState(false);
-  const [donnees,     setDonnees]     = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
   const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]    = useState(borneMin);
   const [anneeMax,    setAnneeMax]    = useState(borneMax);
@@ -47,22 +46,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
 
   const couleur = "var(--bleu)";
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
-  const charger = useCallback(async () => {
-    setLoading(true); setErreur(false);
-    try {
-      const params = new URLSearchParams({ pays_list: [paysSelec, ...paysComp].join(",") });
-      if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
-      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
-      const dataR = await fetch(`${API}/ide/cnuced?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
-      setDonnees(dataR||[]);
-    } catch(e){ console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, [paysSelec, paysComp, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
-
-  useEffect(() => { charger(); }, [charger]);
+  // Données CNUCED en cache React Query, clé = pays + période : re-choisir un
+  // pays ou une plage déjà vus raffiche sans squelette ; pendant une nouvelle
+  // requête, l'écran garde les données précédentes (garder) au lieu de
+  // clignoter.
+  const urlCnuced = (() => {
+    const params = new URLSearchParams({ pays_list: [paysSelec, ...paysComp].join(",") });
+    if (modeAnnees==="specifiques" && anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
+    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
+    return `${API}/ide/cnuced?${params}`;
+  })();
+  const qCnuced = useDonnees<any[]>(urlCnuced, { garder: true });
+  const donnees = useMemo(() => (qCnuced.data ?? []) as any[], [qCnuced.data]);
+  const loading = qCnuced.isPending, erreur = qCnuced.isError;
 
   // Mode comparatif : au moins un pays ajouté via le « + » de l'en-tête
   const estComparatif = paysComp.length > 0;
@@ -498,7 +494,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           {loading ? (
             <SkeletonChartGrid n={4} cols={2} height={230}/>
           ) : erreur ? (
-            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+            <ErreurChargement onRetry={() => qCnuced.refetch()} />
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
               {GRAPHES_PAYS.map(g=>{

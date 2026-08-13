@@ -12,6 +12,7 @@ import BandeauDocument, { RechercheBandeau } from "@/components/shared/BandeauDo
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE as API } from "@/lib/api";
+import { useDonnees } from "@/lib/donnees";
 
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 
@@ -29,32 +30,27 @@ export default function CodeInvestissementsPage() {
   const [loi, setLoi] = useState<Loi>("code");
   const base = loi === "code" ? `${API}/code-investissement` : `${API}/modalites-application`;
 
-  const [chapitres, setChapitres] = useState<any[]>([]);
-  const [pdfInfo, setPdfInfo] = useState<any>(null);
+  // Contenu et fiche PDF en cache React Query, clé = le texte choisi : passer
+  // de l'un à l'autre puis revenir raffiche sans rechargement.
+  const qTexte = useDonnees<any[]>(base);
+  const qPdf = useDonnees<any>(`${base}/pdf/info`);
+  const chapitres = useMemo(() => Array.isArray(qTexte.data) ? qTexte.data : [], [qTexte.data]);
+  const pdfInfo = qPdf.data ?? null;
   const [activeChapId, setActiveChapId] = useState<string | null>(null);
   const [activeSecId, setActiveSecId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<any[] | null>(null);
   const [searching, setSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [erreur, setErreur] = useState(false);
+  const loading = qTexte.isPending, erreur = qTexte.isError;
+  const charger = () => { qTexte.refetch(); qPdf.refetch(); };
   const [pendingArtId, setPendingArtId] = useState<string | null>(null);
 
-  // Chargement du contenu à chaque changement de loi ; en cas d'échec, état
-  // d'erreur avec relance plutôt qu'un « Aucun contenu » trompeur.
-  const charger = useCallback(() => {
-    setLoading(true); setErreur(false); setChapitres([]); setActiveChapId(null); setActiveSecId(null); setQ(""); setResults(null);
-    Promise.all([
-      fetch(`${base}`).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
-      fetch(`${base}/pdf/info`).then((r) => r.json()).catch(() => null),
-    ]).then(([code, pdf]) => {
-      const list = Array.isArray(code) ? code : [];
-      setChapitres(list);
-      setPdfInfo(pdf);
-      if (list.length > 0) setActiveChapId(list[0].id);
-    }).catch(() => setErreur(true)).finally(() => setLoading(false));
-  }, [base]);
-  useEffect(() => { charger(); }, [charger]);
+  // Changer de texte remet la lecture à zéro (sélection, recherche) ; le
+  // premier chapitre s'ouvre dès que le contenu est là — du cache ou du réseau.
+  useEffect(() => { setActiveChapId(null); setActiveSecId(null); setQ(""); setResults(null); }, [base]);
+  useEffect(() => {
+    if (chapitres.length > 0) setActiveChapId(prev => prev ?? chapitres[0].id);
+  }, [chapitres]);
 
   // Recherche full-text
   useEffect(() => {

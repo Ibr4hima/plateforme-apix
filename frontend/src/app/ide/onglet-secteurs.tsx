@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
@@ -8,6 +8,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
@@ -31,11 +32,14 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const st = sousType === "fusion" ? "fusion" : "greenfield";
   useEffect(() => { if (sousType === "fluxstock") setSousType("greenfield"); }, [sousType, setSousType]);
 
-  const [refSecteurs, setRefSecteurs] = useState<any[]>([]);
-  const [donnees,     setDonnees]     = useState<any[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [erreur,      setErreur]      = useState(false);
-  const [tick,        setTick]        = useState(0);
+  // Référentiel et séries en cache React Query (les deux ressources sont
+  // stables) : revenir sur l'onglet raffiche sans squelette.
+  const qRef = useDonnees<any[]>(`${API}/ide/secteurs`);
+  const qSeries = useDonnees<any[]>(`${API}/ide/cnuced-secteurs`);
+  const refSecteurs = useMemo(() => qRef.data ?? [], [qRef.data]);
+  const donnees = useMemo(() => qSeries.data ?? [], [qSeries.data]);
+  const loading = qRef.isPending || qSeries.isPending;
+  const erreur = qRef.isError || qSeries.isError;
   // id 0 = « Global des secteurs » (agrégat des 3 grands secteurs)
   const [selecIds,    setSelecIds]    = useState<number[]>([0]);
   const [openSecs,    setOpenSecs]    = useState<Set<number>>(new Set());
@@ -50,24 +54,6 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 200, 520);
 
-  // Référentiel + séries en un seul chargement (filtrage ensuite côté client)
-  useEffect(() => {
-    let actif = true;
-    (async () => {
-      setLoading(true); setErreur(false);
-      try {
-        const [ref, rows] = await Promise.all([
-          fetch(`${API}/ide/secteurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-          fetch(`${API}/ide/cnuced-secteurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-        ]);
-        if (!actif) return;
-        setRefSecteurs(ref || []);
-        setDonnees(rows || []);
-      } catch (e) { console.error(e); if (actif) setErreur(true); }
-      finally { if (actif) setLoading(false); }
-    })();
-    return () => { actif = false; };
-  }, [tick]);
 
   // Analyse par secteur = sélection unique (Global par défaut) ;
   // comparative = jusqu'à 4 secteurs/branches (les 3 grands secteurs par défaut)
@@ -443,7 +429,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         {loading ? (
           <SkeletonChartGrid n={SERIES.length} cols={2} height={230}/>
         ) : erreur ? (
-          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+          <ErreurChargement onRetry={() => { qRef.refetch(); qSeries.refetch(); }} />
         ) : !aDesDonnees ? (
           <div style={{ textAlign:"center" as const, padding:"90px 24px", color:"var(--gris)" }}>
             <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucune donnée sectorielle</p>

@@ -14,6 +14,7 @@ import { badgePole, poleAccent, voile } from "@/lib/couleurs";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE } from "@/lib/api";
+import { useDonnees, VIDE } from "@/lib/donnees";
 
 // ── Vue types de zones (cards + liste) ───────────────────────────────────────
 function ZonesParType({ zones }: { zones: any[] }) {
@@ -202,19 +203,11 @@ function ZoneBigCard({ zone, color="var(--bleu)", onClick }: { zone:any; color?:
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ZonesPage() {
-  const [zones,      setZones]      = useState<any[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [erreur,     setErreur]     = useState(false);
-  const [tick,       setTick]       = useState(0);
+  // Zones servies par le cache React Query : retour instantané sur la page.
+  const { data: zonesData, isPending: loading, isError: erreur, refetch } = useDonnees(`${API_BASE}/zones-types`);
+  const zones = (zonesData ?? VIDE) as any[];
   const [onglet,     setOnglet]     = useEtatUrl<"zones"|"territoire">("onglet", "zones", ["zones","territoire"]);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  useEffect(()=>{
-    setLoading(true); setErreur(false);
-    fetch(`${API_BASE}/zones-types`)
-      .then(r=>{ if(!r.ok) throw new Error(); return r.json(); }).then(d=>{ setZones(d||[]); })
-      .catch(()=>setErreur(true)).finally(()=>setLoading(false));
-  },[tick]);
 
   return (
     <main style={{ minHeight:"100vh", background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
@@ -227,10 +220,10 @@ export default function ZonesPage() {
       {/* ── Contenu ── */}
       <section style={{padding:"36px 40px 80px",maxWidth:1280,margin:"0 auto"}}>
         {onglet==="zones" && (
-          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <div className="charge-in"><ZonesParType zones={zones}/></div>
+          loading ? <SkeletonCards n={3} cols={3} height={190}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><ZonesParType zones={zones}/></div>
         )}
         {onglet==="territoire" && (
-          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>setTick(t=>t+1)}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones}/></div>
+          loading ? <SkeletonChart height={520}/> : erreur ? <ErreurChargement onRetry={()=>refetch()}/> : <div className="charge-in"><VueTerritorialeSenegal zones={zones}/></div>
         )}
       </section>
     </main>

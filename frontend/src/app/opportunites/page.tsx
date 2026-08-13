@@ -6,7 +6,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
-import { fetchTous } from "@/lib/fetchTous";
+import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { SideFilter, ThematiquesCascadeFilter, LocalisationFilter } from "@/components/shared/FiltresLateraux";
@@ -45,9 +45,11 @@ export default function OpportunitesPage() {
   const [refAvantages,setRefAvantages]= useState<any[]>([]);
 
   // ── Projets ──
-  const [projets,    setProjets]    = useState<any[]>([]);
-  const [projLoad,   setProjLoad]   = useState(true);
-  const [projErr,    setProjErr]    = useState(false);
+  // Les trois collections viennent du cache React Query (lib/donnees) : les
+  // onglets déjà visités raffichent sans squelette.
+  const qProjets = useTous(`${API}/projets`);
+  const projets = (qProjets.data ?? VIDE) as any[];
+  const projLoad = qProjets.isPending, projErr = qProjets.isError, chargerProjets = qProjets.refetch;
   const [projSel,    setProjSel]    = useState<any>(null);
   const [projQ,      setProjQ]      = useState("");
   const [projPoles,  setProjPoles]  = useState<string[]>([]);
@@ -61,16 +63,16 @@ export default function OpportunitesPage() {
   const [regions, setRegions] = useState<any[]>([]);
 
   // ── Potentialités ──
-  const [pots,     setPots]     = useState<any[]>([]);
-  const [potsLoad, setPotsLoad] = useState(true);
-  const [potsErr,  setPotsErr]  = useState(false);
+  const qPots = useTous(`${API}/opportunites/potentialites`);
+  const pots = (qPots.data ?? VIDE) as any[];
+  const potsLoad = qPots.isPending, potsErr = qPots.isError, chargerPots = qPots.refetch;
   const [potSel,   setPotSel]   = useState<any>(null);
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
 
   // ── Avantages ──
-  const [avgs,          setAvgs]          = useState<any[]>([]);
-  const [avgsLoad,      setAvgsLoad]      = useState(true);
-  const [avgsErr,       setAvgsErr]       = useState(false);
+  const qAvgs = useTous(`${API}/opportunites/avantages`);
+  const avgs = (qAvgs.data ?? VIDE) as any[];
+  const avgsLoad = qAvgs.isPending, avgsErr = qAvgs.isError, chargerAvgs = qAvgs.refetch;
   const [avgSel,        setAvgSel]        = useState<any>(null);
   const [selectedSecAvg, setSelectedSecAvg] = useState<string|null>(null);
 
@@ -89,32 +91,6 @@ export default function OpportunitesPage() {
     fetch(`${API}/ref-potentialites/flat`).then(r=>r.json()).then(d=>setRefAvantages(d||[])).catch(()=>{});
   },[]);
 
-  // Chargements principaux par onglet : en cas d'échec, état d'erreur avec relance
-  const chargerProjets = useCallback(async()=>{
-    setProjLoad(true); setProjErr(false);
-    try {
-      setProjets(await fetchTous(`${API}/projets`));
-    } catch { setProjErr(true); }
-    finally { setProjLoad(false); }
-  },[]);
-
-  const chargerPots = useCallback(async()=>{
-    setPotsLoad(true); setPotsErr(false);
-    try {
-      setPots(await fetchTous(`${API}/opportunites/potentialites`));
-    } catch { setPotsErr(true); }
-    finally { setPotsLoad(false); }
-  },[]);
-
-  const chargerAvgs = useCallback(async()=>{
-    setAvgsLoad(true); setAvgsErr(false);
-    try {
-      setAvgs(await fetchTous(`${API}/opportunites/avantages`));
-    } catch { setAvgsErr(true); }
-    finally { setAvgsLoad(false); }
-  },[]);
-
-  useEffect(()=>{ chargerProjets(); chargerPots(); chargerAvgs(); },[chargerProjets,chargerPots,chargerAvgs]);
 
   // ── Filtrage projets ──
   // Arbre secteurs à plat, partagé par les trois onglets (mémoïsé)

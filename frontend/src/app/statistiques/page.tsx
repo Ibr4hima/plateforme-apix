@@ -12,6 +12,7 @@ import { ChevronDown, FileSpreadsheet, Plus, Search, SlidersHorizontal, Table, X
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { demarrerRedimension } from "@/lib/redimension";
+import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 import { GrapheCard } from "@/components/charts/GrapheCardStatistiques";
 import CommerceExterieurPanel from "./commerce-exterieur";
@@ -313,13 +314,21 @@ function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function StatistiquesPage() {
   const [mode, setMode] = useEtatUrl<"indicateurs" | "commerce" | "exterieur">("mode", "indicateurs", ["indicateurs","commerce","exterieur"]);
-  const [pays, setPays] = useState<Pays[]>([]);
-  const [indicateurs, setIndicateurs] = useState<Indicateur[]>([]);
+  // Référentiel (pays, indicateurs) et données de sélection servis par le
+  // cache React Query : revenir sur la page, ou re-choisir un pays déjà vu,
+  // raffiche sans squelette. La clé des données EST la sélection ; `garder`
+  // évite le clignotement pendant qu'une nouvelle sélection charge.
+  const qPays = useDonnees<Pays[]>(`${API}/statistiques/pays`);
+  const qIndicateurs = useDonnees<Indicateur[]>(`${API}/statistiques/indicateurs`);
+  const pays = useMemo(() => qPays.data ?? [], [qPays.data]);
+  const indicateurs = useMemo(() => qIndicateurs.data ?? [], [qIndicateurs.data]);
+  const loading = qPays.isPending || qIndicateurs.isPending;
   const [selection, setSelection] = useState<number[]>([]);
-  const [donnees, setDonnees] = useState<Donnee[]>([]);
-  const [errDonnees, setErrDonnees] = useState(false);
-  const [tickDonnees, setTickDonnees] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const qDonnees = useDonnees<Donnee[]>(
+    selection.length ? `${API}/statistiques/donnees?pays=${selection.join(",")}` : null,
+    { garder: true });
+  const donnees = useMemo(() => selection.length ? (qDonnees.data ?? []) : [], [selection.length, qDonnees.data]);
+  const errDonnees = qDonnees.isError;
   const [kpiActif, setKpiActif] = useState<{ ind: Indicateur; valeur: number | null; annee: number; historique: { annee: number; v: number }[] } | null>(null);
   const [showTable, setShowTable] = useState(false);
   // Barre latérale
@@ -349,20 +358,13 @@ export default function StatistiquesPage() {
   const isResizing = useRef(false);
   const startResize = (e: React.MouseEvent) => demarrerRedimension(e, sidebarWidth, setSidebarWidth, isResizing, 220, 520);
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
+  const erreur = qPays.isError || qIndicateurs.isError;
+  // Le Sénégal est la sélection de départ, posée quand le référentiel arrive —
+  // du cache ou du réseau — sans écraser un choix déjà fait.
   useEffect(() => {
-    setLoading(true); setErreur(false);
-    Promise.all([
-      fetch(`${API}/statistiques/pays`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-      fetch(`${API}/statistiques/indicateurs`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-    ]).then(([p, i]) => {
-      setPays(p || []); setIndicateurs(i || []);
-      const sen = (p || []).find((x: Pays) => x.code_iso3 === "SEN");
-      if (sen) setSelection([sen.id]);
-    }).catch(() => setErreur(true)).finally(() => setLoading(false));
-  }, [tick]);
+    const sen = pays.find((x: Pays) => x.code_iso3 === "SEN");
+    if (sen) setSelection(prev => prev.length ? prev : [sen.id]);
+  }, [pays]);
 
   // Par défaut : Population, Superficie, Densité, PIB, PIB/hab (dans la limite de 5)
   useEffect(() => {
@@ -372,15 +374,6 @@ export default function StatistiquesPage() {
     setKpisEpingles(def.length ? def : codes.slice(0, MAX_KPI));
   }, [indicateurs]);
 
-  // Un échec ici laisserait tous les graphes sur « aucune donnée » : on le
-  // signale et on offre la relance.
-  useEffect(() => {
-    if (!selection.length) { setDonnees([]); return; }
-    setErrDonnees(false);
-    fetch(`${API}/statistiques/donnees?pays=${selection.join(",")}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(setDonnees).catch(() => setErrDonnees(true));
-  }, [selection, tickDonnees]);
 
   // Bornes d'années d'après les données réellement disponibles
   const anneesDispo = useMemo(() => [...new Set(donnees.map(d => d.annee))].filter(a => a > 0).sort((a, b) => a - b), [donnees]);
@@ -660,14 +653,14 @@ export default function StatistiquesPage() {
               <SkeletonChartGrid n={2} cols={2} height={320} />
             </div>
           ) : erreur ? (
-            <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+            <ErreurChargement onRetry={() => { qPays.refetch(); qIndicateurs.refetch(); }} />
           ) : !selection.length ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
               <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Sélectionnez un pays</p>
               <p style={{ fontSize: 14, marginTop: 6 }}>Choisissez un ou plusieurs pays dans la barre de filtre pour explorer leurs statistiques.</p>
             </div>
           ) : errDonnees ? (
-            <ErreurChargement onRetry={() => setTickDonnees(t => t + 1)} />
+            <ErreurChargement onRetry={() => qDonnees.refetch()} />
           ) : (
             <div className="charge-in">
               {(() => {

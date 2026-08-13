@@ -7,7 +7,7 @@ import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchTous } from "@/lib/fetchTous";
+import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
@@ -137,10 +137,15 @@ export default function ProspectsPage() {
   const [onglet, setOnglet] = useEtatUrl<"cibles" | "historique" | "termines">("onglet", "cibles", ["cibles","historique","termines"]);
 
   // Données
-  const [cibles,    setCibles]    = useState<any[]>([]);
-  const [enContact, setEnContact] = useState<any[]>([]);
-  const [termines,  setTermines]  = useState<any[]>([]);
-  const [loading,   setLoading]   = useState(true);
+  // Les trois listes viennent du cache React Query : revenir sur la page ou
+  // changer d'onglet raffiche sans squelette, chaque liste garde sa clé.
+  const qCibles    = useTous(`${API_BASE}/prospects?conclu=false&contactes=false`);
+  const qEnContact = useTous(`${API_BASE}/prospects?conclu=false&contactes=true`);
+  const qTermines  = useTous(`${API_BASE}/prospects?conclu=true`);
+  const cibles    = (qCibles.data ?? VIDE) as any[];
+  const enContact = (qEnContact.data ?? VIDE) as any[];
+  const termines  = (qTermines.data ?? VIDE) as any[];
+  const loading = qCibles.isPending || qEnContact.isPending || qTermines.isPending;
   const [selec,     setSelec]     = useState<any>(null);
   const [selecInfos, setSelecInfos] = useState(false);
   // Ouverture directe depuis la recherche globale (⌘K) — cherche dans les 3 onglets
@@ -149,9 +154,7 @@ export default function ProspectsPage() {
 
   // Filtres
   const [recherche,   setRecherche]   = useState("");
-  const [paysOpts,    setPaysOpts]    = useState<string[]>([]);
   const [paysSel,     setPaysSel]     = useState<string[]>([]);
-  const [secteurOpts, setSecteurOpts] = useState<string[]>([]);
   const [secteursSel, setSecteursSel] = useState<string[]>([]);
   const [statutSel,   setStatutSel]   = useState<string[]>([]);
 
@@ -165,29 +168,16 @@ export default function ProspectsPage() {
   // Le jeu de statuts change d'un onglet à l'autre : on repart à zéro au switch.
   useEffect(() => { setStatutSel([]); }, [onglet]);
 
-  const [erreur, setErreur] = useState(false);
-  const charger = useCallback(async () => {
-    setLoading(true); setErreur(false);
-    try {
-      const [c, e, t] = await Promise.all([
-        fetchTous(`${API_BASE}/prospects?conclu=false&contactes=false`),
-        fetchTous(`${API_BASE}/prospects?conclu=false&contactes=true`),
-        fetchTous(`${API_BASE}/prospects?conclu=true`),
-      ]);
-      setCibles(c);
-      setEnContact(e);
-      setTermines(t);
-
-      const tous = [...c, ...e, ...t];
-      const pays = [...new Set(tous.map((p: any) => p.siege_nom).filter(Boolean))] as string[];
-      const secs = [...new Set(tous.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[];
-      setPaysOpts(pays.sort());
-      setSecteurOpts(secs.sort());
-    } catch (e) { console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { charger(); }, [charger]);
+  const erreur = qCibles.isError || qEnContact.isError || qTermines.isError;
+  const charger = () => { qCibles.refetch(); qEnContact.refetch(); qTermines.refetch(); };
+  // Options de filtre dérivées des trois listes — plus un état à entretenir.
+  const { paysOpts, secteurOpts } = useMemo(() => {
+    const tousP = [...cibles, ...enContact, ...termines];
+    return {
+      paysOpts:    ([...new Set(tousP.map((p: any) => p.siege_nom).filter(Boolean))] as string[]).sort(),
+      secteurOpts: ([...new Set(tousP.flatMap((p: any) => p.secteur_noms || []).filter(Boolean))] as string[]).sort(),
+    };
+  }, [cibles, enContact, termines]);
 
   // Filtrage (mémoïsé : recalculé uniquement quand données ou filtres changent)
   const listeCourante = useMemo(() => {

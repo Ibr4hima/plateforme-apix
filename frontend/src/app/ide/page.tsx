@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { d3, useD3Pret } from "@/lib/d3lazy";
 import { useEtatUrl } from "@/lib/useEtatUrl";
 import { API } from "./partage";
+import { useDonnees, VIDE } from "@/lib/donnees";
 import OngletPays from "./onglet-pays";
 import OngletSecteurs from "./onglet-secteurs";
 import OngletMonde from "./onglet-monde";
@@ -20,12 +21,10 @@ export default function IdePage() {
   const [vueP, setVueP] = useEtatUrl<"pays"|"secteurs">("vue", "pays", ["pays","secteurs"]);
   const [typeSecteurs, setTypeSecteurs] = useEtatUrl<"secteur"|"comparative">("typesec", "secteur", ["secteur","comparative"]);
   const [sousType,   setSousType]   = useEtatUrl<"fluxstock"|"greenfield"|"fusion">("categorie", "fluxstock", ["fluxstock","greenfield","fusion"]);
-  const [paysDispo,  setPaysDispo]  = useState<any[]>([]);
   const [showTable,  setShowTable]  = useState(false);
-
-  useEffect(() => {
-    fetch(`${API}/ide/cnuced/pays-disponibles`).then(r=>r.json()).then(d=>setPaysDispo(d||[])).catch(()=>{});
-  }, []);
+  // Liste stable, en cache pour la session.
+  const { data: paysDispoData } = useDonnees<any[]>(`${API}/ide/cnuced/pays-disponibles`);
+  const paysDispo = (paysDispoData ?? VIDE) as any[];
 
   useEffect(() => { setShowTable(false); }, [sousOnglet, section, vueP, typeSecteurs]);
 

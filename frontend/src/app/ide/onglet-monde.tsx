@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useEffect, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, ChevronRight, SlidersHorizontal, Search } from "lucide-react";
 import { SkeletonChartGrid, SkeletonRows } from "@/components/shared/Skeleton";
@@ -12,6 +12,7 @@ import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees } from "./partage";
+import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
 
@@ -270,8 +271,6 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
 }
 
 function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousType, setSousType, vueP, setVueP }: { showTable: boolean; setShowTable: (v:boolean)=>void; sousOnglet: string; setSousOnglet: (v:"pays"|"comparative"|"monde")=>void; sousType: string; setSousType: (v:"fluxstock"|"greenfield"|"fusion")=>void; vueP: string; setVueP: (v:"pays"|"secteurs")=>void }) {
-  const [donnees,     setDonnees]    = useState<any[]>([]);
-  const [loading,     setLoading]    = useState(false);
   const [borneMin, borneMax] = useBornesCnuced(sousType);
   const [anneeMin,    setAnneeMin]   = useState(borneMin);
   const [anneeMax,    setAnneeMax]   = useState(borneMax);
@@ -297,9 +296,8 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
   const [searchGrp,   setSearchGrp]   = useState("");
   const [contExpanded,setContExpanded]= useState<Record<string,boolean>>({});
 
-  useEffect(() => {
-    fetch(`${API}/ide/monde/groupements`).then(r=>r.json()).then(d=>setGroupements(d||[])).catch(()=>{});
-  }, []);
+  const { data: groupementsData } = useDonnees<any[]>(`${API}/ide/monde/groupements`);
+  useEffect(() => { setGroupements(groupementsData || []); }, [groupementsData]);
 
 
   const grpAvecCouleur = grpSelec.map((code, i) => {
@@ -307,26 +305,22 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
     return { nom: code, label: g?.nom_fr || code, abrege: code.replace(/_/g, " "), couleur: COMP_PALETTE[i] ?? COMP_PALETTE[4] };
   });
 
-  // Chargement principal : en cas d'échec, état d'erreur avec relance (tick)
-  const [erreur, setErreur] = useState(false);
-  const [tick, setTick] = useState(0);
-  const charger = useCallback(async () => {
-    if (!grpSelec.length) { setDonnees([]); return; }
-    setLoading(true); setErreur(false);
-    try {
-      const params = new URLSearchParams();
-      params.set("codes_list", grpSelec.join(","));
-      if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
-      else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
-      const raw: any[] = await fetch(`${API}/ide/monde?${params}`).then(r=>{ if(!r.ok) throw new Error(); return r.json(); });
-      setDonnees((raw||[]).map(d => ({
-        pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.somme,
-      })));
-    } catch(e){ console.error(e); setErreur(true); }
-    finally { setLoading(false); }
-  }, [grpSelec, anneeMinD, anneeMaxD, anneesSpecD, modeAnnees, tick]);
-
-  useEffect(() => { charger(); }, [charger]);
+  // Données en cache React Query, clé = groupements + période ; `garder` évite
+  // le clignotement pendant les transitions de sélection.
+  const urlMonde = (() => {
+    if (!grpSelec.length) return null;
+    const params = new URLSearchParams();
+    params.set("codes_list", grpSelec.join(","));
+    if (modeAnnees==="specifiques"&&anneesSpecD.length>0) params.set("annees", anneesSpecD.join(","));
+    else { params.set("annee_min", String(anneeMinD)); params.set("annee_max", String(anneeMaxD)); }
+    return `${API}/ide/monde?${params}`;
+  })();
+  const qMonde = useDonnees<any[]>(urlMonde, { garder: true });
+  const donnees = useMemo(() => (urlMonde ? (qMonde.data ?? []) : []).map((d: any) => ({
+    pays: d.code, direction: d.direction, indicateur: d.indicateur, annee: d.annee, valeur: d.somme,
+  })), [urlMonde, qMonde.data]);
+  const loading = qMonde.isPending && urlMonde !== null;
+  const erreur = qMonde.isError;
 
   const buildSeries = (dir:string, ind:string) =>
     grpAvecCouleur.map(g => ({ nom:g.abrege, couleur:g.couleur, data:donnees.filter(d=>d.pays===g.nom&&d.direction===dir&&d.indicateur===ind) }));
@@ -626,7 +620,7 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
         ) : loading ? (
           <SkeletonChartGrid n={4} cols={2} height={230}/>
         ) : erreur ? (
-          <ErreurChargement onRetry={() => setTick(t => t + 1)} />
+          <ErreurChargement onRetry={() => qMonde.refetch()} />
         ) : (
           <div className="charge-in">
           <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
