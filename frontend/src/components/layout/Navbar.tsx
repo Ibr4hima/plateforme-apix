@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { moduleAutorise } from "@/lib/authGate";
 import FichePaysLauncher from "@/components/fiche-pays/FichePaysLauncher";
-import NavActions from "@/components/layout/NavActions";
+import NavActions, { CLASSE_CMD, STYLE_NAV_CMD } from "@/components/layout/NavActions";
 import BasculeApparence from "@/components/layout/BasculeApparence";
 import { modules, PROTECTED_SLUGS } from "@/components/layout/navData";
 import { useEffect, useRef, useState } from "react";
@@ -495,10 +495,14 @@ export default function Navbar() {
             {/* La commande d'apparence vit ICI et non dans NavActions : cette
                 barre n'est rendue que par la page d'accueil, alors que
                 NavActions est repris par tous les bandeaux de module. */}
-            <BasculeApparence couleur={textColor} style={{
+            {/* Les trois commandes partagent la classe nav-cmd : grises au
+                repos, bleues au survol. */}
+            <style>{STYLE_NAV_CMD}</style>
+            <BasculeApparence className={CLASSE_CMD} style={{
               display: "inline-flex", alignItems: "center", justifyContent: "center",
               width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
               background: "transparent", border: "1px solid var(--bordure-forte)",
+              transition: "all 0.18s",
             }} />
             <NavActions flouFond={pathname !== "/"} home={pathname !== "/"} />
           </div>

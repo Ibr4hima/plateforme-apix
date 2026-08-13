@@ -39,11 +39,28 @@ function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: 
 }
 
 // ── Bouton circulaire (recherche / menu) ──────────────────────────────────────
+//
+// Sur la barre CLAIRE (l'accueil), les trois commandes — apparence, recherche,
+// menu — sont au repos dans l'encre grise du texte, et virent au bleu au
+// survol. Elles ne portent aucune information tant qu'on ne les sollicite
+// pas : la couleur d'accent doit répondre au geste, pas précéder la lecture.
+// La classe `nav-cmd` porte ce comportement en CSS (voir STYLE_NAV_CMD) —
+// l'icône est un enfant, un gestionnaire JS ne saurait pas la recolorer.
+export const CLASSE_CMD = "nav-cmd";
+export const STYLE_NAV_CMD = `
+.nav-cmd { color: var(--texte); border-color: var(--bordure-forte) !important; }
+.nav-cmd .material-symbols-outlined { color: inherit; }
+.nav-cmd:hover, .nav-cmd:focus-visible, .nav-cmd[data-actif="1"] {
+  color: var(--bleu);
+  border-color: rgb(var(--bleu-rgb) / 0.35) !important;
+  background: rgb(var(--bleu-rgb) / 0.07) !important;
+}`;
+
 function boutonStyle(onDark: boolean, actif: boolean): React.CSSProperties {
   if (onDark) {
     return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgb(var(--carte-rgb) / 0.55)" : "rgba(255,255,255,0.30)", background: actif ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)", cursor: "pointer", transition: "all 0.18s" };
   }
-  return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgb(var(--bleu-rgb) / 0.28)" : "rgb(var(--bleu-rgb) / 0.18)", background: actif ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent", cursor: "pointer", transition: "all 0.18s" };
+  return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: "var(--bordure-forte)", background: "transparent", cursor: "pointer", transition: "all 0.18s" };
 }
 
 export default function NavActions({ onDark = false, flouFond = false, flouTotal = false, home = false }: { onDark?: boolean; flouFond?: boolean; flouTotal?: boolean; home?: boolean }) {
@@ -94,23 +111,26 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
     return () => { window.removeEventListener("scroll", h, true); window.removeEventListener("resize", h); window.removeEventListener("keydown", onKey); };
   }, [userOpen]);
 
-  const icoColor = onDark ? "var(--sur-bleu)" : "var(--bleu)";
+  // En clair, l'icône hérite du bouton (classe nav-cmd) : c'est lui qui vire
+  // au bleu au survol. En sombre, le blanc reste explicite.
+  const icoColor = onDark ? "var(--sur-bleu)" : undefined;
+  const cmd = onDark ? undefined : CLASSE_CMD;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
       {/* Accueil */}
       {home && (
-        <Link href="/" title="Accueil" aria-label="Accueil" style={{ ...boutonStyle(onDark, false), textDecoration: "none" }}
-          onMouseEnter={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.20)" : "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.55)" : "rgb(var(--bleu-rgb) / 0.28)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.10)" : "transparent"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.30)" : "rgb(var(--bleu-rgb) / 0.18)"; }}>
+        <Link href="/" title="Accueil" aria-label="Accueil" className={cmd} style={{ ...boutonStyle(onDark, false), textDecoration: "none" }}
+          onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
+          onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
           <span className="material-symbols-outlined" style={{ fontSize: 18, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
         </Link>
       )}
       {/* Recherche globale (⌘K) */}
       <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-        style={boutonStyle(onDark, false)}
-        onMouseEnter={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.20)" : "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.55)" : "rgb(var(--bleu-rgb) / 0.28)"; }}
-        onMouseLeave={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.10)" : "transparent"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.30)" : "rgb(var(--bleu-rgb) / 0.18)"; }}>
+        className={cmd} style={boutonStyle(onDark, false)}
+        onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
+        onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
         <span className="material-symbols-outlined" style={{ fontSize: 17, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
@@ -118,7 +138,8 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           recouvre le bouton : on n'attache pas la fermeture au mouseleave du
           conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}
       <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={flouTotal ? undefined : closeUser}>
-        <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
+        <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu"
+          className={cmd} data-actif={userOpen ? "1" : undefined} style={boutonStyle(onDark, userOpen)}>
           <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
       </div>
