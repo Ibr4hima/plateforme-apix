@@ -201,10 +201,12 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         // dans le SVG : l'export sérialise pattern et masque tels quels, et le
         // gel des couleurs (outilsExport) résout le jeton du point.
         const pid = `${uid}-t${si}`, mid = `${uid}-m${si}`;
+        // Pas de 4,6 px : la trame est dense — c'est elle qui remplit l'aire,
+        // le dégradé n'est qu'un fond de teint.
         const pat = defs.append("pattern").attr("id", pid)
-          .attr("width", 6.5).attr("height", 6.5)
+          .attr("width", 4.6).attr("height", 4.6)
           .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)");
-        pat.append("circle").attr("cx", 3.25).attr("cy", 3.25).attr("r", epureEff ? 0.9 : 1.05)
+        pat.append("circle").attr("cx", 2.3).attr("cy", 2.3).attr("r", epureEff ? 0.85 : 1.0)
           .style("fill", s.couleur);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
@@ -222,16 +224,35 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const clipId = `${uid}-c${si}`, filtId = `${uid}-f${si}`;
         defs.append("clipPath").attr("id", clipId).append("path").attr("d", dAire);
         defs.append("filter").attr("id", filtId)
-          .attr("x", "-30%").attr("y", "-80%").attr("width", "160%").attr("height", "260%")
-          .append("feGaussianBlur").attr("stdDeviation", hTrace * 0.12);
-        defs.append("mask").attr("id", mid)
+          .attr("x", "-40%").attr("y", "-120%").attr("width", "180%").attr("height", "340%")
+          .append("feGaussianBlur").attr("stdDeviation", hTrace * 0.13);
+        // Deux traits dans le masque : un cœur serré et net sous la courbe,
+        // et une nappe large qui prolonge la dissolution presque jusqu'à la
+        // base — c'est elle qui donne la descente de dégradé.
+        const gMasque = defs.append("mask").attr("id", mid)
           .append("g").attr("clip-path", `url(#${clipId})`)
-          .append("path").attr("d", dLigne)
-          .attr("fill", "none").attr("stroke", "#fff")
-          .attr("stroke-opacity", epureEff ? 0.5 : 0.58)
-          .attr("stroke-width", hTrace * 0.55)
-          .attr("stroke-linejoin", "round")
           .attr("filter", `url(#${filtId})`);
+        gMasque.append("path").attr("d", dLigne)
+          .attr("fill", "none").attr("stroke", "#fff")
+          .attr("stroke-opacity", epureEff ? 0.35 : 0.4)
+          .attr("stroke-width", hTrace * 1.5)
+          .attr("stroke-linejoin", "round");
+        gMasque.append("path").attr("d", dLigne)
+          .attr("fill", "none").attr("stroke", "#fff")
+          .attr("stroke-opacity", epureEff ? 0.55 : 0.62)
+          .attr("stroke-width", hTrace * 0.6)
+          .attr("stroke-linejoin", "round");
+        // L'extinction au pied : un voile noir peint PAR-DESSUS les traits du
+        // masque, transparent en haut de l'aire et presque opaque à sa base
+        // (noir dans un masque = caché). C'est lui qui fait la descente du
+        // dégradé : dense sous la courbe, dissous avant la ligne de base.
+        const kgrad = defs.append("linearGradient").attr("id", `${mid}k`)
+          .attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
+        kgrad.append("stop").attr("offset", "0%").attr("stop-color", "#000").attr("stop-opacity", 0);
+        kgrad.append("stop").attr("offset", "48%").attr("stop-color", "#000").attr("stop-opacity", 0.18);
+        kgrad.append("stop").attr("offset", "100%").attr("stop-color", "#000").attr("stop-opacity", 0.92);
+        d3.select(gMasque.node()!.parentNode as Element)
+          .append("path").attr("d", dAire).attr("fill", `url(#${mid}k)`);
 
         // Aire : le dégradé pose la profondeur, la trame pose la matière
         if (montrerAire) {
@@ -379,7 +400,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
       .call(d3.axisLeft(y).ticks(4).tickFormat(fmtAxis))
       .call(g => g.select(".domain").remove())
       .call(g => g.selectAll("line").remove())
-      .call(g => g.selectAll("text").style("fill", useDual ? series[0].couleur : "var(--gris)").style("font-size", "10px").style("font-weight", useDual ? "600" : "400"));
+      .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
 
     // ── Axe Y droit (série 1) si double axe ──
     if (useDual) {
@@ -387,7 +408,7 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         .call(d3.axisRight(yScales[1]).ticks(4).tickFormat(fmtAxis))
         .call(g => g.select(".domain").remove())
         .call(g => g.selectAll("line").remove())
-        .call(g => g.selectAll("text").style("fill", series[1].couleur).style("font-size", "10px").style("font-weight", "600"));
+        .call(g => g.selectAll("text").style("fill", "var(--gris)").style("font-size", "10px"));
     }
   }, [pret, series, type, height, fmtV, showDots, lineWidth, epure]);
 
