@@ -60,8 +60,7 @@ export default function ConfirmationHote() {
       style={{ position: "fixed", inset: 0, background: "rgb(var(--encre-rgb) / 0.45)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <style>{`@keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}`}</style>
       <div {...dial} onClick={e => e.stopPropagation()} role="alertdialog"
-        style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
-        <div style={{ height: 4, background: "var(--danger-action)", flexShrink: 0 }} />
+        style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth: 440, overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "vueIn 0.18s ease" }}>
         <div style={{ padding: "22px 26px 18px" }}>
           <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)", margin: 0, lineHeight: 1.3 }}>
             {demande.titre || "Confirmation"}

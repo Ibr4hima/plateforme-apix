@@ -636,8 +636,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}
       style={{position:"fixed",inset:0,background:"rgb(var(--ombre-rgb) / 0.45)",backdropFilter:"blur(8px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{background:"var(--carte-douce)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid var(--bordure-forte)",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
-        <div style={{height:5,background:"linear-gradient(90deg,var(--danger-action),var(--danger-voile),var(--bleu-action))"}}/>
+      <div style={{background:"var(--carte-douce)",borderRadius:20,width:"100%",maxWidth:680,maxHeight:"90vh",border:"1px solid var(--bordure)",boxShadow:"var(--ombre-2)",overflow:"hidden"}}>
         <div style={{padding:"24px 28px 28px",overflowY:"auto" as const,maxHeight:"calc(90vh - 5px)"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>

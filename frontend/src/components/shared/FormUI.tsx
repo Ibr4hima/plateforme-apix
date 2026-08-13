@@ -171,17 +171,15 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
   open: boolean; onClose: () => void; title: React.ReactNode; subtitle?: React.ReactNode;
   children: React.ReactNode; footer?: React.ReactNode; maxWidth?: number;
 }) {
-  // Accessibilité : fermeture à la touche Échap + verrouillage du scroll du body
+  // Fermeture à Échap. Le gel du défilement, lui, est passé dans useDialogue
+  // (lib/dialogue) : il est commun à toutes les surfaces modales, et son
+  // compteur gère le cas des fiches superposées — deux verrous locaux
+  // indépendants se seraient marchés dessus.
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   // Robustesse : ne fermer sur le fond que si le CLIC A COMMENCÉ dessus.
@@ -205,9 +203,7 @@ export function FModal({ open, onClose, title, subtitle, children, footer, maxWi
         @keyframes fuiIn{from{opacity:0; transform:translateY(10px) scale(0.985);}to{opacity:1; transform:none;}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       `}</style>
-      <div {...dial} aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
-        {/* Liseré d'accent */}
-        <div style={{ height: 4, background: "var(--degrade-filet)", flexShrink: 0 }} />
+      <div {...dial} aria-label={typeof title === "string" ? title : "Fenêtre de dialogue"} style={{ background: "var(--carte)", borderRadius: 20, width: "100%", maxWidth, maxHeight: "92vh", display: "flex", flexDirection: "column" as const, overflow: "hidden", border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", animation: "fuiIn 0.22s ease" }}>
 
         {/* En-tête */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "18px 28px", borderBottom: "1px solid var(--bordure)", flexShrink: 0 }}>

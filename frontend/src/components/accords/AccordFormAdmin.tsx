@@ -82,7 +82,6 @@ export default function AccordFormAdmin({ onClose, onSuccess }: { onClose: () =>
         maxHeight: "90vh", overflowY: "auto",
         boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.15)",
       }}>
-        <div style={{ height: 5, background: "linear-gradient(90deg, var(--bleu-action), var(--bleu-clair))", borderRadius: "24px 24px 0 0" }} />
 
         <div style={{ padding: "24px 28px" }}>
           {/* Header */}
