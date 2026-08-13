@@ -2,16 +2,16 @@
 
 // ── Fiche modale des pages publiques — une seule coquille pour toutes les
 // fiches (entreprise, événement, accord, projet, potentialité, avantage,
-// zone, prospect) : voile flouté, liseré bleu, en-tête titre + pastilles,
-// corps en sections, pied « Fermer » (+ actions optionnelles en admin).
+// zone, prospect) : voile flouté, panneau à filet fin, en-tête titre +
+// pastilles, corps en sections, pied « Fermer » (+ actions en admin).
 //
 // Jetons : pastilles = badge_bleu/orange/vert/violet… (lib/couleurs),
-// blocs libellés = voile bleu (fond_bleu).
+// blocs libellés = aplat --bleu-voile, sans bordure.
 
 import { FileText, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useDialogue } from "@/lib/dialogue";
-import { fond_bleu, badge_bleu, badge_vert } from "@/lib/couleurs";
+import { badge_bleu, badge_vert } from "@/lib/couleurs";
 import { fmtPhone } from "@/lib/telephone";
 
 // ── Coquille ──────────────────────────────────────────────────────────────────
@@ -93,20 +93,24 @@ export function FicheSection({ titre, count, children }: { titre: React.ReactNod
 
 // Grille 2 colonnes des blocs libellés
 export function FicheGrille({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>{children}</div>;
+  return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>{children}</div>;
 }
 
-// ── Bloc libellé sur voile bleu ───────────────────────────────────────────────
+// ── Bloc libellé sur aplat bleu ───────────────────────────────────────────────
+// Un aplat franc (--bleu-voile) et pas de bordure, là où un dégradé de 6 % à
+// 2 % cerné d'un filet faisait un bloc mou : deux valeurs de bleu et un trait
+// pour dire une seule chose — « ceci est un champ ». L'aplat suffit à le dire,
+// et il tient aussi bien de nuit, où le jeton porte sa propre transparence.
 export function FicheBloc({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <div style={{ ...fond_bleu, borderRadius: 12, padding: "9px 12px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
+    <div style={{ background: "var(--bleu-voile)", borderRadius: 12, padding: "10px 13px", minWidth: 0, gridColumn: full ? "1/-1" : undefined }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", marginBottom: 4 }}>{label}</p>
       {children}
     </div>
   );
 }
 export function FicheValeur({ children, vide, fort }: { children?: React.ReactNode; vide?: boolean; fort?: boolean }) {
-  return <p style={{ fontSize: fort ? 13 : 12.5, fontWeight: fort ? 700 : 600, color: vide ? "var(--gris)" : "var(--encre)" }}>{children}</p>;
+  return <p style={{ fontSize: fort ? 13 : 12.5, fontWeight: fort ? 700 : 600, color: vide ? "var(--gris)" : "var(--encre)", lineHeight: 1.45 }}>{children}</p>;
 }
 export function FicheLien({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -150,9 +154,9 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {fichiers.map((f: any) => (
           <a key={f.id} href={hrefDe(f)} target="_blank" rel="noopener noreferrer"
-            style={{ ...fond_bleu, display: "flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "9px 12px", textDecoration: "none", transition: "border-color 0.15s" }}
-            onMouseEnter={ev => (ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)")}
-            onMouseLeave={ev => (ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.16)")}>
+            style={{ background: "var(--bleu-voile)", display: "flex", alignItems: "center", gap: 8, borderRadius: 12, padding: "10px 13px", textDecoration: "none", transition: "background 0.15s" }}
+            onMouseEnter={ev => (ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.13)")}
+            onMouseLeave={ev => (ev.currentTarget.style.background = "var(--bleu-voile)")}>
             <FileText size={13} style={{ color: "var(--bleu)", flexShrink: 0 }} />
             <span style={{ fontSize: 12.5, color: "var(--bleu)", fontWeight: 600 }}>{f.titre || f.fichier_nom || f.nom || "Document"}</span>
           </a>
@@ -162,33 +166,37 @@ export function FicheDocs({ fichiers, hrefDe }: { fichiers: any[]; hrefDe: (f: a
   );
 }
 
-// ── Cascade thématique à 3 niveaux (secteur bleu → branche orange → activité vert)
+// ── Cascade thématique à 3 niveaux ────────────────────────────────────────────
+//
+// La hiérarchie se lit à l'INDENTATION et à la graisse, comme dans
+// l'application mobile — pas à la couleur. Le bleu / orange / vert d'avant
+// faisait croire à trois familles alors qu'il s'agit d'un seul chemin :
+// secteur → branche → activité. Trois couleurs vives sur cinq lignes, cela
+// criait plus fort que le nom des activités.
+//
+// Reste : une pastille bleue sur le secteur (le point d'entrée), un filet
+// vertical qui tient la descendance, la branche en encre grasse, l'activité
+// en gris. Le lecteur suit une arborescence, pas un nuancier.
 type Niveau = { cle: React.Key; nom: string; enfants?: Niveau[] };
 
 export function FicheArbre({ data }: { data: Niveau[] }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {data.map(sec => (
         <div key={sec.cle}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: sec.enfants?.length ? 5 : 0 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--bleu)" }}>{sec.nom}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: sec.enfants?.length ? 8 : 0 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--encre)" }}>{sec.nom}</span>
           </div>
           {!!sec.enfants?.length && (
-            <div style={{ paddingLeft: 20, borderLeft: "2px solid rgb(var(--bleu-rgb) / 0.15)", display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ marginLeft: 3, paddingLeft: 16, borderLeft: "1.5px solid rgb(var(--bleu-rgb) / 0.18)", display: "flex", flexDirection: "column", gap: 9 }}>
               {sec.enfants.map(bra => (
                 <div key={bra.cle}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: bra.enfants?.length ? 4 : 0 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--orange-action)", flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--orange)" }}>{bra.nom}</span>
-                  </div>
+                  <p style={{ fontSize: 12, fontWeight: 650, color: "var(--encre)", lineHeight: 1.45 }}>{bra.nom}</p>
                   {!!bra.enfants?.length && (
-                    <div style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 3 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
                       {bra.enfants.map(act => (
-                        <div key={act.cle} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--vert-action)", flexShrink: 0 }} />
-                          <span style={{ fontSize: 11, color: "var(--vert)", fontWeight: 500 }}>{act.nom}</span>
-                        </div>
+                        <p key={act.cle} style={{ fontSize: 12, color: "var(--gris-fort)", lineHeight: 1.45 }}>{act.nom}</p>
                       ))}
                     </div>
                   )}
