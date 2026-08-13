@@ -9,10 +9,12 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Fuse from "@/lib/fuse";
+// fuse.js vient du paquet npm — une copie identique (fuse.esm.js v6.6.2) a
+// longtemps vécu dans src/lib, chargée en double dans le bundle.
+import Fuse from "fuse.js";
 import { fetchTous } from "@/lib/fetchTous";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+import { API_BASE as API } from "@/lib/api";
 
 type Resultat = {
   type: string;        // clé de groupe
