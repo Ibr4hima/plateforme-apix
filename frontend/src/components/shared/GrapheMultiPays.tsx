@@ -188,16 +188,57 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
         const areaBase = ys(Math.max(ys.domain()[0], 0));
         const gid = `${uid}-a${si}`;
         const grad = defs.append("linearGradient").attr("id", gid).attr("x1", "0").attr("x2", "0").attr("y1", "0").attr("y2", "1");
-        grad.append("stop").attr("offset", "0%").style("stop-color", s.couleur).attr("stop-opacity", 0.20);
+        grad.append("stop").attr("offset", "0%").style("stop-color", s.couleur).attr("stop-opacity", 0.22);
         grad.append("stop").attr("offset", "55%").style("stop-color", s.couleur).attr("stop-opacity", 0.05);
         grad.append("stop").attr("offset", "100%").style("stop-color", s.couleur).attr("stop-opacity", 0);
+
+        // ── Trame demi-teinte ────────────────────────────────────────────────
+        // La matière des graphiques éditoriaux : des points d'impression dans
+        // l'aire, serrés sous la courbe, qui s'évanouissent vers la base. Le
+        // motif est un pattern SVG tourné à 45° (l'angle des trames offset) ;
+        // le fondu vient d'un masque en dégradé vertical, pas de l'opacité des
+        // points — c'est lui qui donne le « grain qui se dissout ». Tout vit
+        // dans le SVG : l'export sérialise pattern et masque tels quels, et le
+        // gel des couleurs (outilsExport) résout le jeton du point.
+        const pid = `${uid}-t${si}`, mid = `${uid}-m${si}`;
+        const pat = defs.append("pattern").attr("id", pid)
+          .attr("width", 6.5).attr("height", 6.5)
+          .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)");
+        pat.append("circle").attr("cx", 3.25).attr("cy", 3.25).attr("r", epureEff ? 0.9 : 1.05)
+          .style("fill", s.couleur);
 
         const dAire = d3.area<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y0(areaBase).y1(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
         const dLigne = d3.line<{ annee: number; valeur: number }>()
           .x(d => xLin(d.annee)).y(d => ys(d.valeur)).curve(d3.curveMonotoneX)(valid) || "";
-        // Aire en dégradé riche
-        if (montrerAire) svg.append("path").style("fill", `url(#${gid})`).attr("d", dAire);
+
+        // Le fondu de la trame suit LA COURBE, pas une hauteur globale : le
+        // masque est un trait blanc épais qui longe la ligne, flouté, découpé
+        // à l'aire. Sa luminance est maximale juste sous la courbe — où
+        // qu'elle passe, pic ou creux — et se dissout avec la distance. Un
+        // dégradé vertical unique ne sait pas faire ça : sous un creux, les
+        // points naissaient déjà éteints.
+        const hTrace = Math.max(30, H - M.top - M.bottom);
+        const clipId = `${uid}-c${si}`, filtId = `${uid}-f${si}`;
+        defs.append("clipPath").attr("id", clipId).append("path").attr("d", dAire);
+        defs.append("filter").attr("id", filtId)
+          .attr("x", "-30%").attr("y", "-80%").attr("width", "160%").attr("height", "260%")
+          .append("feGaussianBlur").attr("stdDeviation", hTrace * 0.12);
+        defs.append("mask").attr("id", mid)
+          .append("g").attr("clip-path", `url(#${clipId})`)
+          .append("path").attr("d", dLigne)
+          .attr("fill", "none").attr("stroke", "#fff")
+          .attr("stroke-opacity", epureEff ? 0.5 : 0.58)
+          .attr("stroke-width", hTrace * 0.55)
+          .attr("stroke-linejoin", "round")
+          .attr("filter", `url(#${filtId})`);
+
+        // Aire : le dégradé pose la profondeur, la trame pose la matière
+        if (montrerAire) {
+          svg.append("path").style("fill", `url(#${gid})`).attr("d", dAire);
+          svg.append("path").style("fill", `url(#${pid})`).attr("mask", `url(#${mid})`)
+            .style("pointer-events", "none").attr("d", dAire);
+        }
         // La ligne
         svg.append("path").style("fill", "none")
           .style("stroke", s.couleur).attr("stroke-width", pointille ? Math.max(1.6, epaisseur - 0.4) : epaisseur)
