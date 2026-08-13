@@ -427,7 +427,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
                   {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
                 </div>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
+                <p style={{ fontSize:"1.3rem", fontWeight:800, color:"var(--encre)", lineHeight:1.1 }}>{c.val}</p>
                 <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                   {c.delta != null && c.ref != null ? (
                     <Variation valeur={c.delta} annee={c.ref} taille={10} />
@@ -456,7 +456,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                       {k.annee == null && suffix && <p style={{ fontSize:8.5, fontWeight:600, letterSpacing:"0.06em", color:"var(--gris)", textTransform:"uppercase" as const, marginTop:2, lineHeight:1.3 }}>{suffix}</p>}
                     </div>
                   ); })()}
-                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{fmtKpi(k)}</p>
+                  <p style={{ fontSize:"1.3rem", fontWeight:800, color:"var(--encre)", lineHeight:1.1 }}>{fmtKpi(k)}</p>
                   <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                     {delta != null && ref != null ? (
                     <Variation valeur={delta} annee={ref} taille={10} />

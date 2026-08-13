@@ -10,6 +10,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+import Variation from "@/components/shared/Variation";
 import { API, BadgePeriode, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL } from "./partage";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useQueries } from "@tanstack/react-query";
@@ -18,6 +19,23 @@ import { voile } from "@/lib/couleurs";
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
 const BDEF_CAT_COULEURS = ["var(--bleu)","var(--orange)","var(--vert)","var(--violet)","var(--cyan)","var(--danger)","var(--alerte)","var(--emeraude)"];
+
+/**
+ * La valeur BDEF découpée en NOMBRE et UNITÉ, pour que la carte KPI puisse
+ * poser l'unité en suffixe discret. « 21 927,4 Md FCFA » d'un seul tenant et
+ * en gras vole la vedette au chiffre ; le nombre porte l'information, l'unité
+ * la qualifie — deux rôles, deux traitements typographiques.
+ */
+function fmtBdefParts(v: number|null, unite: string): { nombre: string; unite: string } {
+  const s = fmtBdef(v, unite);
+  if (s === "N/A") return { nombre: s, unite: "" };
+  // Le suffixe est le dernier mot pour les unités nommées ; l'échelle (Md, M,
+  // k) reste collée au nombre, elle en fait partie.
+  for (const u of ["FCFA", "%", "j"]) {
+    if (s.endsWith(` ${u}`)) return { nombre: s.slice(0, -(u.length + 1)), unite: u };
+  }
+  return { nombre: s, unite: "" };
+}
 
 function fmtBdef(v: number|null, unite: string, short = false): string {
   if (v === null || v === undefined || isNaN(v)) return "N/A";
@@ -863,6 +881,15 @@ function OngletNational() {
               const ind = indicateurs.find(i=>i.code===code);
               const lastA = anneesAffichees.length ? anneesAffichees[anneesAffichees.length-1] : null;
               const v = ind&&lastA!==null ? (ind.valeurs[lastA]??null) : null;
+              // Variation contre le dernier millésime VALORISÉ qui précède —
+              // pas contre l'année civile précédente : une année sans donnée
+              // ne doit pas effacer la comparaison, elle doit la reporter.
+              const precA = ind && lastA!==null
+                ? [...anneesAffichees].filter(a=>a<lastA).reverse().find(a=>ind.valeurs[a]!=null) ?? null
+                : null;
+              const vPrec = ind && precA!==null ? (ind.valeurs[precA]??null) : null;
+              const delta = v!==null && vPrec!==null && vPrec!==0 ? ((v-vPrec)/Math.abs(vPrec))*100 : null;
+              const parts = ind ? fmtBdefParts(v, ind.unite) : { nombre:"—", unite:"" };
               const pickerOuvert = pickerSlot === slot;
               return (
                 <div key={code} className="kpi-card" {...carteCliquable(()=>{ if (ind) setKpiActif(ind); }, ind ? `${ind.libelle} — voir la fiche` : undefined)}
@@ -871,9 +898,23 @@ function OngletNational() {
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
-                  <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4, paddingRight:26 }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"var(--encre)", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
-                  {lastA&&<p style={{ fontSize:10, color:"var(--gris)", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
+                  {/* Le millésime en pastille sur la ligne du libellé — même
+                      disposition que les cartes IDE, et une ligne « en YYYY »
+                      de moins sous la valeur. */}
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const, paddingRight:26 }}>
+                    <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", lineHeight:1.4 }}>{ind?.libelle??code}</p>
+                    {lastA!==null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{lastA}</span>}
+                  </div>
+                  {/* Le nombre reste d'un bloc ; l'unité passe à la ligne quand
+                      la carte se resserre, plutôt que d'être tronquée en
+                      « FC… » — une unité coupée ne veut plus rien dire. */}
+                  <p style={{ fontSize:"1.3rem", fontWeight:800, color:"var(--encre)", lineHeight:1.1, display:"flex", flexWrap:"wrap" as const, alignItems:"baseline", columnGap:4, minWidth:0 }}>
+                    <span style={{ whiteSpace:"nowrap" as const }}>{parts.nombre}</span>
+                    {parts.unite && <span style={{ fontSize:"0.72em", fontWeight:700, color:"var(--gris-fort)", whiteSpace:"nowrap" as const }}>{parts.unite}</span>}
+                  </p>
+                  <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center" }}>
+                    {delta!==null && precA!==null && <Variation valeur={delta} annee={precA} taille={10}/>}
+                  </div>
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}
                       onPick={c=>remplacerKpi(slot,c)} onClose={()=>setPickerSlot(-1)}/>

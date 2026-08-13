@@ -571,14 +571,14 @@ function CommercePanel() {
         {(() => {
           const expDir = vue === "exportateur";
           const ref = kpis?.annee_ref;
-          // Le millésime en chiffres tient lieu de sous-titre : « Dernière année »
-          // ne disait rien que la valeur ne dise, et obligeait à répéter « en YYYY »
-          // sous chaque chiffre. L'année figure déjà dans le libellé des cartes 2 et 3.
+          // Le millésime est porté par une PASTILLE, comme sur toutes les cartes
+          // KPI de la plateforme — il sortait ici du libellé (« 1er client ·
+          // 2023 ») et là d'un sous-titre, deux écritures pour la même chose.
           const cards = [
-            { label: expDir ? "Total exportations" : "Total importations", sub: ref ? String(ref) : "", value: fmtUSD(kpis?.total ?? null), indicatif: "", text: false },
-            { label: expDir ? `1er client · ${ref ?? "—"}` : `1er fournisseur · ${ref ?? "—"}`, sub: "", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? fmtUSD(kpis.top_partenaire.valeur) : "", text: true },
-            { label: `1re ressource · ${ref ?? "—"}`, sub: "", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : "", text: true },
-            { label: expDir ? "Part du 1er client" : "Part du 1er fournisseur", sub: `Concentration · ${ref ?? "—"}`, value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
+            { label: expDir ? "Total exportations" : "Total importations", annee: ref, sub: "", value: fmtUSD(kpis?.total ?? null), indicatif: "", text: false },
+            { label: expDir ? "1er client" : "1er fournisseur", annee: ref, sub: "", value: kpis?.top_partenaire?.nom || "—", indicatif: kpis?.top_partenaire ? fmtUSD(kpis.top_partenaire.valeur) : "", text: true },
+            { label: "1re ressource", annee: ref, sub: "", value: kpis?.top_ressource?.ressource || "—", indicatif: kpis?.top_ressource ? fmtUSD(kpis.top_ressource.valeur) : "", text: true },
+            { label: expDir ? "Part du 1er client" : "Part du 1er fournisseur", annee: ref, sub: "Concentration", value: kpis?.part_top_partenaire != null ? `${kpis.part_top_partenaire.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %` : "—", indicatif: kpis?.top_partenaire?.nom ? `${expDir ? "vers" : "depuis"} ${kpis.top_partenaire.nom}` : "", text: false },
           ];
           return (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20, opacity: chargKpis ? 0.5 : 1, transition: "opacity 0.15s" }}>
@@ -587,10 +587,13 @@ function CommercePanel() {
                   onMouseEnter={e => { e.currentTarget.style.borderColor = accent.piste; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
                   <div style={{ marginBottom: 7 }}>
-                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: accent.trait, textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", color: accent.trait, textTransform: "uppercase", lineHeight: 1.4 }}>{c.label}</p>
+                      {c.annee != null && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{c.annee}</span>}
+                    </div>
                     {c.sub && <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", textTransform: "uppercase", marginTop: 2, lineHeight: 1.3 }}>{c.sub}</p>}
                   </div>
-                  <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "0.95rem" : "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
+                  <p title={c.text ? c.value : undefined} style={{ fontSize: c.text ? "1.05rem" : "1.3rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: c.text ? "normal" : "nowrap", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>{c.value}</p>
                   {c.indicatif && <p style={{ fontSize: 10, color: "var(--gris)", marginTop: 5, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.indicatif}</p>}
                 </div>
               ))}

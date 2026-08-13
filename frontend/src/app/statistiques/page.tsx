@@ -730,14 +730,14 @@ export default function StatistiquesPage() {
                               onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--ombre-1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)"; }}
                               onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = pickerOuvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"; }}>
                               <BtnSwapKpi ouvert={pickerOuvert} onClick={() => setPickerSlot(pickerOuvert ? -1 : slot)} />
-                              <div style={{ marginBottom: 7, paddingRight: 26 }}>
+                              {/* Le millésime en pastille, sur la ligne du libellé — la
+                                  disposition commune à toutes les cartes KPI de la
+                                  plateforme (IDE, monde, national). */}
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, flexWrap: "wrap", paddingRight: 26 }}>
                                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)", textTransform: "uppercase", lineHeight: 1.4 }}>{ind.libelle}</p>
-                                {/* L'année en chiffres plutôt que « Dernière année » : le
-                                    millésime est l'information utile, la périphrase ne l'est
-                                    pas — et elle obligeait à répéter « en YYYY » sous la valeur. */}
-                                <p style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: "0.06em", color: "var(--gris)", marginTop: 2, lineHeight: 1.3, fontVariantNumeric: "tabular-nums" }}>{refAnnee}</p>
+                                <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, flexShrink: 0 }}>{refAnnee}</span>
                               </div>
-                              <p style={{ fontSize: "1.15rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1 }}>{fmt(v, ind.unite, ind.code)}</p>
+                              <p style={{ fontSize: "1.3rem", fontWeight: 800, color: ind.unite === "%" && v !== null && v < 0 ? "var(--danger)" : "var(--encre)", lineHeight: 1.1 }}>{fmt(v, ind.unite, ind.code)}</p>
                               {varPct !== null && (
                                 <div style={{ marginTop: 6 }}>
                                   <Variation valeur={varPct} annee={refAnnee - 1} />
