@@ -35,7 +35,7 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
         style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:open?8:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
           {isFiltered&&<span style={{width:6,height:6,borderRadius:"50%",background:"var(--bleu-action)",display:"inline-block"}}/>}
-          <span style={{fontSize:11,fontWeight:700,color:isFiltered?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
+          <span style={{fontSize: "var(--t-11)",fontWeight:700,color:isFiltered?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Date de création</span>
         </div>
         <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           {open?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
@@ -48,12 +48,12 @@ function DateRangeFilter({ minYear, maxYear, startYear, endYear, onChange }: {
               onChange={(d,f)=>onChange(d,f)}/>
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
-            <span style={{fontSize:10,color:"var(--gris)"}}>—</span>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
+            <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{startYear}</span>
+            <span style={{fontSize: "var(--t-10)",color:"var(--gris)"}}>—</span>
+            <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.08)",padding:"2px 8px",borderRadius:6}}>{endYear}</span>
           </div>
           {isFiltered&&<button onClick={()=>onChange(minYear,maxYear)}
-            style={{display:"flex",alignItems:"center",gap:4,fontSize:11,color:"var(--danger)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
+            style={{display:"flex",alignItems:"center",gap:4,fontSize: "var(--t-11)",color:"var(--danger)",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginTop:4}}>
             <X size={10}/> Réinitialiser
           </button>}
         </div>
@@ -198,8 +198,8 @@ export default function EntreprisesPage() {
             ):entreprises.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <Building2 size={48} style={{marginBottom:16,opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucune entreprise trouvée</p>
-                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                <p style={{fontSize: "var(--t-16)",fontWeight:600,color:"var(--texte)"}}>Aucune entreprise trouvée</p>
+                <p style={{fontSize: "var(--t-14)",marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ):(
@@ -217,8 +217,8 @@ export default function EntreprisesPage() {
                     {/* Dénomination + forme juridique | badge pôle territoire */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
                       <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
-                        {e.forme_juridique&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
+                        <div style={{fontWeight:800,fontSize: "var(--t-15)",color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nom}</div>
+                        {e.forme_juridique&&<div style={{fontSize: "var(--t-11)",fontWeight:500,color:"var(--gris)",marginTop:3}}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/,"")}</div>}
                       </div>
                       {e.pole_territoire_nom&&(
                         <span title={e.pole_territoire_nom} style={{...badgePole(e.pole_territoire_nom),whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
@@ -230,13 +230,13 @@ export default function EntreprisesPage() {
                     {/* Date de création · Région en rangée épurée */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
+                        <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date de création</p>
+                        <p style={{fontSize: "var(--t-125)",fontWeight:700,color:e.date_creation?"var(--encre)":"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{e.date_creation?fmtDate(e.date_creation):"—"}</p>
                       </div>
                       <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
+                        <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                        <p style={{fontSize: "var(--t-125)",fontWeight:700,color:e.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.region_nom||"—"}</p>
                       </div>
                     </div>
                   </div>

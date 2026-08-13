@@ -63,7 +63,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         {/* Dénomination + siège | badge de statut à droite */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
+            <div style={{ fontWeight: 800, fontSize: "var(--t-15)", color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nom}</div>
             {(() => {
               const rel = onglet === "cibles" && p.created_at ? (() => {
                     const r = ilYa(p.created_at);
@@ -79,7 +79,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
                   })()
                 : null;
               const sousTitre = rel ?? p.siege_nom;
-              return sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>;
+              return sousTitre && <div style={{ fontSize: "var(--t-11)", fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>;
             })()}
           </div>
           {onglet !== "cibles" && badge && badgeStatut && (
@@ -92,13 +92,13 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
         {/* Infos en rangée épurée */}
         <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: p.siege_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
+            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Pays</p>
+            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: p.siege_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.siege_nom || "—"}</p>
           </div>
           <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }}/>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{info2.label}</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: info2.value ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{info2.value || "—"}</p>
+            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{info2.label}</p>
+            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: info2.value ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{info2.value || "—"}</p>
           </div>
         </div>
       </div>
@@ -109,7 +109,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
           <div role="button" tabIndex={0}
             onKeyDown={ev => { ev.stopPropagation(); if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOpenInfos?.(); } }}
             onClick={ev => { ev.stopPropagation(); onOpenInfos?.(); }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: "var(--t-115)", color: "var(--bleu)", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
             Infos investisseur
@@ -118,7 +118,7 @@ function CarteProspect({ p, onglet, onOpen, onOpenInfos }: { p: any; onglet: "ci
           <div role="button" tabIndex={0}
             onKeyDown={ev => { ev.stopPropagation(); if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOpen?.(); } }}
             onClick={ev => { ev.stopPropagation(); onOpen?.(); }}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 0", fontSize: "var(--t-115)", color: "var(--bleu)", fontWeight: 600, transition: "background 0.15s", cursor: "pointer" }}
             onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
             onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
             Voir les échanges
@@ -235,8 +235,8 @@ export default function ProspectsPage() {
           ) : listeCourante.length === 0 ? (
             <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
               <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-              <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun prospect trouvé</p>
-              <p style={{ fontSize: 14, marginTop: 6 }}>Modifiez vos filtres pour affiner la recherche.</p>
+              <p style={{ fontSize: "var(--t-16)", fontWeight: 600, color: "var(--texte)" }}>Aucun prospect trouvé</p>
+              <p style={{ fontSize: "var(--t-14)", marginTop: 6 }}>Modifiez vos filtres pour affiner la recherche.</p>
               {hasFilter && <BoutonEffacerFiltres onClick={reinit}/>}
             </div>
           ) : (

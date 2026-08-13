@@ -13,7 +13,9 @@
 // et ne provoque aucun rendu — rien n'est peint entre-temps, la main n'étant
 // jamais rendue à la boucle d'événements.
 
-const PROPS_COULEUR = ["fill", "stroke", "stop-color", "color"] as const;
+// Les couleurs, et depuis l'échelle typographique en jetons, la taille de
+// police : un SVG sérialisé ne sait pas résoudre var(--t-…) hors de la page.
+const PROPS_COULEUR = ["fill", "stroke", "stop-color", "color", "font-size"] as const;
 
 function enSchemaClair<T>(action: () => T): T {
   const racine = document.documentElement;
@@ -27,7 +29,7 @@ function enSchemaClair<T>(action: () => T): T {
   }
 }
 
-/** Recopie sur le clone les couleurs résolues de l'original. */
+/** Recopie sur le clone les couleurs et tailles résolues de l'original. */
 function figerCouleurs(source: SVGSVGElement, clone: SVGSVGElement) {
   enSchemaClair(() => {
     const origines = [source, ...source.querySelectorAll<SVGElement>("*")];

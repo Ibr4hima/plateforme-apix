@@ -59,7 +59,7 @@ export default function LexiquePage() {
                 <button key={L} onClick={() => present && goLettre(L)} disabled={!present}
                   aria-label={`Aller à ${L}`}
                   style={{ width: 27, height: 27, borderRadius: 999, border: "1px solid", cursor: present ? "pointer" : "default",
-                    fontSize: 11.5, fontWeight: 800, fontFamily: "var(--font-google-sans)",
+                    fontSize: "var(--t-115)", fontWeight: 800, fontFamily: "var(--font-google-sans)",
                     background: present ? "rgba(255,255,255,0.13)" : "transparent",
                     borderColor: present ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)",
                     color: present ? "var(--sur-bleu)" : "rgba(255,255,255,0.28)",
@@ -89,22 +89,22 @@ export default function LexiquePage() {
           ) : erreur ? (
             <ErreurChargement onRetry={charger} />
           ) : total === 0 ? (
-            <p style={{ color: "var(--gris)", fontSize: 14, textAlign: "center", marginTop: 60 }}>
+            <p style={{ color: "var(--gris)", fontSize: "var(--t-14)", textAlign: "center", marginTop: 60 }}>
               {termes.length === 0 ? "Aucun terme n'est encore publié." : "Aucun terme ne correspond à votre recherche."}
             </p>
           ) : groupes.map(([lettre, arr]) => (
             <div key={lettre} id={`lettre-${lettre}`} style={{ scrollMarginTop: 20, marginBottom: 30 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "0 0 16px" }}>
-                <span style={{ fontSize: 26, fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
+                <span style={{ fontSize: "var(--t-26)", fontWeight: 800, color: ORANGE, lineHeight: 1, minWidth: 30 }}>{lettre}</span>
                 <div style={{ flex: 1, height: 1, background: "var(--fond-creux2)" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {arr.map((t) => (
                   <div key={t.id} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 12, padding: "15px 18px" }}>
                     <div style={{ marginBottom: 7 }}>
-                      <span style={{ fontSize: 15.5, fontWeight: 700, color: ENCRE }}>{t.terme}</span>
+                      <span style={{ fontSize: "var(--t-15)", fontWeight: 700, color: ENCRE }}>{t.terme}</span>
                     </div>
-                    <p style={{ fontSize: 13.5, color: "var(--texte)", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
+                    <p style={{ fontSize: "var(--t-135)", color: "var(--texte)", lineHeight: 1.7, margin: 0 }}>{t.definition}</p>
                   </div>
                 ))}
               </div>

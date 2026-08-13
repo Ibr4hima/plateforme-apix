@@ -40,10 +40,10 @@ export default function ZoneDetailModal({ zone, onClose }: { zone:any; onClose:(
       onMouseEnter={ev=>{ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.25)";ev.currentTarget.style.background="var(--carte)";}}
       onMouseLeave={ev=>{ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";}}>
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
-        {ze.entreprise?.forme_juridique&&<div style={{fontSize:11,color:"var(--gris)"}}>{ze.entreprise.forme_juridique}</div>}
+        <div style={{fontWeight:700,fontSize: "var(--t-13)",color:"var(--encre)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ze.entreprise?.nom}</div>
+        {ze.entreprise?.forme_juridique&&<div style={{fontSize: "var(--t-11)",color:"var(--gris)"}}>{ze.entreprise.forme_juridique}</div>}
       </div>
-      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.07)",borderRadius:7,padding:"5px 10px",fontSize:11,color:"var(--bleu)",fontWeight:600,flexShrink:0}}>
+      <span style={{display:"flex",alignItems:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.07)",borderRadius:7,padding:"5px 10px",fontSize: "var(--t-11)",color:"var(--bleu)",fontWeight:600,flexShrink:0}}>
         Fiche →
       </span>
     </div>

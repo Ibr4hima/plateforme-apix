@@ -33,7 +33,7 @@ export const varsAccent = (a: AccentNace) =>
   ({ "--nace-accent": a.trait, "--nace-piste": a.piste }) as React.CSSProperties;
 
 export const pastilleCurseur = (a: AccentNace): React.CSSProperties => ({
-  fontSize: 12, fontWeight: 800, color: a.trait, background: a.voile, padding: "3px 11px",
+  fontSize: "var(--t-12)", fontWeight: 800, color: a.trait, background: a.voile, padding: "3px 11px",
   borderRadius: 999, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "center", whiteSpace: "nowrap",
   flexShrink: 0,
 });
@@ -68,7 +68,7 @@ export function StylesCurseurNace() {
 }
 
 const BORNE: React.CSSProperties = {
-  fontSize: 10, color: "var(--gris)", fontWeight: 700, fontVariantNumeric: "tabular-nums",
+  fontSize: "var(--t-10)", color: "var(--gris)", fontWeight: 700, fontVariantNumeric: "tabular-nums",
   whiteSpace: "nowrap", flexShrink: 0,
 };
 

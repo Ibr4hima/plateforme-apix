@@ -50,13 +50,13 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }} />}
       <div style={{ padding: ouvert ? "14px 16px 10px" : "12px 8px", borderBottom: "1px solid var(--bordure)",
         display: "flex", alignItems: "center", justifyContent: ouvert ? "space-between" : "center", flexShrink: 0 }}>
-        {ouvert && <span style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
+        {ouvert && <span style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Filtres</span>}
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <button onClick={basculer} aria-label={ouvert ? "Réduire les filtres" : "Afficher les filtres"}
             style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 8, padding: "6px 8px",
               display: "flex", alignItems: "center", gap: 5 }}>
             <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
-            {ouvert && nbFiltres > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+            {ouvert && nbFiltres > 0 && <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--bleu)",
               background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>}
           </button>
           {ouvert && aDesFiltres && <button onClick={onReinit} title="Tout réinitialiser" aria-label="Tout réinitialiser"
@@ -64,7 +64,7 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
               borderRadius: 999, padding: 5, display: "flex", alignItems: "center", transition: "background 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.15)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.08)"; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 15, color: "var(--danger)",
+            <span className="material-symbols-outlined" style={{ fontSize: "var(--t-15)", color: "var(--danger)",
               fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>close</span>
           </button>}
         </div>
@@ -74,7 +74,7 @@ export default function PanneauFiltres({ nbFiltres, aDesFiltres, onReinit,
           <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
           <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher…"
             style={{ width: "100%", paddingLeft: 30, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8,
-              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, color: "var(--encre)", outline: "none",
+              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: "var(--t-12)", color: "var(--encre)", outline: "none",
               fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
           {recherche && <button onClick={() => setRecherche("")} aria-label="Effacer la recherche"
             style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none",

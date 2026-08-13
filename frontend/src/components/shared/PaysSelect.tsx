@@ -50,7 +50,7 @@ export default function PaysSelect({
 
   const inputBase = {
     background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-    borderRadius: 8, padding: "9px 12px", fontSize: 13,
+    borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)",
     color: "var(--encre)", outline: "none",
     fontFamily: "var(--font-google-sans)",
     width: "100%", boxSizing: "border-box" as const,
@@ -82,19 +82,19 @@ export default function PaysSelect({
               <Search size={13} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
               <input autoFocus placeholder="Rechercher un pays..." value={search}
                 onChange={e => setSearch(e.target.value)}
-                style={{ ...inputBase, paddingLeft: 28, fontSize: 12 }} />
+                style={{ ...inputBase, paddingLeft: 28, fontSize: "var(--t-12)" }} />
             </div>
           </div>
           {Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([continent, list]) => (
             <div key={continent}>
-              <div style={{ padding: "6px 12px 3px", fontSize: 10, fontWeight: 700, color: "var(--gris)",
+              <div style={{ padding: "6px 12px 3px", fontSize: "var(--t-10)", fontWeight: 700, color: "var(--gris)",
                 textTransform: "uppercase", letterSpacing: "0.1em", background: "var(--carte-douce)" }}>
                 {continent}
               </div>
               {list.map(p => (
                 <div key={p.id}
                   onMouseDown={e => { e.preventDefault(); onChange(p.nom_fr); if (onChangeId) onChangeId(p.id); setOpen(false); setSearch(""); }}
-                  style={{ padding: "9px 14px", cursor: "pointer", fontSize: 13,
+                  style={{ padding: "9px 14px", cursor: "pointer", fontSize: "var(--t-13)",
                     color: value === p.nom_fr ? "var(--bleu)" : "var(--encre)",
                     background: value === p.nom_fr ? "rgb(var(--bleu-rgb) / 0.06)" : "transparent",
                     fontWeight: value === p.nom_fr ? 600 : 400,
@@ -107,7 +107,7 @@ export default function PaysSelect({
             </div>
           ))}
           {filtered.length === 0 && (
-            <div style={{ padding: "14px", fontSize: 13, color: "var(--gris)", textAlign: "center" }}>Aucun pays trouvé</div>
+            <div style={{ padding: "14px", fontSize: "var(--t-13)", color: "var(--gris)", textAlign: "center" }}>Aucun pays trouvé</div>
           )}
         </div>
       )}

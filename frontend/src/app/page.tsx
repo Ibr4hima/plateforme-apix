@@ -114,7 +114,7 @@ export default function HomePage() {
               donnait que 3,3:1, contre 8,2:1 pour l'encre. */}
           <div className="hero-tag" style={{display:"inline-flex",alignItems:"center",gap:9,background:voile("var(--orange-action)", 8),border:`1.5px solid ${voile("var(--orange-action)", 45)}`,borderRadius:999,padding:"8px 17px",marginBottom:28}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:"var(--orange-action)",animation:"pulse 2s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
+            <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Plateforme de Gestion des Investissements et des Investisseurs</span>
           </div>
 
           {/* Titre */}
@@ -137,7 +137,7 @@ export default function HomePage() {
             <br/>Sénégal
           </h1>
 
-          <p className="hero-p" style={{color:"rgba(255,255,255,0.65)",fontSize:"1.1rem",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
+          <p className="hero-p" style={{color:"rgba(255,255,255,0.65)",fontSize: "var(--t-r110)",maxWidth:520,lineHeight:1.75,marginBottom:40}}>
             Plateforme de suivi, d'analyse et de gestion des investissements au Sénégal.
           </p>
 
@@ -146,8 +146,8 @@ export default function HomePage() {
             <Link href="/tableau-de-bord" className="ds-bouton ds-bouton--accent ds-bouton--grand">
               <BarChart2 size={16}/> Tableau de bord <ChevronRight size={15}/>
             </Link>
-            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"var(--sur-bleu)",fontWeight:600,fontSize:14,padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}>
-              <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
+            <Link href="/ide" className="lp-cta-verre" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.10)",backdropFilter:"blur(12px)",color:"var(--sur-bleu)",fontWeight:600,fontSize: "var(--t-14)",padding:"13px 24px",borderRadius:12,textDecoration:"none",border:"1px solid rgba(255,255,255,0.25)",transition:"all 0.2s"}}>
+              <span className="material-symbols-outlined" style={{fontSize: "var(--t-18)",color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>finance_mode</span> Investissements Privés <ChevronRight size={15}/>
             </Link>
           </div>
 
@@ -169,12 +169,12 @@ export default function HomePage() {
               <Link key={i} href={item.href} className="lp-quick-item" style={{flex:1,display:"flex",alignItems:"center",gap:12,padding:"20px 24px",textDecoration:"none",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none",transition:"background 0.15s"}}>
                 <div style={{width:36,height:36,borderRadius:9,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                   {item.mat
-                    ? <span className="material-symbols-outlined" style={{fontSize:18,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
+                    ? <span className="material-symbols-outlined" style={{fontSize: "var(--t-18)",color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{item.mat}</span>
                     : <Icon size={16} style={{color:"var(--sur-bleu)"}}/>}
                 </div>
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:"var(--sur-bleu)",whiteSpace:"nowrap"}}>{item.label}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.65)"}}>{item.sub}</div>
+                  <div style={{fontSize: "var(--t-13)",fontWeight:700,color:"var(--sur-bleu)",whiteSpace:"nowrap"}}>{item.label}</div>
+                  <div style={{fontSize: "var(--t-11)",color:"rgba(255,255,255,0.65)"}}>{item.sub}</div>
                 </div>
                 <ChevronRight size={14} style={{color:"rgba(255,255,255,0.4)",marginLeft:"auto"}}/>
               </Link>
@@ -188,12 +188,12 @@ export default function HomePage() {
         <div style={{maxWidth:1200,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48,flexWrap:"wrap" as const,gap:20}}>
             <div>
-              <p style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
+              <p style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--orange)",letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:10}}>Architecture de la plateforme</p>
               <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.6rem)",color:"var(--encre)",lineHeight:1.1}}>
                 8 modules de données<br/>interconnectés
               </h2>
             </div>
-            <p style={{color:"var(--gris)",maxWidth:360,lineHeight:1.65,fontSize:14}}>
+            <p style={{color:"var(--gris)",maxWidth:360,lineHeight:1.65,fontSize: "var(--t-14)"}}>
               Chaque module couvre un aspect du cycle de vie de l'investissement, de la prospection à l'installation définitive.
             </p>
           </div>
@@ -202,15 +202,15 @@ export default function HomePage() {
                 <Link key={i} href={m.href} className="mod-card" style={{textDecoration:"none",background:"var(--carte)",padding:"28px 24px",display:"flex",flexDirection:"column" as const,gap:16,position:"relative" as const,"--mod-couleur":m.color} as React.CSSProperties}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                     <div style={{width:40,height:40,borderRadius:10,background:`${voile(m.color, 6)}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span className="material-symbols-outlined" style={{fontSize:20,color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
+                      <span className="material-symbols-outlined" style={{fontSize: "var(--t-20)",color:m.color,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",lineHeight:1}}>{m.icon}</span>
                     </div>
-                    <span className="mod-num" style={{fontSize:11,fontWeight:700,color:"var(--gris)",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
+                    <span className="mod-num" style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--gris)",letterSpacing:"0.05em",transition:"color 0.15s"}}>{m.num}</span>
                   </div>
                   <div>
-                    <h3 style={{fontWeight:700,fontSize:15,color:"var(--encre)",marginBottom:6}}>{m.label}</h3>
-                    <p style={{fontSize:12,color:"var(--gris)",lineHeight:1.6}}>{m.desc}</p>
+                    <h3 style={{fontWeight:700,fontSize: "var(--t-15)",color:"var(--encre)",marginBottom:6}}>{m.label}</h3>
+                    <p style={{fontSize: "var(--t-12)",color:"var(--gris)",lineHeight:1.6}}>{m.desc}</p>
                   </div>
-                  <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize:12,color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
+                  <div className="mod-arrow" style={{marginTop:"auto",display:"flex",alignItems:"center",gap:4,fontSize: "var(--t-12)",color:m.color,fontWeight:600,opacity:0,transition:"opacity 0.15s"}}>
                     Accéder <ChevronRight size={13}/>
                   </div>
                 </Link>
@@ -230,12 +230,12 @@ export default function HomePage() {
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:voile("var(--orange-action)", 10),border:`1px solid ${voile("var(--orange-action)", 20)}`,borderRadius:999,padding:"5px 14px",marginBottom:24}}>
               <BarChart2 size={12} style={{color:"var(--orange-action)"}}/>
-              <span style={{fontSize:11,fontWeight:700,color:"var(--orange)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
+              <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--orange)",letterSpacing:"0.12em",textTransform:"uppercase"}}>Tableau de bord</span>
             </div>
             <h2 style={{fontWeight:800,fontSize:"clamp(1.8rem,3vw,2.8rem)",color:"var(--sur-bleu)",lineHeight:1.1,marginBottom:16}}>
               KPIs, visualisations<br/>et analyses en temps réel
             </h2>
-            <p style={{color:"rgba(255,255,255,0.6)",fontSize:14,lineHeight:1.75,marginBottom:32,maxWidth:460}}>
+            <p style={{color:"rgba(255,255,255,0.6)",fontSize: "var(--t-14)",lineHeight:1.75,marginBottom:32,maxWidth:460}}>
               Vue consolidée de l'attractivité de la Destination Sénégal — Tendances sectorielles, répartition géographique, taux d'occupation des zones d'investissement et flux d'IDE
             </p>
             <div style={{display:"flex",gap:10}}>
@@ -254,12 +254,12 @@ export default function HomePage() {
             ].map((k,i)=>(
                 <div key={i} style={{background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",borderRadius:14,padding:"20px",backdropFilter:"blur(12px)"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                    <span className="material-symbols-outlined" style={{fontSize:16,color:"var(--orange)",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
+                    <span className="material-symbols-outlined" style={{fontSize: "var(--t-16)",color:"var(--orange)",opacity:0.9,fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{k.icon}</span>
                   </div>
-                  <div style={{fontWeight:800,fontSize:"1.8rem",color:"var(--sur-bleu)",lineHeight:1,marginBottom:6}}>
+                  <div style={{fontWeight:800,fontSize: "var(--t-r175)",color:"var(--sur-bleu)",lineHeight:1,marginBottom:6}}>
                     <AnimatedCounter target={k.val}/>
                   </div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,0.55)"}}>{k.label}</div>
+                  <div style={{fontSize: "var(--t-11)",color:"rgba(255,255,255,0.55)"}}>{k.label}</div>
                 </div>
             ))}
           </div>
@@ -273,8 +273,8 @@ export default function HomePage() {
             <Image className="logo-apix" src="/logo_apix.png" alt="APIX Sénégal" width={80} height={40} style={{height:40,width:"auto",objectFit:"contain"}}/>
             <div style={{width:1,height:36,background:"var(--fond-creux2)"}}/>
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
-              <div style={{fontSize:12,color:"var(--gris)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
+              <div style={{fontSize: "var(--t-13)",fontWeight:700,color:"var(--encre)"}}>DIPE — Direction de l'Intelligence et des Perspectives Économiques</div>
+              <div style={{fontSize: "var(--t-12)",color:"var(--gris)",marginTop:2}}>Agence Nationale pour la Promotion des Investissements et des Grands Travaux</div>
             </div>
           </div>
           <div style={{display:"flex",gap:16,flexWrap:"wrap" as const}}>
@@ -284,8 +284,8 @@ export default function HomePage() {
               {icon:"show_chart",    label:"Mise à jour continue"},
             ].map((item,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:"var(--champ)",border:"1px solid var(--bordure-forte)",borderRadius:999}}>
-                  <span className="material-symbols-outlined" style={{fontSize:15,color:"var(--texte)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
-                  <span style={{fontSize:12,fontWeight:600,color:"var(--texte)"}}>{item.label}</span>
+                  <span className="material-symbols-outlined" style={{fontSize: "var(--t-15)",color:"var(--texte)",fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>{item.icon}</span>
+                  <span style={{fontSize: "var(--t-12)",fontWeight:600,color:"var(--texte)"}}>{item.label}</span>
                 </div>
             ))}
           </div>
@@ -295,8 +295,8 @@ export default function HomePage() {
       {/* ── FOOTER ────────────────────────────────────────────────────────────── */}
       <footer className="lp-pad" style={{borderTop:"1px solid var(--bordure)",padding:"24px 60px",background:"var(--carte)"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:12}}>
-          <p style={{color:"var(--gris)",fontSize:12}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
-          <p style={{color:"var(--gris)",fontSize:12}}>Plateforme à usage institutionnel</p>
+          <p style={{color:"var(--gris)",fontSize: "var(--t-12)"}}>© {new Date().getFullYear()} APIX S.A — DIPE. Tous droits réservés.</p>
+          <p style={{color:"var(--gris)",fontSize: "var(--t-12)"}}>Plateforme à usage institutionnel</p>
         </div>
       </footer>
     </main>

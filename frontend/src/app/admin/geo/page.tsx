@@ -9,10 +9,10 @@ import { API_BASE } from "@/lib/api";
 
 const IS: any = {
   width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-  borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
+  borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)",
   outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
 };
-const LS: any = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 5, display: "block" };
+const LS: any = { fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)", marginBottom: 5, display: "block" };
 
 export default function AdminGeo() {
   const [regions,         setRegions]         = useState<any[]>([]);
@@ -241,21 +241,21 @@ export default function AdminGeo() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
-          <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "var(--encre)" }}>Découpage Administratif</h1>
-          <p style={{ color: "var(--gris)", fontSize: 13, marginTop: 2 }}>
+          <p style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
+          <h1 style={{ fontWeight: 800, fontSize: "var(--t-r175)", color: "var(--encre)" }}>Découpage Administratif</h1>
+          <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", marginTop: 2 }}>
             {regions.length} régions · {departements.length} départements · {arrondissements.length} arrondissements
           </p>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={openImport}
-            style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 600, fontSize: 13,
+            style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 600, fontSize: "var(--t-13)",
               padding: "10px 18px", borderRadius: 12, border: "1px solid rgb(var(--orange-rgb) / 0.35)", cursor: "pointer" }}>
             <Upload size={14}/> Importer arrondissements
           </button>
           <button onClick={() => openModal("region", "create")}
             style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,var(--orange-action),var(--orange-fonce))",
-              color: "var(--sur-bleu)", fontWeight: 600, fontSize: 14, padding: "11px 20px", borderRadius: 12, border: "none", cursor: "pointer",
+              color: "var(--sur-bleu)", fontWeight: 600, fontSize: "var(--t-14)", padding: "11px 20px", borderRadius: 12, border: "none", cursor: "pointer",
               boxShadow: "0 4px 14px rgb(var(--ombre-rgb) / 0.3)" }}>
             <Plus size={16}/> Nouvelle région
           </button>
@@ -280,14 +280,14 @@ export default function AdminGeo() {
                   <MapPin size={16} style={{ color: "var(--orange)" }}/>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "var(--encre)" }}>{reg.nom}</div>
-                  <div style={{ fontSize: 11, color: "var(--gris)", marginTop: 2 }}>
+                  <div style={{ fontWeight: 700, fontSize: "var(--t-15)", color: "var(--encre)" }}>{reg.nom}</div>
+                  <div style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginTop: 2 }}>
                     {deps.length} département{deps.length > 1 ? "s" : ""} · {totalArr} arrondissement{totalArr > 1 ? "s" : ""}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
                   <button onClick={() => openModal("departement", "create", undefined, reg.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 4, background: "rgb(var(--orange-rgb) / 0.1)", border: "none", cursor: "pointer", borderRadius: 8, padding: "5px 10px", fontSize: 12, fontWeight: 600, color: "var(--orange)" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: "rgb(var(--orange-rgb) / 0.1)", border: "none", cursor: "pointer", borderRadius: 8, padding: "5px 10px", fontSize: "var(--t-12)", fontWeight: 600, color: "var(--orange)" }}>
                     <Plus size={11}/> Dép.
                   </button>
                   <button onClick={() => openModal("region", "edit", reg)}
@@ -308,7 +308,7 @@ export default function AdminGeo() {
               {isRegOpen && (
                 <div style={{ padding: "0 20px 16px" }}>
                   {deps.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "20px", color: "var(--gris)", fontSize: 13 }}>
+                    <div style={{ textAlign: "center", padding: "20px", color: "var(--gris)", fontSize: "var(--t-13)" }}>
                       Aucun département — cliquez sur "+ Dép." pour en ajouter.
                     </div>
                   ) : (
@@ -322,11 +322,11 @@ export default function AdminGeo() {
                             {/* Header département */}
                             <div onClick={() => setExpandedDep(isDepOpen ? null : dep.id)}
                               style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", cursor: "pointer" }}>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", flex: 1 }}>{dep.nom}</span>
-                              <span style={{ fontSize: 11, color: "var(--gris)", marginRight: 8 }}>{arrs.length} arr.</span>
+                              <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)", flex: 1 }}>{dep.nom}</span>
+                              <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginRight: 8 }}>{arrs.length} arr.</span>
                               <div style={{ display: "flex", gap: 5 }} onClick={e => e.stopPropagation()}>
                                 <button onClick={() => openModal("arrondissement", "create", undefined, dep.id)}
-                                  style={{ display: "flex", alignItems: "center", gap: 3, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 6, padding: "4px 8px", fontSize: 11, fontWeight: 600, color: "var(--bleu)" }}>
+                                  style={{ display: "flex", alignItems: "center", gap: 3, background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 6, padding: "4px 8px", fontSize: "var(--t-11)", fontWeight: 600, color: "var(--bleu)" }}>
                                   <Plus size={10}/> Arr.
                                 </button>
                                 <button onClick={() => openModal("departement", "edit", dep)}
@@ -347,13 +347,13 @@ export default function AdminGeo() {
                             {isDepOpen && (
                               <div style={{ borderTop: "1px solid var(--bordure-forte)", padding: "8px 14px 12px" }}>
                                 {arrs.length === 0 ? (
-                                  <p style={{ fontSize: 12, color: "var(--gris)", padding: "6px 0" }}>Aucun arrondissement.</p>
+                                  <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", padding: "6px 0" }}>Aucun arrondissement.</p>
                                 ) : (
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                                     {arrs.map(arr => (
                                       <div key={arr.id} style={{ display: "flex", alignItems: "center", gap: 6,
                                         padding: "5px 10px", background: "var(--carte)", borderRadius: 8, border: "1px solid var(--bordure-forte)" }}>
-                                        <span style={{ fontSize: 12, color: "var(--texte)" }}>{arr.nom}</span>
+                                        <span style={{ fontSize: "var(--t-12)", color: "var(--texte)" }}>{arr.nom}</span>
                                         <button onClick={() => openModal("arrondissement", "edit", arr)}
                                           style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
                                           <Pencil size={11} style={{ color: "var(--gris)" }}/>
@@ -392,7 +392,7 @@ export default function AdminGeo() {
             <div style={{ height: 4, background: "linear-gradient(90deg,var(--orange-action),var(--orange-action))" }}/>
             <div style={{ padding: "22px 26px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <h2 style={{ fontWeight: 700, fontSize: "1rem", color: "var(--encre)" }}>
+                <h2 style={{ fontWeight: 700, fontSize: "var(--t-r105)", color: "var(--encre)" }}>
                   {modal.mode === "create" ? "Nouveau" : "Modifier"}{" "}
                   {modal.type === "region" ? "région" : modal.type === "departement" ? "département" : "arrondissement"}
                 </h2>
@@ -407,13 +407,13 @@ export default function AdminGeo() {
                     placeholder="Nom officiel" style={IS} autoFocus
                     onKeyDown={e => { if (e.key === "Enter") handleSave(); }}/>
                 </div>
-                {error && <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "9px 12px", borderRadius: 8, fontSize: 12 }}>{error}</div>}
+                {error && <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "9px 12px", borderRadius: 8, fontSize: "var(--t-12)" }}>{error}</div>}
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-                  <button onClick={closeModal} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "transparent", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+                  <button onClick={closeModal} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "transparent", color: "var(--texte)", fontSize: "var(--t-13)", fontWeight: 600, cursor: "pointer" }}>Annuler</button>
                   <button onClick={handleSave} disabled={saving || saveOk}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
                       background: saveOk ? "var(--vert-action)" : saving ? "var(--bordure-forte)" : "var(--orange-action)",
-                      color: "var(--sur-bleu)", fontSize: 13, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer" }}>
+                      color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 600, cursor: saving ? "not-allowed" : "pointer" }}>
                     {saveOk ? <><Check size={13}/> Enregistré !</>
                      : saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Sauvegarde…</>
                      : <><Check size={13}/> {modal.mode === "create" ? "Créer" : "Modifier"}</>}
@@ -437,7 +437,7 @@ export default function AdminGeo() {
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                 <div>
-                  <h2 style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--encre)" }}>Importer des arrondissements</h2>
+                  <h2 style={{ fontWeight: 800, fontSize: "var(--t-r110)", color: "var(--encre)" }}>Importer des arrondissements</h2>
                 </div>
                 <button onClick={() => setImportModal(false)}
                   style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}>
@@ -449,7 +449,7 @@ export default function AdminGeo() {
               <div style={{ display: "flex", gap: 2, background: "rgb(var(--ombre-rgb) / 0.04)", borderRadius: 10, padding: 3, marginBottom: 24, width: "fit-content", border: "1px solid var(--bordure-forte)" }}>
                 {([["excel","Coller depuis Excel"],["manual","Par département"]] as const).map(([key,label]) => (
                   <button key={key} onClick={() => { setImportTab(key); setImportResult(null); setImportError(""); }}
-                    style={{ padding: "7px 18px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
+                    style={{ padding: "7px 18px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: "var(--t-13)", fontWeight: 600,
                       background: importTab === key ? "var(--orange-action)" : "transparent", color: importTab === key ? "var(--sur-bleu)" : "var(--texte)" }}>
                     {label}
                   </button>
@@ -460,8 +460,8 @@ export default function AdminGeo() {
               {importTab === "excel" && (
                 <div>
                   <div style={{ background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius: 12, padding: "14px 16px", marginBottom: 18 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--bleu)", marginBottom: 6 }}>Mode rapide — tout en une seule fois</p>
-                    <ol style={{ fontSize: 12, color: "var(--texte)", lineHeight: 2, paddingLeft: 18, margin: 0 }}>
+                    <p style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--bleu)", marginBottom: 6 }}>Mode rapide — tout en une seule fois</p>
+                    <ol style={{ fontSize: "var(--t-12)", color: "var(--texte)", lineHeight: 2, paddingLeft: 18, margin: 0 }}>
                       <li>Sélectionnez vos colonnes dans Excel — <strong>Région · Département · Arrondissement · Commune</strong> ou moins</li>
                       <li>Copiez (<strong>Ctrl+C</strong>) — les cellules fusionnées sont gérées automatiquement</li>
                       <li>Collez ci-dessous (<strong>Ctrl+V</strong>), puis cliquez <strong>Analyser</strong> pour voir l'aperçu avant import</li>
@@ -474,26 +474,26 @@ export default function AdminGeo() {
                       onChange={e => { setExcelPaste(e.target.value); setExcelPreview([]); setExcelPayload([]); setImportResult(null); setImportError(""); }}
                       placeholder={"Dakar\tDakar\tAlmadies\tMermoz-Sacré Cœur\n\t\t\tOuakam\n\t\t\tNgor\n\t\tDakar-Plateau\tDakar-Plateau\n…"}
                       rows={8}
-                      style={{ ...IS, resize: "vertical" as const, lineHeight: 1.8, fontSize: 12, fontFamily: "monospace" }}
+                      style={{ ...IS, resize: "vertical" as const, lineHeight: 1.8, fontSize: "var(--t-12)", fontFamily: "monospace" }}
                     />
                   </div>
                   <button onClick={() => parseExcel(excelPaste)} disabled={!excelPaste.trim()}
-                    style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 16 }}>
+                    style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, fontSize: "var(--t-13)", cursor: "pointer", marginBottom: 16 }}>
                     Analyser
                   </button>
                   {/* Prévisualisation */}
                   {excelPreview.length > 0 && (
                     <div style={{ marginBottom: 16 }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: "var(--texte)", marginBottom: 10 }}>
+                      <p style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--texte)", marginBottom: 10 }}>
                         Aperçu — {excelPayload.reduce((s,p)=>s+p.noms.length,0)} arrondissements dans {excelPreview.length} département{excelPreview.length>1?"s":""}
                       </p>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
                         {excelPreview.map((row, i) => (
                           <div key={i} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "10px 12px" }}>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", marginBottom: 6 }}>{row.dep}</p>
+                            <p style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", marginBottom: 6 }}>{row.dep}</p>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                               {row.arrs.map((a,j) => (
-                                <span key={j} style={{ fontSize: 11, background: "rgb(var(--orange-rgb) / 0.08)", color: "var(--orange)", padding: "2px 7px", borderRadius: 999 }}>{a}</span>
+                                <span key={j} style={{ fontSize: "var(--t-11)", background: "rgb(var(--orange-rgb) / 0.08)", color: "var(--orange)", padding: "2px 7px", borderRadius: 999 }}>{a}</span>
                               ))}
                             </div>
                           </div>
@@ -517,7 +517,7 @@ export default function AdminGeo() {
                   </div>
                   {importRegionId !== "" && (() => {
                     const deps = depsDuReg(Number(importRegionId));
-                    if (deps.length === 0) return <p style={{ color: "var(--gris)", fontSize: 13 }}>Aucun département dans cette région.</p>;
+                    if (deps.length === 0) return <p style={{ color: "var(--gris)", fontSize: "var(--t-13)" }}>Aucun département dans cette région.</p>;
                     return (
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
                         {deps.map(dep => {
@@ -525,13 +525,13 @@ export default function AdminGeo() {
                           return (
                             <div key={dep.id} style={{ background: "var(--carte-douce)", border: "1px solid var(--bordure-forte)", borderRadius: 12, padding: "12px 14px" }}>
                               <div style={{ marginBottom: 8 }}>
-                                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>{dep.nom}</p>
-                                {existants.length > 0 && <p style={{ fontSize: 10, color: "var(--gris)", marginTop: 2 }}>{existants.length} déjà présent{existants.length>1?"s":""}</p>}
+                                <p style={{ fontSize: "var(--t-13)", fontWeight: 700, color: "var(--encre)" }}>{dep.nom}</p>
+                                {existants.length > 0 && <p style={{ fontSize: "var(--t-10)", color: "var(--gris)", marginTop: 2 }}>{existants.length} déjà présent{existants.length>1?"s":""}</p>}
                               </div>
                               <textarea value={importInputs[dep.id] || ""}
                                 onChange={e => setImportInputs(prev => ({ ...prev, [dep.id]: e.target.value }))}
                                 placeholder={"Un arrondissement\npar ligne…"} rows={5}
-                                style={{ ...IS, resize: "vertical" as const, lineHeight: 1.7, fontSize: 12 }}/>
+                                style={{ ...IS, resize: "vertical" as const, lineHeight: 1.7, fontSize: "var(--t-12)" }}/>
                             </div>
                           );
                         })}
@@ -541,22 +541,22 @@ export default function AdminGeo() {
                 </div>
               )}
 
-              {importError && <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14 }}>{importError}</div>}
+              {importError && <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 8, fontSize: "var(--t-12)", marginBottom: 14 }}>{importError}</div>}
               {importResult && (
-                <div style={{ background: "var(--vert-voile)", color: "var(--vert-fonce)", padding: "10px 14px", borderRadius: 8, fontSize: 12, marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ background: "var(--vert-voile)", color: "var(--vert-fonce)", padding: "10px 14px", borderRadius: 8, fontSize: "var(--t-12)", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
                   <Check size={14}/> <strong>{importResult.created}</strong> arrondissement{importResult.created > 1 ? "s" : ""} importé{importResult.created > 1 ? "s" : ""} avec succès.
                 </div>
               )}
 
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button onClick={() => setImportModal(false)}
-                  style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>Fermer</button>
+                  style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: "var(--t-13)" }}>Fermer</button>
                 {importTab === "excel" ? (
                   <button onClick={() => sendBulk(excelPayload)}
                     disabled={importing || excelPayload.length === 0}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
                       background: importing || excelPayload.length === 0 ? "var(--bordure-forte)" : "var(--orange-action)",
-                      color: "var(--sur-bleu)", fontWeight: 700, cursor: importing || excelPayload.length === 0 ? "not-allowed" : "pointer", fontSize: 13 }}>
+                      color: "var(--sur-bleu)", fontWeight: 700, cursor: importing || excelPayload.length === 0 ? "not-allowed" : "pointer", fontSize: "var(--t-13)" }}>
                     {importing ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Import…</> : <><Upload size={13}/> Tout importer</>}
                   </button>
                 ) : (
@@ -564,7 +564,7 @@ export default function AdminGeo() {
                     disabled={importing || importRegionId === ""}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none",
                       background: importing || importRegionId === "" ? "var(--bordure-forte)" : "var(--orange-action)",
-                      color: "var(--sur-bleu)", fontWeight: 700, cursor: importing || importRegionId === "" ? "not-allowed" : "pointer", fontSize: 13 }}>
+                      color: "var(--sur-bleu)", fontWeight: 700, cursor: importing || importRegionId === "" ? "not-allowed" : "pointer", fontSize: "var(--t-13)" }}>
                     {importing ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }}/> Import…</> : <><Upload size={13}/> Importer</>}
                   </button>
                 )}

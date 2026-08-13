@@ -19,11 +19,11 @@ const onLeaveRow = (e: React.MouseEvent<HTMLElement>) => { e.currentTarget.style
 function MenuIcone({ icon, couleur = "var(--bleu)" }: { icon: string; couleur?: string }) {
   // Icône nue (pas de pastille), même épure que le flyout Modules
   return (
-    <span className="material-symbols-outlined" style={{ fontSize: 20, color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>{icon}</span>
+    <span className="material-symbols-outlined" style={{ fontSize: "var(--t-20)", color: couleur, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>{icon}</span>
   );
 }
 function MenuLien({ href, onNav, icon, titre, action }: { href?: string; onNav: () => void; icon: string; titre: string; action?: () => void }) {
-  const label = <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>;
+  const label = <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{titre}</span>;
   if (action) {
     return (
       <button style={MENU_ROW} onMouseEnter={onEnterRow} onMouseLeave={onLeaveRow} onClick={() => { action(); onNav(); }}>
@@ -103,7 +103,7 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
         <Link href="/" title="Accueil" aria-label="Accueil" style={{ ...boutonStyle(onDark, false), textDecoration: "none" }}
           onMouseEnter={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.20)" : "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.55)" : "rgb(var(--bleu-rgb) / 0.28)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.10)" : "transparent"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.30)" : "rgb(var(--bleu-rgb) / 0.18)"; }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "var(--t-18)", color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
         </Link>
       )}
       {/* Recherche globale (⌘K) */}
@@ -111,7 +111,7 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
         style={boutonStyle(onDark, false)}
         onMouseEnter={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.20)" : "rgb(var(--bleu-rgb) / 0.07)"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.55)" : "rgb(var(--bleu-rgb) / 0.28)"; }}
         onMouseLeave={e => { e.currentTarget.style.background = onDark ? "rgba(255,255,255,0.10)" : "transparent"; e.currentTarget.style.borderColor = onDark ? "rgba(255,255,255,0.30)" : "rgb(var(--bleu-rgb) / 0.18)"; }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 17, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
+        <span className="material-symbols-outlined" style={{ fontSize: "var(--t-18)", color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
       {/* Menu hub (ouverture au survol / au clic). En flou total, le voile
@@ -119,7 +119,7 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}
       <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={flouTotal ? undefined : closeUser}>
         <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu" style={boutonStyle(onDark, userOpen)}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "var(--t-20)", color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
       </div>
 
@@ -134,17 +134,17 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
             {/* En-tête compte */}
             {session?.user ? (
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 9px 9px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--degrade-pastille)", color: "var(--sur-bleu)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, textTransform: "uppercase" }}>
+                <span style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--degrade-pastille)", color: "var(--sur-bleu)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--t-14)", fontWeight: 800, flexShrink: 0, textTransform: "uppercase" }}>
                   {(afficheNom || session.user.email || "?").trim().charAt(0)}
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom !== session.user.email ? afficheNom : session.user.email}</p>
-                  <span style={{ display: "inline-flex", marginTop: 3, fontSize: 9, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "1px 7px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
+                  <p style={{ margin: 0, fontSize: "var(--t-125)", fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom !== session.user.email ? afficheNom : session.user.email}</p>
+                  <span style={{ display: "inline-flex", marginTop: 3, fontSize: "var(--t-9)", fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.08)", padding: "1px 7px", borderRadius: 999, textTransform: "uppercase", letterSpacing: "0.06em" }}>{ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}</span>
                 </div>
               </div>
             ) : (
               <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Menu</span>
+                <span style={{ fontSize: "var(--t-95)", fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Menu</span>
               </div>
             )}
 
@@ -153,7 +153,7 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
               <button style={{ ...MENU_ROW, background: menuModsOpen ? "rgb(var(--bleu-rgb) / 0.07)" : "transparent" }} onMouseEnter={onEnterRow} onMouseLeave={e => { if (!menuModsOpen) onLeaveRow(e); }}
                 onClick={() => setMenuModsOpen(o => !o)}>
                 <MenuIcone icon="dashboard" />
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", flex: 1 }}>Modules</span>
+                <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)", flex: 1 }}>Modules</span>
                 <ChevronDown size={14} style={{ color: "var(--gris)", flexShrink: 0, transform: "rotate(90deg)" }} />
               </button>
 
@@ -164,15 +164,15 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
                 <div className="apix-menu-fly" onMouseEnter={openMods} onMouseLeave={closeMods}
                   style={{ position: "absolute", top: -7, right: "calc(100% + 8px)", width: 258, background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.08)", borderRadius: 16, padding: 7, boxShadow: "0 24px 64px rgb(var(--ombre-rgb) / 0.16), 0 4px 12px rgb(var(--ombre-rgb) / 0.06)", transformOrigin: "top right" }}>
                   <div style={{ padding: "4px 9px 7px", borderBottom: "1px solid var(--bordure)", marginBottom: 4 }}>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
+                    <span style={{ fontSize: "var(--t-95)", fontWeight: 700, color: "var(--gris)", letterSpacing: "0.14em", textTransform: "uppercase" }}>Modules de données</span>
                   </div>
                   {modules.filter(m => visible(m.href)).map(m => (
                     <Link key={m.href} href={m.href} onClick={() => { setUserOpen(false); setMenuModsOpen(false); }}
                       style={{ display: "flex", alignItems: "center", gap: 11, padding: "7px 10px", borderRadius: 10, textDecoration: "none", transition: "background 0.12s" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.06)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 19, color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{m.icon}</span>
-                      <span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
+                      <span className="material-symbols-outlined" style={{ fontSize: "var(--t-20)", color: "var(--bleu)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 22, textAlign: "center" }}>{m.icon}</span>
+                      <span style={{ fontSize: "var(--t-125)", fontWeight: 500, color: "var(--encre)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -198,12 +198,12 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
                 style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 11, border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", transition: "background 0.12s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.06)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "var(--danger)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>logout</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>Se déconnecter</span>
+                <span className="material-symbols-outlined" style={{ fontSize: "var(--t-20)", color: "var(--danger)", fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20", lineHeight: 1, flexShrink: 0, width: 24, textAlign: "center" }}>logout</span>
+                <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--danger)" }}>Se déconnecter</span>
               </button>
             ) : (
               <Link href="/login" onClick={() => setUserOpen(false)}
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 12px", borderRadius: 11, fontSize: 13, fontWeight: 700, color: "var(--sur-bleu)", background: "var(--orange-action)", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 12px", borderRadius: 11, fontSize: "var(--t-13)", fontWeight: 700, color: "var(--sur-bleu)", background: "var(--orange-action)", textAlign: "center", textDecoration: "none", fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-action)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "var(--orange-action)"; }}>
                 Connexion

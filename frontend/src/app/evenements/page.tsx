@@ -131,19 +131,19 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
         {accent&&(
           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
-            <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
+            <span style={{fontSize: "var(--t-10)",fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
           </div>
         )}
         <div style={{padding:"16px 18px 14px",flex:1,display:"flex",flexDirection:"column" as const,gap:12}}>
           {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,minWidth:0}}>
             <div style={{minWidth:0,flex:1}}>
-              <div data-marquee style={{fontWeight:800,fontSize:14.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+              <div data-marquee style={{fontWeight:800,fontSize: "var(--t-14)",color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                 <span style={{display:"inline-block"}}>{e.nom_event}</span>
               </div>
               {(()=>{
                 const sousTitre = statut==="a_venir" ? (dansCombien(e) ?? (e.edition!=null?ordinal(e.edition):null)) : (e.edition!=null?ordinal(e.edition):null);
-                return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
+                return sousTitre&&<div style={{fontSize: "var(--t-11)",fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
               })()}
             </div>
             {e.role_apix&&<BadgeRole role={e.role_apix}/>}
@@ -152,15 +152,15 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
           {/* Date · Lieu en rangée épurée */}
           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:11,marginTop:"auto"}}>
             <div style={{flex:1,minWidth:0}}>
-              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
-              <p data-marquee style={{fontSize:12,fontWeight:700,color:dateStr?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+              <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
+              <p data-marquee style={{fontSize: "var(--t-12)",fontWeight:700,color:dateStr?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
               </p>
             </div>
             <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 14px"}}/>
             <div style={{flex:1,minWidth:0}}>
-              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
-              <p data-marquee style={{fontSize:12,fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+              <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
+              <p data-marquee style={{fontSize: "var(--t-12)",fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                 <span style={{display:"inline-block"}}>{lieu||"—"}</span>
               </p>
             </div>
@@ -181,7 +181,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
           <div key={annee}>
             {/* Jalon année */}
             <div style={{display:"flex",justifyContent:"center",padding:"6px 0 20px",position:"relative" as const,zIndex:1}}>
-              <span style={{background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:800,fontSize:13,letterSpacing:"0.06em",padding:"7px 22px",borderRadius:999,boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.30)"}}>{annee}</span>
+              <span style={{background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:800,fontSize: "var(--t-13)",letterSpacing:"0.06em",padding:"7px 22px",borderRadius:999,boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.30)"}}>{annee}</span>
             </div>
             {items.map(({e})=>{
               const statut = computeStatutEvenement(e) ?? ((e.prochain_annee||e.prochain_mois) ? "a_venir" : null);
@@ -210,7 +210,7 @@ function FriseChronologique({ evenements, onOpen, prochainId }: { evenements:any
       {/* Événements récurrents sans date fixée */}
       {sansDate.length>0&&(
         <div style={{marginTop:36}}>
-          <p style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
+          <p style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--gris)",letterSpacing:"0.14em",textTransform:"uppercase" as const,textAlign:"center" as const,marginBottom:14}}>Date à confirmer</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
             {sansDate.map(e=><Carte key={e.id} e={e}/>)}
           </div>
@@ -327,7 +327,7 @@ export default function EvenementsPage() {
           const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
           if (!prochain) return null;
           return <BarreTitreBadge label="Prochain événement" detail={`${prochain.nom_event}${prochain.date_debut?` · ${fmtDate(prochain.date_debut)}`:""}`} onClick={()=>gate(()=>setSelec(prochain))}
-            icon={<span className="material-symbols-outlined" style={{fontSize:16,color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
+            icon={<span className="material-symbols-outlined" style={{fontSize: "var(--t-16)",color:"var(--sur-bleu)",fontVariationSettings:"'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 20",lineHeight:1}}>event</span>}/>;
         })()}>
         <BarreTitreSegment options={[{v:"liste",l:"Liste",count:evenements.length},{v:"frise",l:"Frise chronologique"}]} value={vueMode} onChange={setVueMode}/>
       </BarreTitre>
@@ -339,11 +339,11 @@ export default function EvenementsPage() {
           <PanneauFiltres onPli={setFiltresOuverts} nbFiltres={nbFiltres} aDesFiltres={hasFilter} onReinit={reinit}
             recherche={recherche} setRecherche={setRecherche}>
                 <div style={{marginBottom:18}}>
-                  <p style={{fontSize:11,fontWeight:700,color:statutFiltre?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
+                  <p style={{fontSize: "var(--t-11)",fontWeight:700,color:statutFiltre?"var(--bleu)":"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em",marginBottom:8}}>Statut</p>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {STATUT_OPTS.map(b=>(
                       <button key={b.value} onClick={()=>setStatutFiltre(b.value)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize:12,fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"var(--texte)"}}
+                        style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:7,border:"none",background:"transparent",cursor:"pointer",textAlign:"left" as const,fontSize: "var(--t-12)",fontWeight:statutFiltre===b.value?700:400,color:statutFiltre===b.value?b.text:"var(--texte)"}}
                         onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}} onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:7,height:7,borderRadius:"50%",background:b.text,opacity:statutFiltre===b.value?1:0.3,flexShrink:0}}/>{b.label}
                       </button>
@@ -366,8 +366,8 @@ export default function EvenementsPage() {
             ):evenements.length===0?(
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <CalendarDays size={48} style={{marginBottom:16,opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun événement trouvé</p>
-                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                <p style={{fontSize: "var(--t-16)",fontWeight:600,color:"var(--texte)"}}>Aucun événement trouvé</p>
+                <p style={{fontSize: "var(--t-14)",marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ):vueMode==="frise"?(
@@ -424,17 +424,17 @@ export default function EvenementsPage() {
                         {accent&&(
                           <div style={{display:"flex",alignItems:"center",gap:7,background:accent.grad,padding:"6px 16px",flexShrink:0}}>
                             <span style={{width:7,height:7,borderRadius:"50%",background:"var(--carte)",animation:"pulseDot 1.6s ease-out infinite",flexShrink:0}}/>
-                            <span style={{fontSize:10,fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
+                            <span style={{fontSize: "var(--t-10)",fontWeight:800,color:"var(--sur-bleu)",letterSpacing:"0.12em",textTransform:"uppercase" as const}}>{accent.label}</span>
                           </div>
                         )}
                         <div style={{padding:"18px 20px 16px",flex:1,display:"flex",flexDirection:"column" as const,gap:13}}>
                           {/* Titre + édition | rôle APIX (le statut se lit sur la bande / les dates) */}
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                             <div style={{minWidth:0,flex:1}}>
-                              <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
+                              <div style={{fontWeight:800,fontSize: "var(--t-15)",color:txtC,lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{e.nom_event}</div>
                               {(()=>{
                                 const sousTitre = statutAff==="a_venir" ? (dansCombien(e) ?? (e.edition!=null?ordinal(e.edition):null)) : (e.edition!=null?ordinal(e.edition):null);
-                                return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
+                                return sousTitre&&<div style={{fontSize: "var(--t-11)",fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
                               })()}
                             </div>
                             {e.role_apix&&<BadgeRole role={e.role_apix}/>}
@@ -443,15 +443,15 @@ export default function EvenementsPage() {
                           {/* Date · Lieu en rangée épurée */}
                           <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                             <div style={{flex:1,minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
-                              <p data-marquee style={{fontSize:12.5,fontWeight:700,color:dateStr?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                              <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Date</p>
+                              <p data-marquee style={{fontSize: "var(--t-125)",fontWeight:700,color:dateStr?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{dateStr||"—"}</span>
                               </p>
                             </div>
                             <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                             <div style={{flex:1,minWidth:0}}>
-                              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
-                              <p data-marquee style={{fontSize:12.5,fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                              <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Lieu</p>
+                              <p data-marquee style={{fontSize: "var(--t-125)",fontWeight:700,color:lieu?txtC:"var(--gris)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
                                 <span style={{display:"inline-block"}}>{lieu||"—"}</span>
                               </p>
                             </div>

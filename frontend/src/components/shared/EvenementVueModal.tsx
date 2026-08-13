@@ -80,7 +80,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
           {dateStr && (
             <FicheBloc label="Date">
               <FicheValeur>{dateStr}</FicheValeur>
-              {e.duree_jours && <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 2 }}>{e.duree_jours} jour{e.duree_jours > 1 ? "s" : ""}</p>}
+              {e.duree_jours && <p style={{ fontSize: "var(--t-105)", color: "var(--gris)", marginTop: 2 }}>{e.duree_jours} jour{e.duree_jours > 1 ? "s" : ""}</p>}
             </FicheBloc>
           )}
           {(e.ville || e.pays_hote_nom) && <FicheBloc label="Lieu"><FicheValeur>{[e.ville, e.pays_hote_nom].filter(Boolean).join(", ")}</FicheValeur></FicheBloc>}
@@ -109,7 +109,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {paysInvites.length > 0 && (
               <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Pays invités</p>
+                <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Pays invités</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {paysInvites.map(p => <span key={p} style={badge_bleu}>{p}</span>)}
                 </div>
@@ -117,7 +117,7 @@ export default function EvenementVueModal({ ev:e, onClose, actions }: { ev:any; 
             )}
             {entInvitees.length > 0 && (
               <div>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Entreprises invitées</p>
+                <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.1em", color: "var(--gris)", textTransform: "uppercase", marginBottom: 5 }}>Entreprises invitées</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                   {entInvitees.map(ent => <span key={ent} style={badge_bleu}>{ent}</span>)}
                 </div>

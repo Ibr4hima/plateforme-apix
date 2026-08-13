@@ -30,13 +30,13 @@ function RegionsMultiSelect({
     <div style={{ position: "relative" }}>
       <div onClick={() => setOpen(!open)} style={{
         background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8,
-        padding: "9px 12px", fontSize: 13, cursor: "pointer", minHeight: 38,
+        padding: "9px 12px", fontSize: "var(--t-13)", cursor: "pointer", minHeight: 38,
         display: "flex", alignItems: "center", flexWrap: "wrap", gap: 4,
       }}>
         {noms.length === 0
           ? <span style={{ color: "var(--gris)" }}>Sélectionner des régions…</span>
           : noms.map(n => (
-            <span key={n} style={{ fontSize: 11, fontWeight: 600, color: "var(--violet)", background: "rgb(var(--violet-rgb) / 0.1)", padding: "2px 8px", borderRadius: 999 }}>{n}</span>
+            <span key={n} style={{ fontSize: "var(--t-11)", fontWeight: 600, color: "var(--violet)", background: "rgb(var(--violet-rgb) / 0.1)", padding: "2px 8px", borderRadius: 999 }}>{n}</span>
           ))
         }
       </div>
@@ -44,7 +44,7 @@ function RegionsMultiSelect({
         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200, background: "var(--carte)", border: "1px solid rgb(var(--violet-rgb) / 0.3)", borderRadius: 10, boxShadow: "var(--ombre-2)", maxHeight: 260, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "8px 10px", borderBottom: "1px solid var(--bordure)" }}>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{ width: "100%", background: "var(--fond)", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: 12, outline: "none", boxSizing: "border-box" as const }} />
+              style={{ width: "100%", background: "var(--fond)", border: "none", borderRadius: 6, padding: "6px 10px", fontSize: "var(--t-12)", outline: "none", boxSizing: "border-box" as const }} />
           </div>
           <div style={{ overflowY: "auto", maxHeight: 210 }}>
             {filtered.map(r => (
@@ -56,12 +56,12 @@ function RegionsMultiSelect({
                 <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${selected.includes(r.id) ? "var(--violet)" : "var(--bordure-forte)"}`, background: selected.includes(r.id) ? "var(--violet-action)" : "var(--carte)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {selected.includes(r.id) && <Check size={11} color="var(--sur-bleu)" strokeWidth={3} />}
                 </div>
-                <span style={{ fontSize: 13, color: "var(--encre)" }}>{r.nom}</span>
+                <span style={{ fontSize: "var(--t-13)", color: "var(--encre)" }}>{r.nom}</span>
               </div>
             ))}
           </div>
           <div style={{ padding: "8px 12px", borderTop: "1px solid var(--bordure)", display: "flex", justifyContent: "flex-end" }}>
-            <button onClick={() => setOpen(false)} style={{ fontSize: 12, fontWeight: 600, color: "var(--violet)", background: "none", border: "none", cursor: "pointer" }}>
+            <button onClick={() => setOpen(false)} style={{ fontSize: "var(--t-12)", fontWeight: 600, color: "var(--violet)", background: "none", border: "none", cursor: "pointer" }}>
               Fermer
             </button>
           </div>
@@ -85,8 +85,8 @@ function PoleForm({
   const [description,setDescription]= useState(initial?.description || "");
   const [error,      setError]      = useState("");
 
-  const IS: any = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
-  const LS: any = { fontSize: 12, fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
+  const IS: any = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
+  const LS: any = { fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)", marginBottom: 4, display: "block" };
 
   const handleSubmit = async () => {
     if (!nom.trim()) { setError("Le nom du pôle est obligatoire"); return; }
@@ -110,12 +110,12 @@ function PoleForm({
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
             placeholder="Description optionnelle du pôle…" style={{ ...IS, resize: "vertical" }} />
         </div>
-        {error && <p style={{ fontSize: 12, color: "var(--danger)" }}>{error}</p>}
+        {error && <p style={{ fontSize: "var(--t-12)", color: "var(--danger)" }}>{error}</p>}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>
+          <button onClick={onCancel} style={{ padding: "8px 16px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontWeight: 600, cursor: "pointer", fontSize: "var(--t-13)" }}>
             Annuler
           </button>
-          <button onClick={handleSubmit} disabled={saving} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "none", background: "var(--violet-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontSize: 13 }}>
+          <button onClick={handleSubmit} disabled={saving} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 9, border: "none", background: "var(--violet-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontSize: "var(--t-13)" }}>
             {saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Check size={13} /> {initial ? "Modifier" : "Créer"}</>}
           </button>
         </div>
@@ -195,9 +195,9 @@ export default function PolesPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--violet)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
-        <h1 style={{ fontWeight: 800, fontSize: "1.75rem", color: "var(--encre)" }}>Gestion des pôles territoires</h1>
-        <p style={{ color: "var(--gris)", fontSize: 13, marginTop: 4 }}>
+        <p style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--violet)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Administration</p>
+        <h1 style={{ fontWeight: 800, fontSize: "var(--t-r175)", color: "var(--encre)" }}>Gestion des pôles territoires</h1>
+        <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", marginTop: 4 }}>
           {poles.length} pôle{poles.length > 1 ? "s" : ""} territorial{poles.length > 1 ? "ux" : ""}
         </p>
       </div>
@@ -221,15 +221,15 @@ export default function PolesPage() {
                 <div style={{ background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderLeft: "4px solid var(--violet)", borderRadius: 12, padding: "14px 20px", display: "flex", alignItems: "flex-start", gap: 16 }}>
                   {/* Numéro */}
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgb(var(--violet-rgb) / 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "var(--violet)" }}>{p.id}</span>
+                    <span style={{ fontSize: "var(--t-12)", fontWeight: 800, color: "var(--violet)" }}>{p.id}</span>
                   </div>
                   {/* Infos */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--encre)", marginBottom: 3 }}>{p.pole_territoire}</div>
-                    <div style={{ fontSize: 12, color: "var(--texte)", marginBottom: 2 }}>
+                    <div style={{ fontWeight: 700, fontSize: "var(--t-14)", color: "var(--encre)", marginBottom: 3 }}>{p.pole_territoire}</div>
+                    <div style={{ fontSize: "var(--t-12)", color: "var(--texte)", marginBottom: 2 }}>
                       {nomsRegions(p.region_ids)}
                     </div>
-                    {p.description && <div style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.5 }}>{p.description}</div>}
+                    {p.description && <div style={{ fontSize: "var(--t-12)", color: "var(--gris)", lineHeight: 1.5 }}>{p.description}</div>}
                   </div>
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
@@ -255,7 +255,7 @@ export default function PolesPage() {
               />
             ) : (
               <button onClick={() => setShowCreate(true)}
-                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 20px", borderRadius: 12, border: "2px dashed var(--bordure-forte)", background: "transparent", color: "var(--gris)", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
+                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 20px", borderRadius: 12, border: "2px dashed var(--bordure-forte)", background: "transparent", color: "var(--gris)", fontSize: "var(--t-13)", fontWeight: 600, cursor: "pointer", transition: "all 0.2s", fontFamily: "var(--font-google-sans)" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--violet)"; e.currentTarget.style.color = "var(--violet)"; e.currentTarget.style.background = "rgb(var(--violet-rgb) / 0.03)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--bordure-forte)"; e.currentTarget.style.color = "var(--gris)"; e.currentTarget.style.background = "transparent"; }}
               >

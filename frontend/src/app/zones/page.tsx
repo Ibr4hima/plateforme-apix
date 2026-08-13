@@ -77,7 +77,7 @@ function ZonesParType({ zones }: { zones: any[] }) {
               {/* Bandeau du type — même style que « Prochain événement » */}
               <div style={{ display:"flex", alignItems:"center", gap:7, background:grad, padding:"6px 16px" }}>
                 <span style={{ width:7, height:7, borderRadius:"50%", background:"var(--carte)", animation:"pulseDot 1.6s ease-out infinite", flexShrink:0 }}/>
-                <span style={{ fontSize:10, fontWeight:800, color:"var(--sur-bleu)", letterSpacing:"0.12em", textTransform:"uppercase" as const }}>{t.type}</span>
+                <span style={{ fontSize: "var(--t-10)", fontWeight:800, color:"var(--sur-bleu)", letterSpacing:"0.12em", textTransform:"uppercase" as const }}>{t.type}</span>
                 {active && (
                   <span style={{ marginLeft:"auto", width:16, height:16, borderRadius:"50%", background:"rgba(255,255,255,0.25)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="var(--carte)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -87,26 +87,26 @@ function ZonesParType({ zones }: { zones: any[] }) {
 
               <div style={{ padding:"14px 16px 14px", flex:1 }}>
                 {/* Libellé du type (défile au survol si trop long) */}
-                <div data-marquee style={{ fontWeight:700, fontSize:13.5, color:"var(--encre)", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap" as const }}>
+                <div data-marquee style={{ fontWeight:700, fontSize: "var(--t-135)", color:"var(--encre)", lineHeight:1.35, overflow:"hidden", whiteSpace:"nowrap" as const }}>
                   <span style={{ display:"inline-block" }}>{t.meta.label}</span>
                 </div>
 
                 {/* Compteurs libellés */}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:10 }}>
                   <div style={{ background:`${voile(c, 4)}`, border:`1px solid ${voile(c, 12)}`, borderRadius:10, padding:"8px 11px" }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
-                    <p style={{ fontSize:14, fontWeight:800, color:entreprises>0?"var(--encre)":"var(--gris)" }}>{entreprises}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Entreprise{entreprises>1?"s":""}</p>
+                    <p style={{ fontSize: "var(--t-14)", fontWeight:800, color:entreprises>0?"var(--encre)":"var(--gris)" }}>{entreprises}</p>
                   </div>
                   <div style={{ background:`${voile(c, 4)}`, border:`1px solid ${voile(c, 12)}`, borderRadius:10, padding:"8px 11px" }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Zone{t.zones.length>1?"s":""}</p>
-                    <p style={{ fontSize:14, fontWeight:800, color:t.zones.length>0?"var(--encre)":"var(--gris)" }}>{t.zones.length}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:c, textTransform:"uppercase" as const, marginBottom:3 }}>Zone{t.zones.length>1?"s":""}</p>
+                    <p style={{ fontSize: "var(--t-14)", fontWeight:800, color:t.zones.length>0?"var(--encre)":"var(--gris)" }}>{t.zones.length}</p>
                   </div>
                 </div>
               </div>
 
               {/* Action */}
               <div style={{ display:"flex", borderTop:"1px solid var(--bordure)" }}>
-                <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize:11.5, color:c, fontWeight:700, transition:"background 0.15s" }}
+                <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, padding:"10px 0", fontSize: "var(--t-115)", color:c, fontWeight:700, transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background=`${voile(c, 5)}`}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   {active ? "Affiché" : "Voir les zones"} <ChevronRight size={13}/>
@@ -124,13 +124,13 @@ function ZonesParType({ zones }: { zones: any[] }) {
             background:`linear-gradient(100deg, ${voile(selectedInfo.meta.color, 8)} 0%, ${voile(selectedInfo.meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
             border:`1px solid ${voile(selectedInfo.meta.color, 13)}` }}>
             <div style={{ width:44, height:44, borderRadius:13, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"var(--carte)", border:`1px solid ${selectedInfo.meta.border}`, boxShadow:`0 2px 6px ${voile(selectedInfo.meta.color, 10)}` }}>
-              <span style={{ fontSize:12, fontWeight:800, letterSpacing:"0.02em", color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
+              <span style={{ fontSize: "var(--t-12)", fontWeight:800, letterSpacing:"0.02em", color:selectedInfo.meta.color }}>{selectedInfo.type}</span>
             </div>
             <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:9.5, fontWeight:700, color:selectedInfo.meta.color, textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:3 }}>Type de zone</div>
-              <div style={{ fontWeight:800, fontSize:16, color:"var(--encre)", lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{selectedInfo.meta.label}</div>
+              <div style={{ fontSize: "var(--t-95)", fontWeight:700, color:selectedInfo.meta.color, textTransform:"uppercase" as const, letterSpacing:"0.12em", marginBottom:3 }}>Type de zone</div>
+              <div style={{ fontWeight:800, fontSize: "var(--t-16)", color:"var(--encre)", lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{selectedInfo.meta.label}</div>
             </div>
-            <span style={{ display:"inline-flex", alignItems:"center", fontSize:12.5, fontWeight:700, color:"var(--sur-bleu)", background:selectedInfo.meta.color, padding:"6px 15px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, boxShadow:`0 2px 8px ${voile(selectedInfo.meta.color, 25)}` }}>
+            <span style={{ display:"inline-flex", alignItems:"center", fontSize: "var(--t-125)", fontWeight:700, color:"var(--sur-bleu)", background:selectedInfo.meta.color, padding:"6px 15px", borderRadius:999, flexShrink:0, whiteSpace:"nowrap" as const, boxShadow:`0 2px 8px ${voile(selectedInfo.meta.color, 25)}` }}>
               {selectedInfo.zones.length} zone{selectedInfo.zones.length > 1 ? "s" : ""}
             </span>
           </div>
@@ -171,10 +171,10 @@ function ZoneBigCard({ zone, color="var(--bleu)", onClick }: { zone:any; color?:
       {/* Nom + superficie | badge pôle à droite */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
         <div style={{ minWidth:0, flex:1 }}>
-          <div data-marquee style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+          <div data-marquee style={{ fontWeight:800, fontSize: "var(--t-15)", color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap" as const }}>
             <span style={{ display:"inline-block" }}>{zone.nom_zone}</span>
           </div>
-          {zone.superficie&&<div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</div>}
+          {zone.superficie&&<div style={{ fontSize: "var(--t-11)", fontWeight:500, color:"var(--gris)", marginTop:3 }}>{Number(zone.superficie).toLocaleString("fr-FR")} ha</div>}
         </div>
         {zone.pole_nom&&(
           <span title={zone.pole_nom} style={{ ...badgePole(zone.pole_nom), whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis", flexShrink:1, minWidth:0 }}>
@@ -186,15 +186,15 @@ function ZoneBigCard({ zone, color="var(--bleu)", onClick }: { zone:any; color?:
       {/* Localisation · Entreprises en rangée épurée */}
       <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
         <div style={{ flex:1, minWidth:0 }}>
-          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Localisation</p>
-          <p data-marquee style={{ fontSize:12.5, fontWeight:700, color:(zone.departement_nom||zone.region_nom)?"var(--encre)":"var(--gris)", overflow:"hidden", whiteSpace:"nowrap" as const }}>
+          <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Localisation</p>
+          <p data-marquee style={{ fontSize: "var(--t-125)", fontWeight:700, color:(zone.departement_nom||zone.region_nom)?"var(--encre)":"var(--gris)", overflow:"hidden", whiteSpace:"nowrap" as const }}>
             <span style={{ display:"inline-block" }}>{[zone.departement_nom, zone.region_nom].filter(Boolean).join(", ") || "—"}</span>
           </p>
         </div>
         <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
         <div style={{ flex:1, minWidth:0 }}>
-          <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{entreprises>1?"s":""}</p>
-          <p style={{ fontSize:12.5, fontWeight:700, color:entreprises>0?"var(--encre)":"var(--gris)", fontVariantNumeric:"tabular-nums" }}>{entreprises}</p>
+          <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Entreprise{entreprises>1?"s":""}</p>
+          <p style={{ fontSize: "var(--t-125)", fontWeight:700, color:entreprises>0?"var(--encre)":"var(--gris)", fontVariantNumeric:"tabular-nums" }}>{entreprises}</p>
         </div>
       </div>
     </div>

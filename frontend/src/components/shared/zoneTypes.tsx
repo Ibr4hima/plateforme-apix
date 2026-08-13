@@ -37,7 +37,7 @@ export function ZonePill({ type, children, style }: {
 }) {
   const m = zoneTypeMeta(type);
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 600, color: m.color, background: m.bg, border: `1px solid ${m.border}`, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", ...style }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "var(--t-115)", fontWeight: 600, color: m.color, background: m.bg, border: `1px solid ${m.border}`, padding: "3px 10px", borderRadius: 999, whiteSpace: "nowrap", ...style }}>
       {children}
     </span>
   );

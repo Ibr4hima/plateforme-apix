@@ -11,10 +11,10 @@ import { voile } from "@/lib/couleurs";
 import { API_BASE as API } from "@/lib/api";
 
 // ── Styles partagés ────────────────────────────────────────────────────────────
-const IS: any = { background:"var(--carte-douce)", border:"1px solid var(--bordure-forte)", borderRadius:9, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any = { fontSize:10.5, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:6, display:"block" };
-const BTN_P: any = { display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" };
-const BTN_S: any = { display:"flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" };
+const IS: any = { background:"var(--carte-douce)", border:"1px solid var(--bordure-forte)", borderRadius:9, padding:"9px 12px", fontSize: "var(--t-13)", color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any = { fontSize: "var(--t-105)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:6, display:"block" };
+const BTN_P: any = { display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize: "var(--t-13)", fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" };
+const BTN_S: any = { display:"flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize: "var(--t-13)", fontFamily:"var(--font-google-sans)" };
 
 const CONTINENTS  = ["Afrique","Amérique","Asie","Europe","Océanie"];
 const NIVEAUX     = ["Revenu élevé","Revenu intermédiaire supérieur","Revenu intermédiaire inférieur","Revenu faible","Non classifié"];
@@ -29,7 +29,7 @@ const REVENU_COLOR: Record<string,string> = {
 // ── Composants utilitaires ─────────────────────────────────────────────────────
 function Badge({ label, color="var(--gris)" }: { label:string; color?:string }) {
   return (
-    <span style={{ fontSize:10.5, fontWeight:700, color, background:`${voile(color, 7)}`, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
+    <span style={{ fontSize: "var(--t-105)", fontWeight:700, color, background:`${voile(color, 7)}`, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
       {label}
     </span>
   );
@@ -45,7 +45,7 @@ function Confirm({ msg, onOui, onNon }: { msg:string; onOui:()=>void; onNon:()=>
             <span style={{ width:34, height:34, borderRadius:"50%", background:"rgb(var(--danger-rgb) / 0.08)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
               <AlertTriangle size={16} style={{ color:"var(--danger)" }} />
             </span>
-            <p style={{ fontSize:13.5, color:"var(--encre)", lineHeight:1.65 }}>{msg}</p>
+            <p style={{ fontSize: "var(--t-135)", color:"var(--encre)", lineHeight:1.65 }}>{msg}</p>
           </div>
         </div>
         <div style={{ display:"flex", gap:10, justifyContent:"flex-end", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)" }}>
@@ -105,7 +105,7 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
 
         {/* En-tête */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
-          <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le pays":"Nouveau pays"}</h2>
+          <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le pays":"Nouveau pays"}</h2>
           <button onClick={onClose}
             style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
@@ -163,14 +163,14 @@ function ModalPays({ open, onClose, edit, meta, onSaved }: any) {
 
           <div style={{ display:"flex", gap:20 }}>
             {[["est_industrialise","Économie industrialisée"],["est_emergent","Économie émergente"],["actif","Pays actif"]].map(([k,l])=>(
-              <label key={k} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13, color:"var(--encre)" }}>
+              <label key={k} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize: "var(--t-13)", color:"var(--encre)" }}>
                 <input type="checkbox" checked={!!form[k]} onChange={e=>upd(k,e.target.checked)} style={{ width:14, height:14, accentColor:"var(--bleu)" }} />
                 {l}
               </label>
             ))}
           </div>
 
-          {error && <p style={{ fontSize:12, color:"var(--danger)", marginTop:14 }}>{error}</p>}
+          {error && <p style={{ fontSize: "var(--t-12)", color:"var(--danger)", marginTop:14 }}>{error}</p>}
         </div>
 
         {/* Pied */}
@@ -220,7 +220,7 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
 
         {/* En-tête */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
-          <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le groupement":"Nouveau groupement"}</h2>
+          <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", lineHeight:1.3 }}>{edit?"Modifier le groupement":"Nouveau groupement"}</h2>
           <button onClick={onClose}
             style={{ background:"var(--champ)", border:"none", cursor:"pointer", borderRadius:99, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
             onMouseEnter={ev=>(ev.currentTarget.style.background="var(--fond-creux2)")}
@@ -249,7 +249,7 @@ function ModalGroupement({ open, onClose, edit, onSaved }: any) {
             <label style={{...LS, color:"var(--orange)"}}>Description</label>
             <textarea value={form.description} onChange={e=>upd("description",e.target.value)} rows={3} style={{...IS, resize:"vertical" as const}} />
           </div>
-          {error && <p style={{ fontSize:12, color:"var(--danger)", marginTop:12 }}>{error}</p>}
+          {error && <p style={{ fontSize: "var(--t-12)", color:"var(--danger)", marginTop:12 }}>{error}</p>}
         </div>
 
         {/* Pied */}
@@ -307,10 +307,10 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
         <div style={{ height:4, background:"var(--orange-action)", flexShrink:0 }} />
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16, flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", lineHeight:1.3 }}>{grp.nom_fr}</h2>
+            <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", lineHeight:1.3 }}>{grp.nom_fr}</h2>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
-              <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", padding:"3px 10px", borderRadius:999 }}>{grp.code}</span>
-              <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{membres.length} membre{membres.length>1?"s":""}</span>
+              <span style={{ display:"inline-flex", alignItems:"center", fontSize: "var(--t-105)", fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", padding:"3px 10px", borderRadius:999 }}>{grp.code}</span>
+              <span style={{ display:"inline-flex", alignItems:"center", fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{membres.length} membre{membres.length>1?"s":""}</span>
             </div>
           </div>
           <button onClick={onClose}
@@ -324,13 +324,13 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", flex:1, minHeight:0, overflow:"hidden", height:500 }}>
           {/* Membres actuels */}
           <div style={{ borderRight:"1px solid var(--bordure)", padding:"16px 20px", display:"flex", flexDirection:"column" as const, gap:10, overflow:"hidden" }}>
-            <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.14em", flexShrink:0 }}>Membres actuels</p>
+            <p style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.14em", flexShrink:0 }}>Membres actuels</p>
             <div style={{ overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:4, maxHeight:420 }}>
               {membres.map(m=>(
                 <div key={m.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:9, border:"1px solid var(--bordure)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
-                    <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{m.code_iso3}</span>
-                    <span style={{ fontSize:13, color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{m.nom_fr}</span>
+                    <span style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{m.code_iso3}</span>
+                    <span style={{ fontSize: "var(--t-13)", color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{m.nom_fr}</span>
                   </div>
                   <button onClick={()=>handleRetirer(m.id)} disabled={removing===m.id}
                     style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, width:24, height:24, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
@@ -340,25 +340,25 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
                   </button>
                 </div>
               ))}
-              {membres.length===0 && <p style={{ fontSize:13, color:"var(--gris)", textAlign:"center" as const, padding:"20px 0" }}>Aucun membre</p>}
+              {membres.length===0 && <p style={{ fontSize: "var(--t-13)", color:"var(--gris)", textAlign:"center" as const, padding:"20px 0" }}>Aucun membre</p>}
             </div>
           </div>
 
           {/* Ajouter des pays */}
           <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column" as const, gap:10, overflow:"hidden" }}>
-            <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.14em", flexShrink:0 }}>Ajouter des pays</p>
+            <p style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", textTransform:"uppercase" as const, letterSpacing:"0.14em", flexShrink:0 }}>Ajouter des pays</p>
             <div style={{ flexShrink:0 }}>
               <div style={{ position:"relative" as const }}>
                 <Search size={12} style={{ position:"absolute" as const, left:10, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
-                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" style={{...IS, paddingLeft:28, fontSize:12}} />
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…" style={{...IS, paddingLeft:28, fontSize: "var(--t-12)"}} />
               </div>
             </div>
             <div style={{ overflowY:"auto" as const, display:"flex", flexDirection:"column" as const, gap:4, maxHeight:370 }}>
               {disponibles.map((p:any)=>(
                 <div key={p.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:"var(--carte-douce)", borderRadius:9, border:"1px solid var(--bordure)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:0 }}>
-                    <span style={{ fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--fond-creux2)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{p.code_iso3}</span>
-                    <span style={{ fontSize:13, color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom_fr}</span>
+                    <span style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--texte)", background:"var(--fond-creux2)", padding:"2px 8px", borderRadius:999, flexShrink:0 }}>{p.code_iso3}</span>
+                    <span style={{ fontSize: "var(--t-13)", color:"var(--encre)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom_fr}</span>
                   </div>
                   <button onClick={()=>handleAjouter(p.id)} disabled={adding===p.id}
                     style={{ background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.18)", cursor:"pointer", borderRadius:999, width:24, height:24, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"background 0.15s" }}
@@ -368,7 +368,7 @@ function PanelMembres({ grp, onClose, allPays, onChanged }: any) {
                   </button>
                 </div>
               ))}
-              {disponibles.length===0 && <p style={{ fontSize:13, color:"var(--gris)", textAlign:"center" as const, padding:"20px 0" }}>Tous les pays sont membres</p>}
+              {disponibles.length===0 && <p style={{ fontSize: "var(--t-13)", color:"var(--gris)", textAlign:"center" as const, padding:"20px 0" }}>Tous les pays sont membres</p>}
             </div>
           </div>
         </div>
@@ -472,7 +472,7 @@ export default function RefPaysPage() {
 
       {/* Header */}
       <div style={{ marginBottom:8 }}>
-        <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"var(--encre)" }}>Référentiel Pays &amp; Groupements</h1>
+        <h1 style={{ fontWeight:800, fontSize: "var(--t-r175)", color:"var(--encre)" }}>Référentiel Pays &amp; Groupements</h1>
       </div>
 
       {/* Onglets */}
@@ -483,16 +483,16 @@ export default function RefPaysPage() {
             const count = key==="pays"?pays.length:grps.length;
             return (
             <button key={key} onClick={()=>setOnglet(key)}
-              style={{ display:"flex", alignItems:"center", padding:"14px 22px", border:"none", borderBottom:`2px solid ${actif?"var(--bleu)":"transparent"}`, background:"transparent", color:actif?"var(--bleu)":"var(--gris)", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", padding:"14px 22px", border:"none", borderBottom:`2px solid ${actif?"var(--bleu)":"transparent"}`, background:"transparent", color:actif?"var(--bleu)":"var(--gris)", fontWeight:600, cursor:"pointer", fontSize: "var(--t-13)", transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
               {key==="pays"?<Globe size={13} style={{ marginRight:7 }}/>:<Users size={13} style={{ marginRight:7 }}/>} {label}
-              {count>0 && <span style={{ marginLeft:7, fontSize:11, fontWeight:700, color:actif?"var(--bleu)":"var(--gris)", background:actif?"rgb(var(--bleu-rgb) / 0.1)":"var(--fond)", padding:"1px 7px", borderRadius:999 }}>{count}</span>}
+              {count>0 && <span style={{ marginLeft:7, fontSize: "var(--t-11)", fontWeight:700, color:actif?"var(--bleu)":"var(--gris)", background:actif?"rgb(var(--bleu-rgb) / 0.1)":"var(--fond)", padding:"1px 7px", borderRadius:999 }}>{count}</span>}
             </button>
             );
           })}
         </div>
         <button
           onClick={()=>{ if(onglet==="pays"){ setEditPays(null); setModalPays(true); } else { setEditGrp(null); setModalGrp(true); } }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.3)", marginBottom:4, fontFamily:"var(--font-google-sans)" }}>
+          style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize: "var(--t-13)", boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.3)", marginBottom:4, fontFamily:"var(--font-google-sans)" }}>
           <Plus size={15} /> {onglet==="pays"?"Nouveau pays":"Nouveau groupement"}
         </button>
       </div>
@@ -536,7 +536,7 @@ export default function RefPaysPage() {
               <thead>
                 <tr style={{ borderBottom:"1px solid var(--bordure)" }}>
                   {["ISO","Pays","Continent","Région","Revenu","Statut","Actions"].map(h=>(
-                    <th key={h} style={{ padding:"12px 14px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{h}</th>
+                    <th key={h} style={{ padding:"12px 14px", textAlign:"left" as const, fontSize: "var(--t-10)", fontWeight:800, color:"var(--texte)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -546,19 +546,19 @@ export default function RefPaysPage() {
                     onMouseEnter={e=>(e.currentTarget.style.background="var(--carte-douce)")}
                     onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
                     <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.code_iso3}</span>
+                      <span style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.code_iso3}</span>
                     </td>
                     <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:13, fontWeight:600, color:"var(--encre)" }}>{p.nom_fr}</span>
+                      <span style={{ fontSize: "var(--t-13)", fontWeight:600, color:"var(--encre)" }}>{p.nom_fr}</span>
                     </td>
                     <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:12, color:"var(--texte)" }}>{p.continent||"—"}</span>
+                      <span style={{ fontSize: "var(--t-12)", color:"var(--texte)" }}>{p.continent||"—"}</span>
                     </td>
                     <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:12, color:"var(--texte)" }}>{p.region_geo||"—"}</span>
+                      <span style={{ fontSize: "var(--t-12)", color:"var(--texte)" }}>{p.region_geo||"—"}</span>
                     </td>
                     <td style={{ padding:"10px 14px" }}>
-                      {p.niveau_revenu ? <Badge label={p.niveau_revenu} color={REVENU_COLOR[p.niveau_revenu]||"var(--gris)"} /> : <span style={{ color:"var(--gris)", fontSize:12 }}>—</span>}
+                      {p.niveau_revenu ? <Badge label={p.niveau_revenu} color={REVENU_COLOR[p.niveau_revenu]||"var(--gris)"} /> : <span style={{ color:"var(--gris)", fontSize: "var(--t-12)" }}>—</span>}
                     </td>
                     <td style={{ padding:"10px 14px" }}>
                       <div style={{ display:"flex", gap:4 }}>
@@ -586,9 +586,9 @@ export default function RefPaysPage() {
                 ))}
               </tbody>
             </table>
-            {pays.length===0 && <p style={{ textAlign:"center" as const, padding:"40px 0", color:"var(--gris)", fontSize:14 }}>Aucun pays trouvé</p>}
+            {pays.length===0 && <p style={{ textAlign:"center" as const, padding:"40px 0", color:"var(--gris)", fontSize: "var(--t-14)" }}>Aucun pays trouvé</p>}
           </div>
-          <p style={{ fontSize:12, color:"var(--gris)", marginTop:10 }}>{pays.length} pays affichés</p>
+          <p style={{ fontSize: "var(--t-12)", color:"var(--gris)", marginTop:10 }}>{pays.length} pays affichés</p>
         </div>
 
       ) : (
@@ -602,17 +602,17 @@ export default function RefPaysPage() {
               <div style={{ height:3, background:"linear-gradient(90deg,var(--orange-action) 0%,var(--orange-action) 60%,var(--orange-action) 100%)", flexShrink:0 }} />
               <div style={{ padding:"14px 16px 14px", flex:1 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
-                  <span style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:10.5, fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize: "var(--t-105)", fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
                     <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", ["--pc" as any]:"rgb(var(--orange-rgb) / 0.4)", animation:"pulseDotC 1.6s ease-out infinite", flexShrink:0 }}/>
                     {g.code}
                   </span>
-                  <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const, flexShrink:0 }}>{g.nb_pays} pays</span>
+                  <span style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const, flexShrink:0 }}>{g.nb_pays} pays</span>
                 </div>
-                <p style={{ fontWeight:700, fontSize:13.5, color:"var(--encre)", lineHeight:1.35 }}>{g.nom_fr}</p>
-                {g.nom_en && <p style={{ fontSize:11, color:"var(--gris)", marginTop:2 }}>{g.nom_en}</p>}
+                <p style={{ fontWeight:700, fontSize: "var(--t-135)", color:"var(--encre)", lineHeight:1.35 }}>{g.nom_fr}</p>
+                {g.nom_en && <p style={{ fontSize: "var(--t-11)", color:"var(--gris)", marginTop:2 }}>{g.nom_en}</p>}
                 {g.description && (
                   <div style={{ background:"rgb(var(--orange-rgb) / 0.04)", border:"1px solid rgb(var(--orange-rgb) / 0.12)", borderRadius:10, padding:"8px 11px", marginTop:10 }}>
-                    <p style={{ fontSize:12, color:"var(--texte)", lineHeight:1.5 }}>{g.description}</p>
+                    <p style={{ fontSize: "var(--t-12)", color:"var(--texte)", lineHeight:1.5 }}>{g.description}</p>
                   </div>
                 )}
               </div>
@@ -620,14 +620,14 @@ export default function RefPaysPage() {
               {/* Actions */}
               <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }}>
                 <button onClick={()=>{ setEditGrp(g); setModalGrp(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <div style={{ width:1, background:"var(--fond)" }}/>
                 <button onClick={()=>setPanelGrp(g)}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   <Users size={12}/> Membres ({g.nb_pays})
@@ -642,7 +642,7 @@ export default function RefPaysPage() {
               </div>
             </div>
           ))}
-          {grps.length===0 && <p style={{ color:"var(--gris)", fontSize:14, gridColumn:"1/-1", textAlign:"center" as const, padding:"40px 0" }}>Aucun groupement</p>}
+          {grps.length===0 && <p style={{ color:"var(--gris)", fontSize: "var(--t-14)", gridColumn:"1/-1", textAlign:"center" as const, padding:"40px 0" }}>Aucun groupement</p>}
         </div>
       )}
 

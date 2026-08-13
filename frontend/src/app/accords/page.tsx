@@ -158,10 +158,10 @@ export default function AccordsPage() {
           <div style={{width:64,height:64,borderRadius:16,background:"rgb(var(--bleu-rgb) / 0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <FileText size={28} style={{color:"var(--bleu)"}}/>
           </div>
-          <h2 style={{fontWeight:800,fontSize:"1.4rem",color:"var(--encre)"}}>Traités Internationaux</h2>
-          <p style={{fontSize:14,color:"var(--gris)",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
+          <h2 style={{fontWeight:800,fontSize: "var(--t-r140)",color:"var(--encre)"}}>Traités Internationaux</h2>
+          <p style={{fontSize: "var(--t-14)",color:"var(--gris)",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
           <div style={{background:"rgb(var(--bleu-rgb) / 0.07)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:10,padding:"10px 20px"}}>
-            <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>Disponible prochainement</span>
+            <span style={{fontSize: "var(--t-12)",fontWeight:700,color:"var(--bleu)"}}>Disponible prochainement</span>
           </div>
         </div>
       </div>
@@ -175,8 +175,8 @@ export default function AccordsPage() {
                 {/* Statut */}
                 <div style={{marginBottom:18}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-                    <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
-                    {statutFiltre&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
+                    <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Statut</span>
+                    {statutFiltre&&<span style={{fontSize: "var(--t-10)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>1</span>}
                   </div>
                   <div style={{display:"flex",flexDirection:"column" as const,gap:2}}>
                     {[
@@ -190,7 +190,7 @@ export default function AccordsPage() {
                         onMouseEnter={e=>{e.currentTarget.style.background="var(--carte-douce)";}}
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0}}/>
-                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>{o.l}</span>
+                        <span style={{fontSize: "var(--t-12)",color:"var(--texte)",fontWeight:sel?700:400}}>{o.l}</span>
                       </button>
                     );})}
                   </div>
@@ -201,8 +201,8 @@ export default function AccordsPage() {
                   <button onClick={()=>setPartiesOpen(o=>!o)}
                     style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",background:"none",border:"none",cursor:"pointer",padding:"4px 0",marginBottom:partiesOpen?8:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:11,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
-                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize:10,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
+                      <span style={{fontSize: "var(--t-11)",fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>Parties signataires</span>
+                      {(paysIdsFiltres.length>0||apixFiltre)&&<span style={{fontSize: "var(--t-10)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.1)",padding:"1px 6px",borderRadius:999}}>{paysIdsFiltres.length+(apixFiltre?1:0)}</span>}
                     </div>
                     <span style={{width:20,height:20,borderRadius:"50%",background:"var(--champ)",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           {partiesOpen?<ChevronUp size={11} style={{color:"var(--texte)"}}/>:<ChevronDown size={11} style={{color:"var(--texte)"}}/>}
@@ -217,7 +217,7 @@ export default function AccordsPage() {
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>Sénégal</span>
+                        <span style={{fontSize: "var(--t-12)",color:"var(--texte)",fontWeight:sel?700:400}}>Sénégal</span>
                       </button>
                     );})()}
                     {/* APIX S.A */}
@@ -228,12 +228,12 @@ export default function AccordsPage() {
                         onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                         <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                   </div>
-                        <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>APIX S.A</span>
+                        <span style={{fontSize: "var(--t-12)",color:"var(--texte)",fontWeight:sel?700:400}}>APIX S.A</span>
                       </button>
                     );})()}
                     {/* Sous-section Pays */}
                     {autresPays.length>0&&<>
-                      <p style={{fontSize:10,fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
+                      <p style={{fontSize: "var(--t-10)",fontWeight:700,color:"var(--gris)",textTransform:"uppercase" as const,letterSpacing:"0.08em",margin:"8px 0 2px",padding:"0 8px"}}>Pays</p>
                       <div style={{maxHeight:160,overflowY:"auto" as const}}>
                         {autresPays.map((p:any)=>{const sel=paysIdsFiltres.includes(p.id); return (
                           <button key={p.id} onClick={()=>togglePaysId(p.id)}
@@ -242,7 +242,7 @@ export default function AccordsPage() {
                             onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}>
                             <div style={{width:9,height:9,borderRadius:"50%",border:`2px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`,background:sel?"var(--bleu-action)":"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                                           </div>
-                            <span style={{fontSize:12,color:"var(--texte)",fontWeight:sel?700:400}}>{p.nom}</span>
+                            <span style={{fontSize: "var(--t-12)",color:"var(--texte)",fontWeight:sel?700:400}}>{p.nom}</span>
                           </button>
                         );})}
                       </div>
@@ -264,8 +264,8 @@ export default function AccordsPage() {
             ) : accords.length===0 ? (
               <div style={{textAlign:"center",padding:"80px 24px",color:"var(--gris)"}}>
                 <FileText size={48} style={{marginBottom:16,opacity:0.3}}/>
-                <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun accord trouvé</p>
-                <p style={{fontSize:14,marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
+                <p style={{fontSize: "var(--t-16)",fontWeight:600,color:"var(--texte)"}}>Aucun accord trouvé</p>
+                <p style={{fontSize: "var(--t-14)",marginTop:6}}>Modifiez vos filtres pour affiner la recherche.</p>
                 {hasFilter&&<BoutonEffacerFiltres onClick={reinit}/>}
               </div>
             ) : (
@@ -298,13 +298,13 @@ export default function AccordsPage() {
                     {/* Titre + ancienneté du statut | badge pastel à droite */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                       <div style={{minWidth:0,flex:1}}>
-                        <div style={{fontWeight:800,fontSize:15.5,color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
+                        <div style={{fontWeight:800,fontSize: "var(--t-15)",color:txtC,lineHeight:1.35,letterSpacing:"-0.01em"}}>{a.titre}</div>
                         {(()=>{
                           const sousTitre = statut==="en_vigueur"&&a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
                             : statut==="signe"&&a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
                             : statut==="expire"&&a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
                             : a.reference || null;
-                          return sousTitre&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
+                          return sousTitre&&<div style={{fontSize: "var(--t-11)",fontWeight:500,color:"var(--gris)",marginTop:3}}>{sousTitre}</div>;
                         })()}
                       </div>
                       {st&&(
@@ -317,13 +317,13 @@ export default function AccordsPage() {
                     {/* Dates en rangée épurée + flèche d'action */}
                     <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
+                        <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Signature</p>
+                        <p style={{fontSize: "var(--t-125)",fontWeight:700,color:a.date_signature?txtC:"var(--gris)",fontVariantNumeric:"tabular-nums"}}>{a.date_signature?fmtDate(a.date_signature):"—"}</p>
                       </div>
                       <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
                       <div style={{flex:1,minWidth:0}}>
-                        <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
-                        <p style={{fontSize:12.5,fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
+                        <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>{dateSec.label}</p>
+                        <p style={{fontSize: "var(--t-125)",fontWeight:700,color:dateSec.vide?"var(--gris)":txtC,fontVariantNumeric:"tabular-nums"}}>{dateSec.val}</p>
                       </div>
                     </div>
                   </div>

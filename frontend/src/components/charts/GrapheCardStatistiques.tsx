@@ -20,12 +20,12 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
         <div style={{ marginBottom: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
-              <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, display: "inline-block" }}>{titre}</h3>
+              <h3 style={{ fontWeight: 700, fontSize: "var(--t-135)", color: "var(--encre)", margin: 0, display: "inline-block" }}>{titre}</h3>
             </div>
             {!hideLegend && series?.length > 0 && (
               <LegendeGraphe series={series.filter((s: any) => s.data.some((d: any) => d.valeur !== null))} style={{ marginTop: 5 }} />
             )}
-            {!hideSousTitre && legende && <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 4 }}>{legende}</p>}
+            {!hideSousTitre && legende && <p style={{ fontSize: "var(--t-105)", color: "var(--gris)", marginTop: 4 }}>{legende}</p>}
           </div>
         </div>
         <div style={{ pointerEvents: "none" }}>{children}</div>

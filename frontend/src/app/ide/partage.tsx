@@ -93,14 +93,14 @@ export function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse
     else setTypeAnalyse(v); // ici typeAnalyse EST le sousOnglet (pays/monde)
   };
   const btn = (actif: boolean): React.CSSProperties => ({
-    textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12,
+    textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: "var(--t-12)",
     fontWeight: actif ? 700 : 500, background: actif ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent",
     color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
   });
   return (
     <>
       <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid var(--bordure)" }}>
-        <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+        <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
         <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
           {([{ v:"pays", l:"Pays" }, { v:"monde", l:"Monde" }, { v:"secteurs", l:"Secteurs" }] as const).map(o => (
             <button key={o.v} onClick={() => choisir(o.v)} style={btn(vueActive === o.v)}>{o.l}</button>
@@ -109,7 +109,7 @@ export function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse
       </div>
       {vueP === "secteurs" && (
         <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid var(--bordure)" }}>
-          <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
+          <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Type d&apos;analyse</p>
           <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
             {[{ v: "secteur", l: "Analyse sectorielle" }, { v: "comparative", l: "Analyse comparative" }].map(o => (
               <button key={o.v} onClick={() => setTypeAnalyse(o.v)} style={btn(typeAnalyse === o.v)}>{o.l}</button>
@@ -167,23 +167,23 @@ export function BtnAjoutPaysComp({ paysDispo, exclus, plein, onPick, onOpenChang
           border:"1px solid var(--bordure-forte)", borderRadius:12, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
           <div style={{ padding:8, borderBottom:"1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un pays…"
-              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize: "var(--t-125)", color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight:240, overflowY:"auto" as const }}>
             {groupes.map(([continent, pays]: any) => (
               <div key={continent}>
-                <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{continent}</div>
+                <div style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{continent}</div>
                 {pays.map((p: any) => (
                   <button key={p.nom} onClick={() => { onPick(p.nom); setQ(""); inputRef.current?.focus(); }}
                     style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid var(--bordure)", transition:"background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize:12, color:"var(--encre)", fontWeight:500 }}>{p.nom}</span>
+                    <span style={{ fontSize: "var(--t-12)", color:"var(--encre)", fontWeight:500 }}>{p.nom}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {dispo.length === 0 && <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"14px 0" }}>Aucun pays trouvé</p>}
+            {dispo.length === 0 && <p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"14px 0" }}>Aucun pays trouvé</p>}
           </div>
         </div>
       )}
@@ -256,23 +256,23 @@ export function BtnAjoutGroupement({ groupements, exclus, type, plein, changer, 
           border:"1px solid var(--bordure-forte)", borderRadius:12, background:"var(--carte)", boxShadow:"var(--ombre-2)", overflow:"hidden" }}>
           <div style={{ padding:8, borderBottom:"1px solid var(--bordure)" }}>
             <input ref={inputRef} value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un groupement…"
-              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize:12.5, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
+              style={{ width:"100%", boxSizing:"border-box" as const, background:"var(--carte)", borderWidth:1, borderStyle:"solid", borderColor:"var(--bordure-forte)", borderRadius:9, padding:"8px 11px", fontSize: "var(--t-125)", color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)" }} />
           </div>
           <div style={{ maxHeight:240, overflowY:"auto" as const }}>
             {sections.map(sec => (
               <div key={sec.label}>
-                <div style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{sec.label}</div>
+                <div style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.04)", padding:"5px 12px", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, top:0 }}>{sec.label}</div>
                 {sec.items.map(g => (
                   <button key={g.code} title={g.nom_fr} onClick={() => { onPick(g.code); setQ(""); if (changer) setOpen(false); else inputRef.current?.focus(); }}
                     style={{ display:"flex", alignItems:"center", gap:8, width:"100%", padding:"7px 14px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" as const, borderBottom:"1px solid var(--bordure)", transition:"background 0.1s" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span style={{ fontSize:12, color:"var(--encre)", fontWeight:500 }}>{sec.label === "Groupements" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
+                    <span style={{ fontSize: "var(--t-12)", color:"var(--encre)", fontWeight:500 }}>{sec.label === "Groupements" ? g.code.replace(/_/g, " ") : g.nom_fr}</span>
                   </button>
                 ))}
               </div>
             ))}
-            {sections.length === 0 && <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"14px 0" }}>Aucun résultat</p>}
+            {sections.length === 0 && <p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"14px 0" }}>Aucun résultat</p>}
           </div>
         </div>
       )}
@@ -287,7 +287,7 @@ export function SousTypeNav({ value, onChange, options }: { value: string; onCha
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ padding:"6px 18px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12.5, fontWeight:700, whiteSpace:"nowrap" as const,
+            style={{ padding:"6px 18px", borderRadius:999, border:"none", cursor:"pointer", fontSize: "var(--t-125)", fontWeight:700, whiteSpace:"nowrap" as const,
               background: actif ? "var(--bleu-action)" : "transparent",
               color: actif ? "var(--sur-bleu)" : "var(--texte)",
               boxShadow: actif ? "0 2px 8px rgb(var(--ombre-rgb) / 0.30), inset 0 1px 0 rgba(255,255,255,0.12)" : "none",
@@ -344,16 +344,16 @@ export function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: 
     <div style={{ display: "flex", flexDirection: "column" as const, gap: grand ? 8 : 4.5, padding: grand ? "4px 2px" : "2px 2px 0" }}>
       {rows.map((r, i) => (
         <div key={r.annee} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 16, fontSize: grand ? 11 : 9.5, fontWeight: 800, color: i < 3 ? "var(--bleu)" : "var(--gris)", textAlign: "right" as const, flexShrink: 0 }}>{i + 1}</span>
-          <span style={{ width: 32, fontSize: grand ? 12 : 10.5, fontWeight: 700, color: "var(--encre)", flexShrink: 0 }}>{r.annee}</span>
+          <span style={{ width: 16, fontSize: grand ? "var(--t-11)" : "var(--t-95)", fontWeight: 800, color: i < 3 ? "var(--bleu)" : "var(--gris)", textAlign: "right" as const, flexShrink: 0 }}>{i + 1}</span>
+          <span style={{ width: 32, fontSize: grand ? "var(--t-12)" : "var(--t-105)", fontWeight: 700, color: "var(--encre)", flexShrink: 0 }}>{r.annee}</span>
           <div style={{ flex: 1, height: grand ? 12 : 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.max(2, r.valeur / max * 100)}%`, borderRadius: 99,
               background: i === 0 ? "linear-gradient(90deg,var(--bleu-action),var(--bleu-action))" : "var(--bleu-action)", opacity: i === 0 ? 1 : Math.max(0.35, 1 - i * 0.08) }} />
           </div>
-          <span style={{ width: grand ? 86 : 68, fontSize: grand ? 11.5 : 10, fontWeight: 700, color: "var(--bleu)", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const }}>{fmtVal(r.valeur)}</span>
+          <span style={{ width: grand ? 86 : 68, fontSize: grand ? "var(--t-115)" : "var(--t-10)", fontWeight: 700, color: "var(--bleu)", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const }}>{fmtVal(r.valeur)}</span>
         </div>
       ))}
-      {rows.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "20px 0" }}>Aucune donnée</p>}
+      {rows.length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "20px 0" }}>Aucune donnée</p>}
     </div>
   );
 }
@@ -424,14 +424,14 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
           style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epinglee ? accent : "var(--gris)", flexShrink: 0 }}>
           <Pin size={11} fill={epinglee ? accent : "none"} />
         </button>
-        <span style={{ width: 34, fontSize: 11, fontWeight: epinglee ? 800 : 600, color: "var(--encre)", flexShrink: 0 }}>{annee}</span>
-        <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "var(--gris)" : accent, textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
+        <span style={{ width: 34, fontSize: "var(--t-11)", fontWeight: epinglee ? 800 : 600, color: "var(--encre)", flexShrink: 0 }}>{annee}</span>
+        <span style={{ width: 34, fontSize: "var(--t-11)", fontWeight: 800, color: v === undefined ? "var(--gris)" : accent, textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
         <span style={{ width: 58, textAlign: "right" as const, flexShrink: 0 }}><Delta delta={deltaDe(annee)} /></span>
         <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
           {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: epinglee ? 1 : 0.55 }} />}
         </div>
         {annee === anneeRecord
-          ? <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.10)", padding: "2px 6px", borderRadius: 999, flexShrink: 0 }}>RECORD</span>
+          ? <span style={{ fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.10)", padding: "2px 6px", borderRadius: 999, flexShrink: 0 }}>RECORD</span>
           : <span style={{ width: 46, flexShrink: 0 }} />}
       </div>
     );
@@ -442,9 +442,9 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
       <style>{`.ligne-annee .pin-fantome{opacity:0;transition:opacity .12s}
 .ligne-annee:hover{background:rgb(var(--bleu-rgb) / 0.03)}
 .ligne-annee:hover .pin-fantome{opacity:1}`}</style>
-      <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+      <h3 style={{ fontWeight: 700, fontSize: "var(--t-135)", color: "var(--encre)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
       {valides.length === 0 ? (
-        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
+        <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
       ) : (
         <>
           {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
@@ -454,7 +454,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
               onChange={v => setPosCurseur(v)} />
             <button onClick={() => togglePin(anCurseur)}
               title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "var(--t-10)", fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
                 background: epingles.includes(anCurseur) ? accent : voile(accent, 8), color: epingles.includes(anCurseur) ? "var(--sur-bleu)" : accent, fontFamily: "var(--font-google-sans)" }}>
               <Pin size={10} fill={epingles.includes(anCurseur) ? "var(--sur-bleu)" : "none"} />
               {epingles.includes(anCurseur) ? "Épinglée" : "Épingler"}
@@ -464,9 +464,9 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
           {/* En-tête du tableau */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
             <span style={{ width: 14, flexShrink: 0 }} />
-            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
-            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
-            <span style={{ width: 58, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+            <span style={{ width: 34, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
+            <span style={{ width: 34, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
+            <span style={{ width: 58, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
             <span style={{ flex: 1 }} />
             <span style={{ width: 46, flexShrink: 0 }} />
           </div>
@@ -480,7 +480,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
 
           {/* Bilan de comparaison entre années épinglées */}
           {bilan && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: voile(accent, 5), border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: voile(accent, 5), border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 10, padding: "6px 11px", fontSize: "var(--t-105)", flexWrap: "wrap" as const }}>
               <span style={{ fontWeight: 800, color: accent }}>{bilan.de}</span>
               <span style={{ color: "var(--gris)" }}>({fmtNombre(bilan.v0)})</span>
               <span style={{ color: "var(--gris)" }}>→</span>
@@ -538,7 +538,7 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
   return (
     <div style={{ gridColumn: "1 / -1", background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-        <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
+        <h3 style={{ fontWeight: 700, fontSize: "var(--t-135)", color: "var(--encre)", margin: 0, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
         {n >= 2 && (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <CurseurAnneeNace min={0} max={n} value={annee == null ? n : Math.max(0, annees.indexOf(annee))}
@@ -550,10 +550,10 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
 
       {/* En-tête */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-        <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const }}>{libelleLigne}</span>
-        <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
-        <span style={{ width: 56, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
-        <span style={{ width: 44, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
+        <span style={{ flex: 1, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const }}>{libelleLigne}</span>
+        <span style={{ width: 44, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
+        <span style={{ width: 56, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+        <span style={{ width: 44, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Part</span>
         <span style={{ width: "30%", flexShrink: 0 }} />
       </div>
 
@@ -566,14 +566,14 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
               onMouseLeave={e => { e.currentTarget.style.background = zebre ? "var(--carte-douce)" : "transparent"; }}>
               <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: l.couleur, flexShrink: 0 }} />
-                <span title={l.nom} style={{ fontSize: 12, fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{l.nom}</span>
+                <span title={l.nom} style={{ fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{l.nom}</span>
               </span>
-              <span style={{ width: 44, fontSize: 11.5, fontWeight: 800, color: l.valeur === null ? "var(--gris)" : "var(--bleu)", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{l.valeur === null ? "—" : fmtNombre(l.valeur)}</span>
-              <span style={{ width: 56, fontSize: 9.5, fontWeight: 700, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const,
+              <span style={{ width: 44, fontSize: "var(--t-115)", fontWeight: 800, color: l.valeur === null ? "var(--gris)" : "var(--bleu)", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{l.valeur === null ? "—" : fmtNombre(l.valeur)}</span>
+              <span style={{ width: 56, fontSize: "var(--t-95)", fontWeight: 700, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const,
                 color: l.delta === null ? "var(--gris)" : l.delta > 0 ? "var(--vert)" : l.delta < 0 ? "var(--danger)" : "var(--gris)" }}>
                 {l.delta === null ? "—" : `${l.delta > 0 ? "▲" : l.delta < 0 ? "▼" : "="} ${Math.abs(l.delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
               </span>
-              <span style={{ width: 44, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
+              <span style={{ width: 44, fontSize: "var(--t-10)", fontWeight: 700, color: "var(--texte)", textAlign: "right" as const, flexShrink: 0 }}>
                 {l.valeur !== null && total > 0 ? `${(Math.max(0, l.valeur) / total * 100).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %` : "—"}
               </span>
               <div style={{ width: "30%", height: 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
@@ -583,7 +583,7 @@ export function CarteTableauComparatif({ titre, series, libelleLigne = "Pays" }:
           );
         })}
       </div>
-      {annees.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "16px 0" }}>Aucune donnée</p>}
+      {annees.length === 0 && <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", textAlign: "center" as const, padding: "16px 0" }}>Aucune donnée</p>}
     </div>
   );
 }
@@ -651,8 +651,8 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
-                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize:10.5, fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize: "var(--t-105)", fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
                   {annees[0]} — {annees[annees.length-1]}
                 </span>}
               </div>
@@ -669,7 +669,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                   return (
                     <span key={p.nom} title={p.label||p.nom}
                       onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
-                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(p.couleur, 5)}`, border:`1px solid ${voile(p.couleur, 18)}`, fontSize:10.5, fontWeight:700, color:p.couleur, minWidth:0 }}>
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(p.couleur, 5)}`, border:`1px solid ${voile(p.couleur, 18)}`, fontSize: "var(--t-105)", fontWeight:700, color:p.couleur, minWidth:0 }}>
                       <span style={{ width:7, height:7, borderRadius:"50%", background:p.couleur, display:"inline-block", flexShrink:0 }} />
                       <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
                         <span style={{ display:"inline-block" }}>{p.abrege||p.nom}</span>
@@ -688,11 +688,11 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
 
         {/* Tableau */}
         <div style={{ overflowY:"auto" as const, flex:1, overflowX:"auto" as const }}>
-          <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
+          <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize: "var(--t-12)" }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
               <tr style={{ background:"var(--carte-douce)" }}>
-                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize: "var(--t-10)", fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:170 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize: "var(--t-10)", fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -702,7 +702,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                     <td colSpan={annees.length+1} style={{ padding:"12px 28px 6px", background:"var(--carte)" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                         <span style={{ width:8, height:8, borderRadius:"50%", background:pays.couleur, flexShrink:0 }} />
-                        <span style={{ fontSize:12.5, fontWeight:800, color:pays.couleur }}>{pays.abrege||pays.nom}</span>
+                        <span style={{ fontSize: "var(--t-125)", fontWeight:800, color:pays.couleur }}>{pays.abrege||pays.nom}</span>
                       </div>
                     </td>
                   </tr>
@@ -712,7 +712,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                       onMouseEnter={e=>e.currentTarget.style.background="var(--carte-douce)"}
                       onMouseLeave={e=>e.currentTarget.style.background="var(--carte)"}>
                       <td style={{ padding:"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid var(--bordure)", whiteSpace:"nowrap" as const }}>
-                        <span style={{ fontSize:12, color:"var(--texte)", fontWeight:500 }}>{s.label}</span>
+                        <span style={{ fontSize: "var(--t-12)", color:"var(--texte)", fontWeight:500 }}>{s.label}</span>
                       </td>
                       {annees.map(a=>{
                         const r = donnees.find((d:any)=>d.pays===pays.nom&&d.direction===s.dir&&d.indicateur===s.ind&&d.annee===a);
@@ -720,7 +720,7 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
                         const display = v!==null&&v!==undefined ? (s.unite==="nombre" ? fmtNombre(v) : fmtVal(v)) : "—";
                         const color = v===null||v===undefined ? "var(--gris)" : v<0 ? "var(--danger)" : "var(--texte)";
                         return (
-                          <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
+                          <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize: "var(--t-12)", color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums", whiteSpace:"nowrap" as const }}>
                             {display}
                           </td>
                         );
@@ -735,15 +735,15 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
 
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
-          <span style={{ fontSize:11, color:"var(--gris)" }}>
+          <span style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>
             {paysSelectionnes.length} {entite} · {annees.length} années · {sousType === "fluxstock" ? "valeurs en M$ USD" : "valeurs en M$ USD, nombres en absolu"} · Source CNUCED
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize: "var(--t-125)", fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
             <button onClick={()=>exportXLSX(donnees,paysSelectionnes,periode,sousType)}
-              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
               <FileSpreadsheet size={13}/> Excel
             </button>
           </div>
@@ -829,7 +829,7 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
     .filter(p => kpi.annee == null || p.annee < kpi.annee)
     .slice(-4);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
+    <p style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
 
   return (
@@ -847,7 +847,7 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
                   Les autres précisions — « (vs N-1) », « (5 ans) » — portent du
                   sens et restent. */}
               <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
                   {titreMain}
                   {kpi.annee && <span style={{ color:"var(--gris-fort)" }}>{` · ${kpi.annee}`}</span>}
                 </h2>
@@ -856,12 +856,12 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
               {(precision || trendLabel) && (
                 <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
                   {precision && (
-                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
+                    <span style={{ fontSize: "var(--t-105)", fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
                       {precision}
                     </span>
                   )}
                   {trendLabel && (
-                    <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
+                    <span style={{ fontSize: "var(--t-105)", fontWeight:700, padding:"3px 10px", borderRadius:999, color:signalColor, background:signalBg, border:`1px solid ${signalBorder}` }}>
                       {trendLabel}
                     </span>
                   )}
@@ -880,8 +880,8 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
-              {kpi.annee && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {kpi.annee}</span>}
+              <span style={{ fontSize: "var(--t-r220)", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtKpi(kpi)}</span>
+              {kpi.annee && <span style={{ fontSize: "var(--t-13)", color:"var(--gris)", fontWeight:500 }}>en {kpi.annee}</span>}
             </div>
           </div>
           {historique.length > 0 && (
@@ -890,8 +890,8 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
               <div style={{ display:"grid", gridTemplateColumns:`repeat(${historique.length},1fr)`, gap:8 }}>
                 {historique.map(p => (
                   <div key={p.annee} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{p.annee}</p>
-                    <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{p.annee}</p>
+                    <p style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>
                       {fmtKpi({ ...kpi, valeur: p.v })}
                     </p>
                   </div>
@@ -902,14 +902,14 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
           <div>
             <SecTitle>Interprétation</SecTitle>
             <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
-              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{interp}</p>
+              <p style={{ fontSize: "var(--t-13)", color:"var(--encre)", lineHeight:1.75 }}>{interp}</p>
             </div>
           </div>
         </div>
 
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"flex-end", flexShrink:0 }}>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize: "var(--t-125)", fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
             Fermer
           </button>
         </div>
@@ -979,7 +979,7 @@ export function BoutonDonnees({ onClick, dep }: { onClick: () => void; dep?: any
   }, [dep]);
   return (
     <button ref={ref} onClick={onClick} title="Tableau de données"
-      style={{ marginLeft:"auto", display:"inline-flex", alignItems:"center", gap: mode==="icone"?0:7, padding: mode==="icone"?"8px 10px":"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, whiteSpace:"nowrap" as const }}
+      style={{ marginLeft:"auto", display:"inline-flex", alignItems:"center", gap: mode==="icone"?0:7, padding: mode==="icone"?"8px 10px":"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", fontSize: "var(--t-125)", fontWeight:700, cursor:"pointer", fontFamily:"var(--font-google-sans)", flexShrink:0, whiteSpace:"nowrap" as const }}
       onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
       <Table size={14} />{mode!=="icone" && <span>{mode==="full"?"Tableau de données":"Données"}</span>}
     </button>

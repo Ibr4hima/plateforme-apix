@@ -31,14 +31,14 @@ function BtnAjoutContact({ ok, onClick, titre }: { ok:boolean; onClick:()=>void;
 }
 
 import { API_BASE as API } from "@/lib/api";
-const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"10px 13px", fontSize:13.5, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
+const IS: any  = { background:"var(--carte)", border:"1px solid var(--bordure-forte)", borderRadius:10, padding:"10px 13px", fontSize: "var(--t-135)", color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize: "var(--t-12)", fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize: "var(--t-11)", fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 const validMail = (v: string) => !v || /^[^@.][^@]*@[^@]+\.[^@]+[^@.]$/.test(v.trim());
 const ERR_MAIL = "Email invalide";
 function FieldErr({ msg }: { msg: string }) {
-  return <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>{msg}</p>;
+  return <p style={{ fontSize: "var(--t-11)", color:"var(--danger)", marginTop:3 }}>{msg}</p>;
 }
 
 // ── Point focal row ───────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ function PointFocalRow({ pf, idx, onChange, onRemove }: {
   return (
     <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
+        <span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
           <X size={12} style={{ color:"var(--danger)" }}/>
         </button>
@@ -120,7 +120,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
   return (
     <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-        <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Porteur {idx+1}</span>
+        <span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--bleu)" }}>Porteur {idx+1}</span>
         <button onClick={onRemove} style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:6, padding:"4px 7px" }}>
           <X size={12} style={{ color:"var(--danger)" }}/>
         </button>
@@ -180,7 +180,7 @@ function PorteurRow({ p: porteur, idx, onChange, onRemove }: {
 function AddBtn({ label, onClick, ok = true, titre }: { label:string; onClick:()=>void; ok?:boolean; titre?:string }) {
   return (
     <button onClick={()=>ok&&onClick()} disabled={!ok} title={ok?undefined:titre}
-      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--gris)", fontSize:12.5, fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
+      style={{ display:"flex", alignItems:"center", gap:6, width:"100%", padding:"11px 14px", borderRadius:10, border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", color:"var(--gris)", fontSize: "var(--t-125)", fontWeight:400, cursor:ok?"pointer":"not-allowed", opacity:ok?1:0.45, fontFamily:"var(--font-google-sans)", transition:"all 0.15s" }}
       onMouseEnter={e=>{ if(ok){ e.currentTarget.style.borderColor="var(--bleu)"; e.currentTarget.style.color="var(--bleu)"; } }}
       onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--bordure-forte)"; e.currentTarget.style.color="var(--gris)"; }}>
       <Plus size={13}/> {label}
@@ -465,7 +465,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
               <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/projets/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13, flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
+                  style={{ fontSize: "var(--t-13)", flex:1, color:"var(--encre)", fontWeight:500, textDecoration:"none" }}>{f.titre||f.fichier_nom}</a>
                 <button onClick={async()=>{
                   if (edit?.id) await fetch(`${API}/projets/${edit.id}/fichiers/${f.id}`,{method:"DELETE"});
                   setFichiers(prev=>prev.filter((x:any)=>x.id!==f.id));
@@ -477,7 +477,7 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
         <label style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", borderRadius:10, cursor:"pointer", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", transition:"border-color 0.15s" }}
           onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Upload size={14} color="var(--gris)"/>
-          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
+          <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
           <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
             const files = Array.from(e.target.files||[]);
             setPdfQueue(prev=>[...prev, ...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"") }))]);
@@ -490,13 +490,13 @@ function ProjetModal({ open, onClose, edit, onSaved }: { open:boolean; onClose:(
               <div key={i} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--violet-rgb) / 0.05)", border:"1px solid rgb(var(--violet-rgb) / 0.2)", borderRadius:10, padding:"8px 12px" }}>
                 <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
-                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12.5, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  placeholder="Titre du document" style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize: "var(--t-125)", padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                 <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}>
                   <X size={13} style={{ color:"var(--danger)" }}/>
                 </button>
               </div>
             ))}
-            <p style={{ fontSize:11, color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
+            <p style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>Les fichiers seront téléversés à l&apos;enregistrement.</p>
           </div>
         )}
       </FSection>
@@ -521,11 +521,11 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
   };
   const invest = fmtInvest();
   const SecTitle = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
+    <p style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",letterSpacing:"0.14em",textTransform:"uppercase" as const,marginBottom:10}}>{children}</p>
   );
   const Bloc = ({label,children}:{label:string;children:React.ReactNode}) => (
     <div style={{background:"rgb(var(--bleu-rgb) / 0.04)",border:"1px solid rgb(var(--bleu-rgb) / 0.10)",borderRadius:10,padding:"9px 12px",minWidth:0}}>
-      <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.1em",color:"var(--bleu)",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
+      <p style={{fontSize: "var(--t-9)",fontWeight:800,letterSpacing:"0.1em",color:"var(--bleu)",textTransform:"uppercase" as const,marginBottom:3}}>{label}</p>
       {children}
     </div>
   );
@@ -541,12 +541,12 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
         {/* En-tête */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16,padding:"18px 28px 16px",borderBottom:"1px solid var(--bordure)",flexShrink:0}}>
           <div style={{minWidth:0}}>
-            <h2 style={{fontWeight:800,fontSize:"1.1rem",color:"var(--encre)",lineHeight:1.3}}>{p.titre_projet}</h2>
+            <h2 style={{fontWeight:800,fontSize: "var(--t-r110)",color:"var(--encre)",lineHeight:1.3}}>{p.titre_projet}</h2>
             <div style={{display:"flex",gap:6,flexWrap:"wrap" as const,marginTop:8}}>
-              {p.pole_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{p.pole_nom}</span>}
-              {p.region_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Région de {p.region_nom}</span>}
-              {p.departement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Département de {p.departement_nom}</span>}
-              {p.arrondissement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize:10.5,fontWeight:700,color:"var(--violet)",background:"rgb(var(--violet-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
+              {p.pole_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{p.pole_nom}</span>}
+              {p.region_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--orange)",background:"rgb(var(--orange-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Région de {p.region_nom}</span>}
+              {p.departement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.08)",padding:"3px 10px",borderRadius:999}}>Département de {p.departement_nom}</span>}
+              {p.arrondissement_nom && <span style={{display:"inline-flex",alignItems:"center",fontSize: "var(--t-105)",fontWeight:700,color:"var(--violet)",background:"rgb(var(--violet-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>Arrondissement de {p.arrondissement_nom}</span>}
             </div>
           </div>
           <button onClick={onClose}
@@ -565,8 +565,8 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
             <section>
               <SecTitle>Informations</SecTitle>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {invest && <Bloc label="Investissement"><p style={{fontSize:13,fontWeight:700,color:"var(--encre)"}}>{invest}</p></Bloc>}
-                {p.date_debut && <Bloc label="Date de début"><p style={{fontSize:12.5,fontWeight:600,color:"var(--encre)"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p></Bloc>}
+                {invest && <Bloc label="Investissement"><p style={{fontSize: "var(--t-13)",fontWeight:700,color:"var(--encre)"}}>{invest}</p></Bloc>}
+                {p.date_debut && <Bloc label="Date de début"><p style={{fontSize: "var(--t-125)",fontWeight:600,color:"var(--encre)"}}>{new Date(p.date_debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</p></Bloc>}
               </div>
             </section>
           )}
@@ -577,7 +577,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
               <SecTitle>Description</SecTitle>
               <div style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"13px 15px"}}>
                 <style>{`[data-rte] ul{padding-left:20px;list-style-type:disc}[data-rte] ol{padding-left:20px;list-style-type:decimal}[data-rte] li{margin-bottom:2px}`}</style>
-                <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize:13,color:"var(--texte)",lineHeight:1.7}}/>
+                <div data-rte dangerouslySetInnerHTML={{__html:p.description}} style={{fontSize: "var(--t-13)",color:"var(--texte)",lineHeight:1.7}}/>
               </div>
             </section>
           )}
@@ -595,7 +595,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                     <div key={secId}>
                       <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:brasDuSec.length?5:0}}>
                         <div style={{width:8,height:8,borderRadius:"50%",background:"var(--bleu-action)",flexShrink:0}}/>
-                        <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
+                        <span style={{fontSize: "var(--t-12)",fontWeight:700,color:"var(--bleu)"}}>{sec.nom}</span>
                       </div>
                       {brasDuSec.length > 0 && (
                         <div style={{paddingLeft:20,borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)",display:"flex",flexDirection:"column" as const,gap:4}}>
@@ -605,14 +605,14 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                               <div key={bra.id}>
                                 <div style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:actsDeBra.length?3:0}}>
                                   <div style={{width:6,height:6,borderRadius:"50%",background:"var(--orange-action)",flexShrink:0}}/>
-                                  <span style={{fontSize:11,fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
+                                  <span style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--orange)"}}>{bra.nom}</span>
                                 </div>
                                 {actsDeBra.length > 0 && (
                                   <div style={{paddingLeft:18,display:"flex",flexDirection:"column" as const,gap:3}}>
                                     {actsDeBra.map((act:any) => (
                                       <div key={act.id} style={{display:"flex",alignItems:"center",gap:6}}>
                                         <div style={{width:5,height:5,borderRadius:"50%",background:"var(--vert-action)",flexShrink:0}}/>
-                                        <span style={{fontSize:11,color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
+                                        <span style={{fontSize: "var(--t-11)",color:"var(--vert)",fontWeight:500}}>{act.nom}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -639,14 +639,14 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const mails=(por.mails||[]).filter(Boolean);
                   return (
                     <div key={pi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
-                      {por.nom && <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{por.nom}</p>}
+                      {por.nom && <p style={{fontWeight:700,fontSize: "var(--t-13)",color:"var(--encre)"}}>{por.nom}</p>}
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
                           {tels.map((t:string,ti:number)=>(
-                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
                           ))}
                           {mails.map((m:string,mi:number)=>(
-                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
+                            <span key={`m${mi}`} style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
                           ))}
                         </div>
                       )}
@@ -667,14 +667,14 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   const mails=(pf.mails||[]).filter(Boolean);
                   return (
                     <div key={fi} style={{background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,padding:"11px 14px"}}>
-                      <p style={{fontWeight:700,fontSize:13,color:"var(--encre)"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
+                      <p style={{fontWeight:700,fontSize: "var(--t-13)",color:"var(--encre)"}}>{[pf.civilite,pf.prenom,pf.nom].filter(Boolean).join(" ")}</p>
                       {(tels.length>0||mails.length>0)&&(
                         <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginTop:7}}>
                           {tels.map((t:string,ti:number)=>(
-                            <span key={`t${ti}`} style={{fontSize:11,fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--bleu)",background:"rgb(var(--bleu-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{fmtPhone(t)}</span>
                           ))}
                           {mails.map((m:string,mi:number)=>(
-                            <span key={`m${mi}`} style={{fontSize:11,fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
+                            <span key={`m${mi}`} style={{fontSize: "var(--t-11)",fontWeight:600,color:"var(--vert)",background:"rgb(var(--vert-rgb) / 0.07)",padding:"3px 10px",borderRadius:999}}>{m.trim()}</span>
                           ))}
                         </div>
                       )}
@@ -694,7 +694,7 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
                   <a key={f.id} href={`${API}/projets/${p.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
                     style={{display:"flex",alignItems:"center",gap:8,background:"rgb(var(--bleu-rgb) / 0.05)",border:"1px solid rgb(var(--bleu-rgb) / 0.15)",borderRadius:10,padding:"9px 12px",textDecoration:"none"}}>
                     <FileText size={13} style={{color:"var(--bleu)",flexShrink:0}}/>
-                    <span style={{fontSize:12.5,color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
+                    <span style={{fontSize: "var(--t-125)",color:"var(--bleu)",fontWeight:600}}>{f.titre||f.fichier_nom}</span>
                   </a>
                 ))}
               </div>
@@ -706,11 +706,11 @@ function ProjetVueModal({ projet: p, secteurs, branches, activites, onClose, onE
         {/* Pied */}
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"14px 28px",borderTop:"1px solid var(--bordure)",background:"var(--carte-douce)",flexShrink:0}}>
           <button onClick={onClose}
-            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)"}}>
+            style={{padding:"10px 20px",borderRadius:10,border:"1px solid var(--bordure-forte)",background:"var(--carte)",color:"var(--texte)",fontWeight:600,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)"}}>
             Fermer
           </button>
           <button className="ro-w" onClick={()=>{onClose();onEdit(p);}}
-            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize:13,fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
+            style={{display:"flex",alignItems:"center",gap:7,padding:"10px 22px",borderRadius:10,border:"none",background:"var(--bleu-action)",color:"var(--sur-bleu)",fontWeight:700,cursor:"pointer",fontSize: "var(--t-13)",fontFamily:"var(--font-google-sans)",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)"}}>
             <Pencil size={13}/> Modifier
           </button>
         </div>
@@ -782,8 +782,8 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
       ) : projets.length===0 ? (
         <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
           <Layers size={48} style={{ marginBottom:16, opacity:0.3 }}/>
-          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun projet enregistré</p>
-          <p style={{ fontSize:14, marginTop:6 }}>Cliquez sur « Nouveau projet » pour commencer.</p>
+          <p style={{ fontSize: "var(--t-16)", fontWeight:600, color:"var(--texte)" }}>Aucun projet enregistré</p>
+          <p style={{ fontSize: "var(--t-14)", marginTop:6 }}>Cliquez sur « Nouveau projet » pour commencer.</p>
         </div>
       ) : (
         <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
@@ -800,8 +800,8 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                 {/* Titre + pôle en sous-titre | publication */}
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
                   <div style={{ minWidth:0, flex:1 }}>
-                    <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
-                    {p.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{p.pole_nom}</div>}
+                    <div style={{ fontWeight:800, fontSize: "var(--t-15)", color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
+                    {p.pole_nom&&<div style={{ fontSize: "var(--t-11)", fontWeight:500, color:"var(--gris)", marginTop:3 }}>{p.pole_nom}</div>}
                   </div>
                   {p.est_publie===false&&<span style={{ ...badge_gris, whiteSpace:"nowrap" as const, flexShrink:0 }}>Non publié</span>}
                 </div>
@@ -809,13 +809,13 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
                 {/* Région · Département en rangée épurée */}
                 <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
-                    <p style={{ fontSize:12.5, fontWeight:700, color:p.region_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
+                    <p style={{ fontSize: "var(--t-125)", fontWeight:700, color:p.region_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
                   </div>
                   <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
-                    <p style={{ fontSize:12.5, fontWeight:700, color:p.departement_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
+                    <p style={{ fontSize: "var(--t-125)", fontWeight:700, color:p.departement_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
                   </div>
                 </div>
               </div>
@@ -823,14 +823,14 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
               {/* Actions */}
               <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={ev=>ev.stopPropagation()}>
                 <button className="ro-w" onClick={()=>{ setEdit(p); setModal(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   <Pencil size={12}/> Modifier
                 </button>
                 <div style={{ width:1, background:"var(--fond)" }}/>
                 <button className="ro-w" onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"var(--vert)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:p.est_publie?"var(--vert)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                   onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgb(var(--vert-rgb) / 0.05)":"rgb(var(--orange-rgb) / 0.06)"}
                   onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                   {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}

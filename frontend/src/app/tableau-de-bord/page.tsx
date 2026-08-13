@@ -32,7 +32,7 @@ const getJSON = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)
 
 
 // ── Petits blocs de présentation ──────────────────────────────────────────────
-const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
+const TITRE_SEC: React.CSSProperties = { fontSize: "var(--t-11)", fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
 function Delta({ v, surFonce }: { v: number | null | undefined; surFonce?: boolean }) {
   // Enveloppe du composant commun : ce fichier appelle Delta à une dizaine
@@ -44,17 +44,17 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
   // Valeur textuelle longue (nom de ressource, de pays…) : police réduite,
   // retour à la ligne sur 2 lignes plutôt qu'un texte tronqué.
   const styleValeur: React.CSSProperties = texte
-    ? { fontSize: "1.15rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
-    : { fontSize: "1.65rem", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
+    ? { fontSize: "var(--t-r110)", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
+    : { fontSize: "var(--t-r160)", fontWeight: 800, color: rouge ? "var(--danger)" : ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" };
   return (
     <div className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
-        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
-        {tag && <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
+        <p style={{ fontSize: "var(--t-10)", fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>
+        {tag && <span style={{ fontSize: "var(--t-85)", fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 7px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>{tag}</span>}
       </div>
       <p className="ds-donnee" style={styleValeur}>{valeur}</p>
       <div style={{ marginTop: 8, minHeight: 15, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        {sousLabel && <span style={{ fontSize: 10.5, color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
+        {sousLabel && <span style={{ fontSize: "var(--t-105)", color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousLabel}</span>}
         {delta != null && <Variation valeur={delta} annee={refAnnee != null ? Number(refAnnee) : null} taille={11.5} />}
       </div>
     </div>
@@ -65,8 +65,8 @@ function Kpi({ label, valeur, tag, delta, rouge, sousLabel, refAnnee, texte }: {
 function SectionHead({ n, titre, extra }: { n: number; titre: string; extra?: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgb(var(--bleu-rgb) / 0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
-      <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h2>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: "rgb(var(--bleu-rgb) / 0.09)", color: BLEU, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--t-14)", fontWeight: 800, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{String(n).padStart(2, "0")}</span>
+      <h2 style={{ margin: 0, fontSize: "var(--t-r120)", fontWeight: 800, color: ENCRE, letterSpacing: "-0.01em", whiteSpace: "nowrap", flexShrink: 0 }}>{titre}</h2>
       {extra}
       <div style={{ flex: 1, height: 1, background: "rgb(var(--encre-rgb) / 0.12)" }} />
     </div>
@@ -82,7 +82,7 @@ function Segment<T extends string>({ value, options, onChange }: { value: T; opt
         return (
           <button key={o.v} onClick={() => onChange(o.v)} style={{
             border: "none", cursor: "pointer", padding: "5px 14px", borderRadius: 999,
-            fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+            fontSize: "var(--t-12)", fontWeight: 700, whiteSpace: "nowrap",
             background: actif ? "var(--carte)" : "transparent", color: actif ? BLEU : "var(--gris-fort)",
             boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s",
           }}>{o.l}</button>
@@ -106,14 +106,14 @@ const CurseurAnnee = (p: { min: number; max: number; value: number; onChange: (a
 function MiniBarres({ data, couleur = BLEU, fmt = (v: number) => nf(v), max = 6 }: { data: { label: string; valeur: number }[]; couleur?: string; fmt?: (v: number) => string; max?: number }) {
   const rows = (data || []).slice(0, max);
   const mx = Math.max(1, ...rows.map((r) => r.valeur || 0));
-  if (rows.length === 0) return <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
+  if (rows.length === 0) return <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
       {rows.map((r) => (
         <div key={r.label}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 4 }}>
-            <span style={{ fontSize: 12.5, color: "var(--encre)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
-            <span className="ds-donnee" style={{ fontSize: 12.5, fontWeight: 700, color: ENCRE, flexShrink: 0 }}>{fmt(r.valeur)}</span>
+            <span style={{ fontSize: "var(--t-125)", color: "var(--encre)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
+            <span className="ds-donnee" style={{ fontSize: "var(--t-125)", fontWeight: 700, color: ENCRE, flexShrink: 0 }}>{fmt(r.valeur)}</span>
           </div>
           <div style={{ height: 7, borderRadius: 999, background: "var(--bleu-voile)", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.max(3, (r.valeur / mx) * 100)}%`, borderRadius: 999, background: couleur }} />
@@ -127,19 +127,19 @@ function MiniBarres({ data, couleur = BLEU, fmt = (v: number) => nf(v), max = 6 
 // Tableau compact top-N avec rang
 function TopTable({ rows, couleur = BLEU, fmt = (v: number) => nf(v), colNom = "Libellé", colVal = "Valeur", max = 8, drapeaux = false }: { rows: { nom: string; valeur: number; iso2?: string | null }[]; couleur?: string; fmt?: (v: number) => string; colNom?: string; colVal?: string; max?: number; drapeaux?: boolean }) {
   const data = (rows || []).slice(0, max);
-  if (data.length === 0) return <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
+  if (data.length === 0) return <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--t-125)" }}>
       <thead><tr>
-        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)", width: 30 }}>#</th>
-        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colNom}</th>
-        <th style={{ padding: "6px 8px", textAlign: "right", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colVal}</th>
+        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)", width: 30 }}>#</th>
+        <th style={{ padding: "6px 8px", textAlign: "left", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colNom}</th>
+        <th style={{ padding: "6px 8px", textAlign: "right", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>{colVal}</th>
       </tr></thead>
       <tbody>
         {data.map((r, i) => (
           <tr key={r.nom + i} style={{ borderBottom: "1px solid var(--filet)", background: i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
             <td style={{ padding: "6px 8px" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 999, background: i < 3 ? couleur : "var(--bleu-voile)", color: i < 3 ? "var(--sur-bleu)" : "var(--texte)", fontSize: 10, fontWeight: 800 }}>{i + 1}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 999, background: i < 3 ? couleur : "var(--bleu-voile)", color: i < 3 ? "var(--sur-bleu)" : "var(--texte)", fontSize: "var(--t-10)", fontWeight: 800 }}>{i + 1}</span>
             </td>
             <td style={{ padding: "6px 8px", fontWeight: 650, color: ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
               {drapeaux && <span style={{ marginRight: 7, display: "inline-flex", verticalAlign: "middle" }}><DrapeauPays iso={r.iso2} nom={r.nom} taille={14} /></span>}{r.nom}
@@ -181,7 +181,7 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <p title={nomComplet} style={{ ...TITRE_SEC, margin: 0, flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
           <span>{titre}</span>
-          {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
+          {tag && <span style={{ fontSize: "var(--t-9)", fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
         </p>
         <Segment value={dir} onChange={onDir} options={[{ v: "entrant", l: "Flux entrants" }, { v: "sortant", l: "Flux sortants" }]} />
       </div>
@@ -192,14 +192,14 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée{tag ? ` pour ${tag}` : ""}.</p>
+        <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "30px 0" }}>Aucune donnée{tag ? ` pour ${tag}` : ""}.</p>
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 22, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
-            <span style={{ flex: 1, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" }}>Pays</span>
-            <span style={{ width: 68, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
-            <span style={{ width: 40, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
+            <span style={{ width: 22, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", flexShrink: 0 }}>#</span>
+            <span style={{ flex: 1, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" }}>Pays</span>
+            <span style={{ width: 68, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Valeur</span>
+            <span style={{ width: 40, fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase", textAlign: "right", flexShrink: 0 }}>Part</span>
             <span style={{ width: "22%", flexShrink: 0 }} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -213,7 +213,7 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
                 <Fragment key={r.pays}>
                   {horsTop && (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
-                      <span style={{ width: 22, textAlign: "center", color: "var(--gris)", fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                      <span style={{ width: 22, textAlign: "center", color: "var(--gris)", fontSize: "var(--t-12)", fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
                       <span style={{ flex: 1, height: 1, background: "var(--champ)" }} />
                     </div>
                   )}
@@ -223,15 +223,15 @@ function TableauZoneSenegal({ titre, nomComplet, tag, rows, chargement, dir, onD
                     boxShadow: sen ? "0 1px 6px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
                     <span style={{ width: 22, flexShrink: 0 }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
-                        background: sen || podium ? BLEU : "var(--bleu-voile)", color: sen || podium ? "var(--sur-bleu)" : "var(--texte)", fontSize: 10, fontWeight: 800 }}>{rang}</span>
+                        background: sen || podium ? BLEU : "var(--bleu-voile)", color: sen || podium ? "var(--sur-bleu)" : "var(--texte)", fontSize: "var(--t-10)", fontWeight: 800 }}>{rang}</span>
                     </span>
                     <span style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 7 }}>
                       <DrapeauPays iso={r.code_iso2} nom={r.pays} taille={14} />
-                      <span title={r.pays} style={{ fontSize: 12, fontWeight: sen ? 800 : 650, color: sen ? BLEU : ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.pays}</span>
-                      {sen && horsTop && <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: BLEU, background: "rgb(var(--bleu-rgb) / 0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" }}>{rang}ᵉ DU CLASSEMENT</span>}
+                      <span title={r.pays} style={{ fontSize: "var(--t-12)", fontWeight: sen ? 800 : 650, color: sen ? BLEU : ENCRE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.pays}</span>
+                      {sen && horsTop && <span style={{ fontSize: "var(--t-85)", fontWeight: 800, letterSpacing: "0.08em", color: BLEU, background: "rgb(var(--bleu-rgb) / 0.10)", padding: "2px 7px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" }}>{rang}ᵉ DU CLASSEMENT</span>}
                     </span>
-                    <span className="ds-donnee" style={{ width: 68, fontSize: 11.5, fontWeight: 800, color: BLEU, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtMUSD(r.valeur)}</span>
-                    <span style={{ width: 40, fontSize: 10, fontWeight: 700, color: "var(--texte)", textAlign: "right", flexShrink: 0 }}>
+                    <span className="ds-donnee" style={{ width: 68, fontSize: "var(--t-115)", fontWeight: 800, color: BLEU, textAlign: "right", flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{fmtMUSD(r.valeur)}</span>
+                    <span style={{ width: 40, fontSize: "var(--t-10)", fontWeight: 700, color: "var(--texte)", textAlign: "right", flexShrink: 0 }}>
                       {total > 0 ? `${nf(Math.max(0, r.valeur) / total * 100)} %` : "—"}
                     </span>
                     <div style={{ width: "22%", height: 7, background: "var(--bleu-voile)", borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
@@ -258,14 +258,14 @@ function NavFleches({ libelle, onPrec, onSuiv, titre, fort }: {
   const fleche = (fn: (() => void) | undefined, d: "‹" | "›", aria: string) => (
     <button onClick={fn} disabled={!fn} aria-label={aria}
       style={{ border: "none", background: "transparent", cursor: fn ? "pointer" : "default", padding: "0 4px",
-        fontSize: 13, lineHeight: 1, fontWeight: 800, fontFamily: "var(--font-google-sans)", flexShrink: 0,
+        fontSize: "var(--t-13)", lineHeight: 1, fontWeight: 800, fontFamily: "var(--font-google-sans)", flexShrink: 0,
         color: fort ? (fn ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.3)") : (fn ? "var(--gris)" : "var(--sur-bleu)") }}>{d}</button>
   );
   return (
     <span title={titre} style={{ display: "inline-flex", alignItems: "center", flexShrink: 0,
       ...(fort ? { background: BLEU, borderRadius: 999, padding: "3px 5px" } : {}) }}>
       {fleche(onPrec, "‹", "Précédent")}
-      <span style={{ fontSize: fort ? 11 : 10.5, fontWeight: fort ? 800 : 700, color: fort ? "var(--sur-bleu)" : "var(--gris)",
+      <span style={{ fontSize: fort ? "var(--t-11)" : "var(--t-105)", fontWeight: fort ? 800 : 700, color: fort ? "var(--sur-bleu)" : "var(--gris)",
         whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{libelle}</span>
       {fleche(onSuiv, "›", "Suivant")}
     </span>
@@ -299,7 +299,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
   return (
     <div className="ds-carte" style={{ padding: "16px 18px", boxShadow: "var(--ombre-2)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <p style={{ flex: 1, minWidth: 0, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
+        <p style={{ flex: 1, minWidth: 0, fontSize: "var(--t-95)", fontWeight: 800, letterSpacing: "0.04em", color: BLEU,
           textTransform: "uppercase", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</p>
         {annee != null && (
           <NavFleches libelle={prefixeAnnee ? `${prefixeAnnee} · ${annee}` : annee} titre="Changer d'année"
@@ -315,7 +315,7 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
       ) : (
         <>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, minWidth: 0 }}>
-            <p className="ds-donnee" style={{ fontSize: "1.6rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
+            <p className="ds-donnee" style={{ fontSize: "var(--t-r160)", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1,
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{valeur}</p>
             {avecRang && <VariationLigne />}
           </div>
@@ -335,14 +335,14 @@ function KpiBandeau({ label, annee, onAnnee, anneeMin, anneeMax, prefixeAnnee, v
 
 // Matrice de valeurs partenaire × ressource (intensité = valeur)
 function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v), colPartenaire = "Partenaire" }: { ressources: string[]; partenaires: { nom: string; valeurs: number[] }[]; fmt?: (v: number) => string; colPartenaire?: string }) {
-  if (!partenaires.length || !ressources.length) return <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
+  if (!partenaires.length || !ressources.length) return <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "30px 0" }}>Aucune donnée.</p>;
   const max = Math.max(1, ...partenaires.flatMap((p) => p.valeurs));
-  const thRes: React.CSSProperties = { padding: "6px 8px", textAlign: "center", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid var(--bleu-voile)", verticalAlign: "bottom", minWidth: 74, maxWidth: 110, lineHeight: 1.15 };
+  const thRes: React.CSSProperties = { padding: "6px 8px", textAlign: "center", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "2px solid var(--bleu-voile)", verticalAlign: "bottom", minWidth: 74, maxWidth: 110, lineHeight: 1.15 };
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12 }}>
+      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "var(--t-12)" }}>
         <thead><tr>
-          <th style={{ padding: "6px 10px 6px 4px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid var(--bleu-voile)", position: "sticky", left: 0, background: "var(--carte)", zIndex: 1 }}>{colPartenaire}</th>
+          <th style={{ padding: "6px 10px 6px 4px", textAlign: "left", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid var(--bleu-voile)", position: "sticky", left: 0, background: "var(--carte)", zIndex: 1 }}>{colPartenaire}</th>
           {ressources.map((r) => <th key={r} style={thRes}>{r}</th>)}
         </tr></thead>
         <tbody>
@@ -353,7 +353,7 @@ function MatriceRessources({ ressources, partenaires, fmt = (v: number) => nf(v)
                 const t = v > 0 ? v / max : 0;
                 return (
                   <td key={i} title={v > 0 ? `${p.nom} · ${ressources[i]} : ${fmt(v)}` : undefined}
-                    style={{ textAlign: "center", padding: "7px 8px", fontSize: 11, fontWeight: 650, whiteSpace: "nowrap", borderBottom: "1px solid var(--filet)", background: v > 0 ? `rgba(0,79,145,${(0.06 + t * 0.52).toFixed(3)})` : "transparent", color: t > 0.5 ? "var(--sur-bleu)" : "var(--texte)" }}>
+                    style={{ textAlign: "center", padding: "7px 8px", fontSize: "var(--t-11)", fontWeight: 650, whiteSpace: "nowrap", borderBottom: "1px solid var(--filet)", background: v > 0 ? `rgba(0,79,145,${(0.06 + t * 0.52).toFixed(3)})` : "transparent", color: t > 0.5 ? "var(--sur-bleu)" : "var(--texte)" }}>
                     {v > 0 ? fmt(v) : "·"}
                   </td>
                 );
@@ -372,10 +372,10 @@ function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag
       {titre && (
         <p style={{ ...TITRE_SEC, marginBottom: sousTitre ? 3 : undefined, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span>{titre}</span>
-          {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
+          {tag && <span style={{ fontSize: "var(--t-9)", fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5, letterSpacing: "0.04em", textTransform: "none", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
         </p>
       )}
-      {sousTitre && <p style={{ margin: "0 0 14px", fontSize: 11, fontWeight: 600, color: "var(--gris)", fontStyle: "italic" }}>{sousTitre}</p>}
+      {sousTitre && <p style={{ margin: "0 0 14px", fontSize: "var(--t-11)", fontWeight: 600, color: "var(--gris)", fontStyle: "italic" }}>{sousTitre}</p>}
       {children}
     </div>
   );
@@ -714,11 +714,11 @@ export default function TableauDeBordPage() {
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 13 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: 0 }}>APIX S.A — DIPE</p>
+                <p style={{ fontSize: "var(--t-11)", fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: 0 }}>APIX S.A — DIPE</p>
                 <BarreTitreSegment options={[{ v: "viz", l: "Visualisation de données" }, { v: "tables", l: "Tableaux analytiques" }]} value={onglet} onChange={setOnglet} />
               </div>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
+              <h1 style={{ fontSize: "var(--t-r200)", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
+              <p style={{ fontSize: "var(--t-14)", color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
             </div>
             <div style={{ flexShrink: 0 }}><NavActions onDark home flouTotal /></div>
           </div>
@@ -860,7 +860,7 @@ export default function TableauDeBordPage() {
                       <Carte titre={exp ? "Évolution des exportations" : "Évolution des importations"} tag={evoTag}>
                         {serieEvo.length > 1 ? (
                           <GrapheMultiPays height={220} type="line" fmt={(v) => fmtUSD(v)} series={[serie(exp ? "Exportations" : "Importations", PALETTE_COMPARAISON[0], serieEvo)]} />
-                        ) : <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
+                        ) : <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>}
                       </Carte>
                       <Carte titre={exp ? "Poids des ressources exportées" : "Poids des ressources importées"} tag={anneeRef}>
                         <MiniBarres data={(bilatTops?.ressources || []).map((r: any) => ({ label: r.ressource, valeur: r.valeur }))} couleur={PALETTE_COMPARAISON[0]} fmt={(v) => fmtUSD(v)} max={7} />
@@ -948,7 +948,7 @@ export default function TableauDeBordPage() {
                       .filter((r: any) => r.annee === an && (r.valeur ?? 0) > 0)
                       .map((r: any) => ({ label: r.groupe, valeur: r.valeur as number }))
                       .sort((a: any, b: any) => b.valeur - a.valeur);
-                const vide = <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
+                const vide = <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
                 return (
                   <>
                     <div className="tdb-duo" style={{ marginTop: 20 }}>
@@ -993,7 +993,7 @@ export default function TableauDeBordPage() {
                 const expM = serieSocio("exportations_marchandises"), impM = serieSocio("importations_marchandises"), balM = serieSocio("balance_marchandises");
                 const expS = serieSocio("exportations_services"), impS = serieSocio("importations_services"), balS = serieSocio("balance_services");
                 const plage = (s: { annee: number }[]) => (s.length ? (s[0].annee === s[s.length - 1].annee ? String(s[0].annee) : `${s[0].annee}–${s[s.length - 1].annee}`) : undefined);
-                const vide = <p style={{ color: "var(--gris)", fontSize: 13, textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
+                const vide = <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", textAlign: "center", padding: "40px 0" }}>Données indisponibles.</p>;
                 return (
                   <>
                     <div className="tdb-duo">
@@ -1035,7 +1035,7 @@ export default function TableauDeBordPage() {
           <div style={{ marginTop: 28 }}>
             {GROUPES_TABLES.map((g) => (
               <section key={g.titre} style={{ marginBottom: 34 }}>
-                <p style={{ ...TITRE_SEC, fontSize: 12, marginBottom: 16 }}>{g.titre}</p>
+                <p style={{ ...TITRE_SEC, fontSize: "var(--t-12)", marginBottom: 16 }}>{g.titre}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {g.tables.map((t) => (
                     <AnalyticTable key={t.id} tableId={t.id} titre={t.titre} description={t.description} />

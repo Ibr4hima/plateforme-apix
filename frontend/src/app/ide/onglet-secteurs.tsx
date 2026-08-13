@@ -203,7 +203,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
         {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent", transition:"background 0.15s" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-          {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          {sidebarOpen&&<span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
             <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center", gap:5 }}>
               <SlidersHorizontal size={14} style={{ color:"var(--bleu)" }}/>
@@ -211,7 +211,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
             onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
-              <span className="material-symbols-outlined" style={{ fontSize:15, color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "var(--t-15)", color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
             </button>}
           </div>
         </div>
@@ -223,8 +223,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
              branches en orange, « Global des secteurs » surligné) */
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
-              {selecIds[0]!==0&&<span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
+              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Secteurs</span>
+              {selecIds[0]!==0&&<span style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.18)", padding:"1px 6px", borderRadius:999 }}>1</span>}
             </div>
 
             <BdefRow label="Global des secteurs" selected={selecIds[0]===0} onSelect={()=>setSelecIds([0])} />
@@ -247,7 +247,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                   </div>
                 );
               })}
-              {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
+              {refSecteurs.length===0&&!loading&&<p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
             </div>
           </div>
           ) : (
@@ -255,11 +255,11 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
              même présentation que la comparative des Investissements nationaux */
           <div style={{ marginBottom:18 }}>
             <div style={{ marginBottom:14 }}>
-              <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
+              <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
               <div style={{ display:"flex", gap:6 }}>
                 {([{v:"secteur",l:"Secteurs"},{v:"branche",l:"Branches"}] as const).map(o=>(
                   <button key={o.v} onClick={()=>{ setCompNiveau(o.v); setSelecIds(o.v==="secteur"?[1,2,3]:[]); }}
-                    style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compNiveau===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11.5, fontWeight:compNiveau===o.v?700:500, background:compNiveau===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compNiveau===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
+                    style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compNiveau===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-115)", fontWeight:compNiveau===o.v?700:500, background:compNiveau===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compNiveau===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
                     {o.l}
                   </button>
                 ))}
@@ -267,8 +267,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
             </div>
 
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
-              <span style={{ fontSize:11, fontWeight:600, color:selecIds.length>=4?"var(--bleu)":"var(--gris)", background:selecIds.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{selecIds.length}/4</span>
+              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
+              <span style={{ fontSize: "var(--t-11)", fontWeight:600, color:selecIds.length>=4?"var(--bleu)":"var(--gris)", background:selecIds.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{selecIds.length}/4</span>
             </div>
 
             {(()=>{
@@ -283,7 +283,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                     onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background="var(--carte-douce)"; }}
                     onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="transparent"; }}>
                     <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"var(--bordure-forte)"}`, background:sel?col:"transparent", flexShrink:0 }}/>
-                    <span style={{ fontSize:12, color:"var(--texte)", fontWeight:sel?700:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{nom}</span>
+                    <span style={{ fontSize: "var(--t-12)", color:"var(--texte)", fontWeight:sel?700:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{nom}</span>
                   </div>
                 );
               };
@@ -299,7 +299,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                   return (
                     <div key={s.id}>
                       <button onClick={()=>toggleCompCat(s.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgb(var(--bleu-rgb) / 0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 8px", marginTop:6, marginBottom:3 }}>
-                        <span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{s.nom_fr}</span>
+                        <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{s.nom_fr}</span>
                         <ChevronDown size={11} style={{ color:"var(--bleu)", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                       </button>
                       {open&&(s.branches||[]).map((b: any) => renderItem(b.id, b.nom_fr))}
@@ -308,19 +308,19 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                 })}
               </div>;
             })()}
-            {refSecteurs.length===0&&!loading&&<p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
+            {refSecteurs.length===0&&!loading&&<p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Référentiel indisponible</p>}
           </div>
           )}
           <div style={{ height:1, background:"var(--fond)", marginBottom:18 }}/>
           {/* Période */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                 <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
+                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize: "var(--t-12)", fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none", transition:"all 0.15s" }}>
                   {m.l}
                 </button>
               ))}
@@ -332,11 +332,11 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                     onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                  <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize: "var(--t-10)", color:"var(--gris)" }}>—</span>
+                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                 </div>
-                <p style={{ fontSize:11, color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
+                <p style={{ fontSize: "var(--t-11)", color:"var(--gris)", textAlign:"center" as const }}>{anneeMax-anneeMin+1} année{anneeMax-anneeMin+1>1?"s":""}</p>
               </div>
             ) : (
               <div>
@@ -345,15 +345,15 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                     const sel=anneesSpec.includes(a);
                     return (
                       <button key={a} onClick={()=>setAnneesSpec(prev=>sel?prev.filter(x=>x!==a):[...prev,a].sort())}
-                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:10, fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"var(--bleu-action)":"var(--carte-douce)", color:sel?"var(--sur-bleu)":"var(--texte)", transition:"all 0.1s" }}>
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${sel?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-10)", fontWeight:sel?700:400, textAlign:"center" as const, background:sel?"var(--bleu-action)":"var(--carte-douce)", color:sel?"var(--sur-bleu)":"var(--texte)", transition:"all 0.1s" }}>
                         {a}
                       </button>
                     );
                   })}
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:11, color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
-                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize:11, color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
+                  <span style={{ fontSize: "var(--t-11)", color:"var(--texte)" }}>{anneesSpec.length>0?`${anneesSpec.length} année${anneesSpec.length>1?"s":""}`:""}</span>
+                  {anneesSpec.length>0&&<button onClick={()=>setAnneesSpec([])} style={{ fontSize: "var(--t-11)", color:"var(--gris)", background:"none", border:"none", cursor:"pointer" }}>Effacer</button>}
                 </div>
               </div>
             )}
@@ -380,8 +380,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           return typeAnalyse === "secteur" ? (
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16, flexWrap:"wrap" as const }}>
               <div style={{ width:10, height:10, borderRadius:"50%", background:accent, flexShrink:0 }} />
-              <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
-              {niveauSel!=="global"&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"var(--fond)", border:"1px solid var(--bordure-forte)", fontSize:9, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
+              <h2 style={{ fontWeight:800, fontSize: "var(--t-r130)", color:"var(--encre)" }}>{selecIds.length ? nomById.get(selecIds[0]) : "Secteur"}</h2>
+              {niveauSel!=="global"&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"var(--fond)", border:"1px solid var(--bordure-forte)", fontSize: "var(--t-9)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
                 {niveauSel==="secteur"?"Secteur":"Branche d'activité"}
               </span>}
               {badgePeriode}
@@ -389,14 +389,14 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           ) : (
             <div style={{ marginBottom:16 }}>
               <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)" }}>Analyse comparative par {compNiveau==="secteur"?"secteur":"branche d'activité"}</h2>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r130)", color:"var(--encre)" }}>Analyse comparative par {compNiveau==="secteur"?"secteur":"branche d'activité"}</h2>
                 {badgePeriode}
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:10, flexWrap:"wrap" as const }}>
                 {selecIds.map((id, i) => (
                   <BadgeSerie key={id} i={i} couleur={couleurDe(i)}>{nomById.get(id)}</BadgeSerie>
                 ))}
-                {selecIds.length===0&&<span style={{ fontSize:12, color:"var(--gris)" }}>Sélectionnez jusqu&apos;à 4 {compNiveau==="secteur"?"secteurs":"branches"} dans le filtre</span>}
+                {selecIds.length===0&&<span style={{ fontSize: "var(--t-12)", color:"var(--gris)" }}>Sélectionnez jusqu&apos;à 4 {compNiveau==="secteur"?"secteurs":"branches"} dans le filtre</span>}
               </div>
             </div>
           );
@@ -411,14 +411,14 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
                 onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
-                  <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
-                  {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
+                  <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:accent, textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
+                  {c.annee != null && <span style={{ fontSize: "var(--t-85)", fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
                 </div>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
+                <p style={{ fontSize: "var(--t-r110)", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
                 <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                   {c.delta != null && c.ref != null ? (
                   <Variation valeur={c.delta} annee={c.ref} taille={10} />
-                ) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
+                ) : (c.ind ? <p style={{ fontSize: "var(--t-10)", color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
                 </div>
               </div>
             ))}
@@ -432,8 +432,8 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           <ErreurChargement onRetry={() => { qRef.refetch(); qSeries.refetch(); }} />
         ) : !aDesDonnees ? (
           <div style={{ textAlign:"center" as const, padding:"90px 24px", color:"var(--gris)" }}>
-            <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucune donnée sectorielle</p>
-            <p style={{ fontSize:14, marginTop:6 }}>Les Annex tables sectorielles ({st === "greenfield" ? "15 et 18" : "09 à 12"}) n&apos;ont pas encore été importées dans l&apos;administration.</p>
+            <p style={{ fontSize: "var(--t-16)", fontWeight:600, color:"var(--texte)" }}>Aucune donnée sectorielle</p>
+            <p style={{ fontSize: "var(--t-14)", marginTop:6 }}>Les Annex tables sectorielles ({st === "greenfield" ? "15 et 18" : "09 à 12"}) n&apos;ont pas encore été importées dans l&apos;administration.</p>
           </div>
         ) : (
           <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>

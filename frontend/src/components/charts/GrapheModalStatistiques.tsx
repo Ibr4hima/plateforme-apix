@@ -47,12 +47,12 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
                   les séries visualisées. La source, elle, descend au pied — ce
                   n'est pas ce qu'on lit d'abord. */}
               <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", margin:0, lineHeight:1.35, minWidth:0 }}>
                   {titre}
                   {unite && <span style={{ color:"var(--gris-fort)", fontWeight:700 }}>{` · ${unite}`}</span>}
                 </h2>
                 {anneesRange && (
-                  <span style={{ flexShrink:0, fontSize:11, fontWeight:700, color:"var(--texte)", background:"rgb(var(--gris-rgb) / 0.16)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" }}>
+                  <span style={{ flexShrink:0, fontSize: "var(--t-11)", fontWeight:700, color:"var(--texte)", background:"rgb(var(--gris-rgb) / 0.16)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" }}>
                     {anneesRange}
                   </span>
                 )}
@@ -62,7 +62,7 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
               </div>
               {sous_titre && (
                 <div style={{ marginTop:8 }}>
-                  <span style={{ fontSize:11.5, color:"var(--gris)", fontWeight:500 }}>{sous_titre}</span>
+                  <span style={{ fontSize: "var(--t-115)", color:"var(--gris)", fontWeight:500 }}>{sous_titre}</span>
                 </div>
               )}
             </div>
@@ -79,13 +79,13 @@ export function GrapheModal({ open, onClose, titre, sous_titre, unite, source, c
           {/* La source appartient au pied : elle qualifie la donnée, elle ne la
               titre pas. Un span vide garde les boutons à droite quand il n'y en
               a pas. */}
-          <span style={{ fontSize:11.5, color:"var(--gris)", fontWeight:500, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+          <span style={{ fontSize: "var(--t-115)", color:"var(--gris)", fontWeight:500, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
             {source ? `Source : ${source}` : ""}
           </span>
           <div style={{ display:"flex", gap:10, flexShrink:0 }}>
-          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
+          <button onClick={onClose} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)", background: "var(--carte)", color: "var(--texte)", fontSize: "var(--t-125)", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>Fermer</button>
           <button onClick={() => { const svg = getSvg(); if (svg) downloadPNG(svg, grapheId || titre || "graphe", { titre: unite ? `${titre} · ${unite}` : titre, annees: anneesRange, legende: legendeExport }); }}
-            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
+            style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily: "var(--font-google-sans)" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Télécharger
           </button>

@@ -24,7 +24,7 @@ import { useDonnees } from "@/lib/donnees";
 
 const BLEU = "var(--bleu)", ORANGE = "var(--orange)", ENCRE = "var(--encre)";
 const COULEURS = [BLEU, ORANGE];
-const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
+const TITRE_SEC: React.CSSProperties = { fontSize: "var(--t-11)", fontWeight: 800, color: BLEU, letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 14px" };
 
 type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
@@ -65,7 +65,7 @@ function SelectPays({ valeur, pays, exclure, onChange }: {
     <select value={valeur ?? ""} onChange={e => onChange(Number(e.target.value))}
       style={{ appearance: "none", padding: "8px 34px 8px 16px", borderRadius: 999, cursor: "pointer",
         background: `rgba(255,255,255,0.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center`,
-        border: "1px solid rgba(255,255,255,0.28)", color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700,
+        border: "1px solid rgba(255,255,255,0.28)", color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700,
         fontFamily: "var(--font-google-sans)", outline: "none", maxWidth: 240, textOverflow: "ellipsis" }}>
       {[...Object.keys(parContinent)].sort((a, b) => {
         const ia = CONT_ORDER.indexOf(a), ib = CONT_ORDER.indexOf(b);
@@ -173,8 +173,8 @@ function ContenuFichePays() {
       </span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
-          <span style={{ ...TITRE_SEC, margin: 0, fontSize: 9.5 }}>{titre}</span>
-          <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgb(var(--bleu-rgb) / 0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
+          <span style={{ ...TITRE_SEC, margin: 0, fontSize: "var(--t-95)" }}>{titre}</span>
+          <span style={{ fontSize: "var(--t-10)", fontWeight: 800, color: BLEU, background: "rgb(var(--bleu-rgb) / 0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {items.map((it, i) => (
@@ -199,13 +199,13 @@ function ContenuFichePays() {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>
+              <p style={{ fontSize: "var(--t-11)", fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>
                 Fiche Pays
               </p>
-              <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+              <h1 style={{ fontSize: "var(--t-r200)", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>
                 {ids ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : "Fiche Pays"}
               </h1>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "10px 0 0", fontWeight: 500 }}>
+              <p style={{ fontSize: "var(--t-14)", color: "rgba(255,255,255,0.75)", margin: "10px 0 0", fontWeight: 500 }}>
                 Analyse comparative · Indicateurs économiques · Échanges bilatéraux
               </p>
               {/* Sélecteurs : changer les deux pays sans quitter la page */}
@@ -244,10 +244,10 @@ function ContenuFichePays() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14, marginTop: -52 }}>
             {kpis.map(k => (
               <div key={k.l} className="ds-carte" style={{ padding: "18px 20px", boxShadow: "var(--ombre-2)" }}>
-                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
-                <p className="ds-donnee" style={{ fontSize: "1.65rem", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
+                <p style={{ fontSize: "var(--t-10)", fontWeight: 800, letterSpacing: "0.1em", color: BLEU, textTransform: "uppercase", margin: "0 0 10px" }}>{k.l}</p>
+                <p className="ds-donnee" style={{ fontSize: "var(--t-r160)", fontWeight: 800, color: ENCRE, margin: 0, lineHeight: 1.1, whiteSpace: "nowrap" }}>{k.txt}</p>
                 <div style={{ marginTop: 8, minHeight: 15 }}>
-                  <span style={{ fontSize: 10, color: "var(--gris)" }}>{k.note}</span>
+                  <span style={{ fontSize: "var(--t-10)", color: "var(--gris)" }}>{k.note}</span>
                 </div>
               </div>
             ))}
@@ -281,10 +281,10 @@ function ContenuFichePays() {
             <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th style={{ padding: "0 12px 10px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>Indicateur</th>
+                  <th style={{ padding: "0 12px 10px", textAlign: "left", fontSize: "var(--t-95)", fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>Indicateur</th>
                   {cols.map((c: any, i: number) => (
                     <th key={c.id} style={{ padding: "0 12px 10px", textAlign: "right", borderBottom: "2px solid var(--bleu-voile)" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 800, color: COULEURS[i % 2] }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: "var(--t-125)", fontWeight: 800, color: COULEURS[i % 2] }}>
                         <Drapeau iso={c.code_iso2} nom={c.nom} taille={15} />{c.nom}
                       </span>
                     </th>
@@ -307,8 +307,8 @@ function ContenuFichePays() {
                       return (
                         <tr key={ind.code} style={{ borderBottom: "1px solid var(--filet)", background: ri % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
                           <td style={{ padding: "10px 12px" }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 650, color: ENCRE }}>{ind.libelle}</div>
-                            <div style={{ fontSize: 10.5, color: "var(--gris)" }}>{ind.unite}</div>
+                            <div style={{ fontSize: "var(--t-125)", fontWeight: 650, color: ENCRE }}>{ind.libelle}</div>
+                            <div style={{ fontSize: "var(--t-105)", color: "var(--gris)" }}>{ind.unite}</div>
                           </td>
                           {cols.map((c: any) => {
                             const cell = getCell(c.id, ind.code);
@@ -319,8 +319,8 @@ function ContenuFichePays() {
                               : ENCRE;
                             return (
                               <td key={c.id} className="ds-donnee" style={{ padding: "10px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                                <span style={{ fontSize: 13, fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite, ind.code)}</span>
-                                {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "var(--gris)" }}>{cell.annee}</span>}
+                                <span style={{ fontSize: "var(--t-13)", fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite, ind.code)}</span>
+                                {cell?.annee && <span style={{ display: "block", fontSize: "var(--t-95)", color: "var(--gris)" }}>{cell.annee}</span>}
                               </td>
                             );
                           })}
@@ -346,16 +346,16 @@ function ContenuFichePays() {
               <div className="ds-carte" style={{ overflow: "hidden" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "15px 20px", borderBottom: hasRes ? "1px solid var(--filet)" : "none" }}>
                   <div style={{ minWidth: 0 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: ENCRE }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: "var(--t-13)", fontWeight: 700, color: ENCRE }}>
                       <span style={{ fontWeight: 800, color: col }}>{de}</span>
                       <ArrowRight size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
                       <span>{vers}</span>
                     </span>
-                    {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "var(--gris)", marginTop: 3, display: "block" }}>soit <strong style={{ color: "var(--gris-fort)" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
+                    {dep != null && dep > 0 && <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginTop: 3, display: "block" }}>soit <strong style={{ color: "var(--gris-fort)" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div className="ds-donnee" style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
-                    <div style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
+                    <div className="ds-donnee" style={{ fontSize: "var(--t-15)", fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
+                    <div style={{ fontSize: "var(--t-85)", fontWeight: 700, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
                   </div>
                 </div>
                 {hasRes && (
@@ -365,8 +365,8 @@ function ContenuFichePays() {
                       return (
                         <div key={r.ressource}>
                           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 }}>
-                            <span style={{ fontSize: 11.5, color: "var(--texte)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
-                            <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "var(--encre)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "var(--gris)", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
+                            <span style={{ fontSize: "var(--t-115)", color: "var(--texte)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
+                            <span className="ds-donnee" style={{ fontSize: "var(--t-115)", fontWeight: 700, color: "var(--encre)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "var(--gris)", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
                           </div>
                           <div style={{ height: 7, background: "var(--bleu-voile)", borderRadius: 99, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 99 }} />
@@ -391,15 +391,15 @@ function ContenuFichePays() {
                   <Scale size={19} color={BLEU} />
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ ...TITRE_SEC, margin: "0 0 3px", fontSize: 9.5 }}>Balance commerciale</div>
-                  <div style={{ fontSize: 12.5, color: "var(--texte)", lineHeight: 1.45 }}>
+                  <div style={{ ...TITRE_SEC, margin: "0 0 3px", fontSize: "var(--t-95)" }}>Balance commerciale</div>
+                  <div style={{ fontSize: "var(--t-125)", color: "var(--texte)", lineHeight: 1.45 }}>
                     {diff === 0
                       ? <>Échanges <strong style={{ color: ENCRE }}>équilibrés</strong> entre {a.nom} et {b.nom}.</>
                       : <>Excédentaire en faveur de <strong style={{ color: diff >= 0 ? BLEU : ORANGE }}>{gagnant.nom}</strong>, déficitaire pour {perdant.nom}.</>}
                   </div>
                 </div>
                 {diff !== 0 && (
-                  <span className="ds-donnee" style={{ fontSize: 17, fontWeight: 800, color: diff >= 0 ? BLEU : ORANGE, fontVariantNumeric: "tabular-nums", flexShrink: 0, whiteSpace: "nowrap" }}>
+                  <span className="ds-donnee" style={{ fontSize: "var(--t-18)", fontWeight: 800, color: diff >= 0 ? BLEU : ORANGE, fontVariantNumeric: "tabular-nums", flexShrink: 0, whiteSpace: "nowrap" }}>
                     +{fmtUSD(Math.abs(diff))}
                   </span>
                 )}
@@ -410,10 +410,10 @@ function ContenuFichePays() {
 
         {/* ── Pied méthodologique ── */}
         <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid var(--bleu-voile)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-          <p style={{ fontSize: 10.5, color: "var(--gris)", margin: 0, lineHeight: 1.6, maxWidth: 760 }}>
+          <p style={{ fontSize: "var(--t-105)", color: "var(--gris)", margin: 0, lineHeight: 1.6, maxWidth: 760 }}>
             APIX S.A — DIPE, Direction de l&apos;Intelligence et des Perspectives Économiques.
           </p>
-          <p style={{ fontSize: 10.5, color: "var(--gris)", margin: 0, whiteSpace: "nowrap" }}>
+          <p style={{ fontSize: "var(--t-105)", color: "var(--gris)", margin: 0, whiteSpace: "nowrap" }}>
             Mise à jour le {new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
           </p>
         </div>

@@ -16,7 +16,7 @@ export default function D3Tooltip() {
         color: "var(--sur-bleu)",
         borderRadius: 10,
         padding: "9px 13px",
-        fontSize: 12,
+        fontSize: "var(--t-12)",
         lineHeight: 1.55,
         opacity: 0,
         zIndex: 9999,

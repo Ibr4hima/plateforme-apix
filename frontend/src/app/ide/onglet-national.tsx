@@ -140,8 +140,8 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
-                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize:10.5, fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", margin:0, lineHeight:1.35, flexShrink:0 }}>Tableau de données</h2>
+                {annees.length>0&&<span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, background:"var(--fond-creux2)", border:"1px solid var(--bordure-forte)", fontSize: "var(--t-105)", fontWeight:700, color:"var(--encre)", letterSpacing:"0.02em", flexShrink:0 }}>
                   {annees.length===1 ? `${annees[0]}` : `${annees[0]} — ${annees[annees.length-1]}`}
                 </span>}
               </div>
@@ -158,7 +158,7 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                   return (
                     <span key={b.libelle} title={b.libelle}
                       onMouseEnter={e=>marquee(e,false)} onMouseLeave={e=>marquee(e,true)}
-                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(b.couleur, 5)}`, border:`1px solid ${voile(b.couleur, 18)}`, fontSize:10.5, fontWeight:700, color:b.couleur, minWidth:0 }}>
+                      style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:999, background:`${voile(b.couleur, 5)}`, border:`1px solid ${voile(b.couleur, 18)}`, fontSize: "var(--t-105)", fontWeight:700, color:b.couleur, minWidth:0 }}>
                       <span style={{ width:7, height:7, borderRadius:"50%", background:b.couleur, display:"inline-block", flexShrink:0 }} />
                       <span data-marquee style={{ overflow:"hidden", whiteSpace:"nowrap" as const, minWidth:0 }}>
                         <span style={{ display:"inline-block" }}>{b.libelle}</span>
@@ -177,11 +177,11 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
 
         {/* Tableau */}
         <div style={{ overflowY:"auto" as const, flex:1, overflowX:"auto" as const }}>
-          <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize:12 }}>
+          <table style={{ width:"100%", borderCollapse:"collapse" as const, fontSize: "var(--t-12)" }}>
             <thead style={{ position:"sticky" as const, top:0, zIndex:2 }}>
               <tr style={{ background:"var(--carte-douce)" }}>
-                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
-                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize:10, fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
+                <th style={{ padding:"11px 28px", textAlign:"left" as const, fontSize: "var(--t-10)", fontWeight:800, color:"var(--texte)", letterSpacing:"0.1em", textTransform:"uppercase" as const, position:"sticky" as const, left:0, background:"var(--carte-douce)", borderRight:"1px solid var(--bordure)", borderBottom:"1px solid var(--bordure)", whiteSpace:"nowrap" as const, minWidth:200 }}>Indicateur</th>
+                {annees.map(a=><th key={a} style={{ padding:"11px 12px", fontSize: "var(--t-10)", fontWeight:800, color:"var(--texte)", letterSpacing:"0.06em", textAlign:"right" as const, minWidth:80, borderBottom:"1px solid var(--bordure)" }}>{a}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -192,14 +192,14 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                       <td colSpan={annees.length+1} style={{ padding:"14px 28px 6px", background:"var(--carte)" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                           <span style={{ width:8, height:8, borderRadius:"50%", background:b.couleur, flexShrink:0 }} />
-                          <span style={{ fontSize:12.5, fontWeight:800, color:b.couleur }}>{b.libelle}</span>
+                          <span style={{ fontSize: "var(--t-125)", fontWeight:800, color:b.couleur }}>{b.libelle}</span>
                         </div>
                       </td>
                     </tr>
                   )}
                   {parCatDe(b.indicateurs).map(({cat,inds})=>(
                     <Fragment key={`${b.libelle}-${cat}`}>
-                      <tr><td colSpan={annees.length+1} style={{ padding:multi?"9px 28px 4px 44px":"10px 28px 4px", fontSize:10, fontWeight:800, color:b.couleur, letterSpacing:"0.1em", textTransform:"uppercase" as const, background:"var(--carte)" }}>{cat}</td></tr>
+                      <tr><td colSpan={annees.length+1} style={{ padding:multi?"9px 28px 4px 44px":"10px 28px 4px", fontSize: "var(--t-10)", fontWeight:800, color:b.couleur, letterSpacing:"0.1em", textTransform:"uppercase" as const, background:"var(--carte)" }}>{cat}</td></tr>
                       {inds.map(ind=>{
                         const { unite:uAff, scale } = uniteEtEchelle(ind);
                         return (
@@ -207,14 +207,14 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
                           onMouseEnter={e=>e.currentTarget.style.background="var(--carte-douce)"}
                           onMouseLeave={e=>e.currentTarget.style.background="var(--carte)"}>
                           <td style={{ padding:multi?"9px 28px 9px 58px":"9px 28px 9px 44px", position:"sticky" as const, left:0, background:"inherit", borderRight:"1px solid var(--bordure)", whiteSpace:"nowrap" as const }}>
-                            <span style={{ fontSize:12, color:"var(--texte)", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize:10, color:"var(--gris)" }}>· {uAff}</span>
+                            <span style={{ fontSize: "var(--t-12)", color:"var(--texte)", fontWeight:500 }}>{ind.libelle}</span> <span style={{ fontSize: "var(--t-10)", color:"var(--gris)" }}>· {uAff}</span>
                           </td>
                           {annees.map(a=>{
                             const v = ind.valeurs[a];
                             const display = v!==null&&v!==undefined ? fmtNu(ind, v, scale) : "—";
                             const color = v===null||v===undefined ? "var(--gris)" : v<0 ? "var(--danger)" : "var(--texte)";
                             return (
-                              <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize:12, color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
+                              <td key={a} style={{ padding:"9px 12px", textAlign:"right" as const, fontSize: "var(--t-12)", color, fontWeight:v!==null&&v!==undefined?600:400, fontVariantNumeric:"tabular-nums" as const, whiteSpace:"nowrap" as const }}>{display}</td>
                             );
                           })}
                         </tr>
@@ -230,15 +230,15 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
 
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0, gap:10 }}>
-          <span style={{ fontSize:11, color:"var(--gris)" }}>
+          <span style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>
             {multi?`${blocs.length} éléments · `:""}{nbInds} indicateurs · {annees.length} année{annees.length>1?"s":""} · Source BDEF (ANSD)
           </span>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+            <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize: "var(--t-125)", fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
             <button onClick={exporter}
-              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"9px 20px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize: "var(--t-125)", fontWeight:700, cursor:"pointer", display:"inline-flex", alignItems:"center", gap:7, boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)", fontFamily:"var(--font-google-sans)" }}>
               <FileSpreadsheet size={13}/> Excel
             </button>
           </div>
@@ -276,7 +276,7 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
     : ind.unite==="jours" ? String(Math.round(val))
     : (val/histScale).toLocaleString("fr-FR",{maximumFractionDigits:histScale>=1e6?1:0});
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
-    <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
+    <p style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
 
   return (
@@ -289,17 +289,17 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
         <div style={{ padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:16 }}>
             <div style={{ flex:1, minWidth:0 }}>
-              <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:"var(--encre)", margin:0, lineHeight:1.35 }}>{ind.libelle}</h2>
+              <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:"var(--encre)", margin:0, lineHeight:1.35 }}>{ind.libelle}</h2>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const, marginTop:8 }}>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.19)" }}>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize: "var(--t-105)", fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.19)" }}>
                   <span style={{ width:7, height:7, borderRadius:"50%", background:"var(--bleu-action)", display:"inline-block" }} />
                   {libelle}
                 </span>
-                <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
+                <span style={{ fontSize: "var(--t-105)", fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
                   {ind.categorie}
                 </span>
                 {lastA && (
-                  <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
+                  <span style={{ fontSize: "var(--t-105)", fontWeight:700, padding:"3px 10px", borderRadius:999, color:"var(--texte)", background:"var(--champ)" }}>
                     {lastA}
                   </span>
                 )}
@@ -317,21 +317,21 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           <div>
             <SecTitle>Valeur</SecTitle>
             <div style={{ background:signalBg, border:`1px solid ${signalBorder}`, borderRadius:12, padding:"16px 18px", display:"flex", alignItems:"baseline", gap:10 }}>
-              <span style={{ fontSize:"2.2rem", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
-              {lastA && <span style={{ fontSize:13, color:"var(--gris)", fontWeight:500 }}>en {lastA}</span>}
+              <span style={{ fontSize: "var(--t-r220)", fontWeight:800, color:signalColor, lineHeight:1, letterSpacing:"-0.02em" }}>{fmtBdef(v, ind.unite)}</span>
+              {lastA && <span style={{ fontSize: "var(--t-13)", color:"var(--gris)", fontWeight:500 }}>en {lastA}</span>}
             </div>
           </div>
           {historique.length > 0 && (
             <div>
               <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:10 }}>
-                <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, margin:0 }}>Historique récent</p>
-                <span style={{ fontSize:10.5, fontWeight:600, color:"var(--gris)" }}>en {histUnite}</span>
+                <p style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, margin:0 }}>Historique récent</p>
+                <span style={{ fontSize: "var(--t-105)", fontWeight:600, color:"var(--gris)" }}>en {histUnite}</span>
               </div>
               <div style={{ display:"grid", gridTemplateColumns:`repeat(${Math.min(historique.length,5)},1fr)`, gap:8 }}>
                 {historique.map(a=>(
                   <div key={a} style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"8px 11px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{a}</p>
-                    <p style={{ fontSize:12, fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtHist(ind.valeurs[a] as number)}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", margin:"0 0 3px" }}>{a}</p>
+                    <p style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--encre)", margin:0, whiteSpace:"nowrap" as const, overflow:"hidden", textOverflow:"ellipsis" }}>{fmtHist(ind.valeurs[a] as number)}</p>
                   </div>
                 ))}
               </div>
@@ -340,15 +340,15 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
           <div>
             <SecTitle>Définition</SecTitle>
             <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
-              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75, margin:0 }}>{definition}</p>
+              <p style={{ fontSize: "var(--t-13)", color:"var(--encre)", lineHeight:1.75, margin:0 }}>{definition}</p>
             </div>
           </div>
         </div>
 
         {/* Pied fixe */}
         <div style={{ padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
-          <span style={{ fontSize:11, color:"var(--gris)" }}>Unité : {ind.unite} · Source BDEF (ANSD)</span>
-          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
+          <span style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>Unité : {ind.unite} · Source BDEF (ANSD)</span>
+          <button onClick={onClose} style={{ padding:"9px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontSize: "var(--t-125)", fontWeight:600, cursor:"pointer", fontFamily:"var(--font-google-sans)" }}>
             Fermer
           </button>
         </div>
@@ -520,7 +520,7 @@ function OngletNational() {
           <style>{`::-webkit-scrollbar-thumb{background:var(--fond-creux2)}::-webkit-scrollbar-thumb:hover{background:var(--fond-creux2)}`}</style>
         {sidebarOpen&&<div onMouseDown={startResize} style={{ position:"absolute" as const, right:0, top:0, bottom:0, width:4, cursor:"col-resize", zIndex:10, background:"transparent" }} onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.5)"}} onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}/>}
         <div style={{ padding:sidebarOpen?"14px 16px 10px":"12px 8px", borderBottom:"1px solid var(--bordure)", display:"flex", alignItems:"center", justifyContent:sidebarOpen?"space-between":"center", flexShrink:0 }}>
-          {sidebarOpen&&<span style={{ fontSize:12, fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
+          {sidebarOpen&&<span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--encre)", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>Filtres</span>}
           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
             <button onClick={()=>setSidebarOpen(o=>!o)} aria-label={sidebarOpen ? "Réduire les filtres" : "Afficher les filtres"} style={{ background:"rgb(var(--bleu-rgb) / 0.08)", border:"none", cursor:"pointer", borderRadius:8, padding:"6px 8px", display:"flex", alignItems:"center" }}>
               <SlidersHorizontal size={14} style={{ color:"var(--bleu)" }}/>
@@ -528,7 +528,7 @@ function OngletNational() {
             {sidebarOpen&&hasFilter&&<button onClick={reinit} title="Tout réinitialiser" style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"5px", display:"flex", alignItems:"center", transition:"background 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
-              <span className="material-symbols-outlined" style={{ fontSize:15, color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
+              <span className="material-symbols-outlined" style={{ fontSize: "var(--t-15)", color:"var(--danger)", fontVariationSettings:"'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24", lineHeight:1 }}>close</span>
             </button>}
           </div>
         </div>
@@ -536,11 +536,11 @@ function OngletNational() {
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
           {/* Sélecteur de vue */}
           <div style={{ marginBottom:14, paddingBottom:14, borderBottom:"1px solid var(--bordure)" }}>
-            <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
+            <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Vue</p>
             <div style={{ display:"flex", flexDirection:"column" as const, gap:2 }}>
               {([{v:"sectorielle",l:"Analyse sectorielle"},{v:"comparative",l:"Analyse comparative"}] as const).map(o=>(
                 <button key={o.v} onClick={()=>setSousVue(o.v)}
-                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:sousVue===o.v?700:500, background:sousVue===o.v?"rgb(var(--bleu-rgb) / 0.08)":"transparent", color:sousVue===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
+                  style={{ textAlign:"left" as const, padding:"7px 10px", borderRadius:8, border:"none", cursor:"pointer", fontSize: "var(--t-12)", fontWeight:sousVue===o.v?700:500, background:sousVue===o.v?"rgb(var(--bleu-rgb) / 0.08)":"transparent", color:sousVue===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
                   {o.l}
                 </button>
               ))}
@@ -551,11 +551,11 @@ function OngletNational() {
             <>
               {/* Sélecteur de type */}
               <div style={{ marginBottom:14 }}>
-                <p style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
+                <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:8 }}>Comparer par</p>
                 <div style={{ display:"flex", gap:6 }}>
                   {([{v:"macro_secteur",l:"Macro-sect."},{v:"groupe",l:"Groupes"},{v:"secteur",l:"Secteurs"}] as const).map(o=>(
                     <button key={o.v} onClick={()=>{ setCompType(o.v); setCompSelec([]); }}
-                      style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compType===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11.5, fontWeight:compType===o.v?700:500, background:compType===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compType===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
+                      style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compType===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-115)", fontWeight:compType===o.v?700:500, background:compType===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compType===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
                       {o.l}
                     </button>
                   ))}
@@ -564,8 +564,8 @@ function OngletNational() {
 
               {/* Compteur sélection */}
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
-                <span style={{ fontSize:11, fontWeight:600, color:compSelec.length>=4?"var(--bleu)":"var(--gris)", background:compSelec.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
+                <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Sélection</span>
+                <span style={{ fontSize: "var(--t-11)", fontWeight:600, color:compSelec.length>=4?"var(--bleu)":"var(--gris)", background:compSelec.length>=4?"rgb(var(--bleu-rgb) / 0.08)":"var(--fond)", padding:"2px 8px", borderRadius:999 }}>{compSelec.length}/4</span>
               </div>
 
               {/* Liste (groupée par parent, non dépliante) */}
@@ -582,13 +582,13 @@ function OngletNational() {
                       onMouseEnter={e=>{ if(!disabled) (e.currentTarget as HTMLElement).style.background="var(--carte-douce)"; }}
                       onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="transparent"; }}>
                       <div style={{ width:9, height:9, borderRadius:"50%", border:`2px solid ${sel?col:"var(--bordure-forte)"}`, background:sel?col:"transparent", flexShrink:0 }}/>
-                      <span style={{ fontSize:12, color:"var(--texte)", fontWeight:sel?700:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{n.libelle}</span>
+                      <span style={{ fontSize: "var(--t-12)", color:"var(--texte)", fontWeight:sel?700:400, lineHeight:1.3, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{n.libelle}</span>
                     </div>
                   );
                 };
                 const CatHeader = ({txt, open, onToggle}:{txt:string; open:boolean; onToggle:()=>void})=>(
                   <button onClick={onToggle} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", width:"100%", background:"rgb(var(--bleu-rgb) / 0.04)", border:"none", cursor:"pointer", borderRadius:7, padding:"5px 8px", marginTop:6, marginBottom:3 }}>
-                    <span style={{ fontSize:10, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{txt}</span>
+                    <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.1em", textTransform:"uppercase" as const }}>{txt}</span>
                     <ChevronDown size={11} style={{ color:"var(--bleu)", transform:open?"rotate(0deg)":"rotate(-90deg)", transition:"transform 0.15s" }}/>
                   </button>
                 );
@@ -618,12 +618,12 @@ function OngletNational() {
               {/* Période */}
               <div style={{ marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
                 </div>
                 <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
                   {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                     <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
+                      style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize: "var(--t-12)", fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
                       {m.l}
                     </button>
                   ))}
@@ -635,16 +635,16 @@ function OngletNational() {
                         onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                      <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                      <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                      <span style={{ fontSize: "var(--t-10)", color:"var(--gris)" }}>—</span>
+                      <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                     </div>
                   </div>
                 ) : (
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
                     {(compAnneesData.length?compAnneesData:anneesData).map(a=>{ const s=anneesSpec.includes(a); return (
                       <button key={a} onClick={()=>setAnneesSpec(prev=>s?prev.filter(x=>x!==a):[...prev,a].sort())}
-                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"var(--bleu-action)":"var(--carte-douce)", color:s?"var(--sur-bleu)":"var(--texte)" }}>{a}</button>
+                        style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-11)", fontWeight:s?700:400, textAlign:"center" as const, background:s?"var(--bleu-action)":"var(--carte-douce)", color:s?"var(--sur-bleu)":"var(--texte)" }}>{a}</button>
                     ); })}
                   </div>
                 )}
@@ -657,15 +657,15 @@ function OngletNational() {
           <div style={{ position:"relative" as const, marginBottom:16 }}>
             <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher…"
-              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize:12, color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
+              style={{ width:"100%", paddingLeft:30, paddingRight:8, paddingTop:8, paddingBottom:8, borderRadius:8, border:"1px solid var(--bordure-forte)", background:"var(--carte-douce)", fontSize: "var(--t-12)", color:"var(--encre)", outline:"none", fontFamily:"var(--font-google-sans)", boxSizing:"border-box" as const }}/>
             {search&&<button onClick={()=>setSearch("")} aria-label="Effacer la recherche" style={{ position:"absolute" as const, right:8, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={11} style={{ color:"var(--gris)" }}/></button>}
           </div>
 
           {/* Activités */}
           <div style={{ marginBottom:18 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
-              {sel.niveau!=="global"&&(()=>{ const c=BDEF_NIVEAU_STYLE[sel.niveau]?.color||"var(--bleu)"; return <span style={{ fontSize:10, fontWeight:700, color:c, background:`${voile(c, 10)}`, padding:"1px 6px", borderRadius:999 }}>1</span>; })()}
+              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Activités</span>
+              {sel.niveau!=="global"&&(()=>{ const c=BDEF_NIVEAU_STYLE[sel.niveau]?.color||"var(--bleu)"; return <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:c, background:`${voile(c, 10)}`, padding:"1px 6px", borderRadius:999 }}>1</span>; })()}
             </div>
 
             {/* Global */}
@@ -675,13 +675,13 @@ function OngletNational() {
             {/* Recherche → résultats à plat */}
             {q ? (
               <div style={{ maxHeight:360, overflowY:"auto" as const }}>
-                {resultats.length===0 && <p style={{ fontSize:12, color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
+                {resultats.length===0 && <p style={{ fontSize: "var(--t-12)", color:"var(--gris)", textAlign:"center" as const, padding:"8px 0" }}>Aucun résultat</p>}
                 {resultats.map(({niveau,node})=>(
                   <div key={`${niveau}-${node.id}`} style={{ display:"flex", alignItems:"center", gap:8 }}>
                     <div style={{ flex:1, minWidth:0 }}>
                       <BdefRow label={node.libelle} niveau={niveau} selected={estSel(niveau,node.id)} onSelect={()=>choisir(niveau,node)} />
                     </div>
-                    <span style={{ fontSize:9, fontWeight:700, color:BDEF_NIVEAU_STYLE[niveau]?.color||"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.06em", flexShrink:0, paddingRight:4 }}>{BDEF_NIVEAU_LABEL[niveau]||""}</span>
+                    <span style={{ fontSize: "var(--t-9)", fontWeight:700, color:BDEF_NIVEAU_STYLE[niveau]?.color||"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.06em", flexShrink:0, paddingRight:4 }}>{BDEF_NIVEAU_LABEL[niveau]||""}</span>
                   </div>
                 ))}
               </div>
@@ -727,12 +727,12 @@ function OngletNational() {
           {/* Période */}
           <div style={{ marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
+              <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>Période</span>
             </div>
             <div style={{ display:"flex", gap:3, background:"var(--fond)", borderRadius:9, padding:3, marginBottom:12 }}>
               {[{v:"plage",l:"Plage"},{v:"specifiques",l:"Années"}].map(m=>(
                 <button key={m.v} onClick={()=>setModeAnnees(m.v as "plage"|"specifiques")}
-                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
+                  style={{ flex:1, padding:"7px 0", borderRadius:7, border:"none", cursor:"pointer", fontSize: "var(--t-12)", fontWeight:600, background:modeAnnees===m.v?"var(--carte)":"transparent", color:modeAnnees===m.v?"var(--encre)":"var(--gris)", boxShadow:modeAnnees===m.v?"0 1px 4px rgb(var(--ombre-rgb) / 0.1)":"none" }}>
                   {m.l}
                 </button>
               ))}
@@ -744,16 +744,16 @@ function OngletNational() {
                     onChange={(d,f)=>{ setAnneeMin(d); setAnneeMax(f); }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
-                  <span style={{ fontSize:10, color:"var(--gris)" }}>—</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
+                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMin}</span>
+                  <span style={{ fontSize: "var(--t-10)", color:"var(--gris)" }}>—</span>
+                  <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.08)", padding:"2px 8px", borderRadius:6 }}>{anneeMax}</span>
                 </div>
               </div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:3 }}>
                 {anneesData.map(a=>{ const s=anneesSpec.includes(a); return (
                   <button key={a} onClick={()=>setAnneesSpec(prev=>s?prev.filter(x=>x!==a):[...prev,a].sort())}
-                    style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11, fontWeight:s?700:400, textAlign:"center" as const, background:s?"var(--bleu-action)":"var(--carte-douce)", color:s?"var(--sur-bleu)":"var(--texte)" }}>{a}</button>
+                    style={{ padding:"5px 0", borderRadius:5, border:`1px solid ${s?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize: "var(--t-11)", fontWeight:s?700:400, textAlign:"center" as const, background:s?"var(--bleu-action)":"var(--carte-douce)", color:s?"var(--sur-bleu)":"var(--texte)" }}>{a}</button>
                 ); })}
               </div>
             )}
@@ -777,12 +777,12 @@ function OngletNational() {
           <div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:compSelec.length>0?10:20, flexWrap:"wrap" as const }}>
               <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" as const }}>
-                <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)", margin:0 }}>Analyse comparative {typeLabel}</h2>
+                <h2 style={{ fontWeight:800, fontSize: "var(--t-r130)", color:"var(--encre)", margin:0 }}>Analyse comparative {typeLabel}</h2>
                 {anneesComp.length>0&&<BadgePeriode>
                   {anneesComp.length===1 ? `${anneesComp[0]}` : `${anneesComp[0]} — ${anneesComp[anneesComp.length-1]}`}
                 </BadgePeriode>}
               </div>
-              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
+              {compSelec.length>0&&!loadingComp&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize: "var(--t-125)", fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
                 <Table size={14}/> Tableau de données
               </button>}
             </div>
@@ -802,7 +802,7 @@ function OngletNational() {
 
             {compSelec.length===0 ? (
               <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"var(--gris)" }}>
-                <p style={{ fontSize:14, lineHeight:1.7 }}>Sélectionnez jusqu'à 4 {typePluriel} dans le filtre pour comparer leurs données.</p>
+                <p style={{ fontSize: "var(--t-14)", lineHeight:1.7 }}>Sélectionnez jusqu'à 4 {typePluriel} dans le filtre pour comparer leurs données.</p>
               </div>
             ) : loadingComp ? (
               <SkeletonChartGrid n={8} cols={2} height={215}/>
@@ -839,8 +839,8 @@ function OngletNational() {
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, flexWrap:"wrap" as const, gap:12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:10, height:10, borderRadius:"50%", background:couleur, flexShrink:0 }} />
-            <h2 style={{ fontWeight:800, fontSize:"1.3rem", color:"var(--encre)", margin:0 }}>{sel.libelle}</h2>
-            {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"var(--fond)", border:"1px solid var(--bordure-forte)", fontSize:9, fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
+            <h2 style={{ fontWeight:800, fontSize: "var(--t-r130)", color:"var(--encre)", margin:0 }}>{sel.libelle}</h2>
+            {BDEF_NIVEAU_LABEL[sel.niveau]&&<span style={{ display:"inline-flex", alignItems:"center", padding:"1px 7px", borderRadius:5, background:"var(--fond)", border:"1px solid var(--bordure-forte)", fontSize: "var(--t-9)", fontWeight:700, color:"var(--gris)", textTransform:"uppercase" as const, letterSpacing:"0.05em", flexShrink:0 }}>
               {BDEF_NIVEAU_LABEL[sel.niveau]}
             </span>}
             {/* Même pastille de période que l'onglet IDE : les deux titres se
@@ -850,7 +850,7 @@ function OngletNational() {
               {anneesAffichees[0]} — {anneesAffichees[anneesAffichees.length-1]}
             </BadgePeriode>}
           </div>
-          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:12.5, fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
+          {indicateurs.length>0&&<button onClick={()=>setShowTable(true)} style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize: "var(--t-125)", fontWeight:700, padding:"8px 16px", borderRadius:999, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--bleu)", cursor:"pointer", fontFamily:"var(--font-google-sans)" }} onMouseEnter={e=>{e.currentTarget.style.background="var(--champ)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--carte)";}}>
             <Table size={14}/> Tableau de données
           </button>}
         </div>
@@ -871,9 +871,9 @@ function OngletNational() {
                   onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)";}}>
                   {/* Remplacer ce KPI — icône révélée au survol de la card */}
                   <BtnSwapKpi ouvert={pickerOuvert} onClick={()=>setPickerSlot(pickerOuvert?-1:slot)}/>
-                  <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4, paddingRight:26 }}>{ind?.libelle??code}</p>
-                  <p style={{ fontSize:"1.05rem", fontWeight:800, color:"var(--encre)", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
-                  {lastA&&<p style={{ fontSize:10, color:"var(--gris)", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
+                  <p style={{ fontSize: "var(--t-9)", fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:7, lineHeight:1.4, paddingRight:26 }}>{ind?.libelle??code}</p>
+                  <p style={{ fontSize: "var(--t-r105)", fontWeight:800, color:"var(--encre)", lineHeight:1.15 }}>{ind?fmtBdef(v,ind.unite,true):"—"}</p>
+                  {lastA&&<p style={{ fontSize: "var(--t-10)", color:"var(--gris)", marginTop:5, lineHeight:1 }}>en {lastA}</p>}
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}
                       onPick={c=>remplacerKpi(slot,c)} onClose={()=>setPickerSlot(-1)}/>
@@ -889,8 +889,8 @@ function OngletNational() {
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1.5px dashed ${pickerOuvert?"var(--bleu)":"var(--bordure-forte)"}`, display:"flex", flexDirection:"column" as const, alignItems:"center", justifyContent:"center", gap:4, minHeight:90, cursor:"pointer", transition:"border-color 0.15s", zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.borderColor="var(--bleu)"; }}
                   onMouseLeave={e=>{ if(!pickerOuvert) e.currentTarget.style.borderColor="var(--bordure-forte)"; }}>
-                  <span style={{ fontSize:20, color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>
-                  <span style={{ fontSize:10, color:pickerOuvert?"var(--bleu)":"var(--gris)", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
+                  <span style={{ fontSize: "var(--t-20)", color:pickerOuvert?"var(--bleu)":"var(--gris)", lineHeight:1 }}>+</span>
+                  <span style={{ fontSize: "var(--t-10)", color:pickerOuvert?"var(--bleu)":"var(--gris)", textAlign:"center" as const, lineHeight:1.5 }}>Ajouter un<br/>indicateur</span>
                   {pickerOuvert && (
                     <PickerKpi items={pickerItems} alignDroite={slot>=2}
                       onPick={c=>remplacerKpi(slot,c)} onClose={()=>setPickerSlot(-1)}/>
@@ -909,7 +909,7 @@ function OngletNational() {
           <ErreurChargement onRetry={() => qValeurs.refetch()} />
         ) : indicateurs.length===0 ? (
           <div style={{ textAlign:"center" as const, padding:"70px 20px", color:"var(--gris)" }}>
-            <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
+            <p style={{ fontSize: "var(--t-14)", lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
           </div>
         ) : (
           <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>

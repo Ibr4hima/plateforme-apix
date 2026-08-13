@@ -111,7 +111,7 @@ export default function AdminNaema() {
 
   const inputStyle = {
     width: "100%", background: "var(--fond)", border: "1px solid var(--bordure-forte)",
-    borderRadius: 8, padding: "9px 12px", fontSize: 13, color: "var(--encre)",
+    borderRadius: 8, padding: "9px 12px", fontSize: "var(--t-13)", color: "var(--encre)",
     outline: "none", fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const,
   };
 
@@ -129,13 +129,13 @@ export default function AdminNaema() {
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
+        <p style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>
           Administration
         </p>
-        <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "1.75rem", color: "var(--encre)" }}>
+        <h1 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 800, fontSize: "var(--t-r175)", color: "var(--encre)" }}>
           Classification NAEMA
         </h1>
-        <p style={{ color: "var(--gris)", fontSize: 13, marginTop: 4 }}>
+        <p style={{ color: "var(--gris)", fontSize: "var(--t-13)", marginTop: 4 }}>
           {secteurs.length} secteurs · {branches.length} branches · {activites.length} activités
         </p>
       </div>
@@ -169,13 +169,13 @@ export default function AdminNaema() {
                   background: `${voile(color, 8)}`,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color }}>{sec.code}</span>
+                  <span style={{ fontSize: "var(--t-12)", fontWeight: 800, color }}>{sec.code}</span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: 16, color: "var(--encre)" }}>
+                  <div style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "var(--t-16)", color: "var(--encre)" }}>
                     {sec.nom}
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--gris)", marginTop: 2 }}>
+                  <div style={{ fontSize: "var(--t-12)", color: "var(--gris)", marginTop: 2 }}>
                     {bSec.length} branche{bSec.length > 1 ? "s" : ""} ·{" "}
                     {bSec.reduce((acc, b) => acc + activitesDeLaBranche(b.id).length, 0)} activités
                   </div>
@@ -185,7 +185,7 @@ export default function AdminNaema() {
                   style={{
                     display: "flex", alignItems: "center", gap: 5,
                     background: `${voile(color, 7)}`, border: "none", cursor: "pointer",
-                    borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color,
+                    borderRadius: 8, padding: "6px 12px", fontSize: "var(--t-12)", fontWeight: 600, color,
                   }}
                 >
                   <Plus size={12} /> Branche
@@ -200,7 +200,7 @@ export default function AdminNaema() {
               {isExpanded && (
                 <div style={{ padding: "0 24px 20px" }}>
                   {bSec.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "24px", color: "var(--gris)", fontSize: 13 }}>
+                    <div style={{ textAlign: "center", padding: "24px", color: "var(--gris)", fontSize: "var(--t-13)" }}>
                       Aucune branche — cliquez sur "+ Branche" pour en ajouter.
                     </div>
                   ) : (
@@ -223,23 +223,23 @@ export default function AdminNaema() {
                               }}
                             >
                               <span style={{
-                                fontSize: 10, fontWeight: 700, color,
+                                fontSize: "var(--t-10)", fontWeight: 700, color,
                                 background: `${voile(color, 7)}`, padding: "2px 8px", borderRadius: 999,
                                 flexShrink: 0,
                               }}>
                                 {branch.code}
                               </span>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", flex: 1 }}>
+                              <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)", flex: 1 }}>
                                 {branch.nom}
                               </span>
-                              <span style={{ fontSize: 11, color: "var(--gris)", marginRight: 8 }}>
+                              <span style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginRight: 8 }}>
                                 {asBranch.length} activité{asBranch.length > 1 ? "s" : ""}
                               </span>
                               <button
                                 onClick={e => { e.stopPropagation(); openCreateActivite(branch.id); }}
                                 style={{
                                   background: "rgb(var(--ombre-rgb) / 0.05)", border: "none", cursor: "pointer",
-                                  borderRadius: 6, padding: "4px 8px", fontSize: 11, color: "var(--texte)",
+                                  borderRadius: 6, padding: "4px 8px", fontSize: "var(--t-11)", color: "var(--texte)",
                                   display: "flex", alignItems: "center", gap: 3,
                                 }}
                               >
@@ -271,7 +271,7 @@ export default function AdminNaema() {
                             {isBranchOpen && (
                               <div style={{ borderTop: "1px solid var(--bordure-forte)", padding: "8px 16px 12px" }}>
                                 {asBranch.length === 0 ? (
-                                  <p style={{ fontSize: 12, color: "var(--gris)", padding: "8px 0" }}>
+                                  <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", padding: "8px 0" }}>
                                     Aucune activité — cliquez sur "+ Activité".
                                   </p>
                                 ) : (
@@ -283,12 +283,12 @@ export default function AdminNaema() {
                                         borderRadius: 8, border: "1px solid var(--bordure-forte)",
                                       }}>
                                         <span style={{
-                                          fontSize: 10, fontWeight: 600, color: "var(--gris)",
+                                          fontSize: "var(--t-10)", fontWeight: 600, color: "var(--gris)",
                                           background: "var(--fond)", padding: "1px 6px", borderRadius: 999, flexShrink: 0,
                                         }}>
                                           {act.code}
                                         </span>
-                                        <span style={{ fontSize: 13, color: "var(--texte)", flex: 1 }}>{act.nom}</span>
+                                        <span style={{ fontSize: "var(--t-13)", color: "var(--texte)", flex: 1 }}>{act.nom}</span>
                                         <button
                                           onClick={() => openEditActivite(act)}
                                           style={{ background: "none", border: "none", cursor: "pointer", padding: 3 }}
@@ -341,7 +341,7 @@ export default function AdminNaema() {
             <div style={{ height: 4, background: "linear-gradient(90deg, var(--orange-action), var(--orange-action))" }} />
             <div style={{ padding: "24px 28px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "1.1rem", color: "var(--encre)" }}>
+                <h2 style={{ fontFamily: "var(--font-google-sans)", fontWeight: 700, fontSize: "var(--t-r110)", color: "var(--encre)" }}>
                   {modal.mode === "create" ? "Nouvelle" : "Modifier"}{" "}
                   {modal.type === "branche" ? "branche" : "activité"}
                 </h2>
@@ -352,7 +352,7 @@ export default function AdminNaema() {
 
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "var(--texte)" }}>Code *</label>
+                  <label style={{ fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)" }}>Code *</label>
                   <input
                     value={formCode}
                     onChange={e => setFormCode(e.target.value)}
@@ -361,7 +361,7 @@ export default function AdminNaema() {
                   />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: "var(--texte)" }}>Nom *</label>
+                  <label style={{ fontSize: "var(--t-12)", fontWeight: 600, color: "var(--texte)" }}>Nom *</label>
                   <input
                     value={formNom}
                     onChange={e => setFormNom(e.target.value)}
@@ -371,7 +371,7 @@ export default function AdminNaema() {
                 </div>
 
                 {error && (
-                  <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 8, fontSize: 13 }}>
+                  <div style={{ background: "var(--danger-voile)", color: "var(--danger)", padding: "10px 14px", borderRadius: 8, fontSize: "var(--t-13)" }}>
                     {error}
                   </div>
                 )}
@@ -379,13 +379,13 @@ export default function AdminNaema() {
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
                   <button onClick={() => setModal({ type: null, mode: "create" })} style={{
                     padding: "10px 20px", borderRadius: 10, border: "1px solid var(--bordure-forte)",
-                    background: "transparent", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    background: "transparent", color: "var(--texte)", fontSize: "var(--t-13)", fontWeight: 600, cursor: "pointer",
                   }}>Annuler</button>
                   <button onClick={handleSave} disabled={saving || saveOk} style={{
                     padding: "10px 24px", borderRadius: 10, border: "none",
                     background: saveOk ? "var(--vert-voile)" : "linear-gradient(135deg, var(--orange-action), var(--orange-fonce))",
                     color: saveOk ? "var(--vert-fonce)" : "var(--sur-bleu)",
-                    fontSize: 13, fontWeight: 600, cursor: "pointer",
+                    fontSize: "var(--t-13)", fontWeight: 600, cursor: "pointer",
                     display: "flex", alignItems: "center", gap: 8,
                   }}>
                     {saveOk ? <><Check size={14} /> Enregistré !</> :

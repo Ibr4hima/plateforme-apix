@@ -76,26 +76,26 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
         <div style={{ padding: "18px 22px 0" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>
+              <p style={{ fontSize: "var(--t-11)", fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>
                 Lier à NAEMA · {systeme.toUpperCase()}
               </p>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <code style={{ fontSize: 13, fontWeight: 800, color, background: `${voile(color, 8)}`, padding: "2px 8px", borderRadius: 6 }}>{classe.full_code}</code>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)" }}>{classe.libelle}</span>
+                <code style={{ fontSize: "var(--t-13)", fontWeight: 800, color, background: `${voile(color, 8)}`, padding: "2px 8px", borderRadius: 6 }}>{classe.full_code}</code>
+                <span style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)" }}>{classe.libelle}</span>
               </div>
-              <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 4 }}>{selected.length} activité{selected.length > 1 ? "s" : ""} sélectionnée{selected.length > 1 ? "s" : ""}</p>
+              <p style={{ fontSize: "var(--t-12)", color: "var(--gris)", marginTop: 4 }}>{selected.length} activité{selected.length > 1 ? "s" : ""} sélectionnée{selected.length > 1 ? "s" : ""}</p>
             </div>
             <button onClick={onClose} style={{ background: "var(--fond)", border: "none", cursor: "pointer", borderRadius: 8, padding: 7 }}><X size={14} color="var(--texte)" /></button>
           </div>
           <div style={{ position: "relative", marginBottom: 10 }}>
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Rechercher une activité NAEMA…"
-              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 13, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: "var(--t-13)", outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
           </div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "4px 22px 4px" }}>
           {filtered.length === 0 ? (
-            <p style={{ textAlign: "center", color: "var(--gris)", padding: "24px 0", fontSize: 13 }}>
+            <p style={{ textAlign: "center", color: "var(--gris)", padding: "24px 0", fontSize: "var(--t-13)" }}>
               {activites.length === 0 ? "Chargement…" : "Aucun résultat"}
             </p>
           ) : filtered.map((act: any) => {
@@ -108,16 +108,16 @@ function LierModal({ classe, systeme, onClose, onSaved }: {
                 <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${sel ? color : "var(--gris)"}`, background: sel ? color : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}>
                   {sel && <svg width="10" height="8" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 </div>
-                <code style={{ fontSize: 10, fontWeight: 700, color: sel ? color : "var(--gris)", background: sel ? `${voile(color, 8)}` : "var(--fond)", padding: "1px 6px", borderRadius: 4, flexShrink: 0 }}>{act.naema_code}</code>
-                <span style={{ fontSize: 13, color: sel ? "var(--encre)" : "var(--texte)", fontWeight: sel ? 600 : 400 }}>{act.nom}</span>
+                <code style={{ fontSize: "var(--t-10)", fontWeight: 700, color: sel ? color : "var(--gris)", background: sel ? `${voile(color, 8)}` : "var(--fond)", padding: "1px 6px", borderRadius: 4, flexShrink: 0 }}>{act.naema_code}</code>
+                <span style={{ fontSize: "var(--t-13)", color: sel ? "var(--encre)" : "var(--texte)", fontWeight: sel ? 600 : 400 }}>{act.nom}</span>
               </button>
             );
           })}
         </div>
         <div style={{ padding: "12px 22px 18px", borderTop: "1px solid var(--bordure)", display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "transparent", color: "var(--texte)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Annuler</button>
+          <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid var(--bordure-forte)", background: "transparent", color: "var(--texte)", fontSize: "var(--t-13)", fontWeight: 600, cursor: "pointer" }}>Annuler</button>
           <button onClick={save} disabled={saving || ok}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: ok ? "var(--vert-action)" : color, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: ok ? "var(--vert-action)" : color, color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer" }}>
             {ok ? <><Check size={13} /> Enregistré</> : saving ? <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Enregistrement…</> : <><Link2 size={13} /> Enregistrer</>}
           </button>
         </div>
@@ -198,7 +198,7 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
         <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--bordure)" }}>
           {stats && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: "var(--texte)" }}>
+              <span style={{ fontSize: "var(--t-13)", color: "var(--texte)" }}>
                 <span style={{ fontWeight: 700, color }}>{stats.classes_liees}</span>
                 <span style={{ color: "var(--gris)" }}>/{stats.classes} classes liées</span>
               </span>
@@ -211,9 +211,9 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)}
               placeholder={`Rechercher parmi ${classes.length} classes ${label}…`}
-              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: 12, outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
+              style={{ width: "100%", paddingLeft: 32, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)", fontSize: "var(--t-12)", outline: "none", boxSizing: "border-box" as const, fontFamily: "var(--font-google-sans)" }} />
           </div>
-          {searchQ && <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 5 }}>{classesFiltrees.length} résultat{classesFiltrees.length > 1 ? "s" : ""}</p>}
+          {searchQ && <p style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginTop: 5 }}>{classesFiltrees.length} résultat{classesFiltrees.length > 1 ? "s" : ""}</p>}
         </div>
         <div style={{ flex: 1, overflowY: "auto" }}>
           {loading ? (
@@ -228,10 +228,10 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: isSelected ? `${voile(color, 6)}` : "transparent", cursor: "pointer", textAlign: "left", borderLeft: `3px solid ${isSelected ? color : "transparent"}`, borderBottom: "1px solid var(--filet)" }}
                 onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "var(--carte-douce)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = isSelected ? `${voile(color, 6)}` : "transparent"; }}>
-                <code style={{ fontSize: 10, fontWeight: 700, color: isSelected ? color : "var(--gris)", background: isSelected ? `${voile(color, 8)}` : "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
-                <span style={{ fontSize: 12, color: isSelected ? "var(--encre)" : "var(--texte)", fontWeight: isSelected ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.libelle}</span>
+                <code style={{ fontSize: "var(--t-10)", fontWeight: 700, color: isSelected ? color : "var(--gris)", background: isSelected ? `${voile(color, 8)}` : "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0, minWidth: 52, textAlign: "center" as const }}>{code}</code>
+                <span style={{ fontSize: "var(--t-12)", color: isSelected ? "var(--encre)" : "var(--texte)", fontWeight: isSelected ? 600 : 400, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cls.libelle}</span>
                 {cls.nb_correspondances > 0 && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "var(--vert)", background: "rgb(var(--vert-rgb) / 0.12)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{cls.nb_correspondances}</span>
+                  <span style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--vert)", background: "rgb(var(--vert-rgb) / 0.12)", padding: "2px 7px", borderRadius: 999, flexShrink: 0 }}>{cls.nb_correspondances}</span>
                 )}
               </button>
             );
@@ -246,12 +246,12 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid var(--bordure)", background: "var(--carte)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <code style={{ fontSize: 14, fontWeight: 800, color, background: `${voile(color, 7)}`, padding: "3px 10px", borderRadius: 6 }}>{fullCode(selectedClass)}</code>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--encre)", marginTop: 6, lineHeight: 1.4, maxWidth: 480 }}>{selectedClass.libelle}</p>
-                  <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 4 }}>{corrs.length} activité{corrs.length > 1 ? "s" : ""} NAEMA liée{corrs.length > 1 ? "s" : ""}</p>
+                  <code style={{ fontSize: "var(--t-14)", fontWeight: 800, color, background: `${voile(color, 7)}`, padding: "3px 10px", borderRadius: 6 }}>{fullCode(selectedClass)}</code>
+                  <p style={{ fontSize: "var(--t-13)", fontWeight: 600, color: "var(--encre)", marginTop: 6, lineHeight: 1.4, maxWidth: 480 }}>{selectedClass.libelle}</p>
+                  <p style={{ fontSize: "var(--t-11)", color: "var(--gris)", marginTop: 4 }}>{corrs.length} activité{corrs.length > 1 ? "s" : ""} NAEMA liée{corrs.length > 1 ? "s" : ""}</p>
                 </div>
                 <button onClick={() => setLierModal(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: color, color: "var(--sur-bleu)", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 9, border: "none", background: color, color: "var(--sur-bleu)", fontSize: "var(--t-13)", fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>
                   <Link2 size={13} /> Lier à NAEMA
                 </button>
               </div>
@@ -264,15 +264,15 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
               ) : corrs.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 16px", color: "var(--gris)" }}>
                   <Link2 size={36} style={{ marginBottom: 14, opacity: 0.2 }} />
-                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)", marginBottom: 6 }}>Aucune correspondance</p>
-                  <p style={{ fontSize: 13 }}>Cliquez "Lier à NAEMA" pour associer des activités.</p>
+                  <p style={{ fontSize: "var(--t-15)", fontWeight: 600, color: "var(--texte)", marginBottom: 6 }}>Aucune correspondance</p>
+                  <p style={{ fontSize: "var(--t-13)" }}>Cliquez "Lier à NAEMA" pour associer des activités.</p>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {corrs.map(c => (
                     <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderRadius: 10, background: "var(--carte)", border: "1px solid var(--bordure-forte)" }}>
-                      <code style={{ fontSize: 10, fontWeight: 700, color: "var(--gris)", background: "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>{c.naema_code}</code>
-                      <span style={{ fontSize: 13, color: "var(--encre)", flex: 1 }}>{c.activite.nom}</span>
+                      <code style={{ fontSize: "var(--t-10)", fontWeight: 700, color: "var(--gris)", background: "var(--fond)", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>{c.naema_code}</code>
+                      <span style={{ fontSize: "var(--t-13)", color: "var(--encre)", flex: 1 }}>{c.activite.nom}</span>
                       <button onClick={() => delCorr(c.id)} disabled={deleting === c.id}
                         style={{ width: 28, height: 28, borderRadius: 7, border: "none", cursor: "pointer", background: "rgb(var(--danger-rgb) / 0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         {deleting === c.id ? <Loader2 size={11} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Unlink size={11} style={{ color: "var(--danger)" }} />}
@@ -288,8 +288,8 @@ function OngletClassification({ systeme }: { systeme: "citi" | "nace" }) {
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: "var(--fond)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
               <Link2 size={28} style={{ opacity: 0.3 }} />
             </div>
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)", marginBottom: 6 }}>Sélectionnez une classe {label}</p>
-            <p style={{ fontSize: 13, textAlign: "center", maxWidth: 300 }}>Cliquez sur une classe pour gérer ses correspondances NAEMA.</p>
+            <p style={{ fontSize: "var(--t-16)", fontWeight: 600, color: "var(--texte)", marginBottom: 6 }}>Sélectionnez une classe {label}</p>
+            <p style={{ fontSize: "var(--t-13)", textAlign: "center", maxWidth: 300 }}>Cliquez sur une classe pour gérer ses correspondances NAEMA.</p>
           </div>
         )}
       </div>
@@ -323,9 +323,9 @@ export default function AdminClassifications() {
 
       {/* Header */}
       <div style={{ padding: "20px 32px 0", background: "var(--carte)", borderBottom: "1px solid var(--bordure-forte)" }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase" as const, marginBottom: 4 }}>Administration · Classifications</p>
+        <p style={{ fontSize: "var(--t-11)", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.15em", textTransform: "uppercase" as const, marginBottom: 4 }}>Administration · Classifications</p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <h1 style={{ fontWeight: 800, fontSize: "1.4rem", color: "var(--encre)" }}>Correspondances ↔ NAEMA</h1>
+          <h1 style={{ fontWeight: 800, fontSize: "var(--t-r140)", color: "var(--encre)" }}>Correspondances ↔ NAEMA</h1>
         </div>
         {/* Onglets */}
         <div style={{ display: "flex", marginTop: 16 }}>
@@ -334,7 +334,7 @@ export default function AdminClassifications() {
             { key: "nace", label: "NACE Rév.2.1 ↔ NAEMA", color: "var(--violet)" },
           ] as const).map(t => (
             <button key={t.key} onClick={() => setOnglet(t.key)}
-              style={{ padding: "12px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: 13, fontWeight: 700, color: onglet === t.key ? t.color : "var(--gris)", borderBottom: `3px solid ${onglet === t.key ? t.color : "transparent"}`, transition: "all 0.15s", marginBottom: -1 }}>
+              style={{ padding: "12px 22px", border: "none", background: "transparent", cursor: "pointer", fontFamily: "var(--font-google-sans)", fontSize: "var(--t-13)", fontWeight: 700, color: onglet === t.key ? t.color : "var(--gris)", borderBottom: `3px solid ${onglet === t.key ? t.color : "transparent"}`, transition: "all 0.15s", marginBottom: -1 }}>
               {t.label}
             </button>
           ))}

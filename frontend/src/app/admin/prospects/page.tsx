@@ -20,9 +20,9 @@ function fmtPhone(raw: string): string {
   if (!raw) return raw;
   try { return parsePhoneNumber(raw).formatInternational(); } catch { return raw; }
 }
-const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize:13, color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
-const LS: any  = { fontSize:12, fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
-const SEC: any = { fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
+const IS: any  = { background:"var(--fond)", border:"1px solid var(--bordure-forte)", borderRadius:8, padding:"9px 12px", fontSize: "var(--t-13)", color:"var(--encre)", outline:"none", width:"100%", boxSizing:"border-box", fontFamily:"var(--font-google-sans)" };
+const LS: any  = { fontSize: "var(--t-12)", fontWeight:600, color:"var(--texte)", marginBottom:5, display:"block" };
+const SEC: any = { fontSize: "var(--t-11)", fontWeight:700, color:"var(--orange)", letterSpacing:"0.12em", textTransform:"uppercase" as const, marginBottom:12, paddingBottom:8, borderBottom:"1px solid var(--bordure-forte)" };
 
 // Canaux de contact possibles lors d'un échange.
 const CANAUX = [
@@ -311,10 +311,10 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <User size={13} style={{ color:"var(--bleu)" }}/>
-          <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
+          <span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--bleu)" }}>Point focal {idx+1}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <label style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"var(--texte)", cursor:"pointer" }}>
+          <label style={{ display:"flex", alignItems:"center", gap:5, fontSize: "var(--t-12)", color:"var(--texte)", cursor:"pointer" }}>
             <input type="checkbox" checked={pf.est_principal} onChange={e=>upd("est_principal",e.target.checked)}/> Principal
           </label>
           <button type="button" onClick={onRemove}
@@ -325,11 +325,11 @@ function PointFocalCard({ pf, idx, onUpdate, onRemove }: {
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
         <div>
-          <label style={{ ...fuiLabel, fontSize:11 }}>Prénom *</label>
+          <label style={{ ...fuiLabel, fontSize: "var(--t-11)" }}>Prénom *</label>
           <FInput value={pf.prenom} onChange={e=>upd("prenom",e.target.value)} placeholder="Prénom"/>
         </div>
         <div>
-          <label style={{ ...fuiLabel, fontSize:11 }}>Nom *</label>
+          <label style={{ ...fuiLabel, fontSize: "var(--t-11)" }}>Nom *</label>
           <FInput value={pf.nom} onChange={e=>upd("nom",e.target.value)} placeholder="Nom"/>
         </div>
       </div>
@@ -351,8 +351,8 @@ function ToggleField({ label, desc, value, onChange, children }: {
         style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center",
           padding:"12px 16px", background:value?"rgb(var(--bleu-rgb) / 0.04)":"var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const, fontFamily:"var(--font-google-sans)" }}>
         <div>
-          <span style={{ fontSize:13, fontWeight:600, color:"var(--encre)" }}>{label}</span>
-          {desc && <p style={{ fontSize:11, color:"var(--gris)", marginTop:2 }}>{desc}</p>}
+          <span style={{ fontSize: "var(--t-13)", fontWeight:600, color:"var(--encre)" }}>{label}</span>
+          {desc && <p style={{ fontSize: "var(--t-11)", color:"var(--gris)", marginTop:2 }}>{desc}</p>}
         </div>
         <div style={{ flexShrink:0, marginLeft:12, width:36, height:20, borderRadius:10, background:value?"var(--bleu-action)":"var(--bordure-forte)", position:"relative" as const, transition:"background 0.2s" }}>
           <div style={{ position:"absolute" as const, top:2, left:value?18:2, width:16, height:16, borderRadius:8, background:"var(--carte)", transition:"left 0.2s", boxShadow:"0 1px 3px rgb(var(--ombre-rgb) / 0.2)" }}/>
@@ -557,7 +557,7 @@ function ProspectModal({ open, onClose, edit, onSaved }: {
           onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Plus size={14} color="var(--gris)"/>
-          <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un point focal</span>
+          <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>Ajouter un point focal</span>
         </button>
         ); })()}
       </FSection>
@@ -856,7 +856,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
 
       {/* Échange */}
       <FSection title="Échange" extra={!isEdit && dernierEchangeCourant ? (
-        <span style={{ fontSize:11, color:"var(--orange)", fontWeight:600 }}>
+        <span style={{ fontSize: "var(--t-11)", color:"var(--orange)", fontWeight:600 }}>
           Dernier échange : {new Date(dernierEchangeCourant.date_echange).toLocaleDateString("fr-FR")}
         </span>
       ) : undefined}>
@@ -923,7 +923,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                         onChange={e=>{ upd("canal_contact",e.target.value); if(emailError) setEmailError(""); }}
                         onBlur={()=>{ if(form.canal_contact && !isValidEmail(form.canal_contact)) setEmailError("Adresse e-mail invalide"); }}
                         placeholder={meta?.placeholder || ""} style={{ borderColor: emailError?"var(--danger)":undefined }}/>
-                      {emailError && <p style={{ fontSize:11, color:"var(--danger)", marginTop:3 }}>{emailError}</p>}
+                      {emailError && <p style={{ fontSize: "var(--t-11)", color:"var(--danger)", marginTop:3 }}>{emailError}</p>}
                     </>
                   ) : (
                     <FInput value={form.canal_contact} onChange={e=>upd("canal_contact",e.target.value)}
@@ -955,7 +955,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px", marginBottom:8 }}>
                 <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                 <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${crExistant.id}/download`} target="_blank" rel="noopener noreferrer"
-                  style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
+                  style={{ flex:1, fontSize: "var(--t-125)", color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                   {crExistant.titre}
                 </a>
               </div>
@@ -965,7 +965,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                 <input value={compteRendu.titre} onChange={e=>setCompteRendu(cr=>cr?{...cr,titre:e.target.value}:cr)}
                   placeholder="Titre du compte rendu"
-                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                  style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize: "var(--t-12)", padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                 <button onClick={()=>setCompteRendu(null)} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
               </div>
             ) : (
@@ -973,7 +973,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
                 onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
                 <Upload size={14} color="var(--gris)"/>
-                <span style={{ fontSize:13, color:"var(--gris)" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
+                <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>{crExistant ? "Remplacer le compte rendu (PDF)" : "Ajouter le compte rendu (PDF)"}</span>
                 <input type="file" accept=".pdf" style={{ display:"none" }} onChange={e=>{
                   const file = e.target.files?.[0]; if (!file) return;
                   setCompteRendu({ file, titre:file.name.replace(/\.pdf$/i,"") });
@@ -992,7 +992,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                   <div key={f.id} style={{ display:"flex", alignItems:"center", gap:8, background:"rgb(var(--bleu-rgb) / 0.05)", border:"1px solid rgb(var(--bleu-rgb) / 0.15)", borderRadius:10, padding:"8px 12px" }}>
                     <FileText size={13} style={{ color:"var(--bleu)", flexShrink:0 }}/>
                     <a href={`${API}/prospects/echanges/${edit?.id}/fichiers/${f.id}/download`} target="_blank" rel="noopener noreferrer"
-                      style={{ flex:1, fontSize:12.5, color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
+                      style={{ flex:1, fontSize: "var(--t-125)", color:"var(--bleu)", fontWeight:600, textDecoration:"none" }}>
                       {f.titre}
                     </a>
                   </div>
@@ -1006,7 +1006,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                     <FileText size={13} style={{ color:"var(--violet)", flexShrink:0 }}/>
                     <input value={p.titre} onChange={e=>setPdfQueue(prev=>prev.map((x,j)=>j===i?{...x,titre:e.target.value}:x))}
                       placeholder="Titre du document"
-                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize:12, padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
+                      style={{ flex:1, background:"transparent", border:"none", borderBottom:"1px solid rgb(var(--violet-rgb) / 0.3)", outline:"none", fontSize: "var(--t-12)", padding:"2px 0", fontFamily:"var(--font-google-sans)" }}/>
                     <button onClick={()=>setPdfQueue(prev=>prev.filter((_,j)=>j!==i))} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><X size={13} style={{ color:"var(--danger)" }}/></button>
                   </div>
                 ))}
@@ -1016,7 +1016,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               onMouseEnter={e=>e.currentTarget.style.borderColor="var(--bleu)"}
               onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
               <Upload size={14} color="var(--gris)"/>
-              <span style={{ fontSize:13, color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
+              <span style={{ fontSize: "var(--t-13)", color:"var(--gris)" }}>Ajouter un ou plusieurs PDF</span>
               <input type="file" accept=".pdf" multiple style={{ display:"none" }} onChange={e=>{
                 const files = Array.from(e.target.files||[]);
                 setPdfQueue(prev=>[...prev,...files.map(f=>({file:f,titre:f.name.replace(/\.pdf$/i,"")}))]);
@@ -1024,7 +1024,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
               }}/>
             </label>
             {(compteRendu || pdfQueue.length > 0) && (
-              <p style={{ fontSize:11, color:"var(--gris)", marginTop:6 }}>Les fichiers seront téléversés à l'enregistrement.</p>
+              <p style={{ fontSize: "var(--t-11)", color:"var(--gris)", marginTop:6 }}>Les fichiers seront téléversés à l'enregistrement.</p>
             )}
           </div>
 
@@ -1037,7 +1037,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
           <div style={{ display:"flex", flexDirection:"column" as const, gap:6, marginBottom:8 }}>
             {localContraintes.map((c:any) => (
               <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgb(var(--danger-rgb) / 0.04)", border:"1px solid rgb(var(--danger-rgb) / 0.15)", borderRadius:10, padding:"9px 12px" }}>
-                <div style={{ flex:1, fontSize:12, color:"var(--encre)", lineHeight:1.5 }}>
+                <div style={{ flex:1, fontSize: "var(--t-12)", color:"var(--encre)", lineHeight:1.5 }}>
                   {c.description.replace(/<[^>]+>/g,"").trim() || "—"}
                 </div>
                 <button type="button" onClick={()=>ouvrirContrainte(c)}
@@ -1057,7 +1057,7 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
               {bulletContraintes.map((b,i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <span style={{ color:"var(--bleu)", fontWeight:900, fontSize:18, flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
+                  <span style={{ color:"var(--bleu)", fontWeight:900, fontSize: "var(--t-18)", flexShrink:0, lineHeight:1, userSelect:"none" as const }}>•</span>
                   <input
                     className="fui-input"
                     ref={el=>{ bulletRefs.current[i]=el; }}
@@ -1080,18 +1080,18 @@ function EchangeModal({ open, onClose, prospect, edit, onSaved }: { open:boolean
                 </div>
               ))}
             </div>
-            {contrainteError && <p style={{ fontSize:12, color:"var(--danger)" }}>{contrainteError}</p>}
+            {contrainteError && <p style={{ fontSize: "var(--t-12)", color:"var(--danger)" }}>{contrainteError}</p>}
             <div style={{ display:"flex", gap:8, justifyContent:"flex-end" }}>
-              <FButtonGhost type="button" onClick={annulerContrainte} style={{ padding:"7px 14px", fontSize:12 }}>Annuler</FButtonGhost>
+              <FButtonGhost type="button" onClick={annulerContrainte} style={{ padding:"7px 14px", fontSize: "var(--t-12)" }}>Annuler</FButtonGhost>
               <FButton type="button" onClick={enregistrerContrainte} disabled={savingContrainte} loading={savingContrainte}
-                style={{ padding:"7px 16px", fontSize:12 }}>
+                style={{ padding:"7px 16px", fontSize: "var(--t-12)" }}>
                 {savingContrainte?"Enregistrement…":editContrainteId?"Modifier":"Ajouter"}
               </FButton>
             </div>
           </FPanel>
         ) : (
           <button type="button" onClick={()=>ouvrirContrainte(null)}
-            style={{ width:"100%", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"var(--gris)", fontSize:13, fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
+            style={{ width:"100%", border:"2px dashed var(--bordure-forte)", background:"var(--carte-douce)", borderRadius:10, padding:"11px 16px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:6, color:"var(--gris)", fontSize: "var(--t-13)", fontWeight:500, transition:"border-color 0.15s, color 0.15s", fontFamily:"var(--font-google-sans)" }}
             onMouseEnter={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bleu)"; (e.currentTarget as HTMLButtonElement).style.color="var(--bleu)"; }}
             onMouseLeave={e=>{ (e.currentTarget as HTMLButtonElement).style.borderColor="var(--bordure-forte)"; (e.currentTarget as HTMLButtonElement).style.color="var(--gris)"; }}>
             <Plus size={14}/> Ajouter
@@ -1143,17 +1143,17 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   const accent = "var(--bleu)";
   const TXT="var(--encre)", SUB="var(--texte)", MUT="var(--gris)", SURF="var(--sur-bleu)", BRD="var(--sur-bleu)", DIV="var(--sur-bleu)";
   const card: any = { background:SURF, border:`1px solid ${BRD}`, borderRadius:12, padding:"14px 16px" };
-  const linkStyle: any = { fontSize:13, fontWeight:600, color:"var(--bleu)", wordBreak:"break-all" as const, textDecoration:"none" };
+  const linkStyle: any = { fontSize: "var(--t-13)", fontWeight:600, color:"var(--bleu)", wordBreak:"break-all" as const, textDecoration:"none" };
   const href = (u:string) => /^https?:\/\//.test(u) ? u : `https://${u}`;
 
   const LBL = ({children}:{children:string}) => (
-    <p style={{fontSize:10.5,fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.14em",marginBottom:10}}>{children}</p>
+    <p style={{fontSize: "var(--t-105)",fontWeight:700,color:"var(--bleu)",textTransform:"uppercase" as const,letterSpacing:"0.14em",marginBottom:10}}>{children}</p>
   );
 
   const Section = ({ title, count, action, first, children }:any) => (
     <section style={{ marginTop:first?0:22, paddingTop:first?0:22, borderTop:first?"none":`1px solid ${DIV}` }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:12, minHeight:24 }}>
-        <h3 style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const }}>
+        <h3 style={{ fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const }}>
           {title}{typeof count==="number" ? <span style={{ color:"var(--gris)", fontWeight:700, marginLeft:7 }}>{count}</span> : null}
         </h3>
         {action || null}
@@ -1163,7 +1163,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
   );
 
   const SubLabel = ({ children, color }:any) => (
-    <p style={{ fontSize:10, fontWeight:700, color:color||MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:6 }}>{children}</p>
+    <p style={{ fontSize: "var(--t-10)", fontWeight:700, color:color||MUT, letterSpacing:"0.08em", textTransform:"uppercase" as const, marginBottom:6 }}>{children}</p>
   );
 
   // Affichage en cascade Secteur → Branche → Activité (style entreprises)
@@ -1175,7 +1175,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         return (
           <div key={secId}>
             <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:brasDuSec.length?5:0 }}>
-              <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }}/><span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>{sec.nom}</span>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0 }}/><span style={{ fontSize: "var(--t-12)", fontWeight:700, color:"var(--bleu)" }}>{sec.nom}</span>
             </div>
             {brasDuSec.length>0 && <div style={{ paddingLeft:20, borderLeft:"2px solid rgb(var(--bleu-rgb) / 0.15)", display:"flex", flexDirection:"column" as const, gap:5 }}>
               {brasDuSec.map((bra:any)=>{
@@ -1183,12 +1183,12 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 return (
                   <div key={bra.id}>
                     <div style={{ display:"inline-flex", alignItems:"center", gap:6, marginBottom:actsDeBra.length?4:0 }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", flexShrink:0 }}/><span style={{ fontSize:11, fontWeight:600, color:"var(--orange)" }}>{bra.nom}</span>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", flexShrink:0 }}/><span style={{ fontSize: "var(--t-11)", fontWeight:600, color:"var(--orange)" }}>{bra.nom}</span>
                     </div>
                     {actsDeBra.length>0 && <div style={{ paddingLeft:18, display:"flex", flexDirection:"column" as const, gap:3 }}>
                       {actsDeBra.map((act:any)=>(
                         <div key={act.id} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--vert-action)", flexShrink:0 }}/><span style={{ fontSize:11, color:"var(--vert)", fontWeight:500 }}>{act.nom}</span>
+                          <div style={{ width:5, height:5, borderRadius:"50%", background:"var(--vert-action)", flexShrink:0 }}/><span style={{ fontSize: "var(--t-11)", color:"var(--vert)", fontWeight:500 }}>{act.nom}</span>
                         </div>
                       ))}
                     </div>}
@@ -1212,12 +1212,12 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         {/* En-tête */}
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, padding:"18px 28px 16px", borderBottom:"1px solid var(--bordure)", flexShrink:0 }}>
           <div style={{ minWidth:0 }}>
-            <h2 style={{ fontWeight:800, fontSize:"1.1rem", color:TXT, lineHeight:1.3 }}>{displayName}</h2>
+            <h2 style={{ fontWeight:800, fontSize: "var(--t-r110)", color:TXT, lineHeight:1.3 }}>{displayName}</h2>
             <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const, marginTop:8 }}>
               {(()=>{ const b=badgeProspect(p); return b ? (
-                <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:b.color, background:b.bg, padding:"3px 10px", borderRadius:999 }}>{b.label}</span>
+                <span style={{ display:"inline-flex", alignItems:"center", fontSize: "var(--t-105)", fontWeight:700, color:b.color, background:b.bg, padding:"3px 10px", borderRadius:999 }}>{b.label}</span>
               ) : null; })()}
-              {p.siege_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.siege_nom}</span>}
+              {p.siege_nom && <span style={{ display:"inline-flex", alignItems:"center", fontSize: "var(--t-105)", fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.siege_nom}</span>}
             </div>
           </div>
           <button onClick={onClose}
@@ -1239,30 +1239,30 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {p.telephones?.length > 0 && (
                   <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.telephones.length > 1 ? "Téléphones" : "Téléphone"}</p>
                     {p.telephones.map((t:string,i:number)=>(
-                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)" }}>{fmtPhone(t)}</p>
+                      <p key={i} style={{ fontSize: "var(--t-125)", fontWeight:600, color:"var(--encre)" }}>{fmtPhone(t)}</p>
                     ))}
                   </div>
                 )}
                 {p.mails?.length > 0 && (
                   <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>{p.mails.length > 1 ? "Emails" : "Email"}</p>
                     {p.mails.map((m:string,i:number)=>(
-                      <p key={i} style={{ fontSize:12.5, fontWeight:600, color:"var(--encre)", wordBreak:"break-all" as const }}>{m}</p>
+                      <p key={i} style={{ fontSize: "var(--t-125)", fontWeight:600, color:"var(--encre)", wordBreak:"break-all" as const }}>{m}</p>
                     ))}
                   </div>
                 )}
                 {p.siteweb && (
                   <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
-                    <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>Site web</p>
+                    <a href={href(p.siteweb)} target="_blank" rel="noreferrer" style={{ fontSize: "var(--t-125)", fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.siteweb}</a>
                   </div>
                 )}
                 {p.linkedin && (
                   <div style={{ background:"rgb(var(--bleu-rgb) / 0.04)", border:"1px solid rgb(var(--bleu-rgb) / 0.10)", borderRadius:10, padding:"9px 12px", minWidth:0 }}>
-                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
-                    <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize:12.5, fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
+                    <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, marginBottom:3 }}>LinkedIn</p>
+                    <a href={href(p.linkedin)} target="_blank" rel="noreferrer" style={{ fontSize: "var(--t-125)", fontWeight:600, color:"var(--bleu)", textDecoration:"none", wordBreak:"break-all" as const }}>{p.linkedin}</a>
                   </div>
                 )}
               </div>
@@ -1279,7 +1279,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
           {/* Détails / Commentaires */}
           {p.details && (
             <Section title="Commentaires">
-              <div data-rte style={{ ...card, fontSize:13, color:SUB, lineHeight:1.7 }}
+              <div data-rte style={{ ...card, fontSize: "var(--t-13)", color:SUB, lineHeight:1.7 }}
                 dangerouslySetInnerHTML={{ __html:p.details }}/>
             </Section>
           )}
@@ -1291,13 +1291,13 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 {p.objet_projet && (
                   <div style={card}>
                     <SubLabel>Lié à un projet</SubLabel>
-                    <p style={{ fontSize:13, fontWeight:600, color:TXT }}>{p.objet_projet_titre || `Projet #${p.objet_projet_id}`}</p>
+                    <p style={{ fontSize: "var(--t-13)", fontWeight:600, color:TXT }}>{p.objet_projet_titre || `Projet #${p.objet_projet_id}`}</p>
                   </div>
                 )}
                 {p.objet_intentions_etranger && (
                   <div style={card}>
                     <SubLabel>Intentions d'investissement à l'étranger</SubLabel>
-                    {p.objet_intentions_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
+                    {p.objet_intentions_details && <div data-rte style={{ fontSize: "var(--t-13)", color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_intentions_details }}/>}
                     {(p.objet_intentions_secteur_ids?.length>0 || p.objet_intentions_branche_ids?.length>0 || p.objet_intentions_activite_ids?.length>0) && (
                       <div style={{ marginTop:p.objet_intentions_details?10:0 }}>
                         <NaemaCascade secIds={p.objet_intentions_secteur_ids||[]} braIds={p.objet_intentions_branche_ids||[]} actIds={p.objet_intentions_activite_ids||[]}/>
@@ -1308,7 +1308,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 {p.objet_adequation_senegal && (
                   <div style={card}>
                     <SubLabel>Activités prioritaires pour le Sénégal en phase avec le profil de l'entreprise</SubLabel>
-                    {p.objet_adequation_details && <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
+                    {p.objet_adequation_details && <div data-rte style={{ fontSize: "var(--t-13)", color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_adequation_details }}/>}
                     {(p.objet_adequation_secteur_ids?.length>0 || p.objet_adequation_branche_ids?.length>0 || p.objet_adequation_activite_ids?.length>0) && (
                       <div style={{ marginTop:p.objet_adequation_details?10:0 }}>
                         <NaemaCascade secIds={p.objet_adequation_secteur_ids||[]} braIds={p.objet_adequation_branche_ids||[]} actIds={p.objet_adequation_activite_ids||[]}/>
@@ -1319,7 +1319,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                 {p.objet_commentaires && (
                   <div style={card}>
                     <SubLabel>Commentaires</SubLabel>
-                    <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
+                    <div data-rte style={{ fontSize: "var(--t-13)", color:SUB, lineHeight:1.6 }} dangerouslySetInnerHTML={{ __html:p.objet_commentaires }}/>
                   </div>
                 )}
               </div>
@@ -1334,19 +1334,19 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   const pfTels  = (pf.telephones||[]).filter(Boolean);
                   const pfMails = (pf.mails||[]).filter(Boolean);
                   return (
-                    <div key={i} style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"11px 14px", fontSize:12 }}>
+                    <div key={i} style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"11px 14px", fontSize: "var(--t-12)" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
                         <span style={{ fontWeight:700, color:"var(--encre)" }}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</span>
-                        {pf.poste && <span style={{ fontSize:11, color:"var(--gris)" }}>{pf.poste}</span>}
-                        {pf.est_principal && <span style={{ fontSize:10, fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", borderRadius:999, padding:"2px 8px" }}>Principal</span>}
+                        {pf.poste && <span style={{ fontSize: "var(--t-11)", color:"var(--gris)" }}>{pf.poste}</span>}
+                        {pf.est_principal && <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", borderRadius:999, padding:"2px 8px" }}>Principal</span>}
                       </div>
                       {(pfTels.length > 0 || pfMails.length > 0) && (
                         <div style={{ display:"flex", flexWrap:"wrap" as const, gap:5, marginTop:7 }}>
                           {pfTels.map((t:string, ti:number) => (
-                            <span key={`t${ti}`} style={{ fontSize:11, fontWeight:600, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{fmtPhone(t)}</span>
+                            <span key={`t${ti}`} style={{ fontSize: "var(--t-11)", fontWeight:600, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{fmtPhone(t)}</span>
                           ))}
                           {pfMails.map((m:string, mi:number) => (
-                            <span key={`m${mi}`} style={{ fontSize:11, fontWeight:600, color:"var(--vert)", background:"rgb(var(--vert-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{m}</span>
+                            <span key={`m${mi}`} style={{ fontSize: "var(--t-11)", fontWeight:600, color:"var(--vert)", background:"rgb(var(--vert-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{m}</span>
                           ))}
                         </div>
                       )}
@@ -1364,7 +1364,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
             <Section title="Compte rendu des échanges" count={echangesDuCycle(p,null).length} first={historiqueOnly}
               action={
                 <button onClick={()=>setShowEchanges(o=>!o)}
-                  style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize:11, fontWeight:600, color:SUB }}>
+                  style={{ display:"flex", alignItems:"center", gap:5, background:"transparent", border:`1px solid ${BRD}`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontSize: "var(--t-11)", fontWeight:600, color:SUB }}>
                   {showEchanges?<>Masquer <ChevronUp size={12}/></>:<>Afficher <ChevronDown size={12}/></>}
                 </button>
               }>
@@ -1391,7 +1391,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                             {/* En-tête : date déclarée + actions */}
                             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
-                              <span style={{ fontSize:13, fontWeight:800, color:TXT }}>
+                              <span style={{ fontSize: "var(--t-13)", fontWeight:800, color:TXT }}>
                                 {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                               </span>
                               {canAct && (
@@ -1416,12 +1416,12 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {(e.canal || e.interlocuteur || e.contact_par) && (
                               <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                 {e.canal && (()=>{ const CIcon = canalIcon(e.canal); const coord = canalContactDisplay(e.canal, e.canal_contact); return (
-                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                  <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize: "var(--t-105)", fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                     <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                   </span>
                                 ); })()}
                                 {(e.interlocuteur || e.contact_par) && (
-                                  <span style={{ fontSize:11, color:MUT, fontWeight:500 }}>
+                                  <span style={{ fontSize: "var(--t-11)", color:MUT, fontWeight:500 }}>
                                     {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
                                   </span>
                                 )}
@@ -1431,7 +1431,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             {/* Compte-rendu */}
                             {e.commentaire && (
                               <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                <div data-rte className="cr-rte" style={{ fontSize: "var(--t-12)", color:SUB, lineHeight:1.7 }}
                                   dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                               </div>
                             )}
@@ -1443,7 +1443,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                   <a key={f.id}
                                     href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                     target="_blank" rel="noopener noreferrer"
-                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                    style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize: "var(--t-11)", color:"var(--bleu)", fontWeight:600 }}>
                                     <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                   </a>
                                 ))}
@@ -1451,7 +1451,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             )}
 
                             {/* Pied : horodatage serveur */}
-                            <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: "var(--t-105)", color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
                               <Clock size={11} style={{ flexShrink:0 }}/>
                               <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {retardLabel}</span>
                             </div>
@@ -1473,7 +1473,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   </SubLabel>
                   <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                     {contraintesCycleCourant(p).map((c:any) => (
-                      <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                      <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize: "var(--t-12)", color:SUB }}>
                         <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                         <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                       </div>
@@ -1501,16 +1501,16 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                   <div style={{ border:`1px solid ${BRD}`, borderRadius:12, overflow:"hidden" as const }}>
                     <button onClick={()=>toggleCycle(synId)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
-                        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {currentNum}</span>
-                        <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
-                        {p.issue_conclu_le && <span style={{ fontSize:11, color:MUT }}>· Conclu le {new Date(p.issue_conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
+                        <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {currentNum}</span>
+                        <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
+                        {p.issue_conclu_le && <span style={{ fontSize: "var(--t-11)", color:MUT }}>· Conclu le {new Date(p.issue_conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
                       </div>
                       {isOpen ? <ChevronUp size={14} style={{ color:MUT, flexShrink:0 }}/> : <ChevronDown size={14} style={{ color:MUT, flexShrink:0 }}/>}
                     </button>
                     {isOpen && (
                       <div style={{ borderTop:`1px solid ${BRD}`, padding:"16px 16px", background:SURF, display:"flex", flexDirection:"column" as const, gap:14 }}>
                         {p.issue_commentaire && (
-                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7, fontStyle:"italic" }}
+                          <div data-rte style={{ fontSize: "var(--t-13)", color:SUB, lineHeight:1.7, fontStyle:"italic" }}
                             dangerouslySetInnerHTML={{ __html:p.issue_commentaire }}/>
                         )}
                         {echsCourant.length > 0 && (
@@ -1523,18 +1523,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
                                     <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
                                     <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
-                                      <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
+                                      <div style={{ fontSize: "var(--t-13)", fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize: "var(--t-105)", fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
                                           {(e.interlocuteur||e.contact_par) && (
-                                            <span style={{ fontSize:11, color:MUT, fontWeight:500 }}>
+                                            <span style={{ fontSize: "var(--t-11)", color:MUT, fontWeight:500 }}>
                                               {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
                                             </span>
                                           )}
@@ -1542,7 +1542,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte className="cr-rte" style={{ fontSize: "var(--t-12)", color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
@@ -1552,14 +1552,14 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize: "var(--t-11)", color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
                                         </div>
                                       )}
                                       {/* Pied : horodatage serveur */}
-                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
+                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: "var(--t-105)", color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
                                         <Clock size={11} style={{ flexShrink:0 }}/>
                                         <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
                                       </div>
@@ -1577,7 +1577,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             </SubLabel>
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contrCourant.map((c:any) => (
-                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize: "var(--t-12)", color:SUB }}>
                                   <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
@@ -1601,9 +1601,9 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                     {/* En-tête cliquable */}
                     <button onClick={()=>toggleCycle(cy.id)} style={{ width:"100%", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, padding:"12px 16px", background: isOpen ? SURF : "var(--carte)", border:"none", cursor:"pointer", textAlign:"left" as const }}>
                       <div style={{ display:"flex", alignItems:"center", gap:8, flex:1, flexWrap:"wrap" as const }}>
-                        <span style={{ fontSize:10, fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {cy.cycle_num}</span>
-                        <span style={{ fontSize:11, fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
-                        {cy.conclu_le && <span style={{ fontSize:11, color:MUT }}>· Conclu le {new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
+                        <span style={{ fontSize: "var(--t-10)", fontWeight:700, color:MUT, textTransform:"uppercase" as const, letterSpacing:"0.08em" }}>Cycle {cy.cycle_num}</span>
+                        <span style={{ fontSize: "var(--t-11)", fontWeight:700, color:col }}>— {inst ? "Installation au Sénégal" : "Possibilité écartée"}</span>
+                        {cy.conclu_le && <span style={{ fontSize: "var(--t-11)", color:MUT }}>· Conclu le {new Date(cy.conclu_le).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}</span>}
                       </div>
                       {isOpen ? <ChevronUp size={14} style={{ color:MUT, flexShrink:0 }}/> : <ChevronDown size={14} style={{ color:MUT, flexShrink:0 }}/>}
                     </button>
@@ -1614,7 +1614,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
 
                         {/* Commentaire de conclusion */}
                         {cy.issue_commentaire && (
-                          <div data-rte style={{ fontSize:13, color:SUB, lineHeight:1.7, fontStyle:"italic" }}
+                          <div data-rte style={{ fontSize: "var(--t-13)", color:SUB, lineHeight:1.7, fontStyle:"italic" }}
                             dangerouslySetInnerHTML={{ __html:cy.issue_commentaire }}/>
                         )}
 
@@ -1629,18 +1629,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                   <div key={e.id} style={{ paddingLeft:22, position:"relative" as const }}>
                                     <div style={{ position:"absolute" as const, left:1, top:16, width:9, height:9, borderRadius:"50%", background:accent, border:"2px solid var(--carte)", boxShadow:`0 0 0 1px ${voile(accent, 27)}` }}/>
                                     <div style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:12, padding:"13px 15px" }}>
-                                      <div style={{ fontSize:13, fontWeight:800, color:TXT }}>
+                                      <div style={{ fontSize: "var(--t-13)", fontWeight:800, color:TXT }}>
                                         {new Date(e.date_echange).toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}
                                       </div>
                                       {(e.canal || e.interlocuteur || e.contact_par) && (
                                         <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:6, marginTop:8 }}>
                                           {e.canal && (()=>{ const CIcon=canalIcon(e.canal); const coord=canalContactDisplay(e.canal,e.canal_contact); return (
-                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10.5, fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
+                                            <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize: "var(--t-105)", fontWeight:700, color:"var(--texte)", background:"var(--champ)", padding:"3px 10px", borderRadius:999 }}>
                                               <CIcon size={11} style={{ flexShrink:0 }}/>{e.canal}{coord ? ` · ${coord}` : ""}
                                             </span>
                                           );})()}
                                           {(e.interlocuteur||e.contact_par) && (
-                                            <span style={{ fontSize:11, color:MUT, fontWeight:500 }}>
+                                            <span style={{ fontSize: "var(--t-11)", color:MUT, fontWeight:500 }}>
                                               {[e.interlocuteur, e.contact_par].filter(Boolean).join(" · ")}
                                             </span>
                                           )}
@@ -1648,7 +1648,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                       )}
                                       {e.commentaire && (
                                         <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:10, padding:"10px 13px", marginTop:10 }}>
-                                          <div data-rte className="cr-rte" style={{ fontSize:12, color:SUB, lineHeight:1.7 }}
+                                          <div data-rte className="cr-rte" style={{ fontSize: "var(--t-12)", color:SUB, lineHeight:1.7 }}
                                             dangerouslySetInnerHTML={{ __html:e.commentaire }}/>
                                         </div>
                                       )}
@@ -1658,14 +1658,14 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                                             <a key={f.id}
                                               href={`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`}
                                               target="_blank" rel="noopener noreferrer"
-                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize:11, color:"var(--bleu)", fontWeight:600 }}>
+                                              style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:999, background:"rgb(var(--bleu-rgb) / 0.06)", textDecoration:"none", fontSize: "var(--t-11)", color:"var(--bleu)", fontWeight:600 }}>
                                               <FileText size={11} style={{ flexShrink:0 }}/>{f.titre}
                                             </a>
                                           ))}
                                         </div>
                                       )}
                                       {/* Pied : horodatage serveur */}
-                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:10.5, color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
+                                      <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: "var(--t-105)", color:MUT, marginTop:10, paddingTop:9, borderTop:`1px solid ${DIV}` }}>
                                         <Clock size={11} style={{ flexShrink:0 }}/>
                                         <span>Enregistré le {new Date(e.enregistre_le).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})} · {e.retard_jours ? `saisi ${e.retard_jours} j après` : "saisi le jour même"}</span>
                                       </div>
@@ -1685,7 +1685,7 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
                             </SubLabel>
                             <div style={{ display:"flex", flexDirection:"column" as const, gap:5 }}>
                               {contraintesCy.map((c:any) => (
-                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize:12, color:SUB }}>
+                                <div key={c.id} style={{ display:"flex", alignItems:"flex-start", gap:8, fontSize: "var(--t-12)", color:SUB }}>
                                   <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--bleu-action)", flexShrink:0, marginTop:6 }}/>
                                   <span style={{ lineHeight:1.5 }}>{c.description.replace(/<[^>]+>/g,"").trim()}</span>
                                 </div>
@@ -1708,18 +1708,18 @@ function ProspectVue({ p, onClose, onEdit, onContacter, onEditEchange, onRefresh
         <div style={{ display:"flex", gap:10, justifyContent:"space-between", alignItems:"center", padding:"14px 28px", borderTop:"1px solid var(--bordure)", background:"var(--carte-douce)", flexShrink:0 }}>
           {(!readOnly && !estFige(p)) ? (
             <button className="ro-w" onClick={onContacter}
-              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize:12.5, fontFamily:"var(--font-google-sans)" }}>
+              style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 16px", borderRadius:10, border:"none", background:"rgb(var(--vert-rgb) / 0.08)", color:"var(--vert)", fontWeight:700, cursor:"pointer", fontSize: "var(--t-125)", fontFamily:"var(--font-google-sans)" }}>
               <MessageSquare size={13}/> Contacter
             </button>
           ) : <span/>}
           <div style={{ display:"flex", gap:10 }}>
             <button onClick={onClose}
-              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)" }}>
+              style={{ padding:"10px 20px", borderRadius:10, border:"1px solid var(--bordure-forte)", background:"var(--carte)", color:"var(--texte)", fontWeight:600, cursor:"pointer", fontSize: "var(--t-13)", fontFamily:"var(--font-google-sans)" }}>
               Fermer
             </button>
             {!readOnly && !historiqueOnly && (
               <button className="ro-w" onClick={onEdit}
-                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+                style={{ display:"flex", alignItems:"center", gap:7, padding:"10px 22px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize: "var(--t-13)", fontFamily:"var(--font-google-sans)", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
                 <Pencil size={13}/> Modifier
               </button>
             )}
@@ -1832,7 +1832,7 @@ export default function ProspectsPage() {
       <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur
         droite={onglet!=="precedents" ? (
           <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"var(--carte)", color:"var(--orange)", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"var(--carte)", color:"var(--orange)", fontWeight:700, fontSize: "var(--t-13)", padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
             onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
             onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
             <Plus size={15}/> Nouveau prospect
@@ -1850,8 +1850,8 @@ export default function ProspectsPage() {
       ) : prospects.length === 0 ? (
         <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
           <Building2 size={48} style={{ marginBottom:16, opacity:0.3 }}/>
-          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun prospect</p>
-          <p style={{ fontSize:14, marginTop:6 }}>{onglet==="cibles"?"Cliquez sur « Nouveau prospect » pour commencer.":onglet==="historique"?"Aucun échange enregistré pour l'instant.":"Aucune prospection conclue pour l'instant."}</p>
+          <p style={{ fontSize: "var(--t-16)", fontWeight:600, color:"var(--texte)" }}>Aucun prospect</p>
+          <p style={{ fontSize: "var(--t-14)", marginTop:6 }}>{onglet==="cibles"?"Cliquez sur « Nouveau prospect » pour commencer.":onglet==="historique"?"Aucun échange enregistré pour l'instant.":"Aucune prospection conclue pour l'instant."}</p>
         </div>
       ) : (
         <>
@@ -1887,14 +1887,14 @@ export default function ProspectsPage() {
                     {/* Dénomination + repère temporel | badge de statut */}
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
                       <div style={{ minWidth:0, flex:1 }}>
-                        <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
+                        <div style={{ fontWeight:800, fontSize: "var(--t-15)", color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
                         {(()=>{
                           const sousTitre = onglet==="cibles"
                             ? (p.nb_echanges>0 ? "Déjà contacté" : null)
                             : onglet==="precedents" && p.issue_conclu_le
                             ? `${p.issue==="decline"?"Décliné":"Conclu"} le ${fmtJour(p.issue_conclu_le)}`
                             : null;
-                          return sousTitre && <div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{sousTitre}</div>;
+                          return sousTitre && <div style={{ fontSize: "var(--t-11)", fontWeight:500, color:"var(--gris)", marginTop:3 }}>{sousTitre}</div>;
                         })()}
                       </div>
                       {onglet!=="cibles" && activite && badgeStatut && (
@@ -1905,15 +1905,15 @@ export default function ProspectsPage() {
                     {/* Pays · info contextuelle en rangée épurée */}
                     <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
+                        <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
+                        <p style={{ fontSize: "var(--t-125)", fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
                           {(onglet==="cibles" ? p.siege_nom : p.mails?.[0]) || "—"}
                         </p>
                       </div>
                       <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
                       <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:info2.value?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
+                        <p style={{ fontSize: "var(--t-9)", fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
+                        <p style={{ fontSize: "var(--t-125)", fontWeight:700, color:info2.value?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
                       </div>
                     </div>
                   </div>
@@ -1922,7 +1922,7 @@ export default function ProspectsPage() {
                   {onglet==="precedents" ? (
                     <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>setVue(p)}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--texte)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--texte)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--gris-rgb) / 0.07)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         Consulter
@@ -1931,7 +1931,7 @@ export default function ProspectsPage() {
                         <>
                           <div style={{ width:1, background:"var(--fond)" }}/>
                           <button onClick={()=>handleRecontact(p.id)}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                             onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Re-contacter
@@ -1955,7 +1955,7 @@ export default function ProspectsPage() {
                         return (
                         <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }}>
                           <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                             onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Contacter
@@ -1963,7 +1963,7 @@ export default function ProspectsPage() {
                           <div style={{ width:1, background:"var(--fond)" }}/>
                           <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
                             title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize:11.5, color:terminerDisabled?"var(--gris)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:terminerDisabled?"var(--gris)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                             onMouseEnter={ev=>{if(!terminerDisabled)ev.currentTarget.style.background="rgb(var(--orange-rgb) / 0.05)";}}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <Check size={12}/> Terminer
@@ -1973,22 +1973,22 @@ export default function ProspectsPage() {
                       })()}
                       {terminerOpenId===p.id && (
                         <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
-                          <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
+                          <p style={{ fontSize: "var(--t-11)", fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
                           <div style={{ display:"flex", gap:6, marginBottom:10 }}>
                             {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"var(--gris-fort)"}].map(({val,lbl,col})=>(
                               <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
-                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${voile(col, 9)}`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
+                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${voile(col, 9)}`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize: "var(--t-11)", fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
                                 {lbl}
                               </button>
                             ))}
                           </div>
                           <div style={{ marginBottom:10 }}>
-                            <p style={{ fontSize:11, fontWeight:600, color:"var(--texte)", marginBottom:5 }}>Commentaire *</p>
+                            <p style={{ fontSize: "var(--t-11)", fontWeight:600, color:"var(--texte)", marginBottom:5 }}>Commentaire *</p>
                             <RichTextEditor value={terminerForm.commentaire} onChange={(v:string)=>setTerminerForm(f=>({ ...f, commentaire:v }))}/>
                           </div>
                           <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
                             onClick={()=>handleTerminer(p.id)}
-                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--orange-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--orange-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize: "var(--t-12)", display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
                             {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
                             Conclure la prospection
                           </button>
@@ -1999,7 +1999,7 @@ export default function ProspectsPage() {
                     // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
                     <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
@@ -2008,7 +2008,7 @@ export default function ProspectsPage() {
                   ) : (
                     <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
                       <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                         onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
                         onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                         <Pencil size={12}/> Modifier
@@ -2017,7 +2017,7 @@ export default function ProspectsPage() {
                         <>
                           <div style={{ width:1, background:"var(--fond)" }}/>
                           <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize: "var(--t-115)", color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
                             onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
                             onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
                             <MessageSquare size={12}/> Contacter

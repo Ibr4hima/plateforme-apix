@@ -76,7 +76,7 @@ export default function Sidebar() {
         .nav-lien.bloque { opacity: 0.4; cursor: not-allowed; }
         .nav-lien.bloque:hover { background: transparent; color: var(--texte); }
         .nav-lien.rouge:hover { background: rgb(var(--danger-rgb) / 0.06); }
-        .nav-txt { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-txt { font-size: var(--t-125); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       `}</style>
 
       {/* ── En-tête : identité de l'espace ── */}
@@ -85,12 +85,12 @@ export default function Sidebar() {
         {replie ? (
           <span title="Espace d'administration" style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0,
             background: `linear-gradient(135deg,${ORANGE_APLAT},var(--orange-fonce))`, color: "var(--sur-bleu)", display: "flex",
-            alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800 }}>A</span>
+            alignItems: "center", justifyContent: "center", fontSize: "var(--t-13)", fontWeight: 800 }}>A</span>
         ) : (
           <>
             <Image className="logo-apix" src="/logo_apix.png" alt="APIX" width={78} height={26}
               style={{ height: 26, width: "auto", objectFit: "contain", flexShrink: 0 }} />
-            <span style={{ fontSize: 8.5, fontWeight: 800, color: ORANGE, letterSpacing: "0.16em",
+            <span style={{ fontSize: "var(--t-85)", fontWeight: 800, color: ORANGE, letterSpacing: "0.16em",
               textTransform: "uppercase", background: "rgb(var(--orange-rgb) / 0.10)", padding: "3px 7px",
               borderRadius: 999, whiteSpace: "nowrap" }}>Admin</span>
           </>
@@ -105,7 +105,7 @@ export default function Sidebar() {
             if (replie) return <div key={`s${i}`} style={{ height: 1, background: "var(--fond)", margin: i === 0 ? "2px 6px 8px" : "12px 6px 8px" }} />;
             return (
               <div key={`s${i}`} style={{ display: "flex", alignItems: "center", gap: 8, padding: i === 0 ? "2px 10px 7px" : "18px 10px 7px" }}>
-                <span style={{ fontSize: 9, fontWeight: 800, color: "var(--gris)", letterSpacing: "0.15em",
+                <span style={{ fontSize: "var(--t-9)", fontWeight: 800, color: "var(--gris)", letterSpacing: "0.15em",
                   textTransform: "uppercase", whiteSpace: "nowrap" }}>{item.label}</span>
                 <span style={{ flex: 1, height: 1, background: "var(--fond)" }} />
               </div>
@@ -151,14 +151,14 @@ export default function Sidebar() {
               justifyContent: replie ? "center" : undefined }}>
             <span style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, textTransform: "uppercase",
               background: `linear-gradient(135deg,${ORANGE_APLAT},var(--orange-fonce))`, color: "var(--sur-bleu)", display: "flex",
-              alignItems: "center", justifyContent: "center", fontSize: 12.5, fontWeight: 800 }}>
+              alignItems: "center", justifyContent: "center", fontSize: "var(--t-125)", fontWeight: 800 }}>
               {(afficheNom || session.user.email || "?").trim().charAt(0)}
             </span>
             {!replie && (
               <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "var(--encre)", overflow: "hidden",
+                <p style={{ margin: 0, fontSize: "var(--t-12)", fontWeight: 700, color: "var(--encre)", overflow: "hidden",
                   textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{afficheNom}</p>
-                <span style={{ display: "inline-flex", marginTop: 2, fontSize: 8.5, fontWeight: 800, color: ORANGE,
+                <span style={{ display: "inline-flex", marginTop: 2, fontSize: "var(--t-85)", fontWeight: 800, color: ORANGE,
                   background: "rgb(var(--orange-rgb) / 0.10)", padding: "1px 6px", borderRadius: 999,
                   textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   {ROLE_LABELS[session.user.role || ""] || session.user.role || "—"}

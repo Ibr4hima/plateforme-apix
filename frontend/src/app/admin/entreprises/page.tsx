@@ -224,7 +224,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
   };
 
   const errStyle = (f: string) => errors[f] ? { borderColor: "var(--danger)" } : undefined;
-  const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: 11, color: "var(--danger)", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
+  const Err = ({ f }: { f: string }) => errors[f] ? <span style={{ fontSize: "var(--t-11)", color: "var(--danger)", marginTop: 3, display: "block" }}>{errors[f]}</span> : null;
   // Bouton « + » rond en pointillés — ajout d'une entrée (grisé tant que la
   // précédente n'est pas complète et valide)
   const BtnPlus = ({ ok, onClick, title }: { ok: boolean; onClick: () => void; title?: string }) => (
@@ -389,9 +389,9 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
             {focaux.map((pf,i)=>(
               <FPanel key={i}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"var(--bleu)"}}/><span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>Point focal {i+1}</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}><User size={13} style={{color:"var(--bleu)"}}/><span style={{fontSize: "var(--t-12)",fontWeight:700,color:"var(--bleu)"}}>Point focal {i+1}</span></div>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"var(--texte)",cursor:"pointer"}}>
+                    <label style={{display:"flex",alignItems:"center",gap:5,fontSize: "var(--t-12)",color:"var(--texte)",cursor:"pointer"}}>
                       <input type="checkbox" checked={pf.est_principal} onChange={e=>updFocal(i,"est_principal",e.target.checked)}/> Principal
                     </label>
                     <button onClick={()=>setFocaux(prev=>prev.filter((_,idx)=>idx!==i))} style={{background:"none",border:"none",cursor:"pointer",padding:4}}><Trash size={13} style={{color:"var(--danger)"}}/></button>
@@ -455,7 +455,7 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
           onMouseEnter={e=>{if(ok)e.currentTarget.style.borderColor="var(--bleu)";}}
           onMouseLeave={e=>e.currentTarget.style.borderColor="var(--bordure-forte)"}>
           <Plus size={14} color="var(--gris)"/>
-          <span style={{fontSize:13,color:"var(--gris)"}}>Ajouter un point focal</span>
+          <span style={{fontSize: "var(--t-13)",color:"var(--gris)"}}>Ajouter un point focal</span>
         </button>
         ); })()}
       </FSection>
@@ -479,8 +479,8 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
         {/* Dénomination + forme juridique | publication & pôle territoire */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
-            {e.forme_juridique && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
+            <div style={{ fontWeight: 800, fontSize: "var(--t-15)", color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
+            {e.forme_juridique && <div style={{ fontSize: "var(--t-11)", fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexShrink: 1, justifyContent: "flex-end" }}>
             {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
@@ -495,13 +495,13 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
         {/* Date de création · Région en rangée épurée */}
         <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.date_creation ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
+            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
+            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: e.date_creation ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
           </div>
           <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.region_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
+            <p style={{ fontSize: "var(--t-9)", fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
+            <p style={{ fontSize: "var(--t-125)", fontWeight: 700, color: e.region_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
           </div>
         </div>
       </div>
@@ -509,14 +509,14 @@ function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant
       {/* Actions d'administration */}
       <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
         <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: "var(--t-115)", color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
           onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           <Pencil size={12} /> Modifier
         </button>
         <div style={{ width: 1, background: "var(--fond)" }} />
         <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: "var(--t-115)", color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
           onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
           onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
           {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
@@ -582,13 +582,13 @@ export default function AdminEntreprises() {
       <BarreTitre titre="Entreprises installées" compact ton="orange" pleineLargeur
         droite={
           <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: "var(--t-13)", padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
             onMouseEnter={ev => { ev.currentTarget.style.background = "var(--orange-voile)"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
             onMouseLeave={ev => { ev.currentTarget.style.background = "var(--carte)"; ev.currentTarget.style.transform = "none"; }}>
             <Plus size={15} /> Ajouter une entreprise
           </button>
         }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{entreprises.length}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: "var(--t-12)", fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{entreprises.length}</span>
       </BarreTitre>
 
       {/* ── Grille pleine largeur (3 colonnes) ── */}
@@ -600,8 +600,8 @@ export default function AdminEntreprises() {
         ) : entreprises.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
             <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucune entreprise enregistrée</p>
-            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter une entreprise » pour commencer.</p>
+            <p style={{ fontSize: "var(--t-16)", fontWeight: 600, color: "var(--texte)" }}>Aucune entreprise enregistrée</p>
+            <p style={{ fontSize: "var(--t-14)", marginTop: 6 }}>Cliquez sur « Ajouter une entreprise » pour commencer.</p>
           </div>
         ) : (
           <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
@@ -618,7 +618,7 @@ export default function AdminEntreprises() {
       {/* Fiche (même modal que la page publique) + raccourci de modification */}
       <EntreprisePublicModal entreprise={vue} onClose={() => setVue(null)} actions={vue ? (
         <button className="ro-w" onClick={() => { const v = vue; setVue(null); openEdit(v); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--bleu-action)", color: "var(--sur-bleu)", fontWeight: 700, cursor: "pointer", fontSize: "var(--t-13)", fontFamily: "var(--font-google-sans)", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.25)" }}>
           <Pencil size={13} /> Modifier
         </button>
       ) : null} />

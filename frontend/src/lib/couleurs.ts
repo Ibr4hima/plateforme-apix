@@ -171,7 +171,7 @@ export const badge = (teinte: Teinte): CSSProperties => {
   const rgb = tripletDe(teinte);
   return {
     display: "inline-flex", alignItems: "center", gap: 5,
-    fontSize: 11, fontWeight: 600, color: COULEURS_4[teinte],
+    fontSize: "var(--t-11)", fontWeight: 600, color: COULEURS_4[teinte],
     background: "rgb(var(--carte-rgb) / 0.7)", border: `1px solid rgb(${rgb} / 0.20)`,
     padding: "4px 11px", borderRadius: 999,
   };
@@ -191,7 +191,7 @@ export const badge_violet = badge("violet");
 // ── Constructeurs génériques, à partir d'un jeton nommé ──────────────────────
 export const badgeJeton = (nom: string): CSSProperties => ({
   display: "inline-flex", alignItems: "center", gap: 5,
-  fontSize: 11, fontWeight: 600, color: `var(--${nom})`,
+  fontSize: "var(--t-11)", fontWeight: 600, color: `var(--${nom})`,
   background: "rgb(var(--carte-rgb) / 0.7)", border: `1px solid rgb(var(--${nom}-rgb) / 0.24)`,
   padding: "4px 11px", borderRadius: 999,
 });
@@ -206,7 +206,7 @@ export const fondJeton = (nom: string): CSSProperties => ({
 // permettrait pas.
 export const badgeDe = (couleur: string): CSSProperties => ({
   display: "inline-flex", alignItems: "center", gap: 5,
-  fontSize: 11, fontWeight: 600, color: couleur,
+  fontSize: "var(--t-11)", fontWeight: 600, color: couleur,
   background: "rgb(var(--carte-rgb) / 0.7)", border: `1px solid ${voile(couleur, 24)}`,
   padding: "4px 11px", borderRadius: 999,
 });
@@ -222,7 +222,7 @@ export const fond_ambre = fondJeton("ambre");
 // Badge neutre (états inactifs / expirés) : gris, même gabarit que les autres
 export const badge_gris: CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 5,
-  fontSize: 11, fontWeight: 600, color: "var(--gris-fort)",
+  fontSize: "var(--t-11)", fontWeight: 600, color: "var(--gris-fort)",
   background: "rgb(var(--carte-rgb) / 0.7)", border: "1px solid rgb(var(--gris-rgb) / 0.40)",
   padding: "4px 11px", borderRadius: 999,
 };
