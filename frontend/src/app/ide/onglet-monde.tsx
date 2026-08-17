@@ -114,15 +114,18 @@ function TableauTopPays({ titre, rows, annees, annee, onAnnee, chargement }: {
 }
 
 // Libellés de la vue mondiale (ou d'une zone) par catégorie de données
+//
+// Les libellés de cartes KPI ne portent pas la zone (« Flux entrants », et non
+// « Flux entrants · Afrique ») : elle est déjà annoncée en tête de vue, et
+// reprise dans chaque titre de graphe. Le suffixe n'y ajoutait rien et faisait
+// passer le titre sur deux lignes. Séries et tops, eux, le gardent : ils sont
+// exportés et comparés hors de leur contexte d'affichage.
 function libellesMonde(sousType: string, zone: string | null) {
   const z = zone ?? "monde";           // « monde » ou le nom de la zone (Afrique…)
   const suf = ` · ${z}`;
   const sufTop = zone ? ` · ${zone}` : "";
   if (sousType === "greenfield") return {
     ind: "greenfield_valeur",
-    // Les deux KPIs de tête portaient « · monde » ou « · Afrique » : la zone
-    // est deja nommee dans l'en-tete de la vue, le suffixe ne faisait
-    // qu'allonger un titre qui tient desormais sur une ligne.
     kpiE: "Greenfield reçus", kpiS: "Greenfield émis",
     serieE: `Investissements greenfield reçus${suf}`, serieS: `Investissements greenfield émis${suf}`,
     topE: `Top 10 des pays d'accueil · greenfield${sufTop}`, topS: `Top 10 des pays émetteurs · greenfield${sufTop}`,
@@ -137,7 +140,7 @@ function libellesMonde(sousType: string, zone: string | null) {
   };
   return {
     ind: "flux",
-    kpiE: `Flux entrants${suf}`, kpiS: `Flux sortants${suf}`,
+    kpiE: "Flux entrants", kpiS: "Flux sortants",
     serieE: zone ? `Flux d'IDE entrants · ${zone}` : "Flux d'IDE entrants · total mondial",
     serieS: zone ? `Flux d'IDE sortants · ${zone}` : "Flux d'IDE sortants · total mondial",
     topE: `Top 10 des pays récepteurs d'IDE${sufTop}`, topS: `Top 10 des pays émetteurs d'IDE${sufTop}`,
