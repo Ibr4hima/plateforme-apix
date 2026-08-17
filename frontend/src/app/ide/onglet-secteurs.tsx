@@ -216,7 +216,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
           </div>
         </div>
         {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
-          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse} allerAnalyse={v=>setSousOnglet(v)}/>
+          <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={typeAnalyse} setTypeAnalyse={setTypeAnalyse} allerAnalyse={v=>setSousOnglet(v)} setSousType={setSousType}/>
           {typeAnalyse==="secteur" ? (
           /* Secteurs / branches — même présentation que l'analyse sectorielle
              des Investissements nationaux (BdefRow : secteurs en bleu,

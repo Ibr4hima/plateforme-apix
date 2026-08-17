@@ -76,17 +76,29 @@ const SOUS_TYPE_NAV = [
 ] as const;
 
 // ── Sélecteur VUE (Pays / Secteurs) + TYPE D'ANALYSE (barre de filtre) ────────
-export function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse, allerAnalyse }: {
+/** La catégorie d'ouverture d'une vue — son premier onglet de contenu.
+ *  Secteurs n'offre pas Flux & Stocks : elle ouvre sur Greenfield. */
+export const CATEGORIE_PREMIERE = { pays: "fluxstock", monde: "fluxstock", secteurs: "greenfield" } as const;
+
+export function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse, allerAnalyse, setSousType }: {
   vueP: string; setVueP: (v: "pays"|"secteurs") => void;
   typeAnalyse: string; setTypeAnalyse: (v: any) => void;
   // Depuis la vue Secteurs, aller à Pays/Monde règle le sousOnglet du parent
   allerAnalyse?: (v: "pays"|"monde") => void;
+  /** Remet la catégorie au premier onglet de la vue rejointe. */
+  setSousType?: (v: "fluxstock"|"greenfield"|"fusion") => void;
 }) {
   // VUE unifiée : Pays · Monde · Secteurs. Le « Type d'analyse » dédié a
   // disparu (la comparaison Pays se fait via le « + » de l'en-tête) ; seule la
   // vue Secteurs garde sa bascule Analyse sectorielle / comparative.
   const vueActive = vueP === "secteurs" ? "secteurs" : typeAnalyse; // "pays" | "monde" | "secteurs"
   const choisir = (v: "pays"|"monde"|"secteurs") => {
+    // Changer de vue ouvre son PREMIER onglet de contenu, toujours. La
+    // catégorie est un état partagé par les trois vues : sans cette remise à
+    // zéro, quitter Secteurs/Greenfield pour Pays y arrivait sur Greenfield
+    // au lieu de Flux & Stocks — un onglet hérité d'une vue qu'on vient de
+    // quitter, jamais celui qu'on attend en entrant.
+    if (v !== vueActive) setSousType?.(CATEGORIE_PREMIERE[v]);
     if (v === "secteurs") { setVueP("secteurs"); return; }
     setVueP("pays");
     if (vueP === "secteurs") allerAnalyse?.(v);

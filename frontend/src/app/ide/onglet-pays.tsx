@@ -223,7 +223,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
           </div>
           {sidebarOpen&&<div style={{ padding:"16px", overflowY:"auto" as const, flex:1 }}>
               {/* Sélecteurs Vue + Type d'analyse */}
-              <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet}/>
+              <SelecteurVueAnalyse vueP={vueP} setVueP={setVueP} typeAnalyse={sousOnglet} setTypeAnalyse={setSousOnglet} setSousType={setSousType}/>
               <div style={{ position:"relative" as const, marginBottom:18 }}>
                 <Search size={13} style={{ position:"absolute" as const, left:9, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }}/>
                 <input value={searchPays} onChange={e=>setSearchPays(e.target.value)} placeholder="Rechercher un pays…"
