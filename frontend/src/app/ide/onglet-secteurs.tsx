@@ -177,12 +177,12 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
     const sSf = !gf ? rowsSel.filter((d: any) => d.secteur_id === sid && d.direction === "sortant" && d.indicateur === "ma_valeur").sort((a: any, b: any) => a.annee - b.annee) : [];
     const dV = deltaDe(sV), dN = deltaDe(sN), dSf = deltaDe(sSf);
     return [
-      { label: gf ? "Valeur des projets annoncés" : "Ventes nettes", val: vD ? fmtVal(vD.valeur) : "N/A", annee: vD?.annee ?? null, delta: dV.delta, ref: dV.ref, ind: null as string | null },
+      { label: gf ? "Valeur des projets" : "Ventes nettes", val: vD ? fmtVal(vD.valeur) : "N/A", annee: vD?.annee ?? null, delta: dV.delta, ref: dV.ref, ind: null as string | null },
       gf
-        ? { label: "Nombre de projets annoncés", val: nD ? fmtNombre(nD.valeur) : "N/A", annee: nD?.annee ?? null, delta: dN.delta, ref: dN.ref, ind: null }
+        ? { label: "Nombre de projets", val: nD ? fmtNombre(nD.valeur) : "N/A", annee: nD?.annee ?? null, delta: dN.delta, ref: dN.ref, ind: null }
         : { label: "Achats nets", val: vSf ? fmtVal(vSf.valeur) : "N/A", annee: vSf?.annee ?? null, delta: dSf.delta, ref: dSf.ref, ind: null },
       gf
-        ? { label: "Moyenne 5 ans · valeur", val: moy5 !== null ? fmtVal(moy5) : "N/A", annee: null, delta: null, ref: null, ind: "5 dernières années" }
+        ? { label: "Valeur moyenne · 5 ans", val: moy5 !== null ? fmtVal(moy5) : "N/A", annee: null, delta: null, ref: null, ind: "5 dernières années" }
         : { label: "Nombre de ventes", val: nD ? fmtNombre(nD.valeur) : "N/A", annee: nD?.annee ?? null, delta: dN.delta, ref: dN.ref, ind: null },
       sid === 0
         ? { label: "Secteur dominant", val: dominant ? dominant.nom : "N/A", annee: dominant?.annee ?? null, delta: null, ref: null, ind: dominant && dominant.part !== null ? `${dominant.part.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % du total` : null }
