@@ -150,7 +150,12 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           .style("fill", s.couleur).style("cursor", "pointer")
           .on("mouseover", (e, d) => {
             d3.select(e.currentTarget as SVGRectElement).attr("opacity", 0.75);
-            montrerTooltip(tooltip, e, `<strong>${fmtXv(d.annee)}${nbSeries > 1 ? " — " + s.nom : ""}</strong><br/>${fmtV(d.valeur)}`);
+            montrerTooltip(tooltip, e,
+              `<span style="display:block;font-size:9.5px;font-weight:800;letter-spacing:0.1em;color:var(--gris);margin-bottom:5px">${fmtXv(d.annee)}</span>`
+              + `<span style="display:flex;align-items:center;gap:7px;white-space:nowrap">`
+              + `<span style="width:7px;height:7px;border-radius:4px;background:${s.couleur};flex-shrink:0"></span>`
+              + (nbSeries > 1 ? `<span style="color:var(--gris-fort)">${s.nom}</span>` : "")
+              + `<span style="font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums">${fmtV(d.valeur)}</span></span>`);
           })
           .on("mousemove", (e) => montrerTooltip(tooltip, e))
           .on("mouseout", (e) => { d3.select(e.currentTarget as SVGRectElement).attr("opacity", 1); cacherTooltip(tooltip); });
@@ -359,14 +364,26 @@ export default function GrapheMultiPays({ series, height = 280, type = "line", f
           const avant = s.data.filter(d => d.valeur !== null && d.annee < annee) as { annee: number; valeur: number }[];
           const prec = avant.length ? avant.reduce((m, d) => (d.annee > m.annee ? d : m)) : null;
           const delta = prec && prec.valeur !== 0 ? (v - prec.valeur) / Math.abs(prec.valeur) * 100 : null;
+          // Le delta se dit par un signe, pas par un triangle : « −87,3 % »
+          // se lit d'un coup d'oeil, et le glyphe ▼ dependait de la police du
+          // systeme. La teinte suit le jeton, valide dans les deux themes.
           const deltaHtml = delta === null ? "" :
-            `<span style="color:${delta >= 0 ? "var(--vert)" : "var(--danger-voile)"};font-weight:700;font-size:11px"> ${delta >= 0 ? "▲" : "▼"} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</span>`;
+            `<span style="color:${delta >= 0 ? "var(--vert)" : "var(--danger)"};font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">`
+            + `${delta >= 0 ? "+" : "\u2212"}${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })}\u00a0%</span>`;
           lignesTooltip.push(
-            `<span style="display:inline-block;width:8px;height:8px;border-radius:4px;background:${s.couleur};margin-right:6px"></span>` +
-            `${series.length > 1 ? s.nom + " · " : ""}<strong>${fmtV(v)}</strong>${deltaHtml}`);
+            `<span style="display:flex;align-items:center;gap:7px;white-space:nowrap">`
+            + `<span style="width:7px;height:7px;border-radius:4px;background:${s.couleur};flex-shrink:0"></span>`
+            + (series.length > 1 ? `<span style="color:var(--gris-fort)">${s.nom}</span>` : "")
+            + `<span style="font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums">${fmtV(v)}</span>`
+            + (deltaHtml ? `<span>${deltaHtml}</span>` : "")
+            + `</span>`);
         });
         derniereAnnee = annee;
-        montrerTooltip(tooltip, e, `<strong>${fmtXv(annee)}</strong><br/>${lignesTooltip.join("<br/>")}`);
+        // L'annee coiffe le panneau en petites capitales grises : c'est un
+        // reperage, pas une donnee — les valeurs, elles, gardent l'encre.
+        montrerTooltip(tooltip, e,
+          `<span style="display:block;font-size:9.5px;font-weight:800;letter-spacing:0.1em;color:var(--gris);margin-bottom:5px">${fmtXv(annee)}</span>`
+          + `<span style="display:flex;flex-direction:column;gap:4px">${lignesTooltip.join("")}</span>`);
       };
       svg.append("rect")
         .attr("x", M.left).attr("y", M.top)
