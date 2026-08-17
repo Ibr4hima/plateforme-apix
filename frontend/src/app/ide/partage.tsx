@@ -753,13 +753,19 @@ export function ModalDonnees({ open, onClose, donnees, paysSelectionnes, sousTyp
 }
 
 // ── 25 KPIs fixes ─────────────────────────────────────────────────────────────
+// Les KPI proposés au remplacement dans les cartes de l'onglet Pays.
+//
+// Les indicateurs d'analyse de série — CAGR, momentum, tendance linéaire,
+// accélération, taux moyens 5/10 ans, distance au pic, années de croissance,
+// streak en cours — ont été retirés de la liste : ils demandent une lecture
+// de statisticien là où ces cartes servent à donner un ordre de grandeur.
+// Leur CALCUL reste dans lib/ideKpis (rien n'est perdu, la liste peut se
+// rouvrir), seule l'offre est resserrée.
 export const KPI_25_IDS = [
   "fe_last","fs_last","fn_last","se_last","ss_last","sn_last",
-  "g_fe","g_se","cagr_fe","mom_fe",
+  "g_fe","g_se",
   "moy_fe","med_fe","max_fe","min_fe","std_fe",
-  "trend_fe","accel_fe","tv5_fe","tv10_fe",
-  "r_fe_fs","dist_max_fe","regularite_fe","vs_moy_fe",
-  "n_pos_fe","cur_streak_fe"
+  "r_fe_fs","regularite_fe","vs_moy_fe",
 ];
 
 // ── Interprétation contextuelle d'un KPI ─────────────────────────────────────
