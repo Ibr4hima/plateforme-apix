@@ -11,7 +11,7 @@ import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees, CarteTableauComparatif } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -639,11 +639,24 @@ function OngletMonde({ showTable, setShowTable, sousOnglet, setSousOnglet, sousT
           <ErreurChargement onRetry={() => qMonde.refetch()} />
         ) : (
           <div className="charge-in">
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-            {GRAPHES.map(g=>(
-              <GrapheCard key={g.id} titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" sous_titre="Somme des pays membres" series={g.series} grapheId={g.id} hideLegend hideSousTitre
-                fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={1.6} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={false} lineWidth={1.4} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+          {/* Comparaison de groupements : un graphe par ligne, comme partout
+              ailleurs. Deux courbes de zones aux ordres de grandeur tres
+              differents ont chacune leur echelle, elles ne se comparaient donc
+              pas terme a terme d'une carte a l'autre — et trente-cinq ans en
+              demi-largeur ecrasent leurs inflexions.
+              Les comptages, eux, deviennent des tableaux : un nombre de projets
+              se lit et se compare mieux chiffre par chiffre qu'en barres
+              jumelees, ou deux zones d'ampleur inegale se resument a une barre
+              haute et une barre plate. */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:14 }}>
+            {GRAPHES.map(g=> g.unite==="nombre" ? (
+              <CarteTableauComparatif key={`${g.id}-${grpSelec.join(",")}`} titre={g.titre}
+                series={g.series} libelleLigne="Groupement"/>
+            ) : (
+              <GrapheCard key={g.id} titre={g.titre} unite="M$ USD" source="CNUCED" sous_titre="Somme des pays membres" series={g.series} grapheId={g.id} hideLegend hideSousTitre
+                statique tag={plageAnnees(g.series)}
+                fullChildren={<GrapheMultiPays series={g.series} height={340} type="line" titre={g.id} lineWidth={1.6}/>}>
+                <GrapheMultiPays series={g.series} height={240} type="line" titre={g.id} showDots={false} lineWidth={1.4}/>
               </GrapheCard>
             ))}
           </div>
