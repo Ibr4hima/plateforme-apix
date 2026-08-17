@@ -11,7 +11,7 @@ import { HBarChart } from "@/components/charts/HBarChart";
 import { DivergingBars } from "@/components/charts/DivergingBars";
 import { CurseurAnneeNace, CurseurPlageNace } from "@/components/shared/CurseurNace";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutGroupement, SousTypeNav, useBornesCnuced, GrapheMultiPays, ModalDonnees, BoutonDonnees, plageAnnees } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -260,10 +260,12 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
           trente-cinq ans en demi-largeur perd ses inflexions. */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14, marginBottom: 20 }}>
         <GrapheCard titre={L.serieE} unite="M$ USD" source="CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
+          statique tag={plageAnnees(seriesE)}
           fullChildren={<GrapheMultiPays series={seriesE} height={340}/>}>
           <GrapheMultiPays series={seriesE} height={240}/>
         </GrapheCard>
         <GrapheCard titre={L.serieS} unite="M$ USD" source="CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
+          statique tag={plageAnnees(seriesS)}
           fullChildren={<GrapheMultiPays series={seriesS} height={340}/>}>
           <GrapheMultiPays series={seriesS} height={240}/>
         </GrapheCard>

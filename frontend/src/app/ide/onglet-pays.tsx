@@ -11,7 +11,7 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, BtnAjoutPaysComp, SousTypeNav, useBornesCnuced, GrapheMultiPays, TopAnneesFlux, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, KPI_25_IDS, splitKpiTitre, MiniModalKpi, plageAnnees, sortContinents, groupByContinent, splitKpiLabel, BoutonDonnees } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -546,8 +546,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 // bord : le graphe est deja a sa taille utile, le survol y donne
                 // l'annee et la valeur sur place, et la pastille annonce la
                 // periode reellement couverte par la serie.
-                const anneesG = g.series.flatMap((s:any)=>s.data.filter((d:any)=>d.valeur!==null).map((d:any)=>d.annee));
-                const tagG = anneesG.length ? `${Math.min(...anneesG)}–${Math.max(...anneesG)}` : undefined;
+                const tagG = plageAnnees(g.series);
                 return (
                 <div key={g.id} style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
                 <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre

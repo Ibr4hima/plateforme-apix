@@ -7,7 +7,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { demarrerRedimension } from "@/lib/redimension";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow } from "./partage";
+import { API, fmtVal, BadgePeriode, BadgeSerie, SERIES_TYPES, fmtNombre, SelecteurVueAnalyse, SousTypeNav, ANNEE_MIN, ANNEE_MAX, GrapheMultiPays, CarteTableauAnnees, CarteTableauComparatif, ModalDonnees, BoutonDonnees, BdefRow, plageAnnees } from "./partage";
 import { useDonnees } from "@/lib/donnees";
 import Variation from "@/components/shared/Variation";
 
@@ -454,6 +454,7 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               return (
               <div key={g.id} style={{ gridColumn: "1 / -1" }}>
               <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
+                statique tag={plageAnnees(g.series)}
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                 <GrapheMultiPays series={g.series} height={240} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
