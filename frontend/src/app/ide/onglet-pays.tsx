@@ -456,13 +456,8 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
                   {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
                 </div>
-                {/* Valeur et variation sur la même ligne : ces quatre cartes
-                    n'ont qu'un chiffre chacune, et le delta se lit mieux dans
-                    le prolongement de la valeur qu'il qualifie. Les KPIs
-                    flux & stocks gardent leurs deux lignes — leurs libellés
-                    sont plus longs et la place manque. */}
-                <div style={{ minHeight:18, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const }}>
-                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
+                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
+                <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
                   {c.delta != null && c.ref != null ? (
                     <Variation valeur={c.delta} annee={c.ref} taille={10} />
                   ) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
