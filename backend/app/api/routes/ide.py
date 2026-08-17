@@ -734,6 +734,46 @@ async def sync_prod_config():
 # Chaque zone accepte N fichiers (un par pays). Le pays est auto-détecté
 # depuis la colonne A (Economy_Label) et mappé vers ref_pays.
 
+# ── Garde-fou d'import : un fichier par zone, et un seul ─────────────────────
+#
+# Les imports IDE ont quatre zones de dépôt qui portent chacune une DIRECTION et
+# un INDICATEUR : valeur entrante, valeur sortante, nombre entrant, nombre
+# sortant. Deposer le meme classeur dans deux zones enregistre les memes
+# valeurs sous deux directions differentes, et la plateforme affiche ensuite
+# deux series rigoureusement identiques — « Ventes nettes » et « Achats nets »
+# superposees au dollar pres, courbes comprises. Rien ne le signale : les
+# chiffres sont plausibles, seulement faux.
+#
+# La comparaison porte sur l'empreinte du CONTENU, pas sur le nom : un fichier
+# renomme reste le meme fichier. L'import est refuse en bloc avant toute
+# ecriture, avec le nom des zones en conflit.
+def _refuser_zones_identiques(lus: dict[str, list[tuple[str, bytes]]], libelles: dict[str, str]) -> None:
+    from fastapi import HTTPException
+    import hashlib
+    vus: dict[str, tuple[str, str]] = {}       # empreinte → (zone, nom de fichier)
+    for zone, fichiers in lus.items():
+        for nom, contenu in fichiers:
+            empreinte = hashlib.sha256(contenu).hexdigest()
+            precedent = vus.get(empreinte)
+            if precedent and precedent[0] != zone:
+                zA, nomA = precedent
+                raise HTTPException(422,
+                    f"Le même fichier est déposé dans deux zones différentes : "
+                    f"« {libelles.get(zA, zA)} » ({nomA}) et « {libelles.get(zone, zone)} » ({nom}). "
+                    f"Chaque zone attend son propre tableau — sans quoi les deux séries "
+                    f"seraient identiques dans la plateforme. Import annulé, rien n'a été enregistré.")
+            vus.setdefault(empreinte, (zone, nom))
+
+
+# Libellés des zones tels que l'administration les présente à l'opérateur.
+_LIBELLES_ZONES = {
+    "flux_entrant": "Valeur — entrants / ventes",
+    "flux_sortant": "Valeur — sortants / achats",
+    "stock_entrant": "Nombre (ou stock) — entrants / ventes",
+    "stock_sortant": "Nombre (ou stock) — sortants / achats",
+}
+
+
 @router.post("/importer", status_code=200)
 async def importer_ide(
     flux_entrant:  List[UploadFile] = File(default=[]),
@@ -791,22 +831,29 @@ async def importer_ide(
     # Référentiel préchargé une fois pour la résolution normalisée des labels
     tous_pays = (await db.execute(select(RefPays))).scalars().all()
 
-    for (direction, indicateur), fichiers in zones.items():
+    # Les fichiers sont lus UNE fois — un UploadFile ne se relit pas — puis
+    # controles avant la moindre ecriture.
+    lus: dict[str, list[tuple[str, bytes]]] = {}
+    for nom_zone, fichiers in fichiers_par_zone.items():
         for fichier in (fichiers or []):
             contenu = await lire_import(fichier)
-            if not contenu:
-                continue
-            fichiers_bruts.append((NOMS_ZONES[(direction, indicateur)], fichier.filename or "fichier", contenu))
+            if contenu:
+                lus.setdefault(nom_zone, []).append((fichier.filename or "fichier", contenu))
+    _refuser_zones_identiques(lus, _LIBELLES_ZONES)
+
+    for (direction, indicateur), _ in zones.items():
+        for nom_fichier, contenu in lus.get(NOMS_ZONES[(direction, indicateur)], []):
+            fichiers_bruts.append((NOMS_ZONES[(direction, indicateur)], nom_fichier, contenu))
 
             parseur = _parse_annex_file if format_import == "annex" else _parse_cnuced_file
             try:
-                lignes_par_pays = parseur(contenu, fichier.filename or "")
+                lignes_par_pays = parseur(contenu, nom_fichier)
             except Exception as e:
-                erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
+                erreurs.append(f"{nom_fichier}: erreur de lecture — {e}")
                 continue
 
             if not lignes_par_pays:
-                erreurs.append(f"{fichier.filename}: aucune ligne valide trouvée")
+                erreurs.append(f"{nom_fichier}: aucune ligne valide trouvée")
                 continue
 
             for label, lignes in lignes_par_pays.items():
@@ -925,22 +972,30 @@ async def importer_ide_secteurs(
     erreurs:   list[str]       = []
     fichiers_bruts: list[tuple[str, str, bytes]] = []
 
+    # Lecture unique — un UploadFile ne se relit pas — puis controle avant toute
+    # ecriture : deux zones nourries du meme classeur donneraient deux series
+    # identiques (ventes = achats), plausibles et fausses.
+    lus: dict[str, list[tuple[str, bytes]]] = {}
     for zone, fichiers in fichiers_par_zone.items():
-        di = mapping.get(zone)
         for fichier in (fichiers or []):
             contenu = await lire_import(fichier)
-            if not contenu:
-                continue
+            if contenu:
+                lus.setdefault(zone, []).append((fichier.filename or "fichier", contenu))
+    _refuser_zones_identiques(lus, _LIBELLES_ZONES)
+
+    for zone, fichiers_lus in lus.items():
+        di = mapping.get(zone)
+        for nom_fichier, contenu in fichiers_lus:
             if di is None:
-                erreurs.append(f"{fichier.filename}: zone inutilisée pour la catégorie {categorie}")
+                erreurs.append(f"{nom_fichier}: zone inutilisée pour la catégorie {categorie}")
                 continue
-            fichiers_bruts.append((zone, fichier.filename or "fichier", contenu))
+            fichiers_bruts.append((zone, nom_fichier, contenu))
             direction, indicateur = di
 
             try:
-                lignes_par_label = _parse_annex_file(contenu, fichier.filename or "")
+                lignes_par_label = _parse_annex_file(contenu, nom_fichier)
             except Exception as e:
-                erreurs.append(f"{fichier.filename}: erreur de lecture — {e}")
+                erreurs.append(f"{nom_fichier}: erreur de lecture — {e}")
                 continue
 
             for label, lignes in lignes_par_label.items():
@@ -949,7 +1004,7 @@ async def importer_ide_secteurs(
                     continue  # agrégat toutes branches
                 sec = par_nom.get(low)
                 if not sec:
-                    erreurs.append(f"{fichier.filename}: secteur non reconnu — « {label} »")
+                    erreurs.append(f"{nom_fichier}: secteur non reconnu — « {label} »")
                     continue
                 # Upsert en masse sur uq_ide_cnuced_secteurs_serie (migration 115)
                 from sqlalchemy.dialects.postgresql import insert as pg_insert
