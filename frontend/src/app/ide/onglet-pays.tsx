@@ -507,11 +507,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 // En comparatif : tableau par pays (Cumul ⇆ année au curseur)
                 if (stActif && g.unite === "nombre" && estComparatif)
                   return <CarteTableauComparatif key={`${g.id}-${paysAvecCouleur.map(p=>p.nom).join(",")}`} titre={g.titre} series={g.series}/>;
+                // Greenfield / M&A : les graphes de valeur prennent toute la
+                // largeur, un par ligne — les comptages voisins sont des
+                // tableaux, pas des courbes, et une serie de trente-cinq ans a
+                // deux colonnes ecrase ses inflexions. Flux & Stocks garde ses
+                // deux colonnes : quatre courbes de meme nature s'y comparent.
+                const pleineLargeur = stActif;
                 return (
-                <GrapheCard key={g.id} titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
+                <div key={g.id} style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
+                <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                  <GrapheMultiPays series={g.series} height={145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                  <GrapheMultiPays series={g.series} height={pleineLargeur?240:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
+                </div>
                 );
               })}
               {grapheExtras && <>

@@ -447,14 +447,15 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
               if (typeAnalyse === "comparative" && g.unite === "nombre")
                 return <CarteTableauComparatif key={`${g.id}-${selecIds.join(",")}`} titre={g.titre}
                   series={g.series} libelleLigne="Secteur"/>;
-              // Seul graphe de valeur de la grille (greenfield comparatif :
-              // le nombre est en tableau pleine largeur) → pleine largeur aussi
-              const seulGrapheValeur = typeAnalyse === "comparative" && SERIES.filter(x => x.unite !== "nombre").length === 1;
+              // Les graphes de VALEUR prennent toute la largeur, un par ligne :
+              // les comptages voisins sont des tableaux, pas des courbes, et
+              // une serie de trente-cinq ans a deux colonnes ecrase ses
+              // inflexions. La hauteur suit la largeur gagnee.
               return (
-              <div key={g.id} style={seulGrapheValeur ? { gridColumn: "1 / -1" } : undefined}>
+              <div key={g.id} style={{ gridColumn: "1 / -1" }}>
               <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                 fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
-                <GrapheMultiPays series={g.series} height={seulGrapheValeur?260:SERIES.length===2?220:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
+                <GrapheMultiPays series={g.series} height={240} type={g.unite==="nombre"?"bar":"line"} titre={g.id} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
               </GrapheCard>
               </div>
               );
