@@ -17,34 +17,6 @@ import { useQueries } from "@tanstack/react-query";
 import { voile } from "@/lib/couleurs";
 
 
-// ── Carte KPI compagnon d'un graphe ───────────────────────────────────────────
-// Posee a droite du graphe qu'elle chiffre : le trace donne la forme, ces deux
-// cartes donnent le niveau. Non cliquable — la fiche de l'indicateur s'ouvre
-// depuis les cartes KPI du haut, et deux portes vers le meme panneau
-// n'apportent rien.
-function CarteChiffre({ label, annee, sousTitre, nombre, unite, delta, refAnnee, couleur }: {
-  label: string; annee?: number | null; sousTitre?: string;
-  nombre: string; unite: string; delta?: number | null; refAnnee?: number | null; couleur: string;
-}) {
-  return (
-    <div style={{ background:"var(--carte)", borderRadius:14, border:"1px solid rgb(var(--encre-rgb) / 0.12)",
-      padding:"14px 16px", minWidth:0, display:"flex", flexDirection:"column" as const, justifyContent:"center", gap:6 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" as const }}>
-        <p style={{ fontSize:9, fontWeight:800, color:couleur, textTransform:"uppercase" as const, letterSpacing:"0.1em", lineHeight:1.4 }}>{label}</p>
-        {annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{annee}</span>}
-        {sousTitre && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0, fontVariantNumeric:"tabular-nums" }}>{sousTitre}</span>}
-      </div>
-      <p style={{ fontSize:"1.05rem", fontWeight:800, color:"var(--encre)", lineHeight:1.15, display:"flex", flexWrap:"wrap" as const, alignItems:"baseline", columnGap:4, minWidth:0 }}>
-        <span style={{ whiteSpace:"nowrap" as const }}>{nombre}</span>
-        {unite && <span style={{ fontSize:"0.72em", fontWeight:700, color:"var(--gris-fort)", whiteSpace:"nowrap" as const }}>{unite}</span>}
-      </p>
-      <div style={{ minHeight:12, display:"flex", alignItems:"center" }}>
-        {delta != null && refAnnee != null && <Variation valeur={delta} annee={refAnnee} taille={10}/>}
-      </div>
-    </div>
-  );
-}
-
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
 const BDEF_CAT_COULEURS = ["var(--bleu)","var(--orange)","var(--vert)","var(--violet)","var(--cyan)","var(--danger)","var(--alerte)","var(--emeraude)"];
 
@@ -983,11 +955,7 @@ function OngletNational() {
             <p style={{ fontSize:14, lineHeight:1.7 }}>Aucune donnée pour cette sélection.<br/>Importez les fichiers BDEF dans l'administration.</p>
           </div>
         ) : (
-          // Un indicateur par ligne : le graphe sur 2,8 colonnes sur 4, et
-          // l'espace restant pour deux chiffres superposes — le niveau de la
-          // derniere annee et la moyenne de la periode. Le trace donne la
-          // forme, ces deux cartes donnent l'ordre de grandeur, que l'oeil ne
-          // lit pas sur un axe.
+          // Un indicateur par ligne, sur toute la largeur.
           <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"1fr", gap:14 }}>
             {BDEF_GRAPHES_DEFAUT
               .map(code=>indicateurs.find(i=>i.code===code))
@@ -1005,36 +973,12 @@ function OngletNational() {
                 } else {
                   series = [{ nom:ind.libelle, couleur, data:anneesAffichees.map(a=>({ annee:a, valeur:(ind.valeurs[a]??null) as number|null })) }];
                 }
-                // Les deux chiffres portent sur l'entite selectionnee, meme
-                // quand le graphe compare les quatre macro-secteurs : c'est
-                // bien son total qui est en tete de page.
-                const valorisees = anneesAffichees.filter(a=>ind.valeurs[a]!=null);
-                const derniere = valorisees.length ? valorisees[valorisees.length-1] : null;
-                const vDern = derniere!==null ? (ind.valeurs[derniere] as number) : null;
-                const precA = derniere!==null ? [...valorisees].filter(a=>a<derniere).pop() ?? null : null;
-                const vPrec = precA!==null ? (ind.valeurs[precA] as number) : null;
-                const delta = vDern!==null && vPrec!==null && vPrec!==0 ? ((vDern-vPrec)/Math.abs(vPrec))*100 : null;
-                // Moyenne sur les seules annees renseignees : diviser par des
-                // annees vides tirerait la moyenne vers le bas.
-                const moyenne = valorisees.length
-                  ? valorisees.reduce((t,a)=>t+(ind.valeurs[a] as number),0)/valorisees.length : null;
-                const pDern = fmtBdefParts(vDern, ind.unite);
-                const pMoy  = fmtBdefParts(moyenne, ind.unite);
-                const periode = valorisees.length>1 ? `${valorisees[0]}–${valorisees[valorisees.length-1]}`
-                              : valorisees.length===1 ? String(valorisees[0]) : undefined;
                 return (
-                  <div key={ind.code} style={{ display:"grid", gridTemplateColumns:"2.8fr 1.2fr", gap:14, minWidth:0 }}>
-                    <GrapheCard titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
-                      statique tag={periode}
-                      fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={isGlobal?1.6:undefined}/>}>
-                      <GrapheMultiPays series={series} height={196} type="line" fmt={fmt} showDots={!isGlobal} lineWidth={isGlobal?1.4:undefined}/>
-                    </GrapheCard>
-                    <div style={{ display:"grid", gridTemplateRows:"1fr 1fr", gap:14, minWidth:0 }}>
-                      <CarteChiffre label={ind.libelle} annee={derniere} nombre={pDern.nombre} unite={pDern.unite}
-                        delta={delta} refAnnee={precA} couleur={couleur}/>
-                      <CarteChiffre label="Moyenne" sousTitre={periode} nombre={pMoy.nombre} unite={pMoy.unite} couleur={couleur}/>
-                    </div>
-                  </div>
+                  <GrapheCard key={ind.code} titre={ind.libelle} series={series} grapheId={ind.code} hideLegend hideSousTitre
+                    statique tag={plageAnnees(series)}
+                    fullChildren={<GrapheMultiPays series={series} height={340} type="line" fmt={fmt} lineWidth={isGlobal?1.6:undefined}/>}>
+                    <GrapheMultiPays series={series} height={220} type="line" fmt={fmt} showDots={!isGlobal} lineWidth={isGlobal?1.4:undefined}/>
+                  </GrapheCard>
                 );
               })}
           </div>
