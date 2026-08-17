@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { X, ChevronDown, SlidersHorizontal, Search } from "lucide-react";
@@ -109,40 +109,32 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
   const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
 
-  // Flux & Stocks : les series sortantes passent en orange, comme dans la vue
-  // Monde. Entrant et sortant sont deux mouvements de sens contraire, et les
-  // distinguer d'un coup d'oeil vaut mieux que de lire le titre — d'autant que
-  // les quatre graphes se suivent desormais verticalement. Deux exceptions :
-  // greenfield et M&A, laisses en bleu, et le comparatif, ou la couleur
-  // appartient deja aux pays compares.
+  // Les series sortantes passent en orange, comme dans la vue Monde : entrant et
+  // sortant sont deux mouvements de sens contraire, et maintenant que les
+  // graphes se suivent verticalement au lieu d'etre cote a cote, la couleur
+  // porte la distinction que la position ne porte plus. Seule exception, le
+  // comparatif : la couleur y appartient deja aux pays compares.
   const GRAPHES_PAYS = (stActif || SERIES_TYPES.fluxstock).map((s, i) => ({
     id: `${sousType}-${i}`, titre: s.label, unite: s.unite, sortant: s.dir === "sortant",
     series: buildSerie(s.dir, s.ind).map(se =>
-      !estComparatif && !stActif && s.dir === "sortant" ? { ...se, couleur: "var(--orange)" } : se),
+      !estComparatif && s.dir === "sortant" ? { ...se, couleur: "var(--orange)" } : se),
   }));
 
-  // Graphes d'analyse (vue Pays, flux & stocks, hors comparatif) : soldes nets
-  // des flux et des stocks, et top 10 des années dans les deux sens — pays de
-  // référence.
+  // Analyses complémentaires (vue Pays, flux & stocks, hors comparatif) : le top
+  // 10 des années dans chaque sens, affiché juste sous la courbe qu'il détaille.
+  //
+  // Les soldes nets — flux et stocks — ont été retirés : le solde est déjà lu
+  // par les KPIs (« flux nets », « stocks nets » y figurent, avec leur
+  // variation), et deux graphes de plus allongeaient une page qui se parcourt
+  // désormais verticalement.
   const grapheExtras = (!stActif && !estComparatif) ? (() => {
     const serieDe = (dir: string, ind: string) => donneesRef
       .filter((d: any) => d.direction === dir && d.indicateur === ind && d.valeur !== null)
       .sort((a: any, b: any) => a.annee - b.annee) as { annee: number; valeur: number }[];
     // Un solde n'a de sens que sur les années où les DEUX sens sont connus :
     // soustraire une valeur manquante reviendrait à la compter pour zéro.
-    const solde = (entrant: { annee: number; valeur: number }[], sortant: { annee: number; valeur: number }[]) => {
-      const parAnnee = new Map(sortant.map(r => [r.annee, r.valeur]));
-      return entrant.filter(r => parAnnee.has(r.annee))
-        .map(r => ({ annee: r.annee, valeur: r.valeur - (parAnnee.get(r.annee) as number) }));
-    };
     const rowsE = serieDe("entrant", "flux"), rowsS = serieDe("sortant", "flux");
-    const stockE = serieDe("entrant", "stock"), stockS = serieDe("sortant", "stock");
     if (!rowsE.length) return null;
-
-    const serieNet = [{ nom: "Flux nets", couleur: "var(--bleu)", data: solde(rowsE, rowsS) }];
-    const soldeStock = solde(stockE, stockS);
-    const serieStockNet = soldeStock.length
-      ? [{ nom: "Stocks nets", couleur: "var(--bleu)", data: soldeStock }] : null;
 
     const dixPremieres = (rs: { annee: number; valeur: number }[]) =>
       [...rs].sort((a, b) => b.valeur - a.valeur).slice(0, 10);
@@ -151,7 +143,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const top10S = rowsS.length ? dixPremieres(rowsS) : null;
     const serieTopS = top10S ? [{ nom: "Flux sortants", couleur: "var(--orange)", data: top10S }] : null;
 
-    return { serieNet, serieStockNet, top10, serieTop, top10S, serieTopS };
+    return { top10, serieTop, top10S, serieTopS };
   })() : null;
 
   // KPIs dédiés greenfield / M&A (les 25 KPIs épinglables ne concernent que
@@ -534,7 +526,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
             <ErreurChargement onRetry={() => qCnuced.refetch()} />
           ) : (
             <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
-              {GRAPHES_PAYS.map(g=>{
+              {GRAPHES_PAYS.map((g, iG)=>{
                 // Greenfield / M&A hors comparatif : les « nombres de projets »
                 // s'affichent en tableau explorable (curseur + épinglage)
                 if (stActif && g.unite === "nombre" && !estComparatif)
@@ -559,54 +551,36 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 // l'annee et la valeur sur place, et la pastille annonce la
                 // periode reellement couverte par la serie.
                 const tagG = plageAnnees(g.series);
+                // Flux & Stocks : le top 10 des annees suit immediatement la
+                // courbe qu'il detaille — le classement d'une serie se lit avec
+                // elle, pas trois graphes plus bas. iG 0 = flux entrants,
+                // 1 = flux sortants (l'ordre de SERIES_TYPES.fluxstock).
+                const top = grapheExtras && iG === 0 ? { titre: "Top 10 des années · flux entrants", rows: grapheExtras.top10, series: grapheExtras.serieTop, id: "fluxstock-top10", accent: "var(--bleu)" }
+                          : grapheExtras && iG === 1 && grapheExtras.top10S ? { titre: "Top 10 des années · flux sortants", rows: grapheExtras.top10S, series: grapheExtras.serieTopS, id: "fluxstock-top10-sortants", accent: "var(--orange)" }
+                          : null;
                 return (
-                <div key={g.id} style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
+                <Fragment key={g.id}>
+                <div style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
                 <GrapheCard titre={g.titre} unite={g.unite==="nombre"?"Nombre":"M$ USD"} source="CNUCED" series={g.series} grapheId={g.id} hideLegend hideSousTitre
                   statique={!!pleineLargeur} tag={tagG}
                   fullChildren={<GrapheMultiPays series={g.series} height={340} type={g.unite==="nombre"?"bar":"line"} titre={g.id} lineWidth={estComparatif?1.6:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>}>
                   <GrapheMultiPays series={g.series} height={pleineLargeur?240:145} type={g.unite==="nombre"?"bar":"line"} titre={g.id} showDots={!estComparatif} lineWidth={estComparatif?1.4:undefined} fmt={g.unite==="nombre"?fmtNombre:undefined}/>
                 </GrapheCard>
                 </div>
+                {top && (
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    {/* Un tableau, pas un SVG : sa carte n'affiche donc pas de
+                        bouton d'export, qui n'aurait rien a exporter. */}
+                    <GrapheCard titre={top.titre} unite="M$ USD" source="CNUCED" series={top.series} grapheId={top.id} hideLegend hideSousTitre
+                      statique sansExport tag={plageAnnees(top.series)}>
+                      <TopAnneesFlux rows={top.rows} grand accent={top.accent}/>
+                    </GrapheCard>
+                  </div>
+                )}
+                </Fragment>
                 );
               })}
-              {/* Graphes et tableaux d'analyse, un par ligne comme les series
-                  principales. Les deux top 10 sont des tableaux : leur carte n'a
-                  pas de bouton d'export (il n'y a pas de SVG a exporter) et
-                  passe a la variante haute, la largeur gagnee le permettant. */}
-              {grapheExtras && <>
-                {/* Soldes nets : entrants − sortants, pour les flux puis les stocks */}
-                <div style={{ gridColumn: "1 / -1" }}>
-                <GrapheCard titre="Flux nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
-                  statique tag={plageAnnees(grapheExtras.serieNet)}
-                  fullChildren={<GrapheMultiPays series={grapheExtras.serieNet} height={340}/>}>
-                  <GrapheMultiPays series={grapheExtras.serieNet} height={240}/>
-                </GrapheCard>
-                </div>
-                {grapheExtras.serieStockNet && (
-                  <div style={{ gridColumn: "1 / -1" }}>
-                  <GrapheCard titre="Stocks nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieStockNet} grapheId="fluxstock-stocknet" hideLegend hideSousTitre
-                    statique tag={plageAnnees(grapheExtras.serieStockNet)}
-                    fullChildren={<GrapheMultiPays series={grapheExtras.serieStockNet} height={340}/>}>
-                    <GrapheMultiPays series={grapheExtras.serieStockNet} height={240}/>
-                  </GrapheCard>
-                  </div>
-                )}
-                {/* Top 10 des années par flux entrants */}
-                <div style={{ gridColumn: "1 / -1" }}>
-                <GrapheCard titre="Top 10 des années · flux entrants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
-                  statique sansExport tag={plageAnnees(grapheExtras.serieTop)}>
-                  <TopAnneesFlux rows={grapheExtras.top10} grand/>
-                </GrapheCard>
-                </div>
-                {grapheExtras.top10S && (
-                  <div style={{ gridColumn: "1 / -1" }}>
-                  <GrapheCard titre="Top 10 des années · flux sortants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTopS} grapheId="fluxstock-top10-sortants" hideLegend hideSousTitre
-                    statique sansExport tag={plageAnnees(grapheExtras.serieTopS)}>
-                    <TopAnneesFlux rows={grapheExtras.top10S} grand accent="var(--orange)"/>
-                  </GrapheCard>
-                  </div>
-                )}
-              </>}
+
             </div>
           )}
           </div>
