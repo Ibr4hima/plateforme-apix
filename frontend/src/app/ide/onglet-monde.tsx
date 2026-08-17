@@ -243,15 +243,20 @@ function VueMondeGlobale({ sousType, modeAnnees, anneeMin, anneeMax, anneesSpec,
         ))}
       </div>
 
-      {/* Totaux mondiaux */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 20 }}>
+      {/* Totaux mondiaux — un graphe par ligne.
+          Entrants et sortants ne se comparent pas terme a terme ici : ce sont
+          deux agregats mondiaux d'ordres de grandeur souvent tres differents,
+          chacun sur sa propre echelle. Cote a cote, ils invitaient a une
+          lecture comparee que les axes ne permettent pas — et une serie de
+          trente-cinq ans en demi-largeur perd ses inflexions. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 14, marginBottom: 20 }}>
         <GrapheCard titre={L.serieE} unite="M$ USD" source="CNUCED" series={seriesE} grapheId={`monde-global-e-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesE} height={340}/>}>
-          <GrapheMultiPays series={seriesE} height={160}/>
+          <GrapheMultiPays series={seriesE} height={240}/>
         </GrapheCard>
         <GrapheCard titre={L.serieS} unite="M$ USD" source="CNUCED" series={seriesS} grapheId={`monde-global-s-${sousType}-${code ?? "monde"}`} hideLegend hideSousTitre
           fullChildren={<GrapheMultiPays series={seriesS} height={340}/>}>
-          <GrapheMultiPays series={seriesS} height={160}/>
+          <GrapheMultiPays series={seriesS} height={240}/>
         </GrapheCard>
       </div>
 
