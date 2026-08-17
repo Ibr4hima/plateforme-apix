@@ -183,19 +183,19 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     });
     const M = "millions USD";
     return [
-      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null,
+      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null,
         ...fiche("st_ve", gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", sE, vE, "monnaie", M,
           gf ? "Montant que des entreprises étrangères ont annoncé investir dans le pays pour y créer quelque chose de neuf : une usine, un site, une filiale. Ce sont des projets annoncés, et non des dépenses déjà engagées."
              : "Montant des entreprises du pays rachetées par des investisseurs étrangers, une fois retirées les reventes de la même année. Aucune capacité nouvelle n'est créée ici : des entreprises qui existent déjà changent de propriétaire.") },
-      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null,
+      { label: gf ? "Inv. greenfield émis" : "Acquisitions", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null,
         ...fiche("st_vs", gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", sS, vS, "monnaie", M,
           gf ? "Montant que des entreprises du pays ont annoncé investir hors des frontières, pour y créer des installations nouvelles. Le pays est ici l'investisseur, non le pays d'accueil."
              : "Montant des entreprises étrangères rachetées par des investisseurs du pays, une fois retirées les reventes de la même année.") },
-      { label: gf ? "Nb de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null,
+      { label: gf ? "Nb de projets reçus" : "Nombre de rachats", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null,
         ...fiche("st_nb", gf ? "Nb de projets reçus" : "Nombre de rachats locaux", sN, nE, "entier", "projets",
           gf ? "Nombre de projets annoncés dans le pays. Chaque projet compte pour un, quelle que soit sa taille : rapproché du montant, il indique combien vaut un projet en moyenne."
              : "Nombre d'opérations de rachat d'entreprises du pays. Chaque opération compte pour une, quel que soit son montant : rapproché de la valeur, il indique la taille moyenne d'une transaction.") },
-      { label: gf ? "Solde net" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null,
+      { label: "Solde net", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null,
         ...fiche("st_net", gf ? "Solde net" : "Solde net · rachats − acquisitions", sSolde, solde, "monnaie_signe", M,
           gf ? "Ce que le pays reçoit, moins ce qu'il investit à l'étranger. Un solde positif signifie qu'il attire plus qu'il n'implante ailleurs. Seules les années où les deux sens sont connus entrent dans le calcul, pour ne pas confondre une donnée manquante avec un zéro."
              : "Ce que l'étranger rachète dans le pays, moins ce que le pays rachète à l'étranger. Seules les années où les deux sens sont connus entrent dans le calcul, pour ne pas confondre une donnée manquante avec un zéro.") },
@@ -456,8 +456,13 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
                   {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
                 </div>
-                <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
-                <div style={{ marginTop:5, minHeight:12, display:"flex", alignItems:"center", gap:5, flexWrap:"wrap" as const }}>
+                {/* Valeur et variation sur la même ligne : ces quatre cartes
+                    n'ont qu'un chiffre chacune, et le delta se lit mieux dans
+                    le prolongement de la valeur qu'il qualifie. Les KPIs
+                    flux & stocks gardent leurs deux lignes — leurs libellés
+                    sont plus longs et la place manque. */}
+                <div style={{ minHeight:18, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" as const }}>
+                  <p style={{ fontSize:"1.15rem", fontWeight:800, color:"var(--encre)", lineHeight:1 }}>{c.val}</p>
                   {c.delta != null && c.ref != null ? (
                     <Variation valeur={c.delta} annee={c.ref} taille={10} />
                   ) : (c.ind ? <p style={{ fontSize:10, color:"var(--gris)", lineHeight:1 }}>{c.ind}</p> : null)}
