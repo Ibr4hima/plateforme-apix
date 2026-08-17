@@ -438,15 +438,24 @@ function OngletSecteurs({ showTable, setShowTable, sousType, setSousType, vueP, 
         ) : (
           <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
             {GRAPHES.map(g=>{
+              // Greenfield n'a qu'un seul comptage (« Nombre de projets ») : seul
+              // dans une grille a deux colonnes, il laissait la moitie de la
+              // ligne vide. M&A en a deux, ventes et achats, qui se lisent bien
+              // cote a cote — la regle suit donc le nombre de tableaux.
+              const seulTableau = GRAPHES.filter(x => x.unite === "nombre").length === 1;
+              const surLaLigne = seulTableau ? { gridColumn: "1 / -1" } : undefined;
               // Analyse sectorielle (sélection unique) : les « nombres » en
               // tableau explorable (curseur + épinglage), comme en vue Pays
               if (typeAnalyse === "secteur" && g.unite === "nombre")
-                return <CarteTableauAnnees key={`${g.id}-${selecIds[0]}`} titre={g.titre} accent={accent}
-                  rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>;
+                return <div key={`${g.id}-${selecIds[0]}`} style={surLaLigne}>
+                  <CarteTableauAnnees titre={g.titre} accent={accent}
+                    rows={(g.series[0]?.data || []).map((d: any) => ({ annee: d.annee, valeur: d.valeur }))}/>
+                </div>;
               // Analyse comparative : tableau par secteur (Cumul ⇆ année au curseur)
               if (typeAnalyse === "comparative" && g.unite === "nombre")
-                return <CarteTableauComparatif key={`${g.id}-${selecIds.join(",")}`} titre={g.titre}
-                  series={g.series} libelleLigne="Secteur"/>;
+                return <div key={`${g.id}-${selecIds.join(",")}`} style={surLaLigne}>
+                  <CarteTableauComparatif titre={g.titre} series={g.series} libelleLigne="Secteur"/>
+                </div>;
               // Les graphes de VALEUR prennent toute la largeur, un par ligne :
               // les comptages voisins sont des tableaux, pas des courbes, et
               // une serie de trente-cinq ans a deux colonnes ecrase ses
