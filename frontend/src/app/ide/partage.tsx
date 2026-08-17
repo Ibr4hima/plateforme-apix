@@ -4,11 +4,11 @@ import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, FileSpreadsheet, Pin } from "lucide-react";
+import { X, Plus, Table, ChevronDown, FileSpreadsheet } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
 import { IconeCached } from "@/components/shared/PickerKpi";
-import { accentDe, CurseurAnneeNace } from "@/components/shared/CurseurNace";
+import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
 
 
 import { API_BASE as API } from "@/lib/api";
@@ -371,138 +371,104 @@ export function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: 
 }
 
 // ── Card tableau des nombres de projets (greenfield / M&A, vue Pays) ──────────
-// Les 7 dernières années non nulles en tableau (année · nombre · Δ vs N-1 ·
-// barre). Le curseur « Explorer » montre en direct l'année visée (valeur et
-// variation dans la barre) sans toucher au tableau ; l'épinglage — depuis le
-// curseur ou au survol d'une ligne — fige des années en tête (triées) pour
-// les comparer, avec bilan dès 2 épingles. L'année record est signalée.
+// Un tableau simple : année · nombre · écart au précédent · barre. Les sept
+// années les plus récentes, le reste derrière « Afficher la suite ».
+//
+// Ce qui a été retiré, et pourquoi : le curseur d'exploration et l'épinglage
+// (avec son bilan de comparaison) demandaient trois gestes pour lire ce que le
+// tableau montre déjà — on vient ici compter des projets, pas instrumenter une
+// série. La colonne d'écart donne le NOMBRE (+3, −6) et non un pourcentage :
+// sur des effectifs d'une dizaine, « +300 % » dit moins que « +3 ».
+//
+// L'année de pic porte un aplat bleu et une pastille PIC. S'il n'y a pas de
+// pic — une seule année, ou plusieurs ex æquo au sommet — ni l'un ni l'autre :
+// distinguer une ligne qui ne se distingue pas est un mensonge visuel.
 export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { titre: string; rows: { annee: number; valeur: number | null }[]; accent?: string }) {
-  const [epingles, setEpingles] = useState<number[]>([]);
-  // Position flottante du curseur : le pouce glisse en continu, l'année
-  // affichée est l'arrondi — le glissement reste parfaitement fluide.
-  const [posCurseur, setPosCurseur] = useState<number | null>(null);
+  const [tout, setTout] = useState(false);
+  const FENETRE = 7;
 
   const valides = rows.filter(r => r.valeur !== null).sort((a, b) => a.annee - b.annee) as { annee: number; valeur: number }[];
-  const valMap = new Map(valides.map(r => [r.annee, r.valeur]));
   const nonNulles = valides.filter(r => r.valeur !== 0);
-  const base7 = [...nonNulles.slice(-7)].reverse();
+  const recentes = [...nonNulles].reverse();               // du plus récent au plus ancien
+  const affichees = tout ? recentes : recentes.slice(0, FENETRE);
+  const reste = recentes.length - affichees.length;
   const maxVal = Math.max(1, ...nonNulles.map(r => r.valeur));
-  const anneeRecord = nonNulles.length ? nonNulles.reduce((m, r) => r.valeur > m.valeur ? r : m).annee : null;
-  const anMin = valides.length ? valides[0].annee : 0;
-  const anMax = valides.length ? valides[valides.length - 1].annee : 0;
-  const anCurseur = Math.round(posCurseur ?? anMax);
 
-  // Variation vs l'année précédente disposant d'une valeur
-  const deltaDe = (annee: number): number | null => {
-    const v = valMap.get(annee);
-    if (v === undefined) return null;
-    const avant = valides.filter(r => r.annee < annee);
-    if (!avant.length) return null;
-    const prec = avant[avant.length - 1];
-    return prec.valeur === 0 ? null : (v - prec.valeur) / Math.abs(prec.valeur) * 100;
-  };
-
-  const togglePin = (annee: number) =>
-    setEpingles(prev => prev.includes(annee) ? prev.filter(a => a !== annee) : [...prev, annee]);
-
-  // Tableau : années épinglées en tête (triées, hors fenêtre comprises),
-  // puis la fenêtre des 7 dernières non nulles
-  const lignesPin = [...epingles].sort((a, b) => b - a);
-  const lignesBase = base7.filter(r => !epingles.includes(r.annee)).map(r => r.annee);
-
-  // Bilan de comparaison : plus ancienne → plus récente des années épinglées valorisées
-  const bilan = (() => {
-    const avecVal = [...epingles].filter(a => valMap.has(a)).sort((a, b) => a - b);
-    if (avecVal.length < 2) return null;
-    const de = avecVal[0], vers = avecVal[avecVal.length - 1];
-    const v0 = valMap.get(de)!, v1 = valMap.get(vers)!;
-    return { de, vers, v0, v1, diff: v1 - v0, pct: v0 !== 0 ? (v1 - v0) / Math.abs(v0) * 100 : null };
+  // Le pic n'existe que s'il se distingue : une valeur STRICTEMENT supérieure
+  // à toutes les autres. Deux années ex æquo au sommet, ou des valeurs toutes
+  // égales, ne donnent pas de pic.
+  const anneePic = (() => {
+    if (nonNulles.length < 2) return null;
+    const mx = Math.max(...nonNulles.map(r => r.valeur));
+    const sommet = nonNulles.filter(r => r.valeur === mx);
+    return sommet.length === 1 ? sommet[0].annee : null;
   })();
 
-  const Delta = ({ delta, taille = 9.5 }: { delta: number | null; taille?: number }) => (
-    <span style={{ fontSize: taille, fontWeight: 700, whiteSpace: "nowrap" as const,
-      color: delta === null ? "var(--gris)" : delta > 0 ? "var(--vert)" : delta < 0 ? "var(--danger)" : "var(--gris)" }}>
-      {delta === null ? "—" : `${delta > 0 ? "▲" : delta < 0 ? "▼" : "="} ${Math.abs(delta).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %`}
+  // Écart au dernier millésime valorisé qui précède — en nombre, pas en part.
+  const ecartDe = (annee: number): number | null => {
+    const i = valides.findIndex(r => r.annee === annee);
+    if (i <= 0) return null;
+    return valides[i].valeur - valides[i - 1].valeur;
+  };
+
+  const Ecart = ({ e }: { e: number | null }) => (
+    <span style={{ fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums",
+      color: e === null ? "var(--gris)" : e > 0 ? "var(--vert)" : e < 0 ? "var(--danger)" : "var(--gris)" }}>
+      {e === null ? "—" : e === 0 ? "=" : `${e > 0 ? "+" : "−"}${fmtNombre(Math.abs(e))}`}
     </span>
   );
 
-  const Ligne = ({ annee, epinglee }: { annee: number; epinglee: boolean }) => {
-    const v = valMap.get(annee);
-    return (
-      <div className="ligne-annee" style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 8, background: epinglee ? voile(accent, 6) : "transparent", transition: "background 0.12s" }}>
-        {/* Épingle : pleine sur les lignes figées, fantôme au survol des autres */}
-        <button className={epinglee ? undefined : "pin-fantome"} onClick={() => togglePin(annee)}
-          aria-label={epinglee ? `Désépingler ${annee}` : `Épingler ${annee}`} title={epinglee ? "Désépingler" : "Épingler cette année"}
-          style={{ width: 14, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: epinglee ? accent : "var(--gris)", flexShrink: 0 }}>
-          <Pin size={11} fill={epinglee ? accent : "none"} />
-        </button>
-        <span style={{ width: 34, fontSize: 11, fontWeight: epinglee ? 800 : 600, color: "var(--encre)", flexShrink: 0 }}>{annee}</span>
-        <span style={{ width: 34, fontSize: 11, fontWeight: 800, color: v === undefined ? "var(--gris)" : accent, textAlign: "right" as const, flexShrink: 0 }}>{v === undefined ? "—" : fmtNombre(v)}</span>
-        <span style={{ width: 58, textAlign: "right" as const, flexShrink: 0 }}><Delta delta={deltaDe(annee)} /></span>
-        <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
-          {v !== undefined && v > 0 && <div style={{ height: "100%", width: `${Math.max(2, v / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: epinglee ? 1 : 0.55 }} />}
-        </div>
-        {annee === anneeRecord
-          ? <span style={{ fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--orange)", background: "rgb(var(--orange-rgb) / 0.10)", padding: "2px 6px", borderRadius: 999, flexShrink: 0 }}>RECORD</span>
-          : <span style={{ width: 46, flexShrink: 0 }} />}
-      </div>
-    );
-  };
-
   return (
     <div style={{ background: "var(--carte)", borderRadius: 14, border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
-      <style>{`.ligne-annee .pin-fantome{opacity:0;transition:opacity .12s}
-.ligne-annee:hover{background:rgb(var(--bleu-rgb) / 0.03)}
-.ligne-annee:hover .pin-fantome{opacity:1}`}</style>
       <h3 style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</h3>
       {valides.length === 0 ? (
         <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "26px 0" }}>Aucune donnée</p>
       ) : (
         <>
-          {/* Curseur d'exploration : l'année visée s'affiche ici (valeur + Δ), l'épingle la fige dans le tableau */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--carte-douce)", border: "1px solid var(--bordure)", borderRadius: 10, padding: "7px 11px" }}>
-            <CurseurAnneeNace min={anMin} max={anMax} value={anCurseur} flexible
-              accent={accentDe(accent)} ariaLabel="Explorer une année"
-              onChange={v => setPosCurseur(v)} />
-            <button onClick={() => togglePin(anCurseur)}
-              title={epingles.includes(anCurseur) ? "Désépingler" : "Épingler cette année dans le tableau"}
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, border: "none", cursor: "pointer", flexShrink: 0,
-                background: epingles.includes(anCurseur) ? accent : voile(accent, 8), color: epingles.includes(anCurseur) ? "var(--sur-bleu)" : accent, fontFamily: "var(--font-google-sans)" }}>
-              <Pin size={10} fill={epingles.includes(anCurseur) ? "var(--sur-bleu)" : "none"} />
-              {epingles.includes(anCurseur) ? "Épinglée" : "Épingler"}
-            </button>
-          </div>
-
           {/* En-tête du tableau */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
-            <span style={{ width: 14, flexShrink: 0 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px" }}>
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
-            <span style={{ width: 58, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+            <span style={{ width: 48, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
             <span style={{ flex: 1 }} />
-            <span style={{ width: 46, flexShrink: 0 }} />
+            <span style={{ width: 34, flexShrink: 0 }} />
           </div>
 
-          {/* Années épinglées (triées) puis fenêtre des 7 dernières non nulles */}
           <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
-            {lignesPin.map(a => <Ligne key={`p${a}`} annee={a} epinglee />)}
-            {lignesPin.length > 0 && lignesBase.length > 0 && <div style={{ height: 1, background: "var(--fond)", margin: "3px 8px" }} />}
-            {lignesBase.map(a => <Ligne key={a} annee={a} epinglee={false} />)}
+            {affichees.map(r => {
+              const pic = r.annee === anneePic;
+              return (
+                <div key={r.annee} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 8px", borderRadius: 8,
+                  background: pic ? voile(accent, 8) : "transparent" }}>
+                  <span style={{ width: 34, fontSize: 11.5, fontWeight: pic ? 800 : 600, color: "var(--encre)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{r.annee}</span>
+                  <span style={{ width: 34, fontSize: 11.5, fontWeight: 800, color: accent, textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.valeur)}</span>
+                  <span style={{ width: 48, textAlign: "right" as const, flexShrink: 0 }}><Ecart e={ecartDe(r.annee)} /></span>
+                  <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.max(2, r.valeur / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: pic ? 1 : 0.55 }} />
+                  </div>
+                  {pic
+                    ? <span style={{ width: 34, fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: accent, background: voile(accent, 16), padding: "2px 6px", borderRadius: 999, flexShrink: 0, textAlign: "center" as const, boxSizing: "border-box" as const }}>PIC</span>
+                    : <span style={{ width: 34, flexShrink: 0 }} />}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Bilan de comparaison entre années épinglées */}
-          {bilan && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: voile(accent, 5), border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 10, padding: "6px 11px", fontSize: 10.5, flexWrap: "wrap" as const }}>
-              <span style={{ fontWeight: 800, color: accent }}>{bilan.de}</span>
-              <span style={{ color: "var(--gris)" }}>({fmtNombre(bilan.v0)})</span>
-              <span style={{ color: "var(--gris)" }}>→</span>
-              <span style={{ fontWeight: 800, color: accent }}>{bilan.vers}</span>
-              <span style={{ color: "var(--gris)" }}>({fmtNombre(bilan.v1)})</span>
-              <span style={{ marginLeft: "auto", fontWeight: 800, color: bilan.diff > 0 ? "var(--vert)" : bilan.diff < 0 ? "var(--danger)" : "var(--gris)" }}>
-                {bilan.diff > 0 ? "▲" : bilan.diff < 0 ? "▼" : "="} {bilan.diff > 0 ? "+" : ""}{fmtNombre(bilan.diff)}
-                {bilan.pct !== null && ` (${bilan.pct > 0 ? "+" : ""}${bilan.pct.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} %)`}
-              </span>
-            </div>
+          {reste > 0 && (
+            <button onClick={() => setTout(true)}
+              style={{ alignSelf: "center", marginTop: 2, padding: "6px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)",
+                background: "var(--carte)", color: accent, fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+              Afficher la suite ({reste})
+            </button>
+          )}
+          {tout && recentes.length > FENETRE && (
+            <button onClick={() => setTout(false)}
+              style={{ alignSelf: "center", marginTop: 2, padding: "6px 16px", borderRadius: 999, border: "1px solid var(--bordure-forte)",
+                background: "var(--carte)", color: "var(--texte)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+              Réduire
+            </button>
           )}
         </>
       )}
