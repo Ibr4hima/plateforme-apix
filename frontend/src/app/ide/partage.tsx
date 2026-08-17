@@ -350,19 +350,25 @@ export function GrapheMultiPays(props: {
 }
 
 // ── Top 10 des années par flux entrants — barres classées ─────────────────────
-export function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: number }[]; grand?: boolean }) {
+export function TopAnneesFlux({ rows, grand, accent = "var(--bleu)" }: { rows: { annee: number; valeur: number }[]; grand?: boolean;
+  /** Teinte du rang, des barres et des valeurs — orange pour les flux sortants,
+      qui suivent ainsi la couleur de leur courbe. */
+  accent?: string }) {
   const max = rows.length ? rows[0].valeur : 1;
+  // Le bleu d'action a son pendant pour l'orange : sur une barre pleine, la
+  // teinte de texte manquerait de densite.
+  const remplissage = accent === "var(--bleu)" ? "var(--bleu-action)" : accent;
   return (
     <div style={{ display: "flex", flexDirection: "column" as const, gap: grand ? 8 : 4.5, padding: grand ? "4px 2px" : "2px 2px 0" }}>
       {rows.map((r, i) => (
         <div key={r.annee} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ width: 16, fontSize: grand ? 11 : 9.5, fontWeight: 800, color: i < 3 ? "var(--bleu)" : "var(--gris)", textAlign: "right" as const, flexShrink: 0 }}>{i + 1}</span>
+          <span style={{ width: 16, fontSize: grand ? 11 : 9.5, fontWeight: 800, color: i < 3 ? accent : "var(--gris)", textAlign: "right" as const, flexShrink: 0 }}>{i + 1}</span>
           <span style={{ width: 32, fontSize: grand ? 12 : 10.5, fontWeight: 700, color: "var(--encre)", flexShrink: 0 }}>{r.annee}</span>
           <div style={{ flex: 1, height: grand ? 12 : 8, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.max(2, r.valeur / max * 100)}%`, borderRadius: 99,
-              background: i === 0 ? "linear-gradient(90deg,var(--bleu-action),var(--bleu-action))" : "var(--bleu-action)", opacity: i === 0 ? 1 : Math.max(0.35, 1 - i * 0.08) }} />
+              background: remplissage, opacity: i === 0 ? 1 : Math.max(0.35, 1 - i * 0.08) }} />
           </div>
-          <span style={{ width: grand ? 86 : 68, fontSize: grand ? 11.5 : 10, fontWeight: 700, color: "var(--bleu)", textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const }}>{fmtVal(r.valeur)}</span>
+          <span style={{ width: grand ? 86 : 68, fontSize: grand ? 11.5 : 10, fontWeight: 700, color: accent, textAlign: "right" as const, flexShrink: 0, whiteSpace: "nowrap" as const }}>{fmtVal(r.valeur)}</span>
         </div>
       ))}
       {rows.length === 0 && <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "20px 0" }}>Aucune donnée</p>}
@@ -799,7 +805,7 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
 /** Période réellement couverte par des séries de graphe — « 2004–2023 » —, pour
     la pastille des cartes statiques. Seuls les points renseignés comptent : une
     borne de filtre sans donnée annoncerait une profondeur qui n'existe pas. */
-export function plageAnnees(series: any[]): string | undefined {
+export function plageAnnees(series: any[] | null | undefined): string | undefined {
   const ys: number[] = (series || []).flatMap((s: any) => (s.data || []).filter((d: any) => d.valeur !== null).map((d: any) => d.annee));
   if (!ys.length) return undefined;
   const mn = Math.min(...ys), mx = Math.max(...ys);

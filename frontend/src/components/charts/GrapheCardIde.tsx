@@ -13,7 +13,7 @@ import LegendeGraphe from "@/components/charts/LegendeGraphe";
 // Le téléchargement, lui, ne peut pas disparaître avec la modale : c'est le
 // geste qui fait entrer un graphe dans une note ou une présentation. Il devient
 // donc un bouton de la carte, en haut à droite.
-function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, children }: any) {
+function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, sansExport, children }: any) {
   const boite = useRef<HTMLDivElement>(null);
   const visibles = (series || []).filter((s: any) => s.data.some((d: any) => d.valeur !== null));
   const telecharger = () => {
@@ -36,7 +36,10 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, childr
           {tag && <span style={{ fontSize:9, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"2px 8px",
             borderRadius:5, letterSpacing:"0.04em", textTransform:"none" as const, fontVariantNumeric:"tabular-nums" }}>{tag}</span>}
         </p>
-        <button onClick={telecharger} title="Télécharger le graphe en PNG" aria-label={`Télécharger « ${titre} » en PNG`}
+        {/* Pas de bouton quand le contenu n'est pas un SVG (un tableau, par
+            exemple) : il n'y aurait rien a exporter, et un bouton inerte est
+            pire que pas de bouton. */}
+        {!sansExport && <button onClick={telecharger} title="Télécharger le graphe en PNG" aria-label={`Télécharger « ${titre} » en PNG`}
           style={{ flexShrink:0, width:28, height:28, borderRadius:8, border:"1px solid var(--bordure)", background:"var(--carte)",
             color:"var(--gris)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s, color 0.15s, border-color 0.15s" }}
           onMouseEnter={e=>{ e.currentTarget.style.background="var(--bleu-voile)"; e.currentTarget.style.color="var(--bleu)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
@@ -44,7 +47,7 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, childr
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
-        </button>
+        </button>}
       </div>
       {!hideLegend && visibles.length > 0 && <LegendeGraphe series={visibles} style={{ marginBottom: 8 }} />}
       <div ref={boite}>{children}</div>
@@ -53,7 +56,7 @@ function CarteStatique({ titre, tag, unite, series, grapheId, hideLegend, childr
 }
 
 // ── Card graphe miniature (page IDE) ──────────────────────────────────────────
-export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag }: any) {
+export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag, sansExport }: any) {
   // La carte, elle, n'a ni pied ni place pour trois lignes : unité, source et
   // note s'y recomposent en une seule légende discrète. Les ANNÉES n'y figurent
   // plus — la modale les porte déjà en pastille.
@@ -65,7 +68,7 @@ export function GrapheCard({ titre, sous_titre, unite, source, children, fullChi
   // la valeur). Réservée aux graphes qui occupent déjà toute la largeur : ils
   // n'ont plus rien à gagner à s'agrandir, et une carte qui se soulève au
   // survol sans mener nulle part promet une action qui n'existe pas.
-  if (statique) return <CarteStatique titre={titre} tag={tag} unite={unite} series={series} grapheId={grapheId} hideLegend={hideLegend}>{children}</CarteStatique>;
+  if (statique) return <CarteStatique titre={titre} tag={tag} unite={unite} series={series} grapheId={grapheId} hideLegend={hideLegend} sansExport={sansExport}>{children}</CarteStatique>;
 
   return (
     <>

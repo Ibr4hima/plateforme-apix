@@ -109,9 +109,16 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   const perMin = stBornes ? Math.max(anneeMin, stBornes[0]) : anneeMin;
   const perMax = stBornes ? Math.min(anneeMax, stBornes[1]) : anneeMax;
 
+  // Flux & Stocks : les series sortantes passent en orange, comme dans la vue
+  // Monde. Entrant et sortant sont deux mouvements de sens contraire, et les
+  // distinguer d'un coup d'oeil vaut mieux que de lire le titre — d'autant que
+  // les quatre graphes se suivent desormais verticalement. Deux exceptions :
+  // greenfield et M&A, laisses en bleu, et le comparatif, ou la couleur
+  // appartient deja aux pays compares.
   const GRAPHES_PAYS = (stActif || SERIES_TYPES.fluxstock).map((s, i) => ({
-    id: `${sousType}-${i}`, titre: s.label, unite: s.unite,
-    series: buildSerie(s.dir, s.ind),
+    id: `${sousType}-${i}`, titre: s.label, unite: s.unite, sortant: s.dir === "sortant",
+    series: buildSerie(s.dir, s.ind).map(se =>
+      !estComparatif && !stActif && s.dir === "sortant" ? { ...se, couleur: "var(--orange)" } : se),
   }));
 
   // Graphes d'analyse (vue Pays, flux & stocks, hors comparatif) : soldes nets
@@ -142,7 +149,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const top10 = dixPremieres(rowsE);
     const serieTop = [{ nom: "Flux entrants", couleur: "var(--bleu)", data: top10 }];
     const top10S = rowsS.length ? dixPremieres(rowsS) : null;
-    const serieTopS = top10S ? [{ nom: "Flux sortants", couleur: "var(--bleu)", data: top10S }] : null;
+    const serieTopS = top10S ? [{ nom: "Flux sortants", couleur: "var(--orange)", data: top10S }] : null;
 
     return { serieNet, serieStockNet, top10, serieTop, top10S, serieTopS };
   })() : null;
@@ -541,7 +548,12 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 // tableaux, pas des courbes, et une serie de trente-cinq ans a
                 // deux colonnes ecrase ses inflexions. Flux & Stocks garde ses
                 // deux colonnes : quatre courbes de meme nature s'y comparent.
-                const pleineLargeur = stActif;
+                // Un graphe par ligne dans tous les onglets : une serie de
+                // trente-cinq ans en demi-largeur ecrase ses inflexions, et
+                // quatre courbes d'ordres de grandeur differents (un stock pese
+                // dix fois un flux) ne se comparaient de toute facon pas terme a
+                // terme, chacune ayant sa propre echelle.
+                const pleineLargeur = true;
                 // Pleine largeur = carte statique, presentee comme au tableau de
                 // bord : le graphe est deja a sa taille utile, le survol y donne
                 // l'annee et la valeur sur place, et la pastille annonce la
@@ -557,28 +569,42 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
                 </div>
                 );
               })}
+              {/* Graphes et tableaux d'analyse, un par ligne comme les series
+                  principales. Les deux top 10 sont des tableaux : leur carte n'a
+                  pas de bouton d'export (il n'y a pas de SVG a exporter) et
+                  passe a la variante haute, la largeur gagnee le permettant. */}
               {grapheExtras && <>
                 {/* Soldes nets : entrants − sortants, pour les flux puis les stocks */}
+                <div style={{ gridColumn: "1 / -1" }}>
                 <GrapheCard titre="Flux nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieNet} grapheId="fluxstock-net" hideLegend hideSousTitre
+                  statique tag={plageAnnees(grapheExtras.serieNet)}
                   fullChildren={<GrapheMultiPays series={grapheExtras.serieNet} height={340}/>}>
-                  <GrapheMultiPays series={grapheExtras.serieNet} height={145}/>
+                  <GrapheMultiPays series={grapheExtras.serieNet} height={240}/>
                 </GrapheCard>
+                </div>
                 {grapheExtras.serieStockNet && (
+                  <div style={{ gridColumn: "1 / -1" }}>
                   <GrapheCard titre="Stocks nets des IDE" unite="M$ USD" source="CNUCED" series={grapheExtras.serieStockNet} grapheId="fluxstock-stocknet" hideLegend hideSousTitre
+                    statique tag={plageAnnees(grapheExtras.serieStockNet)}
                     fullChildren={<GrapheMultiPays series={grapheExtras.serieStockNet} height={340}/>}>
-                    <GrapheMultiPays series={grapheExtras.serieStockNet} height={145}/>
+                    <GrapheMultiPays series={grapheExtras.serieStockNet} height={240}/>
                   </GrapheCard>
+                  </div>
                 )}
                 {/* Top 10 des années par flux entrants */}
+                <div style={{ gridColumn: "1 / -1" }}>
                 <GrapheCard titre="Top 10 des années · flux entrants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTop} grapheId="fluxstock-top10" hideLegend hideSousTitre
-                  fullChildren={<TopAnneesFlux rows={grapheExtras.top10} grand/>}>
-                  <TopAnneesFlux rows={grapheExtras.top10}/>
+                  statique sansExport tag={plageAnnees(grapheExtras.serieTop)}>
+                  <TopAnneesFlux rows={grapheExtras.top10} grand/>
                 </GrapheCard>
+                </div>
                 {grapheExtras.top10S && (
+                  <div style={{ gridColumn: "1 / -1" }}>
                   <GrapheCard titre="Top 10 des années · flux sortants" unite="M$ USD" source="CNUCED" series={grapheExtras.serieTopS} grapheId="fluxstock-top10-sortants" hideLegend hideSousTitre
-                    fullChildren={<TopAnneesFlux rows={grapheExtras.top10S} grand/>}>
-                    <TopAnneesFlux rows={grapheExtras.top10S}/>
+                    statique sansExport tag={plageAnnees(grapheExtras.serieTopS)}>
+                    <TopAnneesFlux rows={grapheExtras.top10S} grand accent="var(--orange)"/>
                   </GrapheCard>
+                  </div>
                 )}
               </>}
             </div>
