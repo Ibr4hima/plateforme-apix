@@ -120,14 +120,17 @@ function libellesMonde(sousType: string, zone: string | null) {
   const sufTop = zone ? ` · ${zone}` : "";
   if (sousType === "greenfield") return {
     ind: "greenfield_valeur",
-    kpiE: `Greenfield reçus${suf}`, kpiS: `Greenfield émis${suf}`,
+    // Les deux KPIs de tête portaient « · monde » ou « · Afrique » : la zone
+    // est deja nommee dans l'en-tete de la vue, le suffixe ne faisait
+    // qu'allonger un titre qui tient desormais sur une ligne.
+    kpiE: "Greenfield reçus", kpiS: "Greenfield émis",
     serieE: `Investissements greenfield reçus${suf}`, serieS: `Investissements greenfield émis${suf}`,
     topE: `Top 10 des pays d'accueil · greenfield${sufTop}`, topS: `Top 10 des pays émetteurs · greenfield${sufTop}`,
     top1E: "1er pays d'accueil", top1S: "1er pays émetteur",
   };
   if (sousType === "fusion") return {
     ind: "ma_valeur",
-    kpiE: `Rachats d'entreprises${suf}`, kpiS: `Acquisitions${suf}`,
+    kpiE: "Rachats d'entreprises", kpiS: "Acquisitions",
     serieE: `Valeur des rachats d'entreprises${suf}`, serieS: `Valeur des acquisitions à l'étranger${suf}`,
     topE: `Top 10 des pays cibles · M&A${sufTop}`, topS: `Top 10 des pays acquéreurs · M&A${sufTop}`,
     top1E: "1er pays cible", top1S: "1er pays acquéreur",
