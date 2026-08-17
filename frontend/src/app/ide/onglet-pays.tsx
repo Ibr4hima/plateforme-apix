@@ -36,6 +36,9 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
   useEffect(() => { setAnneeMin(borneMin); setAnneeMax(borneMax); }, [borneMin, borneMax]);
   const [kpisEpingles, setKpisEpingles] = useState<string[]>(KPI_DEFAUT);
   const [kpiActif,     setKpiActif]     = useState<KpiResult|null>(null);
+  // Définition à afficher dans la fiche à la place de l'interprétation : posée
+  // par les KPIs greenfield / M&A, laissée nulle par les 25 KPIs flux & stocks.
+  const [defActif,     setDefActif]     = useState<string|null>(null);
   // Slot (0-3) dont le picker de remplacement est ouvert ; -1 = aucun
   const [pickerSlot,   setPickerSlot]   = useState(-1);
   const [searchPays,   setSearchPays]   = useState("");
@@ -165,11 +168,37 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     const sSolde = sE.filter((r: any) => parAnneeS.has(r.annee)).map((r: any) => ({ annee: r.annee, valeur: r.valeur - (parAnneeS.get(r.annee) as number) }));
     const solde = pt(sSolde);
     const gf = sousType === "greenfield";
+    // Chaque carte porte sa fiche : un KpiResult synthétique — la valeur, son
+    // année et la série qui y mène — plus la définition de l'indicateur. Ces
+    // KPIs ne sortent pas de calculerKpis (qui ne traite que flux & stocks),
+    // d'où la construction à la main.
+    const fiche = (
+      id: string, label: string, rs: any[], v: ReturnType<typeof pt>,
+      format: KpiResult["format"], unite: string, definition: string,
+    ): { kpi: KpiResult; definition: string } => ({
+      kpi: { id, label, categorie: gf ? "greenfield" : "fusion", valeur: v.l ? v.l.valeur : null,
+             unite, annee: v.l?.annee, description: definition, format,
+             serie: rs.map((r: any) => ({ annee: r.annee, v: r.valeur })) },
+      definition,
+    });
+    const M = "millions USD";
     return [
-      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null },
-      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null },
-      { label: gf ? "Nombre de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null },
-      { label: gf ? "Solde net · reçus − émis" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null },
+      { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null,
+        ...fiche("st_ve", gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", sE, vE, "monnaie", M,
+          gf ? "Montant des investissements greenfield annoncés par des entreprises étrangères dans le pays : création d'unités entièrement nouvelles — usines, sites, filiales — par opposition au rachat d'entités déjà existantes. Source CNUCED, en millions de dollars courants."
+             : "Valeur nette des entreprises résidentes acquises par des investisseurs étrangers : acquisitions transfrontalières moins les cessions de la même année. Source CNUCED, en millions de dollars courants.") },
+      { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null,
+        ...fiche("st_vs", gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", sS, vS, "monnaie", M,
+          gf ? "Montant des investissements greenfield annoncés à l'étranger par des entreprises du pays : implantations nouvelles créées hors des frontières nationales. Source CNUCED, en millions de dollars courants."
+             : "Valeur nette des entreprises étrangères acquises par des investisseurs résidents : acquisitions à l'étranger moins les cessions de la même année. Source CNUCED, en millions de dollars courants.") },
+      { label: gf ? "Nb de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null,
+        ...fiche("st_nb", gf ? "Nb de projets reçus" : "Nombre de rachats locaux", sN, nE, "entier", "projets",
+          gf ? "Nombre de projets greenfield annoncés par des entreprises étrangères dans le pays, quel que soit leur montant : un seul très grand projet compte autant qu'un petit. À lire avec le montant, qui donne la taille moyenne."
+             : "Nombre d'opérations de rachat d'entreprises résidentes par des investisseurs étrangers, quel que soit leur montant. À lire avec la valeur, qui donne la taille moyenne des transactions.") },
+      { label: gf ? "Solde net" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null,
+        ...fiche("st_net", gf ? "Solde net" : "Solde net · rachats − acquisitions", sSolde, solde, "monnaie_signe", M,
+          gf ? "Différence entre les montants greenfield reçus et les montants émis à l'étranger. Positif, le pays attire plus qu'il n'implante ailleurs. Le solde n'est calculé que sur les années où les deux sens sont connus : soustraire une donnée manquante reviendrait à la compter pour zéro."
+             : "Différence entre la valeur des entreprises locales rachetées par l'étranger et celle des entreprises étrangères acquises par des résidents. Le solde n'est calculé que sur les années où les deux sens sont connus.") },
     ];
   })();
 
@@ -419,10 +448,10 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               ne concernent que le pays de référence) */}
           {!estComparatif && <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:20 }}>
             {stCards ? stCards.map(c=>(
-              <div key={c.label}
-                style={{ background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", boxShadow:"none", transition:"border-color 0.18s", minWidth:0 }}
-                onMouseEnter={e=>{ e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
+              <div key={c.label} {...carteCliquable(()=>{ setKpiActif(c.kpi); setDefActif(c.definition); })}
+                style={{ background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:"1px solid rgb(var(--encre-rgb) / 0.12)", cursor:"pointer", boxShadow:"none", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", minWidth:0 }}
+                onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)"; }}>
                 <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:7, flexWrap:"wrap" as const }}>
                   <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.1em", color:"var(--bleu)", textTransform:"uppercase" as const, lineHeight:1.4 }}>{c.label}</p>
                   {c.annee != null && <span style={{ fontSize:8.5, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"1px 7px", borderRadius:4, lineHeight:1.5, flexShrink:0 }}>{c.annee}</span>}
@@ -441,7 +470,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
               const { delta, ref } = getVariation(k);
               const pickerOuvert = pickerSlot === slot;
               return (
-                <div key={k.id} className="kpi-card" {...carteCliquable(()=>setKpiActif(k))}
+                <div key={k.id} className="kpi-card" {...carteCliquable(()=>{ setKpiActif(k); setDefActif(null); })}
                   style={{ position:"relative", background:"var(--carte)", borderRadius:14, padding:"13px 14px", border:`1px solid ${pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"}`, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", minWidth:0, zIndex:pickerOuvert?5:undefined }}
                   onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.35)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.borderColor=pickerOuvert?"rgb(var(--bleu-rgb) / 0.35)":"rgb(var(--encre-rgb) / 0.12)"; }}>
@@ -554,7 +583,7 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
       </div>
 
       <ModalDonnees open={showTable} onClose={()=>setShowTable(false)} donnees={donnees} paysSelectionnes={paysAvecCouleur} sousType={sousType} />
-      <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} onClose={()=>setKpiActif(null)} />
+      <MiniModalKpi kpi={kpiActif} pays={paysSelec} couleur={couleur} definition={defActif} onClose={()=>{ setKpiActif(null); setDefActif(null); }} />
     </div>
   );
 }

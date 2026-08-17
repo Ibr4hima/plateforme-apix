@@ -806,7 +806,11 @@ export function splitKpiTitre(label: string): { main: string; suffix: string | n
 }
 
 // ── Mini modal KPI ────────────────────────────────────────────────────────────
-export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; onClose: ()=>void }) {
+/** `definition` : quand elle est fournie, la troisième section devient
+    « Définition » — ce que l'indicateur mesure — au lieu de l'interprétation
+    générée. Les KPIs greenfield / M&A l'utilisent : leur valeur est un montant
+    brut publié par la CNUCED, qu'il faut définir plutôt que commenter. */
+export function MiniModalKpi({ kpi, pays, couleur, definition, onClose }: { kpi: KpiResult|null; pays: string; couleur: string; definition?: string|null; onClose: ()=>void }) {
   useEchap(!!kpi, onClose);
   const dialKpi = useDialogue(!!kpi, "Fiche du KPI");
   if (!kpi) return null;
@@ -897,9 +901,9 @@ export function MiniModalKpi({ kpi, pays, couleur, onClose }: { kpi: KpiResult|n
             </div>
           )}
           <div>
-            <SecTitle>Interprétation</SecTitle>
+            <SecTitle>{definition ? "Définition" : "Interprétation"}</SecTitle>
             <div style={{ background:"var(--carte-douce)", border:"1px solid var(--bordure)", borderRadius:12, padding:"14px 18px" }}>
-              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{interp}</p>
+              <p style={{ fontSize:13, color:"var(--encre)", lineHeight:1.75 }}>{definition || interp}</p>
             </div>
           </div>
         </div>
