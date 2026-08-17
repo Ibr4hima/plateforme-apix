@@ -371,21 +371,24 @@ export function TopAnneesFlux({ rows, grand }: { rows: { annee: number; valeur: 
 }
 
 // ── Card tableau des nombres de projets (greenfield / M&A, vue Pays) ──────────
-// Un tableau simple : année · nombre · écart au précédent · barre. Les sept
-// années les plus récentes, le reste derrière « Afficher la suite ».
+// Un tableau simple : année · nombre · nombre de l'année précédente · écart ·
+// barre. Les huit années les plus récentes, le reste derrière « Afficher la
+// suite ».
 //
 // Ce qui a été retiré, et pourquoi : le curseur d'exploration et l'épinglage
 // (avec son bilan de comparaison) demandaient trois gestes pour lire ce que le
 // tableau montre déjà — on vient ici compter des projets, pas instrumenter une
-// série. La colonne d'écart donne le NOMBRE (+3, −6) et non un pourcentage :
-// sur des effectifs d'une dizaine, « +300 % » dit moins que « +3 ».
+// série. La colonne « N-1 » donne la valeur de l'année précédente, et « vs
+// N-1 » l'écart en NOMBRE (+3, −6) — pas un pourcentage : sur des effectifs
+// d'une dizaine, « +300 % » dit moins que « +3 », et lire les deux nombres
+// côte à côte dispense de tout calcul.
 //
 // L'année de pic porte un aplat bleu et une pastille PIC. S'il n'y a pas de
 // pic — une seule année, ou plusieurs ex æquo au sommet — ni l'un ni l'autre :
 // distinguer une ligne qui ne se distingue pas est un mensonge visuel.
 export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { titre: string; rows: { annee: number; valeur: number | null }[]; accent?: string }) {
   const [tout, setTout] = useState(false);
-  const FENETRE = 7;
+  const FENETRE = 8;
 
   const valides = rows.filter(r => r.valeur !== null).sort((a, b) => a.annee - b.annee) as { annee: number; valeur: number }[];
   const nonNulles = valides.filter(r => r.valeur !== 0);
@@ -404,11 +407,17 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
     return sommet.length === 1 ? sommet[0].annee : null;
   })();
 
-  // Écart au dernier millésime valorisé qui précède — en nombre, pas en part.
-  const ecartDe = (annee: number): number | null => {
+  // Le millésime valorisé qui PRÉCÈDE : sa valeur, et l'écart en nombre.
+  // « précède » au sens des données, pas de l'année civile — une année sans
+  // donnée ne coupe pas la comparaison, elle la reporte.
+  const precedentDe = (annee: number): number | null => {
     const i = valides.findIndex(r => r.annee === annee);
-    if (i <= 0) return null;
-    return valides[i].valeur - valides[i - 1].valeur;
+    return i <= 0 ? null : valides[i - 1].valeur;
+  };
+  const ecartDe = (annee: number): number | null => {
+    const prec = precedentDe(annee);
+    const v = valides.find(r => r.annee === annee)?.valeur;
+    return prec === null || v === undefined ? null : v - prec;
   };
 
   const Ecart = ({ e }: { e: number | null }) => (
@@ -429,6 +438,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px" }}>
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
+            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>N-1</span>
             <span style={{ width: 48, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
             <span style={{ flex: 1 }} />
             <span style={{ width: 34, flexShrink: 0 }} />
@@ -442,6 +452,11 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
                   background: pic ? voile(accent, 8) : "transparent" }}>
                   <span style={{ width: 34, fontSize: 11.5, fontWeight: pic ? 800 : 600, color: "var(--encre)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{r.annee}</span>
                   <span style={{ width: 34, fontSize: 11.5, fontWeight: 800, color: accent, textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.valeur)}</span>
+                  {(() => { const prec = precedentDe(r.annee); return (
+                    <span style={{ width: 34, fontSize: 11, fontWeight: 600, color: "var(--gris-fort)", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+                      {prec === null ? "—" : fmtNombre(prec)}
+                    </span>
+                  ); })()}
                   <span style={{ width: 48, textAlign: "right" as const, flexShrink: 0 }}><Ecart e={ecartDe(r.annee)} /></span>
                   <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${Math.max(2, r.valeur / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: pic ? 1 : 0.55 }} />
