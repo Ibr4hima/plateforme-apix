@@ -185,20 +185,20 @@ function OngletPays({ paysDispo, showTable, setShowTable, sousOnglet, setSousOng
     return [
       { label: gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", val: vE.l ? fmtVal(vE.l.valeur) : "N/A", annee: vE.l?.annee ?? null, delta: vE.delta, ref: vE.ref, ind: null as string | null,
         ...fiche("st_ve", gf ? "Inv. greenfield reçus" : "Rachats d'entreprises locales", sE, vE, "monnaie", M,
-          gf ? "Montant des investissements greenfield annoncés par des entreprises étrangères dans le pays : création d'unités entièrement nouvelles — usines, sites, filiales — par opposition au rachat d'entités déjà existantes. Source CNUCED, en millions de dollars courants."
-             : "Valeur nette des entreprises résidentes acquises par des investisseurs étrangers : acquisitions transfrontalières moins les cessions de la même année. Source CNUCED, en millions de dollars courants.") },
+          gf ? "Montant que des entreprises étrangères ont annoncé investir dans le pays pour y créer quelque chose de neuf : une usine, un site, une filiale. Ce sont des projets annoncés, et non des dépenses déjà engagées."
+             : "Montant des entreprises du pays rachetées par des investisseurs étrangers, une fois retirées les reventes de la même année. Aucune capacité nouvelle n'est créée ici : des entreprises qui existent déjà changent de propriétaire.") },
       { label: gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", val: vS.l ? fmtVal(vS.l.valeur) : "N/A", annee: vS.l?.annee ?? null, delta: vS.delta, ref: vS.ref, ind: null,
         ...fiche("st_vs", gf ? "Inv. greenfield émis" : "Acquisitions à l'étranger", sS, vS, "monnaie", M,
-          gf ? "Montant des investissements greenfield annoncés à l'étranger par des entreprises du pays : implantations nouvelles créées hors des frontières nationales. Source CNUCED, en millions de dollars courants."
-             : "Valeur nette des entreprises étrangères acquises par des investisseurs résidents : acquisitions à l'étranger moins les cessions de la même année. Source CNUCED, en millions de dollars courants.") },
+          gf ? "Montant que des entreprises du pays ont annoncé investir hors des frontières, pour y créer des installations nouvelles. Le pays est ici l'investisseur, non le pays d'accueil."
+             : "Montant des entreprises étrangères rachetées par des investisseurs du pays, une fois retirées les reventes de la même année.") },
       { label: gf ? "Nb de projets reçus" : "Nombre de rachats locaux", val: nE.l ? fmtNombre(nE.l.valeur) : "N/A", annee: nE.l?.annee ?? null, delta: nE.delta, ref: nE.ref, ind: null,
         ...fiche("st_nb", gf ? "Nb de projets reçus" : "Nombre de rachats locaux", sN, nE, "entier", "projets",
-          gf ? "Nombre de projets greenfield annoncés par des entreprises étrangères dans le pays, quel que soit leur montant : un seul très grand projet compte autant qu'un petit. À lire avec le montant, qui donne la taille moyenne."
-             : "Nombre d'opérations de rachat d'entreprises résidentes par des investisseurs étrangers, quel que soit leur montant. À lire avec la valeur, qui donne la taille moyenne des transactions.") },
+          gf ? "Nombre de projets annoncés dans le pays. Chaque projet compte pour un, quelle que soit sa taille : rapproché du montant, il indique combien vaut un projet en moyenne."
+             : "Nombre d'opérations de rachat d'entreprises du pays. Chaque opération compte pour une, quel que soit son montant : rapproché de la valeur, il indique la taille moyenne d'une transaction.") },
       { label: gf ? "Solde net" : "Solde net · rachats − acquisitions", val: solde.l !== null ? `${solde.l.valeur > 0 ? "+" : ""}${fmtVal(solde.l.valeur)}` : "N/A", annee: solde.l?.annee ?? null, delta: solde.delta, ref: solde.ref, ind: null,
         ...fiche("st_net", gf ? "Solde net" : "Solde net · rachats − acquisitions", sSolde, solde, "monnaie_signe", M,
-          gf ? "Différence entre les montants greenfield reçus et les montants émis à l'étranger. Positif, le pays attire plus qu'il n'implante ailleurs. Le solde n'est calculé que sur les années où les deux sens sont connus : soustraire une donnée manquante reviendrait à la compter pour zéro."
-             : "Différence entre la valeur des entreprises locales rachetées par l'étranger et celle des entreprises étrangères acquises par des résidents. Le solde n'est calculé que sur les années où les deux sens sont connus.") },
+          gf ? "Ce que le pays reçoit, moins ce qu'il investit à l'étranger. Un solde positif signifie qu'il attire plus qu'il n'implante ailleurs. Seules les années où les deux sens sont connus entrent dans le calcul, pour ne pas confondre une donnée manquante avec un zéro."
+             : "Ce que l'étranger rachète dans le pays, moins ce que le pays rachète à l'étranger. Seules les années où les deux sens sont connus entrent dans le calcul, pour ne pas confondre une donnée manquante avec un zéro.") },
     ];
   })();
 
