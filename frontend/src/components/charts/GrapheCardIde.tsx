@@ -5,12 +5,33 @@ import { GrapheModal } from "@/components/charts/GrapheModalIde";
 import LegendeGraphe from "@/components/charts/LegendeGraphe";
 
 // ── Card graphe miniature (page IDE) ──────────────────────────────────────────
-export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre }: any) {
+export function GrapheCard({ titre, sous_titre, unite, source, children, fullChildren, analyse, series, grapheId, hideLegend, hideSousTitre, statique, tag }: any) {
   // La carte, elle, n'a ni pied ni place pour trois lignes : unité, source et
   // note s'y recomposent en une seule légende discrète. Les ANNÉES n'y figurent
   // plus — la modale les porte déjà en pastille.
   const legende = [unite, source, sous_titre].filter(Boolean).join(" · ");
   const [open, setOpen] = useState(false);
+
+  // Carte statique — la présentation du tableau de bord : pas de clic, pas de
+  // modale, et le graphe reste vivant sur place (le survol y donne l'année et
+  // la valeur). Réservée aux graphes qui occupent déjà toute la largeur : ils
+  // n'ont plus rien à gagner à s'agrandir, et une carte qui se soulève au
+  // survol sans mener nulle part promet une action qui n'existe pas.
+  if (statique) return (
+    <div style={{ background:"var(--carte)", borderRadius:14, border:"1px solid rgb(var(--encre-rgb) / 0.12)", padding:"16px 18px", minWidth:0 }}>
+      <p style={{ fontSize:11, fontWeight:800, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const,
+        margin:"0 0 14px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
+        <span>{titre}</span>
+        {tag && <span style={{ fontSize:9, fontWeight:700, color:"var(--gris)", background:"var(--bleu-voile)", padding:"2px 8px",
+          borderRadius:5, letterSpacing:"0.04em", textTransform:"none" as const, fontVariantNumeric:"tabular-nums" }}>{tag}</span>}
+      </p>
+      {!hideLegend && series?.length > 0 && (
+        <LegendeGraphe series={series.filter((s:any)=>s.data.some((d:any)=>d.valeur!==null))} style={{ marginBottom: 8 }} />
+      )}
+      {children}
+    </div>
+  );
+
   return (
     <>
       <div onClick={()=>setOpen(true)}
