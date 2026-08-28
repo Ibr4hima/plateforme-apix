@@ -21,6 +21,7 @@ export const MODULES_ADMIN: NavItemAdmin[] = [
   { type: "link", label: "Classification NAEMA",            href: "/admin/naema",              icon: "account_tree",       disabled: true },
   { type: "link", label: "Tableaux de correspondance",      href: "/admin/classifications",    icon: "table_chart",        disabled: true },
   { type: "link", label: "Données IDE",                     href: "/admin/ide",                icon: "finance_mode"                      },
+  { type: "link", label: "Classification fDi Markets",      href: "/admin/fdi",                icon: "account_tree"                      },
   { type: "link", label: "Données BDEF",                    href: "/admin/bdef",               icon: "database",           disabled: true },
   { type: "link", label: "Commerce extérieur",              href: "/admin/commerce-exterieur", icon: "anchor"                            },
   { type: "link", label: "Code des investissements",        href: "/admin/code-investissement",icon: "gavel"                             },
