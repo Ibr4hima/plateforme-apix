@@ -80,6 +80,13 @@ echo "▸ Import des données NACE (commerce extérieur)…"
 $COMPOSE exec -T backend python scripts/nace/importer.py \
   || echo "  ⚠ import NACE en échec — les données du commerce extérieur n'ont pas été mises à jour."
 
+# Même principe pour la nomenclature fDi Markets : les CSV sont versionnés et
+# embarqués dans l'image, l'import est un upsert idempotent. La base suit donc
+# le dépôt à chaque déploiement, sans intervention manuelle.
+echo "▸ Import de la classification fDi Markets…"
+$COMPOSE exec -T backend python scripts/fdi/importer.py \
+  || echo "  ⚠ import fDi en échec — la nomenclature sectorielle n'a pas été mise à jour."
+
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
 
