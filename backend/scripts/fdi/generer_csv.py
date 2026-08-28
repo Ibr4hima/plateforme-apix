@@ -8,6 +8,7 @@ français) et `source/fdi_correspondance_en_fr.xlsx` (les trois tables de
 correspondance anglais ↔ français), et écrit trois CSV à côté :
 
     fdi_secteurs.csv · fdi_sous_secteurs.csv · fdi_business_activites.csv
+    fdi_signaux.csv
 
 Ce sont les CSV, et non les classeurs, qui font foi pour l'import : ils se
 relisent dans une revue de code, se comparent d'une version à l'autre, et
@@ -42,6 +43,10 @@ DOSSIER = Path(__file__).resolve().parent
 SOURCE = DOSSIER / "source"
 CLASSIFICATION = SOURCE / "fdi_classification_fr.xlsx"
 CORRESPONDANCE = SOURCE / "fdi_correspondance_en_fr.xlsx"
+# Les signaux d'investisseur viennent, eux, de deux classeurs parallèles — un
+# par langue — appariés par leur numéro d'ordre et non par un libellé.
+SIGNAUX_EN = SOURCE / "fdi_signaux_en.xlsx"
+SIGNAUX_FR = SOURCE / "fdi_signaux_fr.xlsx"
 
 # Longueur maximale de la partie « libellé » d'un code de sous-secteur. Les
 # libellés fDi vont jusqu'à 100 caractères (« Media streaming distribution
@@ -92,6 +97,27 @@ def lire_correspondance(feuille: str) -> dict[str, str]:
             sys.exit(f"{feuille} : « {fr} » traduit deux fois ({table[fr]} / {en})")
         table[fr] = en
     return table
+
+
+def lire_signaux(chemin: Path) -> list[tuple[int, str, str]]:
+    """Un classeur de signaux : (numéro, libellé, définition).
+
+    Chaque signal porte une définition — ce que fDi entend par « New
+    Personnel » ne se devine pas : l'entreprise a nommé un responsable
+    régional, ce qui laisse penser qu'elle prépare une implantation. Sans la
+    définition, un analyste lirait de travers un signal faible.
+    """
+    wb = openpyxl.load_workbook(chemin, read_only=True, data_only=True)
+    lignes: list[tuple[int, str, str]] = []
+    for i, ligne in enumerate(wb.worksheets[0].iter_rows(values_only=True), start=1):
+        if i <= 3 or not ligne[1]:  # titre, ligne vide, en-têtes
+            continue
+        try:
+            numero = int(str(ligne[0]).strip())
+        except (TypeError, ValueError):
+            sys.exit(f"{chemin.name}, ligne {i} : numéro d'ordre illisible ({ligne[0]!r})")
+        lignes.append((numero, str(ligne[1]).strip(), str(ligne[2] or "").strip()))
+    return lignes
 
 
 def main() -> int:
@@ -145,7 +171,26 @@ def main() -> int:
         for i, fr in enumerate(activites_fr)
     ]
 
-    # ── Sept contrôles avant écriture ─────────────────────────────────────────
+    # ── Signaux d'investisseur ────────────────────────────────────────────────
+    # Deux classeurs parallèles, appariés par le numéro d'ordre : c'est la seule
+    # clé commune, les libellés étant traduits. On vérifie donc que les deux
+    # listes décrivent bien la même chose avant de les coudre ensemble.
+    sig_en, sig_fr = lire_signaux(SIGNAUX_EN), lire_signaux(SIGNAUX_FR)
+    if [n for n, _, _ in sig_en] != [n for n, _, _ in sig_fr]:
+        sys.exit("signaux : les deux classeurs ne portent pas la même numérotation")
+    if len(sig_en) != len(set(n for n, _, _ in sig_en)):
+        sys.exit("signaux : numéro d'ordre en double")
+    signaux = [
+        {"code": slug(en), "libelle_en": en, "libelle_fr": fr,
+         "definition_en": def_en, "definition_fr": def_fr,
+         "cle_appariement": cle_de(en), "ordre": n}
+        for (n, en, def_en), (_, fr, def_fr) in zip(sig_en, sig_fr)
+    ]
+    sans_definition = [s["code"] for s in signaux if not s["definition_en"] or not s["definition_fr"]]
+    if sans_definition:
+        sys.exit(f"signaux sans définition dans les deux langues : {sans_definition}")
+
+    # ── Contrôles avant écriture ──────────────────────────────────────────────
     def unique(nom: str, valeurs: list[str]) -> None:
         doublons = {v: n for v, n in Counter(valeurs).items() if n > 1}
         if doublons:
@@ -156,6 +201,8 @@ def main() -> int:
     unique("code sous-secteur", [s["code"] for s in sous_secteurs])
     unique("libellé EN sous-secteur", [s["libelle_en"] for s in sous_secteurs])
     unique("code activité", [a["code"] for a in activites])
+    unique("code signal", [s["code"] for s in signaux])
+    unique("libellé EN signal", [s["libelle_en"] for s in signaux])
     # La clé d'appariement n'est unique QUE dans son secteur : c'est la raison
     # d'être de la parenthèse de fDi, et donc de la clé composite en base.
     for s in secteurs:
@@ -177,6 +224,7 @@ def main() -> int:
     ecrire("fdi_secteurs.csv", secteurs)
     ecrire("fdi_sous_secteurs.csv", sous_secteurs)
     ecrire("fdi_business_activites.csv", activites)
+    ecrire("fdi_signaux.csv", signaux)
 
     partages = Counter(x["cle_appariement"] for x in sous_secteurs)
     multi = sum(1 for n in partages.values() if n > 1)

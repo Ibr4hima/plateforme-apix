@@ -30,6 +30,7 @@ def test_effectifs_de_la_nomenclature(tables):
     assert rapport["secteurs"] == 37
     assert rapport["sous_secteurs"] == 270
     assert rapport["activites"] == 17
+    assert rapport["signaux"] == 5
 
 
 def test_chaque_secteur_a_au_moins_un_sous_secteur(tables):
@@ -103,7 +104,7 @@ def test_les_libelles_sont_propres(tables):
 def test_la_cle_dapariement_est_normalisee(tables):
     """Minuscules, sans accent, sans ponctuation : la forme qui absorbe les
     écarts de casse d'un export à l'autre."""
-    for l in tables["sous_secteurs"] + tables["activites"]:
+    for l in tables["sous_secteurs"] + tables["activites"] + tables["signaux"]:
         cle = l["cle_appariement"]
         assert cle == cle.lower()
         assert re.fullmatch(r"[a-z0-9 ]+", cle), f"clé non normalisée : « {cle} »"
@@ -175,3 +176,33 @@ def test_la_cle_absorbe_casse_ponctuation_et_espaces():
 def test_le_slug_ne_produit_que_des_caracteres_surs():
     for libelle in ("Coal, oil & gas", "Software & IT Services", "Épargne (Test)"):
         assert re.fullmatch(r"[a-z0-9_]+", slug(libelle)), slug(libelle)
+
+
+# ── Signaux d'investisseur ────────────────────────────────────────────────────
+
+def test_chaque_signal_porte_sa_definition_dans_les_deux_langues(tables):
+    """La définition fait partie de la donnée, pas du confort.
+
+    « New Personnel » désigne une nomination régionale qui laisse présager une
+    implantation — sans sa définition, un lecteur y verrait un simple
+    recrutement. Un signal sans définition est donc une donnée incomplète.
+    """
+    for g in tables["signaux"]:
+        assert len(g["definition_fr"]) > 40, f"{g['code']} : définition française trop courte"
+        assert len(g["definition_en"]) > 40, f"{g['code']} : définition anglaise trop courte"
+
+
+def test_l_ordre_des_signaux_est_celui_de_la_source(tables):
+    """Du signal le plus concret au plus faible : un projet à l'étude d'abord,
+    un contrat décroché en dernier. Cette gradation porte du sens, elle n'est
+    pas alphabétique et ne doit pas le devenir."""
+    codes = [g["code"] for g in sorted(tables["signaux"], key=lambda x: x["ordre"])]
+    assert codes[0] == "considering_project_new_or_expansion"
+    assert codes[-1] == "new_overseas_supplier_contracts"
+
+
+def test_verifier_refuse_un_signal_sans_definition(tables):
+    corrompu = {k: [dict(l) for l in v] for k, v in tables.items()}
+    corrompu["signaux"][0]["definition_fr"] = "   "
+    with pytest.raises(ClassificationInvalide, match="sans définition"):
+        verifier(corrompu)

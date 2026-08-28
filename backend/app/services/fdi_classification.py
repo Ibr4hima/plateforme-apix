@@ -29,6 +29,7 @@ FICHIERS = {
     "secteurs": "fdi_secteurs.csv",
     "sous_secteurs": "fdi_sous_secteurs.csv",
     "activites": "fdi_business_activites.csv",
+    "signaux": "fdi_signaux.csv",
 }
 
 
@@ -85,9 +86,10 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
     dérivation depuis Excel, ceux-ci protègent la base contre un CSV édité à
     la main entre-temps ; c'est le même invariant gardé aux deux bouts.
     """
-    secteurs, sous, activites = tables["secteurs"], tables["sous_secteurs"], tables["activites"]
-    if not secteurs or not sous or not activites:
-        raise ClassificationInvalide("une des trois nomenclatures est vide")
+    secteurs, sous = tables["secteurs"], tables["sous_secteurs"]
+    activites, signaux = tables["activites"], tables["signaux"]
+    if not secteurs or not sous or not activites or not signaux:
+        raise ClassificationInvalide("une des quatre nomenclatures est vide")
 
     def unicite(nom: str, valeurs: list[str]) -> None:
         doublons = sorted(v for v, n in Counter(valeurs).items() if n > 1)
@@ -100,6 +102,16 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
     unicite("libellé anglais de sous-secteur", [s["libelle_en"] for s in sous])
     unicite("code d'activité", [a["code"] for a in activites])
     unicite("libellé anglais d'activité", [a["libelle_en"] for a in activites])
+    unicite("code de signal", [g["code"] for g in signaux])
+    unicite("libellé anglais de signal", [g["libelle_en"] for g in signaux])
+
+    # Les signaux sont la seule nomenclature à porter une définition, et elle
+    # fait partie de la donnée : « New Personnel » sans sa définition se lirait
+    # comme un simple recrutement, non comme le présage d'une implantation.
+    sans_def = [g["code"] for g in signaux
+                if not g.get("definition_en", "").strip() or not g.get("definition_fr", "").strip()]
+    if sans_def:
+        raise ClassificationInvalide(f"signaux sans définition : {sans_def}")
 
     codes = {s["code"] for s in secteurs}
     orphelins = sorted({s["secteur_code"] for s in sous} - codes)
@@ -126,6 +138,7 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
         "secteurs": len(secteurs),
         "sous_secteurs": len(sous),
         "activites": len(activites),
+        "signaux": len(signaux),
         "secteurs_sans_sous_secteur": sans_ss,
         "libelles_partages": partages,
     }
@@ -145,7 +158,7 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
     from sqlalchemy import select
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-    from app.models.fdi import FdiActivite, FdiSecteur, FdiSousSecteur
+    from app.models.fdi import FdiActivite, FdiSecteur, FdiSignal, FdiSousSecteur
 
     tables = lire_csv(dossier)
     rapport = verifier(tables)
@@ -191,6 +204,20 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
         where=FdiActivite.origine == "depot",
     ))
 
+    stmt = pg_insert(FdiSignal).values([
+        {k: s[k] for k in ("code", "libelle_en", "libelle_fr", "definition_en",
+                           "definition_fr", "cle_appariement", "ordre")}
+        for s in tables["signaux"]
+    ])
+    await db.execute(stmt.on_conflict_do_update(
+        index_elements=["code"],
+        set_={"libelle_en": stmt.excluded.libelle_en, "libelle_fr": stmt.excluded.libelle_fr,
+              "definition_en": stmt.excluded.definition_en,
+              "definition_fr": stmt.excluded.definition_fr,
+              "cle_appariement": stmt.excluded.cle_appariement, "ordre": stmt.excluded.ordre},
+        where=FdiSignal.origine == "depot",
+    ))
+
     # Trois populations à distinguer dans ce que la base porte et que le dépôt
     # ne décrit pas de la même façon :
     #
@@ -205,11 +232,13 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
         "secteurs": (await db.execute(select(FdiSecteur.code, FdiSecteur.origine))).all(),
         "sous_secteurs": (await db.execute(select(FdiSousSecteur.code, FdiSousSecteur.origine))).all(),
         "activites": (await db.execute(select(FdiActivite.code, FdiActivite.origine))).all(),
+        "signaux": (await db.execute(select(FdiSignal.code, FdiSignal.origine))).all(),
     }
     du_depot = {
         "secteurs": {s["code"] for s in tables["secteurs"]},
         "sous_secteurs": {s["code"] for s in tables["sous_secteurs"]},
         "activites": {a["code"] for a in tables["activites"]},
+        "signaux": {s["code"] for s in tables["signaux"]},
     }
     rapport["ajouts_admin"] = {
         f: sorted(c for c, o in rs if o == "admin" and c not in du_depot[f])

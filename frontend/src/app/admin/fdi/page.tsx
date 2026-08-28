@@ -36,10 +36,12 @@ type Activite = {
   id: number; code: string; libelle_en: string; libelle_fr: string; ordre: number;
   origine: Origine; modifie_le: string | null;
 };
+type Signal = Activite & { definition_en: string; definition_fr: string };
 type Classification = {
   secteurs: Secteur[];
   activites: Activite[];
-  totaux: { secteurs: number; sous_secteurs: number; activites: number;
+  signaux: Signal[];
+  totaux: { secteurs: number; sous_secteurs: number; activites: number; signaux: number;
             libelles_partages: number; lignes_admin: number };
 };
 
@@ -48,13 +50,15 @@ type Classification = {
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Ce que le formulaire édite : une paire de libellés, et l'endroit où l'écrire. */
+type Famille = "secteur" | "sous" | "activite" | "signal";
 type Edition =
-  | { mode: "creer"; famille: "secteur" | "activite" }
+  | { mode: "creer"; famille: "secteur" | "activite" | "signal" }
   | { mode: "creer"; famille: "sous"; secteur_id: number; secteur_nom: string }
-  | { mode: "modifier"; famille: "secteur" | "sous" | "activite"; id: number;
-      libelle_fr: string; libelle_en: string };
+  | { mode: "modifier"; famille: Famille; id: number; libelle_fr: string; libelle_en: string;
+      definition_fr?: string; definition_en?: string };
 
-const CHEMIN = { secteur: "secteurs", sous: "sous-secteurs", activite: "activites" } as const;
+const CHEMIN = { secteur: "secteurs", sous: "sous-secteurs", activite: "activites",
+                 signal: "signaux" } as const;
 
 function Pastille({ children, couleur = "var(--bleu)", titre }: {
   children: React.ReactNode; couleur?: string; titre?: string;
@@ -89,7 +93,7 @@ export default function AdminFdiClassification() {
   const [data, setData]             = useState<Classification | null>(null);
   const [erreur, setErreur]         = useState<string | null>(null);
   const [chargement, setChargement] = useState(true);
-  const [vue, setVue]               = useState<"secteurs" | "activites">("secteurs");
+  const [vue, setVue]               = useState<"secteurs" | "activites" | "signaux">("secteurs");
   const [recherche, setRecherche]   = useState("");
   const [ouverts, setOuverts]       = useState<Set<number>>(new Set());
 
@@ -97,6 +101,8 @@ export default function AdminFdiClassification() {
   const [edition, setEdition]   = useState<Edition | null>(null);
   const [champFr, setChampFr]   = useState("");
   const [champEn, setChampEn]   = useState("");
+  const [defFr, setDefFr]       = useState("");
+  const [defEn, setDefEn]       = useState("");
   const [envoi, setEnvoi]       = useState(false);
   const [erreurForm, setErreurForm] = useState<string | null>(null);
   const [succes, setSucces]     = useState<string | null>(null);
@@ -115,6 +121,8 @@ export default function AdminFdiClassification() {
       d.secteurs = [...d.secteurs].sort(parNom)
         .map(s => ({ ...s, sous_secteurs: [...s.sous_secteurs].sort(parNom) }));
       d.activites = [...d.activites].sort(parNom);
+      // Les signaux gardent l'ordre de la source : il va du plus concret au plus
+      // faible, gradation que l'alphabet détruirait.
       setData(d);
     } catch {
       setErreur(
@@ -126,12 +134,15 @@ export default function AdminFdiClassification() {
   useEffect(() => { charger(); }, [charger]);
 
   const ouvrirCreation = (e: Edition) => {
-    setEdition(e); setChampFr(""); setChampEn(""); setErreurForm(null);
+    setEdition(e); setChampFr(""); setChampEn(""); setDefFr(""); setDefEn(""); setErreurForm(null);
   };
-  const ouvrirModification = (famille: "secteur" | "sous" | "activite",
-                              l: { id: number; libelle_fr: string; libelle_en: string }) => {
+  const ouvrirModification = (famille: Famille,
+                              l: { id: number; libelle_fr: string; libelle_en: string;
+                                   definition_fr?: string; definition_en?: string }) => {
     setEdition({ mode: "modifier", famille, ...l });
-    setChampFr(l.libelle_fr); setChampEn(l.libelle_en); setErreurForm(null);
+    setChampFr(l.libelle_fr); setChampEn(l.libelle_en);
+    setDefFr(l.definition_fr ?? ""); setDefEn(l.definition_en ?? "");
+    setErreurForm(null);
   };
 
   const enregistrer = async () => {
@@ -143,6 +154,10 @@ export default function AdminFdiClassification() {
       const base = `${API_BASE}/fdi/${CHEMIN[edition.famille]}`;
       const corps: Record<string, unknown> = { libelle_fr: fr, libelle_en: en };
       if (edition.mode === "creer" && edition.famille === "sous") corps.secteur_id = edition.secteur_id;
+      if (edition.famille === "signal") {
+        corps.definition_fr = defFr.trim();
+        corps.definition_en = defEn.trim();
+      }
       const r = await fetch(edition.mode === "creer" ? base : `${base}/${edition.id}`, {
         method: edition.mode === "creer" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
@@ -183,6 +198,16 @@ export default function AdminFdiClassification() {
     return data.activites.filter(a => [a.libelle_fr, a.libelle_en].some(v => norm(v).includes(q)));
   }, [data, recherche]);
 
+  const signauxFiltres = useMemo(() => {
+    if (!data) return [];
+    const q = norm(recherche.trim());
+    if (!q) return data.signaux;
+    // La définition est cherchée elle aussi : on retrouve « capital-risque »
+    // sans savoir qu'il se cache derrière « New Funding ».
+    return data.signaux.filter(g =>
+      [g.libelle_fr, g.libelle_en, g.definition_fr, g.definition_en].some(v => norm(v).includes(q)));
+  }, [data, recherche]);
+
   const nbSousTrouves = secteursFiltres.reduce((n, s) => n + s.sous_secteurs.length, 0);
 
   // Une recherche déplie ce qu'elle trouve : sans cela, on verrait des secteurs
@@ -211,6 +236,13 @@ export default function AdminFdiClassification() {
         <Compteur n={t?.secteurs ?? 0} mot="secteur" />
         <Compteur n={t?.sous_secteurs ?? 0} mot="sous-secteur" couleur="var(--violet)" />
         <Compteur n={t?.activites ?? 0} mot="activité" couleur="var(--orange)" />
+        {/* « signal » fait « signaux » : Compteur, qui ajoute un « s », écrirait
+            « 6 signals ». */}
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--cyan)",
+          background: "color-mix(in srgb, var(--cyan) 7%, transparent)",
+          padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+          {(t?.signaux ?? 0)} signa{(t?.signaux ?? 0) > 1 ? "ux" : "l"}
+        </span>
         {/* Compteur n'accorde que son dernier mot (« ligne tenue icis ») : ce
             libellé-ci s'écrit donc à la main. */}
         {!!t?.lignes_admin && (
@@ -241,19 +273,20 @@ export default function AdminFdiClassification() {
           options={[
             { v: "secteurs" as const,  l: "Secteurs & sous-secteurs", n: t?.secteurs },
             { v: "activites" as const, l: "Activités économiques",    n: t?.activites },
+            { v: "signaux" as const,   l: "Signaux d'investisseur",   n: t?.signaux },
           ]}
           value={vue} onChange={setVue}
         />
         <ChampRecherche
           value={recherche} onChange={setRecherche}
-          placeholder="Rechercher en français ou en anglais…"
+          placeholder={vue === "signaux" ? "Rechercher un signal, jusque dans sa définition…" : "Rechercher en français ou en anglais…"}
           style={{ flex: 1, minWidth: 240 }}
         />
-        <button onClick={() => ouvrirCreation(vue === "secteurs"
-          ? { mode: "creer", famille: "secteur" }
-          : { mode: "creer", famille: "activite" })}
+        <button onClick={() => ouvrirCreation({ mode: "creer",
+          famille: vue === "secteurs" ? "secteur" : vue === "activites" ? "activite" : "signal" })}
           style={{ ...btnPrincipal(true), display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <Plus size={13} /> {vue === "secteurs" ? "Nouveau secteur" : "Nouvelle activité"}
+          <Plus size={13} />
+          {vue === "secteurs" ? "Nouveau secteur" : vue === "activites" ? "Nouvelle activité" : "Nouveau signal"}
         </button>
       </div>
 
@@ -360,6 +393,54 @@ export default function AdminFdiClassification() {
             </div>
           )}
         </Carte>
+      ) : vue === "signaux" ? (
+        <Carte
+          titre="Signaux d'investisseur"
+          aide={
+            <>
+              La nomenclature la plus prospective de fDi : elle ne décrit pas un projet annoncé
+              mais une entreprise qui <em>pourrait</em>{" "}en annoncer un — un projet à l&apos;étude,
+              une levée de fonds, une nomination régionale. C&apos;est la matière première du
+              démarchage. L&apos;ordre est celui de la source, du signal le plus concret au plus
+              faible ; il n&apos;est pas alphabétique, et c&apos;est voulu.
+            </>
+          }
+        >
+          {signauxFiltres.length === 0 ? (
+            <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
+              Aucun signal ne correspond à « {recherche} ».
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {signauxFiltres.map((g, i) => (
+                <div key={g.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12,
+                  padding: "13px 12px 13px 16px", display: "flex", alignItems: "flex-start",
+                  gap: 12, minWidth: 0 }}>
+                  {/* Le rang rappelle la gradation : 1 = intention la plus avancée. */}
+                  <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 999,
+                    background: "var(--bleu-voile)", color: "var(--bleu)", fontSize: 10.5,
+                    fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {i + 1}
+                  </span>
+                  <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0, flex: 1 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>{g.libelle_fr}</span>
+                    <span style={{ fontSize: 11.5, color: "var(--gris-fort)" }}>{g.libelle_en}</span>
+                    {g.definition_fr && (
+                      <span style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.65, marginTop: 4 }}>
+                        {g.definition_fr}
+                      </span>
+                    )}
+                  </span>
+                  {g.origine === "admin" && <Pastille couleur="var(--vert)" titre="Créé ou corrigé ici.">tenu ici</Pastille>}
+                  <BoutonIcone titre={`Corriger « ${g.libelle_fr} »`}
+                    onClick={() => ouvrirModification("signal", g)}>
+                    <Pencil size={12} />
+                  </BoutonIcone>
+                </div>
+              ))}
+            </div>
+          )}
+        </Carte>
       ) : (
         <Carte
           titre="Activités économiques"
@@ -406,15 +487,17 @@ export default function AdminFdiClassification() {
             backdropFilter: "blur(6px)", zIndex: 700, display: "flex", alignItems: "center",
             justifyContent: "center", padding: 32 }}>
           <div onClick={e => e.stopPropagation()} role="dialog" aria-modal
-            style={{ background: "var(--carte)", borderRadius: 18, width: "100%", maxWidth: 480,
+            style={{ background: "var(--carte)", borderRadius: 18, width: "100%", maxWidth: 520,
+              maxHeight: "90vh", display: "flex", flexDirection: "column",
               border: "1px solid var(--bordure)", boxShadow: "var(--ombre-2)", overflow: "hidden" }}>
-            <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid var(--bordure)",
+            <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid var(--bordure)", flexShrink: 0,
               display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <div style={{ minWidth: 0 }}>
                 <h2 style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--encre)", margin: 0 }}>
                   {edition.mode === "creer"
                     ? edition.famille === "secteur" ? "Nouveau secteur"
-                      : edition.famille === "sous" ? "Nouveau sous-secteur" : "Nouvelle activité"
+                      : edition.famille === "sous" ? "Nouveau sous-secteur"
+                      : edition.famille === "signal" ? "Nouveau signal" : "Nouvelle activité"
                     : "Corriger les libellés"}
                 </h2>
                 {edition.mode === "creer" && edition.famille === "sous" && (
@@ -433,7 +516,8 @@ export default function AdminFdiClassification() {
               </BoutonIcone>
             </div>
 
-            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14,
+              overflowY: "auto", flex: 1 }}>
               <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em",
                   textTransform: "uppercase", color: "var(--gris)" }}>Libellé français</span>
@@ -448,10 +532,29 @@ export default function AdminFdiClassification() {
                   rattachera les projets à l&apos;import.
                 </span>
               </label>
+              {edition.famille === "signal" && (
+                <>
+                  {/* La définition n'est pas un commentaire : c'est elle qui dit
+                      ce que le signal recouvre. « New Personnel » sans sa
+                      définition se lirait comme un simple recrutement. */}
+                  <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em",
+                      textTransform: "uppercase", color: "var(--gris)" }}>Définition française</span>
+                    <textarea value={defFr} onChange={e => setDefFr(e.target.value)} rows={4}
+                      style={{ ...IS, resize: "vertical", lineHeight: 1.6 }} />
+                  </label>
+                  <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em",
+                      textTransform: "uppercase", color: "var(--gris)" }}>Définition anglaise</span>
+                    <textarea value={defEn} onChange={e => setDefEn(e.target.value)} rows={4}
+                      style={{ ...IS, resize: "vertical", lineHeight: 1.6 }} />
+                  </label>
+                </>
+              )}
               {erreurForm && <Avis ton="erreur">{erreurForm}</Avis>}
             </div>
 
-            <div style={{ padding: "14px 24px", borderTop: "1px solid var(--bordure)",
+            <div style={{ padding: "14px 24px", borderTop: "1px solid var(--bordure)", flexShrink: 0,
               background: "var(--carte-douce)", display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button onClick={() => setEdition(null)} disabled={envoi} style={btnSecondaire}>Annuler</button>
               <button onClick={enregistrer} disabled={envoi}

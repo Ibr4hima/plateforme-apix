@@ -52,6 +52,14 @@ async def classification(db: AsyncSession = Depends(get_db)):
         "FROM fdi_activites ORDER BY libelle_fr"
     ))).fetchall()
 
+    # Les signaux gardent l'ordre de la source : il va du plus concret (« projet
+    # à l'étude », pays souvent connu) au plus faible (« nouveau contrat à
+    # l'étranger »). Trier alphabétiquement casserait cette gradation.
+    signaux = (await db.execute(text(
+        "SELECT id, code, libelle_en, libelle_fr, definition_en, definition_fr, "
+        "       ordre, origine, modifie_le FROM fdi_signaux ORDER BY ordre"
+    ))).fetchall()
+
     # Un libellé qui sert à plusieurs secteurs — « Other » en sert 24 — n'est
     # pas une anomalie mais une propriété de la nomenclature. Le compter ici
     # évite que chaque écran le recalcule, et permet de le signaler à l'œil.
@@ -89,12 +97,20 @@ async def classification(db: AsyncSession = Depends(get_db)):
              "modifie_le": a.modifie_le.isoformat() if a.modifie_le else None}
             for a in activites
         ],
+        "signaux": [
+            {"id": g.id, "code": g.code, "libelle_en": g.libelle_en, "libelle_fr": g.libelle_fr,
+             "definition_en": g.definition_en, "definition_fr": g.definition_fr,
+             "ordre": g.ordre, "origine": g.origine,
+             "modifie_le": g.modifie_le.isoformat() if g.modifie_le else None}
+            for g in signaux
+        ],
         "totaux": {
             "secteurs": len(secteurs),
             "sous_secteurs": len(sous),
             "activites": len(activites),
+            "signaux": len(signaux),
             "libelles_partages": sum(1 for n in partages.values() if n > 1),
-            "lignes_admin": sum(1 for r in list(secteurs) + list(sous) + list(activites)
+            "lignes_admin": sum(1 for r in list(secteurs) + list(sous) + list(activites) + list(signaux)
                                 if r.origine == "admin"),
         },
     }
@@ -110,10 +126,22 @@ class SousSecteurIn(LibellesIn):
     secteur_id: int
 
 
+class SignalIn(LibellesIn):
+    """Un signal porte en plus sa définition, dans les deux langues.
+
+    Elle n'est pas décorative : « New Personnel » désigne une nomination
+    régionale qui laisse présager une implantation. Sans la définition, le
+    signal se lit de travers.
+    """
+    definition_fr: str = ""
+    definition_en: str = ""
+
+
 TABLES = {
     "secteur":  "fdi_secteurs",
     "sous":     "fdi_sous_secteurs",
     "activite": "fdi_activites",
+    "signal":   "fdi_signaux",
 }
 
 
@@ -293,3 +321,47 @@ async def modifier_activite(activite_id: int, body: LibellesIn, db: AsyncSession
         raise HTTPException(404, "Activité introuvable.")
     await db.commit()
     return {"id": activite_id}
+
+
+@router.post("/signaux", status_code=201)
+async def creer_signal(body: SignalIn, db: AsyncSession = Depends(get_db),
+                       user: dict = Depends(require_admin)):
+    fr, en = _propre(body.libelle_fr), _propre(body.libelle_en)
+    await _refuser_doublon_en(db, "fdi_signaux", en, None)
+    cle = cle_de(en)
+    if (await db.execute(text("SELECT 1 FROM fdi_signaux WHERE cle_appariement = :c"),
+                         {"c": cle})).first():
+        raise HTTPException(409, "Un signal équivalent existe déjà.")
+    code = await _code_libre(db, "fdi_signaux", slug(en))
+    ordre = ((await db.execute(text("SELECT COALESCE(MAX(ordre), 0) FROM fdi_signaux"))).scalar() or 0) + 1
+    r = (await db.execute(text(
+        "INSERT INTO fdi_signaux (code, libelle_en, libelle_fr, definition_en, definition_fr, "
+        "  cle_appariement, ordre, origine, modifie_le, modifie_par) "
+        "VALUES (:c, :en, :fr, :den, :dfr, :k, :o, 'admin', :d, :u) RETURNING id"
+    ), {"c": code, "en": en, "fr": fr, "den": body.definition_en.strip(),
+        "dfr": body.definition_fr.strip(), "k": cle, "o": ordre,
+        "d": datetime.now(timezone.utc), "u": _signature(user)})).first()
+    await db.commit()
+    return {"id": r.id, "code": code}
+
+
+@router.patch("/signaux/{signal_id}")
+async def modifier_signal(signal_id: int, body: SignalIn, db: AsyncSession = Depends(get_db),
+                          user: dict = Depends(require_admin)):
+    fr, en = _propre(body.libelle_fr), _propre(body.libelle_en)
+    await _refuser_doublon_en(db, "fdi_signaux", en, signal_id)
+    cle = cle_de(en)
+    if (await db.execute(text(
+        "SELECT 1 FROM fdi_signaux WHERE cle_appariement = :c AND id <> :i"
+    ), {"c": cle, "i": signal_id})).first():
+        raise HTTPException(409, "Un signal équivalent existe déjà.")
+    r = (await db.execute(text(
+        "UPDATE fdi_signaux SET libelle_en = :en, libelle_fr = :fr, definition_en = :den, "
+        "  definition_fr = :dfr, cle_appariement = :k, origine = 'admin', modifie_le = :d, "
+        "  modifie_par = :u WHERE id = :i RETURNING id"
+    ), {"en": en, "fr": fr, "den": body.definition_en.strip(), "dfr": body.definition_fr.strip(),
+        "k": cle, "d": datetime.now(timezone.utc), "u": _signature(user), "i": signal_id})).first()
+    if not r:
+        raise HTTPException(404, "Signal introuvable.")
+    await db.commit()
+    return {"id": signal_id}

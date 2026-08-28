@@ -70,3 +70,24 @@ class FdiActivite(Base):
     origine         = Column(Text, nullable=False, server_default="depot")
     modifie_le      = Column(TIMESTAMP(timezone=True))
     modifie_par     = Column(Text)
+
+
+class FdiSignal(Base):
+    """Signaux d'investisseur : où en est l'intention, pas ce qui est annoncé.
+
+    La nomenclature la plus prospective de fDi — elle ne décrit pas un projet
+    mais une entreprise qui pourrait en annoncer un. Seule des quatre à porter
+    une définition : « New Personnel » ne se devine pas.
+    """
+    __tablename__ = "fdi_signaux"
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    code            = Column(Text, nullable=False, unique=True)
+    libelle_en      = Column(Text, nullable=False, unique=True)
+    libelle_fr      = Column(Text, nullable=False)
+    definition_en   = Column(Text, nullable=False, server_default="")
+    definition_fr   = Column(Text, nullable=False, server_default="")
+    cle_appariement = Column(Text, nullable=False, unique=True)
+    ordre           = Column(SmallInteger, nullable=False)
+    origine         = Column(Text, nullable=False, server_default="depot")
+    modifie_le      = Column(TIMESTAMP(timezone=True))
+    modifie_par     = Column(Text)
