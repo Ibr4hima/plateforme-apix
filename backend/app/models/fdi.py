@@ -91,3 +91,22 @@ class FdiSignal(Base):
     origine         = Column(Text, nullable=False, server_default="depot")
     modifie_le      = Column(TIMESTAMP(timezone=True))
     modifie_par     = Column(Text)
+
+
+class FdiTypeProjet(Base):
+    """Ce que le projet fait à l'existant : implantation neuve, extension, ajout.
+
+    Décisive pour lire les chiffres : une extension prolonge un investisseur
+    déjà présent — du suivi — quand une implantation nouvelle est une conquête.
+    Les additionner sans les distinguer masque ce que l'agence mesure.
+    """
+    __tablename__ = "fdi_types_projet"
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    code            = Column(Text, nullable=False, unique=True)
+    libelle_en      = Column(Text, nullable=False, unique=True)
+    libelle_fr      = Column(Text, nullable=False)
+    cle_appariement = Column(Text, nullable=False, unique=True)
+    ordre           = Column(SmallInteger, nullable=False)
+    origine         = Column(Text, nullable=False, server_default="depot")
+    modifie_le      = Column(TIMESTAMP(timezone=True))
+    modifie_par     = Column(Text)

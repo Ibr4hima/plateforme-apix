@@ -2,9 +2,10 @@
 
 Les nomenclatures de fDi Markets (Financial Times), en anglais et en français :
 **37 secteurs**, **270 sous-secteurs**, **17 activités économiques**
-(*business activities*) et **5 signaux d'investisseur** (*investor signals*).
+(*business activities*), **5 signaux d'investisseur** (*investor signals*) et
+**3 types de projet**.
 
-## Ce que sont ces quatre nomenclatures
+## Ce que sont ces cinq nomenclatures
 
 **Secteurs et sous-secteurs** décrivent *ce que produit* l'entreprise —
 « Food & Beverages » → « Dairy products ». Deux niveaux, pas trois.
@@ -28,6 +29,18 @@ responsable régional qui laisse présager une implantation — sans sa définit
 on y lirait un simple recrutement. Leur **ordre** est celui de la source, du
 signal le plus concret au plus faible ; il n'est pas alphabétique, et un test
 le gèle.
+
+**Les types de projet** — *New*, *Expansion*, *Co-location* — disent ce que le
+projet fait à l'existant. La distinction est décisive pour lire les chiffres :
+une **extension** prolonge un investisseur déjà présent, c'est du suivi ; une
+**implantation nouvelle** est une conquête. Les additionner sans les distinguer
+masquerait précisément ce qu'une agence de promotion cherche à mesurer.
+
+C'est la seule nomenclature **sans classeur source** : ses trois postes sont
+saisis à la main dans `fdi_types_projet.csv`, versionné comme les CSV dérivés.
+Le générateur ne le produit pas et n'y touche pas ; deux tests tiennent lieu de
+garde-fou à sa place, en vérifiant que le code et la clé d'appariement dérivent
+bien du libellé anglais.
 
 ## Le piège de cette nomenclature
 
@@ -71,7 +84,8 @@ constatée plutôt qu'une surprise à l'import.
 |---|---|
 | `source/*.xlsx` | Les quatre classeurs d'origine, versionnés pour que la dérivation soit rejouable. Les signaux viennent de deux classeurs parallèles — un par langue — appariés par leur numéro d'ordre, seule clé commune |
 | `generer_csv.py` | Dérive les CSV depuis les classeurs, avec sept contrôles bloquants |
-| `fdi_secteurs.csv`, `fdi_sous_secteurs.csv`, `fdi_business_activites.csv`, `fdi_signaux.csv` | **Ce qui fait foi pour l'import** |
+| `fdi_secteurs.csv`, `fdi_sous_secteurs.csv`, `fdi_business_activites.csv`, `fdi_signaux.csv` | **Ce qui fait foi pour l'import**, dérivé des classeurs |
+| `fdi_types_projet.csv` | Fait foi aussi, mais **saisi à la main** : pas de classeur source |
 | `importer.py` | Écrit en base, en upsert |
 
 Ce sont les **CSV** qui font foi, pas les classeurs : ils se relisent dans une
@@ -135,6 +149,7 @@ nomenclature sans que nos URL ni nos jointures bougent.
   `aerospace__other`, `metals__support_activities_for_mining`
 - activité : slug du libellé anglais — `research_and_development`
 - signal : slug du libellé anglais — `new_investment_strategy`
+- type de projet : slug du libellé anglais — `co_location`
 
 Le générateur refuse d'écrire si la troncature à 40 caractères crée une
 collision dans un secteur.

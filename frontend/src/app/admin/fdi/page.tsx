@@ -41,8 +41,9 @@ type Classification = {
   secteurs: Secteur[];
   activites: Activite[];
   signaux: Signal[];
+  types_projet: Activite[];
   totaux: { secteurs: number; sous_secteurs: number; activites: number; signaux: number;
-            libelles_partages: number; lignes_admin: number };
+            types_projet: number; libelles_partages: number; lignes_admin: number };
 };
 
 /** Insensible à la casse ET aux accents : on cherche « energies » et on trouve
@@ -50,15 +51,15 @@ type Classification = {
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Ce que le formulaire édite : une paire de libellés, et l'endroit où l'écrire. */
-type Famille = "secteur" | "sous" | "activite" | "signal";
+type Famille = "secteur" | "sous" | "activite" | "signal" | "type";
 type Edition =
-  | { mode: "creer"; famille: "secteur" | "activite" | "signal" }
+  | { mode: "creer"; famille: "secteur" | "activite" | "signal" | "type" }
   | { mode: "creer"; famille: "sous"; secteur_id: number; secteur_nom: string }
   | { mode: "modifier"; famille: Famille; id: number; libelle_fr: string; libelle_en: string;
       definition_fr?: string; definition_en?: string };
 
 const CHEMIN = { secteur: "secteurs", sous: "sous-secteurs", activite: "activites",
-                 signal: "signaux" } as const;
+                 signal: "signaux", type: "types-projet" } as const;
 
 function Pastille({ children, couleur = "var(--bleu)", titre }: {
   children: React.ReactNode; couleur?: string; titre?: string;
@@ -89,11 +90,38 @@ function BoutonIcone({ onClick, titre, children }: {
   );
 }
 
+/** Une liste plate — activités, types de projet : deux libellés, un bouton.
+    Le même dessin deux fois se serait décalé au premier ajustement. */
+function ListePlate({ items, vide, onCorriger }: {
+  items: Activite[]; vide: string; onCorriger: (a: Activite) => void;
+}) {
+  if (items.length === 0) {
+    return <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>{vide}</p>;
+  }
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 8 }}>
+      {items.map(a => (
+        <div key={a.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12,
+          padding: "11px 10px 11px 14px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>{a.libelle_fr}</span>
+            <span style={{ fontSize: 11.5, color: "var(--gris-fort)" }}>{a.libelle_en}</span>
+          </span>
+          {a.origine === "admin" && <Pastille couleur="var(--vert)" titre="Créé ou corrigé ici.">tenu ici</Pastille>}
+          <BoutonIcone titre={`Corriger « ${a.libelle_fr} »`} onClick={() => onCorriger(a)}>
+            <Pencil size={12} />
+          </BoutonIcone>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function AdminFdiClassification() {
   const [data, setData]             = useState<Classification | null>(null);
   const [erreur, setErreur]         = useState<string | null>(null);
   const [chargement, setChargement] = useState(true);
-  const [vue, setVue]               = useState<"secteurs" | "activites" | "signaux">("secteurs");
+  const [vue, setVue]               = useState<"secteurs" | "activites" | "signaux" | "types">("secteurs");
   const [recherche, setRecherche]   = useState("");
   const [ouverts, setOuverts]       = useState<Set<number>>(new Set());
 
@@ -208,6 +236,13 @@ export default function AdminFdiClassification() {
       [g.libelle_fr, g.libelle_en, g.definition_fr, g.definition_en].some(v => norm(v).includes(q)));
   }, [data, recherche]);
 
+  const typesFiltres = useMemo(() => {
+    if (!data) return [];
+    const q = norm(recherche.trim());
+    if (!q) return data.types_projet;
+    return data.types_projet.filter(t => [t.libelle_fr, t.libelle_en].some(v => norm(v).includes(q)));
+  }, [data, recherche]);
+
   const nbSousTrouves = secteursFiltres.reduce((n, s) => n + s.sous_secteurs.length, 0);
 
   // Une recherche déplie ce qu'elle trouve : sans cela, on verrait des secteurs
@@ -243,6 +278,12 @@ export default function AdminFdiClassification() {
           padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
           {(t?.signaux ?? 0)} signa{(t?.signaux ?? 0) > 1 ? "ux" : "l"}
         </span>
+        {/* « type de projet » : c'est « type » qui s'accorde, pas « projet ». */}
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--violet)",
+          background: "color-mix(in srgb, var(--violet) 7%, transparent)",
+          padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>
+          {(t?.types_projet ?? 0)} type{(t?.types_projet ?? 0) > 1 ? "s" : ""} de projet
+        </span>
         {/* Compteur n'accorde que son dernier mot (« ligne tenue icis ») : ce
             libellé-ci s'écrit donc à la main. */}
         {!!t?.lignes_admin && (
@@ -274,20 +315,28 @@ export default function AdminFdiClassification() {
             { v: "secteurs" as const,  l: "Secteurs & sous-secteurs", n: t?.secteurs },
             { v: "activites" as const, l: "Activités économiques",    n: t?.activites },
             { v: "signaux" as const,   l: "Signaux d'investisseur",   n: t?.signaux },
+            { v: "types" as const,     l: "Types de projet",          n: t?.types_projet },
           ]}
           value={vue} onChange={setVue}
         />
+        {/* Recherche et bouton restent solidaires : à quatre onglets, la barre
+            de segments occupe presque toute la ligne, et sans ce groupe le
+            bouton se retrouvait seul sur la ligne suivante. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 420px", minWidth: 0 }}>
         <ChampRecherche
           value={recherche} onChange={setRecherche}
           placeholder={vue === "signaux" ? "Rechercher un signal, jusque dans sa définition…" : "Rechercher en français ou en anglais…"}
-          style={{ flex: 1, minWidth: 240 }}
+          style={{ flex: 1, minWidth: 180 }}
         />
         <button onClick={() => ouvrirCreation({ mode: "creer",
-          famille: vue === "secteurs" ? "secteur" : vue === "activites" ? "activite" : "signal" })}
+          famille: vue === "secteurs" ? "secteur" : vue === "activites" ? "activite"
+                 : vue === "signaux" ? "signal" : "type" })}
           style={{ ...btnPrincipal(true), display: "inline-flex", alignItems: "center", gap: 6 }}>
           <Plus size={13} />
-          {vue === "secteurs" ? "Nouveau secteur" : vue === "activites" ? "Nouvelle activité" : "Nouveau signal"}
+          {vue === "secteurs" ? "Nouveau secteur" : vue === "activites" ? "Nouvelle activité"
+            : vue === "signaux" ? "Nouveau signal" : "Nouveau type"}
         </button>
+        </div>
       </div>
 
       {chargement ? (
@@ -441,7 +490,7 @@ export default function AdminFdiClassification() {
             </div>
           )}
         </Carte>
-      ) : (
+      ) : vue === "activites" ? (
         <Carte
           titre="Activités économiques"
           aide={
@@ -455,28 +504,26 @@ export default function AdminFdiClassification() {
             </>
           }
         >
-          {activitesFiltrees.length === 0 ? (
-            <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
-              Aucune activité ne correspond à « {recherche} ».
-            </p>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 8 }}>
-              {activitesFiltrees.map(a => (
-                <div key={a.id} style={{ border: "1px solid var(--bordure)", borderRadius: 12,
-                  padding: "11px 10px 11px 14px", display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                  <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--encre)" }}>{a.libelle_fr}</span>
-                    <span style={{ fontSize: 11.5, color: "var(--gris-fort)" }}>{a.libelle_en}</span>
-                  </span>
-                  {a.origine === "admin" && <Pastille couleur="var(--vert)" titre="Créée ou corrigée ici.">tenu ici</Pastille>}
-                  <BoutonIcone titre={`Corriger « ${a.libelle_fr} »`}
-                    onClick={() => ouvrirModification("activite", a)}>
-                    <Pencil size={12} />
-                  </BoutonIcone>
-                </div>
-              ))}
-            </div>
-          )}
+          <ListePlate items={activitesFiltrees}
+            vide={`Aucune activité ne correspond à « ${recherche} ».`}
+            onCorriger={a => ouvrirModification("activite", a)} />
+        </Carte>
+      ) : (
+        <Carte
+          titre="Types de projet"
+          aide={
+            <>
+              Ce que le projet fait à l&apos;existant. La distinction est décisive pour lire les
+              chiffres : une <strong>extension</strong>{" "}prolonge un investisseur déjà présent —
+              c&apos;est du suivi — quand une <strong>implantation nouvelle</strong>{" "}est une
+              conquête. Les additionner sans les distinguer masquerait précisément ce que
+              l&apos;agence cherche à mesurer.
+            </>
+          }
+        >
+          <ListePlate items={typesFiltres}
+            vide={`Aucun type de projet ne correspond à « ${recherche} ».`}
+            onCorriger={t => ouvrirModification("type", t)} />
         </Carte>
       )}
 
@@ -497,7 +544,8 @@ export default function AdminFdiClassification() {
                   {edition.mode === "creer"
                     ? edition.famille === "secteur" ? "Nouveau secteur"
                       : edition.famille === "sous" ? "Nouveau sous-secteur"
-                      : edition.famille === "signal" ? "Nouveau signal" : "Nouvelle activité"
+                      : edition.famille === "signal" ? "Nouveau signal"
+                      : edition.famille === "type" ? "Nouveau type de projet" : "Nouvelle activité"
                     : "Corriger les libellés"}
                 </h2>
                 {edition.mode === "creer" && edition.famille === "sous" && (

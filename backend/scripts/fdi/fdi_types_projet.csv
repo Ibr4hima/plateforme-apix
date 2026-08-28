@@ -1,0 +1,4 @@
+code,libelle_en,libelle_fr,cle_appariement,ordre
+new,New,Nouvelle implantation,new,1
+expansion,Expansion,Extension,expansion,2
+co_location,Co-location,Co-implantation,co location,3

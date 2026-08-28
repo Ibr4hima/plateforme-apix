@@ -60,6 +60,13 @@ async def classification(db: AsyncSession = Depends(get_db)):
         "       ordre, origine, modifie_le FROM fdi_signaux ORDER BY ordre"
     ))).fetchall()
 
+    # Les types de projet gardent eux aussi l'ordre de la source : implantation
+    # neuve, extension, co-implantation — du plus structurant au moins.
+    types = (await db.execute(text(
+        "SELECT id, code, libelle_en, libelle_fr, ordre, origine, modifie_le "
+        "FROM fdi_types_projet ORDER BY ordre"
+    ))).fetchall()
+
     # Un libellé qui sert à plusieurs secteurs — « Other » en sert 24 — n'est
     # pas une anomalie mais une propriété de la nomenclature. Le compter ici
     # évite que chaque écran le recalcule, et permet de le signaler à l'œil.
@@ -104,14 +111,21 @@ async def classification(db: AsyncSession = Depends(get_db)):
              "modifie_le": g.modifie_le.isoformat() if g.modifie_le else None}
             for g in signaux
         ],
+        "types_projet": [
+            {"id": p.id, "code": p.code, "libelle_en": p.libelle_en, "libelle_fr": p.libelle_fr,
+             "ordre": p.ordre, "origine": p.origine,
+             "modifie_le": p.modifie_le.isoformat() if p.modifie_le else None}
+            for p in types
+        ],
         "totaux": {
             "secteurs": len(secteurs),
             "sous_secteurs": len(sous),
             "activites": len(activites),
             "signaux": len(signaux),
+            "types_projet": len(types),
             "libelles_partages": sum(1 for n in partages.values() if n > 1),
-            "lignes_admin": sum(1 for r in list(secteurs) + list(sous) + list(activites) + list(signaux)
-                                if r.origine == "admin"),
+            "lignes_admin": sum(1 for r in list(secteurs) + list(sous) + list(activites)
+                                + list(signaux) + list(types) if r.origine == "admin"),
         },
     }
 
@@ -142,6 +156,7 @@ TABLES = {
     "sous":     "fdi_sous_secteurs",
     "activite": "fdi_activites",
     "signal":   "fdi_signaux",
+    "type":     "fdi_types_projet",
 }
 
 
@@ -365,3 +380,45 @@ async def modifier_signal(signal_id: int, body: SignalIn, db: AsyncSession = Dep
         raise HTTPException(404, "Signal introuvable.")
     await db.commit()
     return {"id": signal_id}
+
+
+@router.post("/types-projet", status_code=201)
+async def creer_type_projet(body: LibellesIn, db: AsyncSession = Depends(get_db),
+                            user: dict = Depends(require_admin)):
+    fr, en = _propre(body.libelle_fr), _propre(body.libelle_en)
+    await _refuser_doublon_en(db, "fdi_types_projet", en, None)
+    cle = cle_de(en)
+    if (await db.execute(text("SELECT 1 FROM fdi_types_projet WHERE cle_appariement = :c"),
+                         {"c": cle})).first():
+        raise HTTPException(409, "Un type de projet équivalent existe déjà.")
+    code = await _code_libre(db, "fdi_types_projet", slug(en))
+    ordre = ((await db.execute(text("SELECT COALESCE(MAX(ordre), 0) FROM fdi_types_projet"))).scalar() or 0) + 1
+    r = (await db.execute(text(
+        "INSERT INTO fdi_types_projet (code, libelle_en, libelle_fr, cle_appariement, ordre, "
+        "  origine, modifie_le, modifie_par) "
+        "VALUES (:c, :en, :fr, :k, :o, 'admin', :d, :u) RETURNING id"
+    ), {"c": code, "en": en, "fr": fr, "k": cle, "o": ordre,
+        "d": datetime.now(timezone.utc), "u": _signature(user)})).first()
+    await db.commit()
+    return {"id": r.id, "code": code}
+
+
+@router.patch("/types-projet/{type_id}")
+async def modifier_type_projet(type_id: int, body: LibellesIn, db: AsyncSession = Depends(get_db),
+                               user: dict = Depends(require_admin)):
+    fr, en = _propre(body.libelle_fr), _propre(body.libelle_en)
+    await _refuser_doublon_en(db, "fdi_types_projet", en, type_id)
+    cle = cle_de(en)
+    if (await db.execute(text(
+        "SELECT 1 FROM fdi_types_projet WHERE cle_appariement = :c AND id <> :i"
+    ), {"c": cle, "i": type_id})).first():
+        raise HTTPException(409, "Un type de projet équivalent existe déjà.")
+    r = (await db.execute(text(
+        "UPDATE fdi_types_projet SET libelle_en = :en, libelle_fr = :fr, cle_appariement = :k, "
+        "  origine = 'admin', modifie_le = :d, modifie_par = :u WHERE id = :i RETURNING id"
+    ), {"en": en, "fr": fr, "k": cle, "d": datetime.now(timezone.utc),
+        "u": _signature(user), "i": type_id})).first()
+    if not r:
+        raise HTTPException(404, "Type de projet introuvable.")
+    await db.commit()
+    return {"id": type_id}

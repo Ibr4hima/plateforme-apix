@@ -31,6 +31,7 @@ def test_effectifs_de_la_nomenclature(tables):
     assert rapport["sous_secteurs"] == 270
     assert rapport["activites"] == 17
     assert rapport["signaux"] == 5
+    assert rapport["types_projet"] == 3
 
 
 def test_chaque_secteur_a_au_moins_un_sous_secteur(tables):
@@ -104,7 +105,8 @@ def test_les_libelles_sont_propres(tables):
 def test_la_cle_dapariement_est_normalisee(tables):
     """Minuscules, sans accent, sans ponctuation : la forme qui absorbe les
     écarts de casse d'un export à l'autre."""
-    for l in tables["sous_secteurs"] + tables["activites"] + tables["signaux"]:
+    for l in (tables["sous_secteurs"] + tables["activites"] + tables["signaux"]
+              + tables["types_projet"]):
         cle = l["cle_appariement"]
         assert cle == cle.lower()
         assert re.fullmatch(r"[a-z0-9 ]+", cle), f"clé non normalisée : « {cle} »"
@@ -206,3 +208,23 @@ def test_verifier_refuse_un_signal_sans_definition(tables):
     corrompu["signaux"][0]["definition_fr"] = "   "
     with pytest.raises(ClassificationInvalide, match="sans définition"):
         verifier(corrompu)
+
+
+# ── Types de projet ───────────────────────────────────────────────────────────
+# Seule nomenclature sans classeur source : le CSV est saisi à la main. Ces
+# tests tiennent donc lieu de garde-fou à la place du générateur.
+
+def test_les_trois_types_de_projet_sont_ceux_de_fdi(tables):
+    codes = [t["code"] for t in sorted(tables["types_projet"], key=lambda x: x["ordre"])]
+    assert codes == ["new", "expansion", "co_location"]
+
+
+def test_les_types_de_projet_derivent_comme_les_autres(tables):
+    """Le CSV est écrit à la main : rien ne garantit ses dérivations, sinon ceci.
+
+    Un code ou une clé saisis de travers ne se verraient qu'au moment de
+    rattacher un projet — bien trop tard.
+    """
+    for t in tables["types_projet"]:
+        assert t["code"] == slug(t["libelle_en"]), t
+        assert t["cle_appariement"] == cle_de(t["libelle_en"]), t

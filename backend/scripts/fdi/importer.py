@@ -31,6 +31,7 @@ async def main() -> int:
     print(f"  sous-secteurs           {rapport['sous_secteurs']:>4}")
     print(f"  activités économiques   {rapport['activites']:>4}")
     print(f"  signaux d'investisseur  {rapport['signaux']:>4}")
+    print(f"  types de projet         {rapport['types_projet']:>4}")
     print(f"  → {rapport['libelles_partages']} libellés de sous-secteur partagés par "
           f"plusieurs secteurs : l'appariement exige toujours le secteur.")
 
