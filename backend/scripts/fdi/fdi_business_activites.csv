@@ -1,0 +1,18 @@
+code,libelle_en,libelle_fr,cle_appariement,ordre
+business_services,Business Services,Services aux entreprises,business services,1
+construction,Construction,Construction,construction,2
+customer_contact_centre,Customer Contact Centre,Centre de contact client,customer contact centre,3
+education_and_training,Education & Training,Éducation et formation,education and training,4
+electricity,Electricity,Électricité,electricity,5
+extraction,Extraction,Extraction,extraction,6
+headquarters,Headquarters,Siège social,headquarters,7
+ict_and_internet_infrastructure,ICT & Internet Infrastructure,TIC et infrastructures internet,ict and internet infrastructure,8
+logistics_distribution_and_transportation,"Logistics, Distribution & Transportation","Logistique, distribution et transport",logistics distribution and transportation,9
+maintenance_and_servicing,Maintenance & Servicing,Maintenance et entretien,maintenance and servicing,10
+manufacturing,Manufacturing,Fabrication,manufacturing,11
+recycling,Recycling,Recyclage,recycling,12
+research_and_development,Research & Development,Recherche et développement,research and development,13
+retail,Retail,Commerce de détail,retail,14
+sales_marketing_and_support,"Sales, Marketing & Support","Ventes, marketing et support",sales marketing and support,15
+shared_services_centre,Shared Services Centre,Centre de services partagés,shared services centre,16
+technical_support_centre,Technical Support Centre,Centre de support technique,technical support centre,17

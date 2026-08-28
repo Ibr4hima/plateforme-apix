@@ -1,0 +1,38 @@
+code,libelle_en,libelle_fr,ordre
+aerospace,Aerospace,Aéronautique,1
+automotive_components,Automotive components,Composants automobiles,2
+automotive_oem,Automotive OEM,Constructeurs automobiles,3
+biotechnology,Biotechnology,Biotechnologies,4
+building_materials,Building materials,Matériaux de construction,5
+business_machines_and_equipment,Business machines & equipment,Machines et équipements de bureau,6
+business_services,Business services,Services aux entreprises,7
+ceramics_and_glass,Ceramics & glass,Céramique et verre,8
+chemicals,Chemicals,Produits chimiques,9
+coal_oil_and_gas,"Coal, oil & gas","Charbon, pétrole et gaz",10
+communications,Communications,Communications,11
+consumer_electronics,Consumer electronics,Électronique grand public,12
+consumer_products,Consumer products,Produits de consommation,13
+electronic_components,Electronic components,Composants électroniques,14
+engines_and_turbines,Engines & turbines,Moteurs et turbines,15
+financial_services,Financial services,Services financiers,16
+food_and_beverages,Food & Beverages,Alimentation et boissons,17
+healthcare,Healthcare,Santé,18
+hotels_and_tourism,Hotels & tourism,Hôtellerie et tourisme,19
+industrial_equipment,Industrial equipment,Équipements industriels,20
+leisure_and_entertainment,Leisure & entertainment,Loisirs et divertissement,21
+medical_devices,Medical devices,Dispositifs médicaux,22
+metals,Metals,Métaux,23
+minerals,Minerals,Minéraux,24
+non_automotive_transport_oem,Non-automotive transport OEM,Constructeurs de matériel de transport non automobile,25
+paper_printing_and_packaging,"Paper, printing & packaging","Papier, imprimerie et emballage",26
+pharmaceuticals,Pharmaceuticals,Produits pharmaceutiques,27
+plastics,Plastics,Plastiques,28
+real_estate,Real estate,Immobilier,29
+renewable_energy,Renewable energy,Énergies renouvelables,30
+rubber,Rubber,Caoutchouc,31
+semiconductors,Semiconductors,Semi-conducteurs,32
+software_and_it_services,Software & IT Services,Logiciels et services informatiques,33
+space_and_defence,Space & defence,Spatial et défense,34
+textiles,Textiles,Textiles,35
+transportation_and_warehousing,Transportation & Warehousing,Transport et entreposage,36
+wood_products,Wood products,Produits du bois,37

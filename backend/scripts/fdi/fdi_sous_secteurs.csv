@@ -1,0 +1,271 @@
+code,secteur_code,libelle_en,libelle_fr,libelle_en_base,cle_appariement,ordre
+aerospace__aircraft,aerospace,Aircraft,Aéronefs,Aircraft,aircraft,1
+aerospace__aircraft_engines_other_parts_and_auxilia,aerospace,"Aircraft engines, other parts & auxiliary equipment","Moteurs d'aéronefs, autres pièces et équipements auxiliaires","Aircraft engines, other parts & auxiliary equipment",aircraft engines other parts and auxiliary equipment,2
+aerospace__other,aerospace,Other (Aerospace),Autres (Aéronautique),Other,other,3
+automotive_components__motor_vehicle_and_parts_dealers,automotive_components,Motor vehicle & parts dealers (Automotive Components),Concessionnaires de véhicules automobiles et pièces détachées (Équipementiers automobiles),Motor vehicle & parts dealers,motor vehicle and parts dealers,4
+automotive_components__motor_vehicle_body_and_trailers,automotive_components,Motor vehicle body & trailers,Carrosseries et remorques automobiles,Motor vehicle body & trailers,motor vehicle body and trailers,5
+automotive_components__motor_vehicle_brake_systems,automotive_components,Motor vehicle brake systems,Systèmes de freinage automobile,Motor vehicle brake systems,motor vehicle brake systems,6
+automotive_components__motor_vehicle_electrical_and_electronic,automotive_components,Motor vehicle electrical & electronic equipment,Équipements électriques et électroniques automobiles,Motor vehicle electrical & electronic equipment,motor vehicle electrical and electronic equipment,7
+automotive_components__motor_vehicle_gasoline_engines_and_engin,automotive_components,Motor vehicle gasoline engines & engine parts,Moteurs à essence automobiles et pièces de moteur,Motor vehicle gasoline engines & engine parts,motor vehicle gasoline engines and engine parts,8
+automotive_components__motor_vehicle_metal_stamping,automotive_components,Motor vehicle metal stamping,Emboutissage de métaux automobile,Motor vehicle metal stamping,motor vehicle metal stamping,9
+automotive_components__motor_vehicle_seating_and_interior_trim,automotive_components,Motor vehicle seating & interior trim,Sièges et garnitures intérieures automobiles,Motor vehicle seating & interior trim,motor vehicle seating and interior trim,10
+automotive_components__motor_vehicle_steering_and_suspension_co,automotive_components,Motor vehicle steering & suspension components,Composants de direction et de suspension automobile,Motor vehicle steering & suspension components,motor vehicle steering and suspension components,11
+automotive_components__motor_vehicle_transmission_and_power_tra,automotive_components,Motor vehicle transmission & power train parts,Transmissions et pièces de groupe motopropulseur automobile,Motor vehicle transmission & power train parts,motor vehicle transmission and power train parts,12
+automotive_components__other_motor_vehicle_parts,automotive_components,Other motor vehicle parts,Autres pièces automobiles,Other motor vehicle parts,other motor vehicle parts,13
+automotive_oem__all_other_transportation,automotive_oem,All other transportation (Automotive OEM),Autres matériels de transport (Constructeurs automobiles),All other transportation,all other transportation,14
+automotive_oem__automobiles,automotive_oem,Automobiles,Automobiles (véhicules particuliers),Automobiles,automobiles,15
+automotive_oem__heavy_duty_trucks,automotive_oem,Heavy duty trucks,Poids lourds,Heavy duty trucks,heavy duty trucks,16
+automotive_oem__light_trucks_and_utility_vehicles,automotive_oem,Light trucks & utility vehicles,Camionnettes et véhicules utilitaires légers,Light trucks & utility vehicles,light trucks and utility vehicles,17
+automotive_oem__motor_vehicle_and_parts_dealers,automotive_oem,Motor vehicle & parts dealers (Automotive OEM),Concessionnaires de véhicules automobiles et pièces détachées (Constructeurs automobiles),Motor vehicle & parts dealers,motor vehicle and parts dealers,18
+biotechnology__biological_products,biotechnology,Biological products (except diagnostic),Produits biologiques (hors diagnostic),Biological products,biological products,19
+biotechnology__in_vitro_diagnostic_substances,biotechnology,In-Vitro diagnostic substances,Substances de diagnostic in vitro,In-Vitro diagnostic substances,in vitro diagnostic substances,20
+biotechnology__other,biotechnology,Other (Biotechnology),Autres (Biotechnologies),Other,other,21
+building_materials__asphalt_paving_roofing_and_saturated_mat,building_materials,"Asphalt paving, roofing, & saturated materials","Revêtements routiers en asphalte, matériaux de toiture et produits saturés","Asphalt paving, roofing, & saturated materials",asphalt paving roofing and saturated materials,22
+building_materials__building_material_and_garden_equipment_a,building_materials,Building material & garden equipment & supplies dealers (Building materials),Négoce de matériaux de construction et d'équipements de jardin (Matériaux de construction),Building material & garden equipment & supplies dealers,building material and garden equipment and supplies dealers,23
+building_materials__cement_and_concrete_products,building_materials,Cement & concrete products,Ciment et produits en béton,Cement & concrete products,cement and concrete products,24
+building_materials__other,building_materials,Other (Building materials ),Autres (Matériaux de construction),Other,other,25
+business_machines_and_equipment__computer_and_peripheral_equipment,business_machines_and_equipment,Computer & peripheral equipment,Ordinateurs et équipements périphériques,Computer & peripheral equipment,computer and peripheral equipment,26
+business_machines_and_equipment__other,business_machines_and_equipment,Other (Business machines & equipment),Autres (Machines et équipements de bureau),Other,other,27
+business_services__accounting_tax_preparation_bookkeeping_a,business_services,"Accounting, tax preparation, bookkeeping, & payroll services","Comptabilité, préparation fiscale, tenue de livres et gestion de la paie","Accounting, tax preparation, bookkeeping, & payroll services",accounting tax preparation bookkeeping and payroll services,28
+business_services__advertising_pr_and_related,business_services,"Advertising, PR, & related","Publicité, relations publiques et activités connexes","Advertising, PR, & related",advertising pr and related,29
+business_services__architectural_engineering_and_related_se,business_services,"Architectural, engineering, & related services","Architecture, ingénierie et services connexes","Architectural, engineering, & related services",architectural engineering and related services,30
+business_services__business_schools_computer_and_management,business_services,"Business schools, computer & management training","Écoles de commerce, formation en informatique et en gestion","Business schools, computer & management training",business schools computer and management training,31
+business_services__business_support_services,business_services,Business support services,Services de soutien aux entreprises,Business support services,business support services,32
+business_services__educational_support_services,business_services,Educational support services,Services de soutien à l'enseignement,Educational support services,educational support services,33
+business_services__employment_services,business_services,Employment services,Services de placement et de recrutement,Employment services,employment services,34
+business_services__environmental_consulting_services,business_services,Environmental consulting services,Services de conseil en environnement,Environmental consulting services,environmental consulting services,35
+business_services__heavy_and_civil_engineering,business_services,Heavy & civil engineering,Génie civil et travaux publics,Heavy & civil engineering,heavy and civil engineering,36
+business_services__legal_services,business_services,Legal services,Services juridiques,Legal services,legal services,37
+business_services__management_consulting_services,business_services,Management consulting services,Services de conseil en gestion,Management consulting services,management consulting services,38
+business_services__newspaper_periodical_book_and_directory,business_services,"Newspaper, periodical, book, & directory publishers","Édition de journaux, périodiques, livres et annuaires","Newspaper, periodical, book, & directory publishers",newspaper periodical book and directory publishers,39
+business_services__other_support_services,business_services,Other support services,Autres services de soutien,Other support services,other support services,40
+business_services__professional_scientific_and_technical_se,business_services,"Professional, scientific & technical services","Services professionnels, scientifiques et techniques","Professional, scientific & technical services",professional scientific and technical services,41
+business_services__schools_colleges_universities_and_profes,business_services,"Schools, colleges, universities, & professional schools","Écoles, collèges, universités et écoles professionnelles","Schools, colleges, universities, & professional schools",schools colleges universities and professional schools,42
+business_services__specialised_design_services,business_services,Specialised design services,Services spécialisés de design,Specialised design services,specialised design services,43
+business_services__speciality_trade_contractors,business_services,Speciality trade contractors,Entrepreneurs spécialisés des métiers du bâtiment,Speciality trade contractors,speciality trade contractors,44
+business_services__technical_trade_and_other_schools,business_services,"Technical, trade & other schools","Écoles techniques, professionnelles et autres","Technical, trade & other schools",technical trade and other schools,45
+business_services__waste_management_and_remediation_service,business_services,Waste management & remediation services,Gestion des déchets et services de dépollution,Waste management & remediation services,waste management and remediation services,46
+business_services__water_sewage_and_other_systems,business_services,"Water, sewage & other systems","Eau, assainissement et autres réseaux","Water, sewage & other systems",water sewage and other systems,47
+ceramics_and_glass__clay_product_and_refractory,ceramics_and_glass,Clay product & refractory,Produits en argile et réfractaires,Clay product & refractory,clay product and refractory,48
+ceramics_and_glass__glass_and_glass_products,ceramics_and_glass,Glass & glass products,Verre et produits verriers,Glass & glass products,glass and glass products,49
+ceramics_and_glass__other,ceramics_and_glass,Other (Ceramics & glass),Autres (Céramique et verre),Other,other,50
+chemicals__basic_chemicals,chemicals,Basic chemicals,Produits chimiques de base,Basic chemicals,basic chemicals,51
+chemicals__other_chemical_products_and_preparation,chemicals,Other chemical products & preparation,Autres produits et préparations chimiques,Other chemical products & preparation,other chemical products and preparation,52
+chemicals__paints_coatings_additives_and_adhesives,chemicals,"Paints, coatings, additives & adhesives","Peintures, revêtements, additifs et adhésifs","Paints, coatings, additives & adhesives",paints coatings additives and adhesives,53
+chemicals__pesticide_fertilisers_and_other_agricult,chemicals,"Pesticide, fertilisers & other agricultural chemicals","Pesticides, engrais et autres produits chimiques agricoles","Pesticide, fertilisers & other agricultural chemicals",pesticide fertilisers and other agricultural chemicals,54
+chemicals__resin_and_artificial_synthetic_fibres_an,chemicals,Resin & artificial synthetic fibres & filaments,Résines et fibres et filaments synthétiques artificiels,Resin & artificial synthetic fibres & filaments,resin and artificial synthetic fibres and filaments,55
+chemicals__soap_cleaning_compounds_and_toilet_prepa,chemicals,"Soap, cleaning compounds, & toilet preparation","Savons, produits d'entretien et articles de toilette","Soap, cleaning compounds, & toilet preparation",soap cleaning compounds and toilet preparation,56
+coal_oil_and_gas__coal_mining,coal_oil_and_gas,Coal mining,Extraction de charbon,Coal mining,coal mining,57
+coal_oil_and_gas__fossil_fuel_electric_power,coal_oil_and_gas,Fossil fuel electric power,Production d'électricité à partir de combustibles fossiles,Fossil fuel electric power,fossil fuel electric power,58
+coal_oil_and_gas__gasoline_stations,coal_oil_and_gas,Gasoline stations,Stations-service,Gasoline stations,gasoline stations,59
+coal_oil_and_gas__natural_liquefied_and_compressed_gas,coal_oil_and_gas,"Natural, liquefied and compressed gas","Gaz naturel, liquéfié et comprimé","Natural, liquefied and compressed gas",natural liquefied and compressed gas,60
+coal_oil_and_gas__nuclear_electric_power_generation,coal_oil_and_gas,Nuclear electric power generation,Production d'électricité d'origine nucléaire,Nuclear electric power generation,nuclear electric power generation,61
+coal_oil_and_gas__oil_and_gas_extraction,coal_oil_and_gas,Oil & gas extraction,Extraction de pétrole et de gaz,Oil & gas extraction,oil and gas extraction,62
+coal_oil_and_gas__other_electric_power_generation,coal_oil_and_gas,"Other electric power generation (Coal, oil and gas)","Autres productions d'électricité (Charbon, pétrole et gaz)",Other electric power generation,other electric power generation,63
+coal_oil_and_gas__other_petroleum_and_coal_products,coal_oil_and_gas,Other petroleum & coal products,Autres produits pétroliers et houillers,Other petroleum & coal products,other petroleum and coal products,64
+coal_oil_and_gas__petroleum_refineries,coal_oil_and_gas,Petroleum refineries,Raffineries de pétrole,Petroleum refineries,petroleum refineries,65
+coal_oil_and_gas__support_activities_for_mining_and_energy,coal_oil_and_gas,"Support activities for mining & energy (Coal, oil & gas)","Activités de soutien aux industries extractives et énergétiques (Charbon, pétrole et gaz)",Support activities for mining & energy,support activities for mining and energy,66
+communications__communications_equipment,communications,Communications equipment,Équipements de communication,Communications equipment,communications equipment,67
+communications__computing_infrastucture_providers_data_p,communications,"Computing infrastucture providers, data processing, web hosting and related services","Fournisseurs d'infrastructures informatiques, traitement de données, hébergement web et services connexes","Computing infrastucture providers, data processing, web hosting and related services",computing infrastucture providers data processing web hosting and related services,68
+communications__media_streaming_distribution_services_so,communications,"Media streaming distribution services, social networks and other media networks and content providers","Services de diffusion de contenus en continu, réseaux sociaux et autres réseaux médiatiques et fournisseurs de contenu","Media streaming distribution services, social networks and other media networks and content providers",media streaming distribution services social networks and other media networks and content providers,69
+communications__motion_picture_and_sound_recording_indus,communications,Motion picture & sound recording industries,Industries du cinéma et de l'enregistrement sonore,Motion picture & sound recording industries,motion picture and sound recording industries,70
+communications__navigational_instruments,communications,Navigational instruments,Instruments de navigation,Navigational instruments,navigational instruments,71
+communications__other_telecommunications,communications,Other telecommunications,Autres télécommunications,Other telecommunications,other telecommunications,72
+communications__radio_and_tv_broadcasting,communications,Radio & TV broadcasting,Radiodiffusion et télédiffusion,Radio & TV broadcasting,radio and tv broadcasting,73
+communications__satellite_telecommunications,communications,Satellite telecommunications,Télécommunications par satellite,Satellite telecommunications,satellite telecommunications,74
+communications__wired_telecommunication_carriers,communications,Wired telecommunication carriers,Opérateurs de télécommunications filaires,Wired telecommunication carriers,wired telecommunication carriers,75
+communications__wireless_telecommunication_carriers,communications,Wireless telecommunication carriers,Opérateurs de télécommunications sans fil,Wireless telecommunication carriers,wireless telecommunication carriers,76
+consumer_electronics__audio_and_video_equipment,consumer_electronics,Audio & video equipment (Consumer electronics),Équipements audio et vidéo (Électronique grand public),Audio & video equipment,audio and video equipment,77
+consumer_electronics__electronics_and_appliances_retailers,consumer_electronics,Electronics & appliances retailers,Distributeurs d'électronique et d'électroménager,Electronics & appliances retailers,electronics and appliances retailers,78
+consumer_electronics__household_appliances,consumer_electronics,Household appliances,Appareils électroménagers,Household appliances,household appliances,79
+consumer_electronics__other,consumer_electronics,Other (Consumer electronics),Autres (Électronique grand public),Other,other,80
+consumer_products__building_material_and_garden_equipment_a,consumer_products,Building material & garden equipment & supplies dealers (Consumer products),Négoce de matériaux de construction et d'équipements de jardin (Produits de consommation),Building material & garden equipment & supplies dealers,building material and garden equipment and supplies dealers,81
+consumer_products__cosmetics_perfume_personal_care_and_hous,consumer_products,"Cosmetics, perfume, personal care & household products","Cosmétiques, parfums, produits de soins personnels et d'entretien ménager","Cosmetics, perfume, personal care & household products",cosmetics perfume personal care and household products,82
+consumer_products__dolls_toy_and_games,consumer_products,"Dolls, toy, & games","Poupées, jouets et jeux","Dolls, toy, & games",dolls toy and games,83
+consumer_products__furniture_and_related_products,consumer_products,Furniture & related products (Consumer Products),Meubles et produits connexes (Produits de consommation),Furniture & related products,furniture and related products,84
+consumer_products__general_merchandise_retailers,consumer_products,General merchandise retailers,Grands magasins et commerces de détail généralistes,General merchandise retailers,general merchandise retailers,85
+consumer_products__jewellery_and_silverware,consumer_products,Jewellery & silverware,Bijouterie et orfèvrerie,Jewellery & silverware,jewellery and silverware,86
+consumer_products__non_store_retailers,consumer_products,Non-store retailers,Vente au détail hors magasin,Non-store retailers,non store retailers,87
+consumer_products__office_supplies,consumer_products,Office supplies (except paper),Fournitures de bureau (hors papier),Office supplies,office supplies,88
+consumer_products__other,consumer_products,Other (Consumer products ),Autres (Produits de consommation),Other,other,89
+consumer_products__sign_manufacturing,consumer_products,Sign manufacturing,Fabrication d'enseignes,Sign manufacturing,sign manufacturing,90
+consumer_products__sporting_goods_hobby_books_and_music,consumer_products,"Sporting goods, hobby, books & music","Articles de sport, loisirs créatifs, livres et musique","Sporting goods, hobby, books & music",sporting goods hobby books and music,91
+consumer_products__all_other_general_merchandise_retailers,consumer_products,All other general merchandise retailers,Autres commerces de détail généralistes,All other general merchandise retailers,all other general merchandise retailers,92
+consumer_products__wholesale_trade,consumer_products,Wholesale Trade (Consumer Products),Commerce de gros (Produits de consommation),Wholesale Trade,wholesale trade,93
+electronic_components__all_other_electrical_equipment_and_compo,electronic_components,All other electrical equipment & components,Autres équipements et composants électriques,All other electrical equipment & components,all other electrical equipment and components,94
+electronic_components__audio_and_video_equipment,electronic_components,Audio & video equipment (Electronic components),Équipements audio et vidéo (Composants électroniques),Audio & video equipment,audio and video equipment,95
+electronic_components__batteries,electronic_components,Batteries,Piles et batteries,Batteries,batteries,96
+electronic_components__communication_and_energy_wires_and_cable,electronic_components,Communication & energy wires & cables,Fils et câbles de communication et d'énergie,Communication & energy wires & cables,communication and energy wires and cables,97
+electronic_components__electric_lighting_equipment,electronic_components,Electric lighting equipment,Matériel d'éclairage électrique,Electric lighting equipment,electric lighting equipment,98
+electronic_components__electrical_equipment,electronic_components,Electrical equipment,Équipements électriques,Electrical equipment,electrical equipment,99
+electronic_components__magnetic_and_optical_media,electronic_components,Magnetic & optical media,Supports magnétiques et optiques,Magnetic & optical media,magnetic and optical media,100
+electronic_components__wiring_devices,electronic_components,Wiring devices,Appareillage électrique de câblage,Wiring devices,wiring devices,101
+engines_and_turbines__engines_and_turbines,engines_and_turbines,Engines & Turbines,Moteurs et turbines,Engines & Turbines,engines and turbines,102
+engines_and_turbines__other,engines_and_turbines,Other (Engines & turbines),Autres (Moteurs et turbines),Other,other,103
+financial_services__corporate_and_investment_banking,financial_services,Corporate & investment banking,Banque d'affaires et d'investissement,Corporate & investment banking,corporate and investment banking,104
+financial_services__insurance,financial_services,Insurance,Assurance,Insurance,insurance,105
+financial_services__investment_management,financial_services,Investment management,Gestion de placements,Investment management,investment management,106
+financial_services__other,financial_services,Other (Financial services),Autres (Services financiers),Other,other,107
+financial_services__retail_banking,financial_services,Retail banking,Banque de détail,Retail banking,retail banking,108
+food_and_beverages__animal_food,food_and_beverages,Animal food,Aliments pour animaux,Animal food,animal food,109
+food_and_beverages__animal_production_and_aquaculture,food_and_beverages,Animal production & aquaculture,Élevage et aquaculture,Animal production & aquaculture,animal production and aquaculture,110
+food_and_beverages__animal_slaughtering_and_processing,food_and_beverages,Animal slaughtering & processing,Abattage et transformation de la viande,Animal slaughtering & processing,animal slaughtering and processing,111
+food_and_beverages__bakeries_and_tortillas,food_and_beverages,Bakeries & tortillas,Boulangeries et tortillas,Bakeries & tortillas,bakeries and tortillas,112
+food_and_beverages__breweries,food_and_beverages,Breweries,Brasseries,Breweries,breweries,113
+food_and_beverages__coffee_and_tea,food_and_beverages,Coffee & tea,Café et thé,Coffee & tea,coffee and tea,114
+food_and_beverages__crop_production,food_and_beverages,Crop production,Production végétale,Crop production,crop production,115
+food_and_beverages__distilleries,food_and_beverages,Distilleries,Distilleries,Distilleries,distilleries,116
+food_and_beverages__dairy_products,food_and_beverages,Dairy products,Produits laitiers,Dairy products,dairy products,117
+food_and_beverages__fishing_hunting_and_trapping,food_and_beverages,"Fishing, hunting & trapping","Pêche, chasse et piégeage","Fishing, hunting & trapping",fishing hunting and trapping,118
+food_and_beverages__food_and_beverage_retailers,food_and_beverages,Food & beverage retailers,Commerce de détail alimentaire et de boissons,Food & beverage retailers,food and beverage retailers,119
+food_and_beverages__food_services,food_and_beverages,Food services,Restauration,Food services,food services,120
+food_and_beverages__fruits_and_vegetables_and_specialist_foo,food_and_beverages,Fruits & vegetables & specialist foods,"Fruits, légumes et produits alimentaires spécialisés",Fruits & vegetables & specialist foods,fruits and vegetables and specialist foods,121
+food_and_beverages__grains_and_oilseed,food_and_beverages,Grains & oilseed,Céréales et oléagineux,Grains & oilseed,grains and oilseed,122
+food_and_beverages__other,food_and_beverages,Other (Food & Beverages),Autres (Alimentation et boissons),Other,other,123
+food_and_beverages__seafood_products,food_and_beverages,Seafood products,Produits de la mer,Seafood products,seafood products,124
+food_and_beverages__seasoning_and_dressing,food_and_beverages,Seasoning & dressing,Assaisonnements et condiments,Seasoning & dressing,seasoning and dressing,125
+food_and_beverages__snack_food,food_and_beverages,Snack food,Produits de grignotage,Snack food,snack food,126
+food_and_beverages__soft_drinks_and_ice,food_and_beverages,Soft drinks & ice,Boissons rafraîchissantes et glace,Soft drinks & ice,soft drinks and ice,127
+food_and_beverages__sugar_and_confectionary_products,food_and_beverages,Sugar & confectionary products,Sucre et confiserie,Sugar & confectionary products,sugar and confectionary products,128
+food_and_beverages__tobacco,food_and_beverages,Tobacco,Tabac,Tobacco,tobacco,129
+food_and_beverages__wholesale_trade,food_and_beverages,Wholesale Trade (Food & Tobacco),Commerce de gros (Alimentation et tabac),Wholesale Trade,wholesale trade,130
+food_and_beverages__wineries,food_and_beverages,Wineries,Établissements vinicoles,Wineries,wineries,131
+healthcare__general_medical_and_surgical_hospitals,healthcare,General medical & surgical hospitals,Hôpitaux généraux et chirurgicaux,General medical & surgical hospitals,general medical and surgical hospitals,132
+healthcare__home_healthcare_services,healthcare,Home healthcare services,Services de soins à domicile,Home healthcare services,home healthcare services,133
+healthcare__nursing_and_residential_care_facilities,healthcare,Nursing & residential care facilities,Établissements de soins infirmiers et d'hébergement médicalisé,Nursing & residential care facilities,nursing and residential care facilities,134
+healthcare__offices_of_physicians_dentists_and_other,healthcare,"Offices of physicians, dentists, & other healthcare practitioners","Cabinets de médecins, dentistes et autres praticiens de santé","Offices of physicians, dentists, & other healthcare practitioners",offices of physicians dentists and other healthcare practitioners,135
+healthcare__other,healthcare,Other (Healthcare),Autres (Santé),Other,other,136
+healthcare__outpatient_care_centres_and_medical_and,healthcare,Outpatient care centres & medical & diagnostic laboratories,Centres de soins ambulatoires et laboratoires médicaux et de diagnostic,Outpatient care centres & medical & diagnostic laboratories,outpatient care centres and medical and diagnostic laboratories,137
+healthcare__psychiatric_and_speciality_hospitals,healthcare,Psychiatric & speciality hospitals,Hôpitaux psychiatriques et spécialisés,Psychiatric & speciality hospitals,psychiatric and speciality hospitals,138
+healthcare__social_assistance,healthcare,Social assistance,Aide sociale,Social assistance,social assistance,139
+hotels_and_tourism__accommodation,hotels_and_tourism,Accommodation,Hébergement,Accommodation,accommodation,140
+hotels_and_tourism__other,hotels_and_tourism,Other (Hotels & tourism),Autres (Hôtellerie et tourisme),Other,other,141
+hotels_and_tourism__travel_arrangement_and_reservation_servi,hotels_and_tourism,Travel arrangement & reservation services,Services d'organisation de voyages et de réservation,Travel arrangement & reservation services,travel arrangement and reservation services,142
+industrial_equipment__agriculture_construction_and_mining_mach,industrial_equipment,"Agriculture, construction, & mining machinery","Machines agricoles, de construction et d'extraction","Agriculture, construction, & mining machinery",agriculture construction and mining machinery,143
+industrial_equipment__all_other_industrial_machinery,industrial_equipment,All other industrial machinery,Autres machines industrielles,All other industrial machinery,all other industrial machinery,144
+industrial_equipment__boiler_tank_and_shipping_container,industrial_equipment,"Boiler, tank, & shipping container","Chaudières, réservoirs et conteneurs de transport","Boiler, tank, & shipping container",boiler tank and shipping container,145
+industrial_equipment__commercial_and_service_industry_machiner,industrial_equipment,Commercial & service industry machinery,Machines pour le commerce et les services,Commercial & service industry machinery,commercial and service industry machinery,146
+industrial_equipment__cutlery_and_handtools,industrial_equipment,Cutlery & handtools,Coutellerie et outils à main,Cutlery & handtools,cutlery and handtools,147
+industrial_equipment__food_product_machinery,industrial_equipment,Food product machinery,Machines pour l'industrie alimentaire,Food product machinery,food product machinery,148
+industrial_equipment__general_purpose_machinery,industrial_equipment,General purpose machinery,Machines d'usage général,General purpose machinery,general purpose machinery,149
+industrial_equipment__measuring_and_control_instruments,industrial_equipment,Measuring & control instruments,Instruments de mesure et de contrôle,Measuring & control instruments,measuring and control instruments,150
+industrial_equipment__mechanical_power_transmission_equipment,industrial_equipment,Mechanical power transmission equipment,Équipements de transmission mécanique de puissance,Mechanical power transmission equipment,mechanical power transmission equipment,151
+industrial_equipment__metalworking_machinery,industrial_equipment,Metalworking machinery,Machines-outils pour le travail des métaux,Metalworking machinery,metalworking machinery,152
+industrial_equipment__paper_industry_machinery,industrial_equipment,Paper industry machinery,Machines pour l'industrie du papier,Paper industry machinery,paper industry machinery,153
+industrial_equipment__plastics_and_rubber_industry_machinery,industrial_equipment,Plastics & rubber industry machinery,Machines pour les industries du plastique et du caoutchouc,Plastics & rubber industry machinery,plastics and rubber industry machinery,154
+industrial_equipment__printing_machinery_and_equipment,industrial_equipment,Printing machinery & equipment,Machines et équipements d'imprimerie,Printing machinery & equipment,printing machinery and equipment,155
+industrial_equipment__sawmill_and_woodworking_machinery,industrial_equipment,Sawmill & woodworking machinery,Machines pour scieries et travail du bois,Sawmill & woodworking machinery,sawmill and woodworking machinery,156
+industrial_equipment__semiconductor_machinery,industrial_equipment,Semiconductor machinery,Machines pour l'industrie des semi-conducteurs,Semiconductor machinery,semiconductor machinery,157
+industrial_equipment__textile_machinery,industrial_equipment,Textile machinery,Machines textiles,Textile machinery,textile machinery,158
+industrial_equipment__ventilation_heating_air_conditioning_and,industrial_equipment,"Ventilation, heating, air conditioning, and commercial refrigeration equipment manufacturing","Fabrication d'équipements de ventilation, chauffage, climatisation et réfrigération commerciale","Ventilation, heating, air conditioning, and commercial refrigeration equipment manufacturing",ventilation heating air conditioning and commercial refrigeration equipment manufacturing,159
+leisure_and_entertainment__amusement_and_theme_parks,leisure_and_entertainment,Amusement & theme parks,Parcs d'attractions et à thème,Amusement & theme parks,amusement and theme parks,160
+leisure_and_entertainment__gambling_industries,leisure_and_entertainment,Gambling industries,Jeux d'argent et de hasard,Gambling industries,gambling industries,161
+leisure_and_entertainment__museums_historical_sites_and_similar,leisure_and_entertainment,"Museums, historical sites, & similar","Musées, sites historiques et similaires","Museums, historical sites, & similar",museums historical sites and similar,162
+leisure_and_entertainment__other_amusement_and_recreation_industrie,leisure_and_entertainment,Other amusement & recreation industries,Autres activités récréatives et de loisirs,Other amusement & recreation industries,other amusement and recreation industries,163
+leisure_and_entertainment__performing_arts_spectator_sports_and_rel,leisure_and_entertainment,"Performing arts, spectator sports, & related","Arts du spectacle, sports professionnels et activités connexes","Performing arts, spectator sports, & related",performing arts spectator sports and related,164
+leisure_and_entertainment__scenic_and_sightseeing_transport,leisure_and_entertainment,Scenic & sightseeing transport,Transport touristique et d'agrément,Scenic & sightseeing transport,scenic and sightseeing transport,165
+medical_devices__electromedical_and_electrotherapeutic_ap,medical_devices,Electromedical and Electrotherapeutic Apparatus,Appareils électromédicaux et électrothérapeutiques,Electromedical and Electrotherapeutic Apparatus,electromedical and electrotherapeutic apparatus,166
+medical_devices__medical_equipment_and_supplies,medical_devices,Medical equipment & supplies,Équipements et fournitures médicaux,Medical equipment & supplies,medical equipment and supplies,167
+medical_devices__other,medical_devices,Other (Medical devices),Autres (Dispositifs médicaux),Other,other,168
+metals__alumina_and_aluminium_production_and_pro,metals,Alumina & aluminium production and processing,Production et transformation d'alumine et d'aluminium,Alumina & aluminium production and processing,alumina and aluminium production and processing,169
+metals__architectural_and_structured_metals,metals,Architectural & structured metals,Métaux architecturaux et de structure,Architectural & structured metals,architectural and structured metals,170
+metals__coating_engraving_heat_treating_and_alli,metals,"Coating, engraving, heat treating, & allied activities","Revêtement, gravure, traitement thermique et activités connexes","Coating, engraving, heat treating, & allied activities",coating engraving heat treating and allied activities,171
+metals__copper_nickel_lead_and_zinc_mining,metals,"Copper, nickel, lead, & zinc mining","Extraction de cuivre, nickel, plomb et zinc","Copper, nickel, lead, & zinc mining",copper nickel lead and zinc mining,172
+metals__forging_and_stamping,metals,Forging & stamping,Forgeage et emboutissage,Forging & stamping,forging and stamping,173
+metals__foundries,metals,Foundries,Fonderies,Foundries,foundries,174
+metals__gold_ore_and_silver_ore_mining,metals,Gold ore & silver ore mining,Extraction de minerai d'or et d'argent,Gold ore & silver ore mining,gold ore and silver ore mining,175
+metals__hardware,metals,Hardware,Quincaillerie,Hardware,hardware,176
+metals__iron_and_steel_mills_and_ferroalloy,metals,Iron & steel mills & ferroalloy,Sidérurgie et ferro-alliages,Iron & steel mills & ferroalloy,iron and steel mills and ferroalloy,177
+metals__iron_ore_mining,metals,Iron ore mining,Extraction de minerai de fer,Iron ore mining,iron ore mining,178
+metals__machine_shops_turned_products_screws_nut,metals,"Machine shops, turned products, screws, nuts & bolts","Ateliers d'usinage, produits tournés, vis, écrous et boulons","Machine shops, turned products, screws, nuts & bolts",machine shops turned products screws nuts and bolts,179
+metals__nonferrous_metal_production_and_processi,metals,Nonferrous metal production & processing,Production et transformation de métaux non ferreux,Nonferrous metal production & processing,nonferrous metal production and processing,180
+metals__other,metals,Other (Metals),Autres (Métaux),Other,other,181
+metals__other_fabricated_metal_products,metals,Other fabricated metal products,Autres produits métalliques manufacturés,Other fabricated metal products,other fabricated metal products,182
+metals__other_metal_ore_mining,metals,Other metal ore mining,Autres extractions de minerais métalliques,Other metal ore mining,other metal ore mining,183
+metals__spring_and_wire_products,metals,Spring & wire products,Ressorts et produits en fil métallique,Spring & wire products,spring and wire products,184
+metals__steel_products,metals,Steel products,Produits sidérurgiques,Steel products,steel products,185
+metals__support_activities_for_mining,metals,Support activities for mining (Metals),Activités de soutien aux industries extractives (Métaux),Support activities for mining,support activities for mining,186
+minerals__lime_and_gypsum_products,minerals,Lime & gypsum products,Chaux et produits à base de gypse,Lime & gypsum products,lime and gypsum products,187
+minerals__nonmetallic_mineral_mining_and_quarrying,minerals,Nonmetallic mineral mining & quarrying,Extraction de minéraux non métalliques et carrières,Nonmetallic mineral mining & quarrying,nonmetallic mineral mining and quarrying,188
+minerals__other,minerals,Other (Minerals),Autres (Minéraux),Other,other,189
+minerals__other_non_metallic_mineral_products,minerals,Other non-metallic mineral products,Autres produits minéraux non métalliques,Other non-metallic mineral products,other non metallic mineral products,190
+minerals__support_activities_for_mining,minerals,Support Activities for Mining,Activités de soutien aux industries extractives,Support Activities for Mining,support activities for mining,191
+non_automotive_transport_oem__all_other_transportation,non_automotive_transport_oem,All other transportation (Non-Automotive OEM),Autres matériels de transport (Constructeurs hors automobile),All other transportation,all other transportation,192
+non_automotive_transport_oem__motorcycle_bicycle_and_parts,non_automotive_transport_oem,"Motorcycle, bicycle, & parts","Motocycles, bicyclettes et pièces détachées","Motorcycle, bicycle, & parts",motorcycle bicycle and parts,193
+non_automotive_transport_oem__railroad_rolling_stock,non_automotive_transport_oem,Railroad rolling stock,Matériel roulant ferroviaire,Railroad rolling stock,railroad rolling stock,194
+non_automotive_transport_oem__ships_and_boats,non_automotive_transport_oem,Ships & boats,Navires et bateaux,Ships & boats,ships and boats,195
+paper_printing_and_packaging__converted_paper_products,paper_printing_and_packaging,Converted paper products,Produits transformés à base de papier,Converted paper products,converted paper products,196
+paper_printing_and_packaging__other,paper_printing_and_packaging,"Other (Paper, printing & packaging)","Autres (Papier, imprimerie et emballage)",Other,other,197
+paper_printing_and_packaging__printing_and_related_activities,paper_printing_and_packaging,Printing & related activities,Imprimerie et activités connexes,Printing & related activities,printing and related activities,198
+paper_printing_and_packaging__pulp_paper_and_paperboard,paper_printing_and_packaging,"Pulp, paper, & paperboard","Pâte à papier, papier et carton","Pulp, paper, & paperboard",pulp paper and paperboard,199
+pharmaceuticals__health_and_personal_care_retailers,pharmaceuticals,Health & personal care retailers,Commerce de détail de produits de santé et de soins personnels,Health & personal care retailers,health and personal care retailers,200
+pharmaceuticals__medicinal_and_botanical,pharmaceuticals,Medicinal & botanical,Produits médicinaux et botaniques,Medicinal & botanical,medicinal and botanical,201
+pharmaceuticals__other,pharmaceuticals,Other (Pharmaceuticals),Autres (Produits pharmaceutiques),Other,other,202
+pharmaceuticals__pharmaceutical_preparations,pharmaceuticals,Pharmaceutical preparations,Préparations pharmaceutiques,Pharmaceutical preparations,pharmaceutical preparations,203
+plastics__artificial_and_synthetic_fibres,plastics,Artificial & synthetic fibres,Fibres artificielles et synthétiques,Artificial & synthetic fibres,artificial and synthetic fibres,204
+plastics__laminated_plastics_plates_sheets_and_sha,plastics,"Laminated plastics plates, sheets & shapes","Plaques, feuilles et profilés plastiques stratifiés","Laminated plastics plates, sheets & shapes",laminated plastics plates sheets and shapes,205
+plastics__other_plastics_products,plastics,Other plastics products,Autres produits en plastique,Other plastics products,other plastics products,206
+plastics__plastic_bottles,plastics,Plastic bottles,Bouteilles en plastique,Plastic bottles,plastic bottles,207
+plastics__plastic_pipes_pipe_fitting_and_unlaminat,plastics,"Plastic pipes, pipe fitting & unlaminated profile shapes","Tuyaux, raccords et profilés plastiques non stratifiés","Plastic pipes, pipe fitting & unlaminated profile shapes",plastic pipes pipe fitting and unlaminated profile shapes,208
+plastics__plastics_packaging_materials_and_unlamin,plastics,Plastics packaging materials & unlaminated film & sheets,Emballages plastiques et films et feuilles plastiques non stratifiés,Plastics packaging materials & unlaminated film & sheets,plastics packaging materials and unlaminated film and sheets,209
+plastics__polystyrene_foam_products,plastics,Polystyrene foam products,Produits en mousse de polystyrène,Polystyrene foam products,polystyrene foam products,210
+plastics__urethane_foam_products_and_other_compoun,plastics,"Urethane, foam products & other compounds","Uréthane, produits en mousse et autres composés","Urethane, foam products & other compounds",urethane foam products and other compounds,211
+real_estate__commercial_and_institutional_building_co,real_estate,Commercial & institutional building construction,Construction de bâtiments commerciaux et institutionnels,Commercial & institutional building construction,commercial and institutional building construction,212
+real_estate__industrial_building_construction,real_estate,Industrial building construction,Construction de bâtiments industriels,Industrial building construction,industrial building construction,213
+real_estate__other,real_estate,Other (Real estate),Autres (Immobilier),Other,other,214
+real_estate__real_estate_services,real_estate,Real estate services,Services immobiliers,Real estate services,real estate services,215
+real_estate__rental_and_leasing_services,real_estate,Rental & leasing services,Services de location et de crédit-bail,Rental & leasing services,rental and leasing services,216
+real_estate__residential_building_construction,real_estate,Residential building construction,Construction de bâtiments résidentiels,Residential building construction,residential building construction,217
+renewable_energy__biomass_power,renewable_energy,Biomass power,Production d'électricité à partir de biomasse,Biomass power,biomass power,218
+renewable_energy__geothermal_electric_power,renewable_energy,Geothermal electric power,Production d'électricité géothermique,Geothermal electric power,geothermal electric power,219
+renewable_energy__hydroelectric_power,renewable_energy,Hydroelectric power,Production d'électricité hydroélectrique,Hydroelectric power,hydroelectric power,220
+renewable_energy__marine_electric_power,renewable_energy,Marine electric power,Production d'électricité marine (houlomotrice et marémotrice),Marine electric power,marine electric power,221
+renewable_energy__other_electric_power_generation,renewable_energy,Other electric power generation (Renewable Energy),Autres productions d'électricité (Énergies renouvelables),Other electric power generation,other electric power generation,222
+renewable_energy__solar_electric_power,renewable_energy,Solar electric power,Production d'électricité solaire,Solar electric power,solar electric power,223
+renewable_energy__wind_electric_power,renewable_energy,Wind electric power,Production d'électricité éolienne,Wind electric power,wind electric power,224
+rubber__other_rubber_products,rubber,Other rubber products,Autres produits en caoutchouc,Other rubber products,other rubber products,225
+rubber__rubber_hoses_and_belting,rubber,Rubber hoses & belting,Tuyaux et courroies en caoutchouc,Rubber hoses & belting,rubber hoses and belting,226
+rubber__tyres,rubber,Tyres,Pneumatiques,Tyres,tyres,227
+semiconductors__other,semiconductors,Other (Semiconductors),Autres (Semi-conducteurs),Other,other,228
+semiconductors__semiconductors_and_other_electronic_comp,semiconductors,Semiconductors & other electronic components,Semi-conducteurs et autres composants électroniques,Semiconductors & other electronic components,semiconductors and other electronic components,229
+software_and_it_services__all_other_information_services,software_and_it_services,All other information services,Autres services d'information,All other information services,all other information services,230
+software_and_it_services__computer_facilities_management_services,software_and_it_services,Computer facilities management services,Services de gestion d'infrastructures informatiques,Computer facilities management services,computer facilities management services,231
+software_and_it_services__computer_systems_design_services,software_and_it_services,Computer systems design services,Services de conception de systèmes informatiques,Computer systems design services,computer systems design services,232
+software_and_it_services__custom_computer_programming_services,software_and_it_services,Custom computer programming services,Programmation informatique sur mesure,Custom computer programming services,custom computer programming services,233
+software_and_it_services__internet_publishing_and_broadcasting_and,software_and_it_services,Internet publishing & broadcasting & web search,Édition et diffusion sur Internet et moteurs de recherche,Internet publishing & broadcasting & web search,internet publishing and broadcasting and web search,234
+software_and_it_services__other,software_and_it_services,Other (Software & IT services),Autres (Logiciels et services informatiques),Other,other,235
+software_and_it_services__other_computer_related_services,software_and_it_services,Other computer related services,Autres services liés à l'informatique,Other computer related services,other computer related services,236
+software_and_it_services__software_publishers_except_video_games,software_and_it_services,"Software publishers, except video games","Éditeurs de logiciels, hors jeux vidéo","Software publishers, except video games",software publishers except video games,237
+software_and_it_services__video_games_applications_and_digital_con,software_and_it_services,"Video games, applications and digital content","Jeux vidéo, applications et contenus numériques","Video games, applications and digital content",video games applications and digital content,238
+space_and_defence__guided_missile_and_space_vehicles,space_and_defence,Guided missile & space vehicles,Missiles guidés et véhicules spatiaux,Guided missile & space vehicles,guided missile and space vehicles,239
+space_and_defence__military_armoured_vehicle_tank_and_compo,space_and_defence,"Military armoured vehicle, tank, & components","Véhicules blindés militaires, chars et composants","Military armoured vehicle, tank, & components",military armoured vehicle tank and components,240
+space_and_defence__other,space_and_defence,Other (Space & defence),Autres (Spatial et défense),Other,other,241
+textiles__apparel_accessories_and_other_apparel,textiles,Apparel accessories & other apparel,Accessoires vestimentaires et autres vêtements,Apparel accessories & other apparel,apparel accessories and other apparel,242
+textiles__apparel_knitting,textiles,Apparel knitting,Bonneterie,Apparel knitting,apparel knitting,243
+textiles__clothing_and_clothing_accessories_retail,textiles,Clothing & clothing accessories retailers,Commerce de détail de vêtements et d'accessoires vestimentaires,Clothing & clothing accessories retailers,clothing and clothing accessories retailers,244
+textiles__cut_and_sew_apparel,textiles,Cut & sew apparel,Vêtements coupés-cousus,Cut & sew apparel,cut and sew apparel,245
+textiles__footwear,textiles,Footwear,Chaussures,Footwear,footwear,246
+textiles__furniture_and_related_products,textiles,Furniture & related products (Textiles),Meubles et produits connexes (Textiles),Furniture & related products,furniture and related products,247
+textiles__leather_and_hide_tanning_and_finishing,textiles,Leather & hide tanning and finishing,Tannage et finition du cuir et des peaux,Leather & hide tanning and finishing,leather and hide tanning and finishing,248
+textiles__other,textiles,Other (Textiles),Autres (Textiles),Other,other,249
+textiles__other_leather_and_allied_products,textiles,Other leather & allied products,Autres produits en cuir et connexes,Other leather & allied products,other leather and allied products,250
+textiles__textile_product_mills,textiles,Textile product mills,Fabrication d'articles textiles,Textile product mills,textile product mills,251
+transportation_and_warehousing__air_transportation,transportation_and_warehousing,Air transportation,Transport aérien,Air transportation,air transportation,252
+transportation_and_warehousing__couriers_and_messengers,transportation_and_warehousing,Couriers & messengers,Messagerie et coursiers,Couriers & messengers,couriers and messengers,253
+transportation_and_warehousing__freight_distribution_services,transportation_and_warehousing,Freight/Distribution Services,Services de fret et de distribution,Freight/Distribution Services,freight distribution services,254
+transportation_and_warehousing__other,transportation_and_warehousing,Other (Transportation & Warehousing),Autres (Transport et entreposage),Other,other,255
+transportation_and_warehousing__other_pipeline_transportation,transportation_and_warehousing,Other pipeline transportation,Autres transports par canalisations,Other pipeline transportation,other pipeline transportation,256
+transportation_and_warehousing__petroleum_bulk_stations_and_terminals,transportation_and_warehousing,Petroleum bulk stations & terminals,Dépôts et terminaux pétroliers,Petroleum bulk stations & terminals,petroleum bulk stations and terminals,257
+transportation_and_warehousing__pipeline_transportation_of_crude_oil,transportation_and_warehousing,Pipeline transportation of crude oil,Transport de pétrole brut par oléoduc,Pipeline transportation of crude oil,pipeline transportation of crude oil,258
+transportation_and_warehousing__pipeline_transportation_of_natural_gas,transportation_and_warehousing,Pipeline transportation of natural gas,Transport de gaz naturel par gazoduc,Pipeline transportation of natural gas,pipeline transportation of natural gas,259
+transportation_and_warehousing__postal_service,transportation_and_warehousing,Postal service,Services postaux,Postal service,postal service,260
+transportation_and_warehousing__rail_transportation,transportation_and_warehousing,Rail transportation,Transport ferroviaire,Rail transportation,rail transportation,261
+transportation_and_warehousing__support_activities_for_transportation,transportation_and_warehousing,Support activities for transportation,Activités de soutien au transport,Support activities for transportation,support activities for transportation,262
+transportation_and_warehousing__transit_and_ground_passenger_transportat,transportation_and_warehousing,Transit & ground passenger transportation,Transport terrestre et transport en commun de voyageurs,Transit & ground passenger transportation,transit and ground passenger transportation,263
+transportation_and_warehousing__truck_transportation,transportation_and_warehousing,Truck transportation,Transport routier de marchandises,Truck transportation,truck transportation,264
+transportation_and_warehousing__warehousing_and_storage,transportation_and_warehousing,Warehousing & storage,Entreposage et stockage,Warehousing & storage,warehousing and storage,265
+transportation_and_warehousing__water_transportation,transportation_and_warehousing,Water transportation,Transport par voie d'eau,Water transportation,water transportation,266
+wood_products__forestry_and_logging,wood_products,Forestry & logging,Sylviculture et exploitation forestière,Forestry & logging,forestry and logging,267
+wood_products__furniture_and_related_products,wood_products,Furniture & related products (Wood Products),Meubles et produits connexes (Produits du bois),Furniture & related products,furniture and related products,268
+wood_products__other,wood_products,Other (Wood products),Autres (Produits du bois),Other,other,269
+wood_products__wood_products,wood_products,Wood products,Produits du bois,Wood products,wood products,270
