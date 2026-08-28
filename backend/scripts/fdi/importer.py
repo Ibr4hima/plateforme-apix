@@ -35,6 +35,15 @@ async def main() -> int:
 
     if rapport["secteurs_sans_sous_secteur"]:
         print(f"  ⚠ secteurs sans sous-secteur : {', '.join(rapport['secteurs_sans_sous_secteur'])}")
+
+    for famille, codes in rapport["ajouts_admin"].items():
+        if codes:
+            print(f"  + {len(codes)} {famille} ajoutés depuis l'administration : {', '.join(codes[:5])}")
+    for famille, codes in rapport["proteges"].items():
+        if codes:
+            # La base a été corrigée à l'écran ET le dépôt décrit ces lignes :
+            # l'import ne les a pas touchées. À arbitrer un jour, sciemment.
+            print(f"  ≠ {len(codes)} {famille} corrigés à l'écran, non écrasés : {', '.join(codes[:5])}")
     for famille, codes in rapport["orphelins_en_base"].items():
         if codes:
             # Ni supprimés ni ignorés : une nomenclature qui perd un poste est

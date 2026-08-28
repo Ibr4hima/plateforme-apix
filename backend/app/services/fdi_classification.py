@@ -14,6 +14,8 @@ transaction appartient à l'appelant, qui commit une fois le rapport obtenu.
 from __future__ import annotations
 
 import csv
+import re
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -32,6 +34,30 @@ FICHIERS = {
 
 class ClassificationInvalide(ValueError):
     """Les CSV ne décrivent pas une nomenclature exploitable."""
+
+
+# ── Dérivations, partagées par le générateur de CSV et l'écriture en base ─────
+# Les deux chemins d'entrée dans la nomenclature — l'import des fichiers et la
+# saisie à l'écran — doivent produire exactement les mêmes formes, sans quoi un
+# poste ajouté à la main ne s'apparierait pas comme ses voisins.
+
+def slug(valeur: str) -> str:
+    """Un identifiant stable et lisible : « Coal, oil & gas » → coal_oil_gas."""
+    txt = unicodedata.normalize("NFKD", valeur).encode("ascii", "ignore").decode()
+    txt = txt.lower().replace("&", " and ")
+    return re.sub(r"[^a-z0-9]+", "_", txt).strip("_")
+
+
+def sans_parenthese(libelle: str) -> str:
+    """Retire la parenthèse de désambiguïsation finale : « Other (Metals) » → « Other »."""
+    return re.sub(r"\s*\([^)]*\)\s*$", "", libelle).strip()
+
+
+def cle_de(libelle: str) -> str:
+    """Forme normalisée d'appariement : casse, accents et « & » neutralisés."""
+    txt = unicodedata.normalize("NFKD", libelle).encode("ascii", "ignore").decode()
+    txt = txt.lower().replace("&", " and ")
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", txt)).strip()
 
 
 def lire_csv(dossier: Path | None = None) -> dict[str, list[dict]]:
@@ -106,7 +132,14 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
 
 
 async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
-    """Écrit les trois nomenclatures en base. Idempotent, rejouable."""
+    """Écrit les trois nomenclatures en base. Idempotent, rejouable.
+
+    Une ligne dont `origine` vaut « admin » — créée ou corrigée depuis
+    l'administration — n'est PAS écrasée : la décision humaine l'emporte sur le
+    fichier. L'écart est remonté dans le rapport, pour que celui qui déploie
+    sache que le dépôt et la base divergent sur ces lignes, plutôt que de le
+    découvrir un jour par une valeur inattendue.
+    """
     # Import local : la moitié « lecture et vérification » de ce module reste
     # utilisable — et testable — sans SQLAlchemy ni pilote PostgreSQL.
     from sqlalchemy import select
@@ -124,6 +157,7 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
         index_elements=["code"],
         set_={"libelle_en": stmt.excluded.libelle_en, "libelle_fr": stmt.excluded.libelle_fr,
               "ordre": stmt.excluded.ordre},
+        where=FdiSecteur.origine == "depot",
     ))
 
     # Les sous-secteurs référencent le secteur par son id : on relit les codes
@@ -143,6 +177,7 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
         set_={"secteur_id": stmt.excluded.secteur_id, "libelle_en": stmt.excluded.libelle_en,
               "libelle_fr": stmt.excluded.libelle_fr, "libelle_en_base": stmt.excluded.libelle_en_base,
               "cle_appariement": stmt.excluded.cle_appariement, "ordre": stmt.excluded.ordre},
+        where=FdiSousSecteur.origine == "depot",
     ))
 
     stmt = pg_insert(FdiActivite).values([
@@ -153,19 +188,39 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
         index_elements=["code"],
         set_={"libelle_en": stmt.excluded.libelle_en, "libelle_fr": stmt.excluded.libelle_fr,
               "cle_appariement": stmt.excluded.cle_appariement, "ordre": stmt.excluded.ordre},
+        where=FdiActivite.origine == "depot",
     ))
 
-    # Ce que le dépôt ne décrit plus mais que la base porte encore : signalé,
-    # jamais supprimé en silence. Une nomenclature perd rarement des postes ;
-    # si cela arrive, c'est une décision, pas un effet de bord d'import.
-    en_base = {
-        "secteurs": set((await db.execute(select(FdiSecteur.code))).scalars()),
-        "sous_secteurs": set((await db.execute(select(FdiSousSecteur.code))).scalars()),
-        "activites": set((await db.execute(select(FdiActivite.code))).scalars()),
+    # Trois populations à distinguer dans ce que la base porte et que le dépôt
+    # ne décrit pas de la même façon :
+    #
+    #   ajouts_admin      créés à l'écran — attendus, pas des anomalies ;
+    #   proteges          présents dans les CSV mais corrigés à l'écran : le
+    #                     dépôt et la base divergent, et c'est la base qui a
+    #                     gagné. À arbitrer un jour, en connaissance de cause ;
+    #   orphelins         issus du dépôt mais disparus des CSV. Jamais
+    #                     supprimés : un poste retiré emporterait le
+    #                     rattachement des projets qui le référencent.
+    lignes = {
+        "secteurs": (await db.execute(select(FdiSecteur.code, FdiSecteur.origine))).all(),
+        "sous_secteurs": (await db.execute(select(FdiSousSecteur.code, FdiSousSecteur.origine))).all(),
+        "activites": (await db.execute(select(FdiActivite.code, FdiActivite.origine))).all(),
+    }
+    du_depot = {
+        "secteurs": {s["code"] for s in tables["secteurs"]},
+        "sous_secteurs": {s["code"] for s in tables["sous_secteurs"]},
+        "activites": {a["code"] for a in tables["activites"]},
+    }
+    rapport["ajouts_admin"] = {
+        f: sorted(c for c, o in rs if o == "admin" and c not in du_depot[f])
+        for f, rs in lignes.items()
+    }
+    rapport["proteges"] = {
+        f: sorted(c for c, o in rs if o == "admin" and c in du_depot[f])
+        for f, rs in lignes.items()
     }
     rapport["orphelins_en_base"] = {
-        "secteurs": sorted(en_base["secteurs"] - {s["code"] for s in tables["secteurs"]}),
-        "sous_secteurs": sorted(en_base["sous_secteurs"] - {s["code"] for s in tables["sous_secteurs"]}),
-        "activites": sorted(en_base["activites"] - {a["code"] for a in tables["activites"]}),
+        f: sorted(c for c, o in rs if o == "depot" and c not in du_depot[f])
+        for f, rs in lignes.items()
     }
     return rapport

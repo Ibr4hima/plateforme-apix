@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String, Integer, SmallInteger, Text, ForeignKey, UniqueConstraint, Index
+from sqlalchemy import Column, Integer, SmallInteger, Text, ForeignKey, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import TIMESTAMP
 
 from app.core.database import Base
 
@@ -22,6 +23,11 @@ class FdiSecteur(Base):
     libelle_en     = Column(Text, nullable=False, unique=True)
     libelle_fr     = Column(Text, nullable=False)
     ordre          = Column(SmallInteger, nullable=False)
+    # « depot » : la ligne suit les CSV. « admin » : elle a été créée ou
+    # corrigée à l'écran, et l'import ne la touche plus.
+    origine        = Column(Text, nullable=False, server_default="depot")
+    modifie_le     = Column(TIMESTAMP(timezone=True))
+    modifie_par    = Column(Text)
     sous_secteurs  = relationship("FdiSousSecteur", back_populates="secteur",
                                   cascade="all, delete-orphan", order_by="FdiSousSecteur.ordre")
 
@@ -42,6 +48,9 @@ class FdiSousSecteur(Base):
     # unique dans son secteur seulement, d'où la contrainte composite.
     cle_appariement = Column(Text, nullable=False)
     ordre           = Column(SmallInteger, nullable=False)
+    origine         = Column(Text, nullable=False, server_default="depot")
+    modifie_le      = Column(TIMESTAMP(timezone=True))
+    modifie_par     = Column(Text)
     secteur         = relationship("FdiSecteur", back_populates="sous_secteurs")
 
     __table_args__ = (
@@ -58,3 +67,6 @@ class FdiActivite(Base):
     libelle_fr      = Column(Text, nullable=False)
     cle_appariement = Column(Text, nullable=False, unique=True)
     ordre           = Column(SmallInteger, nullable=False)
+    origine         = Column(Text, nullable=False, server_default="depot")
+    modifie_le      = Column(TIMESTAMP(timezone=True))
+    modifie_par     = Column(Text)

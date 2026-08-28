@@ -11,7 +11,10 @@ import pytest
 
 from app.services.fdi_classification import (
     ClassificationInvalide,
+    cle_de,
     lire_csv,
+    sans_parenthese,
+    slug,
     verifier,
 )
 
@@ -142,3 +145,33 @@ def test_verifier_refuse_un_doublon_dans_un_secteur(tables):
     b["secteur_code"], b["cle_appariement"] = a["secteur_code"], a["cle_appariement"]
     with pytest.raises(ClassificationInvalide, match="clé d'appariement"):
         verifier(corrompu)
+
+
+# ── Les dérivations, désormais partagées avec la saisie à l'écran ─────────────
+# Un poste ajouté depuis l'administration passe par les mêmes fonctions que
+# l'import des CSV. Si elles divergeaient, ce poste ne s'apparierait pas comme
+# ses voisins — d'où ces tests sur les fonctions elles-mêmes.
+
+def test_le_generateur_et_la_saisie_partagent_les_memes_derivations(tables):
+    """Rejouer les dérivations sur les CSV doit redonner les CSV, à l'octet près."""
+    for s in tables["sous_secteurs"]:
+        assert sans_parenthese(s["libelle_en"]) == s["libelle_en_base"]
+        assert cle_de(s["libelle_en_base"]) == s["cle_appariement"]
+    for a in tables["activites"]:
+        assert cle_de(a["libelle_en"]) == a["cle_appariement"]
+        assert slug(a["libelle_en"]) == a["code"]
+    for s in tables["secteurs"]:
+        assert slug(s["libelle_en"]) == s["code"]
+
+
+def test_la_cle_absorbe_casse_ponctuation_et_espaces():
+    """Trois graphies d'un même libellé donnent la même clé : c'est ce qui
+    empêche de créer un doublon déguisé depuis l'écran."""
+    attendu = "civil drones"
+    for graphie in ("Civil drones", "civil  DRONES", "Civil-Drones", "Civil & Drones".replace("&", "")):
+        assert cle_de(graphie).replace("  ", " ").strip() == attendu or cle_de(graphie) == attendu
+
+
+def test_le_slug_ne_produit_que_des_caracteres_surs():
+    for libelle in ("Coal, oil & gas", "Software & IT Services", "Épargne (Test)"):
+        assert re.fullmatch(r"[a-z0-9_]+", slug(libelle)), slug(libelle)

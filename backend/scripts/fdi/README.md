@@ -65,6 +65,33 @@ Ce sont les **CSV** qui font foi, pas les classeurs : ils se relisent dans une
 revue de code, se comparent d'une version à l'autre, et n'imposent pas de
 dépendance Excel au conteneur backend.
 
+## Qui fait autorité : le dépôt ou la base ?
+
+Les deux, ligne par ligne — c'est ce que tranche la colonne `origine` :
+
+| `origine` | Sens | Comportement de l'import |
+|---|---|---|
+| `depot` | La ligne vient des CSV | Elle les suit : une correction apportée aux fichiers se propage au prochain déploiement |
+| `admin` | Elle a été créée ou corrigée dans l'écran d'administration | L'import **ne la touche plus**. La décision humaine l'emporte sur le fichier |
+
+Le rapport d'import distingue donc trois populations : les **ajouts** faits à
+l'écran, les lignes **protégées** (présentes dans les CSV *et* corrigées à
+l'écran — dépôt et base divergent, à arbitrer un jour sciemment), et les
+**orphelines** (issues du dépôt, disparues des CSV).
+
+### Renommer, ajouter — mais jamais supprimer
+
+Un projet portera l'**identifiant** du secteur, jamais son libellé. Renommer
+est donc un simple `UPDATE` : tous les projets rattachés, même ceux de 2010,
+affichent aussitôt le nouveau nom. Rien à propager.
+
+Le `code`, en revanche, ne change **jamais** après création : c'est l'identité
+stable de la ligne, ce à quoi les imports de projets s'apparient.
+
+La suppression n'existe pas, et ce n'est pas un oubli : un poste supprimé
+emporterait le rattachement de tous les projets qui le référencent. Un poste que
+fDi ne publie plus reste en base, où il continue de décrire le passé.
+
 ## Mettre à jour la nomenclature
 
 ```bash
@@ -82,9 +109,8 @@ docker compose exec -T backend python scripts/fdi/importer.py
 ```
 
 L'import est **idempotent** (upsert sur le code) : le rejouer ne duplique rien.
-Un poste présent en base mais absent des CSV est **signalé, jamais supprimé** —
-une nomenclature qui perd un poste est une décision à prendre, pas un effet de
-bord d'import.
+Il ne touche pas les lignes d'`origine = 'admin'`, et signale sans jamais
+supprimer les postes présents en base mais absents des CSV.
 
 ## Codes
 

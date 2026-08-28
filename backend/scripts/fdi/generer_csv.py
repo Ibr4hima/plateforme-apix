@@ -32,6 +32,12 @@ try:
 except ModuleNotFoundError:  # pragma: no cover — dépendance de développement
     sys.exit("openpyxl requis :  pip install openpyxl")
 
+# Les dérivations (slug, clé d'appariement) vivent dans le service : l'import
+# des fichiers et la saisie à l'écran doivent produire les mêmes formes, et deux
+# copies d'une même règle finissent toujours par diverger.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from app.services.fdi_classification import cle_de, sans_parenthese, slug  # noqa: E402
+
 DOSSIER = Path(__file__).resolve().parent
 SOURCE = DOSSIER / "source"
 CLASSIFICATION = SOURCE / "fdi_classification_fr.xlsx"
@@ -43,32 +49,6 @@ CORRESPONDANCE = SOURCE / "fdi_correspondance_en_fr.xlsx"
 # contrôle d'unicité en fin de script refuse la troncature du jour où deux
 # libellés d'un même secteur partageraient leurs 40 premiers caractères.
 CAP_CODE = 40
-
-
-def slug(valeur: str) -> str:
-    """Un identifiant stable et lisible : « Coal, oil & gas » → coal_oil_gas."""
-    txt = unicodedata.normalize("NFKD", valeur).encode("ascii", "ignore").decode()
-    txt = txt.lower().replace("&", " and ")
-    return re.sub(r"[^a-z0-9]+", "_", txt).strip("_")
-
-
-def sans_parenthese(libelle: str) -> str:
-    """Retire la parenthèse de désambiguïsation finale d'un sous-secteur.
-
-    fDi réutilise le même libellé sous plusieurs secteurs — « Other » revient
-    sous 24 d'entre eux, « Furniture & related products » sous 3 — et les
-    distingue par le nom du secteur entre parenthèses : « Other (Aerospace) ».
-    La forme nue sert de clé d'appariement avec les exports de projets, dont
-    rien ne garantit qu'ils portent la parenthèse.
-    """
-    return re.sub(r"\s*\([^)]*\)\s*$", "", libelle).strip()
-
-
-def cle(libelle: str) -> str:
-    """Forme normalisée pour l'appariement : casse, accents et « & » neutralisés."""
-    txt = unicodedata.normalize("NFKD", libelle).encode("ascii", "ignore").decode()
-    txt = txt.lower().replace("&", " and ")
-    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", txt)).strip()
 
 
 def lire_classification() -> tuple[list[tuple[str, str]], list[str]]:
@@ -151,7 +131,7 @@ def main() -> int:
             "libelle_en": en,
             "libelle_fr": fr,
             "libelle_en_base": base_en,
-            "cle_appariement": cle(base_en),
+            "cle_appariement": cle_de(base_en),
             "ordre": i + 1,
         })
 
@@ -161,7 +141,7 @@ def main() -> int:
         sys.exit(f"activités sans traduction anglaise : {manquants}")
     activites = [
         {"code": slug(trad_activite[fr]), "libelle_en": trad_activite[fr], "libelle_fr": fr,
-         "cle_appariement": cle(trad_activite[fr]), "ordre": i + 1}
+         "cle_appariement": cle_de(trad_activite[fr]), "ordre": i + 1}
         for i, fr in enumerate(activites_fr)
     ]
 
