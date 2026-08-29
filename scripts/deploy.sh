@@ -87,6 +87,14 @@ echo "▸ Import de la classification fDi Markets…"
 $COMPOSE exec -T backend python scripts/fdi/importer.py \
   || echo "  ⚠ import fDi en échec — la nomenclature sectorielle n'a pas été mise à jour."
 
+# Les pages de projets relevées à la main, ensuite : elles s'appuient sur la
+# nomenclature qui vient d'être importée pour rattacher secteurs et types. Les
+# descriptions saisies en administration et les entreprises arbitrées survivent
+# au rejeu — c'est l'empreinte de chaque ligne qui les protège.
+echo "▸ Import des projets fDi Markets…"
+$COMPOSE exec -T backend python scripts/fdi/importer_projets.py \
+  || echo "  ⚠ import des projets fDi en échec — la table des projets n'a pas été mise à jour."
+
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
 

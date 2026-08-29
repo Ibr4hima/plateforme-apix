@@ -153,3 +153,28 @@ nomenclature sans que nos URL ni nos jointures bougent.
 
 Le générateur refuse d'écrire si la troncature à 40 caractères crée une
 collision dans un secteur.
+
+## Projets (`projets/`)
+
+Un fichier par page de la source : `projets/<perimetre>_pNN.csv`. L'export fDi
+étant contingenté, les lignes sont relevées à l'écran et transcrites
+**verbatim**, troncature (`…`) et astérisques d'estimation comprises. C'est
+cette fidélité qui rend la résolution rejouable : les rattachements se
+recalculent à chaque import à partir du texte brut conservé.
+
+```bash
+# après importer.py — la résolution s'appuie sur la nomenclature
+docker compose exec -T backend python scripts/fdi/importer_projets.py
+```
+
+Un fichier = un lot, identifié par son libellé (`Sénégal · page 01`). Rejouer
+un import **ne détruit pas les saisies humaines** : à rang égal et signature
+inchangée (date, entreprise, secteur, montant, effectif, type), la ligne décrit
+le même projet, et ses descriptions comme son arbitrage d'entreprise sont
+conservés. Si la signature bouge, le rang pointe sur autre chose et l'on repart
+de zéro — mieux vaut perdre une description que la coller au mauvais projet.
+
+Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
+texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
+à l'écran (administration → Projets fDi Markets → Entreprises), les
+descriptions s'y saisissent en série.
