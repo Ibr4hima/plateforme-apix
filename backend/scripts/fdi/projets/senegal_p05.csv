@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2022,Endeavour Mining,Endeavour Mining,United Kingdom,Senegal,Metals,Nonferrous metal pr…,Manufacturing,$290.00m,"* 1,985",Expansion
+2,Apr 2022,Maystro Delivery,Maystro Delivery,UAE,Senegal,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Mar 2022,Haussmann Group,Haussmann Group,France,Senegal,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+4,Mar 2022,Yassir,Yassir,Algeria,Senegal,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+5,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Senegal,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Nov 2021,Omnium des Indu…,Ciment d'Afrique (…,Morocco,Senegal,Building materials,Cement & concrete p…,Manufacturing,* $408.10m,"* 1,000",New
+7,Sep 2021,CrossBoundary,CrossBoundary,Kenya,Senegal,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+8,Aug 2021,Hapag-Lloyd,Hapag-Lloyd,Germany,Senegal,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Aug 2021,Klingele Paper & P…,Klingele Paper & P…,Germany,Senegal,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$8.88m,40,New
+10,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Senegal,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+11,Jul 2021,Groupe Realites,Groupe Realites,France,Senegal,Real estate,Residential building …,"Sales, Marketing & S…",* $2.20m,5,New
+12,Jun 2021,Bpifrance,Bpifrance,France,Senegal,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Jan 2021,Jifmar Offshore S…,Jifmar Offshore S…,France,Senegal,"Coal, oil & gas",Support activities for…,Business Services,* $4.50m,* 55,New
+14,Nov 2020,Orange (France Te…,Orange (France Te…,France,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,Aug 2020,GQS,GQS,Australia,Senegal,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New

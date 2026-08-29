@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2020,Bertelsmann,Majorel,Germany,Senegal,Business services,Business support ser…,Business Services,* $27.80m,* 38,New
+2,May 2020,China Mobile Com…,China Mobile Inter…,China,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+3,May 2020,Mobilitas Group,Mobilitas Group,France,Senegal,Business services,Other support services,Business Services,* $27.80m,* 38,New
+4,Mar 2020,Xpertize Africa,Xpertize Africa,Morocco,Senegal,Business services,Employment services,Business Services,* $27.80m,* 38,New
+5,Feb 2020,LaStartupFactory,LaStartupFactory,Morocco,Senegal,Business services,Other support services,Business Services,* $27.80m,* 38,New
+6,Feb 2020,Myriad Group,Myriad Group,Switzerland,Senegal,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.20m,* 18,New
+7,Jan 2020,Guangdong Clean …,Guangdong Clean …,China,Senegal,Ceramics & glass,Clay product & refra…,Manufacturing,* $253.30m,"1,500",New
+8,Jan 2020,Guangzhou Sunda…,Guangzhou Sunda…,China,Senegal,Ceramics & glass,Clay product & refra…,Manufacturing,$64.00m,* 379,New
+9,Nov 2019,Mara Group,Mara Phones,UAE,Senegal,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+10,Sep 2019,African Eagle Tours,African Eagle Tours,South Africa,Senegal,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+11,Sep 2019,Galion,Galion,Tunisia,Senegal,Plastics,Plastics packaging m…,Manufacturing,* $25.20m,* 229,New
+12,Sep 2019,Katara Hospitality …,Katara Hospitality …,Qatar,Senegal,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+13,Sep 2019,Tosyali Holding,Tosyali Holding,Turkey,Senegal,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+14,Sep 2019,Tosyali Holding,Tosyali Holding,Turkey,Senegal,Metals,Steel products,Manufacturing,* $147.40m,* 443,New
+15,Aug 2019,Lufthansa,time:matters,Germany,Senegal,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
