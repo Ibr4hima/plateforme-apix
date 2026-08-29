@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2026,AVCI Global,AVCI Global,Turkey,Senegal,Textiles,Clothing & clothing a…,Manufacturing,$9.98m,200,New
+2,May 2026,Banque de dévelo…,Banque de dévelo…,Mali,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,May 2026,Banque de dévelo…,Banque de dévelo…,Mali,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,May 2026,Banque de dévelo…,Banque de dévelo…,Mali,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,May 2026,Banque de dévelo…,Banque de dévelo…,Mali,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,May 2026,Jumia,Jumia,Nigeria,Senegal,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,Expansion
+7,Apr 2026,Gide Loyrette Nouel,Gide Loyrette Nouel,France,Senegal,Business services,Legal services,Business Services,* $27.80m,* 38,New
+8,Mar 2026,De Gaulle Fleuran…,De Gaulle Fleuran…,France,Senegal,Business services,Legal services,Business Services,* $27.80m,* 38,New
+9,Feb 2026,Hayo,Hayo,United States,Senegal,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Dec 2025,LUSEO Engineering,LUSEO Engineering,United States,Senegal,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+11,Oct 2025,Indorama,Industries Chimiq…,Singapore,Senegal,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $70.00m,* 93,New
+12,Oct 2025,Indorama,Industries Chimiq…,Singapore,Senegal,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $105.00m,* 139,Expansion
+13,Oct 2025,Indorama,Industries Chimiq…,Singapore,Senegal,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $35.00m,* 46,Expansion
+14,Aug 2025,EED Advisory,EED Advisory,Kenya,Senegal,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+15,Jul 2025,ACWA Power,ACWA Power,Saudi Arabia,Senegal,Business services,"Water, sewage & oth…",Recycling,$800.00m,* 773,New

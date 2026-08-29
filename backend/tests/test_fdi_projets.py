@@ -117,3 +117,52 @@ def test_un_libelle_inconnu_est_signale(sous_secteurs):
     le rattacher au voisin le plus proche."""
     verdict, trouves = rapprocher("Quantum teleportation services", sous_secteurs)
     assert verdict == "aucun" and trouves == []
+
+
+# ── Empreinte : ce qui décide si une saisie humaine survit à un réimport ──────
+
+def test_l_empreinte_compare_des_nombres_pas_du_texte():
+    """Régression. La base rend un Decimal(« 9.60 ») là où la source donne 9.6.
+
+    Comparées en texte, ces deux valeurs déclaraient le projet « différent » à
+    chaque réimport : la description saisie à la main était effacée, et
+    l'arbitrage d'entreprise perdu. Le défaut a été trouvé en rejouant un import
+    réel, pas en relisant le code.
+    """
+    from decimal import Decimal
+    from app.services.fdi_projets import empreinte
+    depuis_la_base = empreinte(2026, 5, "Banque de dévelo…", "Financial services",
+                               "Retail banking", Decimal("9.60"), 27, "New")
+    depuis_la_source = empreinte(2026, 5, "Banque de dévelo…", "Financial services",
+                                 "Retail banking", 9.6, 27, "New")
+    assert depuis_la_base == depuis_la_source
+
+
+def test_l_empreinte_distingue_deux_projets_reellement_differents():
+    """Les trois lignes Indorama d'octobre 2025 ne diffèrent que par leur montant
+    et leur type : l'empreinte doit les séparer, sinon une description migrerait
+    de l'une à l'autre."""
+    from app.services.fdi_projets import empreinte
+    base = dict(annee=2025, mois=10, entreprise="Industries Chimiq…", secteur="Chemicals",
+                sous_secteur="Pesticide, fertilisers …", type_projet="New")
+    a = empreinte(**base, capex=70.0, emplois=93)
+    b = empreinte(**{**base, "type_projet": "Expansion"}, capex=105.0, emplois=139)
+    assert a != b
+
+
+def test_l_empreinte_ignore_les_variations_de_graphie():
+    """Une capture à une autre largeur coupe le libellé ailleurs — mais tant que
+    le préfixe conservé est le même, il s'agit du même projet."""
+    from app.services.fdi_projets import empreinte
+    a = empreinte(2026, 6, "AVCI Global", "Textiles", "Clothing & clothing a…", 9.98, 200, "New")
+    b = empreinte(2026, 6, "AVCI  Global", "Textiles", "clothing & CLOTHING a…", 9.98, 200, "New")
+    assert a == b
+
+
+def test_le_csv_versionne_est_lisible_et_ordonne():
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    lignes = lire_lot_csv(DOSSIER_PROJETS / "senegal_p01.csv")
+    assert len(lignes) == 15
+    assert [l["ligne"] for l in lignes] == list(range(1, 16))
+    assert lignes[0]["entreprise"] == "AVCI Global"
+    assert lignes[5]["type"] == "Expansion"

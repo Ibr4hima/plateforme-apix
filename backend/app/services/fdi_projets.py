@@ -19,8 +19,10 @@ rend l'interprétation rejouable, et une erreur détectable.
 """
 from __future__ import annotations
 
+import csv
 import re
 import unicodedata
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover — annotation seule
@@ -124,3 +126,241 @@ def lire_date(brut: str) -> tuple[int, int | None]:
             mois = num
             break
     return int(an.group(0)), mois
+
+
+# ── Lecture des CSV versionnés ────────────────────────────────────────────────
+DOSSIER_PROJETS = Path(__file__).resolve().parents[2] / "scripts" / "fdi" / "projets"
+
+COLONNES = ["ligne", "date", "parent", "entreprise", "source", "dest",
+            "secteur", "sous_secteur", "activite", "capex", "emplois", "type"]
+
+
+def lire_lot_csv(chemin: Path) -> list[dict]:
+    """Un fichier de page, tel que relevé sur la source.
+
+    Les valeurs y sont VERBATIM, troncature comprise : c'est la trace de ce que
+    fDi affichait, et ce qui rend la résolution rejouable.
+    """
+    with chemin.open(encoding="utf-8") as f:
+        lignes = list(csv.DictReader(f))
+    if not lignes:
+        raise LigneInvalide(f"{chemin.name} est vide")
+    manquantes = [c for c in COLONNES if c not in lignes[0]]
+    if manquantes:
+        raise LigneInvalide(f"{chemin.name} : colonnes manquantes {manquantes}")
+    for l in lignes:
+        l["ligne"] = int(l["ligne"])
+    rangs = [l["ligne"] for l in lignes]
+    if sorted(rangs) != list(range(1, len(lignes) + 1)):
+        raise LigneInvalide(f"{chemin.name} : les rangs ne sont pas 1..{len(lignes)}")
+    return sorted(lignes, key=lambda l: l["ligne"])
+
+
+def empreinte(annee: int | None, mois: int | None, entreprise: str | None,
+              secteur: str | None, sous_secteur: str | None,
+              capex: float | None, emplois: int | None, type_projet: str | None) -> tuple:
+    """Ce qui identifie une ligne dans son lot, description exclue.
+
+    Sert au réimport : empreinte inchangée, la ligne décrit le même projet et
+    l'on garde ce qu'un humain y a saisi. Empreinte différente, le rang pointe
+    sur autre chose — mieux vaut perdre une description que la coller sur un
+    projet qui n'est plus le sien.
+
+    Les nombres sont comparés en NOMBRES, jamais en texte : la base rend un
+    Decimal(« 9.60 ») là où la source donne 9.6, et une comparaison de chaînes
+    déclarerait deux fois le même projet différent. C'est arrivé — la
+    description d'une ligne a été effacée à un réimport avant que ce test ne
+    l'attrape.
+    """
+    return (
+        annee, mois,
+        normaliser(entreprise or ""), normaliser(secteur or ""), normaliser(sous_secteur or ""),
+        None if capex is None else round(float(capex), 2),
+        None if emplois is None else int(emplois),
+        normaliser(type_projet or ""),
+    )
+
+
+# ── Écriture ─────────────────────────────────────────────────────────────────
+async def _referentiels(db: "AsyncSession") -> dict:
+    """Les nomenclatures en mémoire : 332 lignes, une requête par famille."""
+    from sqlalchemy import text
+    async def q(sql):
+        return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
+    return {
+        "secteurs":  await q("SELECT id, code, libelle_en FROM fdi_secteurs"),
+        "sous":      await q("SELECT id, secteur_id, libelle_en FROM fdi_sous_secteurs"),
+        "activites": await q("SELECT id, libelle_en FROM fdi_activites"),
+        "types":     await q("SELECT id, libelle_en FROM fdi_types_projet"),
+    }
+
+
+async def _entreprise(db: "AsyncSession", brut: str | None, utilisateur: str | None):
+    """L'entreprise derrière un nom, éventuellement tronqué.
+
+    Un nom COMPLET est une identité : on rattache et l'on considère la question
+    réglée. Un nom TRONQUÉ ne l'est pas — « Banque de dévelo… » peut désigner
+    plusieurs banques — alors on rattache quand même, pour ne pas perdre le
+    projet, mais au statut « proposé » : l'écran d'arbitrage le soumettra, et
+    rien n'est compté comme sûr entre-temps.
+    """
+    from sqlalchemy import text
+    if not brut or not brut.strip():
+        return None, "en_attente"
+    brut = " ".join(brut.split())
+    cle = normaliser(brut)
+    tronque = est_tronque(brut)
+
+    # La mémoire des arbitrages d'abord : si ce texte a déjà été tranché, on
+    # repropose la même entreprise plutôt que d'en créer une jumelle.
+    r = (await db.execute(text(
+        "SELECT entreprise_id FROM fdi_entreprise_alias WHERE alias_normalise = :c "
+        "ORDER BY occurrences DESC LIMIT 1"), {"c": cle})).first()
+    if r:
+        return r.entreprise_id, ("propose" if tronque else "resolu")
+
+    r = (await db.execute(text(
+        "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
+    if not r:
+        r = (await db.execute(text(
+            "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_par) "
+            "VALUES (:n, :c, :s, :u) RETURNING id"),
+            {"n": brut, "c": cle, "s": "tronque" if tronque else "complet", "u": utilisateur})).first()
+    await db.execute(text(
+        "INSERT INTO fdi_entreprise_alias (alias_brut, alias_normalise, tronque, entreprise_id, decide_par) "
+        "VALUES (:b, :c, :t, :e, :u) ON CONFLICT (alias_normalise, entreprise_id) DO NOTHING"),
+        {"b": brut, "c": cle, "t": tronque, "e": r.id, "u": utilisateur})
+    return r.id, ("propose" if tronque else "resolu")
+
+
+async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
+                       lignes: list[dict], utilisateur: str | None = None) -> dict:
+    """Écrit un lot de projets. Rejouable, et respectueux des saisies humaines.
+
+    Le lot est remplacé, jamais fusionné ligne à ligne avec l'existant : sans
+    identifiant de projet chez fDi, rien ne permettrait de rapprocher deux
+    lignes jumelles sans risquer d'en perdre une.
+
+    Mais « remplacer » ne veut pas dire « effacer ce qu'un humain a saisi ». À
+    rang égal ET signature inchangée, la ligne décrit le même projet : ses
+    descriptions et ses arbitrages d'entreprise sont conservés. Si la signature
+    a bougé, le rang pointe sur autre chose et l'on repart de zéro — coller une
+    description sur un projet qui n'est plus le sien serait pire que de la
+    perdre.
+    """
+    from sqlalchemy import text
+
+    ref = await _referentiels(db)
+    par_secteur: dict[int, list] = {}
+    for s in ref["sous"]:
+        par_secteur.setdefault(s["secteur_id"], []).append(s)
+
+    lot = (await db.execute(text("SELECT id FROM fdi_lots_import WHERE libelle = :l"),
+                            {"l": libelle})).first()
+    if lot:
+        lot_id = lot.id
+        await db.execute(text(
+            "UPDATE fdi_lots_import SET perimetre = :p, importe_le = now(), importe_par = :u, "
+            "nb_lignes = :n WHERE id = :i"),
+            {"p": perimetre, "u": utilisateur, "n": len(lignes), "i": lot_id})
+    else:
+        lot_id = (await db.execute(text(
+            "INSERT INTO fdi_lots_import (libelle, perimetre, source, importe_par, nb_lignes) "
+            "VALUES (:l, :p, 'saisie', :u, :n) RETURNING id"),
+            {"l": libelle, "p": perimetre, "u": utilisateur, "n": len(lignes)})).first().id
+
+    # Ce que le lot contenait déjà, pour savoir quoi préserver.
+    avant = {r.ligne: dict(r._mapping) for r in (await db.execute(text(
+        "SELECT ligne, description_en, description_fr, entreprise_id, parent_id, "
+        "       statut_entreprise, secteur_brut, sous_secteur_brut, entreprise_brut, "
+        "       annee, mois, capex_musd, emplois, type_brut "
+        "FROM fdi_projets WHERE lot_id = :i"), {"i": lot_id})).fetchall()}
+
+    rapport = {"lignes": len(lignes), "non_resolus": [], "preserves": 0, "entreprises_a_arbitrer": 0}
+
+    for l in lignes:
+        annee, mois = lire_date(l["date"])
+        capex, capex_est = lire_montant(l.get("capex"))
+        emplois, emplois_est = lire_entier(l.get("emplois"))
+
+        vs, cs = rapprocher(l.get("secteur", ""), ref["secteurs"])
+        secteur_id = cs[0]["id"] if vs in ("exact", "unique") else None
+        if secteur_id is None:
+            rapport["non_resolus"].append((l["ligne"], "secteur", l.get("secteur"), vs))
+
+        sous_id = None
+        if secteur_id:
+            vss, css = rapprocher(l.get("sous_secteur", ""), par_secteur.get(secteur_id, []))
+            sous_id = css[0]["id"] if vss in ("exact", "unique") else None
+            if sous_id is None:
+                rapport["non_resolus"].append((l["ligne"], "sous-secteur", l.get("sous_secteur"), vss))
+
+        va, ca = rapprocher(l.get("activite", ""), ref["activites"])
+        activite_id = ca[0]["id"] if va in ("exact", "unique") else None
+        if activite_id is None:
+            rapport["non_resolus"].append((l["ligne"], "activité", l.get("activite"), va))
+
+        vt, ct = rapprocher(l.get("type", ""), ref["types"])
+        type_id = ct[0]["id"] if vt in ("exact", "unique") else None
+        if type_id is None and (l.get("type") or "").strip():
+            rapport["non_resolus"].append((l["ligne"], "type", l.get("type"), vt))
+
+        parent_id, _ = await _entreprise(db, l.get("parent"), utilisateur)
+        ent_id, statut = await _entreprise(db, l.get("entreprise"), utilisateur)
+        if statut != "resolu":
+            rapport["entreprises_a_arbitrer"] += 1
+
+        # Préservation : même rang, même signature → c'est le même projet.
+        ancien = avant.get(l["ligne"])
+        garde = ancien is not None and empreinte(
+            ancien["annee"], ancien["mois"], ancien["entreprise_brut"], ancien["secteur_brut"],
+            ancien["sous_secteur_brut"], ancien["capex_musd"], ancien["emplois"], ancien["type_brut"],
+        ) == empreinte(annee, mois, l.get("entreprise"), l.get("secteur"),
+                       l.get("sous_secteur"), capex, emplois, l.get("type"))
+        if garde:
+            rapport["preserves"] += 1
+
+        await db.execute(text("""
+            INSERT INTO fdi_projets (lot_id, ligne, annee, mois, parent_brut, parent_id,
+                entreprise_brut, entreprise_id, statut_entreprise, pays_source_brut,
+                pays_dest_brut, secteur_brut, secteur_id, sous_secteur_brut, sous_secteur_id,
+                activite_brut, activite_id, type_brut, type_projet_id, capex_musd, capex_estime,
+                emplois, emplois_estime, modifie_par)
+            VALUES (:lot, :ligne, :annee, :mois, :pb, :pi, :eb, :ei, :se, :src, :dst,
+                :secb, :seci, :ssb, :ssi, :ab, :ai, :tb, :ti, :cap, :cape, :emp, :empe, :u)
+            ON CONFLICT (lot_id, ligne) DO UPDATE SET
+                annee = EXCLUDED.annee, mois = EXCLUDED.mois,
+                parent_brut = EXCLUDED.parent_brut, entreprise_brut = EXCLUDED.entreprise_brut,
+                pays_source_brut = EXCLUDED.pays_source_brut, pays_dest_brut = EXCLUDED.pays_dest_brut,
+                secteur_brut = EXCLUDED.secteur_brut, secteur_id = EXCLUDED.secteur_id,
+                sous_secteur_brut = EXCLUDED.sous_secteur_brut, sous_secteur_id = EXCLUDED.sous_secteur_id,
+                activite_brut = EXCLUDED.activite_brut, activite_id = EXCLUDED.activite_id,
+                type_brut = EXCLUDED.type_brut, type_projet_id = EXCLUDED.type_projet_id,
+                capex_musd = EXCLUDED.capex_musd, capex_estime = EXCLUDED.capex_estime,
+                emplois = EXCLUDED.emplois, emplois_estime = EXCLUDED.emplois_estime,
+                -- Saisies humaines : conservées si la ligne décrit le même projet.
+                description_en = CASE WHEN :garde THEN fdi_projets.description_en ELSE NULL END,
+                description_fr = CASE WHEN :garde THEN fdi_projets.description_fr ELSE NULL END,
+                entreprise_id = CASE WHEN :garde AND fdi_projets.statut_entreprise = 'resolu'
+                                     THEN fdi_projets.entreprise_id ELSE EXCLUDED.entreprise_id END,
+                parent_id = CASE WHEN :garde AND fdi_projets.statut_entreprise = 'resolu'
+                                 THEN fdi_projets.parent_id ELSE EXCLUDED.parent_id END,
+                statut_entreprise = CASE WHEN :garde AND fdi_projets.statut_entreprise = 'resolu'
+                                         THEN 'resolu' ELSE EXCLUDED.statut_entreprise END,
+                modifie_le = now(), modifie_par = EXCLUDED.modifie_par
+        """), {"lot": lot_id, "ligne": l["ligne"], "annee": annee, "mois": mois,
+               "pb": l.get("parent"), "pi": parent_id, "eb": l.get("entreprise"), "ei": ent_id,
+               "se": statut, "src": l.get("source"), "dst": l.get("dest"),
+               "secb": l.get("secteur"), "seci": secteur_id,
+               "ssb": l.get("sous_secteur"), "ssi": sous_id,
+               "ab": l.get("activite"), "ai": activite_id,
+               "tb": l.get("type"), "ti": type_id, "cap": capex, "cape": capex_est,
+               "emp": emplois, "empe": emplois_est, "u": utilisateur, "garde": garde})
+
+    # Une page qui rétrécit : les rangs disparus n'ont plus de projet en face.
+    supprimes = (await db.execute(text(
+        "DELETE FROM fdi_projets WHERE lot_id = :i AND ligne > :n RETURNING id"),
+        {"i": lot_id, "n": len(lignes)})).fetchall()
+    rapport["supprimes"] = len(supprimes)
+    rapport["lot_id"] = lot_id
+    return rapport
