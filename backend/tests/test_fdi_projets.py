@@ -241,3 +241,54 @@ def test_les_filtres_multiples_se_separent_par_barre_verticale():
     assert _liste("Pesticide, fertilisers & other agricultural chemicals") == \
         ["Pesticide, fertilisers & other agricultural chemicals"]
     assert _liste(None) == [] and _liste("") == []
+
+
+# ── Variantes de graphie : quand fDi se contredit lui-même ────────────────────
+
+def test_la_source_ecrit_deux_fois_le_meme_poste():
+    """Régression, relevée sur la page 2 du Sénégal.
+
+    Le classeur de classification écrit « Computing infrastucture », la table
+    des projets « Computing infrastructure ». Le libellé de la nomenclature
+    reste verbatim — c'est la source — et la variante s'ajoute comme second
+    chemin vers le même poste.
+    """
+    from app.services.fdi_projets import lire_variantes
+    variantes = lire_variantes()
+    codes = [c for c, _ in variantes.get("sous", [])]
+    assert "communications__computing_infrastucture_providers_data_p" in codes
+
+
+def test_deux_graphies_du_meme_poste_ne_font_pas_une_ambiguite():
+    """L'ambiguïté, c'est deux POSTES possibles — pas deux libellés d'un seul.
+
+    Sans cette distinction, ajouter une variante rendrait indécidable ce qui
+    l'était parfaitement.
+    """
+    candidats = [
+        {"id": 68, "libelle_en": "Computing infrastucture providers, data processing"},
+        {"id": 68, "libelle_en": "Computing infrastructure providers, data processing"},
+    ]
+    verdict, trouves = rapprocher("Computing infrastruc…", candidats)
+    assert verdict == "unique" and trouves[0]["id"] == 68
+
+
+def test_deux_postes_distincts_restent_ambigus():
+    """Le garde-fou de la règle précédente : des identifiants différents
+    n'autorisent toujours aucune devinette."""
+    candidats = [{"id": 1, "libelle_en": "Pipeline transportation of crude oil"},
+                 {"id": 2, "libelle_en": "Pipeline transportation of natural gas"}]
+    verdict, trouves = rapprocher("Pipeline transportation…", candidats)
+    assert verdict == "ambigu" and len(trouves) == 2
+
+
+def test_la_page_2_est_lisible_et_ordonnee():
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    lignes = lire_lot_csv(DOSSIER_PROJETS / "senegal_p02.csv")
+    assert len(lignes) == 15
+    assert [l["ligne"] for l in lignes] == list(range(1, 16))
+    # Le milliard de DP World, déclaré ; ses 3 000 emplois, estimés.
+    dp = lignes[12]
+    assert dp["entreprise"] == "DP World"
+    assert lire_montant(dp["capex"]) == (1200.0, False)
+    assert lire_entier(dp["emplois"]) == (3000, True)

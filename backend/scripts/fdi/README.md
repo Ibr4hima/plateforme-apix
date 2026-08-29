@@ -194,6 +194,18 @@ le code ISO. Deux échecs sont distingués à l'import, car ils n'appellent pas 
 même correction : *hors correspondance* (graphie nouvelle chez fDi → compléter
 ce CSV) et *absent de ref_pays* (pays inconnu du référentiel → migration).
 
+### Variantes de graphie (`fdi_variantes.csv`)
+
+fDi n'est pas cohérent avec lui-même : son classeur de classification écrit
+« Computing **infrastucture** », sa table des projets « Computing
+**infrastructure** ». Le libellé de la nomenclature reste **verbatim** — le
+corriger casserait l'appariement dans l'autre sens — et la variante s'ajoute à
+côté comme second chemin vers le même poste, avec le motif qui l'a justifiée.
+
+Deux graphies d'un même poste ne créent pas d'ambiguïté : l'appariement
+distingue « deux libellés d'une seule entité » de « deux entités possibles »,
+et ne devine toujours pas dans le second cas.
+
 Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
 texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
 à l'écran (administration → Projets fDi Markets → Entreprises), les

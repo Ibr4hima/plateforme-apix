@@ -71,8 +71,12 @@ def rapprocher(brut: str, candidats: list[dict], champ: str = "libelle_en") -> t
     if exacts:
         return "exact", exacts[:1]
     prefixes = [c for c in candidats if normaliser(c[champ]).startswith(cle)]
-    if len(prefixes) == 1:
-        return "unique", prefixes
+    # Une entité peut porter plusieurs libellés (cf. fdi_variantes.csv) : deux
+    # graphies du MÊME poste ne sont pas une ambiguïté, seulement deux chemins
+    # vers lui. L'ambiguïté, c'est deux postes différents.
+    ids = {c.get("id") for c in prefixes}
+    if len(prefixes) == 1 or (len(ids) == 1 and None not in ids):
+        return "unique", prefixes[:1]
     return ("ambigu", prefixes) if prefixes else ("aucun", [])
 
 
@@ -187,6 +191,37 @@ def lire_pays_csv() -> dict[str, str]:
     return table
 
 
+FICHIER_VARIANTES = DOSSIER_PROJETS.parent / "fdi_variantes.csv"
+
+FAMILLES_VARIANTES = {"secteur": "secteurs", "sous_secteur": "sous",
+                      "activite": "activites", "type": "types"}
+
+
+def lire_variantes() -> dict[str, list[tuple[str, str]]]:
+    """Les libellés que la table des projets écrit autrement que la nomenclature.
+
+    fDi n'est pas cohérent avec lui-même : le classeur de classification écrit
+    « Computing infrastucture », la table des projets « Computing
+    infrastructure ». Le libellé de la nomenclature reste VERBATIM — c'est la
+    source — et la variante s'ajoute à côté comme second chemin vers le même
+    poste. Corriger le libellé casserait l'appariement dans l'autre sens.
+
+    Chaque ligne porte son motif : une correspondance sans raison écrite est
+    une correspondance qu'on n'ose plus toucher.
+    """
+    if not FICHIER_VARIANTES.exists():
+        return {}
+    par_famille: dict[str, list[tuple[str, str]]] = {}
+    with FICHIER_VARIANTES.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            famille = FAMILLES_VARIANTES.get(l["famille"])
+            if famille is None:
+                raise LigneInvalide(
+                    f"{FICHIER_VARIANTES.name} : famille inconnue « {l['famille']} »")
+            par_famille.setdefault(famille, []).append((l["code"], l["libelle_alias"]))
+    return par_famille
+
+
 def empreinte(annee: int | None, mois: int | None, entreprise: str | None,
               secteur: str | None, sous_secteur: str | None,
               capex: float | None, emplois: int | None, type_projet: str | None) -> tuple:
@@ -218,16 +253,29 @@ async def _referentiels(db: "AsyncSession") -> dict:
     from sqlalchemy import text
     async def q(sql):
         return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
-    return {
+    ref = {
         "secteurs":  await q("SELECT id, code, libelle_en FROM fdi_secteurs"),
-        "sous":      await q("SELECT id, secteur_id, libelle_en FROM fdi_sous_secteurs"),
-        "activites": await q("SELECT id, libelle_en FROM fdi_activites"),
-        "types":     await q("SELECT id, libelle_en FROM fdi_types_projet"),
+        "sous":      await q("SELECT id, code, secteur_id, libelle_en FROM fdi_sous_secteurs"),
+        "activites": await q("SELECT id, code, libelle_en FROM fdi_activites"),
+        "types":     await q("SELECT id, code, libelle_en FROM fdi_types_projet"),
         # Le référentiel pays de la plateforme, indexé par code ISO : c'est lui
         # que la correspondance anglaise vient rejoindre.
         "pays":      {r["code_iso3"]: r["id"] for r in
                       await q("SELECT id, code_iso3 FROM ref_pays WHERE code_iso3 IS NOT NULL")},
     }
+
+    # Les variantes de graphie deviennent des candidats de plus, portant le même
+    # identifiant que le poste qu'elles désignent : l'appariement les trouve, et
+    # le projet se rattache au bon poste sans qu'aucun libellé soit réécrit.
+    for famille, alias in lire_variantes().items():
+        par_code = {r["code"]: r for r in ref[famille]}
+        for code, libelle in alias:
+            poste = par_code.get(code)
+            if poste is None:
+                raise LigneInvalide(
+                    f"{FICHIER_VARIANTES.name} : code « {code} » absent de la nomenclature")
+            ref[famille].append({**poste, "libelle_en": libelle})
+    return ref
 
 
 def _pays(brut: str | None, correspondance: dict[str, str], ref: dict[str, int]):
