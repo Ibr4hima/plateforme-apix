@@ -156,6 +156,37 @@ def lire_lot_csv(chemin: Path) -> list[dict]:
     return sorted(lignes, key=lambda l: l["ligne"])
 
 
+FICHIER_PAYS = DOSSIER_PROJETS.parent / "fdi_pays.csv"
+
+
+def lire_pays_csv() -> dict[str, str]:
+    """La correspondance « pays anglais de fDi » → code ISO 3166 alpha-3.
+
+    fDi nomme ses pays en anglais (« Turkey »), le référentiel de la plateforme
+    les nomme en français (« Turquie ») et ne porte pas de nom anglais. Le
+    rapprochement passe donc par une table explicite, jamais par une devinette
+    de similarité : « Niger » et « Nigeria » se ressemblent assez pour qu'une
+    heuristique se trompe, et un projet attribué au mauvais pays est une erreur
+    invisible.
+
+    Le code ISO fait le pont : il ne change pas quand un pays est renommé en
+    base. Plusieurs libellés peuvent viser le même code — « Turkey », « Türkiye »
+    — car la source varie sa graphie avec le temps.
+    """
+    if not FICHIER_PAYS.exists():
+        raise LigneInvalide(f"{FICHIER_PAYS.name} est introuvable")
+    table: dict[str, str] = {}
+    with FICHIER_PAYS.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            cle = normaliser(l["libelle_en"])
+            if cle in table and table[cle] != l["code_iso3"]:
+                raise LigneInvalide(
+                    f"{FICHIER_PAYS.name} : « {l['libelle_en']} » vise deux pays "
+                    f"({table[cle]} et {l['code_iso3']})")
+            table[cle] = l["code_iso3"]
+    return table
+
+
 def empreinte(annee: int | None, mois: int | None, entreprise: str | None,
               secteur: str | None, sous_secteur: str | None,
               capex: float | None, emplois: int | None, type_projet: str | None) -> tuple:
@@ -192,7 +223,30 @@ async def _referentiels(db: "AsyncSession") -> dict:
         "sous":      await q("SELECT id, secteur_id, libelle_en FROM fdi_sous_secteurs"),
         "activites": await q("SELECT id, libelle_en FROM fdi_activites"),
         "types":     await q("SELECT id, libelle_en FROM fdi_types_projet"),
+        # Le référentiel pays de la plateforme, indexé par code ISO : c'est lui
+        # que la correspondance anglaise vient rejoindre.
+        "pays":      {r["code_iso3"]: r["id"] for r in
+                      await q("SELECT id, code_iso3 FROM ref_pays WHERE code_iso3 IS NOT NULL")},
     }
+
+
+def _pays(brut: str | None, correspondance: dict[str, str], ref: dict[str, int]):
+    """(identifiant ref_pays, motif d'échec) — l'un ou l'autre, jamais les deux.
+
+    Deux échecs distincts, et il importe de les distinguer : un pays que la
+    correspondance ignore (graphie nouvelle chez fDi) se corrige dans le CSV ;
+    un pays connu mais absent de ref_pays se corrige par une migration du
+    référentiel. Dans les deux cas la ligne entre en base avec son texte brut.
+    """
+    if not brut or not brut.strip():
+        return None, None
+    code = correspondance.get(normaliser(brut))
+    if code is None:
+        return None, "hors correspondance"
+    pays_id = ref.get(code)
+    if pays_id is None:
+        return None, f"{code} absent de ref_pays"
+    return pays_id, None
 
 
 async def _entreprise(db: "AsyncSession", brut: str | None, utilisateur: str | None):
@@ -251,6 +305,7 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     from sqlalchemy import text
 
     ref = await _referentiels(db)
+    pays_en = lire_pays_csv()
     par_secteur: dict[int, list] = {}
     for s in ref["sous"]:
         par_secteur.setdefault(s["secteur_id"], []).append(s)
@@ -305,6 +360,13 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         if type_id is None and (l.get("type") or "").strip():
             rapport["non_resolus"].append((l["ligne"], "type", l.get("type"), vt))
 
+        src_id, src_motif = _pays(l.get("source"), pays_en, ref["pays"])
+        if src_motif:
+            rapport["non_resolus"].append((l["ligne"], "pays d'origine", l.get("source"), src_motif))
+        dst_id, dst_motif = _pays(l.get("dest"), pays_en, ref["pays"])
+        if dst_motif:
+            rapport["non_resolus"].append((l["ligne"], "pays de destination", l.get("dest"), dst_motif))
+
         parent_id, _ = await _entreprise(db, l.get("parent"), utilisateur)
         ent_id, statut = await _entreprise(db, l.get("entreprise"), utilisateur)
         if statut != "resolu":
@@ -323,15 +385,17 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         await db.execute(text("""
             INSERT INTO fdi_projets (lot_id, ligne, annee, mois, parent_brut, parent_id,
                 entreprise_brut, entreprise_id, statut_entreprise, pays_source_brut,
-                pays_dest_brut, secteur_brut, secteur_id, sous_secteur_brut, sous_secteur_id,
+                pays_source_id, pays_dest_brut, pays_dest_id,
+                secteur_brut, secteur_id, sous_secteur_brut, sous_secteur_id,
                 activite_brut, activite_id, type_brut, type_projet_id, capex_musd, capex_estime,
                 emplois, emplois_estime, modifie_par)
-            VALUES (:lot, :ligne, :annee, :mois, :pb, :pi, :eb, :ei, :se, :src, :dst,
+            VALUES (:lot, :ligne, :annee, :mois, :pb, :pi, :eb, :ei, :se, :src, :srci, :dst, :dsti,
                 :secb, :seci, :ssb, :ssi, :ab, :ai, :tb, :ti, :cap, :cape, :emp, :empe, :u)
             ON CONFLICT (lot_id, ligne) DO UPDATE SET
                 annee = EXCLUDED.annee, mois = EXCLUDED.mois,
                 parent_brut = EXCLUDED.parent_brut, entreprise_brut = EXCLUDED.entreprise_brut,
-                pays_source_brut = EXCLUDED.pays_source_brut, pays_dest_brut = EXCLUDED.pays_dest_brut,
+                pays_source_brut = EXCLUDED.pays_source_brut, pays_source_id = EXCLUDED.pays_source_id,
+                pays_dest_brut = EXCLUDED.pays_dest_brut, pays_dest_id = EXCLUDED.pays_dest_id,
                 secteur_brut = EXCLUDED.secteur_brut, secteur_id = EXCLUDED.secteur_id,
                 sous_secteur_brut = EXCLUDED.sous_secteur_brut, sous_secteur_id = EXCLUDED.sous_secteur_id,
                 activite_brut = EXCLUDED.activite_brut, activite_id = EXCLUDED.activite_id,
@@ -350,7 +414,8 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
                 modifie_le = now(), modifie_par = EXCLUDED.modifie_par
         """), {"lot": lot_id, "ligne": l["ligne"], "annee": annee, "mois": mois,
                "pb": l.get("parent"), "pi": parent_id, "eb": l.get("entreprise"), "ei": ent_id,
-               "se": statut, "src": l.get("source"), "dst": l.get("dest"),
+               "se": statut, "src": l.get("source"), "srci": src_id,
+               "dst": l.get("dest"), "dsti": dst_id,
                "secb": l.get("secteur"), "seci": secteur_id,
                "ssb": l.get("sous_secteur"), "ssi": sous_id,
                "ab": l.get("activite"), "ai": activite_id,

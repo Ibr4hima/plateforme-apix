@@ -1,9 +1,15 @@
 "use client";
 
-// Projets fDi Markets — consultation, arbitrage des entreprises, saisie des
-// descriptions.
+// fDi Markets — les trois bases du fournisseur, sous leur nom d'origine.
 //
-// Trois vues, deux natures de travail :
+//   PROJECT DATABASE   les projets annoncés. Seule base chargée à ce jour.
+//   INVESTOR SIGNALS   les intentions déclarées, en amont du projet.
+//   COMPANY DATABASE   les entreprises investisseuses.
+//
+// Les deux dernières sont annoncées avant d'être remplies, et le disent : un
+// onglet qui n'existe pas laisse croire que la source s'arrête là.
+//
+// Sous « Project database », trois vues, deux natures de travail :
 //
 //   PROJETS       ce qui est entré. Les montants et effectifs estimés par
 //                 l'algorithme du Financial Times y sont marqués : afficher une
@@ -31,6 +37,7 @@ type Projet = {
   entreprise: string | null; entreprise_brut: string | null; entreprise_tronquee: boolean;
   parent: string | null; statut_entreprise: "resolu" | "propose" | "en_attente";
   source: string | null; destination: string | null;
+  source_resolue: boolean; destination_resolue: boolean;
   secteur: string | null; sous_secteur: string | null; activite: string | null; type_projet: string | null;
   capex_musd: number | null; capex_estime: boolean | null;
   emplois: number | null; emplois_estime: boolean | null;
@@ -61,6 +68,18 @@ function Valeur({ v, estime, unite }: { v: number | null; estime: boolean | null
   );
 }
 
+/** Un pays du référentiel s'écrit en français. Un pays que le rapprochement
+    n'a pas atteint garde le libellé anglais de la source, en gris et signalé :
+    la lacune se voit, et personne ne prend « Turkey » pour un nom canonique. */
+function Pays({ nom, resolu }: { nom: string | null; resolu: boolean }) {
+  if (!nom) return <span style={{ color: "var(--gris)" }}>—</span>;
+  if (resolu) return <>{nom}</>;
+  return (
+    <span title="Libellé de la source, non rapproché du référentiel pays."
+      style={{ color: "var(--gris-fort)", fontStyle: "italic" }}>{nom}</span>
+  );
+}
+
 function Pastille({ children, couleur, titre }: {
   children: React.ReactNode; couleur: string; titre?: string;
 }) {
@@ -80,6 +99,7 @@ export default function AdminFdiProjets() {
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [base, setBase] = useState<"projets" | "signaux" | "entreprises">("projets");
   const [vue, setVue] = useState<"projets" | "entreprises" | "descriptions">("projets");
   const [recherche, setRecherche] = useState("");
 
@@ -104,19 +124,36 @@ export default function AdminFdiProjets() {
     const q = norm(recherche.trim());
     if (!q) return projets;
     return projets.filter(p => [p.entreprise, p.parent, p.secteur, p.sous_secteur,
-      p.source, p.type_projet].some(v => v && norm(v).includes(q)));
+      p.source, p.destination, p.type_projet].some(v => v && norm(v).includes(q)));
   }, [projets, recherche]);
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1280, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--encre)", marginBottom: 4 }}>
-        Projets fDi Markets
+        fDi Markets
       </h1>
       <p style={{ fontSize: 13, color: "var(--gris)", lineHeight: 1.6, marginBottom: 18 }}>
         Les investissements <em>annoncés</em>, relevés dans la base du Financial Times.
         Ils disent ce qui a été décidé, quand la CNUCED mesure ce qui est entré.
       </p>
 
+      {/* Les trois bases du fournisseur, sous leur nom d'origine : c'est celui
+          que les analystes lisent dans fDi, et le traduire ferait chercher. */}
+      <div style={{ marginBottom: 18 }}>
+        <Segments
+          options={[
+            { v: "projets" as const,     l: "Project database" },
+            { v: "signaux" as const,     l: "Investor signals" },
+            { v: "entreprises" as const, l: "Company database" },
+          ]}
+          value={base} onChange={setBase}
+        />
+      </div>
+
+      {base !== "projets" ? (
+        <ABientot base={base} />
+      ) : (
+      <>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
         <Compteur n={totaux.total} mot="projet" />
         {totaux.a_arbitrer > 0 && (
@@ -166,7 +203,33 @@ export default function AdminFdiProjets() {
       ) : (
         <VueDescriptions projets={projets} onFait={async (t) => { annoncer(t); await charger(); }} />
       )}
+      </>
+      )}
     </div>
+  );
+}
+
+/** Une base annoncée, pas encore chargée. Dire ce qu'elle contient vaut mieux
+    qu'un onglet vide : le lecteur sait ce qui viendra, et ce qui manque. */
+function ABientot({ base }: { base: "signaux" | "entreprises" }) {
+  const t = base === "signaux"
+    ? { titre: "Investor signals",
+        quoi: "Les intentions déclarées par les investisseurs — recrutement, recherche de site, levée de fonds — en amont de tout projet annoncé.",
+        ou: "La nomenclature des signaux est déjà en base, et se consulte dans « Classification fDi Markets »." }
+    : { titre: "Company database",
+        quoi: "Les entreprises investisseuses : siège, secteur, historique de leurs implantations.",
+        ou: "Les entreprises rencontrées dans les projets sont déjà tenues à jour par l'arbitrage des noms, sous « Project database »." };
+  return (
+    <Carte titre={t.titre}>
+      <div style={{ padding: "30px 4px", textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: "var(--gris-fort)", lineHeight: 1.7, maxWidth: 620, margin: "0 auto 10px" }}>
+          {t.quoi}
+        </p>
+        <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.7, maxWidth: 620, margin: "0 auto" }}>
+          Base non encore chargée. {t.ou}
+        </p>
+      </div>
+    </Carte>
   );
 }
 
@@ -178,7 +241,7 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
       aide={
         <>
           Un <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈</span> devant un montant ou
-          un effectif signale une valeur <strong>estimée</strong> par l&apos;algorithme du Financial
+          un effectif signale une valeur <strong>estimée</strong>{" "}par l&apos;algorithme du Financial
           Times, et non déclarée par l&apos;entreprise. La distinction n&apos;est pas cosmétique :
           l&apos;essentiel des capex de ce périmètre sont des estimations.
         </>
@@ -197,6 +260,7 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
                   <th style={TH}>Période</th>
                   <th style={TH}>Entreprise</th>
                   <th style={TH}>Origine</th>
+                  <th style={TH}>Destination</th>
                   <th style={TH}>Secteur</th>
                   <th style={TH}>Activité</th>
                   <th style={TH}>Type</th>
@@ -221,7 +285,12 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
                         )}
                       </span>
                     </td>
-                    <td style={{ ...TD, whiteSpace: "nowrap" }}>{p.source ?? "—"}</td>
+                    <td style={{ ...TD, whiteSpace: "nowrap" }}>
+                      <Pays nom={p.source} resolu={p.source_resolue} />
+                    </td>
+                    <td style={{ ...TD, whiteSpace: "nowrap" }}>
+                      <Pays nom={p.destination} resolu={p.destination_resolue} />
+                    </td>
                     <td style={TD}>
                       <span style={{ display: "flex", flexDirection: "column", gap: 1 }}>
                         <span>{p.secteur ?? "—"}</span>

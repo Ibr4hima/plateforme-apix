@@ -3,7 +3,7 @@
 // serveur — qui ne rend rien d'autre que ses enfants.
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Projets fDi Markets" };
+export const metadata: Metadata = { title: "fDi Markets" };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;

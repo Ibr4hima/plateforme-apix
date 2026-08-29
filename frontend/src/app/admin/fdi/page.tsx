@@ -298,7 +298,7 @@ export default function AdminFdiClassification() {
 
       <div style={{ marginBottom: 18 }}>
         <Avis ton="info">
-          <strong>Renommer se propage.</strong> Un projet porte l&apos;identifiant du poste, jamais
+          <strong>Renommer se propage.</strong>{" "}Un projet porte l&apos;identifiant du poste, jamais
           son libellé : corriger un nom ici met à jour tous les projets rattachés, même les plus
           anciens. La suppression n&apos;existe pas — un poste retiré emporterait le rattachement
           de ces projets. Un poste que fDi ne publie plus reste donc en place et continue de

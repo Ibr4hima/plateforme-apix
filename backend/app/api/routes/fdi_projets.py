@@ -63,8 +63,11 @@ async def lister_projets(
                pa.nom AS parent_nom,
                s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
                a.libelle_fr AS activite, t.libelle_fr AS type_projet,
+               psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
                l.libelle AS lot
         FROM fdi_projets p
+        LEFT JOIN ref_pays psrc ON psrc.id = p.pays_source_id
+        LEFT JOIN ref_pays pdst ON pdst.id = p.pays_dest_id
         LEFT JOIN fdi_entreprises  e  ON e.id  = p.entreprise_id
         LEFT JOIN fdi_entreprises  pa ON pa.id = p.parent_id
         LEFT JOIN fdi_secteurs     s  ON s.id  = p.secteur_id
@@ -93,7 +96,13 @@ async def lister_projets(
                 "entreprise_tronquee": r.entreprise_statut == "tronque",
                 "parent": r.parent_nom or r.parent_brut,
                 "statut_entreprise": r.statut_entreprise,
-                "source": r.pays_source_brut, "destination": r.pays_dest_brut,
+                # Le nom français du référentiel, avec le libellé anglais de la
+                # source en secours : un pays non rapproché s'affiche tel que
+                # fDi l'écrit, ce qui rend la lacune visible plutôt que muette.
+                "source": r.pays_source or r.pays_source_brut,
+                "destination": r.pays_dest or r.pays_dest_brut,
+                "source_resolue": r.pays_source is not None,
+                "destination_resolue": r.pays_dest is not None,
                 # Le libellé brut reste disponible quand la résolution a échoué :
                 # l'écran affiche alors ce que la source disait, jamais un vide.
                 "secteur": r.secteur or r.secteur_brut,

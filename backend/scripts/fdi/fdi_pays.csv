@@ -1,0 +1,234 @@
+libelle_en,code_iso3,nom_fr_repere
+Afghanistan,AFG,Afghanistan
+South Africa,ZAF,Afrique du Sud
+Albania,ALB,Albanie
+Algeria,DZA,Algérie
+Germany,DEU,Allemagne
+Andorra,AND,Andorre
+Angola,AGO,Angola
+Antigua and Barbuda,ATG,Antigua-et-Barbuda
+Saudi Arabia,SAU,Arabie Saoudite
+Argentina,ARG,Argentine
+Armenia,ARM,Arménie
+Australia,AUS,Australie
+Austria,AUT,Autriche
+Azerbaijan,AZE,Azerbaïdjan
+Bahamas,BHS,Bahamas
+The Bahamas,BHS,Bahamas
+Bahrain,BHR,Bahreïn
+Bangladesh,BGD,Bangladesh
+Barbados,BRB,Barbade
+Belgium,BEL,Belgique
+Belize,BLZ,Belize
+Bhutan,BTN,Bhoutan
+Belarus,BLR,Biélorussie
+Bolivia,BOL,Bolivie
+"Bolivia, Plurinational State of",BOL,Bolivie
+Bosnia and Herzegovina,BIH,Bosnie-Herzégovine
+Botswana,BWA,Botswana
+Brunei,BRN,Brunei
+Brunei Darussalam,BRN,Brunei
+Brazil,BRA,Brésil
+Bulgaria,BGR,Bulgarie
+Burkina Faso,BFA,Burkina Faso
+Burundi,BDI,Burundi
+Benin,BEN,Bénin
+Cambodia,KHM,Cambodge
+Cameroon,CMR,Cameroun
+Canada,CAN,Canada
+Cabo Verde,CPV,Cap-Vert
+Cape Verde,CPV,Cap-Vert
+Chile,CHL,Chili
+China,CHN,Chine
+Cyprus,CYP,Chypre
+Colombia,COL,Colombie
+Comoros,COM,Comores
+Congo,COG,Congo
+Congo (Brazzaville),COG,Congo
+Republic of the Congo,COG,Congo
+Democratic People's Republic of Korea,PRK,Corée du Nord
+"Korea, North",PRK,Corée du Nord
+North Korea,PRK,Corée du Nord
+"Korea, South",KOR,Corée du Sud
+Republic of Korea,KOR,Corée du Sud
+South Korea,KOR,Corée du Sud
+Costa Rica,CRI,Costa Rica
+Croatia,HRV,Croatie
+Cuba,CUB,Cuba
+Cote d'Ivoire,CIV,Côte d'Ivoire
+Côte d'Ivoire,CIV,Côte d'Ivoire
+Ivory Coast,CIV,Côte d'Ivoire
+Denmark,DNK,Danemark
+Djibouti,DJI,Djibouti
+Dominica,DMA,Dominique
+Spain,ESP,Espagne
+Estonia,EST,Estonie
+Eswatini,SWZ,Eswatini
+Swaziland,SWZ,Eswatini
+Fiji,FJI,Fidji
+Finland,FIN,Finlande
+France,FRA,France
+Gabon,GAB,Gabon
+Gambia,GMB,Gambie
+The Gambia,GMB,Gambie
+Ghana,GHA,Ghana
+Grenada,GRD,Grenade
+Greece,GRC,Grèce
+Guatemala,GTM,Guatemala
+Guinea,GIN,Guinée
+Equatorial Guinea,GNQ,Guinée équatoriale
+Guinea-Bissau,GNB,Guinée-Bissau
+Guyana,GUY,Guyana
+Georgia,GEO,Géorgie
+Haiti,HTI,Haïti
+Honduras,HND,Honduras
+Hong Kong,HKG,Hong Kong
+Hungary,HUN,Hongrie
+India,IND,Inde
+Indonesia,IDN,Indonésie
+Iraq,IRQ,Irak
+Iran,IRN,Iran
+"Iran, Islamic Republic of",IRN,Iran
+Ireland,IRL,Irlande
+Iceland,ISL,Islande
+Israel,ISR,Israël
+Italy,ITA,Italie
+Jamaica,JAM,Jamaïque
+Japan,JPN,Japon
+Jordan,JOR,Jordanie
+Kazakhstan,KAZ,Kazakhstan
+Kenya,KEN,Kenya
+Kyrgyzstan,KGZ,Kirghizistan
+Kiribati,KIR,Kiribati
+Kuwait,KWT,Koweït
+Lao PDR,LAO,Laos
+Laos,LAO,Laos
+Lesotho,LSO,Lesotho
+Latvia,LVA,Lettonie
+Lebanon,LBN,Liban
+Liberia,LBR,Liberia
+Libya,LBY,Libye
+Liechtenstein,LIE,Liechtenstein
+Lithuania,LTU,Lituanie
+Luxembourg,LUX,Luxembourg
+Macao,MAC,Macao
+FYR Macedonia,MKD,Macédoine du Nord
+Macedonia,MKD,Macédoine du Nord
+North Macedonia,MKD,Macédoine du Nord
+Madagascar,MDG,Madagascar
+Malaysia,MYS,Malaisie
+Malawi,MWI,Malawi
+Maldives,MDV,Maldives
+Mali,MLI,Mali
+Malta,MLT,Malte
+Morocco,MAR,Maroc
+Mauritius,MUS,Maurice
+Mauritania,MRT,Mauritanie
+Mexico,MEX,Mexique
+Micronesia,FSM,Micronésie
+Moldova,MDA,Moldavie
+"Moldova, Republic of",MDA,Moldavie
+Monaco,MCO,Monaco
+Mongolia,MNG,Mongolie
+Montenegro,MNE,Monténégro
+Mozambique,MOZ,Mozambique
+Burma,MMR,Myanmar
+Myanmar,MMR,Myanmar
+Myanmar (Burma),MMR,Myanmar
+Namibia,NAM,Namibie
+Nauru,NRU,Nauru
+Nicaragua,NIC,Nicaragua
+Niger,NER,Niger
+Nigeria,NGA,Nigeria
+Norway,NOR,Norvège
+New Zealand,NZL,Nouvelle-Zélande
+Nepal,NPL,Népal
+Oman,OMN,Oman
+Uganda,UGA,Ouganda
+Uzbekistan,UZB,Ouzbékistan
+Pakistan,PAK,Pakistan
+Palau,PLW,Palaos
+Panama,PAN,Panama
+Papua New Guinea,PNG,Papouasie-Nouvelle-Guinée
+Paraguay,PRY,Paraguay
+Netherlands,NLD,Pays-Bas
+The Netherlands,NLD,Pays-Bas
+Philippines,PHL,Philippines
+Poland,POL,Pologne
+Portugal,PRT,Portugal
+Peru,PER,Pérou
+Qatar,QAT,Qatar
+Romania,ROU,Roumanie
+Great Britain,GBR,Royaume-Uni
+UK,GBR,Royaume-Uni
+United Kingdom,GBR,Royaume-Uni
+Russia,RUS,Russie
+Russian Federation,RUS,Russie
+Rwanda,RWA,Rwanda
+Central African Republic,CAF,République centrafricaine
+Dominican Republic,DOM,République dominicaine
+Congo (Kinshasa),COD,République démocratique du Congo
+"Congo, Democratic Republic of the",COD,République démocratique du Congo
+DR Congo,COD,République démocratique du Congo
+Democratic Republic of the Congo,COD,République démocratique du Congo
+Saint Kitts and Nevis,KNA,Saint-Kitts-et-Nevis
+San Marino,SMR,Saint-Marin
+Saint Vincent and the Grenadines,VCT,Saint-Vincent-et-les-Grenadines
+Saint Lucia,LCA,Sainte-Lucie
+Samoa,WSM,Samoa
+Sao Tome and Principe,STP,Sao Tomé-et-Principe
+Serbia,SRB,Serbie
+Seychelles,SYC,Seychelles
+Sierra Leone,SLE,Sierra Leone
+Singapore,SGP,Singapour
+Slovakia,SVK,Slovaquie
+Slovenia,SVN,Slovénie
+Somalia,SOM,Somalie
+Sudan,SDN,Soudan
+South Sudan,SSD,Soudan du Sud
+Sri Lanka,LKA,Sri Lanka
+Switzerland,CHE,Suisse
+Suriname,SUR,Suriname
+Sweden,SWE,Suède
+Syria,SYR,Syrie
+Syrian Arab Republic,SYR,Syrie
+Senegal,SEN,Sénégal
+Tajikistan,TJK,Tadjikistan
+Tanzania,TZA,Tanzanie
+"Tanzania, United Republic of",TZA,Tanzanie
+Chad,TCD,Tchad
+Czech Republic,CZE,Tchéquie
+Czechia,CZE,Tchéquie
+Thailand,THA,Thaïlande
+East Timor,TLS,Timor oriental
+Timor-Leste,TLS,Timor oriental
+Togo,TGO,Togo
+Tonga,TON,Tonga
+Trinidad and Tobago,TTO,Trinité-et-Tobago
+Tunisia,TUN,Tunisie
+Turkmenistan,TKM,Turkménistan
+Turkey,TUR,Turquie
+Turkiye,TUR,Turquie
+Türkiye,TUR,Turquie
+Tuvalu,TUV,Tuvalu
+Ukraine,UKR,Ukraine
+Uruguay,URY,Uruguay
+Vanuatu,VUT,Vanuatu
+Venezuela,VEN,Venezuela
+"Venezuela, Bolivarian Republic of",VEN,Venezuela
+Viet Nam,VNM,Viêt Nam
+Vietnam,VNM,Viêt Nam
+Yemen,YEM,Yémen
+Zambia,ZMB,Zambie
+Zimbabwe,ZWE,Zimbabwe
+Egypt,EGY,Égypte
+UAE,ARE,Émirats arabes unis
+United Arab Emirates,ARE,Émirats arabes unis
+Ecuador,ECU,Équateur
+Eritrea,ERI,Érythrée
+USA,USA,États-Unis
+United States,USA,États-Unis
+United States of America,USA,États-Unis
+Ethiopia,ETH,Éthiopie
+Marshall Islands,MHL,Îles Marshall
+Solomon Islands,SLB,Îles Salomon

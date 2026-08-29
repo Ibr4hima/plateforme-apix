@@ -174,6 +174,26 @@ le même projet, et ses descriptions comme son arbitrage d'entreprise sont
 conservés. Si la signature bouge, le rang pointe sur autre chose et l'on repart
 de zéro — mieux vaut perdre une description que la coller au mauvais projet.
 
+### Pays (`fdi_pays.csv`)
+
+fDi nomme ses pays en anglais (« Turkey »), `ref_pays` les nomme en français
+(« Turquie ») et ne porte pas de nom anglais. La correspondance est donc
+**explicite**, jamais une ressemblance de chaînes : « Niger » et « Nigeria »
+sont à deux lettres l'un de l'autre, et un projet attribué au mauvais pays est
+une erreur qui ne se voit pas.
+
+Le pont est le **code ISO 3166 alpha-3** : il ne bouge pas quand un pays est
+renommé en base. Plusieurs libellés peuvent viser le même code — « Turkey »,
+« Türkiye », « Ivory Coast », « Côte d'Ivoire » — parce que la source varie sa
+graphie avec le temps.
+
+La table est dérivée du référentiel pays de la plateforme (migration 009,
+archivée, puis 129 pour Hong Kong et Macao) ; la colonne `nom_fr_repere` n'est
+là que pour relire le fichier à l'œil : l'import ne s'en sert pas, il joint sur
+le code ISO. Deux échecs sont distingués à l'import, car ils n'appellent pas la
+même correction : *hors correspondance* (graphie nouvelle chez fDi → compléter
+ce CSV) et *absent de ref_pays* (pays inconnu du référentiel → migration).
+
 Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
 texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
 à l'écran (administration → Projets fDi Markets → Entreprises), les

@@ -22,7 +22,7 @@ export const MODULES_ADMIN: NavItemAdmin[] = [
   { type: "link", label: "Tableaux de correspondance",      href: "/admin/classifications",    icon: "table_chart",        disabled: true },
   { type: "link", label: "Données IDE",                     href: "/admin/ide",                icon: "finance_mode"                      },
   { type: "link", label: "Classification fDi Markets",      href: "/admin/fdi",                icon: "account_tree"                      },
-  { type: "link", label: "Projets fDi Markets",             href: "/admin/fdi-projets",        icon: "frame_inspect"                     },
+  { type: "link", label: "Bases fDi Markets",               href: "/admin/fdi-projets",        icon: "frame_inspect"                     },
   { type: "link", label: "Données BDEF",                    href: "/admin/bdef",               icon: "database",           disabled: true },
   { type: "link", label: "Commerce extérieur",              href: "/admin/commerce-exterieur", icon: "anchor"                            },
   { type: "link", label: "Code des investissements",        href: "/admin/code-investissement",icon: "gavel"                             },

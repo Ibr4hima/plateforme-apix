@@ -166,3 +166,50 @@ def test_le_csv_versionne_est_lisible_et_ordonne():
     assert [l["ligne"] for l in lignes] == list(range(1, 16))
     assert lignes[0]["entreprise"] == "AVCI Global"
     assert lignes[5]["type"] == "Expansion"
+
+
+# ── Pays : la correspondance anglais → référentiel ────────────────────────────
+
+@pytest.fixture(scope="module")
+def pays():
+    from app.services.fdi_projets import lire_pays_csv
+    return lire_pays_csv()
+
+
+def test_la_correspondance_pays_est_explicite(pays):
+    """fDi nomme en anglais, le référentiel en français : c'est une table, pas
+    une ressemblance de chaînes."""
+    assert pays[normaliser("Turkey")] == "TUR"
+    assert pays[normaliser("Senegal")] == "SEN"
+    assert pays[normaliser("United States")] == "USA"
+
+
+def test_deux_pays_proches_ne_se_confondent_pas(pays):
+    """La raison d'être de la table : « Niger » et « Nigeria » sont à deux
+    lettres l'un de l'autre, et un projet attribué au mauvais pays serait une
+    erreur invisible."""
+    assert pays[normaliser("Niger")] == "NER"
+    assert pays[normaliser("Nigeria")] == "NGA"
+
+
+def test_une_graphie_variante_vise_le_meme_pays(pays):
+    """La source change de graphie avec le temps ; le code ISO, lui, ne bouge
+    pas — c'est par lui que passe le rattachement."""
+    assert pays[normaliser("Türkiye")] == pays[normaliser("Turkey")]
+    assert pays[normaliser("Ivory Coast")] == pays[normaliser("Côte d'Ivoire")]
+
+
+def test_un_pays_inconnu_n_est_pas_devine():
+    """Taiwan n'est pas au référentiel : la ligne entrera avec son texte brut
+    et l'import le signalera, plutôt que de la rattacher à la Chine."""
+    from app.services.fdi_projets import _pays, lire_pays_csv
+    ident, motif = _pays("Taiwan", lire_pays_csv(), {"CHN": 1})
+    assert ident is None and motif == "hors correspondance"
+
+
+def test_un_pays_connu_absent_du_referentiel_est_distingue():
+    """L'autre échec possible, qui n'appelle pas la même correction : le CSV
+    connaît le pays, mais ref_pays ne le porte pas encore."""
+    from app.services.fdi_projets import _pays, lire_pays_csv
+    ident, motif = _pays("Turkey", lire_pays_csv(), {})
+    assert ident is None and motif == "TUR absent de ref_pays"
