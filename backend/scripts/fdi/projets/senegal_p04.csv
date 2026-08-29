@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2023,Honoré Gaming,Honoré Gaming,France,Senegal,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.20m,* 18,New
+2,May 2023,GoGlobal,GoGlobal,Japan,Senegal,Business services,Employment services,Business Services,* $27.80m,* 38,New
+3,Apr 2023,Bersam & Cie,Bersam & Cie,Morocco,Senegal,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+4,Apr 2023,DKK Partners,DKK Partners,United Kingdom,Senegal,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+5,Mar 2023,Elyctis,Elyctis,France,Senegal,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+6,Feb 2023,Onix Data Centres,Onix Data Centres,Ghana,Senegal,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+7,Feb 2023,Vivendi (Vivendi U…,Canal+ Groupe,France,Senegal,Communications,Motion picture & sou…,Research & Develop…,* $6.60m,* 84,New
+8,Dec 2022,Axess Group,Axess Group,Norway,Senegal,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+9,Nov 2022,Aker ASA,Lekela Power,Norway,Senegal,Renewable energy,Other electric power …,"Logistics, Distributio…",* $116.30m,* 37,Co-Location
+10,Oct 2022,Ragni,Ragni,France,Senegal,Electronic components,Electric lighting equi…,"Sales, Marketing & S…",* $1.80m,* 13,New
+11,Sep 2022,ACWA Power,ACWA Power,Saudi Arabia,Senegal,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+12,Jul 2022,Orange (France Te…,Sonatel,France,Senegal,Communications,Communications equ…,Research & Develop…,* $6.60m,* 84,New
+13,Jun 2022,BioNTech,BioNTech,Germany,Senegal,Biotechnology,Biological products (…,Manufacturing,* $105.60m,* 146,New
+14,Jun 2022,Econnext,GRIPS Energy,Germany,Senegal,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+15,May 2022,BudgIT,BudgIT,Nigeria,Senegal,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New

@@ -292,3 +292,22 @@ def test_la_page_2_est_lisible_et_ordonnee():
     assert dp["entreprise"] == "DP World"
     assert lire_montant(dp["capex"]) == (1200.0, False)
     assert lire_entier(dp["emplois"]) == (3000, True)
+
+
+def test_les_quatre_pages_relevees_sont_lisibles():
+    """Chaque page est un lot de quinze lignes, rangs 1 à 15 : c'est ce que la
+    source pagine, et ce sur quoi la préservation des saisies s'appuie."""
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    pages = sorted(DOSSIER_PROJETS.glob("senegal_p*.csv"))
+    assert [p.name for p in pages] == ["senegal_p01.csv", "senegal_p02.csv",
+                                       "senegal_p03.csv", "senegal_p04.csv"]
+    for chemin in pages:
+        lignes = lire_lot_csv(chemin)
+        assert [l["ligne"] for l in lignes] == list(range(1, len(lignes) + 1))
+    assert sum(len(lire_lot_csv(p)) for p in pages) == 60
+
+
+def test_la_source_ecrit_la_cote_d_ivoire_sans_apostrophe(pays):
+    """Relevé page 3 : fDi écrit « Côte d Ivoire ». La normalisation retire la
+    ponctuation avant de comparer, donc les trois graphies mènent au même pays."""
+    assert pays[normaliser("Côte d Ivoire")] == "CIV"
