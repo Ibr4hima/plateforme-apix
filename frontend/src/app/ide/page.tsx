@@ -10,6 +10,7 @@ import OngletPays from "./onglet-pays";
 import OngletSecteurs from "./onglet-secteurs";
 import OngletMonde from "./onglet-monde";
 import OngletNational from "./onglet-national";
+import OngletFdi from "./onglet-fdi";
 
 
 // ── Page principale ───────────────────────────────────────────────────────────
@@ -89,22 +90,8 @@ export default function IdePage() {
           {section === "realises" && vueP === "secteurs" && (
             <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs} setSousOnglet={setSousOnglet}/>
           )}
-          {/* Investissements projetés (FDI Markets) */}
-          {section === "projetes" && (
-            <div style={{ flex:1, minHeight:0, overflowY:"auto" as const, overscrollBehavior:"contain" as const,
-              maxWidth:1400, margin:"0 auto", padding:"80px 40px", textAlign:"center" as const, width:"100%" }}>
-              <div style={{ display:"inline-flex", flexDirection:"column" as const, alignItems:"center", gap:16 }}>
-                <div style={{ width:64, height:64, borderRadius:16, background:"rgb(var(--bleu-rgb) / 0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <span style={{ fontSize:32 }}>📈</span>
-                </div>
-                <h2 style={{ fontWeight:800, fontSize:"1.4rem", color:"var(--encre)" }}>FDI Markets</h2>
-                <p style={{ fontSize:14, color:"var(--gris)", maxWidth:380, lineHeight:1.7 }}>Les données FDI Markets seront disponibles prochainement.</p>
-                <div style={{ background:"rgb(var(--bleu-rgb) / 0.07)", border:"1px solid rgb(var(--bleu-rgb) / 0.2)", borderRadius:10, padding:"10px 20px" }}>
-                  <span style={{ fontSize:12, fontWeight:700, color:"var(--bleu)" }}>Disponible prochainement</span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Investissements projetés (fDi Markets) */}
+          {section === "projetes" && <OngletFdi />}
         </>
       )}
 

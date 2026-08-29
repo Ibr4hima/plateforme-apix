@@ -213,3 +213,31 @@ def test_un_pays_connu_absent_du_referentiel_est_distingue():
     from app.services.fdi_projets import _pays, lire_pays_csv
     ident, motif = _pays("Turkey", lire_pays_csv(), {})
     assert ident is None and motif == "TUR absent de ref_pays"
+
+
+# ── Page publique : le sens de lecture ────────────────────────────────────────
+
+def test_le_sens_choisit_quel_pays_est_observe():
+    """« Destination » observe le pays d'arrivée et montre les pays d'origine en
+    face ; « Source » fait l'inverse. C'est toute la bascule de la page."""
+    from app.services.fdi_projets import sens_de_lecture as _sens
+    assert _sens("destination") == ("pays_dest", "pays_source")
+    assert _sens("source") == ("pays_source", "pays_dest")
+
+
+def test_un_sens_inconnu_retombe_sur_la_destination():
+    """Une URL bricolée ne doit pas casser la page : le sens par défaut est
+    celui qui intéresse l'APIX, ce que le Sénégal reçoit."""
+    from app.services.fdi_projets import sens_de_lecture as _sens
+    assert _sens("n'importe quoi") == ("pays_dest", "pays_source")
+
+
+def test_les_filtres_multiples_se_separent_par_barre_verticale():
+    """La virgule et le point-virgule apparaissent dans les libellés eux-mêmes
+    (« Pesticide, fertilisers & … ») : les prendre pour séparateurs couperait
+    un secteur en deux filtres qui ne trouveraient rien."""
+    from app.services.fdi_projets import filtres_multiples as _liste
+    assert _liste("Produits chimiques|Services financiers") == ["Produits chimiques", "Services financiers"]
+    assert _liste("Pesticide, fertilisers & other agricultural chemicals") == \
+        ["Pesticide, fertilisers & other agricultural chemicals"]
+    assert _liste(None) == [] and _liste("") == []

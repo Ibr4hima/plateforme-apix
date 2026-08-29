@@ -429,3 +429,33 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     rapport["supprimes"] = len(supprimes)
     rapport["lot_id"] = lot_id
     return rapport
+
+
+# ── Lecture publique : le sens, et les filtres à choix multiple ───────────────
+# Ces deux fonctions décrivent la page publique mais vivent ici, avec le reste
+# de la logique pure : la route les importe, les tests aussi, sans base ni
+# configuration.
+
+# Le pays observé et le pays d'en face, selon le sens de lecture. Un projet a
+# deux pays ; choisir « destination », c'est demander ce qu'un pays reçoit,
+# « source » ce qu'il implante ailleurs.
+COTE = {"destination": ("pays_dest", "pays_source"), "source": ("pays_source", "pays_dest")}
+
+
+def sens_de_lecture(v: str) -> tuple[str, str]:
+    """(colonne du pays observé, colonne du pays partenaire).
+
+    Un sens inconnu — URL bricolée — retombe sur la destination plutôt que de
+    casser la page : c'est la lecture qui intéresse l'APIX.
+    """
+    return COTE.get(v, COTE["destination"])
+
+
+def filtres_multiples(v: str | None) -> list[str]:
+    """Les valeurs d'un filtre à choix multiple, séparées par « | ».
+
+    Ni virgule ni point-virgule : ils apparaissent dans les libellés eux-mêmes
+    (« Pesticide, fertilisers & other agricultural chemicals »), et couperaient
+    un secteur en deux filtres qui ne trouveraient rien.
+    """
+    return [x.strip() for x in (v or "").split("|") if x.strip()]
