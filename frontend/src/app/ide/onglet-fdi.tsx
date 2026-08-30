@@ -9,11 +9,10 @@
 // avec son entreprise, son secteur et son pays. Les deux ne se contredisent
 // pas — ils regardent deux moments différents de la même décision.
 //
-// LE SENS est la clef de lecture. Un projet a deux pays : celui d'où part
-// l'investissement et celui où il arrive. « Destination = Sénégal » répond à
-// « qu'est-ce que le pays attire ? » ; « Source = France » répond à « où la
-// France implante-t-elle ? ». Le pays d'en face — le partenaire — se déduit du
-// sens, il ne se demande pas.
+// UNE SEULE QUESTION. Un projet a deux pays, celui d'où part l'investissement
+// et celui où il arrive ; cette page ne pose que la seconde question : qu'un
+// pays REÇOIT-il ? Le pays d'origine se lit alors comme le partenaire, dans
+// les classements et sur chaque projet.
 //
 // UNE SEULE RÈGLE DE CHIFFRE : compteurs, séries et classements sortent tous du
 // même filtre que la table du bas. Un chiffre qu'on ne retrouve pas dans la
@@ -59,13 +58,6 @@ const VUES = [
   { v: "projets" as const, l: "Projets", src: "Project database" },
   { v: "signaux" as const, l: "Signaux d'investissement", src: "Investor signals" },
   { v: "entreprises" as const, l: "Entreprises", src: "Company database" },
-];
-
-// Le pays choisi est-il celui d'où part l'investissement, ou celui où il
-// arrive ? Faute d'un mot d'usage, la question est posée en toutes lettres.
-const SENS = [
-  { v: "destination" as const, l: "Destination", aide: "Ce que le pays reçoit" },
-  { v: "source" as const, l: "Source", aide: "Ce que le pays implante ailleurs" },
 ];
 
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
@@ -170,7 +162,6 @@ function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
 
 export default function OngletFdi() {
   const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">("projets");
-  const [sens, setSens] = useState<"destination" | "source">("destination");
   const [pays, setPays] = useState<string | null>(null);
   const [secteurs, setSecteurs] = useState<string[]>([]);
   const [activites, setActivites] = useState<string[]>([]);
@@ -188,7 +179,7 @@ export default function OngletFdi() {
   // Le périmètre dépend du sens : les pays proposés sont ceux qui existent
   // DANS CE SENS. Basculer de destination à source ne doit pas laisser un pays
   // qui n'y a aucun projet.
-  const qPer = useDonnees<Perimetre>(`${API}/fdi/public/perimetre?sens=${sens}`, { garder: true });
+  const qPer = useDonnees<Perimetre>(`${API}/fdi/public/perimetre`, { garder: true });
   const per = qPer.data;
 
   // Premier pays du sens (le mieux fourni) tant que rien n'est choisi, et
@@ -205,7 +196,7 @@ export default function OngletFdi() {
   }, [per]);
 
   const url = useMemo(() => {
-    const p = new URLSearchParams({ sens });
+    const p = new URLSearchParams();
     if (pays) p.set("pays", pays);
     if (anneeMin != null) p.set("annee_min", String(anneeMin));
     if (anneeMax != null) p.set("annee_max", String(anneeMax));
@@ -214,7 +205,7 @@ export default function OngletFdi() {
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return `${API}/fdi/public/projets?${p}`;
-  }, [sens, pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD]);
+  }, [pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
@@ -243,9 +234,10 @@ export default function OngletFdi() {
     : undefined;
 
   // Deux libellés voisins mais distincts : le compteur dénombre des PAYS, le
-  // classement montre des PROJETS par pays.
-  const libellePartenaire = sens === "destination" ? "Pays d'origine" : "Pays de destination";
-  const libelleSens = sens === "destination" ? "Origine des projets" : "Destination des projets";
+  // classement montre des PROJETS par pays. Le pays d'en face est toujours
+  // celui d'origine, la page ne se lisant que dans un sens.
+  const libellePartenaire = "Pays d'origine";
+  const libelleSens = "Origine des projets";
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -309,35 +301,12 @@ export default function OngletFdi() {
               <>
                 <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
 
-                {/* Le sens de lecture */}
+                {/* Les pays qui REÇOIVENT les projets. La base porte les deux
+                    bouts de chaque projet, mais la question posée ici est
+                    toujours la même : qu'est-ce qu'un pays attire ? Offrir la
+                    lecture inverse ajoutait un choix sans ajouter de réponse. */}
                 <div style={{ marginBottom: 18 }}>
-                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 4 }}>Rôle du pays</span>
-                  <p style={{ fontSize: 10.5, color: "var(--gris)", lineHeight: 1.5, marginBottom: 8 }}>
-                    Le pays choisi est-il celui d&apos;où part l&apos;investissement, ou celui où il arrive ?
-                  </p>
-                  <div style={{ display: "flex", background: "var(--fond)", borderRadius: 999, padding: 3, gap: 3 }}>
-                    {SENS.map(o => {
-                      const sel = sens === o.v;
-                      return (
-                        <button key={o.v} onClick={() => setSens(o.v)} title={o.aide}
-                          style={{ flex: 1, padding: "6px 10px", borderRadius: 999, border: "none", cursor: "pointer",
-                            fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-google-sans)",
-                            background: sel ? "var(--carte)" : "transparent",
-                            color: sel ? "var(--bleu)" : "var(--gris)",
-                            boxShadow: sel ? "0 1px 4px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
-                          {o.l}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 6 }}>
-                    {SENS.find(s => s.v === sens)?.aide}.
-                  </p>
-                </div>
-
-                {/* Pays du sens choisi */}
-                <div style={{ marginBottom: 18 }}>
-                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Pays</span>
+                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Pays destinataire</span>
                   {(per?.pays?.length ?? 0) > 6 && (
                     <div style={{ position: "relative" as const, marginBottom: 8 }}>
                       <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
@@ -416,7 +385,7 @@ export default function OngletFdi() {
                 </h2>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--bleu)",
                   background: "var(--bleu-voile)", padding: "4px 11px", borderRadius: 999 }}>
-                  {sens === "destination" ? "Projets reçus" : "Projets implantés à l'étranger"}
+                  Projets reçus
                 </span>
                 {tag && (
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--gris)",
@@ -424,11 +393,6 @@ export default function OngletFdi() {
                     fontVariantNumeric: "tabular-nums" }}>{tag}</span>
                 )}
               </div>
-              <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, marginBottom: 18, maxWidth: 780 }}>
-                Projets d&apos;investissement <strong>annoncés</strong>{" "}et relevés par fDi Markets
-                (Financial Times). Un projet annoncé n&apos;est pas un investissement réalisé : il dit
-                une décision, pas un décaissement.
-              </p>
 
               {q.isError ? <ErreurChargement onRetry={() => q.refetch()} /> : !d ? (
                 <SkeletonChartGrid n={3} cols={1} height={230} />
@@ -524,57 +488,21 @@ export default function OngletFdi() {
                       </div>
                     </div>
 
-                    <div style={{ overflowX: "auto" as const }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                        <thead>
-                          <tr>
-                            {["Période", "Entreprise", sens === "destination" ? "Origine" : "Destination",
-                              "Secteur", "Type", "M$", "Emplois"].map((t, i) => (
-                              <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-                                letterSpacing: "0.1em", textTransform: "uppercase" as const,
-                                textAlign: i >= 5 ? "right" as const : "left" as const,
-                                padding: "8px 10px", borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const }}>{t}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {d.projets.map(p => (
-                            <tr key={p.id} onClick={() => setOuvert(o => o === p.id ? null : p.id)}
-                              style={{ cursor: p.description ? "pointer" : "default", verticalAlign: "top" as const }}>
-                              <td style={{ ...CELL, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
-                              <td style={CELL}>
-                                <span style={{ fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</span>
-                                {p.description && (
-                                  <ChevronDown size={11} style={{ marginLeft: 6, color: "var(--gris)", verticalAlign: "middle",
-                                    transform: ouvert === p.id ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
-                                )}
-                                {ouvert === p.id && p.description && (
-                                  <p style={{ fontSize: 11.5, color: "var(--gris-fort)", lineHeight: 1.6, marginTop: 6, maxWidth: 520 }}>
-                                    {p.description}
-                                  </p>
-                                )}
-                              </td>
-                              <td style={{ ...CELL, whiteSpace: "nowrap" as const }}>{p.partenaire ?? "—"}</td>
-                              <td style={CELL}>
-                                <span style={{ display: "block" }}>{p.secteur ?? "—"}</span>
-                                {p.sous_secteur && (
-                                  <span style={{ fontSize: 10.5, color: "var(--gris)" }}>{p.sous_secteur}</span>
-                                )}
-                              </td>
-                              <td style={{ ...CELL, whiteSpace: "nowrap" as const }}>{p.type_projet ?? "—"}</td>
-                              <td style={{ ...CELL, textAlign: "right" as const }}>
-                                <Valeur v={p.capex_musd} estime={p.capex_estime} fmt={v => (v ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} />
-                              </td>
-                              <td style={{ ...CELL, textAlign: "right" as const }}>
-                                <Valeur v={p.emplois} estime={p.emplois_estime} fmt={fmtNombre} />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    {/* Une carte par projet, dépliable. Un projet fDi n'est pas
+                        une ligne de tableau : c'est une entreprise, un pays,
+                        un métier et un montant, et la moitié de ces champs ne
+                        tient pas dans une colonne. La carte montre ce qui
+                        identifie, le clic donne le reste. */}
+                    <div style={{ display: "grid", gap: 10,
+                      gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))" }}>
+                      {d.projets.map(p => (
+                        <CarteProjet key={p.id} p={p} ouvert={ouvert === p.id}
+                          onToggle={() => setOuvert(o => (o === p.id ? null : p.id))} />
+                      ))}
                     </div>
+
                     <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                      Un <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈</span> signale une valeur
+                      Un <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈</span>{" "}signale une valeur
                       estimée par l&apos;algorithme du Financial Times, et non déclarée par l&apos;entreprise.
                       Source : fDi Markets.
                     </p>
@@ -589,5 +517,79 @@ export default function OngletFdi() {
   );
 }
 
-const CELL = { fontSize: 12, color: "var(--texte)", padding: "10px 10px",
-  borderBottom: "1px solid var(--bordure)" } as const;
+/** Un projet, en carte dépliable.
+
+    Fermée, elle porte ce qui l'identifie : qui, d'où, quand, combien. Ouverte,
+    elle donne le reste — le sous-secteur, la nature de l'implantation, le
+    groupe, et la description quand elle a été saisie. Le tout sans quitter la
+    liste, parce qu'on parcourt ces projets, on ne les consulte pas un à un. */
+function CarteProjet({ p, ouvert, onToggle }: { p: Projet; ouvert: boolean; onToggle: () => void }) {
+  const lignes: [string, React.ReactNode][] = [
+    ["Sous-secteur", p.sous_secteur],
+    ["Nature de l'implantation", p.activite],
+    ["Type de projet", p.type_projet],
+    ["Destination", p.pays],
+  ];
+  return (
+    <div onClick={onToggle} role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
+      style={{ background: "var(--carte)", border: `1px solid ${ouvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"}`,
+        borderRadius: 14, padding: "14px 16px", cursor: "pointer", transition: "border-color 0.18s, box-shadow 0.18s",
+        boxShadow: ouvert ? "0 2px 10px rgb(var(--ombre-rgb) / 0.08)" : "none" }}
+      onMouseEnter={e => { if (!ouvert) e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.30)"; }}
+      onMouseLeave={e => { if (!ouvert) e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
+
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)", lineHeight: 1.3 }}>
+            {p.entreprise ?? "—"}
+          </p>
+          <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 3 }}>
+            {p.partenaire ?? "—"} · {p.periode}
+          </p>
+        </div>
+        <ChevronDown size={14} style={{ flexShrink: 0, color: "var(--gris)", marginTop: 2,
+          transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.18s" }} />
+      </div>
+
+      <p style={{ fontSize: 12, color: "var(--texte)", marginTop: 10, lineHeight: 1.4 }}>{p.secteur ?? "—"}</p>
+
+      <div style={{ display: "flex", gap: 18, marginTop: 10, flexWrap: "wrap" as const }}>
+        <span>
+          <span style={{ ...ETIQ, display: "block" }}>Investissement</span>
+          <Valeur v={p.capex_musd} estime={p.capex_estime}
+            fmt={v => `${(v ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M$`} />
+        </span>
+        <span>
+          <span style={{ ...ETIQ, display: "block" }}>Emplois</span>
+          <Valeur v={p.emplois} estime={p.emplois_estime} fmt={fmtNombre} />
+        </span>
+      </div>
+
+      {ouvert && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--bordure)" }}>
+          {lignes.filter(([, v]) => v).map(([etiquette, valeur]) => (
+            <div key={etiquette} style={{ display: "flex", gap: 10, marginBottom: 6 }}>
+              <span style={{ ...ETIQ, flex: "0 0 40%" }}>{etiquette}</span>
+              <span style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.4 }}>{valeur}</span>
+            </div>
+          ))}
+          {/* La société mère n'est utile que lorsqu'elle diffère : la répéter
+              ferait passer une filiale pour un groupe. */}
+          {p.description ? (
+            <p style={{ fontSize: 12, color: "var(--gris-fort)", lineHeight: 1.65, marginTop: 10 }}>
+              {p.description}
+            </p>
+          ) : (
+            <p style={{ fontSize: 11.5, color: "var(--gris)", fontStyle: "italic", marginTop: 10 }}>
+              La source ne publie pas de description pour ce projet.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ETIQ = { fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em",
+  textTransform: "uppercase" as const, color: "var(--gris)", lineHeight: 1.6 } as const;

@@ -11,6 +11,8 @@ import OngletSecteurs from "./onglet-secteurs";
 import OngletMonde from "./onglet-monde";
 import OngletNational from "./onglet-national";
 import OngletFdi from "./onglet-fdi";
+import Link from "next/link";
+import { FileText } from "lucide-react";
 
 
 // ── Page principale ───────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ export default function IdePage() {
       {/* ── Onglets ──────────────────────────────────────────────────────────── */}
       {ongletPrincipal === "ide" && (
         <div style={{ background:"var(--carte)", zIndex:10, flexShrink:0, borderBottom:"1px solid var(--bordure)" }}>
-          <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px" }}>
+          <div style={{ maxWidth:1400, margin:"0 auto", padding:"10px 40px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" as const }}>
 
             {/* Niveau 1 : Réalisés / Projetés — segmented control du site */}
             <div style={{ display:"inline-flex", background:"var(--fond)", borderRadius:999, padding:3, gap:3 }}>
@@ -66,6 +68,18 @@ export default function IdePage() {
                 </button>
               ))}
             </div>
+
+            {/* Le rapport porte sur les DEUX sections : la CNUCED mesure ce qui
+                est entré, fDi relève ce qui est annoncé, et c'est de les lire
+                ensemble que vient la lecture. Il vit donc à côté de la bascule,
+                pas dedans. */}
+            <Link href="/ide/rapport"
+              style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"7px 15px", borderRadius:999,
+                border:"1px solid rgb(var(--bleu-rgb) / 0.30)", background:"var(--bleu-voile)",
+                color:"var(--bleu)", fontSize:12.5, fontWeight:700, textDecoration:"none",
+                fontFamily:"var(--font-google-sans)", whiteSpace:"nowrap" as const, transition:"background 0.15s" }}>
+              <FileText size={14}/> Rapport
+            </Link>
 
           </div>
         </div>
