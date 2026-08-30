@@ -23,7 +23,7 @@ import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { badge_bleu, badge_vert, badge_violet } from "@/lib/couleurs";
-import FicheModal, { FicheCarteNeutre, FicheSection } from "@/components/shared/FicheModal";
+import FicheModal from "@/components/shared/FicheModal";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
@@ -532,110 +532,108 @@ function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
 
 /** Une ligne de la fiche : le libellé à gauche, la valeur à droite.
 
-    Pas de blocs en damier ici : les champs d'un projet sont de longueurs très
-    inégales — « New » d'un côté, « Grands magasins et commerces de détail
-    généralistes » de l'autre — et une grille les aurait tous étirés à la
-    taille du plus long. */
+    Pas de blocs en damier : les champs d'un projet sont de longueurs très
+    inégales — « Fabrication » d'un côté, « Commerce de détail de vêtements et
+    d'accessoires vestimentaires » de l'autre — et une grille les aurait tous
+    étirés à la taille du plus long. Le libellé reste en casse normale : c'est
+    un nom de champ, pas un titre. */
 function LigneFiche({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: 16, padding: "9px 0",
-      borderBottom: "1px solid var(--bordure)" }}>
-      <span style={{ ...ETIQ, flex: "0 0 34%", lineHeight: 1.5 }}>{label}</span>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, color: "var(--encre)", lineHeight: 1.5 }}>
-        {children}
-      </span>
+    <div style={{ display: "flex", alignItems: "baseline", gap: 20, padding: "11px 0",
+      borderTop: "1px solid var(--bordure)" }}>
+      <span style={{ flex: "0 0 38%", fontSize: 12.5, color: "var(--gris)", lineHeight: 1.5 }}>{label}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600,
+        color: "var(--encre)", lineHeight: 1.5 }}>{children}</span>
     </div>
+  );
+}
+
+/** Un intertitre de fiche : discret, en casse normale.
+
+    Les petites capitales bleues conviennent aux tableaux de bord, où elles
+    séparent des cartes ; empilées dans une fiche, elles crient plus fort que
+    les valeurs qu'elles annoncent. */
+function TitreFiche({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gris-fort)", letterSpacing: "0.01em",
+      marginBottom: 2 }}>{children}</p>
   );
 }
 
 /** La fiche du projet.
 
-    Elle s'ouvre sur ce qui compte — les deux montants, en grand — puis le
-    trajet de l'investissement, puis ce que l'entreprise vient faire, puis la
-    description. Les valeurs estimées sont dites une fois, en pied de bandeau,
-    plutôt que répétées sous chaque nombre. */
+    Elle est construite comme une page, pas comme un formulaire : les deux
+    montants ouvrent, en grand et sans cadre ; le trajet de l'investissement
+    suit sur une ligne ; le détail vient ensuite en liste, séparé par des
+    filets ; la description ferme. Aucun encadré gris — les fonds empilés
+    faisaient trois boîtes dans une boîte, et rien ne ressortait. */
 function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
   const estime = p.capex_estime || p.emplois_estime;
   return (
-    <FicheModal maxWidth={660} onClose={onClose}
+    <FicheModal maxWidth={620} onClose={onClose}
       titre={
-        <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
           <span>{p.entreprise ?? "Projet"}</span>
           <PastilleType type={p.type_projet} />
         </span>
       }>
 
-      {/* Bandeau des deux chiffres — le fond bleu très pâle des fiches. */}
-      <div style={{ background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.14)",
-        borderRadius: 14, padding: "16px 18px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <p style={{ ...ETIQ, marginBottom: 5 }}>Investissement annoncé</p>
-            <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={24} />
+      {/* Les deux montants, sans cadre : ils sont le sujet de la fiche. */}
+      <div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Investissement annoncé</p>
+            <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={30} />
           </div>
-          <div>
-            <p style={{ ...ETIQ, marginBottom: 5 }}>Emplois annoncés</p>
-            <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" taille={24} />
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Emplois annoncés</p>
+            <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" taille={30} />
           </div>
         </div>
         {estime && (
-          <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 12, lineHeight: 1.5 }}>
-            <span style={{ color: "var(--orange)", fontWeight: 800 }}>≈</span>{" "}valeur estimée par
+          <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.55 }}>
+            <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}valeur estimée par
             l&apos;algorithme du Financial Times, non déclarée par l&apos;entreprise.
           </p>
         )}
       </div>
 
-      {/* Le trajet : d'où part l'investissement, où il arrive. */}
-      <FicheSection titre="Trajet de l'investissement">
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const,
-          background: "var(--carte-douce)", border: "1px solid var(--bordure)",
-          borderRadius: 12, padding: "13px 16px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={18} sansIso="rien" />
-            <span style={{ minWidth: 0 }}>
-              <span style={{ ...ETIQ, display: "block" }}>Origine</span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)" }}>{p.partenaire ?? "—"}</span>
-            </span>
-          </span>
-          <ArrowRight size={16} style={{ color: "var(--bleu)", flexShrink: 0 }} />
-          <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <DrapeauPays iso={p.pays_iso} nom={p.pays ?? ""} taille={18} sansIso="rien" />
-            <span style={{ minWidth: 0 }}>
-              <span style={{ ...ETIQ, display: "block" }}>Destination</span>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)" }}>{p.pays ?? "—"}</span>
-            </span>
-          </span>
-          <span style={{ marginLeft: "auto", textAlign: "right" as const }}>
-            <span style={{ ...ETIQ, display: "block" }}>Annoncé en</span>
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
-              fontVariantNumeric: "tabular-nums" }}>{p.periode}</span>
-          </span>
-        </div>
-      </FicheSection>
+      {/* Le trajet, sur une seule ligne : d'où part l'investissement, où il
+          arrive, et quand il a été annoncé. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
+        paddingTop: 18, borderTop: "1px solid var(--bordure)" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={17} sansIso="rien" />
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{p.partenaire ?? "—"}</span>
+        </span>
+        <ArrowRight size={15} style={{ color: "var(--gris)", flexShrink: 0 }} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <DrapeauPays iso={p.pays_iso} nom={p.pays ?? ""} taille={17} sansIso="rien" />
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{p.pays ?? "—"}</span>
+        </span>
+        <span style={{ marginLeft: "auto", fontSize: 12.5, color: "var(--gris)" }}>
+          annoncé en <span style={{ color: "var(--encre)", fontWeight: 600 }}>{moisEnClair(p.periode)}</span>
+        </span>
+      </div>
 
-      <FicheSection titre="Ce que l'entreprise vient faire">
-        <div>
-          <LigneFiche label="Secteur">{p.secteur ?? "—"}</LigneFiche>
-          <LigneFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</LigneFiche>
-          <LigneFiche label="Nature de l'implantation">{p.activite ?? "—"}</LigneFiche>
-          <LigneFiche label="Type de projet">{p.type_projet ?? "—"}</LigneFiche>
-        </div>
-      </FicheSection>
+      <div>
+        <TitreFiche>Détails du projet</TitreFiche>
+        <LigneFiche label="Secteur">{p.secteur ?? "—"}</LigneFiche>
+        <LigneFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</LigneFiche>
+        <LigneFiche label="Nature de l&apos;implantation">{p.activite ?? "—"}</LigneFiche>
+      </div>
 
-      <FicheSection titre="Description">
-        <FicheCarteNeutre>
-          <p style={{ fontSize: 13, color: p.description ? "var(--texte)" : "var(--gris)",
-            lineHeight: 1.75, fontStyle: p.description ? "normal" : "italic" }}>
-            {p.description ?? "La source ne publie pas de description pour ce projet."}
-          </p>
-        </FicheCarteNeutre>
-      </FicheSection>
-
-      <p style={{ fontSize: 11, color: "var(--gris)", lineHeight: 1.6 }}>
-        Projet <strong>annoncé</strong>, relevé par fDi Markets (Financial Times). Une annonce dit une
-        décision d&apos;investir, pas un décaissement.
-      </p>
+      <div>
+        <TitreFiche>Description</TitreFiche>
+        {/* Un filet vertical plutôt qu'un fond : le texte reste du texte. */}
+        <p style={{ fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
+          borderLeft: "2px solid var(--bordure-forte)",
+          color: p.description ? "var(--texte)" : "var(--gris)",
+          fontStyle: p.description ? "normal" : "italic" }}>
+          {p.description ?? "La source ne publie pas de description pour ce projet."}
+        </p>
+      </div>
     </FicheModal>
   );
 }
