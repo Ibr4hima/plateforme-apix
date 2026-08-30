@@ -311,3 +311,19 @@ def test_la_source_ecrit_la_cote_d_ivoire_sans_apostrophe(pays):
     """Relevé page 3 : fDi écrit « Côte d Ivoire ». La normalisation retire la
     ponctuation avant de comparer, donc les trois graphies mènent au même pays."""
     assert pays[normaliser("Côte d Ivoire")] == "CIV"
+
+
+def test_un_pays_tronque_se_resout_par_prefixe(pays):
+    """Relevé page 11 : la colonne Source est tronquée comme les autres —
+    « Republic of the C… ». Un seul pays commence ainsi, on tranche."""
+    from app.services.fdi_projets import _pays
+    ref = {c: 1 for c in pays.values()}
+    assert _pays("Republic of the C…", pays, ref) == (1, None)
+
+
+def test_un_prefixe_de_pays_ambigu_est_refuse(pays):
+    """« Turk… » vaut pour la Turquie comme pour le Turkménistan : la ligne
+    entre avec son texte brut plutôt qu'avec un pays inventé."""
+    from app.services.fdi_projets import _pays
+    ref = {c: 1 for c in pays.values()}
+    assert _pays("Turk…", pays, ref) == (None, "préfixe ambigu")

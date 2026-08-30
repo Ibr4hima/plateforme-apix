@@ -288,9 +288,18 @@ def _pays(brut: str | None, correspondance: dict[str, str], ref: dict[str, int])
     """
     if not brut or not brut.strip():
         return None, None
-    code = correspondance.get(normaliser(brut))
+    cle = normaliser(brut)
+    code = correspondance.get(cle)
     if code is None:
-        return None, "hors correspondance"
+        # La colonne Source est tronquée comme les autres — « Republic of the
+        # C… ». On applique donc au pays la règle des nomenclatures : un seul
+        # pays commence ainsi, on tranche ; plusieurs, on refuse. Plusieurs
+        # graphies visant le MÊME pays (« Turkey », « Türkiye ») ne comptent
+        # que pour un.
+        codes = {c for libelle, c in correspondance.items() if libelle.startswith(cle)}
+        if len(codes) != 1:
+            return None, "hors correspondance" if not codes else "préfixe ambigu"
+        code = codes.pop()
     pays_id = ref.get(code)
     if pays_id is None:
         return None, f"{code} absent de ref_pays"

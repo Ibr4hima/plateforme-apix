@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2015,Alcatel-Lucent,Alcatel-Lucent,France,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+2,Feb 2015,VMK,VMK,Republic of the C…,Senegal,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+3,Jan 2015,BGFI Bank,BGFI Bank,Gabon,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Dec 2014,Atos (Atos Origin),Atos (Atos Origin),France,Senegal,Software & IT services,Custom computer pr…,Research & Develop…,* $46.50m,250,New
+5,Aug 2014,ContourGlobal,ContourGlobal,United States,Senegal,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$113.48m,* 8,Co-Location
+6,Jun 2014,BGFI Bank,BGFI Bank,Gabon,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,May 2014,Anadolu Ajansi (A…,Anadolu Ajansi (A…,Turkey,Senegal,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,May 2014,Standard Bank Gr…,Standard Bank Gr…,South Africa,Senegal,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Apr 2014,Walmart,Massmart,United States,Senegal,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+10,Feb 2014,CMA CGM,CMA CGM,France,Senegal,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,Co-Location
+11,Dec 2013,Arkeos,Arkeos,Morocco,Senegal,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",$0.61m,* 5,New
+12,Nov 2013,Black Rhino,Black Rhino,South Africa,Senegal,Transportation & Wa…,Other pipeline trans…,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Nov 2013,Deutsche Post,DHL Express,Germany,Senegal,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+14,Nov 2013,World Freight,Air Logistics Group,United Kingdom,Senegal,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Aug 2013,Grupa Azoty Spól…,Grupa Azoty Spól…,Poland,Senegal,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $285.70m,* 455,New
