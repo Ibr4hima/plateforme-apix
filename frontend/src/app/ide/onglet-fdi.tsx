@@ -22,6 +22,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import { badge_bleu, badge_vert, badge_violet } from "@/lib/couleurs";
 import FicheModal, { FicheCarteNeutre, FicheSection } from "@/components/shared/FicheModal";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -29,7 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, fmtNombre, fmtVal } from "./partage";
+import { API, fmtNombre } from "./partage";
 
 type Compte = { nom: string; nb: number };
 type Perimetre = {
@@ -62,22 +63,20 @@ const VUES = [
   { v: "entreprises" as const, l: "Entreprises", src: "Company database" },
 ];
 
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+  "août", "septembre", "octobre", "novembre", "décembre"];
+
+/** « 2026-06 » → « Juin 2026 ». La source ne donne jamais le jour ; écrire le
+    mois en toutes lettres évite de faire lire une date comme un code. */
+function moisEnClair(periode: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(periode);
+  if (!m) return periode;
+  const nom = MOIS_FR[Number(m[2]) - 1];
+  return nom ? `${nom[0].toUpperCase()}${nom.slice(1)} ${m[1]}` : periode;
+}
+
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
-
-function CarteKpi({ label, valeur, note }: { label: string; valeur: string; note?: string | null }) {
-  return (
-    <div style={{ background: "var(--carte)", borderRadius: 14, padding: "13px 14px",
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", minWidth: 0 }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)",
-        textTransform: "uppercase" as const, lineHeight: 1.4, marginBottom: 7 }}>{label}</p>
-      <p style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1 }}>{valeur}</p>
-      <div style={{ marginTop: 5, minHeight: 12 }}>
-        {note && <p style={{ fontSize: 10, color: "var(--gris)", lineHeight: 1.2 }}>{note}</p>}
-      </div>
-    </div>
-  );
-}
 
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
     Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
@@ -215,9 +214,6 @@ export default function OngletFdi() {
 
   const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
 
-  // Le compteur dénombre des PAYS d'origine ; le pays observé est toujours la
-  // destination, la page ne se lisant que dans un sens.
-  const libellePartenaire = "Pays d'origine";
   const tag = d?.kpis?.annees?.[0] != null
     ? (d.kpis.annees[0] === d.kpis.annees[1] ? `${d.kpis.annees[0]}` : `${d.kpis.annees[0]}–${d.kpis.annees[1]}`)
     : undefined;
@@ -393,67 +389,40 @@ export default function OngletFdi() {
                 </div>
               ) : (
                 <div className="charge-in">
-                  {/* Compteurs */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 20 }}>
-                    <CarteKpi label="Projets annoncés" valeur={fmtNombre(d.kpis.projets)}
-                      note={`${d.kpis.entreprises} entreprise${d.kpis.entreprises > 1 ? "s" : ""}`} />
-                    <CarteKpi label="Investissement annoncé" valeur={fmtVal(d.kpis.capex_musd)}
-                      note={d.kpis.part_estimee != null
-                        ? `dont ${d.kpis.part_estimee.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} % estimés par le FT`
-                        : null} />
-                    <CarteKpi label="Emplois annoncés" valeur={fmtNombre(d.kpis.emplois)}
-                      note="à la création du projet" />
-                    <CarteKpi label={libellePartenaire} valeur={fmtNombre(d.kpis.partenaires)}
-                      note={`${fmtVal(d.kpis.capex_moyen)} par projet en moyenne`} />
+                  {/* Ni compteurs ni cadre : les cartes reposent directement
+                      sur la page, comme partout ailleurs sur le site. Un
+                      panneau blanc autour d'une grille de cartes blanches
+                      n'ajoutait qu'une bordure de plus. */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 12, flexWrap: "wrap" as const, marginBottom: 14 }}>
+                    <span style={{ fontSize: 12.5, color: "var(--gris)" }}>
+                      <strong style={{ color: "var(--encre)", fontWeight: 700 }}>{d.projets.length}</strong>{" "}
+                      projet{d.projets.length > 1 ? "s" : ""} annoncé{d.projets.length > 1 ? "s" : ""}
+                    </span>
+                    <div style={{ position: "relative" as const, minWidth: 240, flex: "0 1 340px" }}>
+                      <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
+                        transform: "translateY(-50%)", color: "var(--gris)" }} />
+                      <input value={recherche} onChange={e => setRecherche(e.target.value)}
+                        placeholder="Rechercher une entreprise, un mot de la description…"
+                        style={{ width: "100%", padding: "9px 10px 9px 34px", borderRadius: 999,
+                          border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+                          fontSize: 12.5, color: "var(--encre)", outline: "none",
+                          fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+                    </div>
                   </div>
 
-                  {/* La page ne montre plus QUE les projets. Les series, les
-                      tableaux annuels et les classements sont passes dans le
-                      rapport : ici on cherche un projet, la-bas on lit une
-                      tendance, et melanger les deux gestes obligeait a faire
-                      defiler dix ecrans de synthese avant d'atteindre la
-                      matiere. */}
-                  <div style={{ background: "var(--carte)", borderRadius: 14,
-                    border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-                      gap: 12, flexWrap: "wrap" as const, marginBottom: 14 }}>
-                      <p style={{ fontSize: 11, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.14em",
-                        textTransform: "uppercase" as const }}>
-                        Le détail des projets
-                        <span style={{ marginLeft: 8, fontSize: 9, fontWeight: 700, color: "var(--gris)",
-                          background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5,
-                          letterSpacing: "0.04em", textTransform: "none" as const }}>{d.projets.length}</span>
-                      </p>
-                      <div style={{ position: "relative" as const, minWidth: 240, flex: "0 1 320px" }}>
-                        <Search size={13} style={{ position: "absolute" as const, left: 10, top: "50%",
-                          transform: "translateY(-50%)", color: "var(--gris)" }} />
-                        <input value={recherche} onChange={e => setRecherche(e.target.value)}
-                          placeholder="Rechercher une entreprise, un mot de la description…"
-                          style={{ width: "100%", padding: "8px 8px 8px 32px", borderRadius: 999,
-                            border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
-                            fontSize: 12, color: "var(--encre)", outline: "none",
-                            fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
-                      </div>
-                    </div>
-
-                    {/* Une carte par projet, dépliable. Un projet fDi n'est pas
-                        une ligne de tableau : c'est une entreprise, un pays,
-                        un métier et un montant, et la moitié de ces champs ne
-                        tient pas dans une colonne. La carte montre ce qui
-                        identifie, le clic donne le reste. */}
-                    <div style={{ display: "grid", gap: 10,
-                      gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))" }}>
-                      {d.projets.map(p => (
-                        <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)} />
-                      ))}
-                    </div>
-
-                    <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                      Un <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈</span>{" "}signale une valeur
-                      estimée par l&apos;algorithme du Financial Times, et non déclarée par l&apos;entreprise.
-                      Source : fDi Markets.
-                    </p>
+                  <div style={{ display: "grid", gap: 14,
+                    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+                    {d.projets.map(p => (
+                      <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)} />
+                    ))}
                   </div>
+
+                  <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 18, lineHeight: 1.6 }}>
+                    Un <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}signale une valeur
+                    estimée par l&apos;algorithme du Financial Times, et non déclarée par l&apos;entreprise.
+                    Source : fDi Markets.
+                  </p>
                 </div>
               )}
             </>
@@ -478,7 +447,9 @@ function Montant({ v, estime, unite, taille = 16 }: {
   return (
     <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4, whiteSpace: "nowrap" as const }}
       title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée" : "Valeur déclarée par l'entreprise"}>
-      {estime && <span style={{ fontSize: taille * 0.8, fontWeight: 800, color: "var(--orange)" }}>≈</span>}
+      {/* Le « ≈ » reste noir : il qualifie la valeur, il ne l'alerte pas. Ce
+          qu'il signifie se lit dans l'infobulle et dans la fiche. */}
+      {estime && <span style={{ fontSize: taille * 0.8, fontWeight: 800, color: "var(--encre)" }}>≈</span>}
       <span style={{ fontSize: taille, fontWeight: 800, color: "var(--encre)",
         fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
         {v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
@@ -488,21 +459,18 @@ function Montant({ v, estime, unite, taille = 16 }: {
   );
 }
 
-/** La pastille du type de projet. Trois valeurs seulement, et elles ne disent
-    pas la même chose : une extension prolonge un investisseur déjà présent,
-    une implantation nouvelle amène quelqu'un qui n'était pas là. La couleur
-    porte la distinction, le mot la nomme. */
+/** La pastille du type de projet — les badges de la plateforme, tels quels.
+
+    Trois valeurs seulement, et elles ne disent pas la même chose : une
+    extension prolonge un investisseur déjà présent, une implantation nouvelle
+    amène quelqu'un qui n'était pas là. La couleur porte la distinction, le mot
+    la nomme — en casse normale, parce qu'un libellé de nomenclature n'est pas
+    une alerte. */
 function PastilleType({ type }: { type: string | null }) {
   if (!type) return null;
-  const c = /extension/i.test(type) ? "var(--vert)"
-    : /co-implantation|co-location/i.test(type) ? "var(--violet)" : "var(--bleu)";
-  return (
-    <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase" as const,
-      color: c, background: `color-mix(in srgb, ${c} 11%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 22%, transparent)`,
-      padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
-      {type}
-    </span>
-  );
+  const style = /extension/i.test(type) ? badge_vert
+    : /co-implantation|co-location/i.test(type) ? badge_violet : badge_bleu;
+  return <span style={{ ...style, whiteSpace: "nowrap" as const, flexShrink: 0 }}>{type}</span>;
 }
 
 /** Un projet, en tuile.
@@ -525,42 +493,38 @@ function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
         e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
 
       {/* Période et type : le contexte, avant le nom. */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 9 }}>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
-          fontVariantNumeric: "tabular-nums", letterSpacing: "0.04em" }}>{p.periode}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.02em" }}>
+          {moisEnClair(p.periode)}
+        </span>
         <PastilleType type={p.type_projet} />
       </div>
 
-      <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
+      <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
         letterSpacing: "-0.01em" }}>{p.entreprise ?? "—"}</h3>
 
-      {/* D'où vient l'investissement. Le drapeau se lit avant le mot. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-        <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={13} sansIso="rien" />
-        <span style={{ fontSize: 12, color: "var(--gris-fort)", fontWeight: 600,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-          {p.partenaire ?? "Origine inconnue"}
-        </span>
-      </div>
-
-      <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 8, lineHeight: 1.45,
+      <p style={{ fontSize: 12.5, color: "var(--gris)", marginTop: 5, lineHeight: 1.45,
         display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
-        overflow: "hidden", minHeight: 34 }}>
+        overflow: "hidden", minHeight: 36 }}>
         {p.secteur ?? "Secteur inconnu"}
       </p>
 
-      {/* Les deux chiffres, au pied, séparés du reste par un filet : c'est ce
-          qu'on compare d'une tuile à l'autre en balayant la grille. */}
-      <div style={{ display: "flex", gap: 22, marginTop: 12, paddingTop: 11,
-        borderTop: "1px solid var(--bordure)" }}>
-        <span style={{ minWidth: 0 }}>
-          <span style={{ ...ETIQ, display: "block", marginBottom: 2 }}>Investissement</span>
-          <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" />
-        </span>
-        <span style={{ minWidth: 0 }}>
-          <span style={{ ...ETIQ, display: "block", marginBottom: 2 }}>Emplois</span>
-          <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" />
-        </span>
+      {/* Le pied, en deux colonnes séparées par un filet vertical — la forme
+          des cartes d'entreprise de la plateforme. D'OÙ vient l'investissement
+          d'abord, COMBIEN ensuite : le pays situe, le montant qualifie. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14,
+        paddingTop: 13, borderTop: "1px solid var(--bordure)" }}>
+        <div style={{ minWidth: 0 }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Pays d&apos;origine</span>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)", display: "block",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+            {p.partenaire ?? "—"}
+          </span>
+        </div>
+        <div style={{ minWidth: 0, paddingLeft: 14, borderLeft: "1px solid var(--bordure)" }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Investissement</span>
+          <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={13.5} />
+        </div>
       </div>
     </article>
   );

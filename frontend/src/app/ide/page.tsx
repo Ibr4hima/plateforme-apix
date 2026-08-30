@@ -69,17 +69,18 @@ export default function IdePage() {
               ))}
             </div>
 
-            {/* Le rapport porte sur les DEUX sections : la CNUCED mesure ce qui
-                est entré, fDi relève ce qui est annoncé, et c'est de les lire
-                ensemble que vient la lecture. Il vit donc à côté de la bascule,
-                pas dedans. */}
-            <Link href="/ide/rapport"
+            {/* Le rapport reste attaché aux investissements PROJETÉS, d'où on
+                l'ouvre. Il lit ensuite les deux sources ensemble — la CNUCED
+                mesure ce qui est entré, fDi relève ce qui est annoncé — mais
+                proposer ce lien depuis « réalisés » laisserait croire à un
+                rapport de cette section-là. */}
+            {section === "projetes" && <Link href="/ide/rapport"
               style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"7px 15px", borderRadius:999,
                 border:"1px solid rgb(var(--bleu-rgb) / 0.30)", background:"var(--bleu-voile)",
                 color:"var(--bleu)", fontSize:12.5, fontWeight:700, textDecoration:"none",
                 fontFamily:"var(--font-google-sans)", whiteSpace:"nowrap" as const, transition:"background 0.15s" }}>
               <FileText size={14}/> Rapport
-            </Link>
+            </Link>}
 
           </div>
         </div>
