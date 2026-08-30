@@ -172,8 +172,8 @@ async def projets(
         SELECT p.id, p.annee, p.mois,
                COALESCE(e.nom, p.entreprise_brut) AS entreprise,
                p.statut_entreprise,
-               COALESCE(ro.nom_fr, p.{observe}_brut) AS pays_observe,
-               COALESCE(rp.nom_fr, p.{partenaire}_brut) AS pays_partenaire,
+               COALESCE(ro.nom_fr, p.{observe}_brut) AS pays_observe, ro.code_iso2 AS iso_observe,
+               COALESCE(rp.nom_fr, p.{partenaire}_brut) AS pays_partenaire, rp.code_iso2 AS iso_partenaire,
                COALESCE(s.libelle_fr, p.secteur_brut) AS secteur,
                COALESCE(ss.libelle_fr, p.sous_secteur_brut) AS sous_secteur,
                COALESCE(a.libelle_fr, p.activite_brut) AS activite,
@@ -210,7 +210,11 @@ async def projets(
             {"id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
              "annee": r.annee, "entreprise": r.entreprise,
              "entreprise_a_arbitrer": r.statut_entreprise != "resolu",
-             "pays": r.pays_observe, "partenaire": r.pays_partenaire,
+             # Le code ISO accompagne le nom : c'est lui qui porte le drapeau,
+             # partout ailleurs sur la plateforme. Il est nul quand le pays
+             # n'a pas été rapproché — le drapeau disparaît, le nom reste.
+             "pays": r.pays_observe, "pays_iso": (r.iso_observe or "").strip() or None,
+             "partenaire": r.pays_partenaire, "partenaire_iso": (r.iso_partenaire or "").strip() or None,
              "secteur": r.secteur, "sous_secteur": r.sous_secteur,
              "activite": r.activite, "type_projet": r.type_projet,
              "capex_musd": nb(r.capex_musd), "capex_estime": r.capex_estime,

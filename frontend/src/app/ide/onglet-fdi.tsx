@@ -19,19 +19,17 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 
-import FicheModal, { FicheBloc, FicheCarteNeutre, FicheGrille, FicheSection, FicheValeur }
-  from "@/components/shared/FicheModal";
-import { GrapheCard } from "@/components/charts/GrapheCardIde";
-import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
+import DrapeauPays from "@/components/shared/DrapeauPays";
+import FicheModal, { FicheCarteNeutre, FicheSection } from "@/components/shared/FicheModal";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, CarteTableauAnnees, fmtNombre, fmtVal, GrapheMultiPays } from "./partage";
+import { API, fmtNombre, fmtVal } from "./partage";
 
 type Compte = { nom: string; nb: number };
 type Perimetre = {
@@ -41,7 +39,9 @@ type Perimetre = {
 type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
 type Projet = {
   id: number; periode: string; annee: number; entreprise: string | null;
-  entreprise_a_arbitrer: boolean; pays: string | null; partenaire: string | null;
+  entreprise_a_arbitrer: boolean;
+  pays: string | null; pays_iso: string | null;
+  partenaire: string | null; partenaire_iso: string | null;
   secteur: string | null; sous_secteur: string | null; activite: string | null;
   type_projet: string | null; capex_musd: number | null; capex_estime: boolean | null;
   emplois: number | null; emplois_estime: boolean | null; description: string | null;
@@ -64,18 +64,6 @@ const VUES = [
 
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
-
-/** Un montant estimé par l'algorithme du Financial Times ne se lit pas comme un
-    montant déclaré par l'entreprise. Le « ≈ » le dit sans phrase. */
-function Valeur({ v, estime, fmt }: { v: number | null; estime: boolean | null; fmt: (n: number | null) => string }) {
-  if (v == null) return <span style={{ color: "var(--gris)" }}>—</span>;
-  return (
-    <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée" : "Valeur déclarée par l'entreprise"}
-      style={{ whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-      {estime && <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈ </span>}{fmt(v)}
-    </span>
-  );
-}
 
 function CarteKpi({ label, valeur, note }: { label: string; valeur: string; note?: string | null }) {
   return (
@@ -225,24 +213,14 @@ export default function OngletFdi() {
   const paysFiltres = (per?.pays ?? []).filter(p =>
     !chercherPays || p.nom.toLowerCase().includes(chercherPays.toLowerCase()));
 
-  // Une seule série par graphe : la période est courte et les projets sont des
-  // événements, pas un flux continu — la barre dit mieux qu'une courbe qu'il
-  // s'agit d'un dénombrement.
-  const serie = (cle: "nb" | "capex_musd" | "emplois", nom: string, couleur: string) => [{
-    nom, couleur,
-    data: (d?.par_annee ?? []).map(a => ({ annee: a.annee, valeur: a[cle] as number | null })),
-  }];
+  const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
+
+  // Le compteur dénombre des PAYS d'origine ; le pays observé est toujours la
+  // destination, la page ne se lisant que dans un sens.
+  const libellePartenaire = "Pays d'origine";
   const tag = d?.kpis?.annees?.[0] != null
     ? (d.kpis.annees[0] === d.kpis.annees[1] ? `${d.kpis.annees[0]}` : `${d.kpis.annees[0]}–${d.kpis.annees[1]}`)
     : undefined;
-
-  // Deux libellés voisins mais distincts : le compteur dénombre des PAYS, le
-  // classement montre des PROJETS par pays. Le pays d'en face est toujours
-  // celui d'origine, la page ne se lisant que dans un sens.
-  const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
-
-  const libellePartenaire = "Pays d'origine";
-  const libelleSens = "Origine des projets";
 
   return (
     <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
@@ -429,47 +407,12 @@ export default function OngletFdi() {
                       note={`${fmtVal(d.kpis.capex_moyen)} par projet en moyenne`} />
                   </div>
 
-                  {/* Séries annuelles — un graphe par ligne, comme le reste du site */}
-                  <div style={{ display: "grid", gap: 14, marginBottom: 14 }}>
-                    {/* Le montant se lit en courbe : c'est une grandeur, elle a
-                        une trajectoire. Les DÉNOMBREMENTS, eux, passent en
-                        tableau — une barre par année n'ajoute rien à un
-                        nombre, et sur deux années elle occupe l'écran sans le
-                        renseigner. C'est la règle déjà retenue ailleurs sur le
-                        site pour les comptages. */}
-                    <GrapheCard titre="Investissement annoncé" unite="M$ USD" source="fDi Markets · Financial Times"
-                      series={serie("capex_musd", "Capex", "var(--bleu)")} grapheId="fdi-capex" statique tag={tag} hideLegend>
-                      <GrapheMultiPays series={serie("capex_musd", "Capex", "var(--bleu)")} height={250} type="line"
-                        titre="fdi-capex" showDots />
-                    </GrapheCard>
-                    <CarteTableauAnnees titre="Projets annoncés"
-                      rows={(d.par_annee ?? []).map(a => ({ annee: a.annee, valeur: a.nb }))} />
-                    <CarteTableauAnnees titre="Emplois annoncés" accent="var(--violet)"
-                      rows={(d.par_annee ?? []).map(a => ({ annee: a.annee, valeur: a.emplois }))} />
-                  </div>
-
-                  {/* Classements — le nombre de projets, la valeur en infobulle */}
-                  <div style={{ display: "grid", gap: 14, marginBottom: 14 }}>
-                    {([
-                      { id: "partenaires", titre: libelleSens, couleur: "var(--orange)" },
-                      { id: "secteurs", titre: "Secteurs les plus visés", couleur: "var(--bleu)" },
-                      { id: "activites", titre: "Nature des implantations", couleur: "var(--vert)" },
-                      { id: "entreprises", titre: "Entreprises les plus actives", couleur: "var(--violet)" },
-                    ] as const).map(c => {
-                      const rows = (d.tops[c.id] ?? []).map(r => ({ label: r.nom, valeur: r.nb }));
-                      if (rows.length === 0) return null;
-                      return (
-                        <GrapheCard key={c.id} titre={c.titre} unite="Nombre de projets"
-                          source="fDi Markets · Financial Times" grapheId={`fdi-top-${c.id}`} statique tag={tag} hideLegend>
-                          {/* Échelle linéaire, pas en racine : sur des dénombrements courts,
-                              un projet ne doit pas paraître valoir presque autant que quatre. */}
-                          <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
-                        </GrapheCard>
-                      );
-                    })}
-                  </div>
-
-                  {/* La table : c'est elle que les compteurs décrivent */}
+                  {/* La page ne montre plus QUE les projets. Les series, les
+                      tableaux annuels et les classements sont passes dans le
+                      rapport : ici on cherche un projet, la-bas on lit une
+                      tendance, et melanger les deux gestes obligeait a faire
+                      defiler dix ecrans de synthese avant d'atteindre la
+                      matiere. */}
                   <div style={{ background: "var(--carte)", borderRadius: 14,
                     border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -526,110 +469,206 @@ export default function OngletFdi() {
   );
 }
 
+/** Un montant, écrit comme un chiffre de tableau de bord : la valeur grande,
+    son unité petite à côté, et l'estimation signalée sans occuper la ligne. */
+function Montant({ v, estime, unite, taille = 16 }: {
+  v: number | null; estime: boolean | null; unite: string; taille?: number;
+}) {
+  if (v == null) return <span style={{ fontSize: taille, fontWeight: 700, color: "var(--gris)" }}>—</span>;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4, whiteSpace: "nowrap" as const }}
+      title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée" : "Valeur déclarée par l'entreprise"}>
+      {estime && <span style={{ fontSize: taille * 0.8, fontWeight: 800, color: "var(--orange)" }}>≈</span>}
+      <span style={{ fontSize: taille, fontWeight: 800, color: "var(--encre)",
+        fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
+        {v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
+      </span>
+      <span style={{ fontSize: taille * 0.62, fontWeight: 700, color: "var(--gris)" }}>{unite}</span>
+    </span>
+  );
+}
+
+/** La pastille du type de projet. Trois valeurs seulement, et elles ne disent
+    pas la même chose : une extension prolonge un investisseur déjà présent,
+    une implantation nouvelle amène quelqu'un qui n'était pas là. La couleur
+    porte la distinction, le mot la nomme. */
+function PastilleType({ type }: { type: string | null }) {
+  if (!type) return null;
+  const c = /extension/i.test(type) ? "var(--vert)"
+    : /co-implantation|co-location/i.test(type) ? "var(--violet)" : "var(--bleu)";
+  return (
+    <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase" as const,
+      color: c, background: `color-mix(in srgb, ${c} 11%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 22%, transparent)`,
+      padding: "3px 9px", borderRadius: 999, whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+      {type}
+    </span>
+  );
+}
+
 /** Un projet, en tuile.
 
-    Elle porte ce qui l'identifie — qui, d'où, quand, quel secteur, combien —
-    et rien de plus : la tuile sert à parcourir, pas à consulter. Le clic ouvre
-    la fiche, comme partout ailleurs sur les pages publiques. */
+    Elle répond à quatre questions et s'arrête là : QUI investit, D'OÙ il
+    vient, DANS QUOI, COMBIEN. Le reste — sous-secteur, nature de
+    l'implantation, description — appartient à la fiche : une tuile qui dit
+    tout ne se parcourt plus, elle se lit, et il y en a deux cent trente-cinq. */
 function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
   return (
-    <div onClick={onOuvrir} role="button" tabIndex={0}
+    <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
-      style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)",
-        borderRadius: 14, padding: "14px 16px", cursor: "pointer",
-        transition: "border-color 0.18s, box-shadow 0.18s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)";
-        e.currentTarget.style.boxShadow = "0 2px 10px rgb(var(--ombre-rgb) / 0.08)"; }}
+      style={{ display: "flex", flexDirection: "column" as const, background: "var(--carte)",
+        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, padding: "15px 17px 13px",
+        cursor: "pointer", transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
+        e.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
+        e.currentTarget.style.transform = "translateY(-1px)"; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
-        e.currentTarget.style.boxShadow = "none"; }}>
+        e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
 
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)", lineHeight: 1.3 }}>
-            {p.entreprise ?? "—"}
-          </p>
-          <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 3 }}>
-            {p.partenaire ?? "—"} · {p.periode}
-          </p>
-        </div>
-        <ChevronRight size={14} style={{ flexShrink: 0, color: "var(--gris)", marginTop: 2 }} />
+      {/* Période et type : le contexte, avant le nom. */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 9 }}>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
+          fontVariantNumeric: "tabular-nums", letterSpacing: "0.04em" }}>{p.periode}</span>
+        <PastilleType type={p.type_projet} />
       </div>
 
-      <p style={{ fontSize: 12, color: "var(--texte)", marginTop: 10, lineHeight: 1.4 }}>{p.secteur ?? "—"}</p>
+      <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
+        letterSpacing: "-0.01em" }}>{p.entreprise ?? "—"}</h3>
 
-      <div style={{ display: "flex", gap: 18, marginTop: 10, flexWrap: "wrap" as const }}>
-        <span>
-          <span style={{ ...ETIQ, display: "block" }}>Investissement</span>
-          <Valeur v={p.capex_musd} estime={p.capex_estime}
-            fmt={v => `${(v ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} M$`} />
-        </span>
-        <span>
-          <span style={{ ...ETIQ, display: "block" }}>Emplois</span>
-          <Valeur v={p.emplois} estime={p.emplois_estime} fmt={fmtNombre} />
+      {/* D'où vient l'investissement. Le drapeau se lit avant le mot. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+        <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={13} sansIso="rien" />
+        <span style={{ fontSize: 12, color: "var(--gris-fort)", fontWeight: 600,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+          {p.partenaire ?? "Origine inconnue"}
         </span>
       </div>
+
+      <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 8, lineHeight: 1.45,
+        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
+        overflow: "hidden", minHeight: 34 }}>
+        {p.secteur ?? "Secteur inconnu"}
+      </p>
+
+      {/* Les deux chiffres, au pied, séparés du reste par un filet : c'est ce
+          qu'on compare d'une tuile à l'autre en balayant la grille. */}
+      <div style={{ display: "flex", gap: 22, marginTop: 12, paddingTop: 11,
+        borderTop: "1px solid var(--bordure)" }}>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 2 }}>Investissement</span>
+          <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" />
+        </span>
+        <span style={{ minWidth: 0 }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 2 }}>Emplois</span>
+          <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" />
+        </span>
+      </div>
+    </article>
+  );
+}
+
+/** Une ligne de la fiche : le libellé à gauche, la valeur à droite.
+
+    Pas de blocs en damier ici : les champs d'un projet sont de longueurs très
+    inégales — « New » d'un côté, « Grands magasins et commerces de détail
+    généralistes » de l'autre — et une grille les aurait tous étirés à la
+    taille du plus long. */
+function LigneFiche({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: 16, padding: "9px 0",
+      borderBottom: "1px solid var(--bordure)" }}>
+      <span style={{ ...ETIQ, flex: "0 0 34%", lineHeight: 1.5 }}>{label}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, color: "var(--encre)", lineHeight: 1.5 }}>
+        {children}
+      </span>
     </div>
   );
 }
 
-/** La fiche du projet — la coquille commune à toutes les fiches publiques.
+/** La fiche du projet.
 
-    Elle dit tout ce que la source porte, y compris ce qu'elle ne porte pas :
-    une description absente est écrite comme telle, faute de quoi le lecteur
-    croit à un défaut d'affichage. */
+    Elle s'ouvre sur ce qui compte — les deux montants, en grand — puis le
+    trajet de l'investissement, puis ce que l'entreprise vient faire, puis la
+    description. Les valeurs estimées sont dites une fois, en pied de bandeau,
+    plutôt que répétées sous chaque nombre. */
 function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
-  const montant = (v: number | null, estime: boolean | null, unite: string) =>
-    v == null ? <FicheValeur vide>Non communiqué</FicheValeur> : (
-      <FicheValeur>
-        {estime && <span style={{ color: "var(--orange)", fontWeight: 800 }}>≈ </span>}
-        {v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} {unite}
-        {estime && (
-          <span style={{ display: "block", fontSize: 10.5, fontWeight: 500, color: "var(--gris)", marginTop: 2 }}>
-            estimation du Financial Times
-          </span>
-        )}
-      </FicheValeur>
-    );
-
+  const estime = p.capex_estime || p.emplois_estime;
   return (
-    <FicheModal titre={p.entreprise ?? "Projet"} onClose={onClose} maxWidth={680}>
-      <FicheSection titre="Informations">
-        <FicheGrille>
-          <FicheBloc label="Période"><FicheValeur>{p.periode}</FicheValeur></FicheBloc>
-          <FicheBloc label="Type de projet">
-            <FicheValeur>{p.type_projet ?? "—"}</FicheValeur>
-          </FicheBloc>
-          <FicheBloc label="Pays d'origine"><FicheValeur>{p.partenaire ?? "—"}</FicheValeur></FicheBloc>
-          <FicheBloc label="Destination"><FicheValeur>{p.pays ?? "—"}</FicheValeur></FicheBloc>
-          <FicheBloc label="Investissement annoncé">
-            {montant(p.capex_musd, p.capex_estime, "M$")}
-          </FicheBloc>
-          <FicheBloc label="Emplois annoncés">
-            {montant(p.emplois, p.emplois_estime, "emplois")}
-          </FicheBloc>
-        </FicheGrille>
+    <FicheModal maxWidth={660} onClose={onClose}
+      titre={
+        <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+          <span>{p.entreprise ?? "Projet"}</span>
+          <PastilleType type={p.type_projet} />
+        </span>
+      }>
+
+      {/* Bandeau des deux chiffres — le fond bleu très pâle des fiches. */}
+      <div style={{ background: "rgb(var(--bleu-rgb) / 0.05)", border: "1px solid rgb(var(--bleu-rgb) / 0.14)",
+        borderRadius: 14, padding: "16px 18px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <p style={{ ...ETIQ, marginBottom: 5 }}>Investissement annoncé</p>
+            <Montant v={p.capex_musd} estime={p.capex_estime} unite="M$" taille={24} />
+          </div>
+          <div>
+            <p style={{ ...ETIQ, marginBottom: 5 }}>Emplois annoncés</p>
+            <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" taille={24} />
+          </div>
+        </div>
+        {estime && (
+          <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 12, lineHeight: 1.5 }}>
+            <span style={{ color: "var(--orange)", fontWeight: 800 }}>≈</span>{" "}valeur estimée par
+            l&apos;algorithme du Financial Times, non déclarée par l&apos;entreprise.
+          </p>
+        )}
+      </div>
+
+      {/* Le trajet : d'où part l'investissement, où il arrive. */}
+      <FicheSection titre="Trajet de l'investissement">
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const,
+          background: "var(--carte-douce)", border: "1px solid var(--bordure)",
+          borderRadius: 12, padding: "13px 16px" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={18} sansIso="rien" />
+            <span style={{ minWidth: 0 }}>
+              <span style={{ ...ETIQ, display: "block" }}>Origine</span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)" }}>{p.partenaire ?? "—"}</span>
+            </span>
+          </span>
+          <ArrowRight size={16} style={{ color: "var(--bleu)", flexShrink: 0 }} />
+          <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <DrapeauPays iso={p.pays_iso} nom={p.pays ?? ""} taille={18} sansIso="rien" />
+            <span style={{ minWidth: 0 }}>
+              <span style={{ ...ETIQ, display: "block" }}>Destination</span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)" }}>{p.pays ?? "—"}</span>
+            </span>
+          </span>
+          <span style={{ marginLeft: "auto", textAlign: "right" as const }}>
+            <span style={{ ...ETIQ, display: "block" }}>Annoncé en</span>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
+              fontVariantNumeric: "tabular-nums" }}>{p.periode}</span>
+          </span>
+        </div>
       </FicheSection>
 
-      <FicheSection titre="Activité">
-        <FicheGrille>
-          <FicheBloc label="Secteur"><FicheValeur>{p.secteur ?? "—"}</FicheValeur></FicheBloc>
-          <FicheBloc label="Sous-secteur"><FicheValeur>{p.sous_secteur ?? "—"}</FicheValeur></FicheBloc>
-          <FicheBloc label="Nature de l'implantation" full>
-            <FicheValeur>{p.activite ?? "—"}</FicheValeur>
-          </FicheBloc>
-        </FicheGrille>
+      <FicheSection titre="Ce que l'entreprise vient faire">
+        <div>
+          <LigneFiche label="Secteur">{p.secteur ?? "—"}</LigneFiche>
+          <LigneFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</LigneFiche>
+          <LigneFiche label="Nature de l'implantation">{p.activite ?? "—"}</LigneFiche>
+          <LigneFiche label="Type de projet">{p.type_projet ?? "—"}</LigneFiche>
+        </div>
       </FicheSection>
 
       <FicheSection titre="Description">
         <FicheCarteNeutre>
-          <p style={{ fontSize: 12.5, color: p.description ? "var(--texte)" : "var(--gris)",
-            lineHeight: 1.7, fontStyle: p.description ? "normal" : "italic" }}>
+          <p style={{ fontSize: 13, color: p.description ? "var(--texte)" : "var(--gris)",
+            lineHeight: 1.75, fontStyle: p.description ? "normal" : "italic" }}>
             {p.description ?? "La source ne publie pas de description pour ce projet."}
           </p>
         </FicheCarteNeutre>
       </FicheSection>
 
-      <p style={{ fontSize: 10.5, color: "var(--gris)", lineHeight: 1.6 }}>
+      <p style={{ fontSize: 11, color: "var(--gris)", lineHeight: 1.6 }}>
         Projet <strong>annoncé</strong>, relevé par fDi Markets (Financial Times). Une annonce dit une
         décision d&apos;investir, pas un décaissement.
       </p>
@@ -637,5 +676,5 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
   );
 }
 
-const ETIQ = { fontSize: 9.5, fontWeight: 800, letterSpacing: "0.1em",
+const ETIQ = { fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
   textTransform: "uppercase" as const, color: "var(--gris)", lineHeight: 1.6 } as const;
