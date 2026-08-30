@@ -304,7 +304,12 @@ def test_les_pages_relevees_sont_lisibles():
     for chemin in pages:
         lignes = lire_lot_csv(chemin)
         assert [l["ligne"] for l in lignes] == list(range(1, len(lignes) + 1))
-    assert sum(len(lire_lot_csv(p)) for p in pages) == 15 * len(pages)
+    # Quinze lignes par page, sauf la dernière que la source ne remplit pas.
+    tailles = [len(lire_lot_csv(p)) for p in pages]
+    assert set(tailles[:-1]) == {15} and 1 <= tailles[-1] <= 15
+    # Le compte annoncé par fDi pour le périmètre Sénégal. Une page relevée
+    # deux fois, ou une ligne oubliée, se verrait ici.
+    assert sum(tailles) == 235
 
 
 def test_la_source_ecrit_la_cote_d_ivoire_sans_apostrophe(pays):

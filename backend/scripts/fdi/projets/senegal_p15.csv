@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2008,United Bank for Af…,United Bank for Af…,Nigeria,Senegal,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Nov 2008,Studi Group,Studi Group,Tunisia,Senegal,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+3,Nov 2008,VIVEO Group,VIVEO Group,France,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+4,Apr 2008,Dubai World,Dubai World,UAE,Senegal,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+5,Apr 2008,Dubai World,Dubai World,UAE,Senegal,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Apr 2008,Dubai World,Dubai World,UAE,Senegal,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+7,Apr 2008,Procter & Gamble …,Procter & Gamble …,United States,Senegal,Consumer products,Other (Consumer pr…,Headquarters,* $16.60m,* 85,New
+8,Apr 2008,Tata Group,Tata Motors,India,Senegal,Automotive OEM,Light trucks & utility …,Manufacturing,* $94.50m,* 864,Expansion
+9,Jan 2008,Dubai World,Jafza International,UAE,Senegal,Real estate,Real estate services,Construction,$800.00m,"* 3,000",New
+10,Jun 2007,DP World,DP World,UAE,Senegal,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$534.00m,"* 1,107",Expansion
+11,Feb 2007,Microsoft,Microsoft,United States,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $1.80m,8,New
+12,Nov 2006,Altria,Philip Morris USA,United States,Senegal,Food and Beverages,Tobacco,Manufacturing,$25.00m,300,New
+13,Nov 2006,Iran Khodro Indus…,Iran Khodro Indus…,Iran,Senegal,Automotive OEM,Automobiles,Manufacturing,$60.00m,* 483,New
+14,Oct 2006,Amitelo Communi…,Amitelo Communi…,Switzerland,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+15,Jul 2006,Attijariwafa Bank,Attijariwafa Bank,Morocco,Senegal,Financial services,Retail banking,Business Services,* $21.50m,50,New
