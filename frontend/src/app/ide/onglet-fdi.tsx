@@ -19,8 +19,10 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 
+import FicheModal, { FicheBloc, FicheCarteNeutre, FicheGrille, FicheSection, FicheValeur }
+  from "@/components/shared/FicheModal";
 import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
@@ -170,6 +172,7 @@ export default function OngletFdi() {
   const [chercherPays, setChercherPays] = useState("");
   const [anneeMin, setAnneeMin] = useState<number | null>(null);
   const [anneeMax, setAnneeMax] = useState<number | null>(null);
+  // Le projet dont la fiche est ouverte, par identifiant.
   const [ouvert, setOuvert] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -236,6 +239,8 @@ export default function OngletFdi() {
   // Deux libellés voisins mais distincts : le compteur dénombre des PAYS, le
   // classement montre des PROJETS par pays. Le pays d'en face est toujours
   // celui d'origine, la page ne se lisant que dans un sens.
+  const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
+
   const libellePartenaire = "Pays d'origine";
   const libelleSens = "Origine des projets";
 
@@ -496,8 +501,7 @@ export default function OngletFdi() {
                     <div style={{ display: "grid", gap: 10,
                       gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))" }}>
                       {d.projets.map(p => (
-                        <CarteProjet key={p.id} p={p} ouvert={ouvert === p.id}
-                          onToggle={() => setOuvert(o => (o === p.id ? null : p.id))} />
+                        <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)} />
                       ))}
                     </div>
 
@@ -513,31 +517,31 @@ export default function OngletFdi() {
           )}
         </div>
       </div>
+
+      {/* La fiche du projet ouvert. Elle est montée ici, hors de la grille :
+          une modale enfant d'une carte hériterait de son curseur et de ses
+          gestionnaires de clic. */}
+      {ficheOuverte && <FicheProjet p={ficheOuverte} onClose={() => setOuvert(null)} />}
     </div>
   );
 }
 
-/** Un projet, en carte dépliable.
+/** Un projet, en tuile.
 
-    Fermée, elle porte ce qui l'identifie : qui, d'où, quand, combien. Ouverte,
-    elle donne le reste — le sous-secteur, la nature de l'implantation, le
-    groupe, et la description quand elle a été saisie. Le tout sans quitter la
-    liste, parce qu'on parcourt ces projets, on ne les consulte pas un à un. */
-function CarteProjet({ p, ouvert, onToggle }: { p: Projet; ouvert: boolean; onToggle: () => void }) {
-  const lignes: [string, React.ReactNode][] = [
-    ["Sous-secteur", p.sous_secteur],
-    ["Nature de l'implantation", p.activite],
-    ["Type de projet", p.type_projet],
-    ["Destination", p.pays],
-  ];
+    Elle porte ce qui l'identifie — qui, d'où, quand, quel secteur, combien —
+    et rien de plus : la tuile sert à parcourir, pas à consulter. Le clic ouvre
+    la fiche, comme partout ailleurs sur les pages publiques. */
+function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
   return (
-    <div onClick={onToggle} role="button" tabIndex={0}
-      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
-      style={{ background: "var(--carte)", border: `1px solid ${ouvert ? "rgb(var(--bleu-rgb) / 0.35)" : "rgb(var(--encre-rgb) / 0.12)"}`,
-        borderRadius: 14, padding: "14px 16px", cursor: "pointer", transition: "border-color 0.18s, box-shadow 0.18s",
-        boxShadow: ouvert ? "0 2px 10px rgb(var(--ombre-rgb) / 0.08)" : "none" }}
-      onMouseEnter={e => { if (!ouvert) e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.30)"; }}
-      onMouseLeave={e => { if (!ouvert) e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
+    <div onClick={onOuvrir} role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
+      style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)",
+        borderRadius: 14, padding: "14px 16px", cursor: "pointer",
+        transition: "border-color 0.18s, box-shadow 0.18s" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.35)";
+        e.currentTarget.style.boxShadow = "0 2px 10px rgb(var(--ombre-rgb) / 0.08)"; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
+        e.currentTarget.style.boxShadow = "none"; }}>
 
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
         <div style={{ minWidth: 0 }}>
@@ -548,8 +552,7 @@ function CarteProjet({ p, ouvert, onToggle }: { p: Projet; ouvert: boolean; onTo
             {p.partenaire ?? "—"} · {p.periode}
           </p>
         </div>
-        <ChevronDown size={14} style={{ flexShrink: 0, color: "var(--gris)", marginTop: 2,
-          transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.18s" }} />
+        <ChevronRight size={14} style={{ flexShrink: 0, color: "var(--gris)", marginTop: 2 }} />
       </div>
 
       <p style={{ fontSize: 12, color: "var(--texte)", marginTop: 10, lineHeight: 1.4 }}>{p.secteur ?? "—"}</p>
@@ -565,29 +568,72 @@ function CarteProjet({ p, ouvert, onToggle }: { p: Projet; ouvert: boolean; onTo
           <Valeur v={p.emplois} estime={p.emplois_estime} fmt={fmtNombre} />
         </span>
       </div>
-
-      {ouvert && (
-        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--bordure)" }}>
-          {lignes.filter(([, v]) => v).map(([etiquette, valeur]) => (
-            <div key={etiquette} style={{ display: "flex", gap: 10, marginBottom: 6 }}>
-              <span style={{ ...ETIQ, flex: "0 0 40%" }}>{etiquette}</span>
-              <span style={{ fontSize: 12, color: "var(--texte)", lineHeight: 1.4 }}>{valeur}</span>
-            </div>
-          ))}
-          {/* La société mère n'est utile que lorsqu'elle diffère : la répéter
-              ferait passer une filiale pour un groupe. */}
-          {p.description ? (
-            <p style={{ fontSize: 12, color: "var(--gris-fort)", lineHeight: 1.65, marginTop: 10 }}>
-              {p.description}
-            </p>
-          ) : (
-            <p style={{ fontSize: 11.5, color: "var(--gris)", fontStyle: "italic", marginTop: 10 }}>
-              La source ne publie pas de description pour ce projet.
-            </p>
-          )}
-        </div>
-      )}
     </div>
+  );
+}
+
+/** La fiche du projet — la coquille commune à toutes les fiches publiques.
+
+    Elle dit tout ce que la source porte, y compris ce qu'elle ne porte pas :
+    une description absente est écrite comme telle, faute de quoi le lecteur
+    croit à un défaut d'affichage. */
+function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
+  const montant = (v: number | null, estime: boolean | null, unite: string) =>
+    v == null ? <FicheValeur vide>Non communiqué</FicheValeur> : (
+      <FicheValeur>
+        {estime && <span style={{ color: "var(--orange)", fontWeight: 800 }}>≈ </span>}
+        {v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} {unite}
+        {estime && (
+          <span style={{ display: "block", fontSize: 10.5, fontWeight: 500, color: "var(--gris)", marginTop: 2 }}>
+            estimation du Financial Times
+          </span>
+        )}
+      </FicheValeur>
+    );
+
+  return (
+    <FicheModal titre={p.entreprise ?? "Projet"} onClose={onClose} maxWidth={680}>
+      <FicheSection titre="Informations">
+        <FicheGrille>
+          <FicheBloc label="Période"><FicheValeur>{p.periode}</FicheValeur></FicheBloc>
+          <FicheBloc label="Type de projet">
+            <FicheValeur>{p.type_projet ?? "—"}</FicheValeur>
+          </FicheBloc>
+          <FicheBloc label="Pays d'origine"><FicheValeur>{p.partenaire ?? "—"}</FicheValeur></FicheBloc>
+          <FicheBloc label="Destination"><FicheValeur>{p.pays ?? "—"}</FicheValeur></FicheBloc>
+          <FicheBloc label="Investissement annoncé">
+            {montant(p.capex_musd, p.capex_estime, "M$")}
+          </FicheBloc>
+          <FicheBloc label="Emplois annoncés">
+            {montant(p.emplois, p.emplois_estime, "emplois")}
+          </FicheBloc>
+        </FicheGrille>
+      </FicheSection>
+
+      <FicheSection titre="Activité">
+        <FicheGrille>
+          <FicheBloc label="Secteur"><FicheValeur>{p.secteur ?? "—"}</FicheValeur></FicheBloc>
+          <FicheBloc label="Sous-secteur"><FicheValeur>{p.sous_secteur ?? "—"}</FicheValeur></FicheBloc>
+          <FicheBloc label="Nature de l'implantation" full>
+            <FicheValeur>{p.activite ?? "—"}</FicheValeur>
+          </FicheBloc>
+        </FicheGrille>
+      </FicheSection>
+
+      <FicheSection titre="Description">
+        <FicheCarteNeutre>
+          <p style={{ fontSize: 12.5, color: p.description ? "var(--texte)" : "var(--gris)",
+            lineHeight: 1.7, fontStyle: p.description ? "normal" : "italic" }}>
+            {p.description ?? "La source ne publie pas de description pour ce projet."}
+          </p>
+        </FicheCarteNeutre>
+      </FicheSection>
+
+      <p style={{ fontSize: 10.5, color: "var(--gris)", lineHeight: 1.6 }}>
+        Projet <strong>annoncé</strong>, relevé par fDi Markets (Financial Times). Une annonce dit une
+        décision d&apos;investir, pas un décaissement.
+      </p>
+    </FicheModal>
   );
 }
 

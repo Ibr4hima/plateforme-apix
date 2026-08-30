@@ -30,7 +30,7 @@ import NavActions from "@/components/layout/NavActions";
 import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
-import { API, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
+import { API, CarteTableauAnnees, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
 
 const PAYS = "Sénégal";
 
@@ -290,19 +290,37 @@ export default function RapportIde() {
                 </Carte>
               )}
 
-              {/* d3 arrive dans un module séparé : rendre un graphe avant lui
-                  lève, et une page de rapport qui casse à l'ouverture ne se
-                  rattrape pas. */}
+              {/* Les DÉNOMBREMENTS en tableau annuel, comme sur la page :
+                  une barre par année n'ajoute rien à un nombre, et le tableau
+                  donne en plus l'écart à l'année précédente. */}
+              <div className="rap-duo" style={{ marginTop: 16 }}>
+                <CarteTableauAnnees titre="Projets annoncés"
+                  rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.nb }))} />
+                <CarteTableauAnnees titre="Emplois annoncés" accent="var(--violet)"
+                  rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.emplois }))} />
+              </div>
+
+              {/* Les quatre classements de la page, dans le même ordre : d'où
+                  vient l'argent, dans quoi il va, ce que l'entreprise vient
+                  faire, et qui bouge le plus. d3 arrive dans un module séparé
+                  — rendre un graphe avant lui lève, et une page de rapport qui
+                  casse à l'ouverture ne se rattrape pas. */}
               {d3Pret && (
               <div className="rap-duo" style={{ marginTop: 16 }}>
-                <Carte titre="Pays d'origine" tag="nombre de projets">
-                  <GrapheBarresH data={(fdi.tops.partenaires ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }))}
-                    couleur="var(--orange)" fmt={fmtNombre} exposant={1} />
-                </Carte>
-                <Carte titre="Secteurs visés" tag="nombre de projets">
-                  <GrapheBarresH data={(fdi.tops.secteurs ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }))}
-                    couleur="var(--bleu)" fmt={fmtNombre} exposant={1} />
-                </Carte>
+                {([
+                  { cle: "partenaires" as const, titre: "Origine des projets", couleur: "var(--orange)" },
+                  { cle: "secteurs" as const, titre: "Secteurs les plus visés", couleur: "var(--bleu)" },
+                  { cle: "activites" as const, titre: "Nature des implantations", couleur: "var(--vert)" },
+                  { cle: "entreprises" as const, titre: "Entreprises les plus actives", couleur: "var(--violet)" },
+                ]).map(c => {
+                  const rows = (fdi.tops[c.cle] ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }));
+                  if (rows.length === 0) return null;
+                  return (
+                    <Carte key={c.cle} titre={c.titre} tag="nombre de projets">
+                      <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
+                    </Carte>
+                  );
+                })}
               </div>
               )}
 
