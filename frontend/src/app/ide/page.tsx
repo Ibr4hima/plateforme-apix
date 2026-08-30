@@ -74,13 +74,21 @@ export default function IdePage() {
                 mesure ce qui est entré, fDi relève ce qui est annoncé — mais
                 proposer ce lien depuis « réalisés » laisserait croire à un
                 rapport de cette section-là. */}
-            {section === "projetes" && <Link href="/ide/rapport"
-              style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"7px 15px", borderRadius:999,
-                border:"1px solid rgb(var(--bleu-rgb) / 0.30)", background:"var(--bleu-voile)",
-                color:"var(--bleu)", fontSize:12.5, fontWeight:700, textDecoration:"none",
-                fontFamily:"var(--font-google-sans)", whiteSpace:"nowrap" as const, transition:"background 0.15s" }}>
-              <FileText size={14}/> Rapport
-            </Link>}
+            {/* La forme du segment actif des vues : pastille pleine dans son
+                anneau clair. Le rapport est une destination, pas une option —
+                il mérite le poids qu'a l'onglet en cours. */}
+            {section === "projetes" && (
+              <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
+                borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
+                <Link href="/ide/rapport"
+                  style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 18px", borderRadius:999,
+                    background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700,
+                    textDecoration:"none", whiteSpace:"nowrap" as const, fontFamily:"var(--font-google-sans)",
+                    boxShadow:"0 2px 8px rgb(var(--ombre-rgb) / 0.30), inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+                  <FileText size={14}/> Rapport
+                </Link>
+              </div>
+            )}
 
           </div>
         </div>

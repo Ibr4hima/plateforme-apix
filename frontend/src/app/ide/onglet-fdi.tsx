@@ -30,7 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, fmtNombre } from "./partage";
+import { API, BadgePeriode, fmtNombre } from "./partage";
 
 type Compte = { nom: string; nb: number };
 type Perimetre = {
@@ -215,7 +215,7 @@ export default function OngletFdi() {
   const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
 
   const tag = d?.kpis?.annees?.[0] != null
-    ? (d.kpis.annees[0] === d.kpis.annees[1] ? `${d.kpis.annees[0]}` : `${d.kpis.annees[0]}–${d.kpis.annees[1]}`)
+    ? (d.kpis.annees[0] === d.kpis.annees[1] ? `${d.kpis.annees[0]}` : `${d.kpis.annees[0]} — ${d.kpis.annees[1]}`)
     : undefined;
 
   return (
@@ -356,21 +356,30 @@ export default function OngletFdi() {
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           {vue !== "projets" ? <ABientot vue={vue} /> : (
             <>
-              {/* En-tête : le pays, son rôle, la période couverte */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 6 }}>
-                <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)" }} />
-                <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
+              {/* En-tête : le pays, sa qualification, la période couverte — et
+                  la recherche sur la même ligne, alignée à droite. Les deux
+                  jetons reprennent ceux de la vue Secteurs : la petite étiquette
+                  grise qualifie, la pastille de période date. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
+                <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
+                <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
                   {pays ?? "—"}
                 </h2>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--bleu)",
-                  background: "var(--bleu-voile)", padding: "4px 11px", borderRadius: 999 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px", borderRadius: 5,
+                  background: "var(--fond)", border: "1px solid var(--bordure-forte)", fontSize: 9, fontWeight: 700,
+                  color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.05em", flexShrink: 0 }}>
                   Projets reçus
                 </span>
-                {tag && (
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--gris)",
-                    background: "var(--fond)", padding: "4px 11px", borderRadius: 999,
-                    fontVariantNumeric: "tabular-nums" }}>{tag}</span>
-                )}
+                {tag && <BadgePeriode>{tag}</BadgePeriode>}
+                <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200, flex: "0 1 300px" }}>
+                  <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
+                    transform: "translateY(-50%)", color: "var(--gris)" }} />
+                  <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Rechercher"
+                    style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
+                      border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+                      fontSize: 12.5, color: "var(--encre)", outline: "none",
+                      fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+                </div>
               </div>
 
               {q.isError ? <ErreurChargement onRetry={() => q.refetch()} /> : !d ? (
@@ -389,28 +398,9 @@ export default function OngletFdi() {
                 </div>
               ) : (
                 <div className="charge-in">
-                  {/* Ni compteurs ni cadre : les cartes reposent directement
-                      sur la page, comme partout ailleurs sur le site. Un
-                      panneau blanc autour d'une grille de cartes blanches
-                      n'ajoutait qu'une bordure de plus. */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-                    gap: 12, flexWrap: "wrap" as const, marginBottom: 14 }}>
-                    <span style={{ fontSize: 12.5, color: "var(--gris)" }}>
-                      <strong style={{ color: "var(--encre)", fontWeight: 700 }}>{d.projets.length}</strong>{" "}
-                      projet{d.projets.length > 1 ? "s" : ""} annoncé{d.projets.length > 1 ? "s" : ""}
-                    </span>
-                    <div style={{ position: "relative" as const, minWidth: 240, flex: "0 1 340px" }}>
-                      <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
-                        transform: "translateY(-50%)", color: "var(--gris)" }} />
-                      <input value={recherche} onChange={e => setRecherche(e.target.value)}
-                        placeholder="Rechercher une entreprise, un mot de la description…"
-                        style={{ width: "100%", padding: "9px 10px 9px 34px", borderRadius: 999,
-                          border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-                          fontSize: 12.5, color: "var(--encre)", outline: "none",
-                          fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
-                    </div>
-                  </div>
-
+                  {/* Ni compteur ni cadre : les cartes reposent directement sur
+                      la page, comme partout ailleurs sur le site, et le nombre
+                      de projets se lit deja dans le filtre « Pays ». */}
                   <div style={{ display: "grid", gap: 14,
                     gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
                     {d.projets.map(p => (
@@ -503,12 +493,6 @@ function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
       <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
         letterSpacing: "-0.01em" }}>{p.entreprise ?? "—"}</h3>
 
-      <p style={{ fontSize: 12.5, color: "var(--gris)", marginTop: 5, lineHeight: 1.45,
-        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
-        overflow: "hidden", minHeight: 36 }}>
-        {p.secteur ?? "Secteur inconnu"}
-      </p>
-
       {/* Le pied, en deux colonnes séparées par un filet vertical — la forme
           des cartes d'entreprise de la plateforme. D'OÙ vient l'investissement
           d'abord, COMBIEN ensuite : le pays situe, le montant qualifie. */}
@@ -568,7 +552,6 @@ function TitreFiche({ children }: { children: React.ReactNode }) {
     filets ; la description ferme. Aucun encadré gris — les fonds empilés
     faisaient trois boîtes dans une boîte, et rien ne ressortait. */
 function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
-  const estime = p.capex_estime || p.emplois_estime;
   return (
     <FicheModal maxWidth={620} onClose={onClose}
       titre={
@@ -591,12 +574,6 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
             <Montant v={p.emplois} estime={p.emplois_estime} unite="postes" taille={30} />
           </div>
         </div>
-        {estime && (
-          <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.55 }}>
-            <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}valeur estimée par
-            l&apos;algorithme du Financial Times, non déclarée par l&apos;entreprise.
-          </p>
-        )}
       </div>
 
       {/* Le trajet, sur une seule ligne : d'où part l'investissement, où il
