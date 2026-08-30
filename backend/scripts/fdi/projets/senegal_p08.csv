@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Fracht,Fracht,Switzerland,Senegal,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+2,Mar 2019,French Developm…,Proparco,France,Senegal,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Mar 2019,IDinsight,IDinsight,India,Senegal,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+4,Mar 2019,MainOne,MainOne,Nigeria,Senegal,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+5,Feb 2019,Gramica,Gramica,France,Senegal,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+6,Feb 2019,Tönnjes,Tönnjes,Germany,Senegal,Consumer products,Sign manufacturing,Manufacturing,$1.08m,* 21,New
+7,Jan 2019,Eiffage,Eiffage,France,Senegal,Renewable energy,Wind electric power,Electricity,* $206.10m,* 57,New
+8,Jan 2019,Novatis,Novatis,Morocco,Senegal,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $45.00m,* 171,New
+9,Jan 2019,Toyota Motor,CFAO Group,Japan,Senegal,Food and Beverages,Food & beverage ret…,Retail,* $2.70m,48,New
+10,Dec 2018,RBH Industrie,RBH Industrie,France,Senegal,Space & defence,Military armoured ve…,Manufacturing,* $52.70m,* 145,New
+11,Nov 2018,Workz Group,Workz Group,UAE,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,Sep 2018,NEC,NEC XON,Japan,Senegal,Software & IT services,Custom computer pr…,Technical Support Ce…,* $15.20m,* 393,New
+13,Sep 2018,Orange (France Te…,Orange Marine,France,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+14,Aug 2018,KeyOpsTech,KeyOpsTech,France,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+15,Apr 2018,Elahi Enterprises,Akorbi,United States,Senegal,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
