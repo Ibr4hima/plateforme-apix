@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2015,AstraZeneca,AstraZeneca,United Kingdom,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$122.89m,* 381,New
+2,Jun 2015,Tunisie Telecom,Societe Tunisienn…,Tunisia,Algeria,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,May 2015,Alstom,CITAL,France,Algeria,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $55.90m,* 583,New
+4,Feb 2015,Cipla,Cipla (EU),India,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$15.00m,* 46,New
+5,Feb 2015,Etihad Airways,Etihad Airways,UAE,Algeria,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Feb 2015,Lafarge,Lafarge,France,Algeria,Building materials,Cement & concrete p…,"Logistics, Distributio…",* $10.30m,20,New
+7,Feb 2015,Orange (France Te…,Orange Horizons,France,Algeria,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+8,Dec 2014,Mercedes-Benz Gr…,Mercedes-Benz,Germany,Algeria,Automotive OEM,Automobiles,Manufacturing,* $122.00m,"* 1,625",New
+9,Dec 2014,Remondis (Rethm…,Rhenus Freight Lo…,Germany,Algeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Dec 2014,Russian Railways …,Gefco,Russia,Algeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Nov 2014,icflix,icflix,UAE,Algeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+12,Nov 2014,Idai Nature,Idai Nature,Spain,Algeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $529.30m,* 455,New
+13,Oct 2014,Diagnos,Diagnos,Canada,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+14,Aug 2014,Rheinmetall,Rheinmetall,Germany,Algeria,Space & defence,Military armoured ve…,Manufacturing,$37.00m,* 124,New
+15,Jun 2014,Bennani & Associés,Bennani & Associés,Morocco,Algeria,Business services,Legal services,Business Services,* $27.80m,* 38,New

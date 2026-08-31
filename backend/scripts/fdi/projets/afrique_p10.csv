@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2016,Bidewi Group,Bidewi Group,UAE,Algeria,Metals,Steel products,Manufacturing,$110.00m,650,New
+2,Mar 2016,DS Avocats,DS Avocats,France,Algeria,Business services,Legal services,Business Services,* $0.60m,4,New
+3,Mar 2016,OCI NV,Orascom Construc…,Netherlands,Algeria,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+4,Feb 2016,Anhui Jianghuai A…,Anhui Jianghuai A…,China,Algeria,Automotive OEM,Light trucks & utility …,Manufacturing,$128.00m,* 756,New
+5,Jan 2016,Aliaxis,Nicoll,Belgium,Algeria,Plastics,Laminated plastics pl…,"Sales, Marketing & S…",* $2.00m,* 9,New
+6,Jan 2016,China State Const…,China State Const…,China,Algeria,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$3.30bn,"* 3,000",New
+7,Jan 2016,Groupe Avril (Sofi…,Groupe Avril (Sofi…,France,Algeria,Food and Beverages,Seasoning & dressing,Manufacturing,* $45.80m,* 263,New
+8,Jan 2016,Sagaci Research,Sagaci Research,Kenya,Algeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+9,Jan 2016,Volkswagen,Volkswagen,Germany,Algeria,Automotive OEM,Automobiles,Manufacturing,$185.28m,"* 1,094",New
+10,Dec 2015,Grupo Ortiz Const…,Grupo Ortiz Const…,Spain,Algeria,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+11,Dec 2015,Lanzhou Lanshi Gr…,Lanzhou Lanshi Gr…,China,Algeria,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+12,Nov 2015,Benne,Benne,France,Algeria,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+13,Nov 2015,Holcim Group (Laf…,Lafarge Algeria,Switzerland,Algeria,Building materials,Cement & concrete p…,Manufacturing,$277.00m,* 679,New
+14,Nov 2015,Merck KGaA,Merck KGaA,Germany,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$5.32m,* 16,New
+15,Sep 2015,CNH Industrial,Iveco SpA,United Kingdom,Algeria,Automotive OEM,Heavy duty trucks,Manufacturing,* $122.00m,"* 1,625",New
