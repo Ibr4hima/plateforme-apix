@@ -79,6 +79,11 @@ function moisEnClair(periode: string): string {
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
 
+/** Le filet qui sépare deux sections de la colonne de filtres. Sans lui, les
+    facettes se lisent comme une seule liste et l'on cherche où finit l'une,
+    où commence l'autre. */
+const Filet = () => <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
+
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
 
     Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
@@ -100,7 +105,7 @@ function Facette({ titre, options, choix, setChoix }: {
   if (visibles.length === 0) return null;
   const bascule = (n: string) => setChoix(choix.includes(n) ? choix.filter(x => x !== n) : [...choix, n]);
   return (
-    <div style={{ marginBottom: 18 }}>
+    <div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
         <span style={TITRE_SS}>{titre}</span>
         {choix.length > 0 && (
@@ -109,7 +114,7 @@ function Facette({ titre, options, choix, setChoix }: {
         )}
       </div>
       <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
-        paddingRight: 2 }}>
+        paddingRight: 2, marginBottom: 18 }}>
         {visibles.map(o => {
           const sel = choix.includes(o.nom);
           return (
@@ -132,6 +137,7 @@ function Facette({ titre, options, choix, setChoix }: {
           );
         })}
       </div>
+      <Filet />
     </div>
   );
 }
@@ -337,7 +343,7 @@ export default function OngletFdi() {
 
             {vue === "projets" && (
               <>
-                <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+                <Filet />
 
                 {/* Les pays qui REÇOIVENT les projets. La base porte les deux
                     bouts de chaque projet, mais la question posée ici est
@@ -385,6 +391,8 @@ export default function OngletFdi() {
                   </div>
                 </div>
 
+                <Filet />
+
                 {/* Période — bornée par ce que les données couvrent */}
                 {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
                   <div style={{ marginBottom: 18 }}>
@@ -396,10 +404,11 @@ export default function OngletFdi() {
                     <CurseurPlageNace min={bornes[0]} max={bornes[1]}
                       debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
                       onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
+                    <div style={{ height: 18 }} />
+                    <Filet />
                   </div>
                 )}
 
-                <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
                 <Facette titre="Secteur" options={per?.secteurs ?? []} choix={secteurs} setChoix={setSecteurs} />
                 <Facette titre="Activité prévue" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
                 <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
@@ -466,12 +475,6 @@ export default function OngletFdi() {
                       <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)} />
                     ))}
                   </div>
-
-                  <p style={{ fontSize: 11, color: "var(--gris)", marginTop: 18, lineHeight: 1.6 }}>
-                    Un <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}signale une valeur
-                    estimée par l&apos;algorithme du Financial Times, et non déclarée par l&apos;entreprise.
-                    Source : fDi Markets.
-                  </p>
                 </div>
               )}
             </>
