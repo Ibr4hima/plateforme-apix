@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,Societe Generale (…,Societe Generale (…,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Feb 2011,Kapsch Group,Kapsch CarrierCom,Austria,Algeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Feb 2011,Nes Group,Nes Group,United Kingdom,Algeria,Business services,Employment services,Business Services,* $6.80m,* 15,New
+4,Feb 2011,Samsung Group,Samsung C&T Cor…,South Korea,Algeria,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New
+5,Feb 2011,Travelport,Travelport,United States,Algeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+6,Jan 2011,ArcelorMittal,ArcelorMittal,Luxembourg,Algeria,Metals,Steel products,Manufacturing,* $647.10m,* 443,Expansion
+7,Jan 2011,Renault,Renault,France,Algeria,Automotive OEM,Automobiles,Manufacturing,$66.00m,* 390,New
+8,Jan 2011,XCMG Constructio…,XCMG Constructio…,China,Algeria,Industrial equipment,"Agriculture, construc…",Manufacturing,* $48.20m,* 401,New
+9,Dec 2010,Sinpas Construction,Sinpas Construction,Turkey,Algeria,Real estate,Commercial & institu…,Construction,$160.00m,"* 1,144",New
+10,Nov 2010,Cleverlance,TrustPort,Czech Republic,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+11,Nov 2010,DSL (Derrick Serv…,DSL (Derrick Serv…,United Kingdom,Algeria,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,New
+12,Oct 2010,Emiral,Emiral,UAE,Algeria,Real estate,Other (Real estate),Construction,* $864.90m,* 875,New
+13,Oct 2010,HSBC Holdings,HSBC Bank,United Kingdom,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Sep 2010,Fergo Aisa (Actua…,Fergo Aisa (Actua…,Spain,Algeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+15,Sep 2010,Sanofi,Sanofi,France,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$103.90m,"* 1,138",New
