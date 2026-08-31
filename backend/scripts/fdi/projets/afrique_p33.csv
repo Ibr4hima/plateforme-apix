@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2005,Orascom Construc…,Orascom Telecom,Egypt,Algeria,Communications,Wireless telecommu…,ICT & Internet Infras…,$300.00m,* 207,Expansion
+2,Mar 2005,Roullier,Roullier,France,Algeria,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $6.20m,* 14,New
+3,Mar 2005,Same Deutz-Fahr,Same Deutz-Fahr,Italy,Algeria,Industrial equipment,"Agriculture, construc…",Manufacturing,$28.80m,* 232,New
+4,Jan 2005,Nestle,Nestle,Switzerland,Algeria,Food and Beverages,Soft drinks & ice,Manufacturing,* $45.90m,170,New
+5,Jan 2005,Sidar,Sidar,Saudi Arabia,Algeria,Real estate,Commercial & institu…,Construction,$150.00m,"* 1,072",New
+6,Dec 2004,Orascom Construc…,Orascom,Egypt,Algeria,Communications,Wireless telecommu…,Customer Contact C…,* $10.50m,* 657,New
+7,Dec 2004,Patch International,Patch International,Canada,Algeria,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New
+8,Nov 2004,Air Liquide,Air Liquide Sante,France,Algeria,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $6.20m,* 14,New
+9,Oct 2004,HP (Hewlett-Packa…,HP El Djazair,United States,Algeria,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+10,Oct 2004,Socotherm,Socotec,Italy,Algeria,Metals,"Coating, engraving, …",Manufacturing,$12.80m,150,New
+11,Oct 2004,ZF Friedrichshafen,ZF Algeria,Germany,Algeria,Automotive compon…,Motor vehicle steerin…,Manufacturing,* $22.70m,* 511,New
+12,Oct 2004,ZTE,ZTE,China,Algeria,Communications,Communications equ…,Manufacturing,* $9.40m,* 434,New
+13,Sep 2004,Equinor (Statoil),Equinor (Statoil),Norway,Algeria,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New
+14,Sep 2004,GlaxoSmithKline (…,GlaxoSmithKline (…,United Kingdom,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$25.00m,* 274,New
+15,Sep 2004,Koninklijke Frans …,Koninklijke Frans …,Netherlands,Algeria,Transportation & Wa…,Warehousing & stora…,"Sales, Marketing & S…",* $7.90m,* 24,New

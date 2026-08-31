@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2003,China National Pet…,China National Oil…,China,Algeria,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.64bn,* 146,New
+2,Oct 2003,Ionics,Ionics,United States,Algeria,Business services,"Water, sewage & oth…",Recycling,$225.00m,* 411,New
+3,Sep 2003,Hikma Pharmaceu…,Hikma Pharmaceu…,Jordan,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $51.00m,* 376,New
+4,Sep 2003,Petrobras,Petrobras,Brazil,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 227,New
+5,Aug 2003,First Calgary Petro…,First Calgary Petro…,Canada,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 214,Expansion
+6,Jul 2003,China National Pet…,PetroChina Explor…,China,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$350.00m,* 145,New
+7,Jul 2003,Elaiapharm,CIM Sante Algerie,France,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $50.40m,* 138,New
+8,Jul 2003,Elaiapharm,CIM Sante Algerie,France,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $50.40m,* 138,New
+9,May 2003,Anadarko Petroleu…,Anadarko Petroleu…,United States,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 214,New
+10,May 2003,Burlington Resour…,Burlington Resour…,United States,Algeria,"Coal, oil & gas",Other petroleum & c…,Extraction,* $299.70m,* 214,New
+11,May 2003,Gide Loyrette Nouel,Gide Loyrette Nouel,France,Algeria,Business services,Legal services,Business Services,* $6.80m,* 15,New
+12,May 2003,Nissan,Nissan,Japan,Algeria,Automotive OEM,Automobiles,Maintenance & Servi…,* $6.10m,* 27,New
+13,May 2003,Scania,Scania,Sweden,Algeria,Automotive OEM,Heavy duty trucks,Manufacturing,* $12.40m,100,New
+14,May 2003,Thompson & Knight,Thompson & Knight,United States,Algeria,Business services,Legal services,Business Services,* $6.80m,* 15,New
+15,Apr 2003,Eurocrystal,Eurocrystal,France,Algeria,Medical devices,Medical equipment &…,Manufacturing,* $5.60m,20,New

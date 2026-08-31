@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2005,Danone,Danone,France,Algeria,Food and Beverages,Bakeries & tortillas,Manufacturing,* $58.40m,* 429,New
+2,Oct 2005,BNP Paribas,BNP Paribas El Dj…,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Oct 2005,IMBank,IMBank,Tunisia,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Sep 2005,Carrefour,Carrefour Market …,France,Algeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+5,Sep 2005,DISCOVERY Infor…,DISCOVERY Infor…,Tunisia,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,Sep 2005,Emaar Properties,Emaar Malls,UAE,Algeria,Real estate,Commercial & institu…,Construction,* $864.90m,* 875,New
+7,Sep 2005,Hess,Sonahess,United States,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$500.00m,* 208,Expansion
+8,Sep 2005,Honeywell,Honeywell,United States,Algeria,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+9,Sep 2005,Nokia,Nokia,Finland,Algeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,Sep 2005,Swatch Group,Swatch Group,Switzerland,Algeria,Consumer products,Jewellery & silverware,Retail,$0.75m,* 5,New
+11,Aug 2005,Orascom Construc…,Orascom Construc…,Egypt,Algeria,Building materials,Cement & concrete p…,Manufacturing,$172.40m,* 329,New
+12,Aug 2005,VIVEO Group,VIVEO Group,France,Algeria,Software & IT services,"Software publishers,…",ICT & Internet Infras…,* $146.30m,* 85,New
+13,Jul 2005,Atlas Copco,Atlas Copco Algeria,Sweden,Algeria,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.50m,29,New
+14,Jul 2005,Casagrande,Casagrande,Italy,Algeria,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,New
+15,Jul 2005,Comete Group,Comete Engineeri…,Tunisia,Algeria,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New

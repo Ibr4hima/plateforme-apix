@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2005,Danone,Danone,France,Algeria,Food and Beverages,Dairy products,"Logistics, Distributio…",* $19.90m,* 147,New
+2,Jul 2005,Drive Communicat…,Drive Algeria,Saudi Arabia,Algeria,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+3,Jul 2005,Groupe PSA (PSA …,Peugeot,France,Algeria,Automotive OEM,Motor vehicle & part…,Retail,* $12.70m,* 33,New
+4,Jul 2005,Lafarge,Lafarge,France,Algeria,Building materials,"Asphalt paving, roofi…",Manufacturing,* $159.80m,* 342,New
+5,Jul 2005,Marriott Internatio…,Marriott Internatio…,United States,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Jun 2005,GE Aerospace (Ge…,"GE Infrastructure,…",United States,Algeria,Industrial equipment,General purpose ma…,Manufacturing,* $48.20m,* 401,New
+7,Jun 2005,Goethe-Institut,Goethe-Institut,Germany,Algeria,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+8,Jun 2005,Gulf Keystone,Gulf Keystone,UAE,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$65.00m,* 27,Expansion
+9,Jun 2005,Ontex,Ontex,Belgium,Algeria,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $54.90m,* 76,New
+10,Jun 2005,Sakanid,Sakanid,Morocco,Algeria,Consumer products,Furniture & related p…,Retail,* $36.90m,* 179,New
+11,Jun 2005,Sakanid,Sakanid,Morocco,Algeria,Consumer products,Furniture & related p…,Retail,* $36.90m,* 179,New
+12,May 2005,Oxford Business G…,Oxford Business G…,United Kingdom,Algeria,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+13,May 2005,SAIC Chery Auto…,Chery Automobile,China,Algeria,Automotive OEM,Automobiles,Manufacturing,* $88.80m,* 864,New
+14,May 2005,Sanofi,Sanofi,France,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $51.00m,* 376,New
+15,Mar 2005,Ferrovial,Swissport Internat…,Spain,Algeria,Transportation & Wa…,Support activities for…,"Logistics, Distributio…",* $45.70m,* 93,New
