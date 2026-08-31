@@ -641,18 +641,16 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
         <LigneFiche label="Activité prévue">{p.activite ?? "—"}</LigneFiche>
       </div>
 
-      {/* Les deux langues, l'une sous l'autre. L'anglais est la version de la
-          source — celle qu'on cite — et le français celle qu'on lit : replier
-          les deux en une seule ferait disparaître l'original dès qu'une
-          traduction existe. Chacune se tait si elle n'a pas été saisie ; si
-          aucune ne l'est, la fiche le dit plutôt que de laisser un vide. */}
+      {/* La page publique est en français : seule la description française est
+          affichée. L'anglais de la source reste en base et sert la recherche —
+          il ne se lit pas ici. Tant qu'un projet n'a que sa version anglaise,
+          un tiret tient la place, la même marque d'absence que partout
+          ailleurs. */}
       <div>
         <TitreFiche>Description</TitreFiche>
-        {p.description_fr && <p style={TEXTE_DESC}>{p.description_fr}</p>}
-        {p.description_en && <p style={TEXTE_DESC}>{p.description_en}</p>}
-        {!p.description_fr && !p.description_en && (
-          <p style={{ ...TEXTE_DESC, color: "var(--gris)" }}>—</p>
-        )}
+        <p style={p.description_fr ? TEXTE_DESC : { ...TEXTE_DESC, color: "var(--gris)" }}>
+          {p.description_fr ?? "—"}
+        </p>
       </div>
     </FicheModal>
   );
