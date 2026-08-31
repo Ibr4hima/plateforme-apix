@@ -35,6 +35,7 @@ import { API, BadgePeriode, fmtNombre } from "./partage";
 type Compte = { nom: string; nb: number };
 type Perimetre = {
   sens: string; annees: [number | null, number | null]; total_projets: number;
+  perimetres_complets: string[]; sens_disponibles: string[];
   pays: Compte[]; secteurs: Compte[]; activites: Compte[]; types: Compte[];
 };
 type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
@@ -164,6 +165,11 @@ function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
 
 export default function OngletFdi() {
   const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">("projets");
+  // Le côté par lequel on lit le pays. La bascule ne s'affiche que si un
+  // périmètre a été relevé dans les deux sens : un lot « Dest = Sénégal » ne
+  // dit rien de ce que le Sénégal implante ailleurs, et proposer « Source »
+  // avant d'avoir ce relevé n'ouvrirait qu'une liste vide.
+  const [sens, setSens] = useState<"destination" | "source">("destination");
   const [pays, setPays] = useState<string | null>(null);
   const [secteurs, setSecteurs] = useState<string[]>([]);
   const [activites, setActivites] = useState<string[]>([]);
@@ -191,6 +197,7 @@ export default function OngletFdi() {
     const liste = (cle: string) => (p.get(cle) ?? "").split("|").filter(Boolean);
     const v = p.get("vue");
     if (v === "signaux" || v === "entreprises") setVue(v);
+    if (p.get("sens") === "source") setSens("source");
     if (p.get("pays")) setPays(p.get("pays"));
     if (p.get("a0")) setAnneeMin(Number(p.get("a0")));
     if (p.get("a1")) setAnneeMax(Number(p.get("a1")));
@@ -207,7 +214,7 @@ export default function OngletFdi() {
   // Les facettes cascadent : le périmètre est redemandé à chaque changement de
   // filtre, et chaque facette y est comptée sous les AUTRES filtres.
   const urlPerimetre = useMemo(() => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams({ sens });
     if (pays) p.set("pays", pays);
     // La PÉRIODE entre dans la cascade au même titre que les facettes :
     // restreindre 2015-2019 doit retirer des listes les secteurs, les
@@ -218,7 +225,7 @@ export default function OngletFdi() {
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     return `${API}/fdi/public/perimetre?${p}`;
-  }, [pays, anneeMinD, anneeMaxD, secteurs, activites, types]);
+  }, [sens, pays, anneeMinD, anneeMaxD, secteurs, activites, types]);
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
@@ -232,6 +239,14 @@ export default function OngletFdi() {
     if (!pays && per?.pays?.length) setPays(per.pays[0].nom);
   }, [per, pays]);
 
+  // Changer de sens change de périmètre : le pays retenu n'y existe pas
+  // forcément, et l'effet ci-dessus reprendra le mieux fourni.
+  const premierRendu = useRef(true);
+  useEffect(() => {
+    if (premierRendu.current) { premierRendu.current = false; return; }
+    setPays(null);
+  }, [sens]);
+
   useEffect(() => {
     if (!per?.annees) return;
     setAnneeMin(a => a ?? per.annees[0]);
@@ -239,7 +254,7 @@ export default function OngletFdi() {
   }, [per]);
 
   const url = useMemo(() => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams({ sens });
     if (pays) p.set("pays", pays);
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
@@ -248,7 +263,7 @@ export default function OngletFdi() {
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return `${API}/fdi/public/projets?${p}`;
-  }, [pays, anneeMinD, anneeMaxD, secteurs, activites, types, rechercheD]);
+  }, [sens, pays, anneeMinD, anneeMaxD, secteurs, activites, types, rechercheD]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
@@ -269,6 +284,7 @@ export default function OngletFdi() {
       if (v) p.set(cle, v); else p.delete(cle);
     };
     poser("vue", vue === "projets" ? null : vue);
+    poser("sens", sens === "destination" ? null : sens);
     poser("pays", pays);
     poser("a0", anneeMin != null && anneeMin !== bornes[0] ? String(anneeMin) : null);
     poser("a1", anneeMax != null && anneeMax !== bornes[1] ? String(anneeMax) : null);
@@ -277,7 +293,7 @@ export default function OngletFdi() {
     poser("typ", types.join("|"));
     poser("q", rechercheD.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
-  }, [vue, pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD, bornes]);
+  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD, bornes]);
 
   const reinit = () => {
     setSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
@@ -288,6 +304,15 @@ export default function OngletFdi() {
     !chercherPays || p.nom.toLowerCase().includes(chercherPays.toLowerCase()));
 
   const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
+
+  // Tout ce que le sens de lecture renomme. Le pays observé change de rôle, et
+  // avec lui le titre du filtre, le badge de l'en-tête et la colonne du pied
+  // de carte : « Pays d'origine » sous un relevé « reçoit », « Pays de
+  // destination » sous un relevé « investit ».
+  const dansCeSens = sens === "destination"
+    ? { filtre: "Pays destinataire", badge: "Projets reçus", partenaire: "Pays d'origine" }
+    : { filtre: "Pays d'origine", badge: "Projets implantés à l'étranger", partenaire: "Pays de destination" };
+  const libellePartenaire = dansCeSens.partenaire;
 
   const tag = d?.kpis?.annees?.[0] != null
     ? (d.kpis.annees[0] === d.kpis.annees[1] ? `${d.kpis.annees[0]}` : `${d.kpis.annees[0]} — ${d.kpis.annees[1]}`)
@@ -355,12 +380,43 @@ export default function OngletFdi() {
               <>
                 <Filet />
 
-                {/* Les pays qui REÇOIVENT les projets. La base porte les deux
-                    bouts de chaque projet, mais la question posée ici est
-                    toujours la même : qu'est-ce qu'un pays attire ? Offrir la
-                    lecture inverse ajoutait un choix sans ajouter de réponse. */}
+                {/* La bascule de sens n'apparaît que si les deux relevés
+                    existent. Un lot ne rend exhaustif qu'un couple (pays,
+                    sens) : offrir la lecture inverse sans le relevé
+                    correspondant ouvrirait une liste vide. */}
+                {(per?.sens_disponibles?.length ?? 0) > 1 && (
+                  <div style={{ marginBottom: 18 }}>
+                    <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Sens de lecture</span>
+                    <div style={{ display: "flex", background: "var(--fond)", borderRadius: 999, padding: 3, gap: 3 }}>
+                      {([
+                        { v: "destination" as const, l: "Reçoit" },
+                        { v: "source" as const, l: "Investit" },
+                      ]).map(o => {
+                        const actif = sens === o.v;
+                        return (
+                          <button key={o.v} onClick={() => setSens(o.v)}
+                            style={{ flex: 1, padding: "6px 10px", borderRadius: 999, border: "none",
+                              cursor: "pointer", fontSize: 11.5, fontWeight: 700,
+                              fontFamily: "var(--font-google-sans)",
+                              background: actif ? "var(--carte)" : "transparent",
+                              color: actif ? "var(--bleu)" : "var(--gris)",
+                              boxShadow: actif ? "0 1px 4px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
+                            {o.l}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <Filet />
+                  </div>
+                )}
+
+                {/* Les pays dont le périmètre est complet dans ce sens. La base porte les deux
+                    bouts de chaque projet, mais un relevé n'en rend exhaustif
+                    qu'un seul : les autres pays n'y figurent que pour ce qu'ils
+                    ont échangé avec celui-ci, et les proposer laisserait croire
+                    à une couverture qu'on n'a pas. */}
                 <div style={{ marginBottom: 18 }}>
-                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Pays destinataire</span>
+                  <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>{dansCeSens.filtre}</span>
                   {(per?.pays?.length ?? 0) > 6 && (
                     <div style={{ position: "relative" as const, marginBottom: 8 }}>
                       <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
@@ -446,7 +502,7 @@ export default function OngletFdi() {
                 <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px", borderRadius: 5,
                   background: "var(--fond)", border: "1px solid var(--bordure-forte)", fontSize: 9, fontWeight: 700,
                   color: "var(--gris)", textTransform: "uppercase" as const, letterSpacing: "0.05em", flexShrink: 0 }}>
-                  Projets reçus
+                  {dansCeSens.badge}
                 </span>
                 {tag && <BadgePeriode>{tag}</BadgePeriode>}
                 <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200, flex: "0 1 300px" }}>
@@ -482,7 +538,8 @@ export default function OngletFdi() {
                   <div style={{ display: "grid", gap: 14,
                     gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
                     {d.projets.map(p => (
-                      <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)} />
+                      <CarteProjet key={p.id} p={p} onOuvrir={() => setOuvert(p.id)}
+                        libellePartenaire={libellePartenaire} />
                     ))}
                   </div>
                 </div>
@@ -541,7 +598,9 @@ function PastilleType({ type }: { type: string | null }) {
     vient, DANS QUOI, COMBIEN. Le reste — sous-secteur, nature de
     l'implantation, description — appartient à la fiche : une tuile qui dit
     tout ne se parcourt plus, elle se lit, et il y en a deux cent trente-cinq. */
-function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
+function CarteProjet({ p, onOuvrir, libellePartenaire }: {
+  p: Projet; onOuvrir: () => void; libellePartenaire: string;
+}) {
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
@@ -571,7 +630,7 @@ function CarteProjet({ p, onOuvrir }: { p: Projet; onOuvrir: () => void }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14,
         paddingTop: 13, borderTop: "1px solid var(--bordure)" }}>
         <div style={{ minWidth: 0 }}>
-          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Pays d&apos;origine</span>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>{libellePartenaire}</span>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)", display: "block",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
             {p.partenaire ?? "—"}
