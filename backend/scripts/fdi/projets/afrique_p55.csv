@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2009,Coca-Cola,Coca-Cola,United States,Angola,Food and Beverages,Soft drinks & ice,Headquarters,* $17.30m,* 61,New
+2,Mar 2009,SABMiller,SABMiller,United Kingdom,Angola,Food and Beverages,Breweries,Manufacturing,$125.00m,* 463,New
+3,Mar 2009,Supergesso,Supergesso,Brazil,Angola,Building materials,"Asphalt paving, roofi…",Manufacturing,$20.00m,100,New
+4,Feb 2009,Caledus,Caledus,United Kingdom,Angola,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,Expansion
+5,Feb 2009,Imocom,Imocom,Portugal,Angola,Building materials,Cement & concrete p…,Manufacturing,* $108.80m,* 342,New
+6,Feb 2009,Imocom,Imocom,Portugal,Angola,Building materials,Cement & concrete p…,Manufacturing,$6.00m,* 11,New
+7,Feb 2009,Imocom,Imocom,Portugal,Angola,Building materials,Cement & concrete p…,Manufacturing,* $108.80m,* 342,New
+8,Feb 2009,Imocom,Imocom,Portugal,Angola,Food and Beverages,Soft drinks & ice,Manufacturing,$10.00m,* 37,New
+9,Feb 2009,Radisson Hospitali…,Radisson Blu (Rad…,Belgium,Angola,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,Jan 2009,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+11,Jan 2009,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+12,Jan 2009,BP (British Petrole…,BP (British Petrole…,United Kingdom,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$600.00m,* 249,New
+13,Jan 2009,Coca-Cola,Coca-Cola Bottling…,United States,Angola,Food and Beverages,Soft drinks & ice,Manufacturing,* $51.30m,190,New
+14,Jan 2009,Lonrho,Lonrho Agriculture,United Kingdom,Angola,Food and Beverages,Crop production,Manufacturing,* $58.40m,* 429,New
+15,Jan 2009,Lonrho,Lonrho Agriculture,United Kingdom,Angola,Food and Beverages,Animal slaughtering …,Manufacturing,* $58.40m,* 429,New
