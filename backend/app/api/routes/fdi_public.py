@@ -68,7 +68,13 @@ def _filtres(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
     sélection dès qu'on précise un secteur tout en en gardant un autre entier.
     """
     where, params = ["1 = 1"], {}
-    if pays:
+    # LE PAYS EST UNE FACETTE COMME LES AUTRES : il ne se filtre pas lui-même.
+    # Tant qu'un seul périmètre était relevé, l'oubli ne se voyait pas — la
+    # liste ne contenait qu'un pays de toute façon. Au deuxième, elle se
+    # réduisait au pays retenu une fraction de seconde après le chargement :
+    # les autres apparaissaient, puis s'effaçaient, sans plus aucun moyen d'en
+    # choisir un.
+    if pays and sauf != "pays":
         where.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
         params["pays"] = pays
     if annee_min is not None:

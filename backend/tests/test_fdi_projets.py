@@ -369,3 +369,39 @@ def test_les_pays_du_releve_afrique_sont_tous_connus():
         for ligne in lire_lot_csv(chemin):
             for cote in ("source", "dest"):
                 assert normaliser(ligne[cote]) in connus, f"{chemin.name} L{ligne['ligne']} · {ligne[cote]}"
+
+
+# ── Cascade des facettes : aucune ne se filtre elle-même ─────────────────────
+
+def _where(**kw):
+    from app.api.routes.fdi_public import _filtres
+    base = dict(observe="pays_dest", pays=None, annee_min=None, annee_max=None,
+                secteurs=None, sous_secteurs=None, activites=None, types=None,
+                recherche=None, sauf=None)
+    return " ".join(_filtres(**{**base, **kw})[0])
+
+
+def test_le_pays_ne_se_filtre_pas_lui_meme():
+    """Compter les pays sous le filtre pays réduit la liste au pays retenu :
+    les autres s'affichent au chargement puis disparaissent dès que le premier
+    est sélectionné, et plus rien ne permet d'en choisir un second.
+
+    Invisible tant qu'un seul périmètre était relevé — la liste n'avait qu'une
+    ligne de toute façon. Le Sénégal et l'Algérie côte à côte l'ont révélé."""
+    assert ":pays" in _where(pays="Sénégal")
+    assert ":pays" not in _where(pays="Sénégal", sauf="pays")
+
+
+def test_les_autres_filtres_entrent_bien_dans_le_comptage_des_pays():
+    """La cascade doit rester vraie dans l'autre sens : restreindre à un
+    secteur ou à une période doit retirer de la liste les pays qui n'ont rien
+    annoncé là — sinon on proposerait un pays menant à zéro projet."""
+    w = _where(pays="Sénégal", sauf="pays", secteurs="Caoutchouc", annee_min=2015)
+    assert ":secteurs" in w and ":a0" in w
+
+
+def test_chaque_facette_s_exclut_a_son_tour():
+    for cle, valeur in (("secteurs", "Textiles"), ("activites", "Fabrication"),
+                        ("types", "Extension")):
+        assert f":{cle}" in _where(**{cle: valeur})
+        assert f":{cle}" not in _where(sauf=cle, **{cle: valeur})
