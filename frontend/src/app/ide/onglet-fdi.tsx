@@ -45,7 +45,8 @@ type Projet = {
   partenaire: string | null; partenaire_iso: string | null;
   secteur: string | null; sous_secteur: string | null; activite: string | null;
   type_projet: string | null; capex_musd: number | null; capex_estime: boolean | null;
-  emplois: number | null; emplois_estime: boolean | null; description: string | null;
+  emplois: number | null; emplois_estime: boolean | null;
+  description_fr: string | null; description_en: string | null;
 };
 type Reponse = {
   sens: string;
@@ -166,6 +167,23 @@ export default function OngletFdi() {
   const isResizing = useRef(false);
   const rechercheD = useDebounced(recherche, 300);
 
+  // Reprise de l'état porté par l'URL, une seule fois au montage : c'est par
+  // là que revient le lecteur qui ferme le rapport.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const liste = (cle: string) => (p.get(cle) ?? "").split("|").filter(Boolean);
+    const v = p.get("vue");
+    if (v === "signaux" || v === "entreprises") setVue(v);
+    if (p.get("pays")) setPays(p.get("pays"));
+    if (p.get("a0")) setAnneeMin(Number(p.get("a0")));
+    if (p.get("a1")) setAnneeMax(Number(p.get("a1")));
+    if (liste("sec").length) setSecteurs(liste("sec"));
+    if (liste("act").length) setActivites(liste("act"));
+    if (liste("typ").length) setTypes(liste("typ"));
+    if (p.get("q")) setRecherche(p.get("q") as string);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Le périmètre dépend du sens : les pays proposés sont ceux qui existent
   // DANS CE SENS. Basculer de destination à source ne doit pas laisser un pays
   // qui n'y a aucun projet.
@@ -200,10 +218,32 @@ export default function OngletFdi() {
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
 
+
   const bornes = per?.annees ?? [null, null];
   const nbFiltres = secteurs.length + activites.length + types.length
     + (rechercheD.trim() ? 1 : 0)
     + ((anneeMin !== bornes[0] || anneeMax !== bornes[1]) ? 1 : 0);
+  // L'état de la page s'écrit dans l'URL — vue, pays, période, facettes,
+  // recherche. Trois raisons : le lien devient partageable, F5 ne perd rien,
+  // et le rapport peut ramener EXACTEMENT ici, filtres compris.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    p.set("section", "projetes");
+    const poser = (cle: string, v: string | null | undefined) => {
+      if (v) p.set(cle, v); else p.delete(cle);
+    };
+    poser("vue", vue === "projets" ? null : vue);
+    poser("pays", pays);
+    poser("a0", anneeMin != null && anneeMin !== bornes[0] ? String(anneeMin) : null);
+    poser("a1", anneeMax != null && anneeMax !== bornes[1] ? String(anneeMax) : null);
+    poser("sec", secteurs.join("|"));
+    poser("act", activites.join("|"));
+    poser("typ", types.join("|"));
+    poser("q", rechercheD.trim());
+    window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
+  }, [vue, pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD, bornes]);
+
   const reinit = () => {
     setSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
     setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
@@ -598,22 +638,43 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
         <TitreFiche>Détails du projet</TitreFiche>
         <LigneFiche label="Secteur">{p.secteur ?? "—"}</LigneFiche>
         <LigneFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</LigneFiche>
-        <LigneFiche label="Nature de l&apos;implantation">{p.activite ?? "—"}</LigneFiche>
+        <LigneFiche label="Activité prévue">{p.activite ?? "—"}</LigneFiche>
       </div>
 
-      <div>
-        <TitreFiche>Description</TitreFiche>
-        {/* Un filet vertical plutôt qu'un fond : le texte reste du texte. */}
-        <p style={{ fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
-          borderLeft: "2px solid var(--bordure-forte)",
-          color: p.description ? "var(--texte)" : "var(--gris)",
-          fontStyle: p.description ? "normal" : "italic" }}>
-          {p.description ?? "La source ne publie pas de description pour ce projet."}
-        </p>
-      </div>
+      {/* Les deux langues, l'une sous l'autre. L'anglais est la version de la
+          source — celle qu'on cite — et le français celle qu'on lit : replier
+          les deux en une seule ferait disparaître l'original dès qu'une
+          traduction existe. Chacune se tait si elle n'a pas été saisie ; si
+          aucune ne l'est, la fiche le dit plutôt que de laisser un vide. */}
+      {(p.description_fr || p.description_en) ? (
+        <>
+          {p.description_fr && (
+            <div>
+              <TitreFiche>Description</TitreFiche>
+              <p style={TEXTE_DESC}>{p.description_fr}</p>
+            </div>
+          )}
+          {p.description_en && (
+            <div>
+              <TitreFiche>Description (anglais)</TitreFiche>
+              <p style={TEXTE_DESC}>{p.description_en}</p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div>
+          <TitreFiche>Description</TitreFiche>
+          <p style={{ ...TEXTE_DESC, color: "var(--gris)" }}>—</p>
+        </div>
+      )}
     </FicheModal>
   );
 }
+
+/** Le texte d'une description : posé contre un filet vertical, jamais dans un
+    bloc gris — le texte reste du texte. */
+const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
+  borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
 
 const ETIQ = { fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
   textTransform: "uppercase" as const, color: "var(--gris)", lineHeight: 1.6 } as const;

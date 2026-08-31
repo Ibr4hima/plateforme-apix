@@ -219,7 +219,11 @@ async def projets(
              "activite": r.activite, "type_projet": r.type_projet,
              "capex_musd": nb(r.capex_musd), "capex_estime": r.capex_estime,
              "emplois": r.emplois, "emplois_estime": r.emplois_estime,
-             "description": r.description_fr or r.description_en}
+             # Les deux langues séparément : la fiche les présente l'une sous
+             # l'autre. Les replier en une seule ferait disparaître l'anglais
+             # dès qu'une traduction existe, alors que c'est la version de la
+             # source — celle qu'on cite.
+             "description_fr": r.description_fr, "description_en": r.description_en}
             for r in lignes
         ],
     }

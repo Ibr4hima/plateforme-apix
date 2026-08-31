@@ -11,12 +11,13 @@ import OngletSecteurs from "./onglet-secteurs";
 import OngletMonde from "./onglet-monde";
 import OngletNational from "./onglet-national";
 import OngletFdi from "./onglet-fdi";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
 
 
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function IdePage() {
+  const router = useRouter();
   // Navigation de la page dans l'URL : vues partageables par lien, F5 conserve l'état
   const [ongletPrincipal, setOngletPrincipal] = useEtatUrl<"ide"|"national">("onglet", "ide", ["ide","national"]);
   const [section,    setSection]    = useEtatUrl<"realises"|"projetes">("section", "realises", ["realises","projetes"]);
@@ -80,13 +81,17 @@ export default function IdePage() {
             {section === "projetes" && (
               <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
                 borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
-                <Link href="/ide/rapport"
+                {/* L'adresse est lue AU CLIC, pas au rendu : les filtres de
+                    l'onglet s'écrivent dans l'URL au fil des choix, et un href
+                    figé au rendu ramènerait le lecteur à un état périmé. */}
+                <button onClick={()=>router.push(`/ide/rapport?retour=${encodeURIComponent(window.location.search)}`)}
                   style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 18px", borderRadius:999,
+                    border:"none", cursor:"pointer",
                     background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700,
-                    textDecoration:"none", whiteSpace:"nowrap" as const, fontFamily:"var(--font-google-sans)",
+                    whiteSpace:"nowrap" as const, fontFamily:"var(--font-google-sans)",
                     boxShadow:"0 2px 8px rgb(var(--ombre-rgb) / 0.30), inset 0 1px 0 rgba(255,255,255,0.12)" }}>
                   <FileText size={14}/> Rapport
-                </Link>
+                </button>
               </div>
             )}
 
