@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2005,C & C Technologies,C & C Technologie…,United States,Angola,"Coal, oil & gas",Support activities for…,Business Services,* $4.30m,* 45,New
+2,Feb 2005,Portugal Telecom,Unitel,Portugal,Angola,Communications,Wireless telecommu…,Retail,* $6.40m,* 51,New
+3,Feb 2005,ZTE,ZTE,China,Angola,Communications,Communications equ…,ICT & Internet Infras…,$300.00m,* 207,New
+4,Feb 2005,ZTE,ZTE,China,Angola,Communications,Communications equ…,Manufacturing,* $9.40m,* 434,New
+5,Feb 2005,ZTE,ZTE,China,Angola,Communications,Communications equ…,Education & Training,* $7.00m,* 94,New
+6,Feb 2005,ZTE,ZTE,China,Angola,Communications,Communications equ…,Research & Develop…,* $40.10m,* 158,New
+7,Jan 2005,Volkswagen,Volkswagen,Germany,Angola,Automotive OEM,Automobiles,Manufacturing,$48.00m,"2,500",New
+8,Nov 2004,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+9,Nov 2004,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+10,Nov 2004,New Millennium R…,New Millennium R…,Australia,Angola,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,New
+11,Oct 2004,Chevron,Chevron,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$4.00bn,"* 1,661",New
+12,Oct 2004,Chevron,Chevron,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$2.30bn,* 955,New
+13,Oct 2004,Chevron,Cabinda Gulf Oil C…,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$2.00bn,* 830,New
+14,Sep 2004,Activa Tecnologia …,Activa Tecnologia …,Brazil,Angola,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+15,Aug 2004,Banco do Brasil,Banco do Brasil,Brazil,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New

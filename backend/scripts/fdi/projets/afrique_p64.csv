@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2004,Ericsson,Ericsson,Sweden,Angola,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,May 2004,GE Aerospace (Ge…,GE Oil and Gas,United States,Angola,"Coal, oil & gas",Fossil fuel electric po…,"Sales, Marketing & S…",* $22.20m,* 54,New
+3,May 2004,Portugal Telecom,Unitel,Portugal,Angola,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+4,Apr 2004,Central de Cervej…,Central de Cervej…,Portugal,Angola,Food and Beverages,Breweries,Manufacturing,* $56.20m,* 222,New
+5,Apr 2004,Unicer,Unicer,Portugal,Angola,Food and Beverages,Breweries,Manufacturing,$120.00m,"1,000",New
+6,Jan 2004,Alrosa,Alrosa,Russia,Angola,Metals,Gold ore & silver ore…,Extraction,$30.00m,* 42,New
+7,Jan 2004,Latino Confeccoes,Latino Confeccoes,Portugal,Angola,Textiles,Clothing & clothing a…,Manufacturing,$2.50m,* 44,New
+8,Sep 2003,Ferpinta,Ferpinta Angola,Portugal,Angola,Industrial equipment,"Agriculture, construc…",Manufacturing,$4.70m,50,Expansion
+9,Aug 2003,Petrobras,Petrobras,Brazil,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,New
+10,Aug 2003,Sousa Cintra,Sousa Cintra,Portugal,Angola,Food and Beverages,Distilleries,Manufacturing,* $56.20m,* 222,New
+11,Aug 2003,Technip-Coflexip,Angoflex,France,Angola,Metals,Steel products,Manufacturing,* $178.90m,* 342,Expansion
+12,Jul 2003,BOC,Afrox,United Kingdom,Angola,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $6.20m,* 14,New
+13,Jul 2003,BP (British Petrole…,BP (British Petrole…,United Kingdom,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.24bn,* 214,New
+14,Jul 2003,Zimsun Leisure Gr…,Zimsun Leisure Gr…,Zimbabwe,Angola,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+15,Jul 2003,Zimsun Leisure Gr…,Zimsun Leisure Gr…,Zimbabwe,Angola,Hotels & tourism,Accommodation,Construction,$40.00m,* 102,New

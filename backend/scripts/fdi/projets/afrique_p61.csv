@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2007,Cremades&Calvo-…,Cremades&Calvo-…,Spain,Angola,Business services,Legal services,Business Services,* $6.80m,* 15,New
+2,Dec 2006,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $5.20m,12,New
+3,Dec 2006,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $5.20m,12,New
+4,Oct 2006,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+5,Oct 2006,Cotecna,Cotecna,Switzerland,Angola,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+6,Oct 2006,Cotecna,Cotecna,Switzerland,Angola,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+7,Oct 2006,Cotecna,Cotecna,Switzerland,Angola,Business services,"Professional, scientifi…",Business Services,* $7.30m,40,New
+8,Oct 2006,Cotecna,Cotecna,Switzerland,Angola,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+9,Oct 2006,Honeywell,Honeywell,United States,Angola,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+10,Sep 2006,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+11,Sep 2006,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Other (Financial serv…,Business Services,* $9.60m,* 9,New
+12,Aug 2006,Eco Parts,Eco Parts,Portugal,Angola,Automotive OEM,Heavy duty trucks,Manufacturing,$0.64m,* 5,New
+13,Jul 2006,Standard Bank Gr…,Standard Bank Gr…,South Africa,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+14,Jul 2006,The Navigator Co…,The Navigator Co…,Portugal,Angola,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,* $54.90m,* 76,Expansion
+15,Jun 2006,Exxon Mobil,Esso Exploration A…,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.24bn,* 214,New

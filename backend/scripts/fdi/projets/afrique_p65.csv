@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2003,Det Norske Verita…,Det Norske Verita…,Norway,Angola,Business services,"Professional, scientifi…",Business Services,* $1.80m,10,New
+2,May 2003,Corporacao Indust…,Corporacao Indust…,Portugal,Angola,Chemicals,"Paints, coatings, add…",Manufacturing,$3.00m,* 4,Expansion
+3,May 2003,Exxon Mobil,Exxon Mobil,United States,Angola,"Coal, oil & gas",Other petroleum & c…,Extraction,$3.00bn,"* 1,245",New
+4,May 2003,TotalEnergies (Tot…,TotalfinaElf,France,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$3.40bn,"* 1,412",New
+5,Apr 2003,Alrosa,Alrosa,Russia,Angola,Minerals,Other non-metallic …,"Sales, Marketing & S…",* $2.10m,* 24,New
+6,Mar 2003,Coca-Cola,Coca-Cola,United States,Angola,Food and Beverages,Soft drinks & ice,"Logistics, Distributio…",$4.50m,50,New
+7,Jan 2003,Exxon Mobil,Esso Exploration A…,United States,Angola,"Coal, oil & gas",Petroleum refineries,Manufacturing,$745.00m,* 129,New
+8,Jun 2026,Numeryx,Numeryx,France,Benin,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+9,May 2026,Hapag-Lloyd,Hapag-Lloyd,Germany,Benin,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Apr 2026,TALENZ,TALENZ,France,Benin,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+11,Sep 2025,French Developm…,Proparco,France,Benin,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Jul 2025,European Bank fo…,European Bank fo…,United Kingdom,Benin,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Jul 2025,The Travelbook Gr…,GuestFlip,United Kingdom,Benin,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+14,Feb 2025,Fortune Global Shi…,Fortune Global Shi…,Nigeria,Benin,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Feb 2025,SACO Shipping,SACO Shipping,Germany,Benin,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
