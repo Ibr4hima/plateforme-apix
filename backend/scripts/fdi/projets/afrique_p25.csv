@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2008,OHL,OHL,Spain,Algeria,Hotels & tourism,Accommodation,Construction,$589.00m,"* 1,504",New
+2,Dec 2007,Bernard Krief,Bernard Krief,France,Algeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+3,Dec 2007,Emirates Aluminu…,Emirates Aluminu…,UAE,Algeria,Metals,Alumina & aluminiu…,Manufacturing,* $698.30m,* 342,New
+4,Nov 2007,Institut Merieux,bioMerieux,France,Algeria,Biotechnology,In-Vitro diagnostic s…,Research & Develop…,* $42.60m,* 50,New
+5,Nov 2007,Jelmoli,Jelmoli,Switzerland,Algeria,Real estate,Commercial & institu…,Construction,* $864.90m,* 875,New
+6,Oct 2007,WPP,Memac Ogilvy,United Kingdom,Algeria,Business services,"Advertising, PR, & re…",Business Services,* $2.20m,12,New
+7,Sep 2007,Electricite de Fran…,Dalkia,France,Algeria,Renewable energy,Biomass power,"Sales, Marketing & S…",$205.50m,53,New
+8,Sep 2007,Export Developme…,Export Developme…,Iran,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Sep 2007,Groupe SCE,SCE,France,Algeria,Business services,Environmental consu…,Business Services,* $2.20m,12,New
+10,Sep 2007,Hertz,Hertz,United States,Algeria,Automotive OEM,Automobiles,Retail,* $12.70m,* 33,New
+11,Sep 2007,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Algeria,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+12,Aug 2007,Acciona,Acciona Agua,Spain,Algeria,Business services,"Water, sewage & oth…",Recycling,$183.20m,* 167,New
+13,Aug 2007,Al Qudra Holding,Al Qudra Holding,UAE,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+14,Aug 2007,Gazprom,Gazprom,Russia,Algeria,"Coal, oil & gas",Other electric power …,"Sales, Marketing & S…",$12.20m,23,New
+15,Aug 2007,Isofoton,Isofoton,Spain,Algeria,Electronic components,All other electrical e…,Manufacturing,$48.00m,68,New

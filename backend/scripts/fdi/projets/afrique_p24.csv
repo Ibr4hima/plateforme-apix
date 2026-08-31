@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2008,Suhail Bahwan Gr…,Suhail Bahwan Gr…,Oman,Algeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,$2.40m,* 3,New
+2,Apr 2008,Tibco Software,Tibco Software,United States,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+3,Mar 2008,Alliance Boots,Alliance Boots,United Kingdom,Algeria,Pharmaceuticals,Health & personal ca…,Retail,* $4.20m,* 38,New
+4,Mar 2008,Industries mecani…,Industries mecani…,Tunisia,Algeria,Automotive OEM,Heavy duty trucks,Manufacturing,* $88.80m,* 864,New
+5,Mar 2008,Poulina Group Hol…,Carthago Ceramic,Tunisia,Algeria,Ceramics & glass,Clay product & refra…,Manufacturing,$23.60m,* 64,New
+6,Mar 2008,Rio Tinto Group,Rio Tinto Alcan,United Kingdom,Algeria,Metals,Alumina & aluminiu…,Manufacturing,* $698.30m,* 342,New
+7,Mar 2008,Siemens,Siemens Belgium,Germany,Algeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+8,Mar 2008,Snasco,Snasco,UAE,Algeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+9,Feb 2008,BNP Paribas,BNP Paribas Algeria,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Feb 2008,Elsewedy Electric …,Elsewedy Electric …,Egypt,Algeria,Electronic components,Communication & en…,Manufacturing,$50.00m,* 621,New
+11,Feb 2008,Emirates Internati…,Societe des Parcs …,UAE,Algeria,Real estate,Real estate services,Construction,$5.00bn,"* 3,000",New
+12,Feb 2008,Fiatc,Fiatc,Spain,Algeria,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+13,Jan 2008,Arab Bank,Arab Bank,Jordan,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Jan 2008,Arab Bank,Arab Bank,Jordan,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jan 2008,Arab Swiss Engine…,ASEC Algeria,Egypt,Algeria,Building materials,Cement & concrete p…,Manufacturing,$550.00m,161,New

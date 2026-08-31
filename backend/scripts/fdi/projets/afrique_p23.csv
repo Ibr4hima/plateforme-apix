@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2008,Gulf Keystone,Gulf Keystone,Bermuda,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 214,New
+2,Jun 2008,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Algeria,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+3,Jun 2008,MIR Consulting,MIR Consulting,United Kingdom,Algeria,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+4,Jun 2008,Swicorp,Altea Packaging,Saudi Arabia,Algeria,Plastics,Plastics packaging m…,Manufacturing,$15.50m,* 133,New
+5,Jun 2008,Villar Mir Group,Fertiberia,Spain,Algeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,$1.00bn,"* 1,242",New
+6,May 2008,Knauf Gips,Knauf Gips,Germany,Algeria,Building materials,"Asphalt paving, roofi…",Manufacturing,* $159.80m,* 342,New
+7,May 2008,National Holding,Emirates Internati…,UAE,Algeria,Electronic components,Communication & en…,Manufacturing,* $11.80m,* 157,New
+8,May 2008,Riva y Garcia,Riva y Garcia,Spain,Algeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+9,Apr 2008,Abengoa,Befesa Agua,Spain,Algeria,Business services,"Water, sewage & oth…",Recycling,$232.00m,* 211,New
+10,Apr 2008,Al-Kindi Pharmace…,Al-Kindi Pharmace…,Jordan,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $13.70m,150,New
+11,Apr 2008,Biwater,Biwater,United Kingdom,Algeria,Business services,"Water, sewage & oth…",Recycling,$114.90m,* 104,New
+12,Apr 2008,Ferrovie Dello Stato,ItalFerr SPA,Italy,Algeria,Non-automotive tran…,Railroad rolling stock,"Sales, Marketing & S…",* $2.50m,* 8,New
+13,Apr 2008,Hyflux,Hyflux,Singapore,Algeria,Business services,"Water, sewage & oth…",Recycling,$468.00m,* 425,New
+14,Apr 2008,Intel,Intel,United States,Algeria,Semiconductors,Semiconductors & ot…,"Sales, Marketing & S…",* $3.10m,* 13,New
+15,Apr 2008,Jiangling Motors (…,Jiangling Motors (…,China,Algeria,Automotive OEM,Automobiles,Manufacturing,$286.53m,"* 2,308",New
