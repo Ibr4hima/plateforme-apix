@@ -646,27 +646,14 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
           les deux en une seule ferait disparaître l'original dès qu'une
           traduction existe. Chacune se tait si elle n'a pas été saisie ; si
           aucune ne l'est, la fiche le dit plutôt que de laisser un vide. */}
-      {(p.description_fr || p.description_en) ? (
-        <>
-          {p.description_fr && (
-            <div>
-              <TitreFiche>Description</TitreFiche>
-              <p style={TEXTE_DESC}>{p.description_fr}</p>
-            </div>
-          )}
-          {p.description_en && (
-            <div>
-              <TitreFiche>Description (anglais)</TitreFiche>
-              <p style={TEXTE_DESC}>{p.description_en}</p>
-            </div>
-          )}
-        </>
-      ) : (
-        <div>
-          <TitreFiche>Description</TitreFiche>
+      <div>
+        <TitreFiche>Description</TitreFiche>
+        {p.description_fr && <p style={TEXTE_DESC}>{p.description_fr}</p>}
+        {p.description_en && <p style={TEXTE_DESC}>{p.description_en}</p>}
+        {!p.description_fr && !p.description_en && (
           <p style={{ ...TEXTE_DESC, color: "var(--gris)" }}>—</p>
-        </div>
-      )}
+        )}
+      </div>
     </FicheModal>
   );
 }
