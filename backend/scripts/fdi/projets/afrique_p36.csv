@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2003,Vietnam Oil and G…,Vietnam Oil and G…,Vietnam,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 214,New
+2,Mar 2003,Michelin,Michelin,France,Algeria,Rubber,Tyres,Manufacturing,* $121.00m,290,New
+3,May 2026,ES-KO,ES-KO,Monaco,Angola,Food and Beverages,Food services,"Sales, Marketing & S…",* $4.50m,* 18,New
+4,May 2026,MCA Group (M Co…,MCA Group (M Co…,Portugal,Angola,Renewable energy,Solar electric power,Electricity,$94.90m,* 29,New
+5,Apr 2026,Kemcore,Kemcore,Botswana,Angola,Chemicals,Basic chemicals,Manufacturing,* $466.60m,* 455,New
+6,Apr 2026,Kleber Group,Kleber Group,Switzerland,Angola,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+7,Apr 2026,Lynxmind,Lynxmind,Portugal,Angola,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+8,Jan 2026,Grupo de Lideres …,Grupo de Lideres …,Brazil,Angola,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+9,Dec 2025,ALPi Group,ALPi Group,Nigeria,Angola,Business services,Legal services,Business Services,* $27.80m,* 38,New
+10,Oct 2025,Huawei Technologi…,Huawei Technologi…,China,Angola,Communications,Communications equ…,Research & Develop…,* $6.60m,* 84,New
+11,Sep 2025,BP (British Petrole…,Azule Energy,United Kingdom,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,New
+12,Sep 2025,Inovflow,Inovflow,Portugal,Angola,Software & IT services,Custom computer pr…,Business Services,* $1.00m,13,New
+13,Sep 2025,Seacom,Seacom,Mauritius,Angola,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+14,Aug 2025,Kreston,Kreston Mozambiq…,United Kingdom,Angola,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+15,Jul 2025,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,Expansion

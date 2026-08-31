@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,Mubadala Investm…,Masdar,UAE,Angola,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+2,Jan 2023,Raxio Group,Raxio Group,United States,Angola,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+3,Oct 2022,Nelt,Nelt Angola,Serbia,Angola,Food and Beverages,Sugar & confectionar…,Manufacturing,$19.77m,90,New
+4,Aug 2022,Inter360,ATIS,France,Angola,"Coal, oil & gas",Support activities for…,Education & Training,* $22.20m,* 131,New
+5,Aug 2022,WorldWide Services,WorldWide Services,France,Angola,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+6,Jul 2022,Paratus Africa Gro…,Paratus Africa Gro…,Namibia,Angola,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+7,Jun 2022,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,Expansion
+8,May 2022,Eni SpA,Solenova,Italy,Angola,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+9,Nov 2021,Webcor Group,IMEX Industria,Switzerland,Angola,Plastics,Plastics packaging m…,Manufacturing,$9.50m,* 99,New
+10,Oct 2021,Eni SpA,Eni SpA,Italy,Angola,Renewable energy,Biomass power,Manufacturing,* $3.07bn,* 993,New
+11,Oct 2021,Eni SpA,Eni SpA,Italy,Angola,Food and Beverages,Crop production,Manufacturing,$75.00m,* 208,New
+12,Oct 2021,Lintel,Africell,Lebanon,Angola,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,Co-Location
+13,Jul 2021,Webcor Group,IMEX Industria,Switzerland,Angola,Consumer electronics,Household appliances,Manufacturing,$4.50m,* 78,New
+14,Jul 2021,Webcor Group,IMEX Industria,Switzerland,Angola,Consumer electronics,Household appliances,Retail,* $9.20m,* 78,New
+15,Jun 2021,Huawei Technologi…,Huawei Technologi…,China,Angola,Communications,Communications equ…,Education & Training,$60.00m,* 204,New

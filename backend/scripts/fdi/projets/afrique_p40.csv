@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2020,Voith Group,Voith Group,Germany,Angola,Industrial equipment,Mechanical power tr…,Education & Training,* $5.50m,* 35,New
+2,Feb 2020,Voith Group,Voith Group,Germany,Angola,Renewable energy,Hydroelectric power,Electricity,* $206.10m,* 57,New
+3,Feb 2020,Volkswagen,Automobili Lambo…,Germany,Angola,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+4,Jan 2020,Arcor Group,Arcor Group,Argentina,Angola,Food and Beverages,Sugar & confectionar…,Manufacturing,$50.00m,* 139,New
+5,Dec 2019,Tosyali Holding,Tosyali Holding,Turkey,Angola,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,New
+6,Dec 2019,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Angola,Communications,Communications equ…,Manufacturing,* $1.00m,* 18,Expansion
+7,Dec 2019,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Angola,Communications,Communications equ…,"Logistics, Distributio…",* $1.00m,* 4,New
+8,Dec 2019,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Angola,Communications,Communications equ…,Retail,* $0.50m,* 8,New
+9,Nov 2019,KGK Group,KGK Group,Hong Kong,Angola,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,New
+10,Nov 2019,Monjasa,Monjasa,Denmark,Angola,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $7.80m,* 30,New
+11,Nov 2019,Palmentar General…,Palmentar General…,India,Angola,Chemicals,"Soap, cleaning comp…",Manufacturing,$2.70m,43,New
+12,Nov 2019,Seeds&Chips,Seeds&Chips,Italy,Angola,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+13,Oct 2019,Uralchem Holding,Uralchem,Cyprus,Angola,Chemicals,"Pesticide, fertilisers …",Manufacturing,$1.25bn,"* 1,654",New
+14,Sep 2019,Toyota Motor,Toyota Motor,Japan,Angola,Automotive OEM,Automobiles,Manufacturing,$200.00m,"* 1,181",Expansion
+15,Aug 2019,Allied Wallet,Allied Wallet Africa,United Kingdom,Angola,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New

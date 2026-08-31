@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2025,TNS Global,TNS Global,UAE,Angola,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Mar 2025,Bureau Veritas,Bureau Veritas,France,Angola,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+3,Nov 2024,Satguru Travel,Satguru Travel,UAE,Angola,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+4,Oct 2024,SLB (Schlumberge…,SLB (Schlumberge…,United States,Angola,"Coal, oil & gas",Support activities for…,Research & Develop…,* $28.30m,* 71,New
+5,Aug 2024,Marriott Internatio…,Protea Hospitality,United States,Angola,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,Aug 2024,Tosyali Holding,Tosyali Holding,Turkey,Angola,Metals,Iron & steel mills & f…,Manufacturing,* $147.40m,* 443,New
+7,May 2024,European Travel G…,European Travel G…,Mali,Angola,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+8,May 2024,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,$6.00bn,"* 2,060",New
+9,Apr 2024,ADQ (Abu Dhabi …,AD Ports Group,UAE,Angola,Transportation & Wa…,Warehousing & stora…,Construction,$379.00m,"* 1,981",Expansion
+10,Mar 2024,Haishan Group,Haishan Group,China,Angola,Real estate,Industrial building co…,Construction,$1.00bn,"* 1,495",New
+11,Sep 2023,Mecwide,Mecwide,Portugal,Angola,Business services,Heavy & civil engine…,Business Services,* $7.50m,50,New
+12,Sep 2023,Techint,Tenaris,Italy,Angola,Metals,Iron & steel mills & f…,Maintenance & Servi…,* $20.20m,* 34,New
+13,Jul 2023,UPF Group,UPF Group,Denmark,Angola,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Jun 2023,Paratus Africa Gro…,Paratus Africa Gro…,Namibia,Angola,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,Jun 2023,ZTE,ZTE,China,Angola,Communications,Communications equ…,ICT & Internet Infras…,* $122.20m,* 100,New

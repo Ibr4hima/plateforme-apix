@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2021,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Angola,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,Expansion
+2,Feb 2021,Move One,Move One,UAE,Angola,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Dec 2020,Dubai World,DP World,UAE,Angola,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$190.00m,* 844,New
+4,Dec 2020,Eni SpA,Eni SpA,Italy,Angola,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.41bn,* 213,New
+5,Nov 2020,Eren Groupe,Total Eren,Luxembourg,Angola,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+6,Nov 2020,Gemcorp Capital,Gemcorp Capital,United Kingdom,Angola,"Coal, oil & gas",Petroleum refineries,Manufacturing,$920.00m,"* 1,000",New
+7,Nov 2020,MCA Group (M Co…,MCA Solar Angola,Portugal,Angola,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+8,Jul 2020,Contec Global Gro…,AfriOne,United Kingdom,Angola,Communications,Communications equ…,"Logistics, Distributio…",* $43.30m,* 151,New
+9,Jul 2020,Contec Global Gro…,AfriOne,United Kingdom,Angola,Communications,Communications equ…,"Logistics, Distributio…",* $43.30m,* 151,New
+10,Jul 2020,Contec Global Gro…,AfriOne,United Kingdom,Angola,Communications,Communications equ…,"Logistics, Distributio…",* $43.30m,* 151,New
+11,Jul 2020,Contec Global Gro…,AfriOne,United Kingdom,Angola,Communications,Communications equ…,"Logistics, Distributio…",* $43.30m,* 151,New
+12,Jul 2020,Contec Global Gro…,AfriOne,United Kingdom,Angola,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+13,Jun 2020,Sparrows Offshor…,Sparrows Offshor…,United Kingdom,Angola,Business services,Speciality trade cont…,Business Services,* $27.80m,* 38,Expansion
+14,Mar 2020,Access Bank,Access Bank,Nigeria,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+15,Mar 2020,Zhejiang Hengye …,Hengye Electronic…,China,Angola,Industrial equipment,Measuring & control …,Manufacturing,$20.00m,* 186,New
