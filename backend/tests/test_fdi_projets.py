@@ -332,3 +332,40 @@ def test_un_prefixe_de_pays_ambigu_est_refuse(pays):
     from app.services.fdi_projets import _pays
     ref = {c: 1 for c in pays.values()}
     assert _pays("Turk…", pays, ref) == (None, "préfixe ambigu")
+
+
+# ── Le relevé Afrique ─────────────────────────────────────────────────────────
+
+def test_les_pages_afrique_sont_lisibles():
+    """Même exigence que pour le Sénégal : pagination continue, quinze lignes
+    par page. Sur mille cent vingt-six pages annoncées par la source, c'est le
+    seul contrôle qui verra une page sautée ou relevée deux fois."""
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    pages = sorted(DOSSIER_PROJETS.glob("afrique_p*.csv"))
+    assert [p.name for p in pages] == [f"afrique_p{n:02d}.csv" for n in range(1, len(pages) + 1)]
+    tailles = [len(lire_lot_csv(p)) for p in pages]
+    assert set(tailles[:-1]) == {15} and 1 <= tailles[-1] <= 15
+    for chemin in pages:
+        lignes = lire_lot_csv(chemin)
+        assert [l["ligne"] for l in lignes] == list(range(1, len(lignes) + 1))
+
+
+def test_le_releve_afrique_ne_reprend_pas_le_senegal():
+    """Le Sénégal est relevé pays par pays. S'il revenait par le relevé
+    continental, ses projets seraient comptés deux fois — et le faux total ne
+    se verrait qu'au moment où quelqu'un le citerait."""
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    for chemin in sorted(DOSSIER_PROJETS.glob("afrique_p*.csv")):
+        for ligne in lire_lot_csv(chemin):
+            assert ligne["dest"].strip().lower() != "senegal", f"{chemin.name} L{ligne['ligne']}"
+
+
+def test_les_pays_du_releve_afrique_sont_tous_connus():
+    """Un pays hors correspondance entrerait en base sans rattachement : la
+    ligne existerait, mais aucun filtre ni aucun total ne la verrait passer."""
+    from app.services.fdi_projets import lire_lot_csv, lire_pays_csv, DOSSIER_PROJETS, normaliser
+    connus = lire_pays_csv()
+    for chemin in sorted(DOSSIER_PROJETS.glob("afrique_p*.csv")):
+        for ligne in lire_lot_csv(chemin):
+            for cote in ("source", "dest"):
+                assert normaliser(ligne[cote]) in connus, f"{chemin.name} L{ligne['ligne']} · {ligne[cote]}"

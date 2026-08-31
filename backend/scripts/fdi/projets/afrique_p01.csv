@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2026,Fenix Consulting E…,Fenix Consulting E…,Turkey,Algeria,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+2,Jun 2026,Global Green Gro…,Global Green Gro…,South Korea,Algeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+3,Apr 2026,Seres Group (Cho…,Seres Group (Cho…,China,Algeria,Automotive OEM,Automobiles,Manufacturing,$66.06m,450,New
+4,Apr 2026,Stellantis,Stellantis,Netherlands,Algeria,Automotive OEM,Automobiles,Manufacturing,* $137.20m,"1,000",Expansion
+5,Feb 2026,Hayat Holding,Hayat DHC Algerie,Turkey,Algeria,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$99.47m,"1,000",New
+6,Jan 2026,Interpath Advisory,Interpath Advisory,United Kingdom,Algeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+7,Jan 2026,Stellantis,Opel,Netherlands,Algeria,Automotive OEM,Automobiles,Manufacturing,* $122.00m,"* 1,625",New
+8,Dec 2025,Sonae,Zippy,Portugal,Algeria,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+9,Jul 2025,DoubleStar,DoubleStar,China,Algeria,Rubber,Tyres,Manufacturing,$380.00m,"2,000",New
+10,Jun 2025,Chery Automobile,Chery Automobile,China,Algeria,Automotive OEM,Automobiles,Manufacturing,* $122.00m,"* 1,625",New
+11,Jun 2025,Hikma Pharmaceu…,Hikma Pharmaceu…,United Kingdom,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $43.70m,* 138,New
+12,Jun 2025,Jingdong Steel,Jingdong Steel,China,Algeria,Metals,Steel products,Manufacturing,* $162.80m,"1,114",New
+13,May 2025,Xiamen King Long…,Higer Bus,China,Algeria,Automotive OEM,Heavy duty trucks,Maintenance & Servi…,$2.00m,* 10,New
+14,May 2025,Xiamen King Long…,Higer Bus,China,Algeria,Automotive OEM,Heavy duty trucks,Manufacturing,* $122.00m,"* 1,625",New
+15,Apr 2025,Chery Automobile,Chery Automobile,China,Algeria,Automotive compon…,Motor vehicle body &…,Manufacturing,* $25.70m,* 613,New

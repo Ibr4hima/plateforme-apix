@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2025,Longi Green Ener…,Longi Green Ener…,China,Algeria,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
+2,Mar 2025,GE Vernova,GE Vernova,United States,Algeria,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $2.20m,* 14,New
+3,Mar 2025,Great Wall Motors…,Great Wall Motors…,China,Algeria,Automotive OEM,Automobiles,Manufacturing,* $122.00m,"* 1,625",New
+4,Mar 2025,TASS Russian Ne…,TASS Russian Ne…,Russia,Algeria,Business services,"Newspaper, periodic…",Business Services,* $27.80m,* 38,New
+5,Feb 2025,Samsung Group,Samsung Group,South Korea,Algeria,Consumer electronics,Household appliances,Manufacturing,* $40.00m,* 504,New
+6,Nov 2024,China Railway Con…,China Railway Con…,China,Algeria,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $55.90m,* 583,New
+7,Oct 2024,Bobst Group SA,Bobst Group SA,Switzerland,Algeria,Industrial equipment,Paper industry mach…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Oct 2024,International Wor…,International Wor…,Switzerland,Algeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+9,Aug 2024,ITA Airways,ITA Airways,Italy,Algeria,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Jul 2024,Denzai,Denzai,Japan,Algeria,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+11,Jul 2024,Hyundai Motor,Hyundai Motor,South Korea,Algeria,Automotive OEM,Automobiles,Manufacturing,* $122.00m,"* 1,625",New
+12,Jul 2024,Jamjoom Pharma,Jamjoom Algeria,Saudi Arabia,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$11.84m,* 37,Expansion
+13,Jul 2024,NZI Helmets,NZI Helmets,Spain,Algeria,Consumer products,"Sporting goods, hob…",Manufacturing,* $14.40m,* 418,New
+14,May 2024,Dongfeng Motor,Dongfeng Motor,China,Algeria,Automotive OEM,Automobiles,Headquarters,* $63.70m,* 187,New
+15,May 2024,Estithmar Holding,Elegancia Healthc…,Qatar,Algeria,Healthcare,General medical & s…,Construction,* $70.50m,* 258,New
