@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2011,Nestle,Nestle,Switzerland,Algeria,Food and Beverages,Dairy products,Manufacturing,* $7.60m,50,New
+2,Sep 2011,Hyundai Motor,Hyundai Motor Alg…,South Korea,Algeria,Automotive OEM,Motor vehicle & part…,Retail,$8.10m,* 19,New
+3,Sep 2011,La Vie en Rose,La Vie en Rose,Canada,Algeria,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+4,Sep 2011,Ornua (Irish Dairy…,Kerry Gold,Ireland,Algeria,Plastics,Plastics packaging m…,Manufacturing,* $26.90m,* 107,New
+5,Sep 2011,Ornua (Irish Dairy…,Ornua (Irish Dairy…,Ireland,Algeria,Food and Beverages,Dairy products,"Sales, Marketing & S…",* $6.70m,* 21,New
+6,Sep 2011,Waterleau,Waterleau,Belgium,Algeria,Business services,"Water, sewage & oth…",Business Services,* $27.80m,* 38,New
+7,Aug 2011,Dimelco,Dimelco,France,Algeria,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 17,New
+8,Aug 2011,LVL Medical Groupe,LVL Medical Groupe,France,Algeria,Healthcare,Nursing & residential…,Business Services,* $2.70m,* 37,New
+9,Aug 2011,Saint-Gobain,Verallia,France,Algeria,Ceramics & glass,Glass & glass products,Manufacturing,* $58.60m,* 160,Expansion
+10,Jun 2011,Air France-KLM Gr…,Air France-KLM Gr…,France,Algeria,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+11,Jun 2011,Clarke Group,Clarke Energy,United Kingdom,Algeria,Renewable energy,Biomass power,"Sales, Marketing & S…",* $155.50m,* 22,New
+12,Jun 2011,Dallah Al-Baraka …,Albaraka Bank Alg…,Saudi Arabia,Algeria,Financial services,Retail banking,Headquarters,* $45.10m,* 91,New
+13,May 2011,Dallah Al-Baraka …,Albaraka Bank Alg…,Saudi Arabia,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,May 2011,Dallah Al-Baraka …,Albaraka Bank Alg…,Saudi Arabia,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,May 2011,Dallah Al-Baraka …,Albaraka Bank Alg…,Saudi Arabia,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
