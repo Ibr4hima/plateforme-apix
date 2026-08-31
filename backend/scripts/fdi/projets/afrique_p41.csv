@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2019,Lufthansa,time:matters,Germany,Angola,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+2,Aug 2019,Saint-Gobain,Saint-Gobain Weber,France,Angola,Building materials,Cement & concrete p…,Manufacturing,* $108.80m,* 496,New
+3,Jun 2019,Cubic33,Cubic33,Spain,Angola,Real estate,Industrial building co…,"Sales, Marketing & S…",* $15.90m,* 25,New
+4,Jun 2019,Eni SpA,Eni SpA,Italy,Angola,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+5,Jun 2019,GE Aerospace (Ge…,Baker Hughes,United States,Angola,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $7.80m,* 30,Expansion
+6,Jun 2019,Minsk Tractor Works,Minsk Tractor Works,Belarus,Angola,Industrial equipment,"Agriculture, construc…",Manufacturing,* $29.80m,* 219,New
+7,May 2019,CITIC Group,CITIC Group,China,Angola,Metals,Alumina & aluminiu…,Manufacturing,$40.00m,300,New
+8,May 2019,Terra Drone,Terra Drone,Japan,Angola,Aerospace,Other (Aerospace),"Sales, Marketing & S…",* $5.80m,* 18,New
+9,May 2019,The World Bank G…,International Fina…,United States,Angola,Financial services,Corporate & investm…,Business Services,* $9.60m,* 9,New
+10,Mar 2019,Hyundai Motor,Hyundai Motor,South Korea,Angola,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+11,Nov 2018,Diageo,Diageo,United Kingdom,Angola,Food and Beverages,Distilleries,Manufacturing,$6.20m,* 17,New
+12,Nov 2018,Webcor Group,Grandes Moagens …,Switzerland,Angola,Food and Beverages,Grains & oilseed,Manufacturing,* $34.50m,* 100,New
+13,Oct 2018,Punto FA,Mango,Spain,Angola,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+14,Aug 2018,Eni SpA,Eni SpA,Italy,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,New
+15,May 2018,Kaleido Logistics,Kaleido Logistics,Spain,Angola,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2013,Sonae,MDS,Portugal,Angola,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Jun 2013,Norton Rose Fulbri…,Norton Rose Fulbri…,United Kingdom,Angola,Business services,Legal services,Business Services,* $27.80m,* 38,New
+3,May 2013,Prada,Prada,Italy,Angola,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,May 2013,Sony,Sony,Japan,Angola,Consumer electronics,Other (Consumer ele…,"Sales, Marketing & S…",* $3.40m,* 29,New
+5,May 2013,Veolia Environne…,OTV Sud Afrique,France,Angola,Business services,Environmental consu…,Business Services,* $1.70m,11,New
+6,Apr 2013,Standard Bank Gr…,Standard Bank An…,South Africa,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+7,Mar 2013,Boston Consulting…,Boston Consulting…,United States,Angola,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+8,Mar 2013,Rudolf Wild,Capri Sun AG,Germany,Angola,Food and Beverages,Soft drinks & ice,Manufacturing,* $34.50m,* 100,New
+9,Jan 2013,Essentium Group,Essentium Group,Spain,Angola,Building materials,Cement & concrete p…,Manufacturing,* $108.80m,* 496,New
+10,Jan 2013,GE Aerospace (Ge…,GE Oil and Gas,United States,Angola,Industrial equipment,"Agriculture, construc…",Manufacturing,$175.00m,"* 1,629",New
+11,Jan 2013,Haitong Bank (Ba…,Escom,Portugal,Angola,Minerals,Nonmetallic mineral …,Extraction,* $107.10m,"* 1,366",New
+12,Jan 2013,Portugal Telecom,Unitel,Portugal,Angola,Communications,Wireless telecommu…,ICT & Internet Infras…,$12.51m,* 2,New
+13,Dec 2012,Bank of China,Bank of China,China,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+14,Nov 2012,Baker Tilly,Baker Tilly Portugal,United Kingdom,Angola,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+15,Nov 2012,Neuerth Group,Neuerth Group,UAE,Angola,Metals,Steel products,Recycling,$150.00m,* 203,New

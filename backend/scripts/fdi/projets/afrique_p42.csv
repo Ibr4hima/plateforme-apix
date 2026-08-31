@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2018,Eni SpA,Eni SpA,Italy,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,New
+2,Dec 2017,Haldor Topsoe AS,Haldor Topsoe AS,Denmark,Angola,Chemicals,"Pesticide, fertilisers …",Manufacturing,$2.00bn,"4,000",New
+3,Oct 2017,La Caixa,Banco de Foment…,Spain,Angola,Financial services,Retail banking,Business Services,* $2.70m,9,New
+4,Oct 2017,Sika,Sika,Switzerland,Angola,Chemicals,"Paints, coatings, add…",Manufacturing,* $466.60m,* 455,Expansion
+5,Apr 2017,Bank of China,Bank of China,China,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+6,Feb 2017,Rotana Hotels,Rotana Hotels,UAE,Angola,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+7,Nov 2016,IKI Mobile,IKI Mobile,Portugal,Angola,Communications,Communications equ…,Manufacturing,$2.90m,* 52,New
+8,Oct 2016,Agility,Agility,Kuwait,Angola,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+9,Oct 2016,Alpha Destination …,Alpha Destination …,UAE,Angola,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+10,Sep 2016,CloudFlare,CloudFlare,United States,Angola,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+11,May 2016,Portugal Telecom,Unitel,Portugal,Angola,Communications,Wireless telecommu…,Retail,* $6.30m,* 31,New
+12,Apr 2016,Quantum Global G…,Quantum Global G…,Switzerland,Angola,Financial services,Corporate & investm…,Business Services,* $9.60m,* 9,New
+13,Mar 2016,Eni SpA,Eni SpA,Italy,Angola,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $63.40m,* 85,New
+14,Mar 2016,Sagaci Research,Sagaci Research,Kenya,Angola,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+15,Dec 2015,Karam Industries,Karam Industries,India,Angola,Industrial equipment,General purpose ma…,Manufacturing,$3.00m,470,New
