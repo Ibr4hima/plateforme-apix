@@ -80,14 +80,24 @@ const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
 
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
+
     Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
-    quelque chose, et évite de cliquer pour découvrir un écran vide. */
-function Facette({ titre, options, choix, setChoix, max = 6 }: {
-  titre: string; options: Compte[]; choix: string[]; setChoix: (v: string[]) => void; max?: number;
+    quelque chose, et évite de cliquer pour découvrir un écran vide. Il suit
+    les AUTRES filtres actifs — cocher un secteur restreint les activités
+    proposées — de sorte qu'une option affichée mène toujours à des projets.
+
+    La liste défile plutôt que de se déplier : un « Voir les 30 » demandait un
+    clic pour révéler une hauteur qu'on ne maîtrisait plus, et la colonne
+    sautait sous le curseur. */
+function Facette({ titre, options, choix, setChoix }: {
+  titre: string; options: Compte[]; choix: string[]; setChoix: (v: string[]) => void;
 }) {
-  const [tout, setTout] = useState(false);
-  if (options.length === 0) return null;
-  const visibles = tout ? options : options.slice(0, max);
+  // Une option cochée reste affichée même si les autres filtres la font
+  // tomber à zéro : la retirer de la liste ôterait au lecteur le moyen de la
+  // décocher.
+  const visibles = [...options];
+  for (const c of choix) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
+  if (visibles.length === 0) return null;
   const bascule = (n: string) => setChoix(choix.includes(n) ? choix.filter(x => x !== n) : [...choix, n]);
   return (
     <div style={{ marginBottom: 18 }}>
@@ -98,34 +108,30 @@ function Facette({ titre, options, choix, setChoix, max = 6 }: {
             background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{choix.length}</span>
         )}
       </div>
-      {visibles.map(o => {
-        const sel = choix.includes(o.nom);
-        return (
-          <button key={o.nom} onClick={() => bascule(o.nom)}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7,
-              border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-            <span style={{ width: 12, height: 12, borderRadius: 4, flexShrink: 0,
-              border: `1.5px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`,
-              background: sel ? "var(--bleu)" : "transparent", display: "flex",
-              alignItems: "center", justifyContent: "center" }}>
-              {sel && <span style={{ color: "var(--carte)", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
-            </span>
-            <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
-            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-              fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
-          </button>
-        );
-      })}
-      {options.length > max && (
-        <button onClick={() => setTout(t => !t)}
-          style={{ marginTop: 4, marginLeft: 8, background: "none", border: "none", cursor: "pointer",
-            fontSize: 11, fontWeight: 700, color: "var(--bleu)", fontFamily: "var(--font-google-sans)", padding: 0 }}>
-          {tout ? "Voir moins" : `Voir les ${options.length}`}
-        </button>
-      )}
+      <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
+        paddingRight: 2 }}>
+        {visibles.map(o => {
+          const sel = choix.includes(o.nom);
+          return (
+            <button key={o.nom} onClick={() => bascule(o.nom)} title={o.nom}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7,
+                border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+              <span style={{ width: 12, height: 12, borderRadius: 4, flexShrink: 0,
+                border: `1.5px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`,
+                background: sel ? "var(--bleu)" : "transparent", display: "flex",
+                alignItems: "center", justifyContent: "center" }}>
+                {sel && <span style={{ color: "var(--carte)", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+              </span>
+              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
+              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -187,14 +193,27 @@ export default function OngletFdi() {
   // Le périmètre dépend du sens : les pays proposés sont ceux qui existent
   // DANS CE SENS. Basculer de destination à source ne doit pas laisser un pays
   // qui n'y a aucun projet.
-  const qPer = useDonnees<Perimetre>(`${API}/fdi/public/perimetre`, { garder: true });
+  // Les facettes cascadent : le périmètre est redemandé à chaque changement de
+  // filtre, et chaque facette y est comptée sous les AUTRES filtres.
+  const urlPerimetre = useMemo(() => {
+    const p = new URLSearchParams();
+    if (pays) p.set("pays", pays);
+    if (secteurs.length) p.set("secteurs", secteurs.join("|"));
+    if (activites.length) p.set("activites", activites.join("|"));
+    if (types.length) p.set("types", types.join("|"));
+    return `${API}/fdi/public/perimetre?${p}`;
+  }, [pays, secteurs, activites, types]);
+  const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
   // Premier pays du sens (le mieux fourni) tant que rien n'est choisi, et
   // retour à ce défaut si le pays courant sort du périmètre.
+  // Le pays le mieux fourni au premier chargement, et lui seul : depuis que
+  // les facettes cascadent, un pays peut sortir de la liste parce qu'un autre
+  // filtre l'a vidé — basculer alors sur un voisin déplacerait le lecteur sans
+  // qu'il l'ait demandé.
   useEffect(() => {
-    if (!per?.pays?.length) return;
-    if (!pays || !per.pays.some(p => p.nom === pays)) setPays(per.pays[0].nom);
+    if (!pays && per?.pays?.length) setPays(per.pays[0].nom);
   }, [per, pays]);
 
   useEffect(() => {
@@ -382,7 +401,7 @@ export default function OngletFdi() {
 
                 <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
                 <Facette titre="Secteur" options={per?.secteurs ?? []} choix={secteurs} setChoix={setSecteurs} />
-                <Facette titre="Activité" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
+                <Facette titre="Activité prévue" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
                 <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
               </>
             )}

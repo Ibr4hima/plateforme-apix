@@ -29,39 +29,94 @@ router = APIRouter(prefix="/fdi/public", tags=["fdi"])
 # est imparfaite.
 
 
+# Les expressions de chaque facette, écrites une fois. Le nom qualifie et la
+# clé sert de paramètre de requête ; les deux listes qui suivent — filtres et
+# comptages — en dépendent, ce qui évite qu'une facette filtre sur une colonne
+# et compte sur une autre.
+FACETTES = {
+    "secteurs":  "COALESCE(s.libelle_fr, p.secteur_brut)",
+    "activites": "COALESCE(a.libelle_fr, p.activite_brut)",
+    "types":     "COALESCE(t.libelle_fr, p.type_brut)",
+}
+
+JOINTURES = """
+    FROM fdi_projets p
+    LEFT JOIN ref_pays          ro ON ro.id = p.{observe}_id
+    LEFT JOIN ref_pays          rp ON rp.id = p.{partenaire}_id
+    LEFT JOIN fdi_secteurs      s  ON s.id  = p.secteur_id
+    LEFT JOIN fdi_sous_secteurs ss ON ss.id = p.sous_secteur_id
+    LEFT JOIN fdi_activites     a  ON a.id  = p.activite_id
+    LEFT JOIN fdi_types_projet  t  ON t.id  = p.type_projet_id
+    LEFT JOIN fdi_entreprises   e  ON e.id  = p.entreprise_id
+"""
+
+
+def _filtres(observe: str, pays, annee_min, annee_max, secteurs, activites, types,
+             recherche, sauf: str | None = None) -> tuple[list[str], dict]:
+    """Les conditions du périmètre demandé, éventuellement privées d'une facette.
+
+    `sauf` sert au filtrage EN CASCADE : pour compter les options d'une
+    facette, on applique tous les filtres SAUF le sien. Sans cela, cocher
+    « Communications » réduirait la liste des secteurs à « Communications »
+    seul, et l'on ne pourrait plus en ajouter un deuxième.
+    """
+    where, params = ["1 = 1"], {}
+    if pays:
+        where.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
+        params["pays"] = pays
+    if annee_min is not None:
+        where.append("p.annee >= :a0"); params["a0"] = annee_min
+    if annee_max is not None:
+        where.append("p.annee <= :a1"); params["a1"] = annee_max
+    for cle, brut in (("secteurs", secteurs), ("activites", activites), ("types", types)):
+        valeurs = _liste(brut)
+        if valeurs and cle != sauf:
+            where.append(f"{FACETTES[cle]} = ANY(:{cle})")
+            params[cle] = valeurs
+    if recherche and recherche.strip():
+        where.append("(lower(COALESCE(e.nom, p.entreprise_brut)) LIKE :q "
+                     "OR lower(COALESCE(p.description_fr, p.description_en, '')) LIKE :q)")
+        params["q"] = f"%{recherche.strip().lower()}%"
+    return where, params
+
+
 @router.get("/perimetre")
-async def perimetre(sens: str = "destination", db: AsyncSession = Depends(get_db)):
-    """De quoi remplir les filtres : uniquement ce que les données portent."""
-    observe, _ = _sens(sens)
+async def perimetre(
+    sens: str = "destination",
+    pays: str | None = None,
+    annee_min: int | None = None,
+    annee_max: int | None = None,
+    secteurs: str | None = None,
+    activites: str | None = None,
+    types: str | None = None,
+    recherche: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """De quoi remplir les filtres : uniquement ce que les données portent, et
+    uniquement ce qui reste atteignable COMPTE TENU des autres filtres.
 
-    pays = (await db.execute(text(f"""
-        SELECT COALESCE(r.nom_fr, p.{observe}_brut) AS nom, count(*) AS nb
-        FROM fdi_projets p LEFT JOIN ref_pays r ON r.id = p.{observe}_id
-        WHERE COALESCE(r.nom_fr, p.{observe}_brut) IS NOT NULL
-        GROUP BY 1 ORDER BY count(*) DESC, 1
-    """))).fetchall()
+    Chaque facette est comptée sous les filtres des AUTRES facettes, jamais
+    sous le sien : cocher un secteur doit restreindre les activités proposées,
+    pas la liste des secteurs — sinon on ne pourrait plus en cocher un second.
+    """
+    observe, partenaire = _sens(sens)
+    joint = JOINTURES.format(observe=observe, partenaire=partenaire)
 
-    secteurs = (await db.execute(text("""
-        SELECT COALESCE(s.libelle_fr, p.secteur_brut) AS nom, count(*) AS nb
-        FROM fdi_projets p LEFT JOIN fdi_secteurs s ON s.id = p.secteur_id
-        WHERE COALESCE(s.libelle_fr, p.secteur_brut) IS NOT NULL
-        GROUP BY 1 ORDER BY count(*) DESC, 1
-    """))).fetchall()
+    async def compter(expr: str, sauf: str | None):
+        where, params = _filtres(observe, pays, annee_min, annee_max,
+                                 secteurs, activites, types, recherche, sauf)
+        return (await db.execute(text(f"""
+            SELECT {expr} AS nom, count(*) AS nb
+            {joint} WHERE {' AND '.join(where)} AND {expr} IS NOT NULL
+            GROUP BY 1 ORDER BY count(*) DESC, 1"""), params)).fetchall()
 
-    activites = (await db.execute(text("""
-        SELECT COALESCE(a.libelle_fr, p.activite_brut) AS nom, count(*) AS nb
-        FROM fdi_projets p LEFT JOIN fdi_activites a ON a.id = p.activite_id
-        WHERE COALESCE(a.libelle_fr, p.activite_brut) IS NOT NULL
-        GROUP BY 1 ORDER BY count(*) DESC, 1
-    """))).fetchall()
+    lignes_pays = await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
+    lignes_sec = await compter(FACETTES["secteurs"], "secteurs")
+    lignes_act = await compter(FACETTES["activites"], "activites")
+    lignes_typ = await compter(FACETTES["types"], "types")
 
-    types = (await db.execute(text("""
-        SELECT COALESCE(t.libelle_fr, p.type_brut) AS nom, count(*) AS nb
-        FROM fdi_projets p LEFT JOIN fdi_types_projet t ON t.id = p.type_projet_id
-        WHERE COALESCE(t.libelle_fr, p.type_brut) IS NOT NULL
-        GROUP BY 1 ORDER BY count(*) DESC, 1
-    """))).fetchall()
-
+    # Les bornes de la période restent celles du jeu complet : un curseur dont
+    # les extrémités bougent à chaque clic devient impossible à manœuvrer.
     bornes = (await db.execute(text(
         "SELECT min(annee) AS a0, max(annee) AS a1, count(*) AS n FROM fdi_projets"))).first()
 
@@ -69,10 +124,10 @@ async def perimetre(sens: str = "destination", db: AsyncSession = Depends(get_db
         "sens": sens if sens in COTE else "destination",
         "annees": [bornes.a0, bornes.a1],
         "total_projets": bornes.n,
-        "pays": [{"nom": r.nom, "nb": r.nb} for r in pays],
-        "secteurs": [{"nom": r.nom, "nb": r.nb} for r in secteurs],
-        "activites": [{"nom": r.nom, "nb": r.nb} for r in activites],
-        "types": [{"nom": r.nom, "nb": r.nb} for r in types],
+        "pays": [{"nom": r.nom, "nb": r.nb} for r in lignes_pays],
+        "secteurs": [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
+        "activites": [{"nom": r.nom, "nb": r.nb} for r in lignes_act],
+        "types": [{"nom": r.nom, "nb": r.nb} for r in lignes_typ],
     }
 
 
@@ -100,43 +155,14 @@ async def projets(
     peut pas défendre en réunion.
     """
     observe, partenaire = _sens(sens)
-    where = ["1 = 1"]
-    params: dict = {}
-
-    if pays:
-        where.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
-        params["pays"] = pays
-    if annee_min is not None:
-        where.append("p.annee >= :a0"); params["a0"] = annee_min
-    if annee_max is not None:
-        where.append("p.annee <= :a1"); params["a1"] = annee_max
-    for cle, valeurs, expr in (
-        ("sec", _liste(secteurs), "COALESCE(s.libelle_fr, p.secteur_brut)"),
-        ("act", _liste(activites), "COALESCE(a.libelle_fr, p.activite_brut)"),
-        ("typ", _liste(types), "COALESCE(t.libelle_fr, p.type_brut)"),
-    ):
-        if valeurs:
-            where.append(f"{expr} = ANY(:{cle})")
-            params[cle] = valeurs
-    if recherche and recherche.strip():
-        where.append("(lower(COALESCE(e.nom, p.entreprise_brut)) LIKE :q "
-                     "OR lower(COALESCE(p.description_fr, p.description_en, '')) LIKE :q)")
-        params["q"] = f"%{recherche.strip().lower()}%"
+    where, params = _filtres(observe, pays, annee_min, annee_max,
+                             secteurs, activites, types, recherche)
 
     # Une seule expression de jointure, réutilisée par toutes les agrégations :
     # deux formulations différentes finiraient par diverger, et deux chiffres
     # qui se contredisent sur le même écran valent moins que pas de chiffre.
-    base = f"""
-        FROM fdi_projets p
-        LEFT JOIN ref_pays          ro ON ro.id = p.{observe}_id
-        LEFT JOIN ref_pays          rp ON rp.id = p.{partenaire}_id
-        LEFT JOIN fdi_secteurs      s  ON s.id  = p.secteur_id
-        LEFT JOIN fdi_sous_secteurs ss ON ss.id = p.sous_secteur_id
-        LEFT JOIN fdi_activites     a  ON a.id  = p.activite_id
-        LEFT JOIN fdi_types_projet  t  ON t.id  = p.type_projet_id
-        LEFT JOIN fdi_entreprises   e  ON e.id  = p.entreprise_id
-        WHERE {' AND '.join(where)}
-    """
+    base = JOINTURES.format(observe=observe, partenaire=partenaire) + \
+        f"        WHERE {' AND '.join(where)}\n"
 
     k = (await db.execute(text(f"""
         SELECT count(*) AS nb,
