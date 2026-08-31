@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,PlasteXel,PlasteXel,France,Algeria,Plastics,"Plastic pipes, pipe fit…","Sales, Marketing & S…",* $2.00m,* 12,New
+2,Dec 2008,BNP Paribas,BNP Paribas,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Dec 2008,G Environment,G Environment,France,Algeria,Business services,Environmental consu…,Business Services,* $6.80m,* 15,New
+4,Dec 2008,G Environnement,G Environnement,France,Algeria,Business services,Environmental consu…,Business Services,* $6.80m,* 15,New
+5,Dec 2008,Kocoglu Group,Kocoglu Group,Turkey,Algeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+6,Dec 2008,Phone Control,Phone Control,France,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+7,Dec 2008,Shaanxi Automobi…,Shaanxi Automobi…,China,Algeria,Automotive OEM,Heavy duty trucks,Manufacturing,$100.00m,"4,000",New
+8,Nov 2008,Bouygues,Colas Rail,France,Algeria,Non-automotive tran…,Railroad rolling stock,"Sales, Marketing & S…",* $2.50m,* 8,New
+9,Nov 2008,Compagnie Gestio…,Compagnie Gestio…,Tunisia,Algeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+10,Nov 2008,DP World,DP World,UAE,Algeria,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$700.00m,"* 1,451",New
+11,Nov 2008,DP World,DP World,UAE,Algeria,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$150.00m,* 666,New
+12,Nov 2008,GE Aerospace (Ge…,GE Gas & Oil,United States,Algeria,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,* $5.00m,* 27,New
+13,Nov 2008,Haulotte,Haulotte,France,Algeria,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+14,Nov 2008,Repsol SA,Repsol SA,Spain,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$565.00m,* 235,New
+15,Nov 2008,Samsung Group,Samsung Group,South Korea,Algeria,Consumer electronics,Household appliances,Manufacturing,$100.00m,"1,100",New

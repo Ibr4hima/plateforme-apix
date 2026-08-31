@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2008,Studi Group,Studi Group,Tunisia,Algeria,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+2,Nov 2008,Terramin Australia…,Terramin Australia…,Australia,Algeria,Metals,Nonferrous metal pr…,Extraction,* $270.00m,"* 1,012",Expansion
+3,Oct 2008,Accor,Ibis,France,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+4,Oct 2008,Accor,Ibis,France,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+5,Oct 2008,Accor,Ibis,France,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Oct 2008,Accor,Ibis,France,Algeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+7,Oct 2008,Groupama,Mutuaide Assistan…,France,Algeria,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+8,Oct 2008,Groupe Loukil,Ateliers Mécaniqu…,Tunisia,Algeria,Consumer products,Furniture & related p…,Retail,* $36.90m,* 179,New
+9,Oct 2008,Topnet,Topnet,Tunisia,Algeria,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,Sep 2008,Ernst & Young (EY),Ernst & Young (EY),United Kingdom,Algeria,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,New
+11,Sep 2008,Mobilitis,Mobilitis,France,Algeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+12,Sep 2008,Risk & Co,Risk & Co,France,Algeria,Business services,Other support services,Business Services,* $6.80m,* 15,New
+13,Sep 2008,Saudi Binladin Gro…,Construction Prod…,Saudi Arabia,Algeria,Metals,Architectural & struc…,Manufacturing,$27.22m,* 240,New
+14,Aug 2008,GAC Group,GAC Group,UAE,Algeria,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+15,Aug 2008,HSBC Holdings,HSBC Bank,United Kingdom,Algeria,Financial services,Retail banking,Headquarters,* $18.10m,70,New
