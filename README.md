@@ -36,6 +36,24 @@ uvicorn app.main:app --reload
 npm run dev
 ```
 
+### Mettre en ligne
+
+`maj_local.sh` ne touche QUE votre machine. La démo, elle, suit la branche
+`main` : c'est un push sur `main` qui déclenche le déploiement (GitHub Actions
+→ SSH sur le VPS → `scripts/deploy.sh`). Tant qu'on ne pousse que la branche
+de travail, rien ne part en ligne — et c'est voulu : on met en ligne quand on
+a regardé, pas à chaque commit.
+
+Quand c'est bon :
+
+```bash
+bash scripts/publier.sh
+```
+
+Le script pousse la branche, y amène `main`, revient sur la branche, et refuse
+de partir si quelque chose n'est pas commité. Le déploiement met deux à quatre
+minutes.
+
 ### Se remettre à jour en cours de route
 
 Les deux commandes de l'étape 2, dans un terminal à part. Le front se recharge

@@ -84,8 +84,13 @@ Ajouter les secrets :
 | `DEPLOY_PATH`    | `/opt/apix`                             |
 | `DEPLOY_SSH_KEY` | clé privée SSH (publique installée sur le VPS) |
 
-Ensuite, chaque push sur `claude/modest-ritchie-DlitS` redéploie front + back
-via `.github/workflows/deploy-demo.yml`. Sans ces secrets, le workflow ne fait rien.
+Ensuite, chaque push sur **`main`** redéploie front + back via
+`.github/workflows/deploy-demo.yml` — pas les pushes sur une branche de
+travail, ce qui laisse le temps de regarder avant de mettre en ligne. Sans ces
+secrets, le workflow ne fait rien.
+
+Depuis un poste de développement, `bash scripts/publier.sh` fait les trois
+gestes : pousser la branche, y amener `main`, revenir sur la branche.
 
 ## 6. Partage aux testeurs
 

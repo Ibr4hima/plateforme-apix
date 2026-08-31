@@ -95,13 +95,16 @@ const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: 
   borderRadius: 7, border: "none", cursor: "pointer", background: "transparent",
   textAlign: "left" as const, width: "100%" } as const;
 
-const Case = ({ coche }: { coche: boolean }) => (
-  <span style={{ width: 12, height: 12, borderRadius: 4, flexShrink: 0,
-    border: `1.5px solid ${coche ? "var(--bleu)" : "var(--bordure-forte)"}`,
-    background: coche ? "var(--bleu)" : "transparent", display: "flex",
-    alignItems: "center", justifyContent: "center" }}>
-    {coche && <span style={{ color: "var(--carte)", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
-  </span>
+/** La marque de sélection de toute la colonne : un rond plein quand c'est
+    retenu, un anneau vide sinon. Une seule forme partout — pays, secteurs,
+    sous-secteurs, activités, types — parce que ces listes se lisent d'un même
+    coup d'œil et qu'une case carrée au milieu de ronds ferait croire à une
+    autre nature de choix. La teinte distingue les niveaux : le bleu pour un
+    poste de premier rang, l'orange pour ce qui vit dessous. */
+const Pastille = ({ coche, teinte = "var(--bleu)" }: { coche: boolean; teinte?: string }) => (
+  <span style={{ width: 11, height: 11, borderRadius: "50%", flexShrink: 0,
+    border: `2px solid ${coche ? teinte : "var(--bordure-forte)"}`,
+    background: coche ? teinte : "transparent" }} />
 );
 
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
@@ -143,12 +146,7 @@ function Facette({ titre, options, choix, setChoix }: {
                 border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-              <span style={{ width: 12, height: 12, borderRadius: 4, flexShrink: 0,
-                border: `1.5px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`,
-                background: sel ? "var(--bleu)" : "transparent", display: "flex",
-                alignItems: "center", justifyContent: "center" }}>
-                {sel && <span style={{ color: "var(--carte)", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
-              </span>
+              <Pastille coche={sel} />
               <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
               <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
@@ -217,7 +215,7 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec, choixS
               <button onClick={() => basculerSecteur(o.nom)} title={o.nom} style={LIGNE_FACETTE}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                <Case coche={ouvert} />
+                <Pastille coche={ouvert} />
                 <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: ouvert ? 700 : 400,
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
                 <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
@@ -236,8 +234,9 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec, choixS
                       <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom} style={LIGNE_FACETTE}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                        <Case coche={sel} />
-                        <span style={{ fontSize: 11.5, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                        <Pastille coche={sel} teinte="var(--orange)" />
+                        <span style={{ fontSize: 11.5, fontWeight: sel ? 700 : 400,
+                          color: sel ? "var(--orange)" : "var(--texte)",
                           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{ss.nom}</span>
                         <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
                           fontVariantNumeric: "tabular-nums" }}>{ss.nb}</span>
@@ -568,9 +567,7 @@ export default function OngletFdi() {
                             textAlign: "left" as const, width: "100%" }}
                           onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                          <span style={{ width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
-                            border: `2px solid ${sel ? "var(--bleu)" : "var(--bordure-forte)"}`,
-                            background: sel ? "var(--bleu-action)" : "transparent" }} />
+                          <Pastille coche={sel} />
                           <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
                             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
                           <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
