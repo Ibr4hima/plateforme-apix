@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2007,Boccard,Boccard,France,Algeria,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+2,Jul 2007,Payahi,Tunisie Profiles Al…,Tunisia,Algeria,Metals,Alumina & aluminiu…,Manufacturing,* $698.30m,* 342,New
+3,Jun 2007,BNP Paribas,Banca Nazionale d…,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Jun 2007,Deutsche Bank,Deutsche Bank,Germany,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jun 2007,Punto FA,Mango,Spain,Algeria,Textiles,Clothing & clothing a…,Retail,$13.30m,76,New
+6,May 2007,Dell Technologies,Dell Technologies,United States,Algeria,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+7,Apr 2007,Deloitte Touche To…,Deloitte Touche To…,United States,Algeria,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,New
+8,Apr 2007,International Busi…,International Busi…,United States,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+9,Mar 2007,ABC Minet,ABC Minet,France,Algeria,Metals,Architectural & struc…,"Logistics, Distributio…",* $15.60m,* 29,New
+10,Mar 2007,Ezz Steel Rebars,Ezz Steel Rebars,Egypt,Algeria,Metals,Steel products,Manufacturing,$750.00m,"3,000",New
+11,Mar 2007,Quick,Quick,France,Algeria,Food and Beverages,Food services,Retail,$1.32m,* 22,New
+12,Mar 2007,Societe Generale (…,ALD Automotive,France,Algeria,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+13,Feb 2007,ABC Minet,ABC Minet,France,Algeria,Metals,Architectural & struc…,"Sales, Marketing & S…",* $2.80m,* 9,New
+14,Feb 2007,Orascom Construc…,Orascom Construc…,Egypt,Algeria,Metals,Steel products,Manufacturing,$18.00m,* 159,New
+15,Jan 2007,O2 Network,O2 Network,UAE,Algeria,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New

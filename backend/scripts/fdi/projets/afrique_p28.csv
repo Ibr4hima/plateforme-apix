@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2006,BNP Paribas,Cardif,France,Algeria,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+2,Jul 2006,Citigroup,Citibank,United States,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Jul 2006,International Elect…,International Elect…,Canada,Algeria,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+4,Jul 2006,MENACOM Group …,MENACOM Group …,UAE,Algeria,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+5,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+6,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,Retail,* $12.70m,* 33,New
+7,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+8,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+9,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+10,Jul 2006,Nissan,Nissan Algeria,Japan,Algeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+11,Jul 2006,Systra,Systra,France,Algeria,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New
+12,Jul 2006,Veolia Environne…,Veolia Environne…,France,Algeria,Transportation & Wa…,Transit & ground pas…,"Logistics, Distributio…",* $45.70m,* 93,New
+13,Jun 2006,Bank of Africa (B…,Bank of Africa (B…,Morocco,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Jun 2006,Banque Internatio…,Banque Internatio…,Tunisia,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jun 2006,BLOM Bank,BLOM Bank,Lebanon,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

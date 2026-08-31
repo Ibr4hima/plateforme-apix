@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2006,BP (British Petrole…,BP (British Petrole…,United Kingdom,Algeria,"Coal, oil & gas",Oil & gas extraction,Manufacturing,* $1.64bn,* 146,New
+2,Jun 2006,BT Group (British …,BT Group (British …,United Kingdom,Algeria,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Jun 2006,Byblos Bank,Byblos Bank,Lebanon,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Jun 2006,Cisco Systems,Cisco Systems,United States,Algeria,Software & IT services,Computer systems d…,Research & Develop…,* $15.30m,* 162,New
+5,Jun 2006,Credit Agricole,Calyon,France,Algeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+6,Jun 2006,Essalam Bank,Essalam Bank,UAE,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jun 2006,HSBC Holdings,HSBC Bank,United Kingdom,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jun 2006,Societe Generale (…,Societe Generale (…,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jun 2006,Thuraya,Thuraya,UAE,Algeria,Communications,Satellite telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,May 2006,Lesaffre,Lesaffre,France,Algeria,Food and Beverages,Grains & oilseed,Manufacturing,* $58.40m,* 429,New
+11,Apr 2006,Control Risks Group,Control Risks Group,United Kingdom,Algeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+12,Apr 2006,Lotto Sport Italia,Lotto,Italy,Algeria,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+13,Apr 2006,The Brinks,The Brinks,United States,Algeria,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+14,Mar 2006,Amiantit,Amiantit,Saudi Arabia,Algeria,Plastics,"Plastic pipes, pipe fit…",Manufacturing,$21.00m,* 180,New
+15,Mar 2006,Carrefour,Carrefour Market …,France,Algeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New

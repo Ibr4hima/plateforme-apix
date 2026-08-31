@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2006,Vietnam Oil and G…,PetroVietnam Inv…,Vietnam,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$4.30bn,"* 1,785",Expansion
+2,Feb 2006,LG Corp,LG Electronics,South Korea,Algeria,Consumer electronics,Household appliances,Manufacturing,$12.00m,* 166,New
+3,Feb 2006,Orascom Construc…,Orascom Construc…,Egypt,Algeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,$2.16bn,"* 2,682",New
+4,Jan 2006,Alain Afflelou,Alain Afflelou,France,Algeria,Consumer products,Other (Consumer pr…,Retail,* $36.90m,* 179,New
+5,Jan 2006,Tunisie Leasing,Tunisie Leasing,Tunisia,Algeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+6,Dec 2005,AtkinsRealis (SNC …,SNC Lavalin-Pridesa,Canada,Algeria,Business services,"Water, sewage & oth…",Recycling,$154.35m,* 140,New
+7,Dec 2005,BP (British Petrole…,BP (British Petrole…,United Kingdom,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$300.00m,* 125,New
+8,Dec 2005,Dubai Aluminium …,Dubal Aluminium,UAE,Algeria,Metals,Alumina & aluminiu…,Manufacturing,$5.40bn,"* 3,000",New
+9,Dec 2005,FedEx (Federal Ex…,FedEx (Federal Ex…,United States,Algeria,Transportation & Wa…,Postal service,"Logistics, Distributio…",* $45.70m,* 93,New
+10,Dec 2005,Global Environme…,Global Environme…,Bahamas,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 214,New
+11,Dec 2005,Marsh (Marsh & M…,Kroll,United States,Algeria,Software & IT services,"Software publishers,…",Business Services,* $13.80m,* 49,New
+12,Dec 2005,Mubadala Develop…,Mubadala Develop…,UAE,Algeria,"Coal, oil & gas",Other electric power …,Electricity,$900.00m,* 88,New
+13,Dec 2005,Wink Global,Wink Global,United States,Algeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+14,Nov 2005,BNP Paribas,Cetelem,France,Algeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Nov 2005,Clextral,Clextral,France,Algeria,Industrial equipment,Food product machin…,"Sales, Marketing & S…",* $0.90m,10,Expansion
