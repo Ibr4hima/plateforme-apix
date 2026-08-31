@@ -50,9 +50,13 @@ Quand c'est bon :
 bash scripts/publier.sh
 ```
 
-Le script pousse la branche, y amène `main`, revient sur la branche, et refuse
-de partir si quelque chose n'est pas commité. Le déploiement met deux à quatre
-minutes.
+Le script remet d'abord **votre** base à niveau (`maj_local.sh`), pousse la
+branche, y amène `main`, revient sur la branche — et refuse de partir si
+quelque chose n'est pas commité.
+
+Sur le serveur, l'action GitHub fait le reste sans intervention :
+reconstruction des images, **migrations appliquées**, imports fDi rejoués
+(`scripts/deploy.sh`). Deux à quatre minutes.
 
 ### Se remettre à jour en cours de route
 

@@ -9,8 +9,10 @@
 # `scripts/deploy.sh`). Tant qu'on ne pousse que la branche, rien ne part —
 # et c'est voulu : on met en ligne quand on a regardé, pas à chaque commit.
 #
-# Ce script fait donc les trois gestes, dans l'ordre et sans en oublier un :
-# pousser la branche, y amener `main`, revenir sur la branche.
+# Ce script fait donc les gestes dans l'ordre, sans en oublier un : remettre la
+# base LOCALE à niveau, pousser la branche, y amener `main`, revenir sur la
+# branche. Le reste se passe tout seul sur le serveur — `deploy.sh` y applique
+# les migrations et rejoue les imports.
 #
 # Il refuse de partir si le dossier de travail n'est pas propre : publier un
 # état qu'on n'a pas commité mettrait en ligne autre chose que ce qu'on a vu.
@@ -30,6 +32,17 @@ if [ -n "$(git status --porcelain)" ]; then
   echo
   echo "  Commitez-les d'abord — on ne publie que ce qui a été vu et commité."
   exit 1
+fi
+
+# La base locale d'abord : on publie ce qu'on vient de voir tourner, et une
+# migration oubliée en local se serait vue ici avant d'aller en ligne. L'étape
+# est sautée si Docker n'est pas lancé — publier reste alors possible, c'est
+# une opération purement Git.
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "${CONTENEUR_PG:-apix_postgres}"; then
+  echo "▸ Base locale"
+  bash scripts/maj_local.sh | sed 's/^/  /'
+else
+  gris "▸ Base locale ignorée (Docker n'est pas lancé)"
 fi
 
 echo "▸ Branche $BRANCHE → origin"
@@ -54,5 +67,7 @@ git checkout "$BRANCHE"
 
 vert "✅ Poussé sur main — le déploiement démarre."
 echo
+gris "Sur le serveur, sans rien faire de plus : images reconstruites, migrations"
+gris "appliquées, imports fDi rejoués (scripts/deploy.sh)."
 gris "Suivre : https://github.com/Ibr4hima/plateforme-apix/actions"
 gris "En ligne dans 2 à 4 minutes sur https://demo-plateforme-apix.com"
