@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+2,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+3,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+4,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+5,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+6,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+7,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+8,Jun 2008,Finibanco,Finibanco Angola,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+9,Jun 2008,Haitong Bank (Ba…,Haitong Bank (Ba…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+10,Jun 2008,Haitong Bank (Ba…,Escom,Portugal,Angola,Building materials,Cement & concrete p…,Manufacturing,$200.00m,600,New
+11,May 2008,Martifer,Martifer,Portugal,Angola,Metals,Steel products,Manufacturing,$5.00m,* 44,New
+12,Apr 2008,Mota Engil Group,Mota Engil Group,Portugal,Angola,Real estate,Real estate services,Construction,$602.72m,"* 3,000",New
+13,Mar 2008,BPC Bank,BPC Bank,Democratic Repu…,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+14,Mar 2008,Lonrho,Lonrho Springs,United Kingdom,Angola,Food and Beverages,Soft drinks & ice,"Logistics, Distributio…",* $17.30m,* 92,New
+15,Mar 2008,Lonrho,Lonrho Springs,United Kingdom,Angola,Food and Beverages,Soft drinks & ice,Manufacturing,$9.00m,* 33,New

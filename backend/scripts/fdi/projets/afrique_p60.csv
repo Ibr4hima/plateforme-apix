@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2007,Nampak,Nampak,South Africa,Angola,Metals,Alumina & aluminiu…,Manufacturing,$86.88m,* 767,New
+2,Oct 2007,Novonor (Odebrec…,Novonor (Odebrec…,Brazil,Angola,Renewable energy,Biomass power,Electricity,$250.00m,* 66,New
+3,Oct 2007,Secil,Secil,Portugal,Angola,Building materials,Cement & concrete p…,Manufacturing,$91.00m,314,New
+4,Sep 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $3.90m,9,New
+5,Sep 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $4.30m,10,New
+6,Sep 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $4.30m,10,New
+7,Sep 2007,BP (British Petrole…,BP (British Petrole…,United Kingdom,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.24bn,* 214,New
+8,Jun 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+9,Jun 2007,Melia Hotels Inter…,Melia Hotels Inter…,Spain,Angola,Hotels & tourism,Accommodation,Construction,$46.90m,* 120,New
+10,Mar 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $5.60m,13,New
+11,Mar 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $4.70m,11,New
+12,Mar 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $7.30m,17,New
+13,Mar 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $5.20m,12,New
+14,Feb 2007,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+15,Feb 2007,Chevron,Cabinda Gulf Oil C…,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Headquarters,* $14.70m,300,New

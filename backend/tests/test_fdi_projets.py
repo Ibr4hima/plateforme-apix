@@ -360,15 +360,27 @@ def test_le_releve_afrique_ne_reprend_pas_le_senegal():
             assert ligne["dest"].strip().lower() != "senegal", f"{chemin.name} L{ligne['ligne']}"
 
 
-def test_les_pays_du_releve_afrique_sont_tous_connus():
+def test_les_pays_du_releve_afrique_menent_tous_a_un_seul_pays():
     """Un pays hors correspondance entrerait en base sans rattachement : la
-    ligne existerait, mais aucun filtre ni aucun total ne la verrait passer."""
+    ligne existerait, mais aucun filtre ni aucun total ne la verrait passer.
+
+    La colonne Source est tronquée comme les autres — « Democratic Repu… » —
+    donc on applique ici la règle exacte de l'import : nom entier, sinon
+    préfixe menant à UN SEUL pays. Deux candidats est un échec au même titre
+    que zéro : trancher au hasard rattacherait la ligne au mauvais pays, sans
+    plus rien pour le signaler."""
     from app.services.fdi_projets import lire_lot_csv, lire_pays_csv, DOSSIER_PROJETS, normaliser
     connus = lire_pays_csv()
     for chemin in sorted(DOSSIER_PROJETS.glob("afrique_p*.csv")):
         for ligne in lire_lot_csv(chemin):
             for cote in ("source", "dest"):
-                assert normaliser(ligne[cote]) in connus, f"{chemin.name} L{ligne['ligne']} · {ligne[cote]}"
+                cle = normaliser(ligne[cote])
+                if cle in connus:
+                    continue
+                # Plusieurs graphies du MÊME pays (« Turkey », « Türkiye ») ne
+                # comptent que pour un : on compare des codes, pas des libellés.
+                codes = {c for libelle, c in connus.items() if libelle.startswith(cle)}
+                assert len(codes) == 1, f"{chemin.name} L{ligne['ligne']} · {ligne[cote]} → {codes or 'aucun'}"
 
 
 # ── Cascade des facettes : aucune ne se filtre elle-même ─────────────────────
