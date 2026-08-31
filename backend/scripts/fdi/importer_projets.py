@@ -31,6 +31,7 @@ from app.core.database import AsyncSessionLocal, engine  # noqa: E402
 from app.services.fdi_projets import (  # noqa: E402
     DOSSIER_PROJETS,
     LigneInvalide,
+    appliquer_alias_entreprises,
     importer_lot,
     lire_lot_csv,
 )
@@ -87,6 +88,14 @@ async def main() -> int:
     non_resolus: list[str] = []
     try:
         async with AsyncSessionLocal() as db:
+            # AVANT les lots : une graphie fautive déclarée doit déjà pointer
+            # vers la bonne entreprise quand la première ligne qui la porte
+            # est écrite, sinon l'import recrée la jumelle qu'on vient de
+            # défaire.
+            fusions = await appliquer_alias_entreprises(db, "import")
+            if fusions:
+                print(f"  {fusions} entreprise(s) fusionnée(s) (fdi_entreprises_alias.csv)")
+
             for chemin in fichiers:
                 libelle, perimetre, sens = decrire(chemin)
                 lignes = lire_lot_csv(chemin)

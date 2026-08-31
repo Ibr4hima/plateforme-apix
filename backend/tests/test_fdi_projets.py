@@ -405,3 +405,46 @@ def test_chaque_facette_s_exclut_a_son_tour():
                         ("types", "Extension")):
         assert f":{cle}" in _where(**{cle: valeur})
         assert f":{cle}" not in _where(sauf=cle, **{cle: valeur})
+
+
+# ── Entreprises : quand la source se contredit sur un nom complet ────────────
+
+def test_le_fichier_d_alias_entreprises_est_lisible():
+    """Une graphie fautive corrigée se versionne dans le dépôt, pas en base :
+    elle doit valoir sur une base neuve comme sur celle qui tourne."""
+    from app.services.fdi_projets import lire_alias_entreprises
+    lignes = lire_alias_entreprises()
+    assert ("G Environment", "G Environnement") in [(a, r) for a, r, _ in lignes]
+
+
+def test_chaque_fusion_porte_son_motif(tmp_path, monkeypatch):
+    """Une fusion sans raison écrite est une fusion que personne n'osera
+    défaire, et que personne ne saura justifier en réunion."""
+    from app.services import fdi_projets as m
+    f = tmp_path / "alias.csv"
+    f.write_text("alias,nom_retenu,motif\nA,B,\n", encoding="utf-8")
+    monkeypatch.setattr(m, "FICHIER_ALIAS_ENTREPRISES", f)
+    with pytest.raises(m.LigneInvalide, match="motif"):
+        m.lire_alias_entreprises()
+
+
+def test_un_alias_ne_peut_pas_se_viser_lui_meme(tmp_path, monkeypatch):
+    """« Nestle » → « Nestlé » ne se distinguent qu'à la normalisation près :
+    la fusion serait un tour sur place, et l'entreprise retenue deviendrait sa
+    propre jumelle à supprimer."""
+    from app.services import fdi_projets as m
+    f = tmp_path / "alias.csv"
+    f.write_text("alias,nom_retenu,motif\nNestle,NESTLE,pareil\n", encoding="utf-8")
+    monkeypatch.setattr(m, "FICHIER_ALIAS_ENTREPRISES", f)
+    with pytest.raises(m.LigneInvalide, match="se vise lui-même"):
+        m.lire_alias_entreprises()
+
+
+def test_les_deux_graphies_restent_verbatim_dans_le_releve():
+    """La correction se pose À CÔTÉ du relevé, jamais dedans : la page dit ce
+    que fDi a publié, et le jour où la source rectifie, on saura que le
+    rapprochement venait de nous."""
+    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    lignes = lire_lot_csv(DOSSIER_PROJETS / "afrique_p20.csv")
+    assert lignes[2]["entreprise"] == "G Environment"
+    assert lignes[3]["entreprise"] == "G Environnement"

@@ -191,6 +191,105 @@ def lire_pays_csv() -> dict[str, str]:
     return table
 
 
+FICHIER_ALIAS_ENTREPRISES = DOSSIER_PROJETS.parent / "fdi_entreprises_alias.csv"
+
+
+def lire_alias_entreprises() -> list[tuple[str, str, str]]:
+    """Les entreprises que la source nomme de deux façons — (alias, retenu, motif).
+
+    Distinct d'un nom TRONQUÉ, que l'écran d'arbitrage tranche : ici les deux
+    graphies sont complètes, et la source elle-même se contredit. « G
+    Environment » et « G Environnement » désignent le même bureau d'études,
+    même mois, même montant, même sous-secteur — mais rien dans la donnée ne
+    le dit, et l'import n'a pas à le deviner. La décision est humaine ; elle se
+    versionne ici, avec son motif, plutôt que de vivre dans une base.
+
+    Le relevé, lui, reste VERBATIM : on ne réécrit pas la page pour la rendre
+    cohérente. Corriger le CSV ferait perdre la trace de ce que la source a
+    réellement publié, et le jour où fDi rectifie, on ne saurait plus que
+    c'était nous.
+    """
+    if not FICHIER_ALIAS_ENTREPRISES.exists():
+        return []
+    lignes = []
+    with FICHIER_ALIAS_ENTREPRISES.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            alias, retenu = (l.get("alias") or "").strip(), (l.get("nom_retenu") or "").strip()
+            motif = (l.get("motif") or "").strip()
+            if not alias or not retenu:
+                raise LigneInvalide(
+                    f"{FICHIER_ALIAS_ENTREPRISES.name} : « alias » et « nom_retenu » "
+                    "sont tous deux obligatoires.")
+            if not motif:
+                # Une fusion sans raison écrite est une fusion que personne
+                # n'osera défaire, et que personne ne saura justifier en réunion.
+                raise LigneInvalide(
+                    f"{FICHIER_ALIAS_ENTREPRISES.name} : « {alias} » n'a pas de motif.")
+            if normaliser(alias) == normaliser(retenu):
+                raise LigneInvalide(
+                    f"{FICHIER_ALIAS_ENTREPRISES.name} : « {alias} » se vise lui-même.")
+            lignes.append((alias, retenu, motif))
+    return lignes
+
+
+async def appliquer_alias_entreprises(db: "AsyncSession", utilisateur: str | None = None) -> int:
+    """Fusionne les graphies déclarées. À lancer AVANT d'importer les lots.
+
+    Deux temps, parce que la base peut être dans deux états. Sur une base
+    neuve, il suffit de poser l'alias : `_entreprise` le consultera avant de
+    créer quoi que ce soit. Sur une base où l'import est déjà passé, une
+    entreprise jumelle existe déjà et porte des projets — il faut les
+    rapatrier, puis la supprimer. Sans ce second temps, la correction ne
+    prendrait effet qu'après une remise à zéro.
+
+    Rejouable : au second passage il n'y a plus de jumelle, et l'alias est déjà
+    là.
+    """
+    from sqlalchemy import text
+    fusions = 0
+    for alias, retenu, _motif in lire_alias_entreprises():
+        cle_alias, cle_retenu = normaliser(alias), normaliser(retenu)
+
+        # L'entreprise retenue, créée si elle n'existe pas encore.
+        r = (await db.execute(text(
+            "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle_retenu})).first()
+        if not r:
+            r = (await db.execute(text(
+                "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_par) "
+                "VALUES (:n, :c, 'complet', :u) RETURNING id"),
+                {"n": retenu, "c": cle_retenu, "u": utilisateur})).first()
+        garde = r.id
+
+        # La jumelle née de la graphie fautive, s'il y en a une.
+        jumelle = (await db.execute(text(
+            "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle_alias})).first()
+        if jumelle and jumelle.id != garde:
+            for colonne in ("entreprise_id", "parent_id"):
+                await db.execute(text(
+                    f"UPDATE fdi_projets SET {colonne} = :garde WHERE {colonne} = :j"),
+                    {"garde": garde, "j": jumelle.id})
+            # Les alias déjà tranchés vers la jumelle suivent — sauf ceux qui
+            # existent déjà côté retenu, que la contrainte d'unicité refuserait.
+            await db.execute(text(
+                "UPDATE fdi_entreprise_alias a SET entreprise_id = :garde "
+                " WHERE a.entreprise_id = :j AND NOT EXISTS ("
+                "   SELECT 1 FROM fdi_entreprise_alias b"
+                "    WHERE b.alias_normalise = a.alias_normalise AND b.entreprise_id = :garde)"),
+                {"garde": garde, "j": jumelle.id})
+            await db.execute(text("DELETE FROM fdi_entreprises WHERE id = :j"), {"j": jumelle.id})
+            fusions += 1
+
+        # L'alias lui-même : c'est lui que `_entreprise` consultera au prochain
+        # import, avant même de chercher un nom identique.
+        await db.execute(text(
+            "INSERT INTO fdi_entreprise_alias (alias_brut, alias_normalise, tronque, "
+            "                                  entreprise_id, decide_par) "
+            "VALUES (:b, :c, false, :e, :u) ON CONFLICT (alias_normalise, entreprise_id) "
+            "DO NOTHING"),
+            {"b": alias, "c": cle_alias, "e": garde, "u": utilisateur})
+    return fusions
+
+
 FICHIER_VARIANTES = DOSSIER_PROJETS.parent / "fdi_variantes.csv"
 
 FAMILLES_VARIANTES = {"secteur": "secteurs", "sous_secteur": "sous",
