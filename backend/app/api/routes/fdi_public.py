@@ -34,9 +34,10 @@ router = APIRouter(prefix="/fdi/public", tags=["fdi"])
 # comptages — en dépendent, ce qui évite qu'une facette filtre sur une colonne
 # et compte sur une autre.
 FACETTES = {
-    "secteurs":  "COALESCE(s.libelle_fr, p.secteur_brut)",
-    "activites": "COALESCE(a.libelle_fr, p.activite_brut)",
-    "types":     "COALESCE(t.libelle_fr, p.type_brut)",
+    "secteurs":      "COALESCE(s.libelle_fr, p.secteur_brut)",
+    "sous_secteurs": "COALESCE(ss.libelle_fr, p.sous_secteur_brut)",
+    "activites":     "COALESCE(a.libelle_fr, p.activite_brut)",
+    "types":         "COALESCE(t.libelle_fr, p.type_brut)",
 }
 
 JOINTURES = """
@@ -51,14 +52,20 @@ JOINTURES = """
 """
 
 
-def _filtres(observe: str, pays, annee_min, annee_max, secteurs, activites, types,
-             recherche, sauf: str | None = None) -> tuple[list[str], dict]:
+def _filtres(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
+             activites, types, recherche, sauf: str | None = None) -> tuple[list[str], dict]:
     """Les conditions du périmètre demandé, éventuellement privées d'une facette.
 
     `sauf` sert au filtrage EN CASCADE : pour compter les options d'une
     facette, on applique tous les filtres SAUF le sien. Sans cela, cocher
     « Communications » réduirait la liste des secteurs à « Communications »
     seul, et l'on ne pourrait plus en ajouter un deuxième.
+
+    Secteur et sous-secteur forment UNE hiérarchie, pas deux facettes : ils se
+    combinent par un OU, jamais par un ET. L'écran envoie d'un côté les
+    secteurs retenus en entier, de l'autre les sous-secteurs retenus dans les
+    secteurs où l'on est descendu ; les additionner par un ET aurait vidé la
+    sélection dès qu'on précise un secteur tout en en gardant un autre entier.
     """
     where, params = ["1 = 1"], {}
     if pays:
@@ -68,7 +75,18 @@ def _filtres(observe: str, pays, annee_min, annee_max, secteurs, activites, type
         where.append("p.annee >= :a0"); params["a0"] = annee_min
     if annee_max is not None:
         where.append("p.annee <= :a1"); params["a1"] = annee_max
-    for cle, brut in (("secteurs", secteurs), ("activites", activites), ("types", types)):
+
+    if sauf != "secteurs":
+        branches = []
+        for cle, brut in (("secteurs", secteurs), ("sous_secteurs", sous_secteurs)):
+            valeurs = _liste(brut)
+            if valeurs:
+                branches.append(f"{FACETTES[cle]} = ANY(:{cle})")
+                params[cle] = valeurs
+        if branches:
+            where.append(f"({' OR '.join(branches)})")
+
+    for cle, brut in (("activites", activites), ("types", types)):
         valeurs = _liste(brut)
         if valeurs and cle != sauf:
             where.append(f"{FACETTES[cle]} = ANY(:{cle})")
@@ -87,6 +105,7 @@ async def perimetre(
     annee_min: int | None = None,
     annee_max: int | None = None,
     secteurs: str | None = None,
+    sous_secteurs: str | None = None,
     activites: str | None = None,
     types: str | None = None,
     recherche: str | None = None,
@@ -104,7 +123,7 @@ async def perimetre(
 
     async def compter(expr: str, sauf: str | None):
         where, params = _filtres(observe, pays, annee_min, annee_max,
-                                 secteurs, activites, types, recherche, sauf)
+                                 secteurs, sous_secteurs, activites, types, recherche, sauf)
         return (await db.execute(text(f"""
             SELECT {expr} AS nom, count(*) AS nb
             {joint} WHERE {' AND '.join(where)} AND {expr} IS NOT NULL
@@ -123,6 +142,17 @@ async def perimetre(
     lignes_pays = [r for r in await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
                    if r.nom in complets]
     lignes_sec = await compter(FACETTES["secteurs"], "secteurs")
+
+    # Les sous-secteurs portent le nom de leur secteur : l'écran les emboîte
+    # sous lui, et un même libellé — « Other » vit sous vingt-quatre secteurs
+    # chez fDi — ne se confond pas avec son homonyme.
+    where_ss, params_ss = _filtres(observe, pays, annee_min, annee_max,
+                                   secteurs, sous_secteurs, activites, types, recherche, "secteurs")
+    lignes_ss = (await db.execute(text(f"""
+        SELECT {FACETTES["sous_secteurs"]} AS nom, {FACETTES["secteurs"]} AS secteur,
+               count(*) AS nb
+        {joint} WHERE {' AND '.join(where_ss)} AND {FACETTES["sous_secteurs"]} IS NOT NULL
+        GROUP BY 1, 2 ORDER BY count(*) DESC, 1"""), params_ss)).fetchall()
     lignes_act = await compter(FACETTES["activites"], "activites")
     lignes_typ = await compter(FACETTES["types"], "types")
 
@@ -146,6 +176,7 @@ async def perimetre(
         "sens_disponibles": dispo,
         "pays": [{"nom": r.nom, "nb": r.nb} for r in lignes_pays],
         "secteurs": [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
+        "sous_secteurs": [{"nom": r.nom, "secteur": r.secteur, "nb": r.nb} for r in lignes_ss],
         "activites": [{"nom": r.nom, "nb": r.nb} for r in lignes_act],
         "types": [{"nom": r.nom, "nb": r.nb} for r in lignes_typ],
     }
@@ -158,6 +189,7 @@ async def projets(
     annee_min: int | None = None,
     annee_max: int | None = None,
     secteurs: str | None = None,
+    sous_secteurs: str | None = None,
     activites: str | None = None,
     types: str | None = None,
     recherche: str | None = None,
@@ -176,7 +208,7 @@ async def projets(
     """
     observe, partenaire = _sens(sens)
     where, params = _filtres(observe, pays, annee_min, annee_max,
-                             secteurs, activites, types, recherche)
+                             secteurs, sous_secteurs, activites, types, recherche)
 
     # Une seule expression de jointure, réutilisée par toutes les agrégations :
     # deux formulations différentes finiraient par diverger, et deux chiffres

@@ -33,10 +33,16 @@ import { demarrerRedimension } from "@/lib/redimension";
 import { API, BadgePeriode, fmtNombre } from "./partage";
 
 type Compte = { nom: string; nb: number };
+type SousCompte = Compte & { secteur: string };
+/** Un sous-secteur retenu, avec le secteur d'où il vient. Le couple est porté
+    par l'état plutôt que retrouvé dans le périmètre : la liste des filtres
+    sert à CONSTRUIRE la requête du périmètre, elle ne peut pas en dépendre. */
+type ChoixSous = { secteur: string; nom: string };
 type Perimetre = {
   sens: string; annees: [number | null, number | null]; total_projets: number;
   perimetres_complets: string[]; sens_disponibles: string[];
-  pays: Compte[]; secteurs: Compte[]; activites: Compte[]; types: Compte[];
+  pays: Compte[]; secteurs: Compte[]; sous_secteurs: SousCompte[];
+  activites: Compte[]; types: Compte[];
 };
 type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
 type Projet = {
@@ -84,6 +90,19 @@ const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
     facettes se lisent comme une seule liste et l'on cherche où finit l'une,
     où commence l'autre. */
 const Filet = () => <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
+
+const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: "5px 8px",
+  borderRadius: 7, border: "none", cursor: "pointer", background: "transparent",
+  textAlign: "left" as const, width: "100%" } as const;
+
+const Case = ({ coche }: { coche: boolean }) => (
+  <span style={{ width: 12, height: 12, borderRadius: 4, flexShrink: 0,
+    border: `1.5px solid ${coche ? "var(--bleu)" : "var(--bordure-forte)"}`,
+    background: coche ? "var(--bleu)" : "transparent", display: "flex",
+    alignItems: "center", justifyContent: "center" }}>
+    {coche && <span style={{ color: "var(--carte)", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+  </span>
+);
 
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
 
@@ -143,6 +162,99 @@ function Facette({ titre, options, choix, setChoix }: {
   );
 }
 
+/** Le secteur et ses sous-secteurs, emboîtés.
+
+    Cocher un secteur le retient en entier ; ses sous-secteurs s'ouvrent alors
+    en dessous, et en cocher un ou plusieurs précise la sélection À
+    L'INTÉRIEUR de ce secteur. Le secteur reste coché : il indique où l'on se
+    trouve, pas ce qui est retenu.
+
+    D'où la règle d'envoi, qui vaut d'être dite : un secteur où l'on est
+    descendu n'est PAS transmis en entier, seuls ses sous-secteurs le sont. La
+    requête additionne ensuite les deux listes par un OU — « tout Textiles, et
+    dans les Communications seulement la téléphonie filaire » — là où un ET
+    aurait vidé la sélection. */
+function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec, choixSous, setChoixSous }: {
+  secteurs: Compte[]; sousSecteurs: SousCompte[];
+  choixSec: string[]; setChoixSec: (v: string[]) => void;
+  choixSous: ChoixSous[]; setChoixSous: (v: ChoixSous[]) => void;
+}) {
+  const visibles = [...secteurs];
+  for (const c of choixSec) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
+  if (visibles.length === 0) return null;
+
+  const basculerSecteur = (nom: string) => {
+    if (choixSec.includes(nom)) {
+      setChoixSec(choixSec.filter(x => x !== nom));
+      // Refermer un secteur emporte les sous-secteurs qu'on y avait retenus :
+      // les laisser filtrer depuis une section repliée serait invisible.
+      setChoixSous(choixSous.filter(x => x.secteur !== nom));
+    } else setChoixSec([...choixSec, nom]);
+  };
+  const basculerSous = (secteur: string, nom: string) =>
+    setChoixSous(choixSous.some(x => x.nom === nom && x.secteur === secteur)
+      ? choixSous.filter(x => !(x.nom === nom && x.secteur === secteur))
+      : [...choixSous, { secteur, nom }]);
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={TITRE_SS}>Secteur</span>
+        {(choixSec.length > 0 || choixSous.length > 0) && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+            background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>
+            {choixSous.length || choixSec.length}
+          </span>
+        )}
+      </div>
+      <div style={{ maxHeight: 260, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
+        paddingRight: 2, marginBottom: 18 }}>
+        {visibles.map(o => {
+          const ouvert = choixSec.includes(o.nom);
+          const dedans = sousSecteurs.filter(s => s.secteur === o.nom);
+          return (
+            <div key={o.nom}>
+              <button onClick={() => basculerSecteur(o.nom)} title={o.nom} style={LIGNE_FACETTE}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                <Case coche={ouvert} />
+                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: ouvert ? 700 : 400,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
+                <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                  fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+              </button>
+
+              {ouvert && dedans.length > 0 && (
+                <div style={{ marginLeft: 10, paddingLeft: 10, marginBottom: 6,
+                  borderLeft: "2px solid rgb(var(--bleu-rgb) / 0.20)" }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
+                    textTransform: "uppercase" as const, color: "var(--orange)",
+                    padding: "4px 8px 2px" }}>Sous-secteur</p>
+                  {dedans.map(ss => {
+                    const sel = choixSous.some(x => x.nom === ss.nom && x.secteur === o.nom);
+                    return (
+                      <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom} style={LIGNE_FACETTE}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                        <Case coche={sel} />
+                        <span style={{ fontSize: 11.5, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{ss.nom}</span>
+                        <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                          fontVariantNumeric: "tabular-nums" }}>{ss.nb}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <Filet />
+    </div>
+  );
+}
+
 /** Une base annoncée, pas encore chargée : dire ce qu'elle contiendra vaut
     mieux qu'un onglet muet. */
 function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
@@ -172,6 +284,7 @@ export default function OngletFdi() {
   const [sens, setSens] = useState<"destination" | "source">("destination");
   const [pays, setPays] = useState<string | null>(null);
   const [secteurs, setSecteurs] = useState<string[]>([]);
+  const [sousSecteurs, setSousSecteurs] = useState<ChoixSous[]>([]);
   const [activites, setActivites] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [recherche, setRecherche] = useState("");
@@ -202,6 +315,9 @@ export default function OngletFdi() {
     if (p.get("a0")) setAnneeMin(Number(p.get("a0")));
     if (p.get("a1")) setAnneeMax(Number(p.get("a1")));
     if (liste("sec").length) setSecteurs(liste("sec"));
+    const sous = liste("ssec").map(v => v.split("::"))
+      .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom }));
+    if (sous.length) setSousSecteurs(sous);
     if (liste("act").length) setActivites(liste("act"));
     if (liste("typ").length) setTypes(liste("typ"));
     if (p.get("q")) setRecherche(p.get("q") as string);
@@ -211,6 +327,18 @@ export default function OngletFdi() {
   // Le périmètre dépend du sens : les pays proposés sont ceux qui existent
   // DANS CE SENS. Basculer de destination à source ne doit pas laisser un pays
   // qui n'y a aucun projet.
+  // Ce que la hiérarchie sectorielle transmet : les secteurs retenus EN ENTIER
+  // d'un côté, les sous-secteurs retenus de l'autre. Un secteur où l'on est
+  // descendu sort de la première liste — sinon le OU de la requête le
+  // ramènerait tout entier, et la précision serait sans effet.
+  const selectionSectorielle = useMemo(() => {
+    const precises = new Set(sousSecteurs.map(s => s.secteur));
+    return {
+      secteurs: secteurs.filter(s => !precises.has(s)).join("|"),
+      sous_secteurs: sousSecteurs.map(s => s.nom).join("|"),
+    };
+  }, [secteurs, sousSecteurs]);
+
   // Les facettes cascadent : le périmètre est redemandé à chaque changement de
   // filtre, et chaque facette y est comptée sous les AUTRES filtres.
   const urlPerimetre = useMemo(() => {
@@ -221,11 +349,11 @@ export default function OngletFdi() {
     // activités et les types qui n'ont rien annoncé pendant ces années-là.
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
-    if (secteurs.length) p.set("secteurs", secteurs.join("|"));
+    for (const [cle, v] of Object.entries(selectionSectorielle)) if (v) p.set(cle, v);
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     return `${API}/fdi/public/perimetre?${p}`;
-  }, [sens, pays, anneeMinD, anneeMaxD, secteurs, activites, types]);
+  }, [sens, pays, anneeMinD, anneeMaxD, selectionSectorielle, activites, types]);
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
@@ -258,19 +386,19 @@ export default function OngletFdi() {
     if (pays) p.set("pays", pays);
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
-    if (secteurs.length) p.set("secteurs", secteurs.join("|"));
+    for (const [cle, v] of Object.entries(selectionSectorielle)) if (v) p.set(cle, v);
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return `${API}/fdi/public/projets?${p}`;
-  }, [sens, pays, anneeMinD, anneeMaxD, secteurs, activites, types, rechercheD]);
+  }, [sens, pays, anneeMinD, anneeMaxD, selectionSectorielle, activites, types, rechercheD]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
 
 
   const bornes = per?.annees ?? [null, null];
-  const nbFiltres = secteurs.length + activites.length + types.length
+  const nbFiltres = secteurs.length + sousSecteurs.length + activites.length + types.length
     + (rechercheD.trim() ? 1 : 0)
     + ((anneeMin !== bornes[0] || anneeMax !== bornes[1]) ? 1 : 0);
   // L'état de la page s'écrit dans l'URL — vue, pays, période, facettes,
@@ -289,14 +417,15 @@ export default function OngletFdi() {
     poser("a0", anneeMin != null && anneeMin !== bornes[0] ? String(anneeMin) : null);
     poser("a1", anneeMax != null && anneeMax !== bornes[1] ? String(anneeMax) : null);
     poser("sec", secteurs.join("|"));
+    poser("ssec", sousSecteurs.map(s => `${s.secteur}::${s.nom}`).join("|"));
     poser("act", activites.join("|"));
     poser("typ", types.join("|"));
     poser("q", rechercheD.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
-  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD, bornes]);
+  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types, rechercheD, bornes]);
 
   const reinit = () => {
-    setSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
+    setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
     setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
   };
 
@@ -475,7 +604,9 @@ export default function OngletFdi() {
                   </div>
                 )}
 
-                <Facette titre="Secteur" options={per?.secteurs ?? []} choix={secteurs} setChoix={setSecteurs} />
+                <FacetteSecteurs secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
+                  choixSec={secteurs} setChoixSec={setSecteurs}
+                  choixSous={sousSecteurs} setChoixSous={setSousSecteurs} />
                 <Facette titre="Activité prévue" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
                 <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
               </>
