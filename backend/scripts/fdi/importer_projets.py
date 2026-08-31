@@ -39,7 +39,10 @@ from app.services.fdi_projets import (  # noqa: E402
 # senegal_source_p01.csv → Sénégal, source, page 1
 NOM = re.compile(r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?P<sens>_source)?_p(?P<page>\d+)$")
 
-PERIMETRES = {"senegal": "Sénégal"}
+# Le périmètre écrit dans le nom du fichier, et son libellé en base. Il peut
+# désigner un PAYS ou une ZONE : « Dest = Africa » rend complet chacun des pays
+# africains, et la route publique le résout sur le continent de ref_pays.
+PERIMETRES = {"senegal": "Sénégal", "afrique": "Afrique"}
 
 # Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
 # rapports d'import et dans l'administration.

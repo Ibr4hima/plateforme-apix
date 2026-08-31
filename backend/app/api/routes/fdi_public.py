@@ -135,9 +135,16 @@ async def perimetre(
     # comme périmètres à part entière laisserait croire que la plateforme
     # connaît tout ce que la France annonce, alors qu'elle n'en connaît que la
     # part sénégalaise.
-    complets = {r.perimetre for r in (await db.execute(text(
+    # Un périmètre est un PAYS (« Sénégal ») ou une ZONE (« Afrique ») : un
+    # relevé « Dest = Africa » rend complet chacun des pays africains, pas une
+    # ligne « Afrique » qui n'existe dans aucun référentiel. Les deux se
+    # résolvent d'une seule requête, sur le nom ou sur le continent.
+    releves = [r.perimetre for r in (await db.execute(text(
         "SELECT DISTINCT perimetre FROM fdi_lots_import WHERE sens = :s AND perimetre IS NOT NULL"),
-        {"s": sens if sens in COTE else "destination"})).fetchall()}
+        {"s": sens if sens in COTE else "destination"})).fetchall()]
+    complets = {r.nom_fr for r in (await db.execute(text(
+        "SELECT nom_fr FROM ref_pays WHERE nom_fr = ANY(:p) OR continent = ANY(:p)"),
+        {"p": releves})).fetchall()} if releves else set()
 
     lignes_pays = [r for r in await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
                    if r.nom in complets]
