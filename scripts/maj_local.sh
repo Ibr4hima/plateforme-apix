@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Mise à jour de l'environnement LOCAL, après un « git pull ».
+# Mise à jour de l'environnement LOCAL.
 #
 # Une seule commande, toujours la même, dans n'importe quel ordre de besoins :
 #
 #     bash scripts/maj_local.sh
 #
-# Elle applique les migrations qui manquent, puis rejoue les imports de
-# référentiels fDi. Tout y est IDEMPOTENT : la relancer deux fois de suite ne
-# fait rien la seconde fois. Il n'y a donc jamais à se demander « est-ce que
-# j'ai déjà passé celle-là ? » — c'est précisément ce que ce script sait.
+# Elle RÉCUPÈRE d'abord les nouveautés du dépôt, puis applique les migrations
+# qui manquent, puis rejoue les imports de référentiels et de projets fDi. Tout
+# y est IDEMPOTENT : la relancer deux fois de suite ne fait rien la seconde
+# fois. Il n'y a donc jamais à se demander « est-ce que j'ai déjà passé
+# celle-là ? » — c'est précisément ce que ce script sait.
+#
+# LE « git pull » EN FAIT PARTIE, et c'est délibéré. Les pages de projets sont
+# versionnées dans le dépôt, mais l'écran, lui, lit la BASE : entre les deux, il
+# faut un import. Tant que les deux gestes étaient séparés, en oublier un
+# donnait exactement la mauvaise conclusion — « les nouvelles pages ne sont pas
+# arrivées » — alors qu'elles n'avaient simplement pas été chargées. Un geste
+# qu'on peut oublier finit par être oublié : on le supprime.
+#
+#     bash scripts/maj_local.sh --sans-pull   # rester sur le code en place
 #
 # Ce qu'elle ne fait PAS, volontairement : démarrer ou redémarrer le back et le
 # front. Ils tournent dans vos terminaux, elle n'a pas à s'en mêler ; elle
@@ -23,6 +33,25 @@ cd "$(dirname "$0")/.."
 
 vert() { printf "\033[0;32m%s\033[0m\n" "$1"; }
 gris() { printf "\033[0;90m%s\033[0m\n" "$1"; }
+
+PULL=1
+[ "${1:-}" = "--sans-pull" ] && PULL=0
+
+# ── 0. Le dépôt ──────────────────────────────────────────────────────────────
+# Avance rapide seulement : si la branche locale a divergé, c'est un travail en
+# cours qu'une fusion silencieuse abîmerait. On le dit et on continue avec le
+# code en place — remettre la base à niveau reste utile.
+if [ "$PULL" = "1" ]; then
+  echo "▸ Dépôt"
+  BRANCHE=$(git rev-parse --abbrev-ref HEAD)
+  if [ -n "$(git status --porcelain)" ]; then
+    gris "  modifications locales en cours — récupération ignorée"
+  elif git pull --ff-only origin "$BRANCHE" >/dev/null 2>&1; then
+    gris "  $BRANCHE à jour ($(git rev-parse --short HEAD))"
+  else
+    gris "  récupération impossible (branche divergente ou réseau) — on continue"
+  fi
+fi
 
 [ -f .env ] || { echo "✗ .env introuvable à la racine du dépôt."; exit 1; }
 set -a; source .env; set +a
@@ -75,6 +104,28 @@ echo "▸ Nomenclature fDi"
 ( cd backend && python scripts/fdi/importer.py )
 echo "▸ Projets fDi"
 ( cd backend && python scripts/fdi/importer_projets.py )
+
+# ── 3. Ce que l'écran proposera ──────────────────────────────────────────────
+# Le même calcul que la route publique : un pays n'est offert au filtre que si
+# un lot rend son périmètre exhaustif — directement (« Dest = Sénégal ») ou par
+# sa zone (« Dest = Africa » via ref_pays.continent). L'afficher ici évite de
+# chercher dans le navigateur ce que le terminal savait déjà : une page
+# importée mais absente de cette liste est un rattachement manquant, pas un
+# import raté.
+echo "▸ Pays proposés au filtre public"
+psql_c -tA -F ' · ' -c "
+  WITH releves AS (SELECT DISTINCT perimetre, sens FROM fdi_lots_import WHERE perimetre IS NOT NULL),
+       -- DISTINCT : le Sénégal est rendu complet DEUX fois, par son propre
+       -- relevé et par celui de l'Afrique. Sans lui, la jointure doublerait
+       -- ses projets — l'erreur même contre laquelle tout ceci existe.
+       complets AS (SELECT DISTINCT r.sens, p.nom_fr FROM ref_pays p JOIN releves r
+                      ON p.nom_fr = r.perimetre OR p.continent = r.perimetre)
+  SELECT c.sens, p.nom_fr, count(*)
+    FROM fdi_projets pr
+    JOIN fdi_lots_import l ON l.id = pr.lot_id
+    JOIN ref_pays p ON p.id = CASE l.sens WHEN 'source' THEN pr.pays_source_id ELSE pr.pays_dest_id END
+    JOIN complets c ON c.nom_fr = p.nom_fr AND c.sens = l.sens
+   GROUP BY 1, 2 ORDER BY 3 DESC;" | sed 's/^/  /'
 
 vert "✅ Base à jour."
 echo

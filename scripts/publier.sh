@@ -40,7 +40,9 @@ fi
 # une opération purement Git.
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "${CONTENEUR_PG:-apix_postgres}"; then
   echo "▸ Base locale"
-  bash scripts/maj_local.sh | sed 's/^/  /'
+  # --sans-pull : publier, c'est mettre en ligne CE QU'ON VIENT DE VOIR. Aller
+  # chercher des commits distants ici publierait du code qu'on n'a pas regardé.
+  bash scripts/maj_local.sh --sans-pull | sed 's/^/  /'
 else
   gris "▸ Base locale ignorée (Docker n'est pas lancé)"
 fi

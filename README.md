@@ -16,10 +16,9 @@ celui-ci démarre sur une base à laquelle il manque une migration.
 docker compose up -d
 ```
 
-**2.** Récupérer le code et remettre la base à niveau :
+**2.** Récupérer le code et remettre la base à niveau — une seule commande :
 
 ```bash
-git pull
 bash scripts/maj_local.sh
 ```
 
@@ -60,14 +59,27 @@ reconstruction des images, **migrations appliquées**, imports fDi rejoués
 
 ### Se remettre à jour en cours de route
 
-Les deux commandes de l'étape 2, dans un terminal à part. Le front se recharge
-seul ; le back n'a besoin d'être relancé que lorsqu'une route a changé.
+La commande de l'étape 2, dans un terminal à part. Le front se recharge seul ;
+le back n'a besoin d'être relancé que lorsqu'une route a changé.
 
-`scripts/maj_local.sh` applique les migrations qui manquent, puis rejoue les
-imports de référentiels. Tout y est idempotent : la relancer ne fait rien la
-seconde fois. Il n'y a donc jamais à se demander « ai-je déjà passé cette
-migration ? » — c'est ce que le script sait, en suivant la table
-`schema_migrations`. Il exige que Docker tourne, et le dit clairement sinon.
+`scripts/maj_local.sh` récupère les nouveautés du dépôt, applique les
+migrations qui manquent, puis rejoue les imports de référentiels **et de
+projets**. Tout y est idempotent : la relancer ne fait rien la seconde fois. Il
+n'y a donc jamais à se demander « ai-je déjà passé cette migration ? » — c'est
+ce que le script sait, en suivant la table `schema_migrations`. Il exige que
+Docker tourne, et le dit clairement sinon.
+
+Le `git pull` est **dans** le script, et ce n'est pas un détail de confort. Les
+pages de projets fDi sont versionnées dans le dépôt, mais l'écran lit la
+**base** : entre les deux il faut un import. Tant que les deux gestes étaient
+séparés, en oublier un menait à la mauvaise conclusion — « les nouvelles pages
+ne sont pas arrivées » — alors qu'elles n'avaient pas été chargées.
+
+Le script finit d'ailleurs en listant **les pays que le filtre public
+proposera**, avec leur nombre de projets. C'est le contrôle qui ferme la
+boucle : ce qui n'apparaît pas là n'apparaîtra pas non plus à l'écran.
+
+Pour travailler sans rien récupérer : `bash scripts/maj_local.sh --sans-pull`.
 
 Il ne redémarre volontairement ni le back ni le front : ils tournent dans vos
 terminaux. En production, `scripts/deploy.sh` enchaîne les mêmes étapes après
