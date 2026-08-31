@@ -44,6 +44,16 @@ NOM = re.compile(r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?P<sens>_source)?_p
 # africains, et la route publique le résout sur le continent de ref_pays.
 PERIMETRES = {"senegal": "Sénégal", "afrique": "Afrique"}
 
+# Ce qu'une ZONE ne doit PAS reprendre, parce que c'est déjà relevé pays par
+# pays. Le Sénégal est dans l'Afrique : sans cette garde, ses projets
+# entreraient une seconde fois par le relevé continental et tous les totaux
+# seraient faux — deux fois le nombre de projets, deux fois les montants.
+#
+# Le contrôle est fait ICI, à l'import, et non laissé à la vigilance de qui
+# transcrit : sur mille cent pages, une ligne oubliée est une certitude, et
+# elle ne se verrait qu'au moment où quelqu'un citerait le total en réunion.
+EXCLUS = {"Afrique": {"senegal"}}
+
 # Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
 # rapports d'import et dans l'administration.
 VERBE = {"destination": "reçoit", "source": "investit"}
@@ -79,8 +89,23 @@ async def main() -> int:
         async with AsyncSessionLocal() as db:
             for chemin in fichiers:
                 libelle, perimetre, sens = decrire(chemin)
+                lignes = lire_lot_csv(chemin)
+
+                # Un pays déjà relevé pour lui-même n'a rien à faire dans le
+                # relevé de sa zone.
+                interdits = EXCLUS.get(perimetre, set())
+                if interdits and sens == "destination":
+                    fautives = [l for l in lignes
+                                if (l.get("dest") or "").strip().lower() in interdits]
+                    if fautives:
+                        raise LigneInvalide(
+                            f"{chemin.name} : "
+                            + ", ".join(f"ligne {l['ligne']} (dest « {l['dest']} »)" for l in fautives[:5])
+                            + f" — ce pays est déjà relevé pour lui-même, le reprendre dans "
+                              f"« {perimetre} » compterait ses projets deux fois. Retirez ces lignes.")
+
                 rapport = await importer_lot(db, libelle, perimetre,
-                                             lire_lot_csv(chemin), "import", sens)
+                                             lignes, "import", sens)
                 total += rapport["lignes"]
                 preserves += rapport["preserves"]
                 arbitrer += rapport["entreprises_a_arbitrer"]
