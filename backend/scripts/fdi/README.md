@@ -210,3 +210,20 @@ Ce qui ne se résout pas n'est jamais deviné : la ligne entre en base avec son
 texte brut, et l'import le signale. Les noms d'entreprise tronqués se tranchent
 à l'écran (administration → Projets fDi Markets → Entreprises), les
 descriptions s'y saisissent en série.
+
+### Le sens d'un relevé
+
+`senegal_p01.csv` est relevé sous **Dest = Senegal**, `senegal_source_p01.csv`
+sous **Source = Senegal**. La distinction n'est pas cosmétique : **un lot ne
+rend exhaustif que le couple (pays, sens) qu'il a interrogé.**
+
+Les pays d'origine qui apparaissent dans un relevé « Dest = Senegal » — France,
+Turquie, Mali… — n'y figurent que pour ce qu'ils ont envoyé **au Sénégal**. La
+France annonce des centaines de projets ailleurs dans le monde ; la compter
+depuis ce lot donnerait une image fausse de la France, exacte seulement du
+couple France → Sénégal.
+
+La base le sait : `fdi_lots_import.sens` (migration 135), et la page publique
+ne propose au filtre que les pays dont le périmètre est complet dans le sens
+demandé. La bascule « Reçoit / Investit » n'apparaît qu'une fois les deux
+relevés présents.

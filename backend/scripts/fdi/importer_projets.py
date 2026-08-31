@@ -3,11 +3,19 @@
 
     docker compose exec -T backend python scripts/fdi/importer_projets.py
 
-Un fichier `projets/<perimetre>_pNN.csv` = un lot. Le découpage suit celui de
-la source : fDi pagine, nous relevons page par page, et chaque page se rejoue
-seule. Rejouable à chaque déploiement — les descriptions saisies à l'écran et
-les entreprises arbitrées à la main sont conservées quand la ligne décrit
-toujours le même projet (cf. `importer_lot`).
+Un fichier `projets/<perimetre>[_source]_pNN.csv` = un lot. Le découpage suit
+celui de la source : fDi pagine, nous relevons page par page, et chaque page se
+rejoue seule. Rejouable à chaque déploiement — les descriptions saisies à
+l'écran et les entreprises arbitrées à la main sont conservées quand la ligne
+décrit toujours le même projet (cf. `importer_lot`).
+
+LE SENS FAIT PARTIE DU PÉRIMÈTRE. `senegal_p01.csv` est relevé sous
+« Dest = Senegal » ; `senegal_source_p01.csv` sous « Source = Senegal ». La
+distinction n'est pas cosmétique : un lot ne rend exhaustif que le couple
+(pays, sens) qu'il a interrogé. Les pays d'origine qui apparaissent dans le
+premier n'y figurent que pour ce qu'ils ont envoyé au Sénégal — les compter
+comme des périmètres à part entière donnerait une image fausse (cf. migration
+135).
 
 À lancer APRÈS `importer.py` : la résolution des secteurs, sous-secteurs,
 activités et types s'appuie sur la nomenclature.
@@ -27,21 +35,33 @@ from app.services.fdi_projets import (  # noqa: E402
     lire_lot_csv,
 )
 
-# senegal_p01.csv → périmètre « senegal », page 1.
-NOM = re.compile(r"^(?P<perimetre>[a-z0-9_]+)_p(?P<page>\d+)$")
+# senegal_p01.csv        → Sénégal, destination, page 1
+# senegal_source_p01.csv → Sénégal, source, page 1
+NOM = re.compile(r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?P<sens>_source)?_p(?P<page>\d+)$")
 
 PERIMETRES = {"senegal": "Sénégal"}
 
+# Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
+# rapports d'import et dans l'administration.
+VERBE = {"destination": "reçoit", "source": "investit"}
 
-def decrire(chemin: Path) -> tuple[str, str]:
-    """(libellé du lot, périmètre) — le libellé est la clé d'idempotence."""
+
+def decrire(chemin: Path) -> tuple[str, str, str]:
+    """(libellé du lot, périmètre, sens) — le libellé est la clé d'idempotence.
+
+    Le sens entre dans le libellé : sans lui, la page 1 des projets reçus et
+    la page 1 des projets émis porteraient le même nom, et le second import
+    écraserait le premier.
+    """
     m = NOM.match(chemin.stem)
     if not m:
         raise LigneInvalide(
-            f"{chemin.name} : nom de fichier attendu « perimetre_pNN.csv ». "
-            "Le libellé du lot en dépend, et avec lui la préservation des saisies.")
+            f"{chemin.name} : nom de fichier attendu « perimetre_pNN.csv » ou "
+            "« perimetre_source_pNN.csv ». Le libellé du lot en dépend, et avec "
+            "lui la préservation des saisies.")
     perimetre = PERIMETRES.get(m["perimetre"], m["perimetre"].replace("_", " ").title())
-    return f"{perimetre} · page {int(m['page']):02d}", perimetre
+    sens = "source" if m["sens"] else "destination"
+    return f"{perimetre} {VERBE[sens]} · page {int(m['page']):02d}", perimetre, sens
 
 
 async def main() -> int:
@@ -55,16 +75,16 @@ async def main() -> int:
     try:
         async with AsyncSessionLocal() as db:
             for chemin in fichiers:
-                libelle, perimetre = decrire(chemin)
+                libelle, perimetre, sens = decrire(chemin)
                 rapport = await importer_lot(db, libelle, perimetre,
-                                             lire_lot_csv(chemin), "import")
+                                             lire_lot_csv(chemin), "import", sens)
                 total += rapport["lignes"]
                 preserves += rapport["preserves"]
                 arbitrer += rapport["entreprises_a_arbitrer"]
                 for ligne, champ, brut, verdict in rapport["non_resolus"]:
                     non_resolus.append(f"{libelle} L{ligne} · {champ} « {brut} » → {verdict}")
                 suffixe = f", {rapport['supprimes']} ligne(s) retirée(s)" if rapport["supprimes"] else ""
-                print(f"  {libelle:<22} {rapport['lignes']:>3} lignes{suffixe}")
+                print(f"  {libelle:<30} {rapport['lignes']:>3} lignes{suffixe}")
             await db.commit()
     except LigneInvalide as e:
         # Rien n'est écrit : une page illisible s'arrête avant la base plutôt

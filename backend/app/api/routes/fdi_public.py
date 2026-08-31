@@ -110,10 +110,27 @@ async def perimetre(
             {joint} WHERE {' AND '.join(where)} AND {expr} IS NOT NULL
             GROUP BY 1 ORDER BY count(*) DESC, 1"""), params)).fetchall()
 
-    lignes_pays = await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
+    # LES PAYS PROPOSÉS SONT CEUX DONT LE PÉRIMÈTRE EST COMPLET dans ce sens.
+    # Un relevé « Dest = Sénégal » fait apparaître la France, la Turquie, le
+    # Mali… mais seulement pour ce qu'ils ont envoyé au Sénégal : les proposer
+    # comme périmètres à part entière laisserait croire que la plateforme
+    # connaît tout ce que la France annonce, alors qu'elle n'en connaît que la
+    # part sénégalaise.
+    complets = {r.perimetre for r in (await db.execute(text(
+        "SELECT DISTINCT perimetre FROM fdi_lots_import WHERE sens = :s AND perimetre IS NOT NULL"),
+        {"s": sens if sens in COTE else "destination"})).fetchall()}
+
+    lignes_pays = [r for r in await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
+                   if r.nom in complets]
     lignes_sec = await compter(FACETTES["secteurs"], "secteurs")
     lignes_act = await compter(FACETTES["activites"], "activites")
     lignes_typ = await compter(FACETTES["types"], "types")
+
+    # Les sens qui ont au moins un périmètre relevé. L'écran s'en sert pour
+    # n'offrir la bascule que le jour où elle a un sens : proposer « Source »
+    # sans lot source afficherait une liste de pays vide.
+    dispo = [r.sens for r in (await db.execute(text(
+        "SELECT DISTINCT sens FROM fdi_lots_import ORDER BY sens"))).fetchall()]
 
     # Les bornes de la période restent celles du jeu complet : un curseur dont
     # les extrémités bougent à chaque clic devient impossible à manœuvrer.
@@ -124,6 +141,9 @@ async def perimetre(
         "sens": sens if sens in COTE else "destination",
         "annees": [bornes.a0, bornes.a1],
         "total_projets": bornes.n,
+        # Ce que la plateforme peut affirmer sans réserve, dans ce sens.
+        "perimetres_complets": sorted(complets),
+        "sens_disponibles": dispo,
         "pays": [{"nom": r.nom, "nb": r.nb} for r in lignes_pays],
         "secteurs": [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
         "activites": [{"nom": r.nom, "nb": r.nb} for r in lignes_act],

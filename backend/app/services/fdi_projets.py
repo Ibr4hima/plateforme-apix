@@ -345,12 +345,18 @@ async def _entreprise(db: "AsyncSession", brut: str | None, utilisateur: str | N
 
 
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
-                       lignes: list[dict], utilisateur: str | None = None) -> dict:
+                       lignes: list[dict], utilisateur: str | None = None,
+                       sens: str = "destination") -> dict:
     """Écrit un lot de projets. Rejouable, et respectueux des saisies humaines.
 
     Le lot est remplacé, jamais fusionné ligne à ligne avec l'existant : sans
     identifiant de projet chez fDi, rien ne permettrait de rapprocher deux
     lignes jumelles sans risquer d'en perdre une.
+
+    Le SENS accompagne le lot : un relevé « Dest = Senegal » ne rend exhaustif
+    que le Sénégal comme destination, jamais les pays d'origine qui y figurent.
+    Sans cette mention, une page finirait par présenter « 56 projets français »
+    alors que la base n'en connaît que 56 vers le Sénégal.
 
     Mais « remplacer » ne veut pas dire « effacer ce qu'un humain a saisi ». À
     rang égal ET signature inchangée, la ligne décrit le même projet : ses
@@ -372,14 +378,14 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     if lot:
         lot_id = lot.id
         await db.execute(text(
-            "UPDATE fdi_lots_import SET perimetre = :p, importe_le = now(), importe_par = :u, "
-            "nb_lignes = :n WHERE id = :i"),
-            {"p": perimetre, "u": utilisateur, "n": len(lignes), "i": lot_id})
+            "UPDATE fdi_lots_import SET perimetre = :p, sens = :s, importe_le = now(), "
+            "importe_par = :u, nb_lignes = :n WHERE id = :i"),
+            {"p": perimetre, "s": sens, "u": utilisateur, "n": len(lignes), "i": lot_id})
     else:
         lot_id = (await db.execute(text(
-            "INSERT INTO fdi_lots_import (libelle, perimetre, source, importe_par, nb_lignes) "
-            "VALUES (:l, :p, 'saisie', :u, :n) RETURNING id"),
-            {"l": libelle, "p": perimetre, "u": utilisateur, "n": len(lignes)})).first().id
+            "INSERT INTO fdi_lots_import (libelle, perimetre, sens, source, importe_par, nb_lignes) "
+            "VALUES (:l, :p, :s, 'saisie', :u, :n) RETURNING id"),
+            {"l": libelle, "p": perimetre, "s": sens, "u": utilisateur, "n": len(lignes)})).first().id
 
     # Ce que le lot contenait déjà, pour savoir quoi préserver.
     avant = {r.ligne: dict(r._mapping) for r in (await db.execute(text(
