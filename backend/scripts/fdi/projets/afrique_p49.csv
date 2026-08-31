@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2011,Ecobank Transnati…,Ecobank Transnati…,Togo,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,Expansion
+2,May 2011,Deutsche Post,DHL Global Forwa…,Germany,Angola,Transportation & Wa…,Freight/Distribution …,Research & Develop…,* $24.70m,* 138,New
+3,Apr 2011,Punto FA,Mango,Spain,Angola,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+4,Apr 2011,Standard Bank Gr…,Standard Bank An…,South Africa,Angola,Financial services,Retail banking,Business Services,* $9.60m,* 9,New
+5,Mar 2011,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $3.40m,8,New
+6,Mar 2011,Sonae,Sonae,Portugal,Angola,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+7,Feb 2011,Shoprite,Shoprite,South Africa,Angola,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+8,Jan 2011,CEVA Group,CEVA Logistics,United Kingdom,Angola,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+9,Jan 2011,Nelt,Nelt,Serbia,Angola,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $27.90m,100,New
+10,Dec 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+11,Dec 2010,Nissan,Zhengzhou Nissan…,Japan,Angola,Automotive compon…,Other motor vehicle …,Manufacturing,* $22.70m,* 511,New
+12,Nov 2010,Banco Comercial P…,Banco Millennium …,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+13,Nov 2010,Chevron,Cabinda Gulf Oil C…,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Headquarters,$70.00m,"* 1,424",Expansion
+14,Nov 2010,Eurosemillas,Eurosemillas,Spain,Angola,Food and Beverages,Crop production,Manufacturing,$10.00m,100,New
+15,Nov 2010,KBR,KBR,United States,Angola,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New

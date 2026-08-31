@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2012,Lonrho,Fastjet,United Kingdom,Angola,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+2,Aug 2012,Nestle,Nestle,Switzerland,Angola,Food and Beverages,Coffee & tea,Manufacturing,* $34.50m,* 100,Expansion
+3,Aug 2012,Shoprite,Shoprite,South Africa,Angola,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+4,Jul 2012,Exxon Mobil,Esso Exploration A…,United States,Angola,"Coal, oil & gas",Oil & gas extraction,Extraction,* $2.49bn,* 230,New
+5,Jun 2012,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $2.70m,9,New
+6,May 2012,Amrop Executive …,Amrop Executive …,Belgium,Angola,Business services,Employment services,Business Services,* $6.80m,* 15,New
+7,May 2012,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+8,May 2012,Banco Comercial P…,Banco Millennium …,Portugal,Angola,Financial services,Retail banking,Business Services,* $1.20m,4,New
+9,Apr 2012,Asturmadi,Asturmadi,Spain,Angola,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+10,Apr 2012,Basali Ba Liseli Re…,Basali Ba Liseli Re…,Zambia,Angola,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $45.70m,* 93,New
+11,Apr 2012,Neuerth Group,Neuerth Group,UAE,Angola,Metals,Other (Metals),Recycling,$20.00m,* 27,New
+12,Mar 2012,Cuatrecasas,Cuatrecasas,Spain,Angola,Business services,Legal services,Business Services,* $1.50m,8,New
+13,Mar 2012,Provantage Media,Provantage Media,South Africa,Angola,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+14,Feb 2012,Commerzbank,Commerzbank,Germany,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+15,Feb 2012,Standard Bank Gr…,Standard Bank An…,South Africa,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New

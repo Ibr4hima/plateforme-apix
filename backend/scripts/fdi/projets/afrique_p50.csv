@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2010,Mercedes-Benz Gr…,Mercedes-Benz,Germany,Angola,Automotive OEM,Heavy duty trucks,Manufacturing,$200.00m,"* 1,611",New
+2,Oct 2010,Banco Comercial P…,Banco Millennium …,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+3,Oct 2010,SBM Offshore,SBM Offshore,Netherlands,Angola,Non-automotive tran…,Ships & boats,Manufacturing,$100.00m,* 768,Expansion
+4,Oct 2010,Wings Global Travel,Wings Global Travel,South Africa,Angola,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+5,Sep 2010,Monberg & Thorsen,Tintas Bondex An…,Denmark,Angola,Chemicals,"Paints, coatings, add…",Manufacturing,$5.00m,* 7,New
+6,Aug 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+7,Aug 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $3.90m,9,New
+8,Aug 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+9,Aug 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+10,Aug 2010,Banco BPI,Banco de Foment…,Portugal,Angola,Financial services,Retail banking,Business Services,* $11.00m,* 9,New
+11,Aug 2010,SABMiller,SABMiller,United Kingdom,Angola,Food and Beverages,Breweries,Manufacturing,* $56.20m,* 222,New
+12,Aug 2010,SABMiller,SABMiller,United Kingdom,Angola,Food and Beverages,Breweries,"Logistics, Distributio…",$1.50m,* 4,New
+13,Aug 2010,SABMiller,SABMiller,United Kingdom,Angola,Food and Beverages,Breweries,Manufacturing,* $56.20m,* 222,Expansion
+14,Aug 2010,SABMiller,SABMiller,United Kingdom,Angola,Food and Beverages,Soft drinks & ice,Manufacturing,* $56.20m,* 222,New
+15,Aug 2010,Shoprite,Shoprite,South Africa,Angola,Food and Beverages,Food & beverage ret…,Retail,$13.00m,100,New
