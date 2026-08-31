@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2018,Elsewedy Electric …,Elsewedy Electric …,Egypt,Algeria,Electronic components,Communication & en…,Manufacturing,$1.00m,* 9,New
+2,Nov 2018,Ford Motor Compa…,Ford Motor Compa…,United States,Algeria,Automotive OEM,Automobiles,Manufacturing,$200.00m,"* 1,181",New
+3,Sep 2018,OpinionWay,OpinionWay,France,Algeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+4,Aug 2018,Applus+,Applus+,Spain,Algeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+5,Aug 2018,Digital Virgo,Digital Virgo,France,Algeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+6,May 2018,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Algeria,Chemicals,Basic chemicals,Manufacturing,$1.40bn,"* 1,853",New
+7,Mar 2018,Huawei Technologi…,Huawei Technologi…,China,Algeria,Communications,Communications equ…,Manufacturing,* $5.60m,100,New
+8,Mar 2018,Qatar General Ins…,Qatar General Ins…,Qatar,Algeria,Real estate,Commercial & institu…,Construction,* $704.50m,* 578,New
+9,Mar 2018,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Algeria,Chemicals,"Paints, coatings, add…",Manufacturing,* $529.30m,* 455,New
+10,Feb 2018,BLS International …,BLS International …,India,Algeria,Business services,Other support services,Business Services,* $27.80m,* 38,New
+11,Feb 2018,Heineken Holding,Heineken,Netherlands,Algeria,Food and Beverages,Breweries,Manufacturing,* $45.80m,* 263,New
+12,Feb 2018,Samsung Group,Samsung Group,South Korea,Algeria,Consumer electronics,Household appliances,Manufacturing,* $7.50m,130,New
+13,Feb 2018,Sirien,Sirien,Belgium,Algeria,Industrial equipment,Measuring & control …,Education & Training,* $5.50m,* 35,New
+14,Feb 2018,Tinno Mobile Tech…,Wiko Mobile,China,Algeria,Communications,Communications equ…,Manufacturing,* $5.60m,100,New
+15,Feb 2018,Vicky Foods (Dulc…,Vicky Foods (Dulc…,Spain,Algeria,Food and Beverages,Bakeries & tortillas,Manufacturing,$5.53m,20,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2017,Ipsen Pharmaceut…,Ipsen Pharmaceut…,France,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$29.55m,150,New
+2,Dec 2017,Repsol SA,Repsol SA,Spain,Algeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $299.70m,* 230,Expansion
+3,Dec 2017,Samsung Group,Samsung Group,South Korea,Algeria,Communications,Communications equ…,Manufacturing,* $12.30m,220,New
+4,Dec 2017,Tosyali Holding,Tosyali Holding,Turkey,Algeria,Metals,Steel products,Manufacturing,* $647.10m,* 443,New
+5,Nov 2017,GE Aerospace (Ge…,Baker Hughes,United States,Algeria,Industrial equipment,"Agriculture, construc…",Manufacturing,$45.00m,* 419,New
+6,Nov 2017,Groupe PSA (PSA …,Groupe PSA (PSA …,France,Algeria,Automotive OEM,Automobiles,Manufacturing,$116.71m,* 689,New
+7,Nov 2017,LG Corp,LG Corp,South Korea,Algeria,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+8,Oct 2017,Dar Al Dawa,Dar Al Dawa,Jordan,Algeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$25.00m,150,New
+9,Sep 2017,BNP Paribas,BNP Paribas El Dj…,France,Algeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Aug 2017,Grupo Sese,Grupo Sese,Spain,Algeria,Transportation & Wa…,Truck transportation,"Sales, Marketing & S…",* $34.90m,100,New
+11,Jun 2017,Arafarma Group,Arafarma Group,Spain,Algeria,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $0.49m,3,New
+12,Jun 2017,Vallourec,Vallourec,France,Algeria,Metals,Steel products,"Sales, Marketing & S…",* $1.90m,* 8,New
+13,May 2017,SSAB,SSAB,Sweden,Algeria,Metals,Steel products,"Sales, Marketing & S…",* $1.90m,* 8,New
+14,Apr 2017,Boyner Sanayi,Boyner Sanayi,Turkey,Algeria,Textiles,Textile product mills,Manufacturing,$16.00m,400,New
+15,Apr 2017,Nippon Rika,Nippon Rika Vince…,Japan,Algeria,Electronic components,All other electrical e…,Manufacturing,$10.90m,50,New
