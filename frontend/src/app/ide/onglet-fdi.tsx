@@ -178,6 +178,11 @@ export default function OngletFdi() {
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
   const rechercheD = useDebounced(recherche, 300);
+  // La période se stabilise avant d'être interrogée : un curseur émet une
+  // valeur par pixel parcouru, et le périmètre comme les projets se
+  // redemanderaient à chaque pas.
+  const anneeMinD = useDebounced(anneeMin, 300);
+  const anneeMaxD = useDebounced(anneeMax, 300);
 
   // Reprise de l'état porté par l'URL, une seule fois au montage : c'est par
   // là que revient le lecteur qui ferme le rapport.
@@ -204,11 +209,16 @@ export default function OngletFdi() {
   const urlPerimetre = useMemo(() => {
     const p = new URLSearchParams();
     if (pays) p.set("pays", pays);
+    // La PÉRIODE entre dans la cascade au même titre que les facettes :
+    // restreindre 2015-2019 doit retirer des listes les secteurs, les
+    // activités et les types qui n'ont rien annoncé pendant ces années-là.
+    if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
+    if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
     if (secteurs.length) p.set("secteurs", secteurs.join("|"));
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     return `${API}/fdi/public/perimetre?${p}`;
-  }, [pays, secteurs, activites, types]);
+  }, [pays, anneeMinD, anneeMaxD, secteurs, activites, types]);
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
@@ -231,14 +241,14 @@ export default function OngletFdi() {
   const url = useMemo(() => {
     const p = new URLSearchParams();
     if (pays) p.set("pays", pays);
-    if (anneeMin != null) p.set("annee_min", String(anneeMin));
-    if (anneeMax != null) p.set("annee_max", String(anneeMax));
+    if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
+    if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
     if (secteurs.length) p.set("secteurs", secteurs.join("|"));
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return `${API}/fdi/public/projets?${p}`;
-  }, [pays, anneeMin, anneeMax, secteurs, activites, types, rechercheD]);
+  }, [pays, anneeMinD, anneeMaxD, secteurs, activites, types, rechercheD]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
