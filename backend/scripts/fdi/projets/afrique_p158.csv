@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2025,Sunshell Group,Sunshell Group,China,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$37.00m,"3,000",New
+2,Jul 2025,Zhejiang Charming,Zhejiang Charming,China,Egypt,Textiles,Textile product mills,Manufacturing,$28.50m,"3,000",New
+3,Jul 2025,Zhuzhou Kibing G…,Zhuzhou Kibing G…,China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,* $665.70m,"3,000",New
+4,Jun 2025,BUPA (British Unit…,BUPA (British Unit…,United Kingdom,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+5,Jun 2025,Comfily,Comfily,Hong Kong,Egypt,Textiles,Apparel accessories …,Manufacturing,$20.00m,"2,000",New
+6,Jun 2025,eClerx Services,eClerx Services,India,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+7,Jun 2025,GE Healthcare,GE Healthcare,United States,Egypt,Medical devices,Electromedical and E…,Manufacturing,* $30.00m,* 145,New
+8,Jun 2025,Scatec AS,Scatec AS,Norway,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+9,Jun 2025,Sunrev Solar,Sunrev Solar,China,Egypt,Electronic components,All other electrical e…,Manufacturing,$200.00m,"1,800",New
+10,Jun 2025,Ulusoy Tekstil,Ulusoy Tekstil,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$18.00m,855,New
+11,Jun 2025,VXI Global Solutio…,VXI Global Solutio…,United States,Egypt,Business services,Business support ser…,Customer Contact C…,$135.00m,"4,000",Expansion
+12,May 2025,ADQ (Abu Dhabi …,Abu Dhabi Nation…,UAE,Egypt,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,New
+13,May 2025,Borna Membrane …,Borna Membrane …,Canada,Egypt,Industrial equipment,All other industrial m…,Manufacturing,$40.00m,* 372,New
+14,May 2025,Chery Automobile,Chery Automobile,China,Egypt,Automotive OEM,Automobiles,Manufacturing,$123.00m,"1,500",New
+15,May 2025,Ctrip,Trip.com,China,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New

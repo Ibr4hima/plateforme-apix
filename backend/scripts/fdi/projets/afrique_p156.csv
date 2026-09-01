@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2025,Changzhou Ramada,Changzhou Ramada,China,Egypt,Textiles,Furniture & related p…,Manufacturing,$22.60m,"1,500",New
+2,Aug 2025,Chaoyang Longma…,Chaoyang Longma…,China,Egypt,Rubber,Tyres,Manufacturing,$130.00m,"1,500",New
+3,Aug 2025,Cisco Systems,Cisco Systems,United States,Egypt,Communications,Communications equ…,Education & Training,* $11.10m,* 137,Co-Location
+4,Aug 2025,Dunya Consultants,Dunya Consultants,Pakistan,Egypt,Business services,Educational support …,Business Services,* $27.80m,* 37,New
+5,Aug 2025,EVERFAR,EVERFAR,China,Egypt,Textiles,Textile product mills,Manufacturing,$130.00m,"3,200",New
+6,Aug 2025,F-Tex International,F-Tex International,China,Egypt,Textiles,Textile product mills,Manufacturing,$30.00m,400,New
+7,Aug 2025,Intellias,Intellias,Ukraine,Egypt,Software & IT services,Custom computer pr…,Business Services,* $3.20m,40,New
+8,Aug 2025,JA Solar,JA Solar,China,Egypt,Electronic components,All other electrical e…,Manufacturing,$220.00m,841,New
+9,Aug 2025,Mubadala Investm…,Infinity Power,UAE,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+10,Aug 2025,Murphy,Murphy,Greece,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$4.00m,"1,000",New
+11,Aug 2025,Nil Orme,Nil Orme,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$35.00m,"2,000",New
+12,Aug 2025,Sahinler Holding,Sahinler Egypt,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$41.51m,"* 1,124",New
+13,Aug 2025,Sahinler Holding,Sahinler Egypt,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,* $42.50m,"* 1,555",New
+14,Aug 2025,Sahinler Holding,Sahinler Egypt,Turkey,Egypt,Hotels & tourism,Accommodation,Construction,$60.00m,* 150,New
+15,Aug 2025,Sailun Jinyu Grou…,Sailun Jinyu Grou…,China,Egypt,Rubber,Tyres,Manufacturing,$1.00bn,"* 3,000",New

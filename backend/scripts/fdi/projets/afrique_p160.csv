@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2025,Befar Group,Befar Group,China,Egypt,Chemicals,Basic chemicals,Manufacturing,$500.00m,800,New
+2,Apr 2025,Capgemini,Capgemini,France,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 199,New
+3,Apr 2025,CyberKnight,CyberKnight,UAE,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 199,New
+4,Apr 2025,Habib Al Mulla an…,Habib Al Mulla an…,UAE,Egypt,Business services,Legal services,Business Services,* $27.80m,* 37,New
+5,Apr 2025,IGT Solutions,IGT Solutions,India,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+6,Apr 2025,Majid Al Futtaim G…,Majid Al Futtaim P…,UAE,Egypt,Real estate,Commercial & institu…,Construction,$309.23m,* 462,Expansion
+7,Apr 2025,Mapei,Mapei,Italy,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $261.70m,* 525,New
+8,Apr 2025,Platformance,Platformance,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+9,Mar 2025,All for One Group,All for One Group,Germany,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+10,Mar 2025,Azadea Group,Azadea Group,Lebanon,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Mar 2025,Daikin Industries,Daikin Industries,Japan,Egypt,Industrial equipment,"Ventilation, heating, …",Headquarters,* $10.10m,* 54,New
+12,Mar 2025,Deli Group,Deli Group,China,Egypt,Consumer products,Office supplies (exce…,Manufacturing,$282.58m,"2,200",New
+13,Mar 2025,Di Seta,Di Seta,China,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$40.00m,"1,200",New
+14,Mar 2025,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Headquarters,* $27.80m,* 86,New
+15,Mar 2025,Seal Superyachts,Seal Superyachts,Thailand,Egypt,Non-automotive tran…,Ships & boats,"Sales, Marketing & S…",* $2.50m,* 16,New
