@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2014,Standard Bank Gr…,Standard Bank Gr…,South Africa,Central African R…,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,May 2012,SOMDIAA Group,SUCAF RCA,France,Central African R…,Food and Beverages,Sugar & confectionar…,Manufacturing,* $45.80m,* 263,Expansion
+3,Jan 2010,Gras Savoye,Gras Savoye,France,Central African R…,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+4,Nov 2009,CLG (Centurion La…,CLG (Centurion La…,Equatorial Guinea,Central African R…,Business services,Legal services,Business Services,* $27.80m,* 38,New
+5,Jun 2007,BTC Networks,Bintel,Saudi Arabia,Central African R…,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+6,Feb 2007,Ecobank Transnati…,Ecobank Transnati…,Togo,Central African R…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Sep 2025,Global South Utilit…,Global South Utilit…,UAE,Chad,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+8,May 2025,Qair,Qair,France,Chad,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+9,May 2025,Qair,Qair,France,Chad,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+10,Jan 2024,Mediterranean Shi…,Mediterranean Shi…,Switzerland,Chad,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,May 2022,Afriland First Bank,Afriland First Bank,Cameroon,Chad,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Chad,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+13,Mar 2021,Cotexa,Cotexa,Gabon,Chad,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+14,Nov 2020,Merl Solar Technol…,Merl Solar Technol…,Austria,Chad,Renewable energy,Solar electric power,Electricity,$198.63m,* 62,New
+15,May 2019,CPL Transformatio…,CPL Transformatio…,China,Chad,Food and Beverages,Grains & oilseed,Manufacturing,$5.03m,80,New
