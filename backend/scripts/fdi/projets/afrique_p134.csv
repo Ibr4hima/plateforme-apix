@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2023,Kamaz,Kamaz,Russia,Democratic Repu…,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+2,Mar 2023,China Minmetals,MMG,China,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $516.40m,* 717,Expansion
+3,Mar 2023,Kenya Commercia…,Kenya Commercia…,Kenya,Democratic Repu…,Financial services,Retail banking,Business Services,* $760.70m,"2,500",Expansion
+4,Feb 2023,Eurasian Resource…,Eurasian Resource…,Luxembourg,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$1.80bn,"* 2,685",Expansion
+5,Feb 2023,Ivanhoe Mines,Ivanhoe Mines,Canada,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$380.00m,* 567,New
+6,Jan 2023,Alfajiri Group,Alfajiri Energy,Canada,Democratic Repu…,"Coal, oil & gas",Oil & gas extraction,Extraction,* $730.30m,* 230,New
+7,Jan 2023,HDF Energy (Hydr…,HDF Energy (Hydr…,France,Democratic Repu…,Renewable energy,Other electric power …,Electricity,* $206.10m,* 57,New
+8,Jan 2023,Royal Rock Forte,Winds Exploration…,United States,Democratic Repu…,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$500.00m,* 92,New
+9,Jan 2023,Symbion Power,RED,United States,Democratic Repu…,"Coal, oil & gas",Oil & gas extraction,Extraction,$300.00m,* 103,New
+10,Oct 2022,Twiga Foods,Twiga Foods,Kenya,Democratic Repu…,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+11,Aug 2022,Koolboks,Koolboks,France,Democratic Repu…,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+12,Aug 2022,Visa International,Visa International,United States,Democratic Repu…,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,May 2022,Ivanhoe Mines,Ivanhoe Mines,Canada,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$2.91bn,"* 3,000",Expansion
+14,Mar 2022,Ivanhoe Mines,Ivanhoe Mines,Canada,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $516.40m,* 717,Expansion
+15,Feb 2022,Bennani & Associés,Bennani & Associés,Morocco,Democratic Repu…,Business services,Legal services,Business Services,* $0.50m,3,New

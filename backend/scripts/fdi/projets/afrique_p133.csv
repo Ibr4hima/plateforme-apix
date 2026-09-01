@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2024,Barrick Gold,Barrick Gold,Canada,Democratic Repu…,Metals,Gold ore & silver ore…,Extraction,* $516.40m,* 717,Expansion
+2,Oct 2024,BDO Global Coord…,BDO Global Coord…,Belgium,Democratic Repu…,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+3,Oct 2024,Lapaire,Lapaire,Côte d Ivoire,Democratic Repu…,Healthcare,Offices of physicians…,Business Services,* $2.70m,* 39,New
+4,Oct 2024,Soleos Solar Energy,Soleos Solar Energy,India,Democratic Repu…,Renewable energy,Solar electric power,Electricity,$200.00m,500,New
+5,Aug 2024,Jaipuria Group,Varun Beverages,India,Democratic Repu…,Food and Beverages,Soft drinks & ice,Manufacturing,$50.00m,* 214,New
+6,Aug 2024,Jaipuria Group,Varun Beverages,India,Democratic Repu…,Food and Beverages,Soft drinks & ice,Manufacturing,* $116.80m,500,New
+7,Jun 2024,Inventa Internatio…,Inventa Internatio…,Portugal,Democratic Repu…,Business services,Legal services,Business Services,* $27.80m,* 38,New
+8,May 2024,Alphabet Inc,Google,United States,Democratic Repu…,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+9,Feb 2024,Canada Rare Earth,Simba Essential M…,Canada,Democratic Repu…,Metals,Other (Metals),"Sales, Marketing & S…",* $1.90m,* 8,New
+10,Feb 2024,CIM Group,SkyPower,United States,Democratic Repu…,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+11,Jan 2024,Martech Technolo…,AMASS Fintech,Belize,Democratic Repu…,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+12,Oct 2023,GreenMax Capital,GreenMax Capital,United States,Democratic Repu…,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Aug 2023,Tantalex,United Cominiere,Canada,Democratic Repu…,Metals,Other metal ore mini…,Extraction,* $516.40m,* 717,New
+14,Jul 2023,Prima Secure,Prima Secure,South Africa,Democratic Repu…,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+15,May 2023,Perenco,Perenco,France,Democratic Repu…,"Coal, oil & gas",Oil & gas extraction,Extraction,* $730.30m,* 230,New

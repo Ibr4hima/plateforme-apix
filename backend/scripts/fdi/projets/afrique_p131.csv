@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2009,Nestle,Nestle,Switzerland,Côte d Ivoire,Food and Beverages,Coffee & tea,Research & Develop…,* $16.80m,* 41,New
+2,Feb 2009,MicroCred,MicroCred Côte d'…,France,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Feb 2009,Randgold Resources,Randgold Resources,United Kingdom,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,$2.76m,* 4,New
+4,Nov 2008,Perseus Mining,Perseus Mining,Australia,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+5,Jun 2008,Avvashya Group,Ecu Worldwide,India,Côte d Ivoire,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+6,Apr 2008,Zetes,Zetes,Belgium,Côte d Ivoire,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $2.80m,35,New
+7,Mar 2008,Access Bank,Access Bank,Nigeria,Côte d Ivoire,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jan 2008,Ridge Mining,Amara Mining (Clu…,United Kingdom,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+9,Nov 2007,Cargill,Cargill CI (Côte d'…,United States,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,* $19.90m,* 260,New
+10,Jul 2007,Barry Callebaut,Barry Callebaut,Switzerland,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,* $9.20m,60,Expansion
+11,Sep 2006,Aljazeera (Al Jaze…,Al Jazeera Interna…,Qatar,Côte d Ivoire,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+12,Jul 2006,e& (Etisalat Group),Atlantique Telecom,UAE,Côte d Ivoire,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+13,Aug 2005,Canadian Natural …,Canadian Natural …,Canada,Côte d Ivoire,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+14,Jul 2005,Etruscan Resources,Etruscan Resources,Canada,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",Expansion
+15,May 2003,Swiss Reinsurance…,Swiss Reinsurance…,Switzerland,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
