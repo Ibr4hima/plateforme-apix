@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2025,Siemens,Siemens Healthin…,Germany,Egypt,Medical devices,Electromedical and E…,Research & Develop…,* $30.40m,* 63,New
+2,Mar 2025,Siemens,Siemens Gamesa …,Germany,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+3,Feb 2025,e& (Etisalat Group),Etisalat Egypt,UAE,Egypt,Communications,Wireless telecommu…,Customer Contact C…,* $9.70m,* 606,New
+4,Feb 2025,Emaar Properties,Emaar Misr,UAE,Egypt,Real estate,Commercial & institu…,Construction,$18.58m,* 28,New
+5,Feb 2025,Groupe Acticall,Foundever,France,Egypt,Business services,Business support ser…,Customer Contact C…,* $7.90m,"* 1,000",Expansion
+6,Feb 2025,Groupe Acticall,Foundever,France,Egypt,Business services,Business support ser…,Customer Contact C…,* $23.80m,"* 3,000",New
+7,Feb 2025,Groupe Acticall,Foundever,France,Egypt,Business services,Business support ser…,Customer Contact C…,* $7.90m,"* 1,000",Expansion
+8,Feb 2025,Gruppo San Donato,Gruppo San Donato,Italy,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $30.00m,* 112,New
+9,Feb 2025,Gruppo San Donato,Gruppo San Donato,Italy,Egypt,Healthcare,General medical & s…,Construction,* $70.00m,* 246,New
+10,Feb 2025,Les Laboratoires S…,Servier,France,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $34.20m,* 205,Expansion
+11,Feb 2025,Mixel Inc,Mixel Inc,United States,Egypt,Semiconductors,Semiconductors & ot…,"Sales, Marketing & S…",* $3.90m,* 15,Expansion
+12,Feb 2025,Neomedica,Neomedica,Serbia,Egypt,Chemicals,Basic chemicals,Manufacturing,* $261.70m,* 525,New
+13,Feb 2025,Sanofi,Sanofi,France,Egypt,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,Expansion
+14,Feb 2025,Savino Del Bene,Savino Del Bene,Italy,Egypt,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+15,Feb 2025,Schneider Electric,Aveva Group,France,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,Co-Location

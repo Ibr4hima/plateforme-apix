@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2024,NEC,NEC,Japan,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+2,Nov 2024,Presman & Colard…,Presman & Colard…,United Kingdom,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+3,Nov 2024,Reachware,Reachware,Saudi Arabia,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+4,Nov 2024,Siemag Weiss,SMS,Germany,Egypt,Metals,Iron & steel mills & f…,Manufacturing,$1.05bn,"1,000",New
+5,Nov 2024,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$35.00m,* 948,New
+6,Nov 2024,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$65.00m,"* 1,760",New
+7,Nov 2024,Zamil Group,Zamil Steel Indust…,Saudi Arabia,Egypt,Metals,Architectural & struc…,Manufacturing,* $257.80m,* 613,New
+8,Oct 2024,Adenia Partners,Adenia Partners,Mauritius,Egypt,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+9,Oct 2024,ASOS Process Eng…,ASOS Process Eng…,Turkey,Egypt,Business services,"Architectural, engine…",Business Services,* $27.80m,* 37,New
+10,Oct 2024,Barry Callebaut,Barry Callebaut,Switzerland,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$30.00m,* 227,New
+11,Oct 2024,Beijing Automotiv…,BAIC International,China,Egypt,Automotive OEM,Automobiles,Manufacturing,* $81.00m,* 942,New
+12,Oct 2024,Bpifrance,Bpifrance,France,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Oct 2024,Consultants Valley,Consultants Valley,UAE,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+14,Oct 2024,Deloitte Touche To…,Deloitte Touche To…,United States,Egypt,Software & IT services,Other (Software & IT…,Research & Develop…,$30.00m,350,New
+15,Oct 2024,Fujifilm,Fujifilm,Japan,Egypt,Medical devices,Electromedical and E…,"Sales, Marketing & S…",* $1.90m,* 18,New

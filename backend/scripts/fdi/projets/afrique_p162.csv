@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2025,Spinneys,Spinneys Egypt,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+2,Feb 2025,Symrise,Symrise,Germany,Egypt,Food and Beverages,Other (Food & Bever…,Manufacturing,* $51.60m,* 225,Expansion
+3,Feb 2025,TSH Group of Co…,TSH Group of Co…,UAE,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+4,Feb 2025,TTEC (TeleTech),TTEC (TeleTech),United States,Egypt,Business services,Business support ser…,Headquarters,* $10.50m,* 995,Expansion
+5,Feb 2025,Volkov Infra,FerroGenesis,India,Egypt,Metals,Iron & steel mills & f…,Manufacturing,$5.00m,150,New
+6,Feb 2025,Watermelon Hub,Watermelon Hub,Morocco,Egypt,Business services,Business support ser…,Business Services,* $27.80m,* 37,New
+7,Jan 2025,AGF Freezers,AGF Freezers,Canada,Egypt,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+8,Jan 2025,BP (British Petrole…,BP (British Petrole…,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $349.80m,* 230,Expansion
+9,Jan 2025,CMA CGM,CEVA Logistics,France,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Jan 2025,CMA CGM,CEVA Logistics,France,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Jan 2025,DAIR Engineering …,DAIR Engineering …,Spain,Egypt,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 37,New
+12,Jan 2025,Denim Rise,Denim Rise,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$8.80m,"1,000",New
+13,Jan 2025,DXN (DXN Holdin…,DXN (DXN Holdin…,Malaysia,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $20.10m,* 969,New
+14,Jan 2025,Engie (GDF SUEZ)…,Engie Africa,France,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,Expansion
+15,Jan 2025,First Abu Dhabi B…,First Abu Dhabi B…,UAE,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

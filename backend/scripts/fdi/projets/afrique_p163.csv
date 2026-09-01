@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2025,First Abu Dhabi B…,First Abu Dhabi B…,UAE,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Jan 2025,Grupo Konecta,Grupo Konecta,Spain,Egypt,Business services,Business support ser…,Headquarters,* $70.00m,"* 2,000",New
+3,Jan 2025,Grupo Konecta,Grupo Konecta,Spain,Egypt,Software & IT services,Other (Software & IT…,Research & Develop…,* $30.00m,"* 1,000",New
+4,Jan 2025,Kingdom,Kingdom,China,Egypt,Textiles,Textile product mills,Manufacturing,* $42.50m,"* 1,555",New
+5,Jan 2025,Luthai Textile,Luthai Textile,China,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$385.00m,"* 3,000",New
+6,Jan 2025,Mediterranean Shi…,Medlog,Switzerland,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$3.73m,650,New
+7,Jan 2025,Sinochem Holdings,Prometeon Tyre G…,China,Egypt,Rubber,Tyres,Manufacturing,* $159.00m,* 592,Expansion
+8,Jan 2025,Sinochem Holdings,Prometeon Tyre G…,China,Egypt,Rubber,Tyres,Manufacturing,$550.00m,"* 3,000",Expansion
+9,Dec 2024,ADQ (Abu Dhabi …,AD Ports Group,UAE,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+10,Dec 2024,ADQ (Abu Dhabi …,AD Ports Group,UAE,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+11,Dec 2024,Balkan Agriculture,Balkan Agriculture,Bulgaria,Egypt,Food and Beverages,Fruits & vegetables …,Manufacturing,$16.70m,* 126,New
+12,Dec 2024,CommVault Syste…,CommVault Syste…,United States,Egypt,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 199,New
+13,Dec 2024,GlobeVisa Group,GlobeVisa Group,Singapore,Egypt,Business services,Legal services,Business Services,* $27.80m,* 37,New
+14,Dec 2024,Hebei Xinfeng Steel,Hebei Xinfeng Steel,China,Egypt,Metals,Steel products,Manufacturing,$1.65bn,"8,000",New
+15,Dec 2024,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,$0.71m,* 13,New
