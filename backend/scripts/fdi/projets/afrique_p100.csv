@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2020,Mobilitas Group,Mobilitas Group,France,Cape Verde,Business services,Other support services,Business Services,* $27.80m,* 38,New
+2,Sep 2019,The World Bank G…,The World Bank G…,United States,Cape Verde,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Feb 2019,TUI,TUI,Germany,Cape Verde,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+4,Mar 2018,Hilton Hotels (Hilt…,Hilton Hotels (Hilt…,United States,Cape Verde,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+5,Dec 2016,RIU Hotels & Reso…,RIU Hotels & Reso…,Spain,Cape Verde,Hotels & tourism,Accommodation,Construction,$83.04m,* 208,New
+6,Oct 2016,Coper (Comercial …,Atunlo (Atunes y L…,Spain,Cape Verde,Food and Beverages,Seafood products,Manufacturing,* $70.10m,300,New
+7,Jun 2016,Emicela,Emicela,Spain,Cape Verde,Food and Beverages,Other (Food & Bever…,Manufacturing,* $5.40m,23,New
+8,Jul 2015,Macau Legend De…,Macau Legend De…,Macau,Cape Verde,Leisure & entertainm…,Gambling industries,Construction,$277.37m,"* 1,113",New
+9,Nov 2014,Bank of Africa (B…,Bank of Africa,Morocco,Cape Verde,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Oct 2014,The Resort Group,The Resort Group,United Kingdom,Cape Verde,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+11,Dec 2013,Portugal Telecom,Cabo Verde Teleco…,Portugal,Cape Verde,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+12,Jul 2012,Hotelsa Alimentaci…,Hotelsa Alimentaci…,Spain,Cape Verde,Food and Beverages,Other (Food & Bever…,Manufacturing,* $45.80m,* 263,New
+13,Oct 2011,Coris Bank Intern…,Coris Bank Intern…,Burkina Faso,Cape Verde,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Aug 2011,Water Resources …,Water Resources …,Australia,Cape Verde,Business services,Waste management …,Recycling,* $125.30m,* 38,New
+15,Dec 2010,Hotelsa Alimentaci…,Hotelsa Alimentaci…,Spain,Cape Verde,Food and Beverages,Other (Food & Bever…,Manufacturing,* $45.80m,* 263,New

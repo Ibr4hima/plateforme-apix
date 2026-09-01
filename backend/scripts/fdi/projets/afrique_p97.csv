@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2013,G Power Cement,G Power Cement,Germany,Cameroon,Building materials,Cement & concrete p…,Manufacturing,$90.00m,* 221,New
+2,Jan 2013,Groupe Lacroix (L…,Lacroix Signalisati…,France,Cameroon,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New
+3,Jan 2013,MTN Group,MTN Cameroon,South Africa,Cameroon,Communications,Wireless telecommu…,Retail,* $6.30m,* 31,New
+4,Jan 2013,Onomo Hotels,Onomo Hotels,Senegal,Cameroon,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+5,Dec 2012,Sinosteel,Sinosteel Cameroon,China,Cameroon,Metals,Iron ore mining,Extraction,$673.56m,"* 1,005",New
+6,May 2012,SOMDIAA Group,SOSUCAM,France,Cameroon,Food and Beverages,Sugar & confectionar…,Manufacturing,* $65.90m,* 263,Expansion
+7,Feb 2012,Atlas Copco,Atlas Copco,Sweden,Cameroon,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Jan 2012,Spoor & Fisher,Spoor & Fisher,South Africa,Cameroon,Business services,Legal services,Business Services,* $6.80m,* 15,New
+9,Dec 2011,POSCO (Pohang Ir…,POSCO (Pohang Ir…,South Korea,Cameroon,Metals,Iron & steel mills & f…,Manufacturing,* $178.90m,* 342,New
+10,Dec 2011,POSCO (Pohang Ir…,POSCO (Pohang Ir…,South Korea,Cameroon,Renewable energy,Hydroelectric power,Electricity,* $231.70m,* 54,New
+11,Oct 2011,Coris Bank Intern…,Coris Bank Intern…,Burkina Faso,Cameroon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Aug 2011,Siva Group,Biopalm Energy,India,Cameroon,Food and Beverages,Crop production,Manufacturing,$1.91bn,"* 3,000",New
+13,Jun 2011,Herakles Capital,Herakles Farms,United States,Cameroon,Food and Beverages,Crop production,Manufacturing,$350.00m,"* 2,288",New
+14,May 2011,BGFI Bank,BGFI Bank,Gabon,Cameroon,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,May 2011,BGFI Bank,BGFI Bank Camer…,Gabon,Cameroon,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

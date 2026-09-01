@@ -340,9 +340,14 @@ def test_les_pages_afrique_sont_lisibles():
     """Même exigence que pour le Sénégal : pagination continue, quinze lignes
     par page. Sur mille cent vingt-six pages annoncées par la source, c'est le
     seul contrôle qui verra une page sautée ou relevée deux fois."""
+    import re
     from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
-    pages = sorted(DOSSIER_PROJETS.glob("afrique_p*.csv"))
-    assert [p.name for p in pages] == [f"afrique_p{n:02d}.csv" for n in range(1, len(pages) + 1)]
+    # Tri NUMÉRIQUE : par nom, « p100 » se rangerait entre « p10 » et « p11 »,
+    # et la continuité paraîtrait rompue là où elle ne l'est pas.
+    pages = sorted(DOSSIER_PROJETS.glob("afrique_p*.csv"),
+                   key=lambda c: int(re.search(r"_p(\d+)$", c.stem).group(1)))
+    assert [int(re.search(r"_p(\d+)$", c.stem).group(1)) for c in pages] \
+        == list(range(1, len(pages) + 1))
     tailles = [len(lire_lot_csv(p)) for p in pages]
     assert set(tailles[:-1]) == {15} and 1 <= tailles[-1] <= 15
     for chemin in pages:

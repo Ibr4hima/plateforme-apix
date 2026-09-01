@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Rio Tinto Group,Rio Tinto Alcan,United Kingdom,Cameroon,Metals,Alumina & aluminiu…,"Logistics, Distributio…",* $15.60m,* 29,New
+2,Jan 2009,Sundance Resourc…,Sundance Resourc…,Australia,Cameroon,Metals,Iron ore mining,"Logistics, Distributio…",$160.00m,* 545,New
+3,Dec 2008,CGC Overseas Co…,CGC Overseas Co…,China,Cameroon,Chemicals,"Pesticide, fertilisers …",Manufacturing,$271.59m,* 337,New
+4,Dec 2008,China National Ae…,China National Ae…,China,Cameroon,Building materials,Cement & concrete p…,Manufacturing,$70.41m,* 134,New
+5,Aug 2008,Gateway Commun…,Gateway Commun…,United Kingdom,Cameroon,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+6,Jan 2007,Sundance Resourc…,Sundance Resourc…,Australia,Cameroon,Metals,Iron ore mining,Extraction,$2.46bn,"* 3,000",New
+7,Dec 2006,AES Corporation (…,AES SONEL,United States,Cameroon,"Coal, oil & gas",Other electric power …,Electricity,* $558.00m,* 116,Expansion
+8,Dec 2006,Ferrero,Ferrero,Italy,Cameroon,Food and Beverages,Sugar & confectionar…,Manufacturing,* $65.90m,* 263,New
+9,Oct 2005,Alcan,Alcan,Canada,Cameroon,Metals,Alumina & aluminiu…,Manufacturing,$900.00m,"* 3,000",Expansion
+10,Dec 2004,Continental Reins…,Continental Reins…,Nigeria,Cameroon,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+11,Jun 2003,Neptune Software,Neptune Software,United Kingdom,Cameroon,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+12,Apr 2003,Geovic,Geovic Cameroon,United States,Cameroon,Metals,"Copper, nickel, lead, …",Extraction,* $270.00m,"* 1,012",New
+13,Feb 2025,DuarGema Invest…,DuarGema Invest…,Czech Republic,Cape Verde,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Dec 2024,Happy.Rentals,Happy.Rentals,Switzerland,Cape Verde,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+15,Nov 2022,ITAerea Aeronauti…,ITAerea Aeronauti…,Spain,Cape Verde,Business services,"Technical, trade & ot…",Headquarters,* $10.50m,* 995,New

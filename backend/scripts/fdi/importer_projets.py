@@ -78,8 +78,20 @@ def decrire(chemin: Path) -> tuple[str, str, str]:
     return f"{perimetre} {VERBE[sens]} · page {int(m['page']):02d}", perimetre, sens
 
 
+def numero(chemin: Path) -> tuple[str, int]:
+    """(périmètre, numéro de page) — la clef de tri des fichiers.
+
+    Trier sur le NOM rangerait « p100 » entre « p10 » et « p11 », et le
+    journal d'import annoncerait les pages dans le désordre. Sans importance
+    pour ce qui est écrit, mais un relevé qu'on ne peut pas suivre à l'œil est
+    un relevé qu'on ne vérifie plus.
+    """
+    m = NOM.match(chemin.stem)
+    return (chemin.stem if not m else m["perimetre"], 0 if not m else int(m["page"]))
+
+
 async def main() -> int:
-    fichiers = sorted(DOSSIER_PROJETS.glob("*.csv"))
+    fichiers = sorted(DOSSIER_PROJETS.glob("*.csv"), key=numero)
     if not fichiers:
         print("  aucune page de projets à importer.")
         return 0
