@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2025,BGP,BGP,Australia,Egypt,Food and Beverages,Fruits & vegetables …,"Sales, Marketing & S…",* $4.50m,* 18,New
+2,Nov 2025,DAMAC Holding,DAMAC Properties,UAE,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,Expansion
+3,Nov 2025,DXC Technology,DXC Technology,United States,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $9.30m,50,New
+4,Nov 2025,H&L Group,H&L Group,South Korea,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$15.00m,"2,000",New
+5,Nov 2025,Samil Solution,Samil Solution,South Korea,Egypt,Textiles,Apparel knitting,Manufacturing,$4.49m,"1,000",New
+6,Nov 2025,Schneider Electric,Schneider Electric,France,Egypt,Electronic components,Electrical equipment,Manufacturing,* $86.00m,* 326,Expansion
+7,Nov 2025,Winpex,Winpex,China,Egypt,Electronic components,Electric lighting equi…,Manufacturing,$15.00m,500,New
+8,Nov 2025,Xinmin Glass,Xinmin Glass,China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$30.00m,"1,000",New
+9,Oct 2025,BMEC Imaging,BMEC Imaging,India,Egypt,Medical devices,Electromedical and E…,Manufacturing,$4.51m,* 14,New
+10,Oct 2025,Changzhou Top Cr…,Changzhou Top Cr…,China,Egypt,Textiles,Textile product mills,Manufacturing,$13.30m,600,New
+11,Oct 2025,Dubai World,DP World,UAE,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$29.00m,* 129,New
+12,Oct 2025,IBSA Formwork & …,IBSA Formwork & …,UAE,Egypt,Business services,Speciality trade cont…,Business Services,* $27.80m,* 37,New
+13,Oct 2025,Mars,Mars,United States,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$280.00m,"* 2,115",Expansion
+14,Oct 2025,Scan Global Logist…,Scan Global Logist…,Denmark,Egypt,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+15,Oct 2025,Top New Garment…,Top New Garment…,China,Egypt,Textiles,Textile product mills,Manufacturing,$7.20m,"4,000",New

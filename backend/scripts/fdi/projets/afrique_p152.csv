@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2026,Imerys,Imerys,France,Egypt,Ceramics & glass,Clay product & refra…,Research & Develop…,* $12.90m,* 46,Expansion
+2,Feb 2026,inDrive (inDriver),inDrive (inDriver),United States,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 44,New
+3,Feb 2026,Nissan,Nissan,Japan,Egypt,Automotive OEM,Automobiles,Manufacturing,* $81.00m,* 942,Expansion
+4,Feb 2026,Sampre Nutrition,Sampre Nutrition,India,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,* $51.60m,* 225,New
+5,Jan 2026,Adient,Diniz Adient Oto D…,Ireland,Egypt,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $36.20m,* 613,New
+6,Jan 2026,Coca-Cola Helleni…,Coca-Cola Helleni…,Switzerland,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,* $51.60m,* 225,Expansion
+7,Jan 2026,Coca-Cola Helleni…,Coca-Cola Helleni…,Switzerland,Egypt,Software & IT services,Other (Software & IT…,Research & Develop…,* $52.10m,280,Expansion
+8,Jan 2026,Eroglu Holding,Eroglu Moda Tekstil,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$5.60m,700,New
+9,Jan 2026,Eroglu Holding,Eroglu Holding,Turkey,Egypt,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$175.00m,"2,000",New
+10,Jan 2026,Hengxin Auto Gro…,CORNEX New Ene…,China,Egypt,Electronic components,Batteries,Manufacturing,$200.00m,"* 1,760",New
+11,Jan 2026,Hubei Xingfa Che…,Hubei Xingfa Che…,China,Egypt,Chemicals,Basic chemicals,Manufacturing,$2.00bn,"* 3,000",New
+12,Jan 2026,REXUS Internatio…,REXUS Internatio…,Germany,Egypt,Chemicals,"Paints, coatings, add…",Headquarters,* $14.10m,* 66,New
+13,Jan 2026,Sungrow Power S…,Sungrow Power S…,China,Egypt,Electronic components,Batteries,Manufacturing,$50.00m,150,New
+14,Jan 2026,Unifi Data Manage…,Unifi Data Manage…,UAE,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+15,Dec 2025,Al Mana Holding,Al Mana Holding,Qatar,Egypt,"Coal, oil & gas",Other petroleum & c…,Manufacturing,$200.00m,* 37,New

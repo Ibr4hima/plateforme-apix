@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2025,Boston Consulting…,Boston Consulting…,United States,Egypt,Business services,Management consult…,Business Services,* $27.80m,* 37,Expansion
+2,Sep 2025,Cassava Technolo…,Cassava Technolo…,United Kingdom,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,* $144.00m,* 21,New
+3,Sep 2025,CSG Holding (CSG),CSG Holding (CSG),China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$246.13m,"* 1,375",New
+4,Sep 2025,European Bank fo…,European Bank fo…,United Kingdom,Egypt,Financial services,Corporate & investm…,Business Services,$11.62m,* 38,New
+5,Sep 2025,Geidea,Geidea,Saudi Arabia,Egypt,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,Expansion
+6,Sep 2025,Interloop,Interloop,Pakistan,Egypt,Textiles,Textile product mills,Manufacturing,$35.20m,"1,000",New
+7,Sep 2025,IntouchCX,IntouchCX,Canada,Egypt,Business services,Business support ser…,Customer Contact C…,* $3.20m,400,Expansion
+8,Sep 2025,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+9,Sep 2025,Merloni Finanziaria,Ariston Group (MT…,Italy,Egypt,Industrial equipment,"Ventilation, heating, …",Manufacturing,$20.00m,350,New
+10,Sep 2025,Merloni Finanziaria,Ariston Group (MT…,Italy,Egypt,Industrial equipment,"Ventilation, heating, …",Manufacturing,* $71.80m,* 219,Expansion
+11,Sep 2025,Seacom,Seacom,Mauritius,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,New
+12,Sep 2025,ShuanFeng,ShuanFeng,China,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$8.00m,"2,000",New
+13,Sep 2025,Wujha,Wujha,Oman,Egypt,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+14,Aug 2025,Alorica,Alorica,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $9.70m,"1,220",Expansion
+15,Aug 2025,Bridge Textile Inte…,Bridge Textile Inte…,Hong Kong,Egypt,Textiles,Textile product mills,Manufacturing,$25.00m,500,New
