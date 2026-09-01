@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2026,ES-KO,ES-KO,Monaco,Cameroon,Food and Beverages,Food services,"Sales, Marketing & S…",* $4.50m,* 18,New
+2,May 2026,InTouch,InTouch,Senegal,Cameroon,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+3,May 2026,Samb'a Assurances,Samb'a Assurances,Gabon,Cameroon,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+4,Mar 2026,Dangote Group,Dangote Cement,Nigeria,Cameroon,Building materials,Cement & concrete p…,Manufacturing,* $56.70m,* 496,Expansion
+5,Feb 2026,ADQ (Abu Dhabi …,AD Ports Group,UAE,Cameroon,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$87.13m,* 387,New
+6,Jan 2026,Alapala Holding,Alapala,Turkey,Cameroon,Food and Beverages,Grains & oilseed,Manufacturing,* $65.90m,* 263,New
+7,Dec 2025,LUSEO Engineering,LUSEO Engineering,United States,Cameroon,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+8,Dec 2025,UPF Group,UPF Group,Denmark,Cameroon,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Sep 2025,Scatec AS,Release,Norway,Cameroon,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Expansion
+10,Sep 2025,Scatec AS,Release,Norway,Cameroon,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Expansion
+11,Aug 2025,VFS Global,VFS Global,Switzerland,Cameroon,Business services,Other support services,Business Services,* $27.80m,* 38,New
+12,Jun 2025,CMA CGM,CEVA Logistics,France,Cameroon,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+13,May 2025,Spiro (MAuto Elec…,Spiro (MAuto Elec…,Benin,Cameroon,Non-automotive tran…,"Motorcycle, bicycle, …","Sales, Marketing & S…",* $2.50m,* 16,New
+14,Apr 2025,Stihl,Stihl,Germany,Cameroon,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+15,Mar 2025,TASS Russian Ne…,TASS Russian Ne…,Russia,Cameroon,Business services,"Newspaper, periodic…",Business Services,* $27.80m,* 38,New

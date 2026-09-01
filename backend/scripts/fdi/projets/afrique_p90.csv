@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,Blue Window,Blue Window,Malta,Cameroon,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+2,Oct 2022,Flexi World Logisti…,Flexi World Logisti…,India,Cameroon,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Jun 2022,Bollore Group,Bollore Transport …,France,Cameroon,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$11.00m,* 49,New
+4,May 2022,United Bank for Af…,United Bank for Af…,Nigeria,Cameroon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Apr 2022,Grupo Embotellad…,Ajegroup,Spain,Cameroon,Food and Beverages,Soft drinks & ice,Manufacturing,* $65.90m,* 263,New
+6,Nov 2021,Copagef,Groupe SABC,France,Cameroon,Food and Beverages,Animal production & …,Manufacturing,$31.90m,* 137,New
+7,Nov 2021,Copagef,Groupe SABC,France,Cameroon,Food and Beverages,Breweries,Manufacturing,$8.80m,* 38,Expansion
+8,Sep 2021,Yousheng Cement,Yousheng Cement,China,Cameroon,Building materials,Cement & concrete p…,Manufacturing,* $56.70m,* 496,New
+9,Sep 2021,Yousheng Cement,Yousheng Cement,China,Cameroon,Building materials,Cement & concrete p…,Manufacturing,* $56.70m,* 496,New
+10,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Cameroon,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+11,Jul 2021,Desalytics,Desalytics,UAE,Cameroon,Business services,"Water, sewage & oth…",Business Services,* $27.80m,* 38,New
+12,Mar 2021,Solar Group,Solar Group,Vanuatu,Cameroon,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Feb 2021,LexLau,LexLau,Belgium,Cameroon,Business services,Legal services,Business Services,* $1.20m,8,New
+14,Jan 2021,Confederation of …,Confederation of …,Egypt,Cameroon,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $1.80m,* 29,New
+15,Dec 2020,MTN Group,MTN Cameroon,South Africa,Cameroon,Communications,Wireless telecommu…,Retail,* $6.30m,* 31,New
