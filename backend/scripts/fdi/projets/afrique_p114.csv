@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2020,Puratos,Puratos,Belgium,Côte d Ivoire,Food and Beverages,Bakeries & tortillas,Manufacturing,* $33.90m,* 377,New
+2,Mar 2020,Benoit & Associés …,Benoit & Associés …,France,Côte d Ivoire,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+3,Mar 2020,Fenie Brosette,Fenie Brosette,Morocco,Côte d Ivoire,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+4,Feb 2020,Belvas,Belvas,Belgium,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,$1.16m,* 4,New
+5,Feb 2020,Groupe Supdeco …,Groupe Supdeco …,Senegal,Côte d Ivoire,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+6,Feb 2020,HYDROGEOTECHN…,HYDROGEOTECHN…,France,Côte d Ivoire,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+7,Feb 2020,Maisadour,Mas Seeds,France,Côte d Ivoire,Food and Beverages,Grains & oilseed,Research & Develop…,* $12.00m,* 55,New
+8,Jan 2020,Afrik Global Invest…,Afrik Assurances,Togo,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+9,Jan 2020,Conceptos Plasticos,Conceptos Plasticos,Colombia,Côte d Ivoire,Plastics,Other plastics produ…,Manufacturing,* $25.20m,* 229,New
+10,Jan 2020,KeyOpsTech,KeyOpsTech,France,Côte d Ivoire,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+11,Jan 2020,Lesaffre,Lesaffre Ivoire,France,Côte d Ivoire,Food and Beverages,Bakeries & tortillas,"Sales, Marketing & S…",* $4.50m,* 18,New
+12,Jan 2020,Oxahost,Oxahost,Tunisia,Côte d Ivoire,Communications,Computing infrastruc…,Business Services,* $5.20m,* 20,New
+13,Jan 2020,Veolia Environne…,Veolia Water Solut…,France,Côte d Ivoire,Business services,"Water, sewage & oth…",Recycling,* $150.80m,* 42,New
+14,Jan 2020,Veolia Environne…,Veolia Water Solut…,France,Côte d Ivoire,Business services,"Water, sewage & oth…",Recycling,* $150.80m,* 42,New
+15,Jan 2020,Yux Design,Yux Design,Senegal,Côte d Ivoire,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
