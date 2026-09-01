@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2024,Al Sayegh Group,Al Sayegh Group,UAE,Côte d Ivoire,Food and Beverages,Snack food,Manufacturing,$23.80m,500,New
+2,Jun 2024,AltEmploi,AltEmploi,Gabon,Côte d Ivoire,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+3,Jun 2024,Baker Hughes,Baker Hughes,United States,Côte d Ivoire,"Coal, oil & gas",Support activities for…,Maintenance & Servi…,* $7.70m,* 38,New
+4,Jun 2024,Daikin Industries,Daikin Middle East…,Japan,Côte d Ivoire,Industrial equipment,"Ventilation, heating, …",Education & Training,* $5.50m,* 35,New
+5,May 2024,Alta Ares,Alta Ares,France,Côte d Ivoire,Aerospace,Other (Aerospace),"Sales, Marketing & S…",* $5.80m,* 18,New
+6,May 2024,Aurum Resources,Aurum Resources,Australia,Côte d Ivoire,Metals,Gold ore & silver ore…,"Sales, Marketing & S…",* $0.10m,1,New
+7,May 2024,IHH Healthcare,Acibadem Healthc…,Malaysia,Côte d Ivoire,Healthcare,Outpatient care cent…,Business Services,* $2.70m,* 39,New
+8,May 2024,ST Digital,ST Digital,Cameroon,Côte d Ivoire,Software & IT services,Custom computer pr…,ICT & Internet Infras…,* $243.50m,* 81,New
+9,Apr 2024,Altera Infrastructu…,Altera Infrastructu…,United Kingdom,Côte d Ivoire,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+10,Jan 2024,Bravinci,Bravinci,Netherlands,Côte d Ivoire,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+11,Jan 2024,Kewalram Chanrai,AFCOTT Cashew,Singapore,Côte d Ivoire,Food and Beverages,Snack food,Manufacturing,* $403.70m,"1,250",New
+12,Dec 2023,Azadea Group,Azadea Group,Lebanon,Côte d Ivoire,Textiles,Footwear,Retail,* $4.40m,* 50,New
+13,Nov 2023,Equinix,MainOne,United States,Côte d Ivoire,Communications,Computing infrastruc…,ICT & Internet Infras…,* $34.70m,* 100,New
+14,Aug 2023,Cavagna Group,Cavagna Group,Italy,Côte d Ivoire,Industrial equipment,Measuring & control …,"Logistics, Distributio…",* $15.90m,* 50,New
+15,Jul 2023,China North Indus…,Norinco Internatio…,China,Côte d Ivoire,Space & defence,Military armoured ve…,Maintenance & Servi…,* $2.80m,* 63,New

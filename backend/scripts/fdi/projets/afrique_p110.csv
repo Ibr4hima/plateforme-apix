@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2023,Fosun International,Shanghai Fosun P…,China,Côte d Ivoire,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+2,Jun 2023,ZEBOX,ZEBOX,France,Côte d Ivoire,Business services,Other support services,Business Services,* $27.80m,* 38,New
+3,May 2023,AFEX Commoditie…,AFEX Commoditie…,Nigeria,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,May 2023,Chargel,Chargel,Senegal,Côte d Ivoire,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+5,May 2023,GoGlobal,GoGlobal,Japan,Côte d Ivoire,Business services,Employment services,Business Services,* $27.80m,* 38,New
+6,Apr 2023,DKK Partners,DKK Partners,United Kingdom,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Apr 2023,Farmerline,Farmerline,Ghana,Côte d Ivoire,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+8,Mar 2023,Arma,Arma,Morocco,Côte d Ivoire,Plastics,Other plastics produ…,Recycling,* $29.80m,* 55,New
+9,Jan 2023,AMEA Power,AMEA Power,UAE,Côte d Ivoire,Renewable energy,Solar electric power,Electricity,$60.00m,* 19,New
+10,Jan 2023,HC Capital Propert…,HC Capital Propert…,United Kingdom,Côte d Ivoire,Real estate,Commercial & institu…,Construction,* $704.50m,* 578,New
+11,Jan 2023,Kasada Capital Ma…,Kasada Capital Ma…,South Africa,Côte d Ivoire,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+12,Jan 2023,NOVAIR,NOVAIR,France,Côte d Ivoire,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+13,Oct 2022,Atlantic Cocoa Cor…,Atlantic Cocoa Cor…,Cameroon,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,$108.00m,* 334,New
+14,Oct 2022,Bollore Group,Bollore Transport …,France,Côte d Ivoire,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$51.83m,* 230,Expansion
+15,Oct 2022,Endeavour Mining,Endeavour Mining,United Kingdom,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,$448.00m,* 668,New

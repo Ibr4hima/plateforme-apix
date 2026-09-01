@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2025,Loinette Capital,Loinette Capital,Mauritius,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Feb 2025,Dynacor Gold Mines,Dynacor Gold Mines,Canada,Côte d Ivoire,Metals,Gold ore & silver ore…,Manufacturing,* $24.00m,* 164,New
+3,Jan 2025,Hapag-Lloyd,Hapag-Lloyd,Germany,Côte d Ivoire,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $85.90m,* 111,New
+4,Jan 2025,Perseus Mining,Perseus Mining,Australia,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,Expansion
+5,Dec 2024,Fluence Corporati…,Fluence Corporati…,United States,Côte d Ivoire,Business services,"Water, sewage & oth…",Recycling,$50.38m,* 49,New
+6,Dec 2024,Wazan Consulting,Wazan Consulting,France,Côte d Ivoire,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+7,Nov 2024,Goodpack,Goodpack,Singapore,Côte d Ivoire,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Nov 2024,SOMDIAA Group,SUCAF Cote d'Ivoi…,France,Côte d Ivoire,Food and Beverages,Distilleries,Manufacturing,$29.80m,* 92,New
+9,Oct 2024,Ivory Jet Services,Ivory Jet Services,Djibouti,Côte d Ivoire,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $85.90m,* 111,New
+10,Oct 2024,JPMorgan Chase &…,JPMorgan Chase &…,United States,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Oct 2024,Jumia,Jumia,Nigeria,Côte d Ivoire,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+12,Sep 2024,Panafrica,Panafrica,France,Côte d Ivoire,Textiles,Footwear,Manufacturing,$1.09m,20,New
+13,Aug 2024,Compagnie Gestio…,Compagnie Gestio…,Tunisia,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Jul 2024,Montage Gold,Montage Gold,Canada,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,New
+15,Jul 2024,ODDO BHF (Oddo …,ODDO BHF (Oddo …,France,Côte d Ivoire,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
