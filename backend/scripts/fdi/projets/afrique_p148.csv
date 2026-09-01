@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2008,Qatari Diar,Qatari Diar,Qatar,Djibouti,Real estate,Commercial & institu…,Construction,* $864.90m,* 875,New
+2,Feb 2008,Cooperative and C…,Cooperative and C…,Yemen,Djibouti,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Sep 2007,Michael-Bruno,Michael-Bruno,United States,Djibouti,Business services,"Architectural, engine…",Business Services,$4.60m,7,New
+4,Apr 2006,DP World,DP World,UAE,Djibouti,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$400.00m,* 829,New
+5,Apr 2006,Dubai World,Nakheel Hotels & …,UAE,Djibouti,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Aug 2005,Dubai Ports Autho…,Dubai Ports Intern…,UAE,Djibouti,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$300.00m,* 622,New
+7,Jul 2026,Jiangsu Changhon…,Jiangsu Changhon…,China,Egypt,Business services,"Architectural, engine…",Business Services,$20.00m,* 133,New
+8,Jul 2026,MasterCard,MasterCard,United States,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,Expansion
+9,Jul 2026,Reme-D,Reme-D,United States,Egypt,Biotechnology,In-Vitro diagnostic s…,Manufacturing,* $105.60m,* 146,Expansion
+10,Jul 2026,Siemens,Siemens,Germany,Egypt,Electronic components,Electrical equipment,Manufacturing,* $81.70m,* 812,New
+11,Jul 2026,ThinkHuman,ThinkHuman,UAE,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+12,Jul 2026,Zenith Steel Group,Zenith Steel Group,China,Egypt,Metals,Steel products,Manufacturing,$300.00m,"1,000",New
+13,Jun 2026,Concentrix,Concentrix Egypt,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $17.50m,"* 2,200",New
+14,Jun 2026,Concentrix,Concentrix Egypt,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $17.50m,"* 2,200",New
+15,Jun 2026,Concentrix,Concentrix Egypt,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $17.50m,"* 2,200",New

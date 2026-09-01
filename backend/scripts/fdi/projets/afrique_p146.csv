@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2019,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,Djibouti,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+2,Dec 2018,Hayel Saeed Ana…,Golden Africa,UAE,Djibouti,Food and Beverages,Grains & oilseed,Manufacturing,$30.00m,500,New
+3,Apr 2018,CMA CGM,CMA CGM,France,Djibouti,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+4,Apr 2017,IZP Technologies,Silk Road Internat…,China,Djibouti,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Nov 2016,United Trademark …,United Trademark …,UAE,Djibouti,Business services,Legal services,Business Services,* $27.80m,* 38,New
+6,Aug 2016,Bin Harmal Group,Ayla Hotels and R…,UAE,Djibouti,Hotels & tourism,Accommodation,Construction,$24.50m,* 61,New
+7,Aug 2016,Sika,Sika,Switzerland,Djibouti,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $2.80m,* 13,New
+8,Jun 2016,China Merchants …,China Merchants …,Hong Kong,Djibouti,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+9,Oct 2015,SkyPower,SkyPower,Canada,Djibouti,Renewable energy,Solar electric power,Electricity,$429.00m,* 133,New
+10,Sep 2015,Black Rhino,Black Rhino,South Africa,Djibouti,Transportation & Wa…,Pipeline transportation of crude oil,"Logistics, Distributio…",* $77.50m,* 344,New
+11,Apr 2015,Black Rhino,Black Rhino,South Africa,Djibouti,Transportation & Wa…,Other pipeline trans…,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Mar 2015,Exim Bank (Tanza…,Exim Bank (Tanza…,Tanzania,Djibouti,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Mar 2015,Lufthansa,Lufthansa Consulti…,Germany,Djibouti,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+14,Jul 2014,Africa Oilfield Logi…,Africa Oilfield Logi…,United Kingdom,Djibouti,"Coal, oil & gas",Support activities for…,"Logistics, Distributio…",$1.50m,* 1,New
+15,Apr 2014,GE Aerospace (Ge…,Fotowatio Renewa…,United States,Djibouti,Renewable energy,Solar electric power,Electricity,$132.00m,* 41,New

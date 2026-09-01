@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2026,Educcess,Educcess,United Kingdom,Egypt,Business services,Educational support …,Business Services,* $27.80m,* 37,New
+2,May 2026,Green Sky Capital,Green Sky Capital,Qatar,Egypt,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $922.30m,* 213,New
+3,May 2026,Modon Holding,Modon Holding,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $154.90m,* 202,New
+4,May 2026,Mubadala Investm…,Infinity Power,UAE,Egypt,Renewable energy,Solar electric power,Electricity,$764.00m,* 237,New
+5,May 2026,Procter & Gamble …,Procter & Gamble …,United States,Egypt,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $77.50m,* 644,Expansion
+6,May 2026,Reach Group,Reach Group,UAE,Egypt,Business services,Employment services,Business Services,* $27.80m,* 37,New
+7,May 2026,Sinochem Holdings,Aeolus Tyre,China,Egypt,Rubber,Tyres,Manufacturing,$378.91m,"* 2,430",New
+8,May 2026,Titan Cement,Titan Egypt,Belgium,Egypt,Building materials,Cement & concrete p…,"Logistics, Distributio…",$10.91m,* 21,Co-Location
+9,May 2026,Trafigura Beheer,Trafigura Group,Netherlands,Egypt,Metals,Alumina & aluminiu…,Manufacturing,$825.00m,"* 2,456",New
+10,Apr 2026,Alpha Smart Inve…,Alpha Smart Inve…,UAE,Egypt,Real estate,Industrial building co…,Construction,$100.00m,* 149,New
+11,Apr 2026,Alshaya,Alshaya,Kuwait,Egypt,Textiles,Clothing & clothing a…,Shared Services Cen…,* $22.10m,400,Co-Location
+12,Apr 2026,Atesan Tekstil,Atesan Tekstil,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$6.50m,200,New
+13,Apr 2026,Ela Tekstil,Ela Tekstil,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$16.50m,"2,500",New
+14,Apr 2026,HK Ding Chang Sh…,HK Ding Chang Sh…,Hong Kong,Egypt,Textiles,Furniture & related p…,Manufacturing,$6.00m,200,New
+15,Apr 2026,Indorama,Indorama,Singapore,Egypt,Chemicals,"Pesticide, fertilisers …",Manufacturing,$525.00m,"2,500",New
