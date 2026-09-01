@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2016,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,Côte d Ivoire,"Coal, oil & gas",Other electric power …,"Sales, Marketing & S…",* $7.80m,* 30,New
+2,Jan 2016,Waica Reinsurance,Waica Reinsurance,Sierra Leone,Côte d Ivoire,Financial services,Insurance,Customer Contact C…,* $9.90m,* 235,New
+3,Dec 2015,L'Occitane en Prov…,L'Occitane en Prov…,France,Côte d Ivoire,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New
+4,Nov 2015,Banque Centrale P…,Attawfiq Micro-Fin…,Morocco,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Nov 2015,Banque Centrale P…,Attawfiq Micro-Fin…,Morocco,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Nov 2015,Banque Centrale P…,Attawfiq Micro-Fin…,Morocco,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Nov 2015,PCCI UK,PCCI Group,United Kingdom,Côte d Ivoire,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+8,Oct 2015,Blue Lions,Blue Lions,France,Côte d Ivoire,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+9,Sep 2015,Heineken Holding,Heineken,Netherlands,Côte d Ivoire,Food and Beverages,Breweries,Manufacturing,$170.84m,700,New
+10,Sep 2015,Sea Invest,Sea Invest,Belgium,Côte d Ivoire,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $263.40m,"* 1,170",New
+11,Sep 2015,Sea Invest,Sea Invest,Belgium,Côte d Ivoire,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $131.60m,* 584,Expansion
+12,Sep 2015,Sika,Sika,Switzerland,Côte d Ivoire,Chemicals,"Paints, coatings, add…",Manufacturing,* $285.70m,* 455,New
+13,Sep 2015,YKH Holding,Cellcom,Tunisia,Côte d Ivoire,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+14,Aug 2015,Mitsui & Co,Mitsui & Co,Japan,Côte d Ivoire,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+15,Jul 2015,European Investm…,European Investm…,Luxembourg,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
