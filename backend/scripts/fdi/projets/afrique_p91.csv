@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2020,Toyota Motor,CFAO Group,Japan,Cameroon,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+2,Oct 2020,MTN Group,MTN Cameroon,South Africa,Cameroon,Communications,Wireless telecommu…,Retail,* $6.30m,* 31,New
+3,Aug 2020,Investisseurs & Pa…,Investisseurs & Pa…,France,Cameroon,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+4,Jul 2020,InfiNet Wireless,InfiNet Wireless,Russia,Cameroon,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+5,Jul 2020,Keda Industrial Gr…,Keda Industrial Gr…,China,Cameroon,Ceramics & glass,Clay product & refra…,Manufacturing,$33.50m,* 198,New
+6,Feb 2020,Compagnie Optorg,Tractafric Equipme…,France,Cameroon,Industrial equipment,"Agriculture, construc…",Manufacturing,* $29.80m,* 219,New
+7,Feb 2020,Copagef,Groupe SABC,France,Cameroon,Food and Beverages,Breweries,Manufacturing,$21.00m,* 90,Expansion
+8,Feb 2020,Zunder Systems,AFR-IX Telecom,Spain,Cameroon,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+9,Jan 2020,Access Bank,Access Bank,Nigeria,Cameroon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Jan 2020,Guangzhou Sunda…,Guangzhou Sunda…,China,Cameroon,Ceramics & glass,Clay product & refra…,Manufacturing,* $64.00m,* 379,New
+11,Nov 2019,African Export-Im…,African Export-Im…,Egypt,Cameroon,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Nov 2019,Bridgestone,Bridgestone,Japan,Cameroon,Rubber,Tyres,Manufacturing,* $117.10m,* 592,New
+13,Nov 2019,United Bank for Af…,UBA Cameroon,Nigeria,Cameroon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Oct 2019,China National Bui…,China National Bui…,China,Cameroon,Building materials,Cement & concrete p…,Manufacturing,$60.00m,* 150,New
+15,Oct 2019,Orange (France Te…,Orange Cameroun…,France,Cameroon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
