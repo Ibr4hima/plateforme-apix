@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2022,ZB Financial,ZB Financial,Zimbabwe,Botswana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,May 2022,Cotton On,Cotton On,Australia,Botswana,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+3,Mar 2022,Afro-Asian Insura…,Afro-Asian Insura…,United Kingdom,Botswana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+4,Feb 2022,Boxconn,Boxconn,Ghana,Botswana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Botswana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Sep 2021,TigerWit,TigerWit,United Kingdom,Botswana,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Jul 2021,Petronas,Engen,Malaysia,Botswana,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+8,Jul 2021,Sandfire,Sandfire,Australia,Botswana,Metals,"Copper, nickel, lead, …",Extraction,$279.00m,600,New
+9,Jan 2021,Francler,Francler,India,Botswana,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+10,Nov 2020,Econet Global,Liquid Intelligent …,Mauritius,Botswana,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+11,Nov 2020,Kromberg & Schu…,Kromberg & Schu…,Germany,Botswana,Automotive compon…,Motor vehicle electri…,Manufacturing,* $25.70m,* 613,Expansion
+12,Feb 2020,Finestar Jewellery…,Finestar Diamond…,India,Botswana,Consumer products,Jewellery & silverware,Manufacturing,* $3.70m,70,New
+13,Jun 2019,Shoprite,Shoprite,South Africa,Botswana,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+14,May 2019,Grand Capital,Grand Capital,Russia,Botswana,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,May 2019,Kuoni,VFS Global,Switzerland,Botswana,Business services,Other support services,Business Services,* $27.80m,* 38,New

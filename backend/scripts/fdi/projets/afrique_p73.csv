@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2016,Standard Bank Gr…,Stanbic Bank Bots…,South Africa,Botswana,Financial services,Retail banking,Business Services,* $9.60m,* 27,Expansion
+2,Mar 2016,Marubeni,Marubeni,Japan,Botswana,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$800.00m,* 53,Expansion
+3,Jan 2016,Gemological Instit…,Gemological Instit…,United States,Botswana,Minerals,Other non-metallic …,Research & Develop…,* $12.50m,* 30,Expansion
+4,Dec 2015,Lucara Diamond,Boteti Mining,Canada,Botswana,Minerals,Nonmetallic mineral …,Extraction,$16.50m,* 48,Expansion
+5,Oct 2015,Fluor,Fluor,United States,Botswana,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+6,Sep 2015,KGK Diamonds,KGK Diamonds,India,Botswana,Minerals,Other non-metallic …,Manufacturing,* $11.00m,90,New
+7,Jul 2015,Hansa-Flex (Hans…,Hansa-Flex (Hans…,Germany,Botswana,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Mar 2015,Orange (France Te…,Orange Botswana,France,Botswana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+9,Dec 2014,CPCS,CPCS,Canada,Botswana,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+10,Dec 2014,Gem Experience,Gemological Scien…,United States,Botswana,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+11,Oct 2014,Globalstar,Globalstar,United States,Botswana,Communications,Satellite telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Jun 2014,CMA CGM,CMA CGM,France,Botswana,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Jun 2014,National Buildings…,National Buildings…,India,Botswana,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+14,Apr 2014,Continental Reins…,Continental Reins…,Nigeria,Botswana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+15,Mar 2014,International Wor…,International Wor…,Luxembourg,Botswana,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
