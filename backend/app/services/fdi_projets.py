@@ -81,6 +81,25 @@ def rapprocher(brut: str, candidats: list[dict], champ: str = "libelle_en") -> t
 
 
 # ── Montants ─────────────────────────────────────────────────────────────────
+VIDES = {"", "-", "—", "n/a", "na"}
+
+
+def _est_vide(brut) -> bool:
+    """Une case que fDi n'a pas remplie, astérisque d'estimation comprise.
+
+    La source écrit « - », mais aussi « * - » : son algorithme a bien tourné,
+    il n'a rien produit. Les deux disent la même chose — pas de valeur — et
+    l'astérisque seule ne porte aucune information : un « estimé » sans nombre
+    ne se compte, ne se somme et ne s'affiche pas.
+    """
+    if brut is None:
+        return True
+    txt = str(brut).strip()
+    if txt.startswith("*"):
+        txt = txt[1:].strip()
+    return txt.lower() in VIDES
+
+
 MONTANT = re.compile(r"^\s*(\*)?\s*\$?\s*([\d\s.,]+)\s*(m|bn|k)?\s*$", re.I)
 ECHELLE = {"k": 0.001, "m": 1.0, "bn": 1000.0, None: 1.0, "": 1.0}
 
@@ -90,9 +109,11 @@ def lire_montant(brut: str | None) -> tuple[float | None, bool | None]:
 
     L'astérisque marque les valeurs calculées par l'algorithme du Financial
     Times. Le drapeau reste nul quand la valeur l'est : « estimé » ne veut rien
-    dire sans montant.
+    dire sans montant — et fDi écrit bel et bien « * - », un tiret marqué comme
+    estimé. On le lit comme un vide, pas comme une erreur : refuser la ligne
+    ferait perdre un projet réel pour une case que la source n'a pas remplie.
     """
-    if brut is None or not str(brut).strip() or str(brut).strip() in {"-", "—", "n/a"}:
+    if _est_vide(brut):
         return None, None
     m = MONTANT.match(str(brut))
     if not m:
@@ -103,8 +124,9 @@ def lire_montant(brut: str | None) -> tuple[float | None, bool | None]:
 
 
 def lire_entier(brut: str | None) -> tuple[int | None, bool | None]:
-    """« * 415 » → (415, True). Même règle d'astérisque que les montants."""
-    if brut is None or not str(brut).strip() or str(brut).strip() in {"-", "—", "n/a"}:
+    """« * 415 » → (415, True). Même règle d'astérisque que les montants,
+    « * - » compris : un effectif estimé mais non chiffré reste un vide."""
+    if _est_vide(brut):
         return None, None
     txt = str(brut).strip()
     estime = txt.startswith("*")

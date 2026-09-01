@@ -460,3 +460,21 @@ def test_les_deux_graphies_restent_verbatim_dans_le_releve():
     lignes = lire_lot_csv(DOSSIER_PROJETS / "afrique_p20.csv")
     assert lignes[2]["entreprise"] == "G Environment"
     assert lignes[3]["entreprise"] == "G Environnement"
+
+
+def test_une_case_estimee_mais_vide_reste_un_vide():
+    """fDi écrit « * - » : son algorithme a tourné et n'a rien produit. Le
+    tiret et le tiret étoilé disent la même chose — pas de valeur.
+
+    Refuser la ligne ferait perdre un projet réel (Altech Group au Burundi,
+    page 86) pour une case que la source n'a pas remplie ; la compter comme
+    zéro serait pire encore, puisqu'un effectif inconnu n'est pas un effectif
+    nul. L'astérisque seule ne porte aucune information : « estimé » sans
+    nombre ne se somme ni ne s'affiche."""
+    from app.services.fdi_projets import lire_entier, lire_montant
+    for vide in ("-", "* -", "—", "* —", "", "  ", None, "n/a"):
+        assert lire_entier(vide) == (None, None), vide
+        assert lire_montant(vide) == (None, None), vide
+    # Et la règle ne mange pas les vraies valeurs estimées.
+    assert lire_entier("* 33") == (33, True)
+    assert lire_montant("* $9.60m") == (9.6, True)
