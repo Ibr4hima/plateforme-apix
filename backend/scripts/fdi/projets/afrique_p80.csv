@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2005,Scania,Scania Botswana,Sweden,Botswana,Automotive OEM,Heavy duty trucks,Headquarters,* $43.60m,* 197,New
+2,Aug 2004,Eurostar Diamond…,Eurostar Diamond…,Belgium,Botswana,Minerals,Other non-metallic …,Manufacturing,* $122.70m,"1,000",New
+3,Aug 2004,The Star Diamond…,Star-DMB,Belgium,Botswana,Minerals,Other non-metallic …,Manufacturing,* $36.80m,300,New
+4,Jul 2004,Firestone Diamonds,Firestone Diamonds,United Kingdom,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+5,Apr 2004,African Diamonds,African Diamonds,Ireland,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+6,Nov 2003,Gallery Gold,Gallery Gold,Australia,Botswana,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+7,Oct 2003,De Beers,Debswana,South Africa,Botswana,Minerals,Nonmetallic mineral …,Extraction,$40.00m,* 53,New
+8,Oct 2003,Ellerines Holdings,FurnCity,South Africa,Botswana,Wood products,Furniture & related p…,Retail,* $11.00m,* 119,New
+9,Jul 2003,Kingdom Financial…,Kingdom Bank Afr…,Zimbabwe,Botswana,Financial services,Retail banking,Business Services,$3.00m,40,New
+10,May 2003,LionOre Mining,LionOre Mining,Canada,Botswana,Metals,"Copper, nickel, lead, …",Extraction,* $270.00m,"* 1,012",New
+11,Apr 2026,Teyliom Group,Bridge Bank Group,Côte d Ivoire,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Jan 2026,Milbridge Group,Mark Cables,UAE,Burkina Faso,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$212.63m,* 14,New
+13,Nov 2025,Kazanci Holding,Aksa Enerji Ureti…,Turkey,Burkina Faso,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+14,Sep 2025,OBT Shipping Gro…,OBT Shipping Gro…,UAE,Burkina Faso,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Jul 2025,Gutami Group,Gutami Group,Netherlands,Burkina Faso,Renewable energy,Solar electric power,Electricity,$116.18m,* 36,New

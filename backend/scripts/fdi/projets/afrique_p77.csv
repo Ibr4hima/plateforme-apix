@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2009,African Diamonds,African Diamonds,Ireland,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+2,Nov 2009,Atlas Copco,Atlas Copco,Sweden,Botswana,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+3,Nov 2009,De Beers,Debswana,South Africa,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+4,Oct 2009,Ariya Capital,Ariya Capital,United Kingdom,Botswana,Financial services,Corporate & investm…,Business Services,* $1.30m,3,New
+5,Oct 2009,State Bank of Indi…,State Bank of Indi…,India,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Jul 2009,Accenture,Accenture,Bermuda,Botswana,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+7,Jul 2009,PPC (Pretoria Portl…,PPC (Pretoria Portl…,South Africa,Botswana,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,Expansion
+8,Jul 2009,ZimRe Holdings,ZimRe Holdings,Zimbabwe,Botswana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+9,Jun 2009,Firestone Diamonds,Firestone Diamonds,United Kingdom,Botswana,Minerals,Nonmetallic mineral …,Manufacturing,$7.50m,* 61,New
+10,Jun 2009,Tiffany & Co,Rand Diamonds,United States,Botswana,Minerals,Other non-metallic …,Manufacturing,$5.00m,* 41,New
+11,May 2009,deVere & Partners…,deVere & Partners…,Switzerland,Botswana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+12,May 2009,Yum! Brands,KFC,United States,Botswana,Food and Beverages,Food services,Retail,* $16.60m,* 177,New
+13,Feb 2009,First Merchant Ba…,Capital Bank Limit…,Malawi,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Dec 2008,CIC Energy,CIC Energy,Canada,Botswana,"Coal, oil & gas",Other petroleum & c…,Electricity,* $558.00m,* 116,New
+15,Oct 2008,African Queen Min…,African Queen Min…,Canada,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New

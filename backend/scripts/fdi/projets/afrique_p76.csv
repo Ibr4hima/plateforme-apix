@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2011,Pluczenik,Pluczenik,Belgium,Botswana,Minerals,Other non-metallic …,Manufacturing,$4.00m,300,New
+2,Mar 2011,FirstRand,First National Ban…,South Africa,Botswana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Mar 2011,Outsource Digital,Outsource Digital,South Africa,Botswana,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+4,Mar 2011,Seacom,Seacom,Mauritius,Botswana,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+5,Mar 2011,Shrenuj,Shrenuj,India,Botswana,Consumer products,Jewellery & silverware,Manufacturing,$4.55m,* 41,New
+6,Mar 2011,Suashish Diamonds,Suashish Diamonds,India,Botswana,Consumer products,Jewellery & silverware,Manufacturing,* $16.30m,* 243,New
+7,Jan 2011,State Bank of Indi…,State Bank of Indi…,India,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Dec 2010,Bank of Baroda,Bank of Baroda,India,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Oct 2010,Bank of India (BOI),Bank of India (BOI),India,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Sep 2010,Standard Chartere…,Standard Chartere…,United Kingdom,Botswana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Jul 2010,Norilsk Nickel,Norilsk Nickel,Russia,Botswana,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+12,May 2010,De Beers,De Beers,South Africa,Botswana,Minerals,Other non-metallic …,Education & Training,* $4.60m,* 94,New
+13,May 2010,Discovery Metals,Discovery Metals,Australia,Botswana,Metals,"Copper, nickel, lead, …",Extraction,* $270.00m,"* 1,012",Expansion
+14,Mar 2010,Africa First ReNais…,FMRE Property & …,Zimbabwe,Botswana,Financial services,Insurance,"Sales, Marketing & S…",$0.50m,* 2,New
+15,Feb 2010,Globalstar,Globalstar,United States,Botswana,Communications,Satellite telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New

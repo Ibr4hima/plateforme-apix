@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2007,I Hennig & Co,I Hennig & Co,United Kingdom,Botswana,Minerals,Nonmetallic mineral …,"Sales, Marketing & S…",* $2.10m,* 24,New
+2,Oct 2007,DiamonEx Limited,DiamonEx Limited,Australia,Botswana,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,New
+3,Aug 2007,Nampak,Nampak Rigid Pla…,South Africa,Botswana,Plastics,Plastics packaging m…,Manufacturing,$1.03m,* 9,New
+4,Aug 2007,Norilsk Nickel,Norilsk Nickel,Russia,Botswana,Metals,"Copper, nickel, lead, …",Extraction,* $270.00m,"* 1,012",Expansion
+5,Aug 2007,Suashish Diamonds,Suashish Diamonds,India,Botswana,Minerals,Nonmetallic mineral …,"Sales, Marketing & S…",$1.50m,* 5,New
+6,Jun 2007,Dalumi Group,Dalumi Group,Israel,Botswana,Minerals,Other non-metallic …,Manufacturing,* $12.30m,100,New
+7,Apr 2007,Pluczenik,Pluczenik,Belgium,Botswana,Minerals,Other non-metallic …,Manufacturing,$3.00m,100,New
+8,Aug 2006,LionOre Mining,Tati Nickel,Canada,Botswana,Metals,"Copper, nickel, lead, …",Manufacturing,$620.00m,"* 3,000",Expansion
+9,May 2006,Tarsus Technologies,Tarsus Technologies,South Africa,Botswana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+10,May 2006,Verizon Communi…,Verizon Business,United States,Botswana,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+11,Mar 2006,Mount Burgess Mi…,Mount Burgess Mi…,Australia,Botswana,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+12,Aug 2005,De Beers,Debswana,South Africa,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+13,Jul 2005,African Copper,African Copper,Canada,Botswana,Metals,"Copper, nickel, lead, …",Extraction,$30.00m,* 42,New
+14,Jul 2005,R Enthoven and S…,Hollard Insurance,South Africa,Botswana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+15,Mar 2005,Rio Tinto Group,Rio Tinto Mining & …,United Kingdom,Botswana,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
