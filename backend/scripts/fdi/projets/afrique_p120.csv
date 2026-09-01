@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2018,Shanghai Fosun P…,Shanghai Fosun P…,China,Côte d Ivoire,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+2,Feb 2018,Banque Regionale…,Banque Regionale…,Senegal,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Feb 2018,BASF,BASF,Germany,Côte d Ivoire,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $2.80m,* 13,New
+4,Feb 2018,Bollore Group,Bollore Transport …,France,Côte d Ivoire,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $85.90m,* 111,New
+5,Feb 2018,Gramica,Gramica,France,Côte d Ivoire,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+6,Feb 2018,Seedstars,Seedstars,Switzerland,Côte d Ivoire,Business services,Other support services,Business Services,* $27.80m,* 38,New
+7,Dec 2017,DP Survey Group,DP Survey Group,Belgium,Côte d Ivoire,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+8,Dec 2017,Hinduja Group,Ashok Leyland,India,Côte d Ivoire,Automotive OEM,Heavy duty trucks,Headquarters,* $6.50m,41,New
+9,Nov 2017,Lumos Global,Lumos Global,Netherlands,Côte d Ivoire,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+10,Nov 2017,Orange (France Te…,Orange (France Te…,France,Côte d Ivoire,Communications,Wireless telecommu…,Headquarters,$50.40m,* 179,New
+11,Nov 2017,PEGAfrica,PEGAfrica,Ghana,Côte d Ivoire,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+12,Oct 2017,Heineken Holding,Heineken,Netherlands,Côte d Ivoire,Food and Beverages,Breweries,Manufacturing,$35.49m,* 110,Expansion
+13,Oct 2017,Intelcia,Intelcia,Morocco,Côte d Ivoire,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+14,Oct 2017,Movenpick Group …,Movenpick Hotels …,Switzerland,Côte d Ivoire,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+15,Oct 2017,World Cargo Allian…,World Cargo Allian…,United States,Côte d Ivoire,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New

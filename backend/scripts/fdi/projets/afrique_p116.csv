@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2019,Toyota Motor,CFAO Group,Japan,Côte d Ivoire,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+2,Sep 2019,Toyota Motor,CFAO Group,Japan,Côte d Ivoire,Real estate,Commercial & institu…,Construction,* $704.50m,* 578,New
+3,Aug 2019,Hinduja Group,Ashok Leyland,India,Côte d Ivoire,Automotive OEM,Heavy duty trucks,Manufacturing,$10.00m,* 59,New
+4,Aug 2019,Jetex Flight Support,Jetex Flight Support,UAE,Côte d Ivoire,Transportation & Wa…,Support activities for…,"Logistics, Distributio…",* $85.90m,* 111,New
+5,Aug 2019,Lufthansa,time:matters,Germany,Côte d Ivoire,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $85.90m,* 111,New
+6,Aug 2019,Swiss Reinsurance…,Swiss Reinsurance…,Switzerland,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+7,Aug 2019,Toyota Motor,Toyota Motor,Japan,Côte d Ivoire,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+8,Aug 2019,Webhelp,Webhelp,France,Côte d Ivoire,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+9,Jul 2019,MainOne,MainOne,Nigeria,Côte d Ivoire,Communications,Wired telecommunic…,ICT & Internet Infras…,* $10.00m,* 1,New
+10,Jul 2019,Rina Group,Dekel oil,Israel,Côte d Ivoire,Food and Beverages,Snack food,Manufacturing,* $33.90m,* 377,New
+11,Jul 2019,SQORUS (Des Sys…,SQORUS (Des Sys…,France,Côte d Ivoire,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+12,Jun 2019,Bollore Group,Bollore Transport …,France,Côte d Ivoire,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$6.65m,* 30,New
+13,Jun 2019,Pharmanova,Pharmanova,Ghana,Côte d Ivoire,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$7.60m,200,New
+14,Jun 2019,Societe Generale (…,Societe Generale …,France,Côte d Ivoire,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+15,May 2019,Activa Finances,Activa Assurances,Cameroon,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $6.70m,* 40,New

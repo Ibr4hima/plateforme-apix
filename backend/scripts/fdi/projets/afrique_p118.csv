@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2018,Banque Centrale P…,Wizall,Morocco,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Dec 2018,Glovo App,Glovo App,Spain,Côte d Ivoire,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $1.80m,9,New
+3,Dec 2018,T&T Group,T&T Group,Vietnam,Côte d Ivoire,Food and Beverages,Snack food,Manufacturing,* $33.90m,* 377,New
+4,Nov 2018,Africa Global Recy…,Africa Global Recy…,Togo,Côte d Ivoire,Business services,Waste management …,Business Services,* $27.80m,* 38,New
+5,Nov 2018,Bollore Group,Bollore Transport …,France,Côte d Ivoire,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $85.90m,* 111,New
+6,Nov 2018,HEC Paris,HEC Paris,France,Côte d Ivoire,Business services,"Business schools, co…",Business Services,* $27.80m,* 38,New
+7,Nov 2018,KfW Bankengrupp…,Deutsche Investiti…,Germany,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+8,Nov 2018,Nexans,Nexans Morocco,France,Côte d Ivoire,Electronic components,Communication & en…,Manufacturing,$13.62m,100,New
+9,Nov 2018,Soufflet,Soufflet,France,Côte d Ivoire,Food and Beverages,Grains & oilseed,Research & Develop…,* $12.00m,* 55,New
+10,Oct 2018,Bennani & Associés,Bennani & Associés,Morocco,Côte d Ivoire,Business services,Legal services,Business Services,* $27.80m,* 38,New
+11,Oct 2018,Radisson Hospitali…,Radisson Hospitali…,Belgium,Côte d Ivoire,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+12,Sep 2018,Green Mineral,Green Mineral,Italy,Côte d Ivoire,Building materials,Other (Building mate…,Recycling,* $141.10m,* 122,New
+13,Sep 2018,MainOne,MDXi,Nigeria,Côte d Ivoire,Communications,Computing infrastruc…,ICT & Internet Infras…,* $10.00m,* 1,New
+14,Aug 2018,Global EcoPower,Nova Power,France,Côte d Ivoire,Renewable energy,Solar electric power,Electricity,$40.00m,30,New
+15,Jul 2018,4SiGHT Research …,4SiGHT Research …,Saudi Arabia,Côte d Ivoire,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
