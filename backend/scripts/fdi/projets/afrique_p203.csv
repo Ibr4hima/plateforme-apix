@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2019,Sabayik Company,Sabayik Company,Kuwait,Egypt,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New
+2,Nov 2019,Sabayik Company,Sabayik Company,Kuwait,Egypt,Metals,Other fabricated met…,"Sales, Marketing & S…",$6.19m,* 60,New
+3,Nov 2019,Sabayik Company,Sabayik Company,Kuwait,Egypt,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New
+4,Nov 2019,Seeds&Chips,Seeds&Chips,Italy,Egypt,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+5,Nov 2019,Super E Factory D…,Super E Factory D…,India,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+6,Nov 2019,Symrise,Symrise,Germany,Egypt,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,New
+7,Nov 2019,Vodafone Group,Vodafone Internat…,United Kingdom,Egypt,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Nov 2019,Vodafone Group,Vodafone Internat…,United Kingdom,Egypt,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+9,Oct 2019,ACWA Power,ACWA Power,Saudi Arabia,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+10,Oct 2019,Azadea Group,Azadea Group,Lebanon,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Oct 2019,Bank Audi sal-Aud…,Bank Audi Egypt,Lebanon,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Oct 2019,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Oct 2019,Deezer,Deezer,France,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $1.00m,* 5,Expansion
+14,Oct 2019,EFKO Produkty Pit…,EFKO Group,Russia,Egypt,Food and Beverages,Grains & oilseed,Manufacturing,* $51.60m,* 225,New
+15,Oct 2019,EFKO Produkty Pit…,EFKO Group,Russia,Egypt,Food and Beverages,Grains & oilseed,Research & Develop…,* $12.00m,* 55,New

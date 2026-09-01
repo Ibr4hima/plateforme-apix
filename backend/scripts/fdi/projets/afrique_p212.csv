@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2018,Metprom Group,Metprom Group,Russia,Egypt,Metals,Steel products,Manufacturing,$68.20m,* 197,New
+2,Nov 2018,Metprom Group,Metprom Group,Russia,Egypt,Metals,Steel products,Manufacturing,$170.49m,* 491,New
+3,Nov 2018,Rosatom,AtomStroyExport,Russia,Egypt,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 37,New
+4,Nov 2018,Saraya,Saraya,Japan,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,$10.00m,* 146,New
+5,Nov 2018,Sysmex,Sysmex Europe,Japan,Egypt,Medical devices,Electromedical and E…,"Sales, Marketing & S…",* $1.90m,* 18,New
+6,Nov 2018,Vodafone Group,Vodafone Egypt,United Kingdom,Egypt,Communications,Wireless telecommu…,Customer Contact C…,* $9.70m,* 606,New
+7,Nov 2018,Voltalia,Voltalia,France,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+8,Oct 2018,BBK Electronics,Oppo Electronics,China,Egypt,Communications,Communications equ…,Maintenance & Servi…,* $10.10m,* 54,New
+9,Oct 2018,BBK Electronics,Oppo Electronics,China,Egypt,Communications,Communications equ…,Maintenance & Servi…,* $10.10m,* 54,New
+10,Oct 2018,Caisse de Depot e…,Societe Centrale d…,Morocco,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+11,Oct 2018,CL Grupo Industrial,Global Energy Ser…,Spain,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+12,Oct 2018,EMKE Group,LuLu,UAE,Egypt,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $166.66m,* 467,New
+13,Oct 2018,Fawaz Alhokair Gr…,FAS Energy,Saudi Arabia,Egypt,Business services,Waste management …,Recycling,$325.00m,* 314,New
+14,Oct 2018,Fawaz Alhokair Gr…,FAS Energy,Saudi Arabia,Egypt,Renewable energy,Solar electric power,Electricity,$95.00m,* 29,New
+15,Oct 2018,Indian Register of …,Indian Register of …,India,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New

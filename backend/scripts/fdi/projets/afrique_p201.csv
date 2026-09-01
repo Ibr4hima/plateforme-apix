@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,Avaya,Avaya,United States,Egypt,Communications,Wired telecommunic…,Research & Develop…,* $6.60m,* 84,New
+2,Jan 2020,BBK Electronics,Realme,China,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $204.70m,"1,000",New
+3,Jan 2020,Bollore Group,Bollore Transport …,France,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$150.00m,400,New
+4,Jan 2020,Orange (France Te…,Orange Egypt (Mo…,France,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,$135.00m,* 20,New
+5,Jan 2020,Royal Philips Elect…,Philips Africa,Netherlands,Egypt,Medical devices,Electromedical and E…,"Sales, Marketing & S…",* $1.90m,* 18,New
+6,Jan 2020,Trukker,Trukker,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+7,Jan 2020,Union Pipes Indus…,Union Pipes Indus…,UAE,Egypt,Plastics,"Plastic pipes, pipe fit…",Manufacturing,* $140.80m,* 229,New
+8,Dec 2019,Al Nowais Invest…,Al Nowais Invest…,UAE,Egypt,Renewable energy,Wind electric power,Electricity,$550.00m,* 171,New
+9,Dec 2019,Al Nowais Invest…,Al Nowais Invest…,UAE,Egypt,Renewable energy,Solar electric power,Electricity,$200.00m,* 62,New
+10,Dec 2019,AMEA Power,AMEA Power,UAE,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+11,Dec 2019,Attijariwafa Bank,Attijariwafa Bank …,Morocco,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Dec 2019,Attijariwafa Bank,Attijariwafa Bank …,Morocco,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Dec 2019,Attijariwafa Bank,Attijariwafa Bank …,Morocco,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Dec 2019,Attijariwafa Bank,Attijariwafa Bank …,Morocco,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Dec 2019,China Poly Group,China Poly Group,China,Egypt,Rubber,Tyres,Manufacturing,* $159.00m,* 592,New

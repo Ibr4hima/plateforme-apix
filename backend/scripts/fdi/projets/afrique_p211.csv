@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2019,Noon,Noon,UAE,Egypt,Consumer products,General merchandis…,"Sales, Marketing & S…",* $3.20m,* 37,New
+2,Feb 2019,Noon,Noon,UAE,Egypt,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+3,Jan 2019,Henkel,Henkel,Germany,Egypt,Consumer products,"Cosmetics, perfume,…",Technical Support Ce…,$2.84m,120,Expansion
+4,Jan 2019,Mercedes-Benz Gr…,Mercedes-Benz,Germany,Egypt,Automotive OEM,Automobiles,Manufacturing,* $81.00m,* 942,New
+5,Jan 2019,Nestle,Nestle Egypt,Switzerland,Egypt,Food and Beverages,Coffee & tea,Manufacturing,$13.60m,240,New
+6,Jan 2019,Thomas Cook Gro…,Thomas Cook Gro…,United Kingdom,Egypt,Hotels & tourism,Accommodation,Construction,* $154.90m,* 202,New
+7,Dec 2018,Central Bank of Li…,Bank ABC (Arab B…,Libya,Egypt,Financial services,Retail banking,Headquarters,* $44.20m,* 93,Expansion
+8,Dec 2018,Econet Global,Africa Data Centres,Mauritius,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,* $275.70m,* 100,New
+9,Dec 2018,Kuoni,VFS Global,Switzerland,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+10,Dec 2018,Nano Steel,Nano Steel,Saudi Arabia,Egypt,Metals,Steel products,Headquarters,* $13.20m,* 57,New
+11,Dec 2018,Saudi Arabian Airli…,Saudi Airlines Car…,Saudi Arabia,Egypt,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Dec 2018,Trox Group (Gebr…,Trox Middle East,Germany,Egypt,Industrial equipment,"Ventilation, heating, …",Manufacturing,* $71.80m,* 219,New
+13,Nov 2018,Daily Mail and Ge…,dmg events,United Kingdom,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+14,Nov 2018,Hanergy Holdings …,Hanergy Holdings …,China,Egypt,Renewable energy,Solar electric power,Electricity,$450.00m,* 140,New
+15,Nov 2018,MENAMOBILE,MENAMOBILE,China,Egypt,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New

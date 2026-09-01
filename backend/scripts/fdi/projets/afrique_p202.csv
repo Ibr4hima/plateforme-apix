@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2019,China State Const…,China State Const…,China,Egypt,Chemicals,Basic chemicals,Manufacturing,* $261.70m,* 525,New
+2,Dec 2019,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Dec 2019,Daikin Industries,Daikin Egypt,Japan,Egypt,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+4,Dec 2019,Dallah Al-Baraka …,Albaraka Bank Eg…,Saudi Arabia,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Dec 2019,Mars,Mars,United States,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$200.00m,"* 1,511",Expansion
+6,Dec 2019,University of Hertf…,University of Hertf…,United Kingdom,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+7,Nov 2019,Andela,Andela,United States,Egypt,Business services,Employment services,Business Services,* $27.80m,* 37,New
+8,Nov 2019,Bank Audi sal-Aud…,Bank Audi Egypt,Lebanon,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Nov 2019,Bodo Moller Chemie,Bodo Moller Chemie,Germany,Egypt,Chemicals,Resin & artificial syn…,Manufacturing,* $261.70m,* 525,Expansion
+10,Nov 2019,Boehringer Ingelh…,Boehringer Ingelh…,Germany,Egypt,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+11,Nov 2019,Engie (GDF SUEZ)…,Engie Africa,France,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,Co-Location
+12,Nov 2019,Georg Fischer,Georg Fischer,Switzerland,Egypt,Plastics,"Plastic pipes, pipe fit…",Manufacturing,$7.76m,* 81,New
+13,Nov 2019,GlaxoSmithKline (…,GSK Egypt,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$4.97m,* 32,Expansion
+14,Nov 2019,GlaxoSmithKline (…,GSK Egypt,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$6.21m,* 40,Expansion
+15,Nov 2019,Sabayik Company,Sabayik Company,Kuwait,Egypt,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New

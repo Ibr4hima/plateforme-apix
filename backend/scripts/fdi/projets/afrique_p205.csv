@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2019,Ideal Standard Int…,Ideal Standard,Luxembourg,Egypt,Consumer products,Furniture & related p…,Manufacturing,* $20.10m,* 969,Expansion
+2,Sep 2019,Saint-Gobain,Saint-Gobain,France,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$8.84m,* 49,New
+3,Sep 2019,University Of Lond…,London School of …,United Kingdom,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+4,Sep 2019,Valeo,Valeo Egypt,France,Egypt,Automotive compon…,Other motor vehicle …,Technical Support Ce…,* $13.40m,* 319,New
+5,Sep 2019,Valeo,Valeo Egypt,France,Egypt,Automotive compon…,Other motor vehicle …,Technical Support Ce…,* $13.40m,* 319,New
+6,Aug 2019,Al-Futtaim Group,Al-Futtaim Group,UAE,Egypt,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+7,Aug 2019,Allianz Group,Allianz Egypt,Germany,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+8,Aug 2019,Bank Audi sal-Aud…,Bank Audi Egypt,Lebanon,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Aug 2019,Coventry University,Coventry University,United Kingdom,Egypt,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 37,New
+10,Aug 2019,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Aug 2019,Fawaz Alhokair Gr…,Arabian Centres C…,Saudi Arabia,Egypt,Real estate,Commercial & institu…,Construction,* $1.24bn,* 578,New
+12,Aug 2019,Hilton Hotels (Hilt…,Hilton Hotels (Hilt…,United States,Egypt,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+13,Aug 2019,itialuS,itialuS,United Kingdom,Egypt,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 37,New
+14,Aug 2019,Konka Group,Konka Group,China,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,$30.00m,600,New
+15,Aug 2019,Mainstream Rene…,Lekela Power,Ireland,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
