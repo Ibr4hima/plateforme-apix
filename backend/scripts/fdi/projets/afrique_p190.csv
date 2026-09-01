@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2022,Al Nowais Invest…,Amia Power,UAE,Egypt,Renewable energy,Other electric power …,Manufacturing,$800.00m,* 410,New
+2,May 2022,Bravado Gaming,Bravado Gaming,South Africa,Egypt,Leisure & entertainm…,Other amusement & …,"Sales, Marketing & S…",* $1.80m,* 29,New
+3,May 2022,Fortescue Metals …,Fortescue Future I…,Australia,Egypt,Renewable energy,Other electric power …,Manufacturing,$10.00bn,"* 3,000",New
+4,May 2022,Hapag-Lloyd,Hapag-Lloyd Dami…,Germany,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+5,May 2022,International Wor…,International Wor…,Switzerland,Egypt,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+6,May 2022,Lux Actuaries & C…,Lux Actuaries & C…,UAE,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+7,May 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+8,May 2022,Rawabi Holding,Rawabi Holding,Saudi Arabia,Egypt,Real estate,Commercial & institu…,Construction,* $1.24bn,* 578,New
+9,May 2022,STMicroelectronics,STMicroelectronics,Switzerland,Egypt,Semiconductors,Semiconductors & ot…,Research & Develop…,* $16.90m,45,New
+10,May 2022,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Egypt,Renewable energy,Other electric power …,Manufacturing,$5.00bn,"* 2,563",New
+11,Apr 2022,Alpine Group (Alpi…,Alpine Group (Alpi…,UAE,Egypt,Textiles,Clothing & clothing a…,Manufacturing,* $73.80m,"2,000",New
+12,Apr 2022,Alpine Group (Alpi…,Alpine Group (Alpi…,UAE,Egypt,Textiles,Textile product mills,Manufacturing,* $42.50m,"* 1,555",New
+13,Apr 2022,AMEA Power,AMEA Power,UAE,Egypt,Renewable energy,Other electric power …,Manufacturing,$1.30bn,750,New
+14,Apr 2022,Concentrix,Concentrix Egypt,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $11.90m,"* 1,500",Expansion
+15,Apr 2022,Concentrix,Concentrix Egypt,United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $7.90m,"* 1,000",New

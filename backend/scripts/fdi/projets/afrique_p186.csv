@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2022,ACME Group (ACM…,ACME Group (ACM…,India,Egypt,Renewable energy,Other electric power …,Manufacturing,$13.00bn,"* 3,000",New
+2,Aug 2022,Actis,Actis,United Kingdom,Egypt,Renewable energy,Other electric power …,Manufacturing,$1.50bn,* 769,New
+3,Aug 2022,Alcazar Energy,Alcazar Energy,UAE,Egypt,Renewable energy,Other electric power …,Manufacturing,$2.00bn,"* 1,025",New
+4,Aug 2022,Alfanar,Alfanar,Saudi Arabia,Egypt,Renewable energy,Other electric power …,Manufacturing,$3.50bn,"* 1,794",New
+5,Aug 2022,AP Moller - Maersk,AP Moller - Maersk,Denmark,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$500.00m,"* 2,221",Expansion
+6,Aug 2022,Azadea Group,Azadea Group,Lebanon,Egypt,Textiles,Clothing & clothing a…,"Sales, Marketing & S…",* $1.40m,* 13,Expansion
+7,Aug 2022,Azelio,Azelio,Sweden,Egypt,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+8,Aug 2022,CFC Holding,CFC Holding,UAE,Egypt,Chemicals,"Pesticide, fertilisers …",Manufacturing,$400.00m,"1,500",New
+9,Aug 2022,CK Hutchison Hold…,Hutchison Port Hol…,Hong Kong,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $350.00m,"* 1,555",New
+10,Aug 2022,CK Hutchison Hold…,Hutchison Port Hol…,Hong Kong,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $350.00m,"* 1,555",New
+11,Aug 2022,Conix.ai,Conix.ai,United Kingdom,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+12,Aug 2022,Dubai World,DP World,UAE,Egypt,Real estate,Industrial building co…,Construction,$80.00m,600,New
+13,Aug 2022,Eni SpA,Eni SpA,Italy,Egypt,Renewable energy,Other electric power …,Electricity,* $443.00m,* 57,New
+14,Aug 2022,Enlight Renewable…,Enlight Renewable…,Israel,Egypt,Renewable energy,Other electric power …,Electricity,* $443.00m,* 57,New
+15,Aug 2022,Excis Compliance,Excis Compliance,United Kingdom,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New

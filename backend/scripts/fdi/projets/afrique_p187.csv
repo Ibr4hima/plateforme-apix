@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2022,Exxon Mobil,Exxon Mobil,United States,Egypt,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+2,Aug 2022,Globeleq Generati…,Globeleq Generati…,United Kingdom,Egypt,Renewable energy,Other electric power …,Manufacturing,$11.00bn,"* 3,000",New
+3,Aug 2022,Heard Global,Heard Global,United States,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+4,Aug 2022,IBIS Consulting,IBIS Consulting,South Africa,Egypt,Business services,Environmental consu…,Business Services,* $27.80m,* 37,New
+5,Aug 2022,IT-Enterprise,IT-Enterprise,Ukraine,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+6,Aug 2022,KK Power,KK Power,UAE,Egypt,Renewable energy,Other electric power …,Manufacturing,* $3.92bn,* 993,New
+7,Aug 2022,Koker,Koker,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+8,Aug 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New
+9,Aug 2022,Public Investment…,Public Investment…,Saudi Arabia,Egypt,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+10,Aug 2022,Valeo,Valeo Egypt,France,Egypt,Automotive compon…,Other motor vehicle …,Technical Support Ce…,* $77.40m,850,Expansion
+11,Aug 2022,Vitro,Vitro,Mexico,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,* $200.00m,* 750,New
+12,Aug 2022,Vitro,Vitro,Mexico,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,* $200.00m,* 750,New
+13,Aug 2022,Zemam,Zemam,United States,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+14,Jul 2022,ADQ (Abu Dhabi …,TAQA Arabia,UAE,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+15,Jul 2022,Alfanar,Alfanar,Saudi Arabia,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,* $275.70m,* 100,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2022,Fawaz Alhokair Gr…,FAS Real Estate,Saudi Arabia,Egypt,Real estate,Residential building …,Construction,* $240.00m,* 359,New
+2,Jun 2022,GBM (Gulf Busine…,GBM (Gulf Busine…,UAE,Egypt,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,Jun 2022,GoMyCode,GoMyCode,Tunisia,Egypt,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,Expansion
+4,Jun 2022,GrubTech,GrubTech,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$5.00m,* 25,New
+5,Jun 2022,GTC Global Trade …,GTC Global Trade …,UAE,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Jun 2022,Imdaad,Imdaad,UAE,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+7,Jun 2022,J&T Express,J&T Express,Indonesia,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+8,Jun 2022,Jamjoom Pharma,Jamjoom Pharma,Saudi Arabia,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$33.40m,400,New
+9,Jun 2022,LIXIL Group (JS G…,Grohe,Japan,Egypt,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $3.20m,* 37,New
+10,Jun 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Business services,Business support ser…,Headquarters,$52.96m,550,New
+11,Jun 2022,Remote Technology,Remote Technology,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+12,Jun 2022,Sumitomo Group,Sumitomo Group,Japan,Egypt,Automotive compon…,Motor vehicle electri…,Manufacturing,* $36.20m,* 613,New
+13,Jun 2022,Webhelp,Webhelp,France,Egypt,Business services,Business support ser…,Headquarters,$13.00m,"1,100",New
+14,Jun 2022,Yash Technologies,Yash Technologies,United States,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+15,May 2022,Ackermans & van …,DEME,Belgium,Egypt,Renewable energy,Other electric power …,Manufacturing,* $1.80bn,500,New

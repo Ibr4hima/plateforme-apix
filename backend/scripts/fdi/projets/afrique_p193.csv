@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2022,Estarta,Estarta,Jordan,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+2,Jan 2022,Gulf Marketing Gr…,Gulf Marketing Gr…,UAE,Egypt,Textiles,Clothing & clothing a…,Headquarters,* $12.10m,* 53,New
+3,Jan 2022,Gulf Marketing Gr…,Gulf Marketing Gr…,UAE,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Jan 2022,Jumia,Jumia Egypt,Nigeria,Egypt,Software & IT services,Other (Software & IT…,Research & Develop…,* $14.00m,* 75,Expansion
+5,Jan 2022,Jumia,Jumia Egypt,Nigeria,Egypt,Software & IT services,Other (Software & IT…,Research & Develop…,* $14.00m,* 75,New
+6,Jan 2022,Standard Chartere…,Standard Chartere…,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Jan 2022,Standard Chartere…,Standard Chartere…,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Jan 2022,SweepSouth,SweepSouth,South Africa,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+9,Dec 2021,Nestle,Nestle Egypt,Switzerland,Egypt,Food and Beverages,Other (Food & Bever…,Manufacturing,$45.00m,* 340,Expansion
+10,Dec 2021,SiegCo,Valtech,Belgium,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+11,Dec 2021,Uflex,Uflex,India,Egypt,Chemicals,Basic chemicals,Manufacturing,$30.00m,* 86,New
+12,Dec 2021,Uflex,Uflex,India,Egypt,Plastics,Plastics packaging m…,Manufacturing,* $140.80m,* 229,Expansion
+13,Dec 2021,Waypoint Port Ser…,Waypoint Port Ser…,Switzerland,Egypt,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Dec 2021,Waypoint Port Ser…,Waypoint Port Ser…,Switzerland,Egypt,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Dec 2021,Waypoint Port Ser…,Waypoint Port Ser…,Switzerland,Egypt,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New

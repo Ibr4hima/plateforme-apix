@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2022,Gulf Capital,Gulf Capital,UAE,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Mar 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $6.81m,* 19,Expansion
+3,Mar 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $6.81m,* 123,New
+4,Mar 2022,Scatec AS,Scatec AS,Norway,Egypt,Renewable energy,Other electric power …,Manufacturing,* $3.92bn,* 993,Expansion
+5,Mar 2022,Talys,Talys,France,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+6,Mar 2022,Uber Technologies,Careem,United States,Egypt,Software & IT services,Internet publishing …,Research & Develop…,* $32.40m,* 199,Expansion
+7,Mar 2022,URB,URB,UAE,Egypt,Real estate,Residential building …,Construction,* $1.24bn,* 578,New
+8,Mar 2022,Worldwide Logistics,Worldwide Logistics,United States,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Feb 2022,Endress+Hauser,Endress+Hauser,Switzerland,Egypt,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 11,New
+10,Feb 2022,Engie (GDF SUEZ)…,National Central C…,France,Egypt,Business services,"Water, sewage & oth…",Business Services,* $27.80m,* 37,New
+11,Feb 2022,H2-Industries (H2…,H2-Industries (H2…,United States,Egypt,Renewable energy,Other electric power …,Manufacturing,$3.00bn,"* 1,538",New
+12,Feb 2022,LiteFinance,LiteFinance,Saint Vincent and…,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Feb 2022,Restaurant Secrets,Lincoln Hospitality,UAE,Egypt,Food and Beverages,Bakeries & tortillas,Retail,* $92.80m,* 107,New
+14,Feb 2022,Xylem,Xylem,United States,Egypt,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+15,Feb 2022,Zbooni,Zbooni,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New

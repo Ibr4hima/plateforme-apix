@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2021,Hellmann Worldwi…,Hellmann Worldwi…,Germany,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+2,Mar 2021,Hellmann Worldwi…,Hellmann Worldwi…,Germany,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+3,Mar 2021,Imarticus Learning,Imarticus Learning,India,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+4,Mar 2021,IMG Technology G…,Riversong Technol…,China,Egypt,Communications,Communications equ…,Headquarters,* $36.10m,* 95,New
+5,Mar 2021,Metito,Metito,UAE,Egypt,Business services,"Water, sewage & oth…",Recycling,$739.00m,* 714,New
+6,Mar 2021,TIME Hotels Mana…,TIME Hotels Mana…,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $154.90m,* 202,New
+7,Mar 2021,Zoho (AdventNet),Zoho (AdventNet),India,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+8,Feb 2021,Alfocan,Alfocan,Spain,Egypt,Food and Beverages,Seafood products,Manufacturing,$1.46m,* 11,Expansion
+9,Feb 2021,CTP Invest,CTP Invest,Czech Republic,Egypt,Real estate,Industrial building co…,Construction,$600.00m,* 897,New
+10,Feb 2021,Hydro Industries,Hydro Industries,United Kingdom,Egypt,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+11,Feb 2021,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,$25.48m,* 461,New
+12,Feb 2021,Spinneys,Spinneys Egypt,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $5.50m,100,New
+13,Jan 2021,500 Global (500 S…,500 Global (500 S…,United States,Egypt,Financial services,Corporate & investm…,Business Services,* $0.90m,3,New
+14,Jan 2021,Aldar Properties,Sodic,UAE,Egypt,Real estate,Residential building …,Construction,* $1.24bn,* 578,New
+15,Dec 2020,GoMyCode,GoMyCode,Tunisia,Egypt,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New

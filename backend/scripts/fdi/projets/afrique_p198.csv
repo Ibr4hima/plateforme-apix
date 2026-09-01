@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2020,Wego,Wego,Singapore,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Dec 2020,Zeal Rewards,Zeal Rewards,United Kingdom,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 44,New
+3,Nov 2020,Bertelsmann,Majorel,Germany,Egypt,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 978,New
+4,Nov 2020,Bluemina Citizens…,Bluemina Citizens…,UAE,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+5,Nov 2020,CYTA,CYTA,Cyprus,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,New
+6,Nov 2020,JetHQ,JetHQ,United States,Egypt,Aerospace,Aircraft,"Sales, Marketing & S…",* $5.80m,* 18,New
+7,Nov 2020,Saudi Research an…,Asharq News,Saudi Arabia,Egypt,Communications,Radio & TV broadcas…,Research & Develop…,* $6.60m,* 84,New
+8,Oct 2020,Al Habtoor Group,Al Habtoor Group,UAE,Egypt,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+9,Oct 2020,CorporateStack S…,CorporateStack S…,UAE,Egypt,Software & IT services,"Software publishers,…",Headquarters,* $0.80m,5,New
+10,Oct 2020,EMKE Group,LuLu,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+11,Oct 2020,EMKE Group,LuLu,UAE,Egypt,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+12,Oct 2020,International Medi…,The National,UAE,Egypt,Business services,"Newspaper, periodic…",Business Services,* $27.80m,* 37,New
+13,Oct 2020,Monginis,Monginis,India,Egypt,Food and Beverages,Bakeries & tortillas,Manufacturing,$9.59m,* 72,New
+14,Sep 2020,Azadea Group,Azadea Group,Lebanon,Egypt,Consumer products,"Sporting goods, hob…",Retail,* $10.90m,* 170,New
+15,Sep 2020,Foodics,Foodics,Saudi Arabia,Egypt,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
