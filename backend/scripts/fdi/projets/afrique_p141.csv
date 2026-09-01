@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,Sundance Resourc…,Sundance Resourc…,Australia,Democratic Repu…,Metals,Iron ore mining,Extraction,$619.60m,* 871,New
+2,Jan 2011,Acil Cotton Indust…,Acil Cotton Indust…,India,Democratic Repu…,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+3,Jan 2011,CEVA Group,CEVA Logistics,United Kingdom,Democratic Repu…,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Jan 2011,United Bank for Af…,United Bank for Af…,Nigeria,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jan 2011,United Bank for Af…,United Bank for Af…,Nigeria,Democratic Repu…,Financial services,Retail banking,Headquarters,* $45.10m,* 91,New
+6,Jul 2010,Atlas Copco,Atlas Copco,Sweden,Democratic Repu…,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $6.90m,80,New
+7,Jul 2010,Atlas Copco,Atlas Copco,Sweden,Democratic Repu…,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,New
+8,Jul 2010,Atlas Copco,Atlas Copco,Sweden,Democratic Repu…,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,New
+9,Jul 2010,Banro,Banro,Canada,Democratic Repu…,Metals,Gold ore & silver ore…,Extraction,* $382.30m,"* 1,012",Co-Location
+10,Jul 2010,Tiger Resources,Tiger Resources,Australia,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $382.30m,"* 1,012",New
+11,Jun 2010,Nestle,Nestle,Switzerland,Democratic Repu…,Food and Beverages,Coffee & tea,Manufacturing,* $58.40m,* 429,New
+12,May 2010,AECI,AEL Central Africa,South Africa,Democratic Repu…,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $6.20m,* 14,New
+13,May 2010,SRK Consulting,SRK Consulting,South Africa,Democratic Repu…,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+14,Apr 2010,African Trade Insu…,African Trade Insu…,Kenya,Democratic Repu…,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 100,New
+15,Feb 2010,China National Co…,China National Co…,China,Democratic Repu…,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $162.20m,* 149,New

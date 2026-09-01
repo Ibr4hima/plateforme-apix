@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2003,Banro,Banro,Canada,Democratic Repu…,Metals,Gold ore & silver ore…,Extraction,* $382.30m,"* 1,012",Expansion
+2,Jun 2003,KGHM,KGHM,Poland,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$10.00m,* 14,New
+3,Jun 2003,Kinross Gold,Kinross Gold,Canada,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$135.00m,* 190,Expansion
+4,Sep 2025,Seacom,Seacom,Mauritius,Djibouti,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+5,Jan 2025,Marsa Maroc,Marsa Maroc,Morocco,Djibouti,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Jan 2023,Hong Kong Aerosp…,Hong Kong Aerosp…,Hong Kong,Djibouti,Space & defence,Guided missile & spa…,Research & Develop…,$1.00bn,"* 3,000",New
+7,Jan 2023,TouchRoad Group,TouchRoad Group,China,Djibouti,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+8,Dec 2022,Continental Wind …,Continental Wind …,Australia,Djibouti,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+9,Jul 2022,AMEA Power,AMEA Power,UAE,Djibouti,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+10,Mar 2021,Dolphin Marine Gr…,Dolphin Marine Gr…,Egypt,Djibouti,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+11,Dec 2020,Cinturion Group,Cinturion Group,Bermuda,Djibouti,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,May 2020,China Mobile Com…,China Mobile Inter…,China,Djibouti,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+13,Feb 2020,Groupe Supdeco …,Groupe Supdeco …,Senegal,Djibouti,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+14,Oct 2019,International Wor…,International Wor…,Switzerland,Djibouti,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+15,Jul 2019,Banque Misr,Banque Misr,Egypt,Djibouti,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2009,Bank of Africa,Bank of Africa,Mali,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Mar 2009,United Bank for Af…,United Bank for Af…,Nigeria,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Mar 2009,Vale (Companhia …,Vale (Companhia …,Brazil,Democratic Repu…,Metals,Iron ore mining,"Sales, Marketing & S…",* $2.80m,* 9,New
+4,Mar 2009,Vale (Companhia …,Vale (Companhia …,Brazil,Democratic Repu…,Metals,Iron ore mining,"Sales, Marketing & S…",* $2.80m,* 9,New
+5,Feb 2009,Jindal Organisatio…,Jindal Steel & Pow…,India,Democratic Repu…,Minerals,Nonmetallic mineral …,Extraction,$20.00m,* 27,New
+6,Dec 2008,Metorex Group,Metorex Group,South Africa,Democratic Repu…,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,New
+7,Oct 2008,Vale (Companhia …,Vale (Companhia …,Brazil,Democratic Repu…,Metals,Iron ore mining,"Sales, Marketing & S…",* $2.80m,* 9,New
+8,Jul 2008,Standard Bank Gr…,Standard Bank Gr…,South Africa,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jun 2008,Anvil Mining,Anvil Mining,Australia,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$550.00m,* 773,Expansion
+10,Jun 2008,Rakeen Developm…,Rakeen Developm…,UAE,Democratic Repu…,Real estate,Real estate services,Construction,* $864.90m,* 875,New
+11,May 2008,Banco Bic,Banco Bic,Angola,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,May 2008,Eni SpA,Eni SpA,Italy,Democratic Repu…,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$13.00m,* 1,New
+13,May 2008,Radio France Inter…,Radio France Inter…,France,Democratic Repu…,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Mar 2008,Access Bank,Access Bank,Nigeria,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Mar 2008,Ecobank Transnati…,Ecobank Transnati…,Togo,Democratic Repu…,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2006,Metorex Group,Metorex Group,South Africa,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $382.30m,"* 1,012",New
+2,Feb 2006,Zain (Mobile Telec…,Celtel International,Kuwait,Democratic Repu…,Communications,Wireless telecommu…,Technical Support Ce…,$7.00m,* 84,New
+3,Jan 2006,Etablissements M…,Etablissements M…,France,Democratic Repu…,"Coal, oil & gas",Other petroleum & c…,Extraction,* $536.90m,* 214,Expansion
+4,Dec 2005,Anvil Mining,Anvil Mining,Australia,Democratic Repu…,Metals,"Copper, nickel, lead, …",Manufacturing,* $183.00m,* 342,Expansion
+5,Dec 2005,Anvil Mining,Anvil Mining,Australia,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $382.30m,"* 1,012",New
+6,Nov 2005,Anvil Mining,Anvil Mining,Australia,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,* $183.00m,* 342,New
+7,Sep 2005,Central African Mi…,Central African Mi…,United Kingdom,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,$5.00m,* 44,Expansion
+8,Sep 2005,Central African Mi…,Central African Mi…,United Kingdom,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,* $183.00m,* 342,New
+9,Sep 2005,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Democratic Repu…,"Coal, oil & gas",Other petroleum & c…,Extraction,* $730.30m,* 230,New
+10,Jun 2005,First Quantum Min…,First Quantum Min…,Canada,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$226.00m,* 318,New
+11,May 2005,Tiger Resources,Tiger Resources,Australia,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,* $382.30m,"* 1,012",New
+12,Feb 2005,African Developm…,African Developm…,Côte d Ivoire,Democratic Repu…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Jan 2005,Banro,Banro,Canada,Democratic Repu…,Metals,Gold ore & silver ore…,Extraction,* $516.40m,* 717,New
+14,Dec 2004,Banro,Banro,Canada,Democratic Repu…,Metals,Gold ore & silver ore…,Extraction,* $516.40m,* 717,New
+15,Aug 2004,Etablissements M…,Etablissements M…,France,Democratic Repu…,"Coal, oil & gas",Other petroleum & c…,Extraction,* $536.90m,* 214,New
