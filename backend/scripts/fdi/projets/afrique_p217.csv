@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2018,Majid Al Futtaim G…,Majid Al Futtaim C…,UAE,Egypt,Leisure & entertainm…,"Performing arts, spe…",Retail,* $29.30m,* 58,New
+2,Feb 2018,Mars,Mars,United States,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$42.53m,* 321,Expansion
+3,Feb 2018,Mlekovita,Mlekovita,Poland,Egypt,Food and Beverages,Dairy products,Manufacturing,$83.27m,* 629,New
+4,Feb 2018,Nokia,Nokia,Finland,Egypt,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+5,Feb 2018,Polfa Tarchomin,Polfa Tarchomin,Poland,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $34.20m,* 205,New
+6,Feb 2018,Vogt Solar,ib vogt,Germany,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+7,Feb 2018,Vogt Solar,ib vogt,Germany,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+8,Jan 2018,Al Ghurair Group,Canal Sugar Co,UAE,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$1.00bn,"* 3,000",New
+9,Jan 2018,China National Bui…,Jushi Group,China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$60.00m,* 335,Expansion
+10,Jan 2018,China National Bui…,Jushi Group,China,Egypt,Ceramics & glass,Glass & glass products,Research & Develop…,* $12.90m,* 46,New
+11,Jan 2018,Clarksons,Clarksons,United Kingdom,Egypt,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$200.00m,* 888,New
+12,Jan 2018,Digital Virgo,Digital Virgo,France,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+13,Jan 2018,Gide Loyrette Nouel,Gide Loyrette Nouel,France,Egypt,Business services,Legal services,Business Services,* $27.80m,* 37,New
+14,Jan 2018,Noon Academy,Noon Academy,Saudi Arabia,Egypt,Software & IT services,Other (Software & IT…,"Sales, Marketing & S…",* $5.20m,* 44,New
+15,Jan 2018,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Bakeries & tortillas,Manufacturing,* $51.60m,* 225,Expansion

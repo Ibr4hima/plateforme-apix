@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2017,Kawasaki Kisen K…,K Line,Japan,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+2,Nov 2017,Mitsui OSK Lines (…,Mitsui OSK Lines (…,Japan,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+3,Nov 2017,Mitsui OSK Lines (…,Mitsui OSK Lines (…,Japan,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+4,Nov 2017,Nippon Yusen Kab…,Nippon Yusen Kab…,Japan,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+5,Nov 2017,Nippon Yusen Kab…,Nippon Yusen Kab…,Japan,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+6,Nov 2017,SECI Societa Eser…,Enerray,Italy,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+7,Nov 2017,SECI Societa Eser…,Enerray,Italy,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+8,Nov 2017,Yang Ming Marine …,Yang Ming Marine …,Taiwan,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+9,Nov 2017,Yang Ming Marine …,Yang Ming Marine …,Taiwan,Egypt,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $156.20m,* 111,Expansion
+10,Oct 2017,Acciona,Acciona Energia,Spain,Egypt,Renewable energy,Solar electric power,Electricity,$180.00m,* 56,New
+11,Oct 2017,Aramex Internatio…,Aramex Internatio…,UAE,Egypt,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+12,Oct 2017,Electricite de Fran…,EDF Renouvelables,France,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+13,Oct 2017,Schneider Electric,Schneider Electric,France,Egypt,Electronic components,Electrical equipment,Manufacturing,* $86.00m,* 326,New
+14,Oct 2017,Seal Software,Seal Software,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $2.40m,12,New
+15,Sep 2017,AlSaqqaf Group,AlSaqqaf Group,Saudi Arabia,Egypt,Chemicals,"Soap, cleaning comp…",Manufacturing,$1.69m,* 5,New

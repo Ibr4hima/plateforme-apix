@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2017,Apparel Group,Apparel Group,UAE,Egypt,Textiles,Footwear,Retail,* $4.40m,* 50,New
+2,Sep 2017,Deutsche Bahn,DB Schenker,Germany,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+3,Sep 2017,Inter Ikea Holding,Ikea,Netherlands,Egypt,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,Expansion
+4,Sep 2017,International Flav…,International Flav…,United States,Egypt,Chemicals,"Paints, coatings, add…",Research & Develop…,* $14.00m,* 49,Expansion
+5,Sep 2017,Mercedes-Benz Gr…,Mercedes-Benz,Germany,Egypt,Automotive OEM,Automobiles,"Logistics, Distributio…",* $22.90m,* 93,New
+6,Aug 2017,ACWA Power,ACWA Power,Saudi Arabia,Egypt,Renewable energy,Solar electric power,Electricity,* $77.49m,* 24,New
+7,Aug 2017,ACWA Power,ACWA Power,Saudi Arabia,Egypt,Renewable energy,Solar electric power,Electricity,* $32.15m,* 10,New
+8,Aug 2017,ACWA Power,ACWA Power,Saudi Arabia,Egypt,Renewable energy,Solar electric power,Electricity,* $80.36m,* 25,New
+9,Aug 2017,AlSaqqaf Group,AlSaqqaf Group,Saudi Arabia,Egypt,Real estate,Residential building …,Construction,* $1.24bn,* 578,New
+10,Aug 2017,AlSaqqaf Group,AlSaqqaf Group,Saudi Arabia,Egypt,Real estate,Industrial building co…,Construction,* $1.24bn,* 578,New
+11,Aug 2017,AlSaqqaf Group,AlSaqqaf Group,Saudi Arabia,Egypt,Real estate,Commercial & institu…,Construction,$16.96m,* 25,New
+12,Aug 2017,Boryszew,Boryszew,Poland,Egypt,Automotive compon…,Other motor vehicle …,Manufacturing,* $36.20m,* 613,New
+13,Aug 2017,Dubai World,DP World,UAE,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+14,Aug 2017,Panasonic (Matsus…,Panasonic (Matsus…,Japan,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,* $15.70m,225,New
+15,Aug 2017,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Egypt,Communications,Communications equ…,Retail,* $6.30m,* 31,New

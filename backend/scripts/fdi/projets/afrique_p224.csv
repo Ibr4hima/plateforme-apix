@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2017,Sun Pharmaceutic…,Ranbaxy Laborato…,India,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$12.50m,* 81,New
+2,Jan 2017,BBK Electronics,Oppo Electronics,China,Egypt,Communications,Communications equ…,Maintenance & Servi…,* $10.10m,* 54,New
+3,Jan 2017,BBK Electronics,Oppo Electronics,China,Egypt,Communications,Communications equ…,Maintenance & Servi…,* $10.10m,* 54,New
+4,Jan 2017,Guangzhou Goods…,Guangzhou Goods…,China,Egypt,Metals,Alumina & aluminiu…,Manufacturing,$100.00m,* 288,New
+5,Jan 2017,Inditex,Stradivarius,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+6,Jan 2017,Minsk Automobile …,Minsk Automobile …,Belarus,Egypt,Automotive OEM,Heavy duty trucks,Manufacturing,$5.00m,* 30,New
+7,Jan 2017,New Hope Group (…,New Hope Group (…,China,Egypt,Food and Beverages,Animal food,Manufacturing,* $51.60m,* 225,New
+8,Dec 2016,Minsk Automobile …,Minsk Automobile …,Belarus,Egypt,Automotive OEM,Heavy duty trucks,"Sales, Marketing & S…",* $9.70m,* 26,New
+9,Dec 2016,Sumitomo Group,Sumitomo Electric…,Japan,Egypt,Automotive compon…,Motor vehicle electri…,Manufacturing,$10.50m,"1,000",New
+10,Dec 2016,ZTE,ZTE,China,Egypt,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+11,Nov 2016,Bemasa Caps,Bemasa Caps,Spain,Egypt,Metals,Other fabricated met…,Manufacturing,* $9.70m,28,New
+12,Nov 2016,GE Aerospace (Ge…,GE Oil and Gas,United States,Egypt,Industrial equipment,"Agriculture, construc…",Manufacturing,* $4.30m,* 40,Expansion
+13,Nov 2016,Uber Technologies,Uber Technologies,United States,Egypt,Software & IT services,Internet publishing …,Education & Training,* $6.85m,* 74,Expansion
+14,Nov 2016,Uber Technologies,Uber Technologies,United States,Egypt,Software & IT services,Internet publishing …,Headquarters,$6.85m,* 42,Expansion
+15,Nov 2016,Uber Technologies,Uber Technologies,United States,Egypt,Software & IT services,Internet publishing …,Technical Support Ce…,* $13.70m,* 137,New

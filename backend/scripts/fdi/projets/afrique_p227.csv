@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2016,White & Case,White & Case,United States,Egypt,Business services,Legal services,Business Services,* $27.80m,* 37,New
+2,May 2016,Bertazzoni Italia,Bertazzoni Italia,Italy,Egypt,Consumer electronics,Household appliances,Manufacturing,$61.31m,"1,000",New
+3,May 2016,Deutsche Post,DHL Express,Germany,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$1.13m,* 5,New
+4,May 2016,Huawei Technologi…,Huawei Technologi…,China,Egypt,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+5,May 2016,Megan Group,Megan Group,China,Egypt,Consumer electronics,Other (Consumer ele…,Manufacturing,* $69.00m,"* 1,020",New
+6,May 2016,Sisban Holding,Sisban Holding,Saudi Arabia,Egypt,Real estate,Residential building …,Construction,$3.60bn,"* 3,000",New
+7,May 2016,StarLink,StarLink,UAE,Egypt,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,Expansion
+8,May 2016,TCL,TCL Multimedia Te…,China,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,$2.40m,* 34,New
+9,Apr 2016,BP (British Petrole…,BP (British Petrole…,United Kingdom,Egypt,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $922.30m,* 213,New
+10,Apr 2016,Eni SpA,Eni SpA,Italy,Egypt,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $922.30m,* 213,New
+11,Apr 2016,IDG (International…,IDC,United States,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+12,Apr 2016,Martifer,Martifer Solar,Portugal,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+13,Apr 2016,Mitsubishi Heavy I…,Mitsubishi Heavy I…,Japan,Egypt,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+14,Apr 2016,MTN Group,MTN Group,South Africa,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,New
+15,Apr 2016,Pacific Internation…,Pacific Internation…,Singapore,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New

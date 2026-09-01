@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2016,Apex Internationa…,Apex Internationa…,United States,Egypt,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,New
+2,Oct 2016,China Fortune Lan…,China Fortune Lan…,China,Egypt,Real estate,Other (Real estate),Construction,$20.00bn,"* 3,000",New
+3,Oct 2016,Hugo Boss,Hugo Boss,Germany,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Oct 2016,Huhtamaki,Huhtamaki,Finland,Egypt,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$25.12m,300,New
+5,Oct 2016,Mitsubishi UFJ Fin…,Mitsubishi UFJ Fin…,Japan,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,Expansion
+6,Oct 2016,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Egypt,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+7,Oct 2016,Unilever,Unilever,United Kingdom,Egypt,Consumer products,Other (Consumer pr…,Manufacturing,$24.03m,* 351,New
+8,Sep 2016,Eni SpA,Petrobel,Italy,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+9,Sep 2016,Sanmar Group,TCI Sanmar Chem…,India,Egypt,Chemicals,Basic chemicals,Manufacturing,$20.00m,* 57,Expansion
+10,Aug 2016,Daikin Industries,Daikin Europe,Japan,Egypt,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+11,Aug 2016,Orange (France Te…,Orange Egypt (Mo…,France,Egypt,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+12,Aug 2016,Tebian Electric Ap…,TBEA SunOasis,China,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+13,Jul 2016,BBK Electronics,Oppo Electronics,China,Egypt,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+14,Jul 2016,Careem,Careem,UAE,Egypt,Software & IT services,Internet publishing …,Research & Develop…,* $32.40m,* 199,New
+15,Jul 2016,Spinneys,Spinneys,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
