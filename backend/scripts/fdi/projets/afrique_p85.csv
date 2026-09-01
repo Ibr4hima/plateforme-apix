@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2003,Jilbey Gold Explor…,Jilbey Gold Explor…,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+2,Sep 2025,BDO Global Coord…,BDO Global Coord…,Belgium,Burundi,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+3,Mar 2025,Blueberry Travel,Blueberry Travel,UAE,Burundi,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+4,May 2023,Gigawatt Global,Gigawatt Global,Netherlands,Burundi,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Expansion
+5,May 2023,Prime Internation…,Prime Internation…,Rwanda,Burundi,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Mar 2023,Kenya Commercia…,Kenya Commercia…,Kenya,Burundi,Financial services,Retail banking,Business Services,* $0.90m,3,Expansion
+7,Aug 2019,Lufthansa,time:matters,Germany,Burundi,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+8,Jul 2018,Fracht,Fracht,Switzerland,Burundi,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Aug 2017,Rainbow Rare Eart…,Rainbow Rare Eart…,United Kingdom,Burundi,Metals,Other metal ore mini…,Manufacturing,$1.50m,* 10,New
+10,Aug 2017,SEW-Eurodrive,SEW-Eurodrive,Germany,Burundi,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 11,Expansion
+11,Jan 2017,Gigawatt Global,Gigawatt Global,Netherlands,Burundi,Renewable energy,Solar electric power,Electricity,$14.00m,* 4,New
+12,Aug 2016,CityBlue Hotels,CityBlue Hotels,Uganda,Burundi,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+13,Feb 2016,Viettel,Viettel Burundi,Vietnam,Burundi,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+14,Apr 2015,Equity Bank,Equity Bank,Kenya,Burundi,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Mar 2015,Rainbow Rare Eart…,Rainbow Rare Eart…,United Kingdom,Burundi,Metals,Other metal ore mini…,Extraction,* $410.90m,* 717,New

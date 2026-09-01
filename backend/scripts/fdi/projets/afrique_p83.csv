@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2017,Punto FA,Mango,Spain,Burkina Faso,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,Oct 2016,Lagazel,Lagazel,France,Burkina Faso,Electronic components,Electric lighting equi…,Manufacturing,* $2.30m,20,New
+3,Sep 2016,MicroCred,MicroCred,France,Burkina Faso,Financial services,Corporate & investm…,Headquarters,* $7.80m,45,New
+4,Jun 2016,Douja Promotion …,Ciment d'Afrique (…,Morocco,Burkina Faso,Building materials,Cement & concrete p…,Manufacturing,$28.41m,* 70,New
+5,Apr 2016,OLVEA (Sirh) (Soc…,OLVEA (Sirh) (Soc…,France,Burkina Faso,Food and Beverages,Grains & oilseed,Manufacturing,* $4.70m,20,New
+6,Jun 2014,Dundee Corporation,Windiga Energy,Canada,Burkina Faso,Renewable energy,Solar electric power,Electricity,$50.00m,150,New
+7,May 2014,Standard Bank Gr…,Standard Bank Gr…,South Africa,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Jan 2014,Banque de dévelo…,Banque de dévelo…,Mali,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Jul 2013,AECI,AECI,South Africa,Burkina Faso,Chemicals,Other chemical prod…,Manufacturing,* $285.70m,* 455,New
+10,Apr 2013,Tunisair,Tunisair,Tunisia,Burkina Faso,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Mar 2013,Heidelberg Materi…,Heidelberg Materi…,Germany,Burkina Faso,Building materials,Cement & concrete p…,Manufacturing,$50.00m,100,New
+12,Feb 2013,Bharti Group,Bharti Airtel,India,Burkina Faso,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+13,Feb 2013,Douja Promotion …,Douja Promotion …,Morocco,Burkina Faso,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+14,Oct 2012,Atlas Copco,Atlas Copco,Sweden,Burkina Faso,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $1.10m,10,New
+15,Sep 2011,SEMAFO,SEMAFO,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Manufacturing,$112.50m,* 993,Expansion

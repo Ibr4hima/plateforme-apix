@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,Schneider Electric,Schneider Electric…,France,Burkina Faso,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+2,Nov 2019,Fracht,Fracht Burkina Faso,Switzerland,Burkina Faso,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Aug 2019,Grand Capital,Grand Capital,Russia,Burkina Faso,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Aug 2019,Lufthansa,time:matters,Germany,Burkina Faso,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+5,May 2019,BIA Group,BIA Burkina,Mauritius,Burkina Faso,Industrial equipment,"Agriculture, construc…",Headquarters,* $10.10m,* 54,Expansion
+6,May 2019,West African Reso…,West African Reso…,Australia,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,New
+7,Apr 2019,Hadid Internation…,Hadid Internation…,UAE,Burkina Faso,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Jan 2019,KeyOpsTech,KeyOpsTech,France,Burkina Faso,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+9,Dec 2018,WaystoCap,WaystoCap,Morocco,Burkina Faso,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+10,Nov 2018,Red Star Express,Red Star Express,Nigeria,Burkina Faso,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Aug 2018,BIA Group,BIA Burkina,Mauritius,Burkina Faso,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+12,Aug 2018,VoxAfrica,VoxAfrica,United Kingdom,Burkina Faso,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+13,Feb 2018,Ayka Textile,Ayka Textile,Turkey,Burkina Faso,Textiles,Textile product mills,Manufacturing,$378.00m,"* 3,000",New
+14,Feb 2018,Banque Centrale P…,Groupe Banque At…,Morocco,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Feb 2018,Heidelberg Materi…,Cimburkina,Germany,Burkina Faso,Building materials,Cement & concrete p…,Manufacturing,$28.16m,* 69,Expansion

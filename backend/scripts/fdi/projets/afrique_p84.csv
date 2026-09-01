@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2011,Mercator Transport,Mercator Transport,Canada,Burkina Faso,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+2,May 2011,Spanco,Spanco,India,Burkina Faso,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+3,Feb 2011,SEMAFO,SEMAFO,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Manufacturing,$25.00m,* 221,Expansion
+4,Oct 2010,Attijariwafa Bank,Attijariwafa Bank,Morocco,Burkina Faso,Financial services,Retail banking,Business Services,* $9.50m,* 22,New
+5,Jul 2010,SEMAFO,SEMAFO,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Manufacturing,* $178.90m,* 342,Expansion
+6,Jun 2010,IAMGold,IAMGold,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+7,Dec 2009,Avocet Mining,Avocet Mining,United Kingdom,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+8,Aug 2008,Ecobank Transnati…,Ecobank Burkina,Togo,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Aug 2008,Ecobank Transnati…,Ecobank Burkina,Togo,Burkina Faso,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Jan 2008,Ridge Mining,Amara Mining (Clu…,United Kingdom,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+11,Oct 2007,Groupe Banque Po…,Coface,France,Burkina Faso,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Jul 2005,Comete Group,Comete Engineeri…,Tunisia,Burkina Faso,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+13,Jun 2005,Riverstone Resour…,Riverstone Resour…,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+14,May 2005,Etruscan Resources,Etruscan Resources,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+15,Sep 2004,Orezone Resources,Orezone Resources,Canada,Burkina Faso,Metals,Gold ore & silver ore…,Extraction,$12.00m,* 17,New
