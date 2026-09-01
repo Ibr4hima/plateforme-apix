@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2023,Altice NV,Intelcia,Netherlands,Egypt,Business services,Business support ser…,Customer Contact C…,* $8.09m,* 500,New
+2,Jun 2023,ARICOMA Group,Musala Soft,Czech Republic,Egypt,Software & IT services,Custom computer pr…,Business Services,* $7.70m,* 96,Expansion
+3,Jun 2023,ARICOMA Group,Musala Soft,Czech Republic,Egypt,Software & IT services,Custom computer pr…,Business Services,* $7.60m,* 94,Expansion
+4,Jun 2023,ARICOMA Group,Musala Soft,Czech Republic,Egypt,Software & IT services,Custom computer pr…,Business Services,* $7.80m,* 97,Expansion
+5,Jun 2023,Bajaj Group,Bajaj Auto,India,Egypt,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $55.90m,* 583,Expansion
+6,Jun 2023,Finestra,Finestra,Italy,Egypt,Real estate,Industrial building co…,Construction,* $1.24bn,* 578,New
+7,Jun 2023,Hela Clothing,Hela Clothing,Sri Lanka,Egypt,Textiles,Clothing & clothing a…,Manufacturing,* $42.50m,"* 1,555",Expansion
+8,Jun 2023,JJT Group,Roha Dyechem,India,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $261.70m,* 525,Expansion
+9,Jun 2023,Multi Dimensional …,Multi Dimensional …,Canada,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,New
+10,Jun 2023,Samsung Group,Samsung Electron…,South Korea,Egypt,Communications,Communications equ…,Manufacturing,* $22.30m,* 400,New
+11,Jun 2023,Vivo Electronics,Vivo Electronics,China,Egypt,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+12,May 2023,AstraZeneca,AstraZeneca,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,Headquarters,* $42.10m,* 109,Expansion
+13,May 2023,CFI Financial Grou…,CFI Financial Grou…,Lebanon,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,May 2023,GoGlobal,GoGlobal,Japan,Egypt,Business services,Employment services,Business Services,* $27.80m,* 37,New
+15,May 2023,GPX Global Syste…,GPX Global Syste…,United States,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,$87.40m,* 13,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2023,United Energy Gro…,United Energy Gro…,Hong Kong,Egypt,Renewable energy,Other electric power …,Manufacturing,$6.75bn,"* 3,000",New
+2,Oct 2023,Zhejiang Hengshe…,Zhejiang Hengshe…,China,Egypt,Textiles,Textile product mills,Manufacturing,$70.00m,"1,500",New
+3,Sep 2023,Abu Dhabi Nation…,ADNOC Distribution,UAE,Egypt,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+4,Sep 2023,Aldar Properties,Sodic,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $154.90m,* 202,Co-Location
+5,Sep 2023,Aldar Properties,Sodic,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $154.90m,* 202,New
+6,Sep 2023,Dama,Paul & Shark,Italy,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,Sep 2023,Far-Eastern Shippi…,FESCO Transport …,Russia,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+8,Sep 2023,Interpublic Group …,McCann Health,United States,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+9,Sep 2023,Johnson Controls …,Johnson Controls …,Ireland,Egypt,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+10,Sep 2023,Kronospan Holdings,Kronospan,Cyprus,Egypt,Wood products,Wood products,Manufacturing,$50.00m,* 106,New
+11,Sep 2023,PayToMe.co,PayToMe.co,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+12,Sep 2023,Prometey,Prometey,Ukraine,Egypt,Food and Beverages,Grains & oilseed,"Sales, Marketing & S…",* $4.50m,* 18,New
+13,Sep 2023,Visa International,Visa International,United States,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,Expansion
+14,Aug 2023,Al Baraqah Bank,Al Baraqah Bank,Bahrain,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Aug 2023,Al Baraqah Bank,Al Baraqah Bank,Bahrain,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

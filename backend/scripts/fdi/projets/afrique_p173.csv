@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2024,PricewaterhouseC…,PwC Middle East,United Kingdom,Egypt,Business services,"Accounting, tax prep…",Business Services,* $37.70m,* 250,Expansion
+2,Jan 2024,TriStratus,TriStratus,Malta,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+3,Jan 2024,Vehiclevo,Vehiclevo,Germany,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 199,New
+4,Dec 2023,ACWA Power,ACWA Power,Saudi Arabia,Egypt,Renewable energy,Other electric power …,Manufacturing,$4.00bn,"* 2,050",New
+5,Dec 2023,Henneway,Henneway,China,Egypt,Textiles,Apparel accessories …,Manufacturing,$50.00m,"2,000",New
+6,Nov 2023,AlKraida Dates,AlKraida Dates,Saudi Arabia,Egypt,Food and Beverages,Fruits & vegetables …,Manufacturing,* $51.60m,* 225,New
+7,Nov 2023,COFRA,COFRA,Italy,Egypt,Textiles,Footwear,Manufacturing,$10.75m,* 291,New
+8,Nov 2023,ContentSquare,ContentSquare,France,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 44,New
+9,Nov 2023,D.B. Group,D.B. Group,Italy,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Nov 2023,Dana Gas,Dana Gas,UAE,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$43.00m,* 15,Expansion
+11,Nov 2023,European Investm…,European Investm…,Luxembourg,Egypt,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,Expansion
+12,Nov 2023,First Abu Dhabi B…,First Abu Dhabi B…,UAE,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Nov 2023,Küçükçalık Şirketl…,Küçükçalık Şirketl…,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$500.00m,"* 3,000",New
+14,Nov 2023,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+15,Nov 2023,Platinum Industries,Platinum Industries,India,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,$6.00m,* 17,New

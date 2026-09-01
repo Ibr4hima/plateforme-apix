@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2022,District Real Estate,District Real Estate,UAE,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+2,Sep 2022,Engie (GDF SUEZ)…,National Central C…,France,Egypt,Business services,"Water, sewage & oth…",Business Services,* $27.80m,* 37,New
+3,Sep 2022,Flex Pet,Flex Pet,India,Egypt,Chemicals,Resin & artificial syn…,Manufacturing,$110.00m,* 315,New
+4,Sep 2022,MVP Match,MVP Match,Germany,Egypt,Business services,Employment services,Business Services,* $27.80m,* 37,New
+5,Sep 2022,NAGA Architects,NAGA Architects,UAE,Egypt,Business services,"Architectural, engine…",Business Services,* $27.80m,* 37,Expansion
+6,Sep 2022,Ocean Rubber Fac…,Ocean Rubber Fac…,UAE,Egypt,Rubber,Other rubber products,"Sales, Marketing & S…",* $2.70m,* 19,New
+7,Sep 2022,Polish Aviation Gr…,LOT Polish Airlines…,Poland,Egypt,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Sep 2022,Ponea Health,Ponea Health,Kenya,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 44,New
+9,Sep 2022,Precise Biopharma,Precise Biopharma,India,Egypt,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+10,Sep 2022,Rechi Precision,Rechi Precision,Taiwan,Egypt,Industrial equipment,"Ventilation, heating, …",Manufacturing,$33.00m,* 307,New
+11,Sep 2022,Saint-Gobain,Saint-Gobain,France,Egypt,Building materials,"Asphalt paving, roofi…",Manufacturing,* $94.40m,* 496,New
+12,Sep 2022,Shandong Tianyi …,Shandong Tianyi …,China,Egypt,Chemicals,Basic chemicals,Manufacturing,* $261.70m,* 525,New
+13,Sep 2022,SweepSouth,SweepSouth,South Africa,Egypt,Business services,Other support services,Business Services,* $27.80m,* 37,Expansion
+14,Sep 2022,Vehiclevo,Vehiclevo,Germany,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,Expansion
+15,Sep 2022,Vodafone Group,Vodafone Group,United Kingdom,Egypt,Communications,Wireless telecommu…,Shared Services Cen…,* $117.70m,"1,000",New

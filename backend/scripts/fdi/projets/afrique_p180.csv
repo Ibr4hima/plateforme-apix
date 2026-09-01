@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2023,Agility,Agility,Kuwait,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$100.00m,* 444,New
+2,Mar 2023,Capgemini,Capgemini,France,Egypt,Software & IT services,Custom computer pr…,Business Services,* $242.00m,"3,000",Expansion
+3,Mar 2023,China Energy Engi…,China Energy Engi…,China,Egypt,Renewable energy,Other electric power …,Manufacturing,$6.75bn,"* 2,000",New
+4,Mar 2023,China National Bui…,Jushi Group,China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$320.00m,560,Expansion
+5,Mar 2023,COSCO SHIPPING…,COSCO Shipping P…,China,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$375.00m,"* 1,666",New
+6,Mar 2023,GrubMarket,Salix Fruits,United States,Egypt,Food and Beverages,Fruits & vegetables …,"Sales, Marketing & S…",* $4.50m,* 18,New
+7,Mar 2023,Haier Group,Haier Smart Home,China,Egypt,Consumer electronics,Household appliances,Manufacturing,$160.00m,"2,000",New
+8,Mar 2023,IPAG Business Sc…,IPAG Business Sc…,France,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+9,Mar 2023,Midea Group,Midea Group,China,Egypt,Consumer electronics,Household appliances,Manufacturing,$25.00m,270,New
+10,Mar 2023,Midea Group,Midea Group,China,Egypt,Consumer electronics,Household appliances,"Logistics, Distributio…",* $20.50m,* 102,New
+11,Mar 2023,Mothmerat Group,Dice Marketing & …,Saudi Arabia,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+12,Mar 2023,Scope Investment,Scope Investment,UAE,Egypt,Medical devices,Medical equipment &…,Manufacturing,$9.70m,* 30,New
+13,Mar 2023,SoluGrowth,SoluGrowth,South Africa,Egypt,Business services,Business support ser…,Business Services,* $27.80m,* 37,New
+14,Mar 2023,Star Agritech Inte…,Star Agritech Inte…,Turkey,Egypt,Food and Beverages,Tobacco,"Sales, Marketing & S…",* $4.50m,* 18,New
+15,Mar 2023,Talgo,Talgo,Spain,Egypt,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $55.90m,* 583,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2022,Mondragon Corpor…,Copreci,Spain,Egypt,Industrial equipment,General purpose ma…,Manufacturing,$7.60m,* 71,New
+2,Dec 2022,Ocior Energy,Ocior Energy,UAE,Egypt,Renewable energy,Other electric power …,Manufacturing,$4.00bn,"* 2,050",New
+3,Dec 2022,Olayan Investmen…,El Rashidi El Mizan,Liechtenstein,Egypt,Food and Beverages,Seasoning & dressing,Manufacturing,$150.00m,"* 1,133",Expansion
+4,Dec 2022,Voltalia,Voltalia,France,Egypt,Renewable energy,Other electric power …,Manufacturing,* $3.92bn,* 993,New
+5,Nov 2022,500 Global (500 S…,500 Global (500 S…,United States,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Nov 2022,Capgemini,Capgemini,France,Egypt,Software & IT services,Custom computer pr…,Business Services,* $16.10m,200,New
+7,Nov 2022,Engie (GDF SUEZ)…,Engie Africa,France,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+8,Nov 2022,Koc Holding,Arçelik A.S.,Turkey,Egypt,Consumer electronics,Household appliances,Manufacturing,$110.00m,"2,000",New
+9,Nov 2022,Mubadala Investm…,Masdar,UAE,Egypt,Renewable energy,Wind electric power,Electricity,$10.00bn,"3,200",New
+10,Nov 2022,Pfizer,Pfizer,United States,Egypt,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+11,Nov 2022,SSH Design,SSH Design,Kuwait,Egypt,Business services,"Architectural, engine…",Business Services,* $27.80m,* 37,New
+12,Nov 2022,Tetra Laval,Tetra Pak,Switzerland,Egypt,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$2.65m,* 14,New
+13,Oct 2022,Agility,Agility Egypt,Kuwait,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $30.00m,* 133,New
+14,Oct 2022,Almarai,Beyti,Saudi Arabia,Egypt,Food and Beverages,Dairy products,Manufacturing,$6.81m,* 51,New
+15,Oct 2022,Arrow Electronics,eInfochips,United States,Egypt,Semiconductors,Semiconductors & ot…,Research & Develop…,* $13.10m,35,New

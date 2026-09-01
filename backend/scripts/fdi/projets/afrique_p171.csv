@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2024,Feerum,Feerum,Poland,Egypt,Industrial equipment,"Agriculture, construc…",Manufacturing,$31.67m,* 295,New
+2,Mar 2024,Grand Community,Grand Community,Kuwait,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+3,Mar 2024,Gulf Marketing Gr…,Gulf Marketing Gr…,UAE,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Mar 2024,Huhtamaki,Huhtamaki,Finland,Egypt,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $49.10m,250,New
+5,Mar 2024,Japan Tobacco,Japan Tobacco Int…,Japan,Egypt,Food and Beverages,Tobacco,"Sales, Marketing & S…",* $4.50m,* 18,New
+6,Mar 2024,Saint-Gobain,Saint-Gobain,France,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$188.69m,"* 1,054",New
+7,Mar 2024,Tac Mutfak,Tac Mutfak,Turkey,Egypt,Consumer products,Furniture & related p…,Manufacturing,$1.50m,* 22,New
+8,Mar 2024,Verger Group,Verger Group,UAE,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+9,Feb 2024,ADQ (Abu Dhabi …,ADQ (Abu Dhabi …,UAE,Egypt,Real estate,Residential building …,Construction,* $24.00bn,"* 3,000",New
+10,Feb 2024,AmmPower,AmmPower,Canada,Egypt,Renewable energy,Other electric power …,Manufacturing,* $3.92bn,* 993,New
+11,Feb 2024,CIS Gaz,CIS Gaz,Romania,Egypt,"Coal, oil & gas",Support activities for…,Business Services,* $4.50m,* 55,New
+12,Feb 2024,Computer Learnin…,Computer Learnin…,Kenya,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+13,Feb 2024,EHAF Consulting E…,EHAF Consulting E…,UAE,Egypt,Business services,"Architectural, engine…",Business Services,* $1.50m,10,Expansion
+14,Feb 2024,Estarta,Estarta,Jordan,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,Expansion
+15,Feb 2024,European Financia…,EFG Eurobank Erg…,Luxembourg,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

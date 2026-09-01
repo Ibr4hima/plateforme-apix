@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,Malabar Group,Malabar Gold and …,India,Egypt,Consumer products,Jewellery & silverware,Retail,* $32.00m,* 200,New
+2,Jan 2023,National Basketba…,National Basketba…,United States,Egypt,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $1.80m,* 29,New
+3,Jan 2023,Rawabi Holding,Magnom Properties,Saudi Arabia,Egypt,Real estate,Commercial & institu…,Construction,* $1.24bn,* 578,New
+4,Jan 2023,SpaceEdge Techn…,TheServerHost,India,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,* $275.70m,* 100,New
+5,Jan 2023,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,* $42.50m,"* 1,555",Expansion
+6,Jan 2023,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,Co-Location
+7,Jan 2023,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,Co-Location
+8,Jan 2023,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,Co-Location
+9,Dec 2022,AMEA Power,AMEA Power,UAE,Egypt,Renewable energy,Solar electric power,Electricity,* $550.00m,* 171,New
+10,Dec 2022,AMEA Power,AMEA Power,UAE,Egypt,Renewable energy,Wind electric power,Electricity,* $550.00m,* 171,New
+11,Dec 2022,Atos (Atos Origin),Atos (Atos Origin),France,Egypt,Software & IT services,Custom computer pr…,Business Services,* $80.70m,"1,000",Expansion
+12,Dec 2022,Bayerische Motore…,Bayerische Motore…,Germany,Egypt,Automotive OEM,Automobiles,Manufacturing,$150.00m,600,New
+13,Dec 2022,Creative Power So…,Creative Power So…,Switzerland,Egypt,Electronic components,All other electrical e…,Manufacturing,$5.75m,91,New
+14,Dec 2022,DeFacto Perakend…,DeFacto Perakend…,Turkey,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Dec 2022,Mahindra Group,Tech Mahindra,India,Egypt,Software & IT services,Custom computer pr…,Business Services,* $80.70m,"1,000",New

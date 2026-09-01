@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2023,Point Group,Point Group,South Africa,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+2,Oct 2023,4iG,4iG,Hungary,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,New
+3,Oct 2023,DXC Technology,Luxoft,United States,Egypt,Software & IT services,Custom computer pr…,Business Services,* $8.10m,101,New
+4,Oct 2023,Eroglu Holding,Eroglu Holding,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$40.00m,"* 1,083",New
+5,Oct 2023,Hengtong Optic-El…,Hengtong Optic-El…,China,Egypt,Electronic components,Communication & en…,Manufacturing,$18.00m,* 158,Expansion
+6,Oct 2023,Indochine Interna…,Indochine Interna…,China,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$21.30m,* 577,New
+7,Oct 2023,IntouchCX,IntouchCX,Canada,Egypt,Business services,Business support ser…,Customer Contact C…,* $4.00m,500,New
+8,Oct 2023,Itochu,Itochu,Japan,Egypt,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $63.40m,* 85,New
+9,Oct 2023,re.life,re.life,UAE,Egypt,Software & IT services,Custom computer pr…,Business Services,* $8.00m,* 99,New
+10,Oct 2023,Rungas Group,Rungas Group,Nigeria,Egypt,Industrial equipment,All other industrial m…,Manufacturing,* $71.80m,* 219,New
+11,Oct 2023,Shaoxing Yuding T…,Shaoxing Yuding T…,China,Egypt,Textiles,Textile product mills,Manufacturing,$5.00m,* 135,New
+12,Oct 2023,Shengzhou Captai…,Shengzhou Captai…,China,Egypt,Textiles,Textile product mills,Manufacturing,$5.00m,* 135,New
+13,Oct 2023,Spinneys,Spinneys Egypt,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $5.50m,100,New
+14,Oct 2023,Tema Group,LC Waikiki,Turkey,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Oct 2023,United Energy Gro…,United Energy Gro…,Hong Kong,Egypt,Chemicals,Basic chemicals,Manufacturing,$8.00bn,"* 3,000",New
