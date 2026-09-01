@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2020,Yamee,Yamee,Netherlands,Democratic Repu…,Food and Beverages,Food services,"Sales, Marketing & S…",* $4.50m,* 18,New
+2,Jan 2020,Guangzhou Sunda…,Guangzhou Sunda…,China,Democratic Repu…,Ceramics & glass,Clay product & refra…,Manufacturing,* $64.00m,* 379,New
+3,Dec 2019,International Cont…,Matadi Gateway T…,Philippines,Democratic Repu…,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$100.00m,* 444,Expansion
+4,Oct 2019,Nimba Group,Nimba Group,United States,Democratic Repu…,Minerals,Other non-metallic …,"Sales, Marketing & S…",* $1.30m,* 7,New
+5,Oct 2019,Trafigura Beheer,Trafigura Group,Netherlands,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,$450.00m,"* 3,000",New
+6,Jul 2019,Affaso,Affaso,Netherlands,Democratic Repu…,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,May 2019,Activa Finances,Activa Assurances,Cameroon,Democratic Repu…,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+8,May 2019,Nikai,Nikai,UAE,Democratic Repu…,Consumer electronics,Electronics & applian…,"Sales, Marketing & S…",* $3.40m,* 29,New
+9,Dec 2018,DALDEWOLF,DALDEWOLF,Belgium,Democratic Repu…,Business services,Legal services,Business Services,* $27.80m,* 38,New
+10,Dec 2018,Zhejiang Huayou …,Congo Dongfang I…,China,Democratic Repu…,Metals,"Copper, nickel, lead, …",Extraction,$147.00m,* 219,New
+11,Aug 2018,BBOXX,BBOXX,United Kingdom,Democratic Repu…,Electronic components,All other electrical e…,Headquarters,* $21.90m,* 55,New
+12,Aug 2018,Orange (France Te…,Orange RDC,France,Democratic Repu…,Communications,Wireless telecommu…,Headquarters,* $36.10m,* 95,Expansion
+13,Jul 2018,Fracht,Fracht,Switzerland,Democratic Repu…,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,May 2018,Sakthi Trading Gr…,Sakthi Trading Gr…,Hong Kong,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,$53.00m,* 363,New
+15,Mar 2018,Dubai World,DP World,UAE,Democratic Repu…,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$350.00m,"* 1,555",New

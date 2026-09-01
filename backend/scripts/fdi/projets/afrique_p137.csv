@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2018,Guangdong Silver …,Guangdong Silver …,China,Democratic Repu…,Metals,Other (Metals),Manufacturing,* $139.60m,* 443,New
+2,Feb 2018,Nanjing Hanrui Co…,Nanjing Hanrui Co…,China,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,$216.00m,"* 1,478",New
+3,Jan 2018,Serena Group,Serena Group,Kenya,Democratic Repu…,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+4,Oct 2017,SRS Group,SRS Real Infrastru…,India,Democratic Repu…,Real estate,Other (Real estate),"Sales, Marketing & S…",* $15.90m,* 25,New
+5,Aug 2017,SEW-Eurodrive,SEW-Eurodrive,Germany,Democratic Repu…,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 11,New
+6,May 2017,Verdant Capital,Verdant Capital,South Africa,Democratic Repu…,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Mar 2017,Fraser & Neave (F…,Frasers Hospitality,Singapore,Democratic Repu…,Real estate,Residential building …,Construction,* $704.50m,* 578,New
+8,Feb 2017,Rotana Hotels,Rotana Hotels,UAE,Democratic Repu…,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+9,Jan 2017,Attijariwafa Bank,Attijariwafa Bank,Morocco,Democratic Repu…,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Nov 2016,Sparc Systems,Sparc Systems,Malawi,Democratic Repu…,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+11,Aug 2016,Chengtun Mining …,Chengtun Mining …,China,Democratic Repu…,Metals,Nonferrous metal pr…,Manufacturing,$60.00m,* 411,New
+12,Aug 2016,Trafigura Beheer,Puma Energy Inte…,Netherlands,Democratic Repu…,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $63.40m,* 85,New
+13,Jun 2016,Bollore Group,Bollore Logistics,France,Democratic Repu…,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+14,Mar 2016,Sinotruk (China N…,Sinotruk (China N…,China,Democratic Repu…,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",* $27.80m,* 73,New
+15,Feb 2016,Murray & Roberts,Murray & Roberts,South Africa,Democratic Repu…,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
