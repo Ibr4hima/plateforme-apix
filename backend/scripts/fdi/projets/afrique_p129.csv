@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2012,MicroCred,MicroCred Côte d'…,France,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,May 2012,EFG Hermes Holdi…,Credit International,Egypt,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,May 2012,SOMDIAA Group,SUCAF Cote d'Ivoi…,France,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,* $33.90m,* 377,Expansion
+4,Apr 2012,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Côte d Ivoire,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Feb 2012,Microsoft,Microsoft,United States,Côte d Ivoire,Software & IT services,"Software publishers,…",Headquarters,* $16.00m,* 61,New
+6,Feb 2012,Olam International,Olam International,Singapore,Côte d Ivoire,Food and Beverages,Snack food,Manufacturing,* $367.10m,"2,400",New
+7,Feb 2012,Olam International,Olam International,Singapore,Côte d Ivoire,Food and Beverages,Dairy products,Manufacturing,* $38.20m,250,New
+8,Dec 2011,CICA Re,CICA Re,Togo,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+9,Dec 2011,Desarrollos Alime…,Gallina Blanca Star,Spain,Côte d Ivoire,Food and Beverages,Seasoning & dressing,Manufacturing,* $19.90m,* 260,New
+10,Oct 2011,Ajinomoto,Ajinomoto,Japan,Côte d Ivoire,Plastics,Plastics packaging m…,Manufacturing,$7.80m,34,New
+11,Oct 2011,Globeleq Generati…,Azito Energie,United Kingdom,Côte d Ivoire,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $558.00m,* 116,Expansion
+12,Sep 2011,Centre d'Etude et …,Centre d'Etude et …,France,Côte d Ivoire,Business services,"Newspaper, periodic…",Business Services,* $6.80m,* 15,New
+13,Aug 2011,International Wor…,International Wor…,Luxembourg,Côte d Ivoire,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+14,Aug 2011,MicroCred,MicroCred Côte d'…,France,Côte d Ivoire,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,May 2011,MTN Group,MTN Cote d'Ivoire,South Africa,Côte d Ivoire,Communications,Wireless telecommu…,ICT & Internet Infras…,* $34.70m,* 100,New

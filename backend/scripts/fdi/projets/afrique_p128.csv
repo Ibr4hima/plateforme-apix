@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2013,Jumia,Jumia,Nigeria,Côte d Ivoire,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+2,Jul 2013,Kolon Corporation,Kolon Corporation,South Korea,Côte d Ivoire,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+3,Jul 2013,Rina Group,Dekel oil,Israel,Côte d Ivoire,Food and Beverages,Grains & oilseed,Manufacturing,* $129.20m,400,New
+4,May 2013,Mambo Commodit…,Mambo Commodit…,France,Côte d Ivoire,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $285.70m,* 455,New
+5,May 2013,Millicom Internati…,Jovago.com,Luxembourg,Côte d Ivoire,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+6,May 2013,Toyota Motor,CFAO Group,Japan,Côte d Ivoire,Real estate,Commercial & institu…,Construction,$66.00m,* 99,New
+7,Mar 2013,Coris Bank Intern…,Coris Bank Intern…,Burkina Faso,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Mar 2013,Webb Fontaine,Webb Fontaine,UAE,Côte d Ivoire,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+9,Dec 2012,African Press Age…,African Press Age…,Senegal,Côte d Ivoire,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+10,Dec 2012,welltec,welltec,Denmark,Côte d Ivoire,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+11,Nov 2012,Huawei Technologi…,Huawei Technologi…,China,Côte d Ivoire,Communications,Computing infrastruc…,ICT & Internet Infras…,$30.00m,* 4,New
+12,Oct 2012,Continental Reins…,Continental Reins…,Nigeria,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+13,Jul 2012,Cemoi,Cemoi,France,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,$3.73m,* 12,Expansion
+14,Jun 2012,Cevital,Cevital,Algeria,Côte d Ivoire,Food and Beverages,Sugar & confectionar…,Manufacturing,$200.00m,* 619,New
+15,Jun 2012,Endeavour Mining,Endeavour Mining,Cayman Islands,Côte d Ivoire,Metals,Gold ore & silver ore…,Extraction,$159.00m,350,New

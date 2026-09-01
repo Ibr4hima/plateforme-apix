@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2014,Groupe Tazi,Group Richbond,Morocco,Côte d Ivoire,Consumer products,Furniture & related p…,Manufacturing,* $8.84m,* 169,New
+2,Jan 2014,Groupe Tazi,Atlas Plastique,Morocco,Côte d Ivoire,Plastics,Laminated plastics pl…,Manufacturing,* $8.84m,* 92,New
+3,Dec 2013,Arkeos,Arkeos,Morocco,Côte d Ivoire,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+4,Dec 2013,e& (Etisalat Group),Moov,UAE,Côte d Ivoire,Communications,Wireless telecommu…,ICT & Internet Infras…,* $34.70m,* 100,New
+5,Dec 2013,Nestle,Nestle,Switzerland,Côte d Ivoire,Food and Beverages,Crop production,Research & Develop…,* $6.70m,20,New
+6,Nov 2013,Lazard,Lazard,Bermuda,Côte d Ivoire,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+7,Nov 2013,MTN Group,MTN Cote d'Ivoire,South Africa,Côte d Ivoire,Communications,Wireless telecommu…,ICT & Internet Infras…,* $34.70m,* 100,New
+8,Nov 2013,MTN Group,MTN Cote d'Ivoire,South Africa,Côte d Ivoire,Communications,Wireless telecommu…,ICT & Internet Infras…,* $34.70m,* 100,New
+9,Sep 2013,Dangote Group,Dangote Cement,Nigeria,Côte d Ivoire,Building materials,Cement & concrete p…,Manufacturing,* $63.50m,* 496,New
+10,Sep 2013,Filhet-Allard,Filhet-Allard,France,Côte d Ivoire,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+11,Aug 2013,Finagestion,CIPREL,France,Côte d Ivoire,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$464.33m,* 31,Expansion
+12,Aug 2013,Standard Bank Gr…,Standard Bank Gr…,South Africa,Côte d Ivoire,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Jul 2013,Aggreko,Aggreko,United Kingdom,Côte d Ivoire,"Coal, oil & gas",Other electric power …,Electricity,* $679.20m,* 101,Expansion
+14,Jul 2013,Barry Callebaut,Barry Callebaut,Switzerland,Côte d Ivoire,Food and Beverages,Crop production,Education & Training,* $2.00m,* 131,New
+15,Jul 2013,IHS Plc,IHS Plc,Nigeria,Côte d Ivoire,Communications,Communications equ…,ICT & Internet Infras…,* $34.70m,* 100,New
