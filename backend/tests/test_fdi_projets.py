@@ -200,11 +200,26 @@ def test_une_graphie_variante_vise_le_meme_pays(pays):
 
 
 def test_un_pays_inconnu_n_est_pas_devine():
-    """Taiwan n'est pas au référentiel : la ligne entrera avec son texte brut
-    et l'import le signalera, plutôt que de la rattacher à la Chine."""
+    """Une graphie que la nomenclature ne connaît pas ressort nulle et signalée,
+    jamais rattachée au voisin le plus proche.
+
+    L'exemple est volontairement SYNTHÉTIQUE. Il portait Taiwan, jusqu'à ce que
+    Taiwan entre au relevé (page 168) et donc à la nomenclature : le test s'est
+    mis à échouer alors que la règle qu'il défend n'avait pas bougé. Un vrai
+    pays finit toujours par arriver ; seul un libellé qui ne peut pas exister
+    chez fDi garde ce test stable."""
     from app.services.fdi_projets import _pays, lire_pays_csv
-    ident, motif = _pays("Taiwan", lire_pays_csv(), {"CHN": 1})
+    ident, motif = _pays("Pays Imaginaire", lire_pays_csv(), {"CHN": 1})
     assert ident is None and motif == "hors correspondance"
+
+
+def test_taiwan_est_rattache_et_non_confondu_avec_la_chine():
+    """Hon Hai investit depuis Taiwan en Égypte (page 168). La ligne se rattache
+    à TWN — surtout pas à CHN, que le préfixe ne désigne pas et que la migration
+    139 se garde bien de confondre avec elle."""
+    from app.services.fdi_projets import _pays, lire_pays_csv
+    ident, motif = _pays("Taiwan", lire_pays_csv(), {"TWN": 7, "CHN": 1})
+    assert (ident, motif) == (7, None)
 
 
 def test_un_pays_connu_absent_du_referentiel_est_distingue():

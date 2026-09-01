@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2024,Global iTS,Global iTS,Bahrain,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+2,Jul 2024,Hisense,Hisense,China,Egypt,Consumer electronics,Other (Consumer ele…,Manufacturing,* $69.00m,"* 1,020",New
+3,Jul 2024,Informa,Informa,United Kingdom,Egypt,Business services,Other support services,Headquarters,* $10.50m,* 995,Expansion
+4,Jul 2024,Signify (Philips Lig…,Signify (Philips Lig…,Netherlands,Egypt,Electronic components,Electric lighting equi…,Manufacturing,* $25.00m,* 220,New
+5,Jun 2024,Amethis,Amethis,France,Egypt,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+6,Jun 2024,F3 International R…,F3 International R…,United States,Egypt,Business services,Other support services,Headquarters,* $10.50m,* 995,New
+7,Jun 2024,Mobius MEA,Mobius MEA,UAE,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Jun 2024,Petroka Internatio…,Petroka Internatio…,United Kingdom,Egypt,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 37,New
+9,Jun 2024,Saint-Gobain,Saint-Gobain,France,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$40.00m,* 223,New
+10,Jun 2024,Sirikcioglu Mensuc…,Sirikcioglu Mensuc…,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$700.00m,"5,000",New
+11,Jun 2024,Studio Internation…,Studio Internation…,UAE,Egypt,Business services,"Architectural, engine…",Business Services,* $27.80m,* 37,New
+12,Jun 2024,Unifonic,Unifonic,Saudi Arabia,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,Expansion
+13,Jun 2024,ZIWO,ZIWO,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $1.20m,6,Expansion
+14,Jun 2024,Zschimmer & Sch…,Zschimmer & Sch…,Germany,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $261.70m,* 525,New
+15,May 2024,Dongfeng Motor,Dongfeng Motor,China,Egypt,Automotive OEM,Automobiles,Manufacturing,* $81.00m,* 942,New

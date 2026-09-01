@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2024,Eaton,Eaton,Ireland,Egypt,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 11,New
+2,Aug 2024,Hon Hai Precision …,Sharp,Taiwan,Egypt,Consumer electronics,Household appliances,Manufacturing,$30.00m,* 430,New
+3,Aug 2024,JDP Global,JDP Global,United Kingdom,Egypt,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+4,Aug 2024,Jiangsu Lianfa Tex…,Jiangsu Lianfa Tex…,China,Egypt,Textiles,Textile product mills,Manufacturing,$500.00m,"* 3,000",New
+5,Aug 2024,Kervan Gida,Kervan Gida,Turkey,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$30.00m,* 227,New
+6,Aug 2024,Maxbit,Maxbit,United States,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 199,New
+7,Aug 2024,Sanmar Group,TCI Sanmar Chem…,India,Egypt,Chemicals,Basic chemicals,"Logistics, Distributio…",$150.00m,* 351,New
+8,Aug 2024,Sanmar Group,TCI Sanmar Chem…,India,Egypt,Chemicals,Resin & artificial syn…,Manufacturing,$150.00m,* 430,Expansion
+9,Aug 2024,ServiceNow,ServiceNow,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+10,Aug 2024,SiAECOSYS,SiAECOSYS,China,Egypt,Automotive compon…,Motor vehicle transm…,"Sales, Marketing & S…",* $1.80m,* 18,New
+11,Aug 2024,Teracloud,Teracloud,Denmark,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $1.30m,7,New
+12,Aug 2024,TKMiND Consultan…,TKMiND Consultan…,United Kingdom,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 275,New
+13,Aug 2024,Trust Control,Trust Control,United States,Egypt,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+14,Aug 2024,Yesim Tekstil,Yesim Tekstil,Turkey,Egypt,Renewable energy,Solar electric power,Electricity,$1.50m,* -,Co-Location
+15,Jul 2024,[24]7.ai (24/7),[24]7.ai (24/7),United States,Egypt,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 978,New
