@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2003,UAZ,UAZ,Russia,Ethiopia,Automotive OEM,Light trucks & utility …,Manufacturing,* $94.50m,* 864,New
+2,Jun 2003,Petronas,Petronas,Malaysia,Ethiopia,"Coal, oil & gas",Oil & gas extraction,Extraction,$5.00m,* 2,New
+3,Jul 2026,Prometal,Prometal,Cameroon,Gabon,Metals,Iron & steel mills & f…,Manufacturing,$63.19m,* 432,New
+4,May 2026,CMA CGM,CEVA Logistics,France,Gabon,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,May 2026,Omnium des Indu…,Ciments de l'Afriq…,Morocco,Gabon,Building materials,Cement & concrete p…,Manufacturing,$45.00m,* 110,Expansion
+6,Apr 2026,Bank of Africa (B…,Bank of Africa (B…,Morocco,Gabon,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Jan 2026,Cybastion,Cybastion,United States,Gabon,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Jan 2026,Cybastion,Cybastion,United States,Gabon,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+9,Sep 2025,The World Bank G…,International Fina…,United States,Gabon,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+10,Mar 2025,Coris Bank Intern…,Coris Bank Intern…,Burkina Faso,Gabon,Financial services,Retail banking,Headquarters,* $44.20m,* 93,New
+11,Feb 2025,CF Banque,CF Banque,United Kingdom,Gabon,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+12,Feb 2025,Linde,BOC,United Kingdom,Gabon,"Coal, oil & gas","Natural, liquefied an…","Sales, Marketing & S…",* $7.80m,* 30,New
+13,May 2024,ST Digital,ST Digital,Cameroon,Gabon,Software & IT services,Custom computer pr…,ICT & Internet Infras…,* $243.50m,* 81,New
+14,Mar 2024,BW Group,BW Energy,Bermuda,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $730.30m,* 230,New
+15,Feb 2023,Genmin Group,Genmin Group,Australia,Gabon,Renewable energy,Other electric power …,"Logistics, Distributio…",* $116.30m,* 37,Co-Location

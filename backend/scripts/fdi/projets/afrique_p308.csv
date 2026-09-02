@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2007,Mishkaat holding,Sheba Steel,Pakistan,Ethiopia,Metals,Iron & steel mills & f…,Manufacturing,$2.10m,* 19,Expansion
+2,Nov 2007,Starbucks,Starbucks,United States,Ethiopia,Food and Beverages,Coffee & tea,Education & Training,* $1.70m,* 94,New
+3,Oct 2007,Farmers Best Agro…,Farmers Best Agro…,Germany,Ethiopia,Food and Beverages,Dairy products,Manufacturing,$221.07m,"* 1,445",New
+4,Oct 2007,Latteno Food Corp…,BDFC Ethiopia Ind…,United States,Ethiopia,Food and Beverages,Coffee & tea,Manufacturing,$50.00m,* 214,New
+5,Sep 2007,Commerzbank,Commerzbank,Germany,Ethiopia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Sep 2007,S.S. Lootah Group,Lootah IT Solution…,UAE,Ethiopia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+7,Jun 2007,e-Freight Internati…,e-Freight Internati…,UAE,Ethiopia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+8,May 2007,Zydus Lifescience…,Zydus Lifescience…,India,Ethiopia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$12.22m,* 134,New
+9,Jan 2007,Ayka Textile,Ayka Textile,Turkey,Ethiopia,Textiles,Textile product mills,Manufacturing,$100.00m,"5,000",New
+10,Nov 2006,Bumrungrad Hosp…,Bumrungrad Hosp…,Thailand,Ethiopia,Healthcare,General medical & s…,"Sales, Marketing & S…",* $7.90m,* 22,New
+11,Sep 2006,Huawei Technologi…,Huawei Technologi…,China,Ethiopia,Communications,Wireless telecommu…,ICT & Internet Infras…,$1.50bn,"* 1,036",Expansion
+12,Sep 2006,ZTE,ZTE,China,Ethiopia,Communications,Communications equ…,Manufacturing,$5.21m,* 71,New
+13,Nov 2005,Petronas,Petronas,Malaysia,Ethiopia,"Coal, oil & gas",Oil & gas extraction,Extraction,$20.00m,* 8,New
+14,Aug 2005,Selam,Selam,Sweden,Ethiopia,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $1.80m,* 29,New
+15,Apr 2004,Matador,Matador,Slovakia,Ethiopia,Rubber,Tyres,Manufacturing,* $53.00m,* 217,New

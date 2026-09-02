@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2023,Perenco,Perenco,France,Gabon,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$1.00bn,* 184,New
+2,Mar 2022,Solen Renewable …,Solen SA Gabon,UAE,Gabon,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+3,Jan 2022,Meridiam,Meridiam,France,Gabon,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+4,Sep 2021,Perenco,Perenco,France,Gabon,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.41bn,* 213,New
+5,Sep 2021,Wartsila (Waertsil…,Wartsila (Waertsil…,Finland,Gabon,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+6,Aug 2021,Desiba Energy,Desiba Energy,Turkey,Gabon,Renewable energy,Solar electric power,Electricity,$31.73m,* 10,New
+7,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Gabon,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+8,May 2021,Eticwood,Eticwood,Spain,Gabon,Business services,Environmental consu…,Business Services,* $27.80m,* 38,New
+9,Oct 2020,Olam International,Olam Palm Gabon,Singapore,Gabon,Renewable energy,Biomass power,Manufacturing,* $3.07bn,* 993,New
+10,Oct 2020,ST Digital,ST Digital,Cameroon,Gabon,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+11,Jun 2020,International Wor…,International Wor…,Switzerland,Gabon,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+12,May 2020,China Mobile Com…,China Mobile Inter…,China,Gabon,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+13,Mar 2020,Dangote Group,Dangote Cement,Nigeria,Gabon,Building materials,Cement & concrete p…,Manufacturing,$75.00m,* 184,New
+14,Nov 2019,Gozem,Gozem,Singapore,Gabon,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+15,Oct 2019,International Wor…,International Wor…,Switzerland,Gabon,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
