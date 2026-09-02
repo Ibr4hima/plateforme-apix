@@ -120,22 +120,25 @@ export default function AdminFdiProjets() {
   const annoncer = (t: string) => { setMessage(t); setTimeout(() => setMessage(null), 4000); };
 
   const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  // Le tableau se lit par pays : à vingt lignes par écran, l'ordre du relevé
+  // ferait sauter d'un pays à l'autre sans qu'aucun soit jamais complet.
+  // Comparaison française pour que les accents se rangent où on les cherche
+  // (Égypte entre l'Eswatini et l'Érythrée, pas rejetée en fin de liste), et
+  // tri stable : à destination égale, l'ordre du relevé est conservé.
+  const collateur = useMemo(() => new Intl.Collator("fr", { sensitivity: "base" }), []);
   const projetsFiltres = useMemo(() => {
     const q = norm(recherche.trim());
-    if (!q) return projets;
-    return projets.filter(p => [p.entreprise, p.parent, p.secteur, p.sous_secteur,
-      p.source, p.destination, p.type_projet].some(v => v && norm(v).includes(q)));
-  }, [projets, recherche]);
+    const retenus = !q ? projets : projets.filter(p => [p.entreprise, p.parent, p.secteur,
+      p.sous_secteur, p.source, p.destination, p.type_projet].some(v => v && norm(v).includes(q)));
+    return [...retenus].sort((a, b) =>
+      collateur.compare(a.destination ?? "", b.destination ?? ""));
+  }, [projets, recherche, collateur]);
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1280, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--encre)", marginBottom: 4 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--encre)", marginBottom: 18 }}>
         fDi Markets
       </h1>
-      <p style={{ fontSize: 13, color: "var(--gris)", lineHeight: 1.6, marginBottom: 18 }}>
-        Les investissements <em>annoncés</em>, relevés dans la base du Financial Times.
-        Ils disent ce qui a été décidé, quand la CNUCED mesure ce qui est entré.
-      </p>
 
       {/* Les trois bases du fournisseur, sous leur nom d'origine : c'est celui
           que les analystes lisent dans fDi, et le traduire ferait chercher. */}
