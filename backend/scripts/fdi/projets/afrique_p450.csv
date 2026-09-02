@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2021,Scatec AS,Scatec AS,Norway,Lesotho,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+2,Jan 2021,ASIF420,WeGROW Lesotho,Israel,Lesotho,Pharmaceuticals,Medicinal & botanical,Manufacturing,* $15.50m,100,New
+3,Nov 2020,Lucapa Diamonds,Lucapa Diamonds,Australia,Lesotho,Minerals,Nonmetallic mineral …,Extraction,$6.00m,* 18,Expansion
+4,Aug 2020,Pick n Pay Holdings,Pick n Pay,South Africa,Lesotho,Food and Beverages,Food & beverage ret…,Retail,* $5.00m,90,New
+5,Jul 2019,Pure Salmon,Pure Salmon,Singapore,Lesotho,Food and Beverages,Seafood products,Manufacturing,$250.00m,250,New
+6,Jun 2019,Canopy Growth C…,Canopy Growth C…,Canada,Lesotho,Pharmaceuticals,Medicinal & botanical,Manufacturing,* $33.60m,* 205,New
+7,May 2019,White Sheep,White Sheep,Canada,Lesotho,Pharmaceuticals,Medicinal & botanical,Manufacturing,* $33.60m,* 205,New
+8,Dec 2018,Lucapa Diamonds,Lucapa Diamonds,Australia,Lesotho,Minerals,Nonmetallic mineral …,Extraction,* $107.10m,"* 1,366",New
+9,Oct 2018,African Medallion …,African Medallion …,South Africa,Lesotho,Metals,Nonferrous metal pr…,"Sales, Marketing & S…",* $1.90m,* 8,New
+10,Oct 2018,Holcim Group (Laf…,Lafarge South Afri…,Switzerland,Lesotho,Building materials,Cement & concrete p…,Manufacturing,* $61.20m,150,New
+11,Aug 2018,Mergence Investm…,Mergence Investm…,South Africa,Lesotho,Financial services,Investment manage…,Business Services,* $0.60m,2,New
+12,Jun 2017,Afrisam,Afrisam,South Africa,Lesotho,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+13,Apr 2012,Clicks Group,Clicks Group,South Africa,Lesotho,Pharmaceuticals,Health & personal ca…,Retail,* $4.20m,* 38,New
+14,Nov 2011,Obtala Resources,Paragon Diamonds,United Kingdom,Lesotho,Minerals,Other non-metallic …,Manufacturing,* $26.40m,* 191,Co-Location
+15,Sep 2011,Gem Diamonds,Gem Diamonds,United Kingdom,Lesotho,Minerals,Other non-metallic …,Manufacturing,$280.00m,"* 2,282",Expansion

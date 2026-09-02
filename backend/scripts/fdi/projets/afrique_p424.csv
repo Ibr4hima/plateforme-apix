@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2014,Bigot Fleurs,Bigot Fleurs,France,Kenya,Consumer products,Other (Consumer pr…,Manufacturing,$5.10m,200,Expansion
+2,Jun 2014,Emerging Markets…,Emerging Markets…,South Africa,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+3,Jun 2014,Suitsupply,Suitsupply,Netherlands,Kenya,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,May 2014,Imperial,Imperial Logistics,South Africa,Kenya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$20.00m,84,New
+5,May 2014,International Busi…,International Busi…,United States,Kenya,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 146,New
+6,May 2014,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 171,New
+7,May 2014,Quick Heal Techno…,Quick Heal Techno…,India,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+8,May 2014,Syngenta,Syngenta,Switzerland,Kenya,Food and Beverages,Crop production,Research & Develop…,* $12.00m,* 55,New
+9,Apr 2014,Omnicane,Omnicane,Mauritius,Kenya,Renewable energy,Hydroelectric power,Electricity,* $41.67m,* 13,New
+10,Apr 2014,Religare Enterpris…,Chase Cooper,India,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+11,Apr 2014,TENDER,Prospectiuni,Romania,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+12,Apr 2014,United Aviation Se…,United Aviation Se…,UAE,Kenya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Apr 2014,Woolworths (Sout…,Woolworths (Sout…,South Africa,Kenya,Consumer products,All other general me…,Retail,* $10.90m,* 170,New
+14,Apr 2014,Zahid Group,Altaaqa Global CA…,Saudi Arabia,Kenya,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 11,New
+15,Mar 2014,Bright Food,Weetabix Food Co…,China,Kenya,Food and Beverages,Snack food,Manufacturing,$2.26m,* 36,Expansion

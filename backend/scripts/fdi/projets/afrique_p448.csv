@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2005,Riegos Agricolas E…,Riegos Agricolas E…,Spain,Kenya,Food and Beverages,Sugar & confectionar…,Manufacturing,$140.00m,* 915,New
+2,Dec 2004,European Investm…,European Investm…,Luxembourg,Kenya,Financial services,Corporate & investm…,Headquarters,* $45.10m,* 91,New
+3,Oct 2004,Energem Resources,Energem Resources,Canada,Kenya,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,New
+4,Sep 2004,HSBC Holdings,HSBC Bank,United Kingdom,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Aug 2004,Promasidor,Nutro Manufacturi…,South Africa,Kenya,Food and Beverages,Grains & oilseed,Manufacturing,$6.20m,60,New
+6,Aug 2004,Tehnoton,Tehnoton,Romania,Kenya,Consumer electronics,Household appliances,Manufacturing,* $27.20m,* 641,New
+7,Jul 2004,General Motors (G…,General Motors (G…,United States,Kenya,Automotive OEM,Motor vehicle & part…,Retail,$0.13m,* -,New
+8,Jul 2004,LG Corp,LG Electronics,South Korea,Kenya,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.90m,* 20,New
+9,Jul 2004,Samsung Group,Samsung Electron…,South Korea,Kenya,Consumer electronics,Audio & video equip…,Maintenance & Servi…,* $0.90m,* 118,New
+10,Jul 2004,Tehnoton,Tehnoton,Romania,Kenya,Consumer electronics,Household appliances,Manufacturing,$3.00m,* 41,New
+11,May 2004,Coca-Cola Bevera…,Coca-Cola Bevera…,South Africa,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$25.00m,300,New
+12,Apr 2004,Hugin,Aerospace Geoma…,Germany,Kenya,Business services,"Architectural, engine…",Business Services,$0.60m,* 3,New
+13,Mar 2004,Preesman,Preesman,Netherlands,Kenya,Food and Beverages,Crop production,Manufacturing,* $11.90m,* 429,New
+14,Jan 2004,Neptune Orient Li…,APL Logistics (APL…,Singapore,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+15,Jan 2004,Tata Chemicals Eu…,Tata Chemicals M…,United Kingdom,Kenya,Chemicals,Basic chemicals,Manufacturing,$116.00m,* 144,New

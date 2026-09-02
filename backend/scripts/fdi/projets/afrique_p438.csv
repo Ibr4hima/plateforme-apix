@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2011,Havas,Havas,France,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 37,New
+2,May 2011,Nu Tek India,Nu Tek India,India,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,May 2011,Samsung Group,Samsung Group,South Korea,Kenya,Consumer electronics,Other (Consumer ele…,Headquarters,* $4.10m,23,New
+4,May 2011,Samsung Group,Samsung Group,South Korea,Kenya,Business machines &…,Computer & peripher…,Manufacturing,* $132.30m,900,New
+5,May 2011,Spanco,Spanco,India,Kenya,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+6,May 2011,Wavetec,Wavetec,UAE,Kenya,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New
+7,Apr 2011,Beijing Automotiv…,Beiqi Foton Motor,China,Kenya,Automotive OEM,Automobiles,Manufacturing,* $62.10m,500,New
+8,Apr 2011,Coca-Cola,Coca-Cola,United States,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$62.00m,* 230,Expansion
+9,Apr 2011,Country Club Indi…,Country Club Indi…,India,Kenya,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $8.20m,* 4,New
+10,Apr 2011,Intermedia,Intermedia,United States,Kenya,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+11,Apr 2011,Mahindra Group,Mahindra & Mahin…,India,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.50m,* 864,New
+12,Apr 2011,Nokia Solutions a…,Nokia Solutions a…,Finland,Kenya,Communications,Wireless telecommu…,Headquarters,* $36.90m,* 80,New
+13,Apr 2011,Orange (France Te…,Orange Kenya,France,Kenya,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+14,Apr 2011,Ormat Industries,OrPower 4,Israel,Kenya,Renewable energy,Geothermal electric …,Electricity,* $101.30m,* 54,Expansion
+15,Mar 2011,Basset,Basset,Sweden,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New

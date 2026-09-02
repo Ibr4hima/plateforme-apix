@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2019,D.light Design,D.light Design,United States,Kenya,Electronic components,Electric lighting equi…,"Sales, Marketing & S…",* $1.80m,* 13,New
+2,May 2019,DVA International,DVA International,Germany,Kenya,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $2.80m,* 13,New
+3,May 2019,Hylands Water Sol…,Hylands Water Sol…,France,Kenya,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+4,May 2019,Microsoft,Microsoft,United States,Kenya,Software & IT services,"Software publishers,…",Research & Develop…,* $50.00m,* 50,New
+5,May 2019,Toshiba,Toshiba,Japan,Kenya,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+6,Apr 2019,American Tower C…,American Tower C…,United States,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+7,Apr 2019,Cisco Systems,Cisco Systems,United States,Kenya,Communications,Other telecommunic…,Business Services,$0.68m,* 4,New
+8,Apr 2019,Grand Capital,Grand Capital,Russia,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+9,Apr 2019,Kerridge Commer…,Kerridge Commer…,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+10,Apr 2019,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 171,New
+11,Apr 2019,Rendeavour,Rendeavour,Nigeria,Kenya,Renewable energy,Solar electric power,Electricity,* $87.90m,* 57,New
+12,Apr 2019,Standard Chartere…,Standard Chartere…,United Kingdom,Kenya,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 146,Co-Location
+13,Apr 2019,Weeco Recycling,Weeco Recycling,China,Kenya,Plastics,Plastic bottles,Recycling,$6.00m,500,New
+14,Mar 2019,ACO Group,ACO Group,Germany,Kenya,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+15,Mar 2019,Ad Dynamo,Ad Dynamo,South Africa,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 41,New

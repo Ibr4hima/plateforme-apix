@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,Gems Education,Gems Education,UAE,Kenya,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+2,Mar 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Kenya,Software & IT services,Custom computer pr…,Education & Training,* $5.60m,* 70,New
+3,Mar 2011,HSBC Holdings,HSBC Bank,United Kingdom,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Mar 2011,JPMorgan Chase &…,JPMorgan Chase &…,United States,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Mar 2011,PepsiCo,PepsiCo,United States,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$28.40m,300,New
+6,Mar 2011,Visa International,Visa International,United States,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Feb 2011,Goldplat,Kilimapesa Gold,United Kingdom,Kenya,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+8,Feb 2011,MobileComm Prof…,MobileComm Tech…,United States,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+9,Feb 2011,Orange (France Te…,Orange Kenya,France,Kenya,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+10,Feb 2011,The Sage Group,Softline VIP,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+11,Jan 2011,Ad Dynamo,Ad Dynamo,South Africa,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 37,New
+12,Jan 2011,Pharmadule,Flexenclosure,Sweden,Kenya,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Jan 2011,SDE,SDE,Israel,Kenya,Renewable energy,Marine electric power,Electricity,* $101.30m,* 54,New
+14,Dec 2010,Bank of Baroda,Bank of Baroda,India,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Dec 2010,Orange (France Te…,Orange Kenya,France,Kenya,Communications,Wireless telecommu…,ICT & Internet Infras…,$59.40m,* 41,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2007,QI International,V Global Manage…,Hong Kong,Kenya,Business services,"Advertising, PR, & re…",Headquarters,* $13.80m,* 85,New
+2,Oct 2007,Swift Freight,Swift Freight,UAE,Kenya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+3,Aug 2007,Panasonic (Matsus…,Panasonic (Matsus…,Japan,Kenya,Consumer electronics,Audio & video equip…,"Sales, Marketing & S…",$8.20m,15,New
+4,Aug 2007,Renaissance Capital,Renaissance Capital,Russia,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jun 2007,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,Kenya,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $60.60m,* 348,New
+6,Jan 2007,Rotam Global Agr…,Rotam Global Agr…,Hong Kong,Kenya,Chemicals,"Pesticide, fertilisers …",Headquarters,* $13.60m,* 65,New
+7,Dec 2006,Tetra Laval,Tetra Pak East Afri…,Switzerland,Kenya,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$2.87m,* 14,New
+8,Sep 2006,Aljazeera (Al Jaze…,Al Jazeera Interna…,Qatar,Kenya,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+9,Sep 2006,Spescom,Spescom DataFusi…,South Africa,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+10,Aug 2006,Al-Futtaim Group,Al Futtaim Technol…,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+11,Aug 2006,General Insurance…,General Insurance…,India,Kenya,Financial services,Insurance,"Sales, Marketing & S…",$25.50m,61,New
+12,Jul 2006,CBOSS,CBOSS,Russia,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+13,May 2006,Ericsson,Ericsson,Sweden,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $16.70m,65,New
+14,May 2006,Neumann Kaffee …,Neumann Kaffee …,Germany,Kenya,Food and Beverages,Coffee & tea,"Sales, Marketing & S…",* $6.70m,* 21,New
+15,May 2006,Thuraya,Thuraya Satellite …,UAE,Kenya,Communications,Satellite telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2014,BASF,BASF,Germany,Kenya,Chemicals,"Paints, coatings, add…",Manufacturing,* $285.70m,* 455,New
+2,Aug 2014,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Aug 2014,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Aug 2014,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Aug 2014,McKinsey,McKinsey,United States,Kenya,Business services,Management consult…,Business Services,* $27.80m,* 41,New
+6,Aug 2014,Naspers,OLX,South Africa,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New
+7,Jul 2014,Africa Oilfield Logi…,Africa Oilfield Logi…,United Kingdom,Kenya,"Coal, oil & gas",Support activities for…,"Logistics, Distributio…",$2.50m,* 2,New
+8,Jul 2014,Auric Air,Auric Air,Tanzania,Kenya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Jul 2014,Bank of Baroda,Bank of Baroda (K…,India,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Jul 2014,British American I…,Britam,Mauritius,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+11,Jul 2014,British American I…,Britam,Mauritius,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+12,Jul 2014,Buhler,Buhler,Switzerland,Kenya,Industrial equipment,Food product machin…,"Sales, Marketing & S…",* $2.90m,* 11,New
+13,Jul 2014,Rodl & Partner G…,Rodl & Partner G…,Germany,Kenya,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 41,New
+14,Jul 2014,StarTimes Media,StarTimes Media,China,Kenya,Communications,Radio & TV broadcas…,Headquarters,$80.00m,* 284,New
+15,Jun 2014,ADEC Group,ADEC Group,Philippines,Kenya,Business services,Business support ser…,Business Services,* $9.00m,60,New

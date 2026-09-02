@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2010,African Medical In…,VIP Healthcare So…,United Kingdom,Kenya,Healthcare,General medical & s…,Construction,* $49.40m,* 209,New
+2,Jan 2010,Alios Finance,Alios Finance,Tunisia,Kenya,Financial services,Retail banking,Headquarters,* $44.20m,* 93,New
+3,Jan 2010,Bowmans (Bowm…,Bowmans (Bowm…,South Africa,Kenya,Business services,Legal services,Business Services,* $10.20m,68,Expansion
+4,Jan 2010,Cilek,Cilek,Turkey,Kenya,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $4.40m,* 18,New
+5,Jan 2010,Path Solutions,Path Solutions,Kuwait,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,Dec 2009,Deutsche Post,DHL Express,Germany,Kenya,Transportation & Wa…,Air transportation,"Logistics, Distributio…",$0.05m,* -,Expansion
+7,Dec 2009,Nokia,Nokia,Finland,Kenya,Communications,Communications equ…,Maintenance & Servi…,* $8.40m,* 82,New
+8,Dec 2009,Qalaa Holdings (Ci…,Qalaa Holdings (Ci…,Egypt,Kenya,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+9,Nov 2009,Barclays Bank,Barclays Bank of …,United Kingdom,Kenya,Financial services,Retail banking,Customer Contact C…,* $9.70m,* 225,New
+10,Nov 2009,InterContinental H…,Crowne Plaza,United Kingdom,Kenya,Hotels & tourism,Accommodation,Construction,* $78.30m,200,New
+11,Nov 2009,International Busi…,International Busi…,United States,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+12,Nov 2009,Mobiserve,Mobiserve,Egypt,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Nov 2009,Reserve Bank of I…,Nabard Consultan…,India,Kenya,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 37,New
+14,Nov 2009,Starbucks,Starbucks,United States,Kenya,Food and Beverages,Sugar & confectionar…,Education & Training,* $1.70m,* 94,New
+15,Sep 2009,MIC Global (Micro…,MIC Global (Micro…,United Kingdom,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New

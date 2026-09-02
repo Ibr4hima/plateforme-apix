@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2011,British American I…,British American I…,Mauritius,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+2,Jul 2011,Hidesign,Hidesign,India,Kenya,Textiles,Leather & hide tanni…,"Sales, Marketing & S…",* $1.70m,* 17,New
+3,Jul 2011,Nile Petroleum Co…,Nile Petroleum Ea…,Sudan,Kenya,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $154.10m,* 130,New
+4,Jul 2011,Nile Petroleum Co…,Nile Petroleum Ea…,Sudan,Kenya,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,* 335,New
+5,Jul 2011,Nokia,Nokia,Finland,Kenya,Communications,Communications equ…,Maintenance & Servi…,* $1.40m,8,New
+6,Jul 2011,Pfizer,Pfizer,United States,Kenya,Pharmaceuticals,Pharmaceutical prep…,"Logistics, Distributio…",$0.50m,* 2,New
+7,Jul 2011,Toyota Motor,Hino Motors,Japan,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,$33.75m,* 272,Expansion
+8,Jun 2011,Dentsu Aegis Net…,Posterscope,United Kingdom,Kenya,Business services,"Advertising, PR, & re…",Headquarters,* $13.80m,* 85,New
+9,Jun 2011,James Mintz Group,James Mintz Group,United States,Kenya,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 37,New
+10,Jun 2011,Mitsui & Co,Mitsui & Co,Japan,Kenya,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 37,New
+11,Jun 2011,Spill Center,Spill Center,United States,Kenya,Business services,Waste management …,Business Services,* $6.80m,* 37,New
+12,Jun 2011,Standard Chartere…,Standard Chartere…,United Kingdom,Kenya,Financial services,Retail banking,Headquarters,$36.07m,* 140,Expansion
+13,May 2011,Central Bank of In…,Central Bank of In…,India,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,May 2011,Dabur India,Dabur India,India,Kenya,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $16.30m,* 243,New
+15,May 2011,Deutsche Post,DHL Global Forwa…,Germany,Kenya,Transportation & Wa…,Freight/Distribution …,Research & Develop…,* $24.70m,* 138,New

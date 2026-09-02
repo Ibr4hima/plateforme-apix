@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,Seacom,Seacom,Mauritius,Lesotho,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+2,Feb 2011,Firestone Diamonds,Firestone Diamonds,United Kingdom,Lesotho,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+3,Jul 2010,Namakwa Diamond,Namakwa Diamond,South Africa,Lesotho,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+4,Nov 2009,Kopane Diamond …,Liqhobong Mining …,United Kingdom,Lesotho,Minerals,Other non-metallic …,Manufacturing,* $26.40m,* 191,Expansion
+5,Mar 2008,Royal Philips Elect…,Philips SA,Netherlands,Lesotho,Electronic components,Electric lighting equi…,Manufacturing,* $11.80m,* 157,New
+6,Nov 2007,Gem Diamonds,Gem Diamonds,United Kingdom,Lesotho,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+7,Jun 2003,MineGem,MineGem,Canada,Lesotho,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+8,Jul 2026,Cellecor Gadgets,Cellecor Gadgets,India,Liberia,Consumer electronics,Other (Consumer ele…,Manufacturing,* $40.00m,* 504,New
+9,Jun 2026,First Atlantic Bank,First Atlantic Bank,Ghana,Liberia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Mar 2026,AP Moller - Maersk,APM Terminals Lib…,Denmark,Liberia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,Expansion
+11,Oct 2025,Scatec AS,Release,Norway,Liberia,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+12,Jul 2025,Hayo,Hayo,United States,Liberia,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+13,May 2025,Orange (France Te…,Orange Liberia,France,Liberia,Communications,Wireless telecommu…,ICT & Internet Infras…,$200.00m,* 30,Expansion
+14,May 2025,Orange (France Te…,Orange Liberia,France,Liberia,Communications,Wireless telecommu…,Headquarters,$10.00m,* 35,New
+15,Jun 2024,Vedanta Resources,Western Cluster,United Kingdom,Liberia,Metals,Iron ore mining,Extraction,$2.00bn,"* 2,983",Expansion

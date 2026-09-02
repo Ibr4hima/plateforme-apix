@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2017,Volvo,Volvo Trucks,Sweden,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,$24.00m,* 142,New
+2,May 2017,BBK Electronics,Oppo Electronics,China,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,May 2017,BBK Electronics,Oppo Electronics,China,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+4,May 2017,British Broadcasti…,British Broadcasti…,United Kingdom,Kenya,Communications,Radio & TV broadcas…,Research & Develop…,$10.00m,250,New
+5,May 2017,Hangzhou Tianlon…,Hangzhou Tianlon…,China,Kenya,Metals,Steel products,Manufacturing,* $29.20m,200,New
+6,May 2017,MIAVIT,MIAVIT,Germany,Kenya,Food and Beverages,Animal food,"Logistics, Distributio…",* $22.50m,* 158,New
+7,May 2017,Otello Corporation…,Otello Corporation…,Norway,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $10.10m,* 50,New
+8,May 2017,Power Constructio…,Power Constructio…,China,Kenya,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$1.98bn,* 132,New
+9,Apr 2017,GeNNex,GeNNex,United Kingdom,Kenya,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
+10,Apr 2017,Naspers,MultiChoice Kenya,South Africa,Kenya,Communications,Media streaming dist…,Retail,* $6.30m,* 31,New
+11,Apr 2017,Zepz,Zepz,United Kingdom,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Mar 2017,Asian Logic,Dafabet,Hong Kong,Kenya,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.20m,* 19,New
+13,Mar 2017,Johnson & Johnson,Johnson & Johnson,United States,Kenya,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+14,Mar 2017,MTN Group,MTN Group,South Africa,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,$12.90m,* 2,New
+15,Mar 2017,Naspers,ShowMax,South Africa,Kenya,Software & IT services,Internet publishing …,Headquarters,* $12.20m,* 73,New

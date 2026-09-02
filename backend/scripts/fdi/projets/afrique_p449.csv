@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2004,Visergy,Visergy,United Kingdom,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 37,Expansion
+2,Dec 2003,Clarion Merchandise,Clarion Merchandise,Italy,Kenya,Food and Beverages,Fruits & vegetables …,Manufacturing,$3.20m,* 21,New
+3,Oct 2003,Amadeus IT Group,Amadeus IT Group,Spain,Kenya,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+4,Oct 2003,arivia.kom,arivia.kom,South Africa,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+5,Oct 2003,Sybase,Sybase Africa,United States,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,Jul 2003,Bank of India (BOI),Bank of India (BOI),India,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jun 2003,British American T…,British American T…,United Kingdom,Kenya,Food and Beverages,Tobacco,Manufacturing,$6.20m,* 41,Expansion
+8,Jun 2003,Coca-Cola,Coca-Cola,United States,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$7.90m,* 29,New
+9,Jun 2003,Global Petroleum,Star Petroleum In…,Australia,Kenya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+10,May 2003,Swiss Reinsurance…,Swiss Reinsurance…,Switzerland,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+11,Apr 2003,Maxingvest,Beiersdorf,Germany,Kenya,Consumer products,"Cosmetics, perfume,…",Manufacturing,$1.00m,* 9,Expansion
+12,Mar 2003,Bridgestone,Bridgestone,Japan,Kenya,Rubber,Tyres,Manufacturing,$11.00m,* 26,Expansion
+13,Feb 2003,Dominion Group,Dominion Group,United States,Kenya,Food and Beverages,Crop production,Manufacturing,* $15.90m,* 309,New
+14,Jan 2003,South African Air…,South African Air…,South Africa,Kenya,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 14,New
+15,Feb 2024,Astra Energy,Astra Energy,United States,Lesotho,Renewable energy,Other electric power …,Electricity,* $206.10m,* 57,New

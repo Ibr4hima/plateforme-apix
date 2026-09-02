@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2008,Dhanush Infotech,Dhanush Infotech,India,Kenya,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+2,May 2008,Ecobank Transnati…,Ecobank Transnati…,Togo,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,May 2008,Mi-Fone,Mi-Fone,Hong Kong,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,May 2008,Tata Group,TATA Africa Holdin…,India,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.50m,* 864,New
+5,Apr 2008,Standard Bank Gr…,CfC Stanbic Bank,South Africa,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Apr 2008,Tactile Technologies,Tactile Technologies,South Africa,Kenya,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New
+7,Mar 2008,Mahindra Satyam …,Mahindra Satyam …,India,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+8,Mar 2008,Siemens,Siemens Belgium,Germany,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+9,Mar 2008,Vangold Resources,Vangold Resources,Canada,Kenya,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+10,Jan 2008,Bowmans (Bowm…,Bowmans (Bowm…,South Africa,Kenya,Business services,Legal services,Business Services,* $0.30m,2,New
+11,Jan 2008,Epicor Software,Epicor Software,United States,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+12,Jan 2008,PIC Solutions,PIC Solutions,South Africa,Kenya,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+13,Dec 2007,Cisco Systems,Cisco Systems,United States,Kenya,Software & IT services,"Software publishers,…",Headquarters,* $16.00m,* 61,New
+14,Nov 2007,Aviat Networks (H…,Aviat Networks (H…,United States,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,Expansion
+15,Oct 2007,Fairmont Raffles H…,Fairmont Hotels &…,Canada,Kenya,Hotels & tourism,Accommodation,Construction,$35.00m,* 89,New

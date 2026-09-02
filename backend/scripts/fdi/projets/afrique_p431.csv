@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2013,Gras Savoye,Gras Savoye,France,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Jan 2013,Jumia,Jumia,Nigeria,Kenya,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+3,Jan 2013,Landmark Group,Max Retail,UAE,Kenya,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Jan 2013,RSA Logistics,RSA Logistics,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+5,Jan 2013,Simba Energy,Simba Energy,Canada,Kenya,"Coal, oil & gas",Oil & gas extraction,Headquarters,* $37.90m,* 140,New
+6,Jan 2013,SoftBank Group,Carview,Japan,Kenya,Automotive OEM,Motor vehicle & part…,"Sales, Marketing & S…",$0.57m,* 4,New
+7,Jan 2013,Techno Brain,Techno Brain,Tanzania,Kenya,Software & IT services,"Software publishers,…",Education & Training,* $7.80m,* 67,New
+8,Jan 2013,Toyota Motor,Toyota Kenya,Japan,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,* $19.50m,* 884,New
+9,Nov 2012,Avanti Communic…,Avanti Communic…,United Kingdom,Kenya,Communications,Satellite telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Nov 2012,Embraer (Embraer…,Embraer (Embraer…,Brazil,Kenya,Aerospace,"Aircraft engines, oth…",Maintenance & Servi…,* $31.10m,* 147,New
+11,Nov 2012,Osprea Logistics,Osprea Logistics,United Kingdom,Kenya,Space & defence,Military armoured ve…,Manufacturing,$42.00m,* 141,New
+12,Nov 2012,SEKO Worldwide,SEKO Worldwide,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Nov 2012,The Sage Group,The Sage Group,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+14,Oct 2012,Cortell,Cortell,South Africa,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+15,Oct 2012,Getmapping,Getmapping,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New

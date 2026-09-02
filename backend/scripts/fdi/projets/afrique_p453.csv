@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2019,Shangyou Wood,Shangyou Wood,China,Liberia,Wood products,Wood products,Manufacturing,$350.00m,"5,000",New
+2,Jul 2018,Afriland First Bank,Afriland First Bank,Cameroon,Liberia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Jul 2018,Afriland First Bank,Afriland First Bank,Cameroon,Liberia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Jul 2018,Henan Ruimei Hai…,Henan Ruimei Hai…,China,Liberia,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $26.20m,500,New
+5,Jan 2018,Dangote Group,Dangote Cement …,Nigeria,Liberia,Building materials,Cement & concrete p…,Manufacturing,$41.00m,* 100,New
+6,Jun 2017,Energiya Global,Energiya Global,Israel,Liberia,Renewable energy,Solar electric power,Electricity,$20.00m,* 6,New
+7,Jun 2017,Orange (France Te…,Orange (France Te…,France,Liberia,Communications,Wireless telecommu…,Education & Training,* $11.10m,* 137,New
+8,Jun 2017,Tidfore Heavy Equ…,Tidfore Investment,China,Liberia,Metals,Steel products,Manufacturing,$200.00m,"1,000",New
+9,Mar 2017,MTN Group,Lonestar Cell MTN,South Africa,Liberia,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+10,Oct 2016,PricewaterhouseC…,PricewaterhouseC…,United Kingdom,Liberia,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+11,Oct 2015,Coca-Cola,Equatorial Coca-C…,United States,Liberia,Food and Beverages,Soft drinks & ice,Manufacturing,$5.70m,* 24,New
+12,Oct 2015,Wuhan Iron and S…,Wuhan Iron and S…,China,Liberia,Metals,Iron & steel mills & f…,Manufacturing,* $147.40m,* 443,New
+13,Oct 2015,Wuhan Iron and S…,Wuhan Iron and S…,China,Liberia,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+14,Sep 2015,AP Moller - Maersk,APM Terminals Lib…,Denmark,Liberia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$120.00m,* 533,Expansion
+15,Jun 2014,The World Bank G…,The World Bank G…,United States,Liberia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,Expansion

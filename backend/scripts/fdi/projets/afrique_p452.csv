@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2024,Scatec AS,Scatec AS,Norway,Liberia,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+2,Aug 2023,China Baowu Stee…,China Baowu Stee…,China,Liberia,Metals,Iron ore mining,Extraction,* $410.90m,* 717,New
+3,Aug 2022,Black Banx (WB21),Black Banx (WB21),Canada,Liberia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Aug 2022,Thesaurum Travel …,Thesaurum Travel …,Germany,Liberia,Hotels & tourism,Accommodation,Construction,$5.00m,* 13,New
+5,Jun 2022,CARES Group,CARES Group,Switzerland,Liberia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+6,Jan 2022,Orange (France Te…,Orange (France Te…,France,Liberia,Business services,Other support services,Business Services,* $27.80m,* 38,New
+7,Sep 2021,CloudFlare,CloudFlare,United States,Liberia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+8,Feb 2021,ArcelorMittal,ArcelorMittal Liberia,Luxembourg,Liberia,Metals,Iron ore mining,Extraction,$800.00m,"1,000",Expansion
+9,Jan 2021,Private Infrastruct…,InfraCo Africa,United Kingdom,Liberia,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+10,Nov 2020,Bnb Transfer,Bnb Transfer,Canada,Liberia,Financial services,Retail banking,Business Services,* $7.90m,* 26,New
+11,Nov 2020,Orange (France Te…,Orange (France Te…,France,Liberia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Jan 2020,Heidelberg Materi…,Liberia Cement Co…,Germany,Liberia,Building materials,Cement & concrete p…,Manufacturing,$14.00m,* 34,New
+13,Aug 2019,Century Plyboards…,Star Cement,India,Liberia,Building materials,Cement & concrete p…,Manufacturing,* $25.00m,* 61,New
+14,Aug 2019,Lufthansa,time:matters,Germany,Liberia,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+15,Apr 2019,National Aviation …,National Aviation …,Kuwait,Liberia,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New

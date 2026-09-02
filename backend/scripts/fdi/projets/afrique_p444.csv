@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2009,Ecobank Transnati…,Ecobank Kenya,Togo,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Feb 2009,Ecobank Transnati…,Ecobank Kenya,Togo,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Jan 2009,IGE Resources (In…,IGE Resources (In…,Sweden,Kenya,Metals,Gold ore & silver ore…,Extraction,$0.50m,* 1,Expansion
+4,Dec 2008,LG Corp,LG Electronics,South Korea,Kenya,Consumer electronics,Household appliances,Maintenance & Servi…,$0.13m,* 1,New
+5,Dec 2008,Ormat Industries,Ormat Technologies,Israel,Kenya,Renewable energy,Geothermal electric …,Electricity,$150.00m,* 40,Expansion
+6,Dec 2008,United Bank for Af…,United Bank for Af…,Nigeria,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Nov 2008,Oriflame,Oriflame,Sweden,Kenya,Consumer products,"Cosmetics, perfume,…","Logistics, Distributio…",* $32.00m,* 265,New
+8,Nov 2008,Paragon Labels,Paragon Labels,United Kingdom,Kenya,Plastics,Plastics packaging m…,Manufacturing,* $26.90m,* 107,New
+9,Nov 2008,Standard Bank Gr…,Standard Bank Gr…,South Africa,Kenya,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+10,Oct 2008,Nokia,Nokia,Finland,Kenya,Communications,Communications equ…,Research & Develop…,* $40.10m,* 158,New
+11,Sep 2008,Coca-Cola,Coca-Cola,United States,Kenya,Food and Beverages,Soft drinks & ice,"Sales, Marketing & S…",$9.89m,* 36,New
+12,Sep 2008,Dubai Holding,Dubai Bank,UAE,Kenya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Sep 2008,Ericsson,Ericsson,Sweden,Kenya,Communications,Communications equ…,Research & Develop…,* $60.50m,* 123,New
+14,Jun 2008,Huawei Technologi…,Huawei Technologi…,China,Kenya,Communications,Wireless telecommu…,Education & Training,$1.00m,* 3,New
+15,May 2008,Coca-Cola,Coca-Cola,United States,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$50.00m,* 185,Expansion

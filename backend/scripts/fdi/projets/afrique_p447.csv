@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2006,Tata Group,Tata Motors,India,Kenya,Automotive compon…,Motor vehicle gasolin…,"Sales, Marketing & S…",* $2.30m,* 26,New
+2,Mar 2006,Nokia,Nokia,Finland,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Jan 2006,Coca-Cola,Coca-Cola,United States,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$16.70m,* 62,Expansion
+4,Dec 2005,Mukwano Group,Gulf Stream Inves…,Uganda,Kenya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$30.00m,* 62,New
+5,Oct 2005,ZTE,ZTE,China,Kenya,Communications,Wireless telecommu…,Manufacturing,* $9.40m,* 434,New
+6,Sep 2005,ATM Solutions,ATM Solutions,United States,Kenya,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New
+7,Sep 2005,Lenovo Group,Lenovo Group,Hong Kong,Kenya,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.30m,* 118,New
+8,Sep 2005,Lenovo Group,Lenovo Group,Hong Kong,Kenya,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+9,Jul 2005,AUCMA Group,AUCMA Group,China,Kenya,Consumer electronics,Audio & video equip…,Manufacturing,$1.50m,52,New
+10,Jul 2005,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,Kenya,Consumer electronics,Other (Consumer ele…,"Sales, Marketing & S…",* $3.90m,* 20,New
+11,Jul 2005,Oracle,Oracle,United States,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+12,Jun 2005,Psitek,Psitek East Africa,South Africa,Kenya,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Jun 2005,Toshiba,Toshiba,Japan,Kenya,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.30m,* 118,New
+14,Mar 2005,Metropolis Health …,Metropolis Health …,India,Kenya,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $34.60m,* 80,New
+15,Feb 2005,Bridgestone,Bridgestone/Firest…,Japan,Kenya,Rubber,Tyres,Manufacturing,$2.00m,* 5,New

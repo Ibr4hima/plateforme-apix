@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2009,Sime Darby,Sime Darby,Malaysia,Liberia,Food and Beverages,Crop production,Manufacturing,$640.00m,"3,000",New
+2,May 2009,Sime Darby,Sime Darby,Malaysia,Liberia,Rubber,Other rubber products,Manufacturing,* $117.10m,* 592,New
+3,Mar 2009,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Liberia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Feb 2009,Estmor Service Tr…,Estmor Service Tr…,Estonia,Liberia,Minerals,Nonmetallic mineral …,Extraction,$2.00m,35,New
+5,Dec 2005,Ecobank Transnati…,Ecobank Liberia,Togo,Liberia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Sep 2005,Mittal Steel,Mittal Steel,Netherlands,Liberia,Metals,Iron ore mining,Extraction,$900.00m,"* 1,265",New
+7,Jul 2026,Qatar Airways,Qatar Airways,Qatar,Libya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Apr 2026,Reed Pelagics Co.,Reed Pelagics Co.,Hong Kong,Libya,Food and Beverages,Other (Food & Bever…,Manufacturing,* $45.80m,* 263,New
+9,Jul 2025,BP (British Petrole…,BP (British Petrole…,United Kingdom,Libya,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,Expansion
+10,May 2025,Hanzo Motors,Hanzo Motors,China,Libya,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+11,Feb 2025,Rubex,Rubex,Egypt,Libya,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $3.20m,* 37,New
+12,Dec 2024,Tetra Laval,Tetra Pak,Switzerland,Libya,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$16.20m,* 83,New
+13,Jul 2024,Tosyali Holding,Tosyali Holding,Turkey,Libya,Metals,Iron & steel mills & f…,Manufacturing,* $147.40m,* 443,New
+14,Mar 2023,Wangkang Group,Goodwill,China,Libya,Ceramics & glass,Clay product & refra…,Manufacturing,* $67.50m,400,New
+15,Jan 2023,Eni SpA,Eni SpA,Italy,Libya,Chemicals,Basic chemicals,Recycling,* $2.00bn,* 20,Co-Location

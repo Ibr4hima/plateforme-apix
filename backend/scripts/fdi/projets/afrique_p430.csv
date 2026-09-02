@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2013,Deere & Company,John Deere,United States,Kenya,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+2,Apr 2013,Econet Global,Kenya Data Netwo…,Mauritius,Kenya,Communications,Wired telecommunic…,ICT & Internet Infras…,* $52.80m,* 100,New
+3,Apr 2013,FVC,FVC,UAE,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+4,Apr 2013,John Swire & Sons,Swire Oilfield Serv…,United Kingdom,Kenya,Industrial equipment,"Boiler, tank, & shippi…","Sales, Marketing & S…",* $2.90m,* 11,New
+5,Mar 2013,Basin Holdings US,Basin Supply,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Mar 2013,Bollore Group,Africa Global Logis…,France,Kenya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+7,Mar 2013,Honda Motor Com…,Honda Motor Com…,Japan,Kenya,Non-automotive tran…,"Motorcycle, bicycle,…",Manufacturing,* $55.90m,* 583,New
+8,Feb 2013,AP Moller - Maersk,APM Terminals,Denmark,Kenya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+9,Feb 2013,Bharti Group,Airtel Kenya,India,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+10,Feb 2013,Bharti Group,Bharti Airtel,India,Kenya,Communications,Wireless telecommu…,ICT & Internet Infras…,* $52.80m,* 100,New
+11,Feb 2013,Canon,Canon Middle East,Japan,Kenya,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+12,Jan 2013,Afro-Asian Insura…,Afro-Asian Insura…,United Kingdom,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+13,Jan 2013,Ascent Capital,Ascent Capital,Mauritius,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Jan 2013,Columbia University,Columbia University,United States,Kenya,Business services,"Schools, colleges, un…",Research & Develop…,* $8.60m,* 73,New
+15,Jan 2013,General Motors (G…,Isuzu East Africa (…,United States,Kenya,Automotive OEM,Heavy duty trucks,Manufacturing,$1.14m,* 7,Expansion

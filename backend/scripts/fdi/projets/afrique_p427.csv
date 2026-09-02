@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2013,Bacardi,Bacardi,Bermuda,Kenya,Food and Beverages,Distilleries,"Sales, Marketing & S…",* $4.50m,* 18,New
+2,Oct 2013,Belgacom SA,Belgacom Interna…,Belgium,Kenya,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,Oct 2013,Bowmans (Bowm…,Bowmans (Bowm…,South Africa,Kenya,Business services,Legal services,Business Services,* $4.80m,32,Expansion
+4,Oct 2013,Deutsche Bahn,DB Schenker,Germany,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+5,Oct 2013,Eversheds,Eversheds,United Kingdom,Kenya,Business services,Legal services,Business Services,* $27.80m,* 41,New
+6,Oct 2013,GE Aerospace (Ge…,GE Capital,United States,Kenya,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+7,Oct 2013,Unilever,Unilever,United Kingdom,Kenya,Food and Beverages,Coffee & tea,Manufacturing,* $24.10m,* 162,Expansion
+8,Oct 2013,Unilever,Unilever,United Kingdom,Kenya,Consumer products,"Cosmetics, perfume,…",Manufacturing,$1.47m,* 28,New
+9,Oct 2013,Zamir Telecom,Zamir Telecom,United Kingdom,Kenya,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Sep 2013,Asia Plantation Ca…,Asia Plantation Ca…,Singapore,Kenya,Food and Beverages,Crop production,Research & Develop…,* $12.00m,* 55,New
+11,Sep 2013,Coffey International,Coffey International,Australia,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+12,Sep 2013,Dangote Group,Dangote Cement,Nigeria,Kenya,Building materials,Cement & concrete p…,Manufacturing,$400.00m,* 980,New
+13,Sep 2013,Dell Technologies,Dell Technologies,United States,Kenya,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+14,Sep 2013,Econet Global,Liquid Intelligent …,Mauritius,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+15,Sep 2013,First Solar,First Solar,United States,Kenya,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
