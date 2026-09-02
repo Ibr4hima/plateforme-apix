@@ -498,3 +498,42 @@ def test_une_case_estimee_mais_vide_reste_un_vide():
     # Et la règle ne mange pas les vraies valeurs estimées.
     assert lire_entier("* 33") == (33, True)
     assert lire_montant("* $9.60m") == (9.6, True)
+
+
+# ── Corriger une ligne, en ajouter une ────────────────────────────────────────
+
+def test_l_aller_retour_d_un_montant_ne_perd_rien():
+    """L'écran de correction rend « * $9.60m » ; l'analyseur doit relire ce
+    qu'il vient d'écrire. Sans cet aller-retour, corriger un seul champ d'une
+    ligne réécrirait les autres avec une valeur dégradée à chaque passage."""
+    from app.services.fdi_projets import montant_brut as _brut_montant, entier_brut as _brut_entier
+    from app.services.fdi_projets import lire_montant, lire_entier
+    for valeur, estime in [(9.6, True), (1650.0, False), (0.17, False), (3070.0, True)]:
+        assert lire_montant(_brut_montant(valeur, estime)) == (round(valeur, 2), estime)
+    for n, estime in [(18, True), (13000, False), (1, False), (2801, True)]:
+        assert lire_entier(_brut_entier(n, estime)) == (n, estime)
+
+
+def test_une_case_vide_reste_vide_apres_aller_retour():
+    """Une ligne sans capex ne doit pas revenir avec un zéro : « non renseigné »
+    et « zéro » ne disent pas la même chose et ne se confondent nulle part."""
+    from app.services.fdi_projets import montant_brut as _brut_montant, entier_brut as _brut_entier
+    from app.services.fdi_projets import lire_montant, lire_entier
+    assert lire_montant(_brut_montant(None, None)) == (None, None)
+    assert lire_entier(_brut_entier(None, None)) == (None, None)
+
+
+def test_un_verrou_ne_porte_que_sur_une_colonne_connue():
+    """Le nom de colonne part dans la requête sans passer par un paramètre : la
+    seule barrière est cette vérification, et elle doit exister."""
+    import pytest
+    from app.services.fdi_projets import CHAMPS_MODIFIABLES, _garde_si
+    assert "fdi_projets.capex_musd" in _garde_si("capex_musd")
+    # Le drapeau suit son montant : c'est la colonne porteuse qui décide.
+    assert "'capex_musd' = ANY" in _garde_si("capex_estime", "capex_musd")
+    assert "fdi_projets.capex_estime" in _garde_si("capex_estime", "capex_musd")
+    with pytest.raises(ValueError):
+        _garde_si("id")                      # une colonne qui n'est pas factuelle
+    with pytest.raises(ValueError):
+        _garde_si("x; DROP TABLE fdi_projets")
+    assert "description_en" not in CHAMPS_MODIFIABLES  # la description a sa propre route

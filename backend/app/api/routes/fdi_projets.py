@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
-from app.services.fdi_projets import est_tronque, normaliser
+from app.services.fdi_projets import (date_brute, entier_brut, est_tronque,
+                                      montant_brut, normaliser)
 
 # Projets fDi Markets — consultation, arbitrage des entreprises, saisie des
 # descriptions.
@@ -59,6 +60,7 @@ async def lister_projets(
                p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime,
                p.description_en, p.description_fr,
                p.secteur_brut, p.sous_secteur_brut, p.activite_brut, p.type_brut,
+               p.origine, p.champs_verrouilles,
                e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
                pa.nom AS parent_nom,
                s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
@@ -113,6 +115,16 @@ async def lister_projets(
                 "capex_estime": r.capex_estime,
                 "emplois": r.emplois, "emplois_estime": r.emplois_estime,
                 "description_en": r.description_en, "description_fr": r.description_fr,
+                "origine": r.origine, "champs_verrouilles": list(r.champs_verrouilles or []),
+                "brut": {
+                    "date": date_brute(r.annee, r.mois), "parent": r.parent_brut,
+                    "entreprise": r.entreprise_brut, "source": r.pays_source_brut,
+                    "dest": r.pays_dest_brut, "secteur": r.secteur_brut,
+                    "sous_secteur": r.sous_secteur_brut, "activite": r.activite_brut,
+                    "type": r.type_brut,
+                    "capex": montant_brut(r.capex_musd, r.capex_estime),
+                    "emplois": entier_brut(r.emplois, r.emplois_estime),
+                },
             }
             for r in lignes
         ],
@@ -312,3 +324,211 @@ async def lister_entreprises(recherche: str = "", db: AsyncSession = Depends(get
         FROM fdi_entreprises e {where} ORDER BY e.nom LIMIT 40
     """), params)).fetchall()
     return [{"id": r.id, "nom": r.nom, "nb_projets": r.nb_projets} for r in lignes]
+
+
+# ── Corriger une ligne, en ajouter une ────────────────────────────────────────
+# Ces deux gestes passent par le MÊME analyseur que l'import — resoudre_ligne.
+# On saisit donc des cases de relevé (« Mar 2014 », « * $9.60m »), pas des
+# colonnes de base : une seule écriture de la donnée, une seule interprétation
+# des astérisques, des troncatures et des échelles.
+class LigneIn(BaseModel):
+    date: str = ""
+    parent: str = ""
+    entreprise: str = ""
+    source: str = ""
+    dest: str = ""
+    secteur: str = ""
+    sous_secteur: str = ""
+    activite: str = ""
+    type: str = ""
+    capex: str = ""
+    emplois: str = ""
+
+
+def _brutes(body: LigneIn) -> dict:
+    """Les cases telles qu'elles sont saisies, espaces normalisés. Une case vide
+    devient None : « pas renseigné » et « chaîne vide » ne doivent pas cohabiter
+    dans une colonne où l'on comptera ensuite les manques."""
+    def net(v: str) -> str | None:
+        v = " ".join((v or "").split())
+        return v or None
+    return {c: net(getattr(body, c)) for c in
+            ("date", "parent", "entreprise", "source", "dest", "secteur",
+             "sous_secteur", "activite", "type", "capex", "emplois")}
+
+
+async def _preparer(db: AsyncSession, body: LigneIn, utilisateur: str) -> tuple[dict, dict, list]:
+    """Analyse une saisie et rend (cases brutes, colonnes, manques)."""
+    from app.services.fdi_projets import (LigneInvalide, _referentiels,
+                                          lire_pays_csv, resoudre_ligne)
+    brutes = _brutes(body)
+    if not brutes["date"]:
+        raise HTTPException(400, "La période est obligatoire : sans date, le projet ne peut être ni "
+                                 "classé dans le temps ni comparé aux autres.")
+    try:
+        col, manques = await resoudre_ligne(
+            db, {**brutes, "ligne": None}, await _referentiels(db), lire_pays_csv(), utilisateur)
+    except LigneInvalide as e:
+        # Un montant ou une date illisible est refusé au lieu d'être deviné :
+        # la même règle qu'à l'import, et pour la même raison.
+        raise HTTPException(400, str(e)) from e
+    return brutes, col, manques
+
+
+def _avertissements(manques: list) -> list[str]:
+    """Ce qui n'a pas pu être rattaché. La ligne est enregistrée quand même —
+    c'est déjà ce que fait l'import — mais on le DIT, sinon la valeur brute
+    resterait dans la table sans que personne ne sache qu'elle n'a rien touché."""
+    return [f"{champ} « {brut} » → {verdict}" for _, champ, brut, verdict in manques]
+
+
+@router.patch("/projets/{projet_id}")
+async def corriger_projet(projet_id: int, body: LigneIn,
+                          db: AsyncSession = Depends(get_db),
+                          user: dict = Depends(require_admin)):
+    """Corrige une ligne, et fait en sorte que la correction survive au réimport.
+
+    Les colonnes effectivement changées sont ajoutées à champs_verrouilles : le
+    prochain import du lot réécrira tout le reste depuis le CSV mais laissera
+    celles-là. Sans ce marquage, la correction disparaîtrait au premier import
+    suivant, sans un mot — ce qui serait pire que de ne pas pouvoir corriger.
+
+    Les verrous déjà posés sont conservés même si la valeur revient à celle du
+    CSV : c'est une décision humaine, elle ne se retire pas parce que les deux
+    valeurs coïncident aujourd'hui.
+    """
+    from app.services.fdi_projets import CHAMPS_MODIFIABLES
+
+    avant = (await db.execute(text(
+        "SELECT * FROM fdi_projets WHERE id = :i"), {"i": projet_id})).first()
+    if not avant:
+        raise HTTPException(404, "Projet introuvable.")
+
+    signataire = str(user.get("email") or "admin")
+    _, col, manques = await _preparer(db, body, signataire)
+
+    def _pareil(a, b) -> bool:
+        """Comparaison en nombres pour les montants : la base rend un
+        Decimal(« 9.60 ») là où l'analyseur donne 9.6, et les déclarer
+        différents poserait un verrou que personne n'a demandé."""
+        if isinstance(a, (int, float)) or isinstance(b, (int, float)):
+            try:
+                return a is not None and b is not None and round(float(a), 2) == round(float(b), 2)
+            except (TypeError, ValueError):
+                return a == b
+        return a == b
+
+    verrous = set(avant.champs_verrouilles or [])
+    for c in CHAMPS_MODIFIABLES:
+        if not _pareil(getattr(avant, c), col[c]):
+            verrous.add(c)
+
+    # L'entreprise corrigée à la main est tenue pour arbitrée : c'est le geste
+    # même que l'écran d'arbitrage produit, et le refaire passer par « à
+    # arbitrer » obligerait à trancher deux fois la même chose.
+    statut = "resolu" if "entreprise_brut" in verrous else col["statut_entreprise"]
+
+    await db.execute(text("""
+        UPDATE fdi_projets SET
+            annee = :annee, mois = :mois,
+            parent_brut = :parent_brut, parent_id = :parent_id,
+            entreprise_brut = :entreprise_brut, entreprise_id = :entreprise_id,
+            statut_entreprise = :statut,
+            pays_source_brut = :pays_source_brut, pays_source_id = :pays_source_id,
+            pays_dest_brut = :pays_dest_brut, pays_dest_id = :pays_dest_id,
+            secteur_brut = :secteur_brut, secteur_id = :secteur_id,
+            sous_secteur_brut = :sous_secteur_brut, sous_secteur_id = :sous_secteur_id,
+            activite_brut = :activite_brut, activite_id = :activite_id,
+            type_brut = :type_brut, type_projet_id = :type_projet_id,
+            capex_musd = :capex_musd, capex_estime = :capex_estime,
+            emplois = :emplois, emplois_estime = :emplois_estime,
+            champs_verrouilles = :verrous,
+            modifie_le = :d, modifie_par = :u
+        WHERE id = :i
+    """), {**col, "statut": statut, "verrous": sorted(verrous),
+           "d": datetime.now(timezone.utc), "u": signataire, "i": projet_id})
+    await db.commit()
+    return {"id": projet_id, "champs_verrouilles": sorted(verrous),
+            "avertissements": _avertissements(manques)}
+
+
+# Le lot où atterrissent les projets saisis. Il n'a PAS de périmètre : un
+# périmètre est une promesse d'exhaustivité — « tout ce que ce pays a reçu » —
+# et ajouter un projet à la main n'en fait aucune. Le projet compte partout
+# ailleurs ; il ne rend simplement aucun pays « complet » à lui seul.
+LOT_SAISIE = "Saisie manuelle"
+
+
+@router.post("/projets", status_code=201)
+async def ajouter_projet(body: LigneIn, db: AsyncSession = Depends(get_db),
+                         user: dict = Depends(require_admin)):
+    """Ajoute un projet que le relevé ne contient pas.
+
+    Il va dans un lot à part, marqué « saisie » : la purge des rangs excédentaires
+    d'un réimport ne peut donc jamais l'atteindre. Un projet saisi n'a pas de
+    rang chez fDi — aucune ligne de CSV ne viendra en face de lui.
+    """
+    signataire = str(user.get("email") or "admin")
+    _, col, manques = await _preparer(db, body, signataire)
+
+    lot = (await db.execute(text(
+        "SELECT id FROM fdi_lots_import WHERE libelle = :l"), {"l": LOT_SAISIE})).first()
+    if lot:
+        lot_id = lot.id
+    else:
+        lot_id = (await db.execute(text(
+            "INSERT INTO fdi_lots_import (libelle, perimetre, sens, source, importe_par, nb_lignes) "
+            "VALUES (:l, NULL, 'destination', 'saisie', :u, 0) RETURNING id"),
+            {"l": LOT_SAISIE, "u": signataire})).first().id
+
+    rang = ((await db.execute(text(
+        "SELECT coalesce(max(ligne), 0) + 1 AS n FROM fdi_projets WHERE lot_id = :i"),
+        {"i": lot_id})).first()).n
+
+    r = (await db.execute(text("""
+        INSERT INTO fdi_projets (lot_id, ligne, origine, annee, mois,
+            parent_brut, parent_id, entreprise_brut, entreprise_id, statut_entreprise,
+            pays_source_brut, pays_source_id, pays_dest_brut, pays_dest_id,
+            secteur_brut, secteur_id, sous_secteur_brut, sous_secteur_id,
+            activite_brut, activite_id, type_brut, type_projet_id,
+            capex_musd, capex_estime, emplois, emplois_estime,
+            champs_verrouilles, modifie_par)
+        VALUES (:lot, :rang, 'saisie', :annee, :mois,
+            :parent_brut, :parent_id, :entreprise_brut, :entreprise_id, 'resolu',
+            :pays_source_brut, :pays_source_id, :pays_dest_brut, :pays_dest_id,
+            :secteur_brut, :secteur_id, :sous_secteur_brut, :sous_secteur_id,
+            :activite_brut, :activite_id, :type_brut, :type_projet_id,
+            :capex_musd, :capex_estime, :emplois, :emplois_estime,
+            '{}', :u)
+        RETURNING id
+    """), {**col, "lot": lot_id, "rang": rang, "u": signataire})).first()
+
+    await db.execute(text(
+        "UPDATE fdi_lots_import SET nb_lignes = (SELECT count(*) FROM fdi_projets WHERE lot_id = :i), "
+        "  importe_le = now(), importe_par = :u WHERE id = :i"), {"i": lot_id, "u": signataire})
+    await db.commit()
+    return {"id": r.id, "lot_id": lot_id, "ligne": rang,
+            "avertissements": _avertissements(manques)}
+
+
+@router.delete("/projets/{projet_id}")
+async def retirer_projet(projet_id: int, db: AsyncSession = Depends(get_db),
+                         user: dict = Depends(require_admin)):
+    """Retire un projet SAISI. Une ligne venue d'un CSV n'est pas supprimable
+    ici : elle reviendrait au prochain import, et laisser croire le contraire
+    serait pire que de refuser. C'est le CSV qu'il faut corriger."""
+    r = (await db.execute(text(
+        "DELETE FROM fdi_projets WHERE id = :i AND origine = 'saisie' RETURNING lot_id"),
+        {"i": projet_id})).first()
+    if not r:
+        existe = (await db.execute(text(
+            "SELECT origine FROM fdi_projets WHERE id = :i"), {"i": projet_id})).first()
+        if existe:
+            raise HTTPException(409, "Ce projet vient du relevé : il reviendrait au prochain "
+                                     "import. Corrigez le fichier de relevé.")
+        raise HTTPException(404, "Projet introuvable.")
+    await db.execute(text(
+        "UPDATE fdi_lots_import SET nb_lignes = (SELECT count(*) FROM fdi_projets WHERE lot_id = :i) "
+        "WHERE id = :i"), {"i": r.lot_id})
+    await db.commit()
+    return {"id": projet_id}
