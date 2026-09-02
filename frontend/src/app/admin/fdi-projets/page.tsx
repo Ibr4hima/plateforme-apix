@@ -154,23 +154,6 @@ export default function AdminFdiProjets() {
         <ABientot base={base} />
       ) : (
       <>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-        <Compteur n={totaux.total} mot="projet" />
-        {totaux.a_arbitrer > 0 && (
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--orange)",
-            background: "color-mix(in srgb, var(--orange) 8%, transparent)",
-            padding: "3px 11px", borderRadius: 999 }}>
-            {totaux.a_arbitrer} entreprise{totaux.a_arbitrer > 1 ? "s" : ""} à arbitrer
-          </span>
-        )}
-        {totaux.sans_description > 0 && (
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--gris-fort)",
-            background: "rgb(var(--gris-rgb) / 0.12)", padding: "3px 11px", borderRadius: 999 }}>
-            {totaux.sans_description} sans description
-          </span>
-        )}
-      </div>
-
       {erreur && <div style={{ marginBottom: 18 }}><Avis ton="erreur">{erreur}</Avis></div>}
       {message && <div style={{ marginBottom: 18 }}><Avis ton="ok">{message}</Avis></div>}
 
@@ -234,7 +217,41 @@ function ABientot({ base }: { base: "signaux" | "entreprises" }) {
 }
 
 // ── Vue 1 : les projets ───────────────────────────────────────────────────────
+
+const PAR_PAGE = 20;
+
+/** Les numéros à afficher autour de la page courante, sans jamais dérouler les
+    centaines de pages que compte le relevé : premières, dernières, et une
+    fenêtre autour de l'endroit où l'on se trouve. Le « … » n'est pas cliquable :
+    c'est une ellipse, pas un bouton, et le prétendre tromperait. */
+function fenetre(page: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const vues = new Set([1, 2, total - 1, total, page - 1, page, page + 1]);
+  const nums = [...vues].filter(n => n >= 1 && n <= total).sort((a, b) => a - b);
+  const sortie: (number | "…")[] = [];
+  nums.forEach((n, i) => {
+    if (i > 0 && n - nums[i - 1] > 1) sortie.push("…");
+    sortie.push(n);
+  });
+  return sortie;
+}
+
 function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: string }) {
+  const [page, setPage] = useState(1);
+
+  // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
+  // résultat qui n'en compte plus que deux n'aurait aucun sens. L'ajustement se
+  // fait pendant le rendu et non dans un effet — React le prévoit, et un effet
+  // provoquerait ici un second rendu pour rien.
+  const [rechercheVue, setRechercheVue] = useState(recherche);
+  if (recherche !== rechercheVue) { setRechercheVue(recherche); setPage(1); }
+
+  const pages = Math.max(1, Math.ceil(projets.length / PAR_PAGE));
+  // Le nombre de pages peut avoir fondu sans que la recherche change (un import
+  // qui retire des lignes) : on borne l'affichage sans toucher à l'état.
+  const courante = Math.min(page, pages);
+  const visibles = projets.slice((courante - 1) * PAR_PAGE, courante * PAR_PAGE);
+
   return (
     <Carte
       titre="Projets annoncés"
@@ -261,17 +278,24 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
                 </tr>
               </thead>
               <tbody>
-                {projets.map(p => (
+                {visibles.map(p => (
                   <tr key={p.id}>
                     <td style={{ ...TD, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
                     <td style={TD}>
                       <span style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-                        <span style={{ fontWeight: 600 }}>{p.entreprise ?? "—"}</span>
-                        {p.statut_entreprise !== "resolu" && (
-                          <Pastille couleur="var(--orange)" titre={`Nom affiché tronqué par la source : « ${p.entreprise_brut} ». À arbitrer.`}>
-                            à arbitrer
-                          </Pastille>
-                        )}
+                        {/* Le nom d'une entreprise non arbitrée passe en orange, sans
+                            étiquette : la couleur suffit à signaler qu'il reste à trancher,
+                            et l'infobulle donne le texte brut de la source à celui qui
+                            s'arrête dessus. */}
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: p.statut_entreprise !== "resolu" ? "var(--orange)" : undefined,
+                          }}
+                          title={p.statut_entreprise !== "resolu"
+                            ? `Nom affiché tronqué par la source : « ${p.entreprise_brut} ». À arbitrer.`
+                            : undefined}
+                        >{p.entreprise ?? "—"}</span>
                         {p.parent && p.parent !== p.entreprise && (
                           <span style={{ fontSize: 11, color: "var(--gris)" }}>groupe {p.parent}</span>
                         )}
@@ -304,7 +328,49 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
           </div>
         </div>
       )}
+
+      {pages > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", marginTop: 16 }}>
+          <BoutonPage onClick={() => setPage(courante - 1)} inactif={courante === 1} titre="Page précédente">
+            <ChevronLeft size={14} />
+          </BoutonPage>
+          {fenetre(courante, pages).map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} style={{ fontSize: 12, color: "var(--gris)", padding: "0 2px" }}>…</span>
+            ) : (
+              <BoutonPage key={n} onClick={() => setPage(n)} actif={n === courante} titre={`Page ${n}`}>
+                {n}
+              </BoutonPage>
+            )
+          )}
+          <BoutonPage onClick={() => setPage(courante + 1)} inactif={courante === pages} titre="Page suivante">
+            <ChevronRight size={14} />
+          </BoutonPage>
+        </div>
+      )}
     </Carte>
+  );
+}
+
+/** Un pas de navigation. Désactivé, il reste visible mais ne réagit plus : le
+    faire disparaître déplacerait les autres boutons sous le curseur. */
+function BoutonPage({ children, onClick, actif, inactif, titre }: {
+  children: React.ReactNode; onClick: () => void; actif?: boolean; inactif?: boolean; titre?: string;
+}) {
+  return (
+    <button
+      type="button" onClick={onClick} disabled={inactif} title={titre}
+      aria-current={actif ? "page" : undefined}
+      style={{
+        minWidth: 30, height: 30, padding: "0 8px", borderRadius: 9, cursor: inactif ? "default" : "pointer",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        fontSize: 12, fontWeight: actif ? 800 : 600, fontVariantNumeric: "tabular-nums",
+        border: `1px solid ${actif ? "var(--bleu)" : "var(--bordure)"}`,
+        background: actif ? "color-mix(in srgb, var(--bleu) 10%, transparent)" : "transparent",
+        color: inactif ? "var(--gris)" : actif ? "var(--bleu)" : "var(--gris-fort)",
+        opacity: inactif ? 0.45 : 1,
+      }}
+    >{children}</button>
   );
 }
 
