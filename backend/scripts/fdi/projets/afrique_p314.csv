@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2009,Ecobank Transnati…,Ecobank Transnati…,Togo,Gabon,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Mar 2009,CLG (Centurion La…,CLG (Centurion La…,Equatorial Guinea,Gabon,Business services,Legal services,Business Services,* $27.80m,* 38,New
+3,Mar 2009,Etablissements M…,Etablissements M…,France,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+4,Mar 2009,United Bank for Af…,United Bank for Af…,Nigeria,Gabon,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Feb 2009,BTC Networks,Bintel,Saudi Arabia,Gabon,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+6,Nov 2008,VAALCO Energy,VAALCO Energy,United States,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+7,Nov 2008,VAALCO Energy,VAALCO Energy,United States,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+8,Jun 2008,VAALCO Energy,VAALCO Energy,United States,Gabon,"Coal, oil & gas",Oil & gas extraction,Manufacturing,* $1.64bn,* 146,Expansion
+9,May 2008,Veripos,Veripos,United Kingdom,Gabon,Communications,Navigational instrum…,ICT & Internet Infras…,* $150.00m,* 89,New
+10,Feb 2008,Sonae,Plysorol,Portugal,Gabon,Wood products,Forestry & logging,Manufacturing,$14.60m,* 37,Expansion
+11,Oct 2007,CMA CGM,Delmas Gabon,France,Gabon,Transportation & Wa…,Water transportation,Headquarters,* $16.50m,* 106,New
+12,Jan 2007,International Mon…,International Mon…,United States,Gabon,Financial services,Corporate & investm…,Education & Training,$265.37m,588,New
+13,Jan 2007,Ningbo Hwazhou …,Ningbo Hwazhou …,China,Gabon,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+14,Nov 2006,Eramet,Eramet Comilog M…,France,Gabon,Metals,Other metal ore mini…,Extraction,$263.00m,* 370,Expansion
+15,Jan 2006,Pan-Ocean Energy,Pan-Ocean Energy,United Kingdom,Gabon,"Coal, oil & gas",Other petroleum & c…,Manufacturing,$164.00m,* 33,New

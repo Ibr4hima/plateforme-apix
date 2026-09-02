@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2005,Canadian Natural …,Canadian Natural …,Canada,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+2,Aug 2005,Premier Oil,Premier Oil,United Kingdom,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+3,Aug 2005,VAALCO Energy,VAALCO Energy,United States,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+4,Jul 2005,Pan-Ocean Energy,Pan-Ocean Energy,United Kingdom,Gabon,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+5,Feb 2025,CF Banque,CF Banque,United Kingdom,Gambia,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+6,Aug 2024,Cauridor,Cauridor,United States,Gambia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Feb 2024,Mirale Services Ca…,Mirale Services Ca…,Senegal,Gambia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Sep 2023,NEK Umwelttechni…,NEK Umwelttechni…,Switzerland,Gambia,Renewable energy,Wind electric power,Electricity,* $206.10m,* 57,New
+9,Sep 2023,NEK Umwelttechni…,NEK Umwelttechni…,Switzerland,Gambia,Renewable energy,Wind electric power,Electricity,* $206.10m,* 57,New
+10,Mar 2023,Wakanow,Wakanow,Nigeria,Gambia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.60m,5,New
+11,Mar 2022,International Mon…,International Mon…,United States,Gambia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,Expansion
+12,Dec 2019,Innovarx Global H…,Innovarx Global H…,United States,Gambia,Healthcare,Home health care se…,Business Services,* $2.70m,* 39,New
+13,Aug 2019,Lufthansa,time:matters,Germany,Gambia,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+14,Sep 2018,Kuoni,VFS Global,Switzerland,Gambia,Business services,Other support services,Business Services,* $27.80m,* 38,New
+15,Sep 2018,Thomas Cook Gro…,Thomas Cook Gro…,United Kingdom,Gambia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
