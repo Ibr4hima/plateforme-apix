@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2003,British Gas Group …,British Gas Group …,United Kingdom,Egypt,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$550.00m,* 96,Expansion
+2,Jan 2003,KK Birla Group,Zuari-Chambal,India,Egypt,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $355.70m,* 204,New
+3,Jan 2003,Lafarge,Lafarge,France,Egypt,Building materials,"Asphalt paving, roofi…",Manufacturing,* $180.20m,* 404,New
+4,Jan 2003,Tadhamon Interna…,Tadhamon Interna…,Yemen,Egypt,Financial services,Retail banking,Business Services,* $9.50m,* 22,New
+5,Apr 2019,Tradex SA,Tradex SA,Cameroon,Equatorial Guinea,"Coal, oil & gas",Gasoline stations,Retail,$25.81m,* 61,New
+6,Aug 2017,Corlido Group,Corlido Group,Netherlands,Equatorial Guinea,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+7,Aug 2015,Afrique Media,Afrique Media,Cameroon,Equatorial Guinea,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,May 2015,Gridline Communi…,GridlineXstreme,United States,Equatorial Guinea,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+9,Jan 2015,Ascensores Excels…,Ascensores Excels…,Spain,Equatorial Guinea,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+10,May 2014,Standard Bank Gr…,Standard Bank Gr…,South Africa,Equatorial Guinea,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Apr 2013,Punto FA,Mango,Spain,Equatorial Guinea,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+12,Apr 2012,Asturmadi,Asturmadi,Spain,Equatorial Guinea,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+13,Mar 2012,welltec,welltec,Denmark,Equatorial Guinea,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+14,Sep 2011,ZoomLion Ghana …,ZoomLion Ghana …,Ghana,Equatorial Guinea,Business services,Waste management …,Business Services,* $6.80m,* 15,New
+15,Jul 2011,Aker Solutions (A…,Aker Qserv,Norway,Equatorial Guinea,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,* $4.10m,20,New

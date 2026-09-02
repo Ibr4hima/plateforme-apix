@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2016,PMI Gold Corporat…,Nevsun Resources,Canada,Eritrea,Metals,Nonferrous metal pr…,Manufacturing,* $147.40m,* 443,Co-Location
+2,Apr 2006,Oil and Gas Devel…,Oil and Gas Devel…,Pakistan,Eritrea,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+3,Sep 2005,Nevsun Resources,Nevsun Resources,Canada,Eritrea,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+4,Sep 2005,Nevsun Resources,Nevsun Resources,Canada,Eritrea,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+5,Sep 2005,Nevsun Resources,Nevsun Resources,Canada,Eritrea,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+6,May 2005,Northern Mining E…,Northern Mining E…,Canada,Eritrea,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+7,Mar 2004,Sunridge Gold,Sunridge Gold,Canada,Eritrea,Metals,"Copper, nickel, lead, …",Extraction,$1.30m,* 2,New
+8,Nov 2003,Sunridge Gold,Sunridge Gold,Canada,Eritrea,Metals,"Copper, nickel, lead, …",Extraction,* $270.00m,"* 1,012",New
+9,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Eswatini,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Oct 2021,Frazium Energy,Frazium Energy,Australia,Eswatini,Renewable energy,Solar electric power,Electricity,$115.00m,* 36,New
+11,Oct 2020,Standard Bank Gr…,Standard Bank Gr…,South Africa,Eswatini,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Jul 2019,Kellanova (Kellogg…,Kellanova (Kellogg…,United States,Eswatini,Food and Beverages,Snack food,Manufacturing,* $45.80m,* 263,New
+13,Mar 2018,Walmart,Massmart,United States,Eswatini,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+14,Jul 2014,Techno Brain,Techno Brain,Tanzania,Eswatini,Software & IT services,"Software publishers,…",Education & Training,* $7.80m,* 67,New
+15,Mar 2014,Arabian Constructi…,Reyada Constructi…,Egypt,Eswatini,Building materials,Cement & concrete p…,Manufacturing,* $49.00m,120,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2003,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$90.00m,* 588,New
+2,Oct 2003,ZTE,ZTE,China,Egypt,Communications,Communications equ…,Education & Training,* $7.00m,* 94,New
+3,Sep 2003,Bank of Valletta,Bank of Valletta,Malta,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Sep 2003,Kamaz,Kamaz,Russia,Egypt,Automotive OEM,Heavy duty trucks,Manufacturing,* $51.70m,* 864,New
+5,Sep 2003,Thai Acrylic Fibre,Thai Acrylic Fibre,Thailand,Egypt,Plastics,Artificial & synthetic …,Manufacturing,$100.00m,* 582,New
+6,Aug 2003,Fuel Systems Solu…,Impco Technologies,United States,Egypt,Automotive compon…,Motor vehicle gasolin…,Headquarters,* $19.70m,* 129,New
+7,Aug 2003,Ivanhoe Energy,Ivanhoe Energy,Canada,Egypt,"Coal, oil & gas","Natural, liquefied an…",Extraction,* $373.70m,* 214,New
+8,Aug 2003,LV Salamanca Ing…,LV Salamanca Ing…,Spain,Egypt,Real estate,Commercial & institu…,Construction,$60.00m,* 429,New
+9,Jul 2003,LML,LML,India,Egypt,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $60.60m,* 348,New
+10,Jul 2003,Mapei,Vinavil,Italy,Egypt,Chemicals,Basic chemicals,Manufacturing,$11.00m,* 14,New
+11,Jul 2003,UAZ,UAZ,Russia,Egypt,Automotive OEM,Light trucks & utility …,Manufacturing,* $45.90m,* 864,New
+12,Jun 2003,Chipita Internatio…,Chipita Internatio…,Greece,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+13,Jun 2003,IRL,IRL,Australia,Egypt,"Paper, printing & pac…",Printing & related ac…,Manufacturing,$90.00m,"1,000",New
+14,Jun 2003,Jordanian Arab Ba…,Jordanian Arab Ba…,Jordan,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jun 2003,Jordanian Arab Ba…,Jordanian Arab Ba…,Jordan,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
