@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2011,Valeo,Valeo,France,Egypt,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $26.70m,120,Expansion
+2,Nov 2011,General Motors (G…,SAIC-GM-Wuling …,United States,Egypt,Automotive OEM,Light trucks & utility …,Manufacturing,* $51.70m,* 864,Expansion
+3,Nov 2011,Google,Google,United States,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 16,Expansion
+4,Nov 2011,Leoni,Leoni,Germany,Egypt,Electronic components,Communication & en…,Manufacturing,* $11.80m,* 157,New
+5,Nov 2011,RKW,RKW,Germany,Egypt,Plastics,Plastics packaging m…,Manufacturing,$30.00m,40,New
+6,Oct 2011,Coca-Cola,Coca-Cola Bottling…,United States,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,$16.70m,* 126,Expansion
+7,Oct 2011,Qatari Diar,Qatari Diar,Qatar,Egypt,Real estate,Commercial & institu…,Construction,$543.80m,* 813,New
+8,Oct 2011,Qatari Diar,Qatari Diar,Qatar,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+9,Sep 2011,Alshaya,MH Alshaya Co (Al…,Kuwait,Egypt,Food and Beverages,Food services,Retail,* $268.00m,* 177,New
+10,Sep 2011,Amanie Advisors,Amanie Advisors,Malaysia,Egypt,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+11,Sep 2011,Aptec Holdings,Aptec Holdings,UAE,Egypt,Software & IT services,Custom computer pr…,Education & Training,* $5.60m,* 70,New
+12,Sep 2011,Ermenegildo Zegna,Ermenegildo Zegna,Italy,Egypt,Textiles,Clothing & clothing a…,Manufacturing,* $28.60m,"* 1,080",Co-Location
+13,Aug 2011,China Fiberglass,Jushi Group,China,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$223.00m,* 600,New
+14,Aug 2011,Fawaz Alhokair Gr…,Fawaz Alhokair Gr…,Saudi Arabia,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Aug 2011,Global Knowledge,Global Knowledge,United States,Egypt,Business services,"Business schools, co…",Headquarters,* $10.50m,* 995,Expansion

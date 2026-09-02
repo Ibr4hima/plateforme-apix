@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2011,Multi Estirada,Multi Estirada,Indonesia,Egypt,Rubber,Tyres,Manufacturing,$320.00m,"* 2,052",New
+2,Jan 2011,Nestle,Nestle,Switzerland,Egypt,Food and Beverages,Seasoning & dressing,Manufacturing,* $45.70m,* 429,New
+3,Jan 2011,Plug and Play,Plug and Play,United States,Egypt,Business services,Other support services,Business Services,* $6.80m,* 15,New
+4,Jan 2011,Qatar Petrochemic…,Qatar Petrochemic…,Qatar,Egypt,Chemicals,Basic chemicals,"Logistics, Distributio…",* $13.20m,* 28,New
+5,Jan 2011,Shantui Constructi…,Shantui Constructi…,China,Egypt,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,New
+6,Jan 2011,Titan Cement,Titan Cement,Greece,Egypt,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,Expansion
+7,Dec 2010,Drake & Scull Inte…,Drake & Scull Inte…,UAE,Egypt,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New
+8,Dec 2010,Ferro,Ferro,United States,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $395.10m,* 149,New
+9,Dec 2010,Invensys,Invensys Operatio…,United Kingdom,Egypt,Software & IT services,"Software publishers,…",Research & Develop…,* $54.70m,350,New
+10,Dec 2010,Pedersen & Partne…,Pedersen & Partne…,Czech Republic,Egypt,Business services,Employment services,Business Services,* $6.80m,* 15,New
+11,Dec 2010,Sellgate Sales Out…,Sellgate Sales Out…,Switzerland,Egypt,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+12,Nov 2010,Arab Bank,Arab Bank,Jordan,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Nov 2010,Brocade Communi…,Brocade Communi…,United States,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Nov 2010,Toshiba,Toshiba,Japan,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,$59.50m,* 852,New
+15,Nov 2010,Turkiye Is Bankasi…,Turkiye Is Bankasi…,Turkey,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
