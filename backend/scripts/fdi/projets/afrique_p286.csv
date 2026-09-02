@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2014,Arabian Constructi…,Reyada Constructi…,Egypt,Eswatini,Building materials,Cement & concrete p…,Manufacturing,$1.29m,120,New
+2,Nov 2013,MTN Group,MTN Swaziland,South Africa,Eswatini,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+3,Mar 2012,Don't Waste Servi…,Don't Waste Servi…,South Africa,Eswatini,Business services,Waste management …,Business Services,* $6.80m,* 15,New
+4,Dec 2011,Galp Energia,Galp Swaziland,Portugal,Eswatini,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,* 335,New
+5,Oct 2011,OM Residual UK (…,Nedbank Swaziland,United Kingdom,Eswatini,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Jul 2011,Limkokwing Unive…,Limkokwing Unive…,Malaysia,Eswatini,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+7,Jul 2011,Sanlam Group,Sanlam Investme…,South Africa,Eswatini,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+8,Jul 2011,Vantage Health,Vantage Health,United States,Eswatini,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $31.10m,* 376,New
+9,Jul 2011,Vantage Health,Vantage Health,United States,Eswatini,Healthcare,General medical & s…,Construction,* $49.40m,* 209,New
+10,Jun 2011,Clicks Group,Clicks Group,South Africa,Eswatini,Pharmaceuticals,Health & personal ca…,Retail,* $4.20m,* 38,New
+11,May 2011,Associated British …,Ubombo Sugar,United Kingdom,Eswatini,Food and Beverages,Sugar & confectionar…,Manufacturing,$134.00m,* 876,Expansion
+12,Mar 2011,Seacom,Seacom,Mauritius,Eswatini,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+13,Jul 2009,ZimRe Holdings,ZimRe Holdings,Zimbabwe,Eswatini,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+14,Jul 2008,Blue Financial Ser…,Blue Financial Ser…,South Africa,Eswatini,Financial services,Retail banking,Business Services,* $3.40m,8,New
+15,Jul 2008,Standard Bank Gr…,Liberty Group,South Africa,Eswatini,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New

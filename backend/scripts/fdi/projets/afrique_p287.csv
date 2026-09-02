@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2008,OM Residual UK (…,OM Residual UK (…,United Kingdom,Eswatini,Financial services,Insurance,"Sales, Marketing & S…",$6.54m,* 31,New
+2,Nov 2005,D1 Oils,D1 Oils,United Kingdom,Eswatini,Food and Beverages,Crop production,Manufacturing,* $58.40m,* 429,New
+3,Apr 2005,Marketing & Prom…,Marketing & Prom…,Nigeria,Eswatini,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+4,Dec 2004,Tex-Ray,Tex-Ray,Taiwan,Eswatini,Textiles,Clothing & clothing a…,Manufacturing,* $152.00m,"2,700",New
+5,May 2004,Nan-Woei Industrial,Nan-Woei Industrial,Taiwan,Eswatini,Textiles,Textile product mills,Manufacturing,$200.00m,"* 3,000",Expansion
+6,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Renewable energy,Wind electric power,Electricity,$2.50bn,* 775,New
+7,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Renewable energy,Wind electric power,Electricity,* $2.50bn,* 775,New
+8,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Industrial equipment,Mechanical power tr…,Manufacturing,* $2.43bn,"* 3,000",New
+9,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Renewable energy,Wind electric power,Electricity,* $2.50bn,* 775,New
+10,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Renewable energy,Other electric power …,Manufacturing,* $2.43bn,"* 1,247",New
+11,May 2026,Mingyang New En…,MingYang Smart E…,China,Ethiopia,Engines & turbines,Engines & Turbines,Manufacturing,* $2.43bn,"* 3,000",New
+12,May 2026,Renewvia Energy,Renewvia Solar Af…,United States,Ethiopia,Renewable energy,Solar electric power,Electricity,* $187.50m,* 58,New
+13,May 2026,Visa International,Visa International,United States,Ethiopia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Mar 2026,Dangote Group,Dangote Cement,Nigeria,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,Expansion
+15,Oct 2025,Golden Concord H…,Golden Concord H…,Hong Kong,Ethiopia,"Coal, oil & gas",Petroleum refineries,Manufacturing,$2.50bn,* 460,New

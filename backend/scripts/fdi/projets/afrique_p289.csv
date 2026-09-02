@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2023,Americana Group …,Americana Group …,UAE,Ethiopia,Food and Beverages,Animal food,Manufacturing,* $66.50m,* 294,New
+2,Aug 2023,Minsk Automobile …,Minsk Automobile …,Belarus,Ethiopia,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+3,Jul 2023,My 1Health (MyHe…,My 1Health (MyHe…,Kenya,Ethiopia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+4,Jun 2023,CLT Toolbox,CLT Toolbox,Australia,Ethiopia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+5,May 2023,AFEX Commoditie…,AFEX Commoditie…,Nigeria,Ethiopia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Mar 2023,West China Cement,West China Cement,China,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,$2.20bn,"5,000",New
+7,Feb 2023,Groupe Castel,BGI Ethiopia,France,Ethiopia,Food and Beverages,Breweries,Manufacturing,$9.30m,* 40,Expansion
+8,Jan 2023,Mubadala Investm…,Masdar,UAE,Ethiopia,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+9,Dec 2022,CCI Group,CCI Group,UAE,Ethiopia,Business services,Business support ser…,Customer Contact C…,* $0.80m,100,New
+10,Oct 2022,AP Moller - Maersk,AP Moller - Maersk,Denmark,Ethiopia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+11,May 2022,Coca-Cola,Coca-Cola Bevera…,United States,Ethiopia,Food and Beverages,Soft drinks & ice,Manufacturing,* $66.50m,* 294,New
+12,May 2022,Union InVivo,Soufflet Malt (Malt…,France,Ethiopia,Food and Beverages,Grains & oilseed,Manufacturing,* $23.40m,100,New
+13,Jan 2022,Vodafone Group,Safaricom Teleco…,United Kingdom,Ethiopia,Communications,Computing infrastruc…,ICT & Internet Infras…,$100.00m,* 15,New
+14,Jan 2022,Vodafone Group,Safaricom Teleco…,United Kingdom,Ethiopia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $100.00m,* 15,New
+15,Jan 2022,Vodafone Group,Safaricom Teleco…,United Kingdom,Ethiopia,Communications,Computing infrastruc…,ICT & Internet Infras…,$100.00m,* 15,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2025,Dangote Group,Dangote Group,Nigeria,Ethiopia,Chemicals,"Pesticide, fertilisers …",Manufacturing,$4.00bn,"* 3,000",New
+2,Mar 2025,TASS Russian Ne…,TASS Russian Ne…,Russia,Ethiopia,Business services,"Newspaper, periodic…",Business Services,* $27.80m,* 38,New
+3,Feb 2025,Rossiya Segodnya,Sputnik News,Russia,Ethiopia,Communications,Radio & TV broadcas…,Business Services,* $5.20m,* 20,New
+4,Jan 2025,Kagool,Kagool,United Kingdom,Ethiopia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+5,Dec 2024,WPP,Bultum Technologi…,United Kingdom,Ethiopia,Software & IT services,Internet publishing …,Headquarters,* $12.20m,* 73,New
+6,Oct 2024,Vsun Solar,Toyo Solar,Japan,Ethiopia,Electronic components,All other electrical e…,Manufacturing,$60.00m,880,New
+7,Jul 2024,Akobo Minerals,Akobo Minerals,Sweden,Ethiopia,Metals,Nonferrous metal pr…,Manufacturing,* $147.40m,* 443,Co-Location
+8,Jul 2024,East Africa Metals,East Africa Metals,Canada,Ethiopia,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,New
+9,Jun 2024,Vodafone Group,Safaricom Teleco…,United Kingdom,Ethiopia,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+10,Jun 2024,Vodafone Group,Safaricom Teleco…,United Kingdom,Ethiopia,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $2.50m,12,New
+11,Feb 2024,Point Group,Point Group,South Africa,Ethiopia,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+12,Dec 2023,AMEA Power,AMEA Power,UAE,Ethiopia,Renewable energy,Wind electric power,Electricity,$600.00m,* 186,New
+13,Dec 2023,Boeing,Boeing,United States,Ethiopia,Aerospace,Aircraft,Headquarters,* $40.50m,* 103,New
+14,Dec 2023,Sinoma Internatio…,Sinoma Internatio…,China,Ethiopia,Business services,"Technical, trade & ot…",Education & Training,* $9.40m,* 46,New
+15,Oct 2023,Septimius Security,Septimius Security,Ireland,Ethiopia,Business services,Other support services,Business Services,* $27.80m,* 38,New
