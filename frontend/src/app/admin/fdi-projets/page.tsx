@@ -42,6 +42,16 @@ type Projet = {
   capex_musd: number | null; capex_estime: boolean | null;
   emplois: number | null; emplois_estime: boolean | null;
   description_en: string | null; description_fr: string | null;
+  origine: "import" | "saisie"; champs_verrouilles: string[];
+  // Les cases telles que fDi les écrit — « Mar 2014 », « * $9.60m ». C'est
+  // ce que le formulaire modifie, et ce que le serveur sait relire.
+  brut: LigneBrute;
+};
+type LigneBrute = {
+  date: string; parent: string | null; entreprise: string | null;
+  source: string | null; dest: string | null; secteur: string | null;
+  sous_secteur: string | null; activite: string | null; type: string | null;
+  capex: string; emplois: string;
 };
 type Candidat = { id: number; nom: string; origine: "memoire" | "prefixe" };
 type Groupe = {
@@ -89,6 +99,132 @@ function Pastille({ children, couleur, titre }: {
       color: couleur, background: `color-mix(in srgb, ${couleur} 10%, transparent)`,
       padding: "2px 7px", borderRadius: 999, whiteSpace: "nowrap", flexShrink: 0,
     }}>{children}</span>
+  );
+}
+
+// ── Le formulaire d'une ligne : le même pour corriger et pour ajouter ─────────
+// On y saisit des CASES DE RELEVÉ, pas des colonnes de base : « Mar 2014 »,
+// « * $9.60m », « Clothing & clothing a… ». C'est ce que l'utilisateur a sous
+// les yeux chez fDi, et c'est le serveur — le même analyseur que l'import — qui
+// en tire dates, échelles, drapeaux d'estimation et rattachements. Demander ici
+// une autre écriture obligerait à traduire de tête, et à chaque ligne.
+
+const VIDE: LigneBrute = {
+  date: "", parent: "", entreprise: "", source: "", dest: "", secteur: "",
+  sous_secteur: "", activite: "", type: "", capex: "", emplois: "",
+};
+
+const CASES: { cle: keyof LigneBrute; l: string; aide?: string; large?: boolean }[] = [
+  { cle: "date",         l: "Période",      aide: "Mar 2014" },
+  { cle: "type",         l: "Type",         aide: "New, Expansion, Co-Location" },
+  { cle: "parent",       l: "Société mère", aide: "Groupe, si différent" },
+  { cle: "entreprise",   l: "Entreprise",   aide: "Nom complet si vous le connaissez" },
+  { cle: "source",       l: "Origine",      aide: "Nom anglais : France, Turkey…" },
+  { cle: "dest",         l: "Destination",  aide: "Nom anglais : Senegal, Egypt…" },
+  { cle: "secteur",      l: "Secteur",      aide: "Libellé fDi, troncature comprise", large: true },
+  { cle: "sous_secteur", l: "Sous-secteur", aide: "Libellé fDi, troncature comprise", large: true },
+  { cle: "activite",     l: "Activité",     aide: "Manufacturing, Business Services…", large: true },
+  { cle: "capex",        l: "Capex",        aide: "* $9.60m — l'astérisque marque une estimation" },
+  { cle: "emplois",      l: "Emplois",      aide: "* 1 012" },
+];
+
+function FormulaireLigne({ valeurs, titre, sousTitre, verrous, onFermer, onEnvoyer }: {
+  valeurs: LigneBrute; titre: string; sousTitre?: React.ReactNode;
+  verrous?: string[]; onFermer: () => void;
+  onEnvoyer: (v: LigneBrute) => Promise<string[] | null>;
+}) {
+  const [v, setV] = useState<LigneBrute>(valeurs);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [alertes, setAlertes] = useState<string[]>([]);
+
+  // Le lien entre une case du formulaire et la colonne que le serveur verrouille.
+  const COLONNE: Partial<Record<keyof LigneBrute, string>> = {
+    date: "annee", parent: "parent_brut", entreprise: "entreprise_brut",
+    source: "pays_source_brut", dest: "pays_dest_brut", secteur: "secteur_brut",
+    sous_secteur: "sous_secteur_brut", activite: "activite_brut", type: "type_brut",
+    capex: "capex_musd", emplois: "emplois",
+  };
+
+  const envoyer = async () => {
+    setEnvoi(true); setErreur(null); setAlertes([]);
+    try {
+      const a = await onEnvoyer(v);
+      if (a && a.length) { setAlertes(a); setEnvoi(false); return; }
+      onFermer();
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Enregistrement impossible.");
+      setEnvoi(false);
+    }
+  };
+
+  return (
+    <div
+      role="dialog" aria-modal="true" aria-label={titre}
+      onClick={e => { if (e.target === e.currentTarget) onFermer(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgb(var(--encre-rgb) / 0.42)",
+        display: "flex", alignItems: "flex-start", justifyContent: "center",
+        padding: "5vh 16px", overflowY: "auto" }}
+    >
+      <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 18,
+        padding: "22px 24px", width: "100%", maxWidth: 820, boxShadow: "0 18px 50px rgb(var(--encre-rgb) / 0.18)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 4 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            {titre}
+          </span>
+          <button type="button" onClick={onFermer} aria-label="Fermer"
+            style={{ ...btnSecondaire, padding: "3px 10px", fontSize: 12 }}>Fermer</button>
+        </div>
+        {sousTitre && (
+          <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, marginBottom: 16 }}>{sousTitre}</p>
+        )}
+
+        {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+        {alertes.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <Avis ton="info">
+              Enregistré, mais ces cases n&apos;ont pas pu être rattachées au référentiel — leur
+              texte est conservé, elles ne compteront dans aucun filtre :
+              <ul style={{ margin: "6px 0 0 18px" }}>
+                {alertes.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </Avis>
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 12 }}>
+          {CASES.map(c => {
+            const verrouille = verrous?.includes(COLONNE[c.cle] ?? "");
+            return (
+              <label key={c.cle} style={{ gridColumn: c.large ? "span 2" : undefined, display: "block" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5,
+                  fontWeight: 700, color: "var(--gris-fort)", marginBottom: 5 }}>
+                  {c.l}
+                  {verrouille && (
+                    <Pastille couleur="var(--violet)"
+                      titre="Corrigée à la main : un réimport du relevé ne la réécrira pas.">corrigée</Pastille>
+                  )}
+                </span>
+                <input
+                  value={v[c.cle] ?? ""} placeholder={c.aide}
+                  onChange={e => setV({ ...v, [c.cle]: e.target.value })}
+                  onKeyDown={e => { if (e.key === "Enter" && !envoi) envoyer(); }}
+                  style={IS}
+                />
+              </label>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+          <button type="button" onClick={onFermer} style={btnSecondaire}>Annuler</button>
+          <button type="button" onClick={envoyer} disabled={envoi}
+            style={{ ...btnPrincipal, opacity: envoi ? 0.6 : 1 }}>
+            {envoi ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -183,7 +319,8 @@ export default function AdminFdiProjets() {
           <span style={{ fontSize: 13 }}>Chargement…</span>
         </div>
       ) : vue === "projets" ? (
-        <VueProjets projets={projetsFiltres} recherche={recherche} />
+        <VueProjets projets={projetsFiltres} recherche={recherche}
+          onFait={async (t) => { annoncer(t); await charger(); }} />
       ) : vue === "entreprises" ? (
         <VueEntreprises groupes={groupes} onFait={async (t) => { annoncer(t); await charger(); }} />
       ) : (
@@ -239,8 +376,14 @@ function fenetre(page: number, total: number): (number | "…")[] {
   return sortie;
 }
 
-function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: string }) {
+function VueProjets({ projets, recherche, onFait }: {
+  // onFait recharge la liste : le formulaire l'attend avant de se fermer, pour
+  // que la ligne corrigée soit déjà à l'écran quand le voile se lève.
+  projets: Projet[]; recherche: string; onFait: (t: string) => void | Promise<void>;
+}) {
   const [page, setPage] = useState(1);
+  // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
+  const [edite, setEdite] = useState<Projet | "nouveau" | null>(null);
 
   // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
   // résultat qui n'en compte plus que deux n'aurait aucun sens. L'ajustement se
@@ -258,6 +401,11 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
   return (
     <Carte
       titre="Projets annoncés"
+      extra={
+        <button type="button" onClick={() => setEdite("nouveau")} style={btnSecondaire}>
+          + Ajouter un projet
+        </button>
+      }
     >
       {projets.length === 0 ? (
         <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
@@ -278,6 +426,7 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
                   <th style={TH}>Type</th>
                   <th style={{ ...TH, textAlign: "right" }}>Capex (M$)</th>
                   <th style={{ ...TH, textAlign: "right" }}>Emplois</th>
+                  <th style={{ ...TH, width: 1 }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -324,12 +473,59 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
                     <td style={{ ...TD, textAlign: "right" }}>
                       <Valeur v={p.emplois} estime={p.emplois_estime} />
                     </td>
+                    <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                      <button type="button" onClick={() => setEdite(p)}
+                        title="Corriger cette ligne"
+                        style={{ ...btnSecondaire, padding: "3px 10px", fontSize: 11.5 }}>
+                        Corriger
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
+      )}
+
+      {edite && (
+        <FormulaireLigne
+          titre={edite === "nouveau" ? "Ajouter un projet" : "Corriger la ligne"}
+          sousTitre={edite === "nouveau"
+            ? <>Saisir les cases telles que fDi les écrit, troncature comprise : c&apos;est le
+                même analyseur que l&apos;import qui les relira. Le projet ira dans un lot à part
+                et ne sera jamais effacé par un réimport du relevé.</>
+            : <>Les cases modifiées seront <strong>protégées</strong>{" "}: un réimport du relevé
+                réécrira les autres depuis le fichier, mais laissera celles-là.{" "}
+                {edite.origine === "saisie"
+                  ? "Ce projet a été saisi à la main ; il ne vient d'aucun fichier."
+                  : `Ligne ${edite.ligne} du lot « ${edite.lot} ».`}</>}
+          valeurs={edite === "nouveau" ? VIDE : {
+            date: edite.brut.date, parent: edite.brut.parent ?? "",
+            entreprise: edite.brut.entreprise ?? "", source: edite.brut.source ?? "",
+            dest: edite.brut.dest ?? "", secteur: edite.brut.secteur ?? "",
+            sous_secteur: edite.brut.sous_secteur ?? "", activite: edite.brut.activite ?? "",
+            type: edite.brut.type ?? "", capex: edite.brut.capex, emplois: edite.brut.emplois,
+          }}
+          verrous={edite === "nouveau" ? [] : edite.champs_verrouilles}
+          onFermer={() => setEdite(null)}
+          onEnvoyer={async (v) => {
+            const nouveau = edite === "nouveau";
+            const r = await fetch(
+              nouveau ? `${API_BASE}/fdi/projets` : `${API_BASE}/fdi/projets/${edite.id}`,
+              { method: nouveau ? "POST" : "PATCH",
+                headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+                body: JSON.stringify(v) });
+            const corps = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(corps.detail || "Enregistrement impossible.");
+            // Les avertissements laissent le formulaire ouvert : la ligne est
+            // écrite, mais l'utilisateur doit voir ce qui n'a pas été rattaché
+            // pendant qu'il a encore le texte fautif sous les yeux.
+            const alertes: string[] = corps.avertissements ?? [];
+            await onFait(nouveau ? "Projet ajouté." : "Ligne corrigée.");
+            return alertes.length ? alertes : null;
+          }}
+        />
       )}
 
       {pages > 1 && (
