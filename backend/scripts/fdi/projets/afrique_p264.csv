@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2008,Cementos La Union,Cementos La Union,Spain,Egypt,Building materials,Cement & concrete p…,Manufacturing,$500.00m,400,New
+2,Aug 2008,Dusit Thani (Dusit…,Dusit Thani (Dusit…,Thailand,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+3,Aug 2008,Fairmont Raffles H…,Fairmont Hotels &…,Canada,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+4,Aug 2008,Giorgio Armani,Armani Hotels & R…,Italy,Egypt,Real estate,Residential building …,Construction,* $1.24bn,* 578,New
+5,Aug 2008,Hubei Jingshan Co…,Hubei Jingshan Co…,China,Egypt,Industrial equipment,Printing machinery &…,"Sales, Marketing & S…",* $2.90m,* 17,New
+6,Aug 2008,PetroSA,PetroSA,South Africa,Egypt,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+7,Aug 2008,Rapha Industry C…,Rapha Industry C…,South Korea,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$100.00m,"3,000",New
+8,Jul 2008,Andree & Wilkerling,Andree & Wilkerling,Germany,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+9,Jul 2008,AP Moller - Maersk,Egyptian Drilling,Denmark,Egypt,"Coal, oil & gas",Other petroleum & c…,Extraction,$220.00m,* 91,New
+10,Jul 2008,BP (British Petrole…,BP Egypt,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+11,Jul 2008,Damas Jewellery,Damas Jewellery,UAE,Egypt,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+12,Jul 2008,Emaar Properties,Emaar Hospitality,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+13,Jul 2008,Posco Daewoo (D…,Posco Daewoo (D…,South Korea,Egypt,Business machines &…,Computer & peripher…,Manufacturing,* $68.60m,* 558,New
+14,Jul 2008,Saudi Binladin Gro…,Construction Prod…,Saudi Arabia,Egypt,Metals,Architectural & struc…,Manufacturing,* $178.90m,* 342,New
+15,Jul 2008,Shandong Univers…,Shandong Univers…,China,Egypt,Healthcare,General medical & s…,Education & Training,* $4.60m,* 94,New

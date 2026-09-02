@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2008,Societe Generale (…,CrediNil,France,Egypt,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+2,Jul 2008,Sultan Center Foo…,Sultan Center Foo…,Kuwait,Egypt,Food and Beverages,Food & beverage ret…,Retail,$800.00m,"* 3,000",New
+3,Jul 2008,Vicat Group,Vicat Group,France,Egypt,Building materials,Cement & concrete p…,Manufacturing,$191.97m,* 366,Expansion
+4,Jun 2008,Bank of India (BOI),Bank of India (BOI),India,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jun 2008,Cayan Investment…,Cayan Investment…,UAE,Egypt,Real estate,Industrial building co…,Construction,$408.00m,"* 2,917",New
+6,Jun 2008,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jun 2008,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jun 2008,Gippsland,Gippsland,Australia,Egypt,Metals,Nonferrous metal pr…,Manufacturing,* $257.80m,* 613,Expansion
+9,Jun 2008,Korloff Paris,Korloff Paris,France,Egypt,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+10,Jun 2008,Marcopolo,Marcopolo,Brazil,Egypt,Automotive compon…,Motor vehicle body &…,Manufacturing,$70.00m,* 985,New
+11,Jun 2008,Pirelli,Pirelli,Italy,Egypt,Rubber,Tyres,Manufacturing,$65.00m,* 156,Expansion
+12,Jun 2008,Virgin Group,Virgin Megastore,United Kingdom,Egypt,Consumer products,"Sporting goods, hob…",Retail,* $36.90m,* 179,New
+13,May 2008,Amlak,Amlak,UAE,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+14,May 2008,Emaar Properties,Emaar Misr,UAE,Egypt,Real estate,Real estate services,Construction,$1.00bn,"* 3,000",New
+15,May 2008,Hill International,Hill International,United States,Egypt,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New

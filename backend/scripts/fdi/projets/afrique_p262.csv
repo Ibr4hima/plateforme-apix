@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Titan Cement,Beni Suef Cement,Greece,Egypt,Building materials,Cement & concrete p…,Manufacturing,$180.00m,* 344,Expansion
+2,Dec 2008,BNP Paribas,BNP Paribas,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Dec 2008,Convergys,Convergys,United States,Egypt,Business services,Business support ser…,Business Services,* $6.80m,* 15,New
+4,Dec 2008,Oetker Gruppe,Hamburg Sud,Germany,Egypt,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+5,Dec 2008,RWE,DEA Deutsche Erd…,Germany,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+6,Dec 2008,Simorra,Simorra,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+7,Dec 2008,Vodafone Group,Vodafone Group,United Kingdom,Egypt,Communications,Wireless telecommu…,Customer Contact C…,* $10.50m,* 657,New
+8,Nov 2008,Credit Suisse Group,Clariden Leu,Switzerland,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Nov 2008,Del Consulting,Del Consulting,United Kingdom,Egypt,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+10,Nov 2008,El Corte Ingles,Sfera,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+11,Nov 2008,Geberit Internatio…,Geberit Internatio…,Switzerland,Egypt,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+12,Nov 2008,Hisense,Hisense,China,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,$15.00m,* 207,New
+13,Nov 2008,IDS Softwares,IDS Softwares,India,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+14,Nov 2008,Marico,Marico,India,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.10m,* 243,New
+15,Nov 2008,Marriott Internatio…,Ritz-Carlton,United States,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New

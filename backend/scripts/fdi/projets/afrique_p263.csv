@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2008,Saudi Binladin Gro…,Construction Prod…,Saudi Arabia,Egypt,Business services,"Architectural, engine…",Research & Develop…,* $22.00m,200,New
+2,Nov 2008,Sea Dragon Energy,Sea Dragon Energy,Canada,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+3,Oct 2008,Al Kharafi Group,Al Kharafi Group,Kuwait,Egypt,Metals,Steel products,Manufacturing,* $178.90m,* 342,New
+4,Oct 2008,iBAHN Corporation,iBAHN Corporation,United States,Egypt,Communications,Media streaming dist…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Oct 2008,Julius Baer,Julius Baer,Switzerland,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Oct 2008,KEO International …,KEO International …,Kuwait,Egypt,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+7,Oct 2008,Sorouh Real Estate,Sorouh Real Estate,UAE,Egypt,Real estate,Real estate services,Construction,* $1.24bn,* 578,New
+8,Sep 2008,Aayan Leasing an…,Mubarrad Transport,Kuwait,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+9,Sep 2008,Arabian Oil Comp…,Arabian Oil Comp…,Japan,Egypt,"Coal, oil & gas",Other petroleum & c…,Extraction,* $373.70m,* 214,New
+10,Sep 2008,General Motors (G…,General Motors Eg…,United States,Egypt,Automotive OEM,Light trucks & utility …,Manufacturing,$32.00m,300,Co-Location
+11,Sep 2008,International Busi…,International Busi…,United States,Egypt,Software & IT services,"Software publishers,…",Research & Develop…,* $140.70m,900,Expansion
+12,Sep 2008,International Busi…,International Busi…,United States,Egypt,Electronic components,All other electrical e…,Research & Develop…,* $21.10m,* 75,New
+13,Sep 2008,RWE,DEA Deutsche Erd…,Germany,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+14,Sep 2008,Sumitomo Group,Sumitomo Wiring …,Japan,Egypt,Automotive compon…,Motor vehicle electri…,Manufacturing,$10.00m,"1,400",New
+15,Sep 2008,Sumitomo Group,Sumitomo Group,Japan,Egypt,Automotive compon…,Motor vehicle electri…,Manufacturing,$50.00m,* 703,New
