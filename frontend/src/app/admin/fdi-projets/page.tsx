@@ -25,8 +25,8 @@
 //                 y en a des centaines : cette vue est faite pour la série, un
 //                 projet à la fois, sans jamais quitter le clavier.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, X } from "lucide-react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
@@ -46,6 +46,9 @@ type Projet = {
   // Les cases telles que fDi les écrit — « Mar 2014 », « * $9.60m ». C'est
   // ce que le formulaire modifie, et ce que le serveur sait relire.
   brut: LigneBrute;
+  // Les postes du référentiel auxquels la ligne est rattachée : le formulaire
+  // s'en sert pour présélectionner ses listes.
+  ids: Partial<Record<ClefListe, number | null>>;
 };
 type LigneBrute = {
   date: string; parent: string | null; entreprise: string | null;
@@ -103,58 +106,338 @@ function Pastille({ children, couleur, titre }: {
 }
 
 // ── Le formulaire d'une ligne : le même pour corriger et pour ajouter ─────────
-// On y saisit des CASES DE RELEVÉ, pas des colonnes de base : « Mar 2014 »,
-// « * $9.60m », « Clothing & clothing a… ». C'est ce que l'utilisateur a sous
-// les yeux chez fDi, et c'est le serveur — le même analyseur que l'import — qui
-// en tire dates, échelles, drapeaux d'estimation et rattachements. Demander ici
-// une autre écriture obligerait à traduire de tête, et à chaque ligne.
+// On ne retape plus les nomenclatures, on les CHOISIT. Les listes s'affichent
+// en ANGLAIS — la langue de fDi, celle qu'on a sous les yeux en recopiant une
+// capture — avec le français dessous, celui que la plateforme publiera. C'est
+// l'anglais qui repart au serveur, où le MÊME analyseur que l'import le
+// rapproche : un seul chemin d'interprétation de la donnée, quel que soit le
+// geste qui l'a produite.
+//
+// Quatre cases restent libres, faute de liste qui puisse les contenir : la
+// société mère, l'entreprise, le montant et l'effectif. Pour les deux nombres,
+// l'astérisque de fDi devient une case à cocher et la devise disparaît — on
+// saisit une valeur, pas une notation. La notation, c'est l'affaire du code.
 
-const VIDE: LigneBrute = {
+type Poste = { id: number; en: string; fr: string; secteur_id?: number };
+type Referentiels = {
+  types: Poste[]; secteurs: Poste[]; sous_secteurs: Poste[];
+  activites: Poste[]; pays: Poste[];
+};
+type ClefListe = "type" | "source" | "dest" | "secteur" | "sous_secteur" | "activite";
+
+/** Une fiche vierge : rien n'est prérempli, tout se choisit ou se saisit. */
+const LIGNE_VIDE: LigneBrute = {
   date: "", parent: "", entreprise: "", source: "", dest: "", secteur: "",
   sous_secteur: "", activite: "", type: "", capex: "", emplois: "",
 };
 
-const CASES: { cle: keyof LigneBrute; l: string; aide?: string; large?: boolean }[] = [
-  { cle: "date",         l: "Période",      aide: "Mar 2014" },
-  { cle: "type",         l: "Type",         aide: "New, Expansion, Co-Location" },
-  { cle: "parent",       l: "Société mère", aide: "Groupe, si différent" },
-  { cle: "entreprise",   l: "Entreprise",   aide: "Nom complet si vous le connaissez" },
-  { cle: "source",       l: "Origine",      aide: "Nom anglais : France, Turkey…" },
-  { cle: "dest",         l: "Destination",  aide: "Nom anglais : Senegal, Egypt…" },
-  { cle: "secteur",      l: "Secteur",      aide: "Libellé fDi, troncature comprise", large: true },
-  { cle: "sous_secteur", l: "Sous-secteur", aide: "Libellé fDi, troncature comprise", large: true },
-  { cle: "activite",     l: "Activité",     aide: "Manufacturing, Business Services…", large: true },
-  { cle: "capex",        l: "Capex",        aide: "* $9.60m — l'astérisque marque une estimation" },
-  { cle: "emplois",      l: "Emplois",      aide: "* 1 012" },
-];
+const MOIS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+                 "septembre", "octobre", "novembre", "décembre"];
 
-function FormulaireLigne({ valeurs, titre, sousTitre, verrous, notes, onFermer, onEnvoyer }: {
-  valeurs: LigneBrute; titre: string; sousTitre?: React.ReactNode;
+/** Sans accent ni casse : « Côte d'Ivoire » se trouve en tapant « cote ». */
+const pliage = (v: string) =>
+  v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+// ── Une liste déroulante avec recherche ──────────────────────────────────────
+// 273 sous-secteurs ne se parcourent pas à la molette. On tape trois lettres du
+// libellé anglais — ou du français, la recherche porte sur les deux — et la
+// liste se réduit. Le clavier suffit : flèches, Entrée, Échap.
+function ChampListe({ options, valeur, onChoisir, placeholder, vide, autoriseVide = true }: {
+  options: Poste[];
+  valeur: Poste | null;
+  onChoisir: (p: Poste | null) => void;
+  placeholder: string;
+  /** Ce qu'on affiche quand rien n'est choisi mais que la source, elle, disait
+      quelque chose : un libellé que la nomenclature n'a pas reconnu. */
+  vide?: React.ReactNode;
+  autoriseVide?: boolean;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+  const [q, setQ] = useState("");
+  const [survol, setSurvol] = useState(0);
+  const boite = useRef<HTMLDivElement | null>(null);
+  const champ = useRef<HTMLInputElement | null>(null);
+
+  const filtres = useMemo(() => {
+    const c = pliage(q.trim());
+    if (!c) return options;
+    const commence = options.filter(o => pliage(o.en).startsWith(c) || pliage(o.fr).startsWith(c));
+    const contient = options.filter(o => !commence.includes(o)
+      && (pliage(o.en).includes(c) || pliage(o.fr).includes(c)));
+    // Ce qui commence par la saisie d'abord : en recopiant « Financial ser… »
+    // on veut « Financial services » en tête, pas « Alternative/renewable ».
+    return [...commence, ...contient];
+  }, [options, q]);
+
+  const fermer = useCallback(() => { setOuvert(false); setQ(""); setSurvol(0); }, []);
+
+  useEffect(() => {
+    if (!ouvert) return;
+    const dehors = (e: MouseEvent) => {
+      if (boite.current && !boite.current.contains(e.target as Node)) fermer();
+    };
+    document.addEventListener("mousedown", dehors);
+    champ.current?.focus();
+    return () => document.removeEventListener("mousedown", dehors);
+  }, [ouvert, fermer]);
+
+  const prendre = (p: Poste | null) => { onChoisir(p); fermer(); };
+
+  return (
+    <div ref={boite} style={{ position: "relative" }}>
+      <button
+        type="button" onClick={() => setOuvert(o => !o)}
+        aria-haspopup="listbox" aria-expanded={ouvert}
+        style={{
+          ...IS, display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 8, textAlign: "left", cursor: "pointer", minHeight: 44,
+          borderColor: ouvert ? "var(--bleu)" : undefined,
+        }}
+      >
+        {valeur ? (
+          <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
+            <span style={{ fontWeight: 600, color: "var(--encre)", overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{valeur.en}</span>
+            <span style={{ fontSize: 11, color: "var(--gris)", overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{valeur.fr}</span>
+          </span>
+        ) : (
+          <span style={{ color: "var(--gris)", overflow: "hidden", textOverflow: "ellipsis",
+            whiteSpace: "nowrap" }}>{vide ?? placeholder}</span>
+        )}
+        <ChevronDown size={15} style={{ color: "var(--gris)", flexShrink: 0 }} />
+      </button>
+
+      {ouvert && (
+        <div
+          role="listbox"
+          style={{
+            position: "absolute", zIndex: 5, top: "calc(100% + 5px)", left: 0, right: 0,
+            background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 12,
+            boxShadow: "0 14px 34px rgb(var(--encre-rgb) / 0.16)", overflow: "hidden",
+          }}
+        >
+          <div style={{ padding: 8, borderBottom: "1px solid var(--bordure)" }}>
+            <input
+              ref={champ} value={q} placeholder="Filtrer…"
+              onChange={e => { setQ(e.target.value); setSurvol(0); }}
+              onKeyDown={e => {
+                if (e.key === "Escape") { e.preventDefault(); fermer(); }
+                if (e.key === "ArrowDown") { e.preventDefault(); setSurvol(i => Math.min(i + 1, filtres.length - 1)); }
+                if (e.key === "ArrowUp") { e.preventDefault(); setSurvol(i => Math.max(i - 1, 0)); }
+                if (e.key === "Enter") { e.preventDefault(); if (filtres[survol]) prendre(filtres[survol]); }
+              }}
+              style={{ ...IS, padding: "7px 10px", fontSize: 13 }}
+            />
+          </div>
+          <div style={{ maxHeight: 260, overflowY: "auto" }}>
+            {autoriseVide && (
+              <button type="button" onClick={() => prendre(null)}
+                style={{ ...ligneListe, color: "var(--gris)", fontStyle: "italic" }}>
+                Aucun
+              </button>
+            )}
+            {filtres.length === 0 && (
+              <p style={{ padding: "12px 12px 14px", fontSize: 12.5, color: "var(--gris)", margin: 0 }}>
+                Rien sous ce nom dans la nomenclature.
+              </p>
+            )}
+            {filtres.map((o, i) => (
+              <button
+                key={o.id} type="button" role="option" aria-selected={valeur?.id === o.id}
+                onMouseEnter={() => setSurvol(i)} onClick={() => prendre(o)}
+                style={{
+                  ...ligneListe,
+                  background: i === survol ? "color-mix(in srgb, var(--bleu) 8%, transparent)" : "transparent",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontWeight: 600, color: "var(--encre)" }}>{o.en}</span>
+                    <span style={{ display: "block", fontSize: 11.5, color: "var(--gris)" }}>{o.fr}</span>
+                  </span>
+                  {valeur?.id === o.id && <Check size={14} style={{ color: "var(--bleu)", flexShrink: 0 }} />}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ligneListe: React.CSSProperties = {
+  display: "block", width: "100%", textAlign: "left", padding: "8px 12px",
+  border: "none", background: "transparent", cursor: "pointer", fontSize: 13,
+  fontFamily: "inherit", lineHeight: 1.35,
+};
+
+/** L'intitulé d'une case, avec la pastille des cases protégées. */
+function Etiquette({ children, verrouille }: { children: React.ReactNode; verrouille?: boolean }) {
+  return (
+    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11,
+      fontWeight: 700, color: "var(--gris-fort)", marginBottom: 6,
+      letterSpacing: "0.03em", textTransform: "uppercase" }}>
+      {children}
+      {verrouille && (
+        <Pastille couleur="var(--violet)"
+          titre="Corrigée à la main : un réimport du relevé ne la réécrira pas.">corrigée</Pastille>
+      )}
+    </span>
+  );
+}
+
+/** Un groupe de cases, sous son titre. Quatre blocs valent mieux qu'une grille
+    de onze champs où l'œil ne sait plus où il en est. */
+function Bloc({ titre, children, colonnes = 3 }: {
+  titre: string; children: React.ReactNode; colonnes?: number;
+}) {
+  return (
+    <section style={{ marginTop: 20 }}>
+      <h3 style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.13em",
+        textTransform: "uppercase", color: "var(--gris)", margin: "0 0 10px",
+        paddingBottom: 7, borderBottom: "1px solid var(--bordure)" }}>{titre}</h3>
+      <div style={{ display: "grid", gap: 14,
+        gridTemplateColumns: `repeat(auto-fit, minmax(${colonnes >= 3 ? 210 : 260}px, 1fr))` }}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/** La case à cocher qui remplace l'astérisque de fDi. */
+function Coche({ actif, onBascule, titre }: {
+  actif: boolean; onBascule: () => void; titre: string;
+}) {
+  return (
+    <button
+      type="button" role="switch" aria-checked={actif} onClick={onBascule} title={titre}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6, marginTop: 7,
+        border: "none", background: "transparent", padding: 0, cursor: "pointer",
+        fontFamily: "inherit", fontSize: 12, color: actif ? "var(--orange)" : "var(--gris)",
+        fontWeight: actif ? 700 : 500,
+      }}
+    >
+      <span style={{
+        width: 15, height: 15, borderRadius: 4, flexShrink: 0,
+        border: `1.5px solid ${actif ? "var(--orange)" : "var(--bordure-forte, var(--bordure))"}`,
+        background: actif ? "var(--orange)" : "transparent",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {actif && <Check size={11} strokeWidth={3.2} style={{ color: "var(--carte)" }} />}
+      </span>
+      Valeur estimée
+    </button>
+  );
+}
+
+// L'état du formulaire. Les listes gardent un Poste ; les nombres, du texte,
+// parce qu'une saisie en cours n'est pas encore un nombre.
+type EtatSaisie = {
+  mois: string; annee: string;
+  parent: string; entreprise: string;
+  capex: string; capexUnite: "m" | "bn"; capexEstime: boolean;
+  emplois: string; emploisEstime: boolean;
+} & Record<ClefListe, Poste | null>;
+
+/** « * $9.60m » → la valeur, l'échelle et le drapeau. L'inverse de ce que le
+    serveur écrit ; les deux doivent rester d'accord. */
+function lireMontant(v: string): { valeur: string; unite: "m" | "bn"; estime: boolean } {
+  const m = /^\s*(\*)?\s*\$?\s*([\d\s.,]+?)\s*(bn|m)?\s*$/i.exec(v || "");
+  if (!m) return { valeur: "", unite: "m", estime: false };
+  return {
+    valeur: (m[2] || "").replace(/[\s,]/g, ""),
+    unite: (m[3] || "m").toLowerCase() === "bn" ? "bn" : "m",
+    estime: Boolean(m[1]),
+  };
+}
+
+function lireEntier(v: string): { valeur: string; estime: boolean } {
+  const m = /^\s*(\*)?\s*([\d\s,]+)\s*$/.exec(v || "");
+  if (!m) return { valeur: "", estime: false };
+  return { valeur: (m[2] || "").replace(/[\s,]/g, ""), estime: Boolean(m[1]) };
+}
+
+function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous, notes, onFermer, onEnvoyer }: {
+  valeurs: LigneBrute;
+  /** Les postes auxquels la ligne est DÉJÀ rattachée : c'est eux qu'on
+      présélectionne, et non le libellé brut, souvent tronqué. */
+  ids?: Partial<Record<ClefListe, number | null>>;
+  nomenclature: Referentiels | null;
+  titre: string; sousTitre?: React.ReactNode;
   verrous?: string[];
-  // Ce que la case ne dit pas d'elle-même : le nom arbitré derrière un libellé
-  // tronqué, par exemple. Le formulaire montre le RELEVÉ, le tableau montre le
-  // référentiel ; quand les deux divergent, il faut le dire ici.
   notes?: Partial<Record<keyof LigneBrute, React.ReactNode>>;
   onFermer: () => void;
   onEnvoyer: (v: LigneBrute) => Promise<string[] | null>;
 }) {
-  const [v, setV] = useState<LigneBrute>(valeurs);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [alertes, setAlertes] = useState<string[]>([]);
 
-  // Le lien entre une case du formulaire et la colonne que le serveur verrouille.
-  const COLONNE: Partial<Record<keyof LigneBrute, string>> = {
-    date: "annee", parent: "parent_brut", entreprise: "entreprise_brut",
-    source: "pays_source_brut", dest: "pays_dest_brut", secteur: "secteur_brut",
-    sous_secteur: "sous_secteur_brut", activite: "activite_brut", type: "type_brut",
-    capex: "capex_musd", emplois: "emplois",
+  // L'état de départ, calculé une fois : les postes viennent des identifiants
+  // du projet, les nombres de la notation que le serveur a rendue.
+  const depart = useMemo<EtatSaisie>(() => {
+    const trouver = (liste: Poste[] | undefined, id: number | null | undefined) =>
+      (id == null ? null : liste?.find(o => o.id === id) ?? null);
+    const d = /^([A-Za-z]{3})\s+(\d{4})$/.exec(valeurs.date || "");
+    const c = lireMontant(valeurs.capex);
+    const e = lireEntier(valeurs.emplois);
+    return {
+      mois: d ? String(MOIS_EN.indexOf(d[1]) + 1) : "",
+      annee: d ? d[2] : (/^\d{4}$/.test(valeurs.date || "") ? valeurs.date : ""),
+      parent: valeurs.parent ?? "", entreprise: valeurs.entreprise ?? "",
+      type: trouver(nomenclature?.types, ids?.type),
+      source: trouver(nomenclature?.pays, ids?.source),
+      dest: trouver(nomenclature?.pays, ids?.dest),
+      secteur: trouver(nomenclature?.secteurs, ids?.secteur),
+      sous_secteur: trouver(nomenclature?.sous_secteurs, ids?.sous_secteur),
+      activite: trouver(nomenclature?.activites, ids?.activite),
+      capex: c.valeur, capexUnite: c.unite, capexEstime: c.estime,
+      emplois: e.valeur, emploisEstime: e.estime,
+    };
+  }, [valeurs, ids, nomenclature]);
+
+  const [f, setF] = useState<EtatSaisie>(depart);
+  const maj = <K extends keyof EtatSaisie>(k: K, v: EtatSaisie[K]) => setF(x => ({ ...x, [k]: v }));
+
+  // Un sous-secteur appartient à un secteur : n'offrir que les siens évite de
+  // ranger « Retail banking » sous « Automotive OEM », ce qu'aucune capture ne
+  // dira jamais mais qu'un menu de 273 lignes rend possible d'un clic.
+  const sousSecteurs = useMemo(() => {
+    const tous = nomenclature?.sous_secteurs ?? [];
+    return f.secteur ? tous.filter(s => s.secteur_id === f.secteur!.id) : tous;
+  }, [nomenclature, f.secteur]);
+
+  // Ce qui part au serveur. Une liste qu'on n'a pas touchée renvoie le libellé
+  // BRUT d'origine : le relevé est verbatim, et remplacer « Central African R… »
+  // par le nom entier au seul motif qu'on a ouvert la fiche effacerait ce que la
+  // source a réellement écrit — et poserait un verrou que personne n'a demandé.
+  const aEnvoyer = (): LigneBrute => {
+    const liste = (k: ClefListe, brut: string | null) =>
+      f[k] ? (f[k]!.id === depart[k]?.id ? (brut ?? "") : f[k]!.en) : (depart[k] ? "" : (brut ?? ""));
+    const nombre = (v: string) => v.trim().replace(/\s/g, "").replace(",", ".");
+    return {
+      date: f.annee.trim()
+        ? (f.mois ? `${MOIS_EN[Number(f.mois) - 1]} ${f.annee.trim()}` : f.annee.trim())
+        : "",
+      parent: f.parent.trim(), entreprise: f.entreprise.trim(),
+      source: liste("source", valeurs.source), dest: liste("dest", valeurs.dest),
+      secteur: liste("secteur", valeurs.secteur),
+      sous_secteur: liste("sous_secteur", valeurs.sous_secteur),
+      activite: liste("activite", valeurs.activite),
+      type: liste("type", valeurs.type),
+      capex: nombre(f.capex) ? `${f.capexEstime ? "* " : ""}$${nombre(f.capex)}${f.capexUnite}` : "",
+      emplois: nombre(f.emplois) ? `${f.emploisEstime ? "* " : ""}${nombre(f.emplois)}` : "",
+    };
   };
 
   const envoyer = async () => {
     setEnvoi(true); setErreur(null); setAlertes([]);
     try {
-      const a = await onEnvoyer(v);
+      const a = await onEnvoyer(aEnvoyer());
       if (a && a.length) { setAlertes(a); setEnvoi(false); return; }
       onFermer();
     } catch (e) {
@@ -163,30 +446,45 @@ function FormulaireLigne({ valeurs, titre, sousTitre, verrous, notes, onFermer, 
     }
   };
 
+  const V = (colonne: string) => verrous?.includes(colonne);
+  // Le libellé que la source donnait, quand la nomenclature ne l'a pas reconnu :
+  // la case est vide, mais on montre ce qu'il y avait, sinon la lacune disparaît.
+  const orphelin = (k: ClefListe, brut: string | null) =>
+    !depart[k] && brut ? <span style={{ fontStyle: "italic" }}>{brut} — non reconnu</span> : undefined;
+
   return (
     <div
       role="dialog" aria-modal="true" aria-label={titre}
       onClick={e => { if (e.target === e.currentTarget) onFermer(); }}
-      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgb(var(--encre-rgb) / 0.42)",
-        display: "flex", alignItems: "flex-start", justifyContent: "center",
-        padding: "5vh 16px", overflowY: "auto" }}
+      onKeyDown={e => { if (e.key === "Escape") onFermer(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgb(var(--encre-rgb) / 0.45)",
+        backdropFilter: "blur(2px)", display: "flex", alignItems: "flex-start",
+        justifyContent: "center", padding: "4vh 16px", overflowY: "auto" }}
     >
-      <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 18,
-        padding: "22px 24px", width: "100%", maxWidth: 820, boxShadow: "0 18px 50px rgb(var(--encre-rgb) / 0.18)" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, marginBottom: 4 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
-            {titre}
-          </span>
-          <button type="button" onClick={onFermer} aria-label="Fermer"
-            style={{ ...btnSecondaire, padding: "3px 10px", fontSize: 12 }}>Fermer</button>
-        </div>
-        {sousTitre && (
-          <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, marginBottom: 16 }}>{sousTitre}</p>
-        )}
+      <div style={{ background: "var(--carte)", border: "1px solid var(--bordure)", borderRadius: 20,
+        padding: "24px 28px 22px", width: "100%", maxWidth: 880,
+        boxShadow: "0 24px 64px rgb(var(--encre-rgb) / 0.22)" }}>
 
-        {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+          gap: 16, paddingBottom: 14, borderBottom: "1px solid var(--bordure)" }}>
+          <div style={{ minWidth: 0 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--encre)", margin: 0,
+              letterSpacing: "-0.01em" }}>{titre}</h2>
+            {sousTitre && (
+              <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, margin: "6px 0 0" }}>
+                {sousTitre}
+              </p>
+            )}
+          </div>
+          <button type="button" onClick={onFermer} aria-label="Fermer"
+            style={{ ...btnSecondaire, padding: "4px 8px", flexShrink: 0, lineHeight: 0 }}>
+            <X size={15} />
+          </button>
+        </div>
+
+        {erreur && <div style={{ marginTop: 16 }}><Avis ton="erreur">{erreur}</Avis></div>}
         {alertes.length > 0 && (
-          <div style={{ marginBottom: 14 }}>
+          <div style={{ marginTop: 16 }}>
             <Avis ton="info">
               Enregistré, mais ces cases n&apos;ont pas pu être rattachées au référentiel — leur
               texte est conservé, elles ne compteront dans aucun filtre :
@@ -197,41 +495,147 @@ function FormulaireLigne({ valeurs, titre, sousTitre, verrous, notes, onFermer, 
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 12 }}>
-          {CASES.map(c => {
-            const verrouille = verrous?.includes(COLONNE[c.cle] ?? "");
-            return (
-              <label key={c.cle} style={{ gridColumn: c.large ? "span 2" : undefined, display: "block" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5,
-                  fontWeight: 700, color: "var(--gris-fort)", marginBottom: 5 }}>
-                  {c.l}
-                  {verrouille && (
-                    <Pastille couleur="var(--violet)"
-                      titre="Corrigée à la main : un réimport du relevé ne la réécrira pas.">corrigée</Pastille>
-                  )}
-                </span>
-                <input
-                  value={v[c.cle] ?? ""} placeholder={c.aide}
-                  onChange={e => setV({ ...v, [c.cle]: e.target.value })}
-                  onKeyDown={e => { if (e.key === "Enter" && !envoi) envoyer(); }}
-                  style={IS}
-                />
-                {notes?.[c.cle] && (
+        {!nomenclature && (
+          <p style={{ marginTop: 18, fontSize: 13, color: "var(--gris)",
+            display: "flex", alignItems: "center", gap: 8 }}>
+            <Loader2 size={14} className="tourne" /> Chargement des nomenclatures…
+          </p>
+        )}
+
+        {nomenclature && (
+          <>
+            <Bloc titre="Période et nature">
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("annee") || V("mois")}>Période</Etiquette>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select value={f.mois} onChange={e => maj("mois", e.target.value)}
+                    aria-label="Mois" style={{ ...IS, flex: 1, minHeight: 44, cursor: "pointer" }}>
+                    <option value="">Mois —</option>
+                    {MOIS_FR.map((m, i) => (
+                      <option key={m} value={i + 1}>{MOIS_EN[i]} · {m}</option>
+                    ))}
+                  </select>
+                  <input value={f.annee} onChange={e => maj("annee", e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    inputMode="numeric" placeholder="2014" aria-label="Année"
+                    style={{ ...IS, width: 92, minHeight: 44, textAlign: "center",
+                      fontVariantNumeric: "tabular-nums" }} />
+                </div>
+              </label>
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("type_brut")}>Type de projet</Etiquette>
+                <ChampListe options={nomenclature.types} valeur={f.type}
+                  onChoisir={p => maj("type", p)} placeholder="Choisir un type"
+                  vide={orphelin("type", valeurs.type)} />
+              </label>
+            </Bloc>
+
+            <Bloc titre="Investisseur et pays">
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("entreprise_brut")}>Entreprise</Etiquette>
+                <input value={f.entreprise} onChange={e => maj("entreprise", e.target.value)}
+                  placeholder="Nom tel que fDi l'écrit" style={{ ...IS, minHeight: 44 }} />
+                {notes?.entreprise && (
                   <span style={{ display: "block", fontSize: 11.5, color: "var(--gris)",
-                    lineHeight: 1.5, marginTop: 5 }}>{notes[c.cle]}</span>
+                    lineHeight: 1.5, marginTop: 6 }}>{notes.entreprise}</span>
                 )}
               </label>
-            );
-          })}
-        </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
-          <button type="button" onClick={onFermer} style={btnSecondaire}>Annuler</button>
-          <button type="button" onClick={envoyer} disabled={envoi}
-            style={{ ...btnPrincipal, opacity: envoi ? 0.6 : 1 }}>
-            {envoi ? "Enregistrement…" : "Enregistrer"}
-          </button>
-        </div>
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("parent_brut")}>Société mère</Etiquette>
+                <input value={f.parent} onChange={e => maj("parent", e.target.value)}
+                  placeholder="Groupe, si différent" style={{ ...IS, minHeight: 44 }} />
+              </label>
+
+              <div />
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("pays_source_brut")}>Pays d&apos;origine</Etiquette>
+                <ChampListe options={nomenclature.pays} valeur={f.source}
+                  onChoisir={p => maj("source", p)} placeholder="Choisir un pays"
+                  vide={orphelin("source", valeurs.source)} />
+              </label>
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("pays_dest_brut")}>Pays de destination</Etiquette>
+                <ChampListe options={nomenclature.pays} valeur={f.dest}
+                  onChoisir={p => maj("dest", p)} placeholder="Choisir un pays"
+                  vide={orphelin("dest", valeurs.dest)} />
+              </label>
+            </Bloc>
+
+            <Bloc titre="Classement" colonnes={2}>
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("secteur_brut")}>Secteur</Etiquette>
+                <ChampListe options={nomenclature.secteurs} valeur={f.secteur}
+                  onChoisir={p => {
+                    maj("secteur", p);
+                    // Le sous-secteur suit son secteur : en changer laisserait
+                    // sinon en place un poste qui n'en dépend plus.
+                    if (p && f.sous_secteur && f.sous_secteur.secteur_id !== p.id) maj("sous_secteur", null);
+                  }}
+                  placeholder="Choisir un secteur" vide={orphelin("secteur", valeurs.secteur)} />
+              </label>
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("sous_secteur_brut")}>Sous-secteur</Etiquette>
+                <ChampListe options={sousSecteurs} valeur={f.sous_secteur}
+                  onChoisir={p => maj("sous_secteur", p)}
+                  placeholder={f.secteur ? "Choisir un sous-secteur" : "Choisir un secteur d'abord"}
+                  vide={orphelin("sous_secteur", valeurs.sous_secteur)} />
+              </label>
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("activite_brut")}>Activité</Etiquette>
+                <ChampListe options={nomenclature.activites} valeur={f.activite}
+                  onChoisir={p => maj("activite", p)} placeholder="Choisir une activité"
+                  vide={orphelin("activite", valeurs.activite)} />
+              </label>
+            </Bloc>
+
+            <Bloc titre="Montants" colonnes={2}>
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("capex_musd") || V("capex_estime")}>
+                  Investissement
+                </Etiquette>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                      fontSize: 13, fontWeight: 700, color: "var(--gris)", pointerEvents: "none" }}>$</span>
+                    <input value={f.capex} onChange={e => maj("capex", e.target.value.replace(/[^\d.,\s]/g, ""))}
+                      inputMode="decimal" placeholder="9.60" aria-label="Montant"
+                      style={{ ...IS, minHeight: 44, paddingLeft: 26, fontVariantNumeric: "tabular-nums" }} />
+                  </div>
+                  <select value={f.capexUnite} onChange={e => maj("capexUnite", e.target.value as "m" | "bn")}
+                    aria-label="Échelle" style={{ ...IS, width: 108, minHeight: 44, cursor: "pointer" }}>
+                    <option value="m">millions</option>
+                    <option value="bn">milliards</option>
+                  </select>
+                </div>
+                <Coche actif={f.capexEstime} onBascule={() => maj("capexEstime", !f.capexEstime)}
+                  titre="Chez fDi, l'astérisque. Une estimation de l'algorithme du Financial Times, non déclarée par l'entreprise." />
+              </label>
+
+              <label style={{ display: "block" }}>
+                <Etiquette verrouille={V("emplois") || V("emplois_estime")}>Emplois</Etiquette>
+                <input value={f.emplois} onChange={e => maj("emplois", e.target.value.replace(/[^\d\s]/g, ""))}
+                  inputMode="numeric" placeholder="1012"
+                  style={{ ...IS, minHeight: 44, fontVariantNumeric: "tabular-nums" }} />
+                <Coche actif={f.emploisEstime} onBascule={() => maj("emploisEstime", !f.emploisEstime)}
+                  titre="Chez fDi, l'astérisque. Un effectif estimé par l'algorithme du Financial Times, non déclaré." />
+              </label>
+            </Bloc>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end",
+              gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--bordure)" }}>
+              <button type="button" onClick={onFermer} style={btnSecondaire}>Annuler</button>
+              <button type="button" onClick={envoyer} disabled={envoi}
+                style={{ ...btnPrincipal, opacity: envoi ? 0.6 : 1 }}>
+                {envoi ? "Enregistrement…" : "Enregistrer"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -247,6 +651,9 @@ export default function AdminFdiProjets() {
   const [base, setBase] = useState<"projets" | "signaux" | "entreprises">("projets");
   const [vue, setVue] = useState<"projets" | "entreprises" | "descriptions">("projets");
   const [recherche, setRecherche] = useState("");
+  // Les nomenclatures ne bougent pas d'une session à l'autre : on les charge une
+  // fois, pas à chaque ouverture du formulaire.
+  const [nomenclature, setNomenclature] = useState<Referentiels | null>(null);
 
   const charger = useCallback(async () => {
     setChargement(true); setErreur(null);
@@ -261,6 +668,12 @@ export default function AdminFdiProjets() {
     } finally { setChargement(false); }
   }, []);
   useEffect(() => { charger(); }, [charger]);
+  useEffect(() => {
+    fetch(`${API_BASE}/fdi/referentiels`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(r => { if (r) setNomenclature(r); })
+      .catch(() => {});
+  }, []);
 
   const annoncer = (t: string) => { setMessage(t); setTimeout(() => setMessage(null), 4000); };
 
@@ -328,7 +741,7 @@ export default function AdminFdiProjets() {
           <span style={{ fontSize: 13 }}>Chargement…</span>
         </div>
       ) : vue === "projets" ? (
-        <VueProjets projets={projetsFiltres} recherche={recherche}
+        <VueProjets projets={projetsFiltres} recherche={recherche} nomenclature={nomenclature}
           onFait={async (t) => { annoncer(t); await charger(); }} />
       ) : vue === "entreprises" ? (
         <VueEntreprises groupes={groupes} onFait={async (t) => { annoncer(t); await charger(); }} />
@@ -385,10 +798,11 @@ function fenetre(page: number, total: number): (number | "…")[] {
   return sortie;
 }
 
-function VueProjets({ projets, recherche, onFait }: {
+function VueProjets({ projets, recherche, nomenclature, onFait }: {
   // onFait recharge la liste : le formulaire l'attend avant de se fermer, pour
   // que la ligne corrigée soit déjà à l'écran quand le voile se lève.
-  projets: Projet[]; recherche: string; onFait: (t: string) => void | Promise<void>;
+  projets: Projet[]; recherche: string; nomenclature: Referentiels | null;
+  onFait: (t: string) => void | Promise<void>;
 }) {
   const [page, setPage] = useState(1);
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
@@ -500,16 +914,14 @@ function VueProjets({ projets, recherche, onFait }: {
       {edite && (
         <FormulaireLigne
           titre={edite === "nouveau" ? "Ajouter un projet" : "Corriger la ligne"}
-          sousTitre={edite === "nouveau"
-            ? <>Saisir les cases telles que fDi les écrit, troncature comprise : c&apos;est le
-                même analyseur que l&apos;import qui les relira. Le projet ira dans un lot à part
-                et ne sera jamais effacé par un réimport du relevé.</>
+          nomenclature={nomenclature}
+          sousTitre={edite === "nouveau" ? undefined
             : <>Les cases modifiées seront <strong>protégées</strong>{" "}: un réimport du relevé
                 réécrira les autres depuis le fichier, mais laissera celles-là.{" "}
                 {edite.origine === "saisie"
                   ? "Ce projet a été saisi à la main ; il ne vient d'aucun fichier."
                   : `Ligne ${edite.ligne} du lot « ${edite.lot} ».`}</>}
-          valeurs={edite === "nouveau" ? VIDE : {
+          valeurs={edite === "nouveau" ? LIGNE_VIDE : {
             date: edite.brut.date, parent: edite.brut.parent ?? "",
             entreprise: edite.brut.entreprise ?? "", source: edite.brut.source ?? "",
             dest: edite.brut.dest ?? "", secteur: edite.brut.secteur ?? "",
@@ -517,6 +929,7 @@ function VueProjets({ projets, recherche, onFait }: {
             type: edite.brut.type ?? "", capex: edite.brut.capex, emplois: edite.brut.emplois,
           }}
           verrous={edite === "nouveau" ? [] : edite.champs_verrouilles}
+          ids={edite === "nouveau" ? undefined : edite.ids}
           // Le tableau affiche le nom ARBITRÉ, le formulaire le libellé que fDi
           // a écrit : « Attijariwafa Bank … » d'un côté, « Attijariwafa Bank
           // Egypt » de l'autre. Sans ce rappel, l'écart passe pour une erreur.

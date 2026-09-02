@@ -61,6 +61,8 @@ async def lister_projets(
                p.description_en, p.description_fr,
                p.secteur_brut, p.sous_secteur_brut, p.activite_brut, p.type_brut,
                p.origine, p.champs_verrouilles,
+               p.pays_source_id, p.pays_dest_id, p.secteur_id, p.sous_secteur_id,
+               p.activite_id, p.type_projet_id,
                e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
                pa.nom AS parent_nom,
                s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
@@ -116,6 +118,14 @@ async def lister_projets(
                 "emplois": r.emplois, "emplois_estime": r.emplois_estime,
                 "description_en": r.description_en, "description_fr": r.description_fr,
                 "origine": r.origine, "champs_verrouilles": list(r.champs_verrouilles or []),
+                # Les postes auxquels la ligne est rattachée. Le formulaire de
+                # correction s'en sert pour PRÉSÉLECTIONNER, au lieu de rendre à
+                # l'utilisateur un libellé tronqué qu'aucune liste ne contient.
+                "ids": {
+                    "source": r.pays_source_id, "dest": r.pays_dest_id,
+                    "secteur": r.secteur_id, "sous_secteur": r.sous_secteur_id,
+                    "activite": r.activite_id, "type": r.type_projet_id,
+                },
                 "brut": {
                     "date": date_brute(r.annee, r.mois), "parent": r.parent_brut,
                     "entreprise": r.entreprise_brut, "source": r.pays_source_brut,
@@ -350,6 +360,44 @@ async def lister_entreprises(recherche: str = "", db: AsyncSession = Depends(get
         FROM fdi_entreprises e {where} ORDER BY e.nom LIMIT 40
     """), params)).fetchall()
     return [{"id": r.id, "nom": r.nom, "nb_projets": r.nb_projets} for r in lignes]
+
+
+@router.get("/referentiels")
+async def referentiels(db: AsyncSession = Depends(get_db)):
+    """Les nomenclatures, pour que la saisie CHOISISSE au lieu de retaper.
+
+    Chaque poste porte ses deux libellés. L'anglais est celui que l'on lit chez
+    fDi, et donc celui qu'on cherche des yeux en recopiant une capture ; le
+    français est celui que la plateforme affichera. Les donner ensemble évite
+    d'avoir à traduire de tête dans un sens à la saisie et dans l'autre à la
+    relecture — et c'est l'anglais qui repart au serveur, où l'analyseur de
+    l'import le rapproche comme n'importe quelle ligne du relevé.
+
+    Les sous-secteurs portent leur secteur : l'écran n'a plus qu'à ne proposer
+    que ceux du secteur choisi, au lieu des 273 de la nomenclature entière.
+
+    Tout tient en cinq cents lignes ; on les envoie d'un coup plutôt que de
+    faire une requête par frappe.
+    """
+    async def q(sql: str) -> list:
+        return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
+
+    return {
+        "types": await q(
+            "SELECT id, libelle_en AS en, libelle_fr AS fr FROM fdi_types_projet ORDER BY ordre"),
+        "secteurs": await q(
+            "SELECT id, libelle_en AS en, libelle_fr AS fr FROM fdi_secteurs ORDER BY libelle_en"),
+        "sous_secteurs": await q(
+            "SELECT id, secteur_id, libelle_en AS en, libelle_fr AS fr "
+            "FROM fdi_sous_secteurs ORDER BY libelle_en"),
+        "activites": await q(
+            "SELECT id, libelle_en AS en, libelle_fr AS fr FROM fdi_activites ORDER BY libelle_en"),
+        # Un pays sans nom anglais ne serait pas rapprochable par l'analyseur :
+        # on ne le propose pas plutôt que de le proposer et le refuser ensuite.
+        "pays": await q(
+            "SELECT id, nom_en AS en, nom_fr AS fr FROM ref_pays "
+            " WHERE coalesce(nom_en, '') <> '' ORDER BY nom_fr"),
+    }
 
 
 # ── Corriger une ligne, en ajouter une ────────────────────────────────────────
