@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2008,International Busi…,International Busi…,United States,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,$15.30m,100,New
+2,May 2008,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,* $45.70m,* 429,Expansion
+3,May 2008,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$150.00m,* 981,New
+4,Apr 2008,AvtoVAZ (Volga A…,AvtoVAZ (Volga A…,Russia,Egypt,Automotive OEM,Automobiles,Manufacturing,* $51.70m,* 864,New
+5,Apr 2008,European Softwar…,European Softwar…,Spain,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+6,Apr 2008,Hennes & Mauritz …,Hennes & Mauritz …,Sweden,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+7,Apr 2008,National Bank of …,Al Watany,Kuwait,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Apr 2008,Pelliconi Group,Pelliconi Group,Italy,Egypt,Metals,Other fabricated met…,Manufacturing,* $178.90m,* 342,New
+9,Apr 2008,Tata Group,Tata Consultancy …,India,Egypt,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+10,Apr 2008,Transaero,Transaero,Russia,Egypt,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+11,Apr 2008,Wartsila (Waertsil…,Wartsila (Waertsil…,Finland,Egypt,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $7.90m,* 13,New
+12,Mar 2008,Aramex Internatio…,Aramex Internatio…,UAE,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,Co-Location
+13,Mar 2008,Soprema,Soprema,France,Egypt,Plastics,Plastics packaging m…,Manufacturing,* $141.30m,* 107,New
+14,Feb 2008,ArcelorMittal,ArcelorMittal,Luxembourg,Egypt,Metals,Steel products,Manufacturing,* $178.90m,* 342,New
+15,Feb 2008,Dana Gas,Dana Gas,UAE,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$200.00m,* 83,New

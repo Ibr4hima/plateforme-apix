@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2008,Inditex,Zara,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+2,Feb 2008,Tamweel,Tamweel,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Jan 2008,Ahli United Bank,Ahli United Bank,Bahrain,Egypt,Financial services,Retail banking,Customer Contact C…,$6.20m,* 144,New
+4,Jan 2008,EMKE Group,EMKE Group,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+5,Jan 2008,Epicor Software,Epicor Software,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,Jan 2008,Heidelberg Materi…,Italgen,Italy,Egypt,Renewable energy,Wind electric power,Electricity,$169.42m,* 53,New
+7,Jan 2008,L'Oreal,L'Oreal,France,Egypt,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $4.40m,* 18,New
+8,Jan 2008,Melrose Resources,Melrose Resources,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,Expansion
+9,Jan 2008,National Bank of …,NBK Capital,Kuwait,Egypt,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+10,Jan 2008,Tokio Marine Holdi…,Tokio Marine & Nic…,Japan,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+11,Dec 2007,DAMAC Holding,DAMAC Holding,UAE,Egypt,Real estate,Residential building …,Construction,* $1.24bn,* 578,New
+12,Dec 2007,Inatech Solutions,Inatech Solutions,United Kingdom,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$10.70m,14,New
+13,Dec 2007,Starwood Hotels …,St. Regis Hotel an…,United States,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+14,Nov 2007,Barclays Bank,Barclays Bank,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $430.50m,"1,000",New
+15,Nov 2007,Cotonificio Albini …,Cotonificio Albini …,Italy,Egypt,Textiles,Textile product mills,Manufacturing,$29.40m,300,New

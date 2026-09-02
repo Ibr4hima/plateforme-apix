@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2007,National Bank of …,National Bank of …,Greece,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Sep 2007,Nokia,Nokia,Finland,Egypt,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Aug 2007,Naftogaz Ukrainy,Naftogaz,Ukraine,Egypt,"Coal, oil & gas","Natural, liquefied an…","Sales, Marketing & S…",* $22.20m,* 54,New
+4,Aug 2007,Reliance Industries,Reliance Industries,India,Egypt,"Coal, oil & gas",Other petroleum & c…,Manufacturing,$1.00bn,231,New
+5,Aug 2007,Reliance Industries,Reliance Industries,India,Egypt,Chemicals,Basic chemicals,Manufacturing,$37.07m,48,New
+6,Jul 2007,ART Marine,ART Marine,UAE,Egypt,Non-automotive tran…,Ships & boats,"Sales, Marketing & S…",$4.55m,18,New
+7,Jul 2007,Spectrum Consult…,Spectrum Consult…,UAE,Egypt,Business services,Employment services,Business Services,* $6.80m,* 15,New
+8,Jun 2007,Archimedia,Archimedia,UAE,Egypt,Consumer electronics,Audio & video equip…,Retail,* $12.30m,* 97,New
+9,Jun 2007,BALtrans Logistics,BALtrans Logistics,Hong Kong,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+10,Jun 2007,Google,Google,United States,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 16,New
+11,May 2007,Fiat Chrysler Auto…,Ferrari,Italy,Egypt,Automotive OEM,Automobiles,Retail,* $12.70m,* 33,New
+12,May 2007,Mapfre,Mapfre Asistencia,Spain,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+13,May 2007,Mashreqbank,Mashreqbank,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,May 2007,Qatar Petrochemic…,Qatar Petrochemic…,Qatar,Egypt,Chemicals,Basic chemicals,"Logistics, Distributio…",* $13.20m,* 28,New
+15,Apr 2007,Danone,Danone,France,Egypt,Food and Beverages,Dairy products,Manufacturing,* $45.70m,* 429,New

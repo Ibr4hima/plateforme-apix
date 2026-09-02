@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2007,J Feliu de la Penya…,Troll,Spain,Egypt,Electronic components,Electric lighting equi…,Manufacturing,* $11.80m,* 157,New
+2,Nov 2007,Meinhardt,Meinhardt,Singapore,Egypt,Business services,Heavy & civil engine…,Business Services,* $5.30m,35,New
+3,Nov 2007,Oracle,Oracle Financial S…,United States,Egypt,Software & IT services,"Software publishers,…",Technical Support Ce…,* $17.00m,* 222,New
+4,Nov 2007,Saint-Gobain,Saint-Gobain,France,Egypt,Ceramics & glass,Glass & glass products,Manufacturing,$175.89m,"1,131",New
+5,Oct 2007,INA Group,INA Group,Croatia,Egypt,"Coal, oil & gas",Oil & gas extraction,Manufacturing,* $1.53bn,* 146,New
+6,Oct 2007,Naftogaz Ukrainy,Naftogaz,Ukraine,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+7,Oct 2007,PTT,PTT Exploration a…,Thailand,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+8,Oct 2007,Sun International,Sun International,South Africa,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+9,Oct 2007,TP (Teleperforman…,TP (Teleperforman…,France,Egypt,Business services,Business support ser…,Customer Contact C…,* $12.10m,600,New
+10,Sep 2007,Avolta,Avolta,Switzerland,Egypt,Consumer products,"Cosmetics, perfume,…",Retail,* $36.90m,* 179,New
+11,Sep 2007,Carillion,Carillion,United Kingdom,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",$86.70m,23,New
+12,Sep 2007,Club Med (Club M…,Club Med (Club M…,France,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+13,Sep 2007,Havas,Havas,France,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+14,Sep 2007,Iran Khodro Indus…,Iran Khodro Indus…,Iran,Egypt,Automotive OEM,Automobiles,Manufacturing,* $51.70m,* 864,New
+15,Sep 2007,Landmark Group,Landmark Group,UAE,Egypt,Consumer products,Other (Consumer pr…,Retail,* $36.90m,* 179,New

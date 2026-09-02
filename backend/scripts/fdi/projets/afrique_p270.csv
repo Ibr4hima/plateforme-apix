@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2007,Mellon Technologies,Mellon Group of C…,Greece,Egypt,Software & IT services,"Software publishers,…",Customer Contact C…,* $4.20m,100,New
+2,Apr 2007,Morgan Stanley,Morgan Stanley,United States,Egypt,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+3,Apr 2007,Orange (France Te…,Orange S.A.,France,Egypt,Communications,Wireless telecommu…,Research & Develop…,$23.79m,98,New
+4,Apr 2007,Rasna,Rasna,India,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,$5.00m,* 19,New
+5,Mar 2007,Omya,Omya,Switzerland,Egypt,Minerals,Nonmetallic mineral …,Manufacturing,$87.00m,* 709,New
+6,Mar 2007,Papa John's,Papa John's,United States,Egypt,Food and Beverages,Food services,Retail,* $268.00m,* 177,New
+7,Feb 2007,AstraZeneca,AstraZeneca,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $27.40m,300,New
+8,Feb 2007,DAMAC Holding,DAMAC Properties,UAE,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+9,Feb 2007,Mahindra Satyam …,Mahindra Satyam …,India,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+10,Feb 2007,Newport Media,Newport Media,United States,Egypt,Semiconductors,Semiconductors & ot…,Research & Develop…,* $51.30m,* 118,New
+11,Feb 2007,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$187.00m,"* 1,223",New
+12,Feb 2007,TenStep,TenStep,United States,Egypt,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+13,Feb 2007,Tous,Tous,Spain,Egypt,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+14,Jan 2007,Amlak,Amlak,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jan 2007,China National Ch…,China Chemical E…,China,Egypt,Chemicals,Basic chemicals,Manufacturing,* $395.10m,* 149,New
