@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2006,Domina Vacanze,Domina Hotels,Italy,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+2,Jul 2006,Efad Holding,Efad Holding,Kuwait,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",$0.20m,* 1,New
+3,Jul 2006,Efad Holding,Efad Holding,Kuwait,Egypt,Hotels & tourism,Accommodation,Construction,$50.00m,* 128,New
+4,Jul 2006,Oberoi Group,EIH,India,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+5,Jun 2006,Akça Holding,Metemteks Tekstil,Turkey,Egypt,Textiles,Textile product mills,Manufacturing,$1.00m,* 18,New
+6,Jun 2006,Eni SpA,SEGAS,Italy,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$1.90m,* 8,Expansion
+7,Jun 2006,Google,Google,United States,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 16,New
+8,Jun 2006,Karl Thomson,Karl Thomson,Hong Kong,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+9,Jun 2006,Kuwait Gulf and Li…,Kuwait Gulf and Li…,Kuwait,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$1.00bn,"* 2,074",New
+10,May 2006,Al-Futtaim Group,Al-Futtaim Group,UAE,Egypt,Real estate,Residential building …,Construction,$1.91bn,"* 3,000",New
+11,May 2006,Barclays Bank,Barclays Bank,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,May 2006,International Air C…,International Air C…,United Kingdom,Egypt,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+13,May 2006,Karthago Airlines,Karthago Airlines,Tunisia,Egypt,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+14,May 2006,Saudi Basic Indus…,Saudi Basic Indus…,Saudi Arabia,Egypt,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $6.20m,* 14,New
+15,Apr 2006,Al Mazaya Holding,Al Mazaya Holding,Kuwait,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New

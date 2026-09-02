@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2006,Mothercare,Mothercare,United Kingdom,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+2,Nov 2006,Sabanci,Temsa,Turkey,Egypt,Automotive OEM,Heavy duty trucks,Manufacturing,$25.00m,750,New
+3,Oct 2006,Barclays Bank,Barclays Bank,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Oct 2006,Centurion Energy,Centurion Energy,Canada,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,Expansion
+5,Oct 2006,Starbucks,Starbucks,United States,Egypt,Food and Beverages,Food services,Retail,* $268.00m,* 177,New
+6,Sep 2006,Aljazeera (Al Jaze…,Al Jazeera Interna…,Qatar,Egypt,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+7,Sep 2006,Al-Tuwairqi Group …,Al-Tuwairqi Group …,Saudi Arabia,Egypt,Metals,Iron & steel mills & f…,Manufacturing,* $178.90m,* 342,New
+8,Sep 2006,Aminex,Aminex Petroleum…,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+9,Sep 2006,Mahindra Group,Mahindra & Mahin…,India,Egypt,Automotive OEM,Heavy duty trucks,Manufacturing,* $51.70m,* 864,New
+10,Sep 2006,Oracle,Oracle,United States,Egypt,Software & IT services,"Software publishers,…",Technical Support Ce…,* $2.10m,20,New
+11,Sep 2006,Western Digital (…,Western Digital (…,United States,Egypt,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.30m,* 118,New
+12,Aug 2006,Barwa Real Estate,Barwa Real Estate,Qatar,Egypt,Real estate,Commercial & institu…,Construction,$1.00bn,"* 3,000",New
+13,Aug 2006,Credit Agricole,Credit Agricole,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Aug 2006,Shell PLC (Royal D…,Shell Egypt,Netherlands,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$7.50m,* 3,Expansion
+15,Jul 2006,Domina Vacanze,Domina Vacanze,Italy,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New

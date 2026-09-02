@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2007,e& (Etisalat Group),Etisalat Egypt,UAE,Egypt,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+2,Jan 2007,Olam International,Olam Egypt,Singapore,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+3,Jan 2007,Sonae,WeDo Consulting,Portugal,Egypt,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+4,Jan 2007,ThyssenKrupp,Uhde,Germany,Egypt,Chemicals,Basic chemicals,Manufacturing,* $395.10m,* 149,New
+5,Dec 2006,AstraZeneca,AstraZeneca,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $4.20m,* 40,New
+6,Dec 2006,BLOM Bank,BLOM Bank,Lebanon,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Dec 2006,Mahindra Satyam …,Mahindra Satyam …,India,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+8,Dec 2006,Sabre Holdings,Sabre Travel Netw…,United States,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+9,Nov 2006,Al Kharafi Group,Al Kharafi Group,Kuwait,Egypt,Minerals,Nonmetallic mineral …,Extraction,$200.00m,"5,000",New
+10,Nov 2006,Al-Futtaim Group,Al-Futtaim Group,UAE,Egypt,Real estate,Residential building …,Construction,$3.50bn,"* 3,000",New
+11,Nov 2006,Apache,Apache,United States,Egypt,"Coal, oil & gas","Natural, liquefied an…",Extraction,* $373.70m,* 214,Expansion
+12,Nov 2006,Barclays Bank,Barclays Bank,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Nov 2006,Carlyle Group,Carlyle Group,United States,Egypt,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+14,Nov 2006,Interpublic Group …,Lowe Worldwide,United States,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+15,Nov 2006,Lexmark,Lexmark,United States,Egypt,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New

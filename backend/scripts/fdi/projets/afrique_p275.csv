@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2005,Al Kharafi Group,Al Kharafi Group,Kuwait,Egypt,Hotels & tourism,Travel arrangement …,Construction,$500.00m,"* 1,250",New
+2,Dec 2005,Awal Investment,Awal Investment,Saudi Arabia,Egypt,Hotels & tourism,Travel arrangement …,Construction,$200.00m,* 511,New
+3,Dec 2005,Axiata Group (Tel…,Axiata Group (Tel…,Malaysia,Egypt,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+4,Dec 2005,Bericap,Bericap,Germany,Egypt,Plastics,Plastics packaging m…,Manufacturing,* $141.30m,* 107,New
+5,Dec 2005,Carlson Companies,Radisson SAS Hot…,United States,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Dec 2005,Huawei Technologi…,Huawei Technologi…,China,Egypt,Communications,Communications equ…,Technical Support Ce…,* $9.70m,* 151,New
+7,Dec 2005,M A Kharafi & Sons,M A Kharafi & Sons,Kuwait,Egypt,Business machines &…,Computer & peripher…,Manufacturing,* $68.60m,* 558,New
+8,Dec 2005,M A Kharafi & Sons,M A Kharafi & Sons,Kuwait,Egypt,Communications,Communications equ…,Manufacturing,* $9.40m,* 434,New
+9,Dec 2005,Oracle,Oracle,United States,Egypt,Software & IT services,"Software publishers,…",Technical Support Ce…,* $17.00m,* 222,New
+10,Nov 2005,Sanpaolo IMI,Sanpaolo IMI,Italy,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Oct 2005,BNP Paribas,BNP Paribas Cairo,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Sep 2005,Angsana,Angsana Spa,Singapore,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+13,Sep 2005,Arab Computer Co…,Arab Computer Co…,Jordan,Egypt,Business machines &…,Computer & peripher…,Manufacturing,* $68.60m,* 558,New
+14,Sep 2005,Carrefour,Carrefour,France,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+15,Sep 2005,China Petrochemic…,China Petroleum a…,China,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
