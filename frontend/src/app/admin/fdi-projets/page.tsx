@@ -238,14 +238,6 @@ function VueProjets({ projets, recherche }: { projets: Projet[]; recherche: stri
   return (
     <Carte
       titre="Projets annoncés"
-      aide={
-        <>
-          Un <span style={{ color: "var(--orange)", fontWeight: 700 }}>≈</span> devant un montant ou
-          un effectif signale une valeur <strong>estimée</strong>{" "}par l&apos;algorithme du Financial
-          Times, et non déclarée par l&apos;entreprise. La distinction n&apos;est pas cosmétique :
-          l&apos;essentiel des capex de ce périmètre sont des estimations.
-        </>
-      }
     >
       {projets.length === 0 ? (
         <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
@@ -354,15 +346,6 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
   return (
     <Carte
       titre="Entreprises à arbitrer"
-      aide={
-        <>
-          La source coupe les noms trop longs — « Banque de dévelo… » — et ne dit pas de qui il
-          s&apos;agit. Complétez le nom une fois : <strong>tous les projets qui portent le même
-          texte</strong>{" "}sont rattachés d&apos;un coup, et la décision est retenue pour les imports
-          suivants. Un préfixe n&apos;étant pas une identité, rien n&apos;est appliqué
-          d&apos;office : deux banques de développement peuvent le partager.
-        </>
-      }
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -485,15 +468,6 @@ function VueDescriptions({ projets, onFait }: { projets: Projet[]; onFait: (t: s
   return (
     <Carte
       titre="Saisie des descriptions"
-      aide={
-        <>
-          La source ne donne la description qu&apos;au dépliage de chaque ligne : elle se saisit
-          donc ici. C&apos;est elle qui distingue deux projets par ailleurs identiques —
-          quatre lignes de la Banque de développement partagent date, montant et sous-secteur.
-          Le français est <strong>facultatif</strong>{" "}: l&apos;anglais suffit à analyser, et
-          traduire avant d&apos;afficher retarderait tout.
-        </>
-      }
       extra={
         <span style={{ fontSize: 11.5, color: "var(--gris)", fontVariantNumeric: "tabular-nums" }}>
           {i + 1} / {projets.length} · {restants} sans description
