@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2017,Everest Textile,Everest Textile,Taiwan,Ethiopia,Textiles,Textile product mills,Manufacturing,* $113.40m,"* 1,909",New
+2,Dec 2016,Sika,Sika,Switzerland,Ethiopia,Chemicals,"Paints, coatings, add…",Manufacturing,* $875.60m,* 455,New
+3,Nov 2016,Office Cherifien de…,Office Cherifien de…,Morocco,Ethiopia,Chemicals,"Pesticide, fertilisers …",Manufacturing,$3.70bn,500,New
+4,Oct 2016,Chongqing Sansh…,Chongqing Sansh…,China,Ethiopia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$85.00m,300,New
+5,Oct 2016,TAL Global Alliances,TAL Global Alliances,Hong Kong,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,$10.00m,200,New
+6,Jun 2016,Humanwell Health…,Humanwell Health…,China,Ethiopia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$80.00m,* 517,New
+7,Jun 2016,Sany,Sany,China,Ethiopia,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+8,Jun 2016,Tebian Electric Ap…,Tebian Electric Ap…,China,Ethiopia,Electronic components,Electrical equipment,Manufacturing,* $31.20m,* 326,New
+9,May 2016,Phillips-Van Heuse…,Phillips-Van Heuse…,United States,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,* $113.40m,"* 1,909",New
+10,May 2016,Viettel,Viettel,Vietnam,Ethiopia,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+11,Apr 2016,Eastern and South…,Eastern and South…,Burundi,Ethiopia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Apr 2016,EgyptAir Holding …,EgyptAir,Egypt,Ethiopia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Apr 2016,Jiangsu Sunshine …,Jiangsu Sunshine …,China,Ethiopia,Textiles,Textile product mills,Manufacturing,$350.00m,"* 3,000",New
+14,Feb 2016,Elsewedy Electric …,Elsewedy Electric …,Egypt,Ethiopia,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+15,Feb 2016,Office Cherifien de…,Office Cherifien de…,Morocco,Ethiopia,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $2.80m,* 13,New

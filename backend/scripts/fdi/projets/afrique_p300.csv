@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2015,Gulf Pharmaceutic…,Gulf Pharmaceutic…,UAE,Ethiopia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$50.00m,* 323,Expansion
+2,Jan 2015,TMF Group,TMF Group,Netherlands,Ethiopia,Business services,Business support ser…,Business Services,* $27.80m,* 38,New
+3,Dec 2014,Oniverse (Calzedo…,Oniverse (Calzedo…,Italy,Ethiopia,Textiles,Clothing & clothing a…,"Sales, Marketing & S…",* $1.40m,* 13,New
+4,Nov 2014,China Poly Group,Poly GCL Petroleu…,China,Ethiopia,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,New
+5,Oct 2014,DBL Group,DBL Group,Bangladesh,Ethiopia,Textiles,Textile product mills,Manufacturing,$38.18m,"3,000",New
+6,Oct 2014,Djibouti Data Cent…,Djibouti Data Cent…,Djibouti,Ethiopia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+7,Oct 2014,PackTech,PackTech,Egypt,Ethiopia,Electronic components,Electrical equipment,Manufacturing,* $31.20m,* 326,New
+8,Sep 2014,Al Ghurair Group,Al Ghurair Group,UAE,Ethiopia,Metals,Alumina & aluminiu…,Manufacturing,$55.00m,* 376,New
+9,Sep 2014,Eskoy Chemical In…,Eskoy Chemical In…,Turkey,Ethiopia,Chemicals,Basic chemicals,"Logistics, Distributio…",* $21.60m,* 26,New
+10,Sep 2014,Jiangsu Lianfa Tex…,Jiangsu Lianfa Tex…,China,Ethiopia,Textiles,Textile product mills,Manufacturing,$500.00m,"* 3,000",New
+11,Sep 2014,PPC (Pretoria Portl…,PPC (Pretoria Portl…,South Africa,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,$175.00m,* 429,New
+12,Aug 2014,Al Ghandin Auto,Al Ghandin Auto,UAE,Ethiopia,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+13,Aug 2014,Hadid Internation…,Hadid Internation…,UAE,Ethiopia,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Jul 2014,Caleres (Brown S…,Caleres (Brown S…,United States,Ethiopia,Textiles,Footwear,"Sales, Marketing & S…",* $1.40m,* 13,New
+15,Jul 2014,Dow Chemical,Dow Chemical,United States,Ethiopia,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $2.80m,* 13,New
