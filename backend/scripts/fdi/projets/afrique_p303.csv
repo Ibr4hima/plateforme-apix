@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2013,Standard Bank Gr…,Standard Bank Gr…,South Africa,Ethiopia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Jul 2013,Ecobank Transnati…,Ecobank Transnati…,Togo,Ethiopia,Financial services,Retail banking,Business Services,* $0.90m,3,New
+3,Apr 2013,LG Corp,LG Electronics,South Korea,Ethiopia,Consumer electronics,Other (Consumer ele…,Education & Training,$1.00m,* 3,New
+4,Apr 2013,MWH Global,MWH Global,United States,Ethiopia,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+5,Mar 2013,Allanasons,Allanasons,India,Ethiopia,Food and Beverages,Animal slaughtering …,Manufacturing,$19.36m,600,New
+6,Mar 2013,Asseco Poland,Asseco Poland,Poland,Ethiopia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$15.00m,* 74,New
+7,Mar 2013,Black Rhino,Black Rhino,South Africa,Ethiopia,Transportation & Wa…,Other pipeline trans…,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Feb 2013,Allana Potash,Allana Potash,Canada,Ethiopia,Minerals,Nonmetallic mineral …,Extraction,* $107.10m,"* 1,366",New
+9,Feb 2013,Deloitte Touche To…,Deloitte Touche To…,United States,Ethiopia,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+10,Feb 2013,Heineken Holding,Heineken,Netherlands,Ethiopia,Food and Beverages,Breweries,Manufacturing,$127.78m,280,New
+11,Feb 2013,Inchcape,Moenco,United Kingdom,Ethiopia,Industrial equipment,"Agriculture, construc…",Retail,* $1.80m,* 10,New
+12,Dec 2012,CHT/BEZEMA Group,CHT/BEZEMA Group,Germany,Ethiopia,Chemicals,Basic chemicals,Manufacturing,* $875.60m,* 455,New
+13,Dec 2012,CHT/BEZEMA Group,CHT/BEZEMA Group,Germany,Ethiopia,Chemicals,Basic chemicals,"Logistics, Distributio…",* $21.60m,* 26,New
+14,Nov 2012,SEKO Worldwide,SEKO Worldwide,United States,Ethiopia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Oct 2012,Baotou Bei Ben H…,Baotou Bei Ben H…,China,Ethiopia,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New

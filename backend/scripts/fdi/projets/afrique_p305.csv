@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2011,Apollo Hospitals G…,Apollo Hospitals G…,India,Ethiopia,Healthcare,Nursing & residential…,Business Services,$2.40m,* 26,New
+2,Oct 2011,Gulf General Inve…,Gulf General Inve…,UAE,Ethiopia,Metals,Alumina & aluminiu…,Manufacturing,$12.00m,* 106,New
+3,Sep 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Ethiopia,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+4,Sep 2011,Samsung Group,Samsung Electron…,South Korea,Ethiopia,Consumer electronics,Other (Consumer ele…,Manufacturing,* $27.20m,* 641,New
+5,Aug 2011,Horticoop,Horticoop,Netherlands,Ethiopia,Food and Beverages,Crop production,"Sales, Marketing & S…",* $6.70m,* 21,New
+6,Jul 2011,PricewaterhouseC…,PricewaterhouseC…,United Kingdom,Ethiopia,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,New
+7,Jul 2011,Seven Seas Techn…,Seven Seas Techn…,Kenya,Ethiopia,Software & IT services,Custom computer pr…,Business Services,$1.00m,* 8,New
+8,Jun 2011,Falcon Chemicals,Falcon Chemicals,UAE,Ethiopia,Chemicals,Basic chemicals,Manufacturing,$5.00m,* 7,New
+9,May 2011,Altour International,Altour International,United States,Ethiopia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+10,May 2011,Chongqing Lifan I…,Chongqing Lifan I…,China,Ethiopia,Automotive OEM,Automobiles,Manufacturing,* $94.50m,* 864,New
+11,May 2011,Chongqing Lifan I…,Chongqing Lifan I…,China,Ethiopia,Automotive OEM,Motor vehicle & part…,Retail,* $12.70m,* 33,New
+12,May 2011,Spintex Group,CLC Industries,India,Ethiopia,Textiles,Textile product mills,Manufacturing,* $138.00m,"* 2,182",New
+13,May 2011,Spintex Group,CLC Industries,India,Ethiopia,Textiles,Textile product mills,Manufacturing,* $138.00m,"* 2,182",New
+14,Apr 2011,Dangote Group,Dangote Group,Nigeria,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,New
+15,Apr 2011,Mahindra Group,Mahindra & Mahin…,India,Ethiopia,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.50m,* 864,New

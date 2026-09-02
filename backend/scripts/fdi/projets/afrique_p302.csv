@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2014,Unilever,Unilever,United Kingdom,Ethiopia,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,New
+2,Jan 2014,A.N.F,A.N.F,Pakistan,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,* $113.40m,"* 1,909",New
+3,Jan 2014,Bank of Africa (B…,Bank of Africa Mer…,Morocco,Ethiopia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Jan 2014,George Shoe,George Shoe,Taiwan,Ethiopia,Textiles,Footwear,Manufacturing,$7.76m,"1,000",New
+5,Jan 2014,K.E.I,K.E.I,South Korea,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,* $113.40m,"* 1,909",New
+6,Jan 2014,Karli International,Karli International,India,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,* $113.40m,"* 1,909",New
+7,Dec 2013,Dandong Jinwan,Sino-Ethiopia Ass…,China,Ethiopia,Plastics,Plastics packaging m…,Manufacturing,$5.23m,* 55,New
+8,Dec 2013,First Pacific,Indofood CBP Suk…,Hong Kong,Ethiopia,Food and Beverages,Snack food,Manufacturing,* $66.50m,* 294,New
+9,Dec 2013,Vodafone Group,Vodacom,United Kingdom,Ethiopia,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Nov 2013,Transsion Holding…,Transsion Holding…,Hong Kong,Ethiopia,Communications,Communications equ…,Manufacturing,* $11.20m,200,New
+11,Sep 2013,Coca-Cola Bevera…,East Africa Bottlin…,South Africa,Ethiopia,Food and Beverages,Soft drinks & ice,Manufacturing,$13.00m,* 56,Expansion
+12,Sep 2013,Coca-Cola Bevera…,East Africa Bottlin…,South Africa,Ethiopia,Food and Beverages,Soft drinks & ice,Manufacturing,$20.00m,* 86,Expansion
+13,Sep 2013,Dangote Group,Dangote Cement,Nigeria,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,$500.00m,"* 1,225",New
+14,Sep 2013,Hikma Pharmaceu…,Hikma Pharmaceu…,United Kingdom,Ethiopia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $46.70m,* 205,New
+15,Sep 2013,Reykjavik Geother…,Reykjavik Geother…,Iceland,Ethiopia,Renewable energy,Geothermal electric …,Electricity,$4.00bn,"* 1,240",New
