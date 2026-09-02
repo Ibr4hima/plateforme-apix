@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2025,Global Admission,Global Admission,United Kingdom,Ghana,Business services,Educational support …,Business Services,* $27.80m,* 38,New
+2,Jan 2025,Gravita Group,Recyclers Ghana,India,Ghana,Metals,Alumina & aluminiu…,Recycling,$0.79m,* 1,New
+3,Jan 2025,MasterCard,MasterCard,United States,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Dec 2024,BDO Global Coord…,BDO Global Coord…,Belgium,Ghana,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+5,Dec 2024,London Internet E…,London Internet E…,United Kingdom,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,New
+6,Dec 2024,R-Pharm,TRPHARM,Russia,Ghana,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+7,Dec 2024,United Bank for Af…,UBA Ghana,Nigeria,Ghana,Financial services,Retail banking,Headquarters,* $44.20m,* 93,Expansion
+8,Nov 2024,Asante Gold,Asante Gold,Canada,Ghana,Metals,Gold ore & silver ore…,Manufacturing,* $97.50m,* 667,Expansion
+9,Nov 2024,Asante Gold,Asante Gold,Canada,Ghana,Metals,Gold ore & silver ore…,Manufacturing,* $227.50m,"* 1,557",Expansion
+10,Nov 2024,Association Famili…,Decathlon (Oxylan…,France,Ghana,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Nov 2024,Imperial College L…,Imperial College L…,United Kingdom,Ghana,Business services,"Schools, colleges, un…",Research & Develop…,* $8.60m,* 73,New
+12,Nov 2024,Jumia,Jumia,Nigeria,Ghana,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+13,Oct 2024,Ubiquity Global Se…,Ubiquity Global Se…,United States,Ghana,Business services,Business support ser…,Customer Contact C…,* $4.00m,500,New
+14,Sep 2024,Empower New En…,Empower New En…,Norway,Ghana,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+15,Aug 2024,Flutterwave,Flutterwave,United States,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New

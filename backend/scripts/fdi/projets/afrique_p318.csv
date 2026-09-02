@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2026,Olam Agri,Olam Agri,Singapore,Ghana,Food and Beverages,Other (Food & Bever…,Manufacturing,$40.00m,* 327,New
+2,Feb 2026,iFinex,Tether.to,Hong Kong,Ghana,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+3,Dec 2025,Paystack,Paystack,Nigeria,Ghana,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,Expansion
+4,Dec 2025,SKSHU Paint,SKSHU Paint,China,Ghana,Chemicals,"Paints, coatings, add…",Retail,* $9.50m,* 118,New
+5,Dec 2025,SKSHU Paint,SKSHU Paint,China,Ghana,Chemicals,"Paints, coatings, add…",Manufacturing,* $285.70m,* 455,New
+6,Oct 2025,Digital Realty Trust,Digital Realty Trust,United States,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,New
+7,Oct 2025,Mashang Auto,Mashang Auto,China,Ghana,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+8,Aug 2025,Al Jedad Holding,Al Jedad Holding,Qatar,Ghana,Chemicals,"Pesticide, fertilisers …",Manufacturing,$5.00bn,"2,000",New
+9,Aug 2025,LutinX,LutinX,United Kingdom,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+10,Aug 2025,LutinX,LutinX,United Kingdom,Ghana,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+11,Jul 2025,The Travelbook Gr…,GuestFlip,United Kingdom,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,Jul 2025,Zipline,Zipline,United States,Ghana,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+13,Jun 2025,Bluechip Technolo…,Bluechip Technolo…,Nigeria,Ghana,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,Expansion
+14,Jun 2025,VFS Global,VFS Global,Switzerland,Ghana,Business services,Other support services,Business Services,* $27.80m,* 38,New
+15,May 2025,Dangote Group,Dangote Sugar Re…,Nigeria,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,$162.00m,"* 1,326",New
