@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,PIRON Global Dev…,PIRON Global Dev…,Germany,Ghana,Business services,Management consult…,Business Services,* $27.80m,* 38,Expansion
+2,Dec 2022,DKK Partners,DKK Partners,United Kingdom,Ghana,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Dec 2022,FBN Holdings (Firs…,FBNBank Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Dec 2022,Network Internati…,Network Internati…,UAE,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+5,Dec 2022,The Diar Group,CityBlue Hotels,Kenya,Ghana,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,Dec 2022,The Diar Group,CityBlue Hotels,Kenya,Ghana,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+7,Nov 2022,Activa Finances,Activa Internation…,Cameroon,Ghana,Financial services,Insurance,Headquarters,* $44.20m,* 93,Expansion
+8,Nov 2022,MTN Group,MTN Ghana,South Africa,Ghana,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+9,Nov 2022,Trade X,Trade X,Canada,Ghana,Automotive OEM,Automobiles,"Logistics, Distributio…",* $22.90m,* 93,New
+10,Nov 2022,Trade X,Trade X,Canada,Ghana,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+11,Oct 2022,Atlantic Lithium,Atlantic Lithium,Australia,Ghana,Minerals,Nonmetallic mineral …,Extraction,$125.00m,* 365,New
+12,Oct 2022,Danone,Fan Milk,France,Ghana,Business services,"Water, sewage & oth…",Recycling,$6.80m,* 7,Co-Location
+13,Oct 2022,Ecobank Transnati…,Ecobank Ghana,Togo,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Oct 2022,Tema Group,LC Waikiki,Turkey,Ghana,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Oct 2022,WiPay Caribbean,WiPay Caribbean,Trinidad & Tobago,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $2.00m,10,New

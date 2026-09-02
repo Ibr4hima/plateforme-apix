@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2024,H.G & W,H.G & W,Australia,Ghana,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+2,Jul 2024,Metso Corporation,Metso Corporation,Finland,Ghana,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+3,Jul 2024,Thai Union,Thai Union,Thailand,Ghana,Food and Beverages,Seafood products,"Logistics, Distributio…",$14.00m,* 39,Co-Location
+4,Jun 2024,AfricaWorks,AfricaWorks,South Africa,Ghana,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+5,Jun 2024,Aquaya,Aquaya,Kenya,Ghana,Business services,Environmental consu…,Business Services,* $27.80m,* 38,New
+6,Jun 2024,Goldplat,Gold Recovery Gh…,United Kingdom,Ghana,Metals,Gold ore & silver ore…,Extraction,$1.14m,* 2,Expansion
+7,Jun 2024,SYNLAB,SYNLAB,Germany,Ghana,Healthcare,Outpatient care cent…,Headquarters,* $19.00m,* 175,Expansion
+8,May 2024,Indiana University,Indiana University,United States,Ghana,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 38,New
+9,May 2024,PAIX Data Centres,PAIX Data Centres,Netherlands,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,Expansion
+10,Apr 2024,EDU Africa,EDU Africa,South Africa,Ghana,Business services,Educational support …,Business Services,* $27.80m,* 38,New
+11,Apr 2024,Mediterranean Shi…,Mediterranean Shi…,Switzerland,Ghana,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,Expansion
+12,Feb 2024,HJ Real Estates,HJ Real Estates,UAE,Ghana,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+13,Feb 2024,Sagist Group,Sagist Group,Turkey,Ghana,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $3.20m,* 37,New
+14,Feb 2024,Telecel Group,Telecel Group,United Kingdom,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $141.30m,* 100,New
+15,Jan 2024,Access Bank,Access Bank (Gha…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2019,Zipline,Zipline,United States,Ghana,Transportation & Wa…,Air transportation,"Logistics, Distributio…",$3.00m,* 13,New
+2,Apr 2019,Cycle Farms,Cycle Farms,France,Ghana,Food and Beverages,Animal food,Manufacturing,* $31.10m,* 344,New
+3,Apr 2019,Go Africa LLC (Go …,Go Africa LLC (Go …,United States,Ghana,Food and Beverages,Coffee & tea,"Sales, Marketing & S…",* $4.50m,* 18,New
+4,Apr 2019,Kobo360,Kobo360,Nigeria,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+5,Apr 2019,Longrich,Longrich,China,Ghana,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,New
+6,Apr 2019,Sunray Ventures,Daystar Power,UAE,Ghana,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,Expansion
+7,Mar 2019,Fujian Sentuo Cer…,Fujian Sentuo Cer…,China,Ghana,Ceramics & glass,Clay product & refra…,Manufacturing,$80.00m,"1,300",New
+8,Mar 2019,Hero Cycles,Hero Motocorp (H…,India,Ghana,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $55.90m,* 583,New
+9,Mar 2019,Office Cherifien de…,Office Cherifien de…,Morocco,Ghana,Chemicals,"Pesticide, fertilisers …",Manufacturing,$10.00m,* 13,New
+10,Mar 2019,Suzuki Motor,Suzuki Motor,Japan,Ghana,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+11,Feb 2019,De Vierschaar,Koudijs Ghana,Netherlands,Ghana,Food and Beverages,Animal food,Manufacturing,* $31.10m,* 344,New
+12,Jan 2019,Chipper Cash,Chipper Cash,United States,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+13,Jan 2019,Unilever,Unilever Ghana,United Kingdom,Ghana,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,Expansion
+14,Jan 2019,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+15,Jan 2019,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,$90.00m,* 13,New

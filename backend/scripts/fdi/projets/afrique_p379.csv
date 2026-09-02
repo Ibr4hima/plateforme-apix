@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2024,Tata Group,Tata Chemicals M…,India,Kenya,Chemicals,Basic chemicals,Manufacturing,$28.00m,* 37,Expansion
+2,Oct 2024,Tune Group (Tune…,AirAsia,Malaysia,Kenya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Oct 2024,Vallibel One,Unidil Packaging,Sri Lanka,Kenya,"Paper, printing & pac…",Converted paper pro…,"Sales, Marketing & S…",* $2.10m,* 10,New
+4,Sep 2024,Archer Daniels Mi…,Archer Daniels Mi…,United States,Kenya,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,New
+5,Sep 2024,Growth Energy,Growth Energy,France,Kenya,Renewable energy,Other electric power …,Headquarters,* $19.70m,* 41,New
+6,Sep 2024,Irvine's,Irvine's,Zimbabwe,Kenya,Food and Beverages,Animal food,Manufacturing,* $6.20m,* 100,New
+7,Sep 2024,LANCK Telecom,LANCK Telecom,United States,Kenya,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Sep 2024,Removall Carbon,Removall Carbon,France,Kenya,Business services,Environmental consu…,Business Services,* $27.80m,* 41,New
+9,Aug 2024,Chint Group,Chint Group,China,Kenya,Electronic components,All other electrical e…,Manufacturing,* $4.50m,40,New
+10,Aug 2024,Euroform Product…,Euroform Product…,United Kingdom,Kenya,Metals,Architectural & struc…,Manufacturing,* $147.40m,* 443,New
+11,Aug 2024,Evogene,Casterra,Israel,Kenya,Biotechnology,Biological products (…,Manufacturing,* $105.60m,* 146,New
+12,Aug 2024,Hankyu Hanshin H…,Intraspeed Arcpro…,Japan,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,Expansion
+13,Jul 2024,Annota.tech,Annota.tech,Bulgaria,Kenya,Software & IT services,Other computer rela…,"Sales, Marketing & S…",* $5.20m,* 19,New
+14,Jul 2024,Nippon Paint,Nipsea Group,Japan,Kenya,Chemicals,"Paints, coatings, add…","Logistics, Distributio…",* $21.60m,* 26,New
+15,Jul 2024,Scanwell Logistics,Scanwell Logistics,Hong Kong,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New

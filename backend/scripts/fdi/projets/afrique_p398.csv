@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,Puratos,Puratos,Belgium,Kenya,Food and Beverages,Bakeries & tortillas,"Sales, Marketing & S…",* $4.50m,* 18,New
+2,Jan 2020,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+3,Dec 2019,Diageo,East African Brew…,United Kingdom,Kenya,Food and Beverages,Distilleries,Manufacturing,* $24.10m,* 162,Expansion
+4,Dec 2019,Diageo,East African Brew…,United Kingdom,Kenya,Food and Beverages,Distilleries,"Sales, Marketing & S…",* $4.50m,* 18,Expansion
+5,Dec 2019,Land O'Lakes,Land O'Lakes,United States,Kenya,Food and Beverages,Animal food,Manufacturing,$12.00m,* 192,New
+6,Nov 2019,Amazon.com,Amazon Web Serv…,United States,Kenya,Communications,Computing infrastruc…,Research & Develop…,* $6.60m,* 84,New
+7,Nov 2019,Anam Technologies,Anam Technologies,Ireland,Kenya,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+8,Nov 2019,BBK Electronics,Vivo Electronics,China,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+9,Nov 2019,BBK Electronics,Vivo Electronics,China,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+10,Nov 2019,Bridgestone,Bridgestone,Japan,Kenya,Rubber,Tyres,Manufacturing,* $117.10m,* 592,New
+11,Nov 2019,Designer Group,Designer Group,Ireland,Kenya,Business services,"Architectural, engine…",Business Services,* $27.80m,* 41,New
+12,Nov 2019,Guala Group,Guala Closures Ea…,Italy,Kenya,Metals,Other fabricated met…,Manufacturing,$4.85m,60,New
+13,Nov 2019,MAS Holdings,MAS Holdings,Sri Lanka,Kenya,Textiles,Clothing & clothing a…,Manufacturing,$14.79m,"3,250",New
+14,Nov 2019,TSS4U,TSS4U,Netherlands,Kenya,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+15,Nov 2019,Varian Medical Sy…,Varian Medical Sy…,United States,Kenya,Medical devices,Electromedical and E…,"Sales, Marketing & S…",* $1.90m,* 18,New

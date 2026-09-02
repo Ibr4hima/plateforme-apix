@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2016,Beijing Fuxing Xia…,BXC Ghana,China,Ghana,Renewable energy,Solar electric power,Electricity,$30.00m,* 9,New
+2,Feb 2016,Millicom Internati…,Tigo Ghana,Luxembourg,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,$5.10m,* 1,New
+3,Feb 2016,Shapoorji Pallonji …,Sterling and Wilson,India,Ghana,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+4,Feb 2016,Societe Generale (…,Societe Generale …,France,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Jan 2016,CPCS,CPCS,Canada,Ghana,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+6,Dec 2015,DHC International,DHC International,Vietnam,Ghana,Consumer products,Furniture & related p…,Manufacturing,* $14.40m,* 418,New
+7,Dec 2015,DHC International,DHC International,Vietnam,Ghana,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $3.20m,* 37,New
+8,Dec 2015,India Bullion and J…,India Bullion and J…,India,Ghana,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+9,Dec 2015,Kagiso Media,Mediamark,South Africa,Ghana,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+10,Dec 2015,Schneider Electric,APC by Schneider …,France,Ghana,Business machines &…,Other (Business mac…,Maintenance & Servi…,* $2.80m,* 46,New
+11,Nov 2015,Cummins,Cummins Cogener…,United States,Ghana,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$350.00m,* 23,New
+12,Nov 2015,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Nov 2015,Millicom Internati…,Tigo Ghana,Luxembourg,Ghana,Communications,Wireless telecommu…,Technical Support Ce…,* $18.70m,200,New
+14,Nov 2015,Shoprite,Shoprite,South Africa,Ghana,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+15,Sep 2015,Yingli Green Ener…,Yingli Green Ener…,China,Ghana,Renewable energy,Solar electric power,Headquarters,* $19.70m,* 41,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2025,BUPA (British Unit…,BUPA (British Unit…,United Kingdom,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Apr 2025,Dubai Islamic Ban…,Dubai Islamic Ban…,UAE,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Apr 2025,Dubai Islamic Ban…,Dubai Islamic Ban…,UAE,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Apr 2025,Nippon Yusen Kab…,Yusen Logistics,Japan,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,Apr 2025,P95,P95,Belgium,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+6,Apr 2025,Soham ERP,Soham ERP,India,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+7,Apr 2025,SVC Energy,SVC Energy,China,Kenya,Electronic components,All other electrical e…,"Logistics, Distributio…",* $12.90m,* 39,New
+8,Apr 2025,Technological Univ…,Technological Univ…,Ireland,Kenya,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 41,New
+9,Mar 2025,Nabisar Films,Nabisar Films,United States,Kenya,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Mar 2025,Novo Nordisk,Novo Nordisk,Denmark,Kenya,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,Expansion
+11,Mar 2025,Sysmex,Sysmex Europe,Japan,Kenya,Medical devices,Medical equipment &…,"Sales, Marketing & S…",$2.36m,* 30,New
+12,Mar 2025,Vodafone Group,Safaricom,United Kingdom,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+13,Feb 2025,AmSpec Group,AmSpec Group,United States,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+14,Feb 2025,BUI Ltd,BUI Ltd,South Africa,Kenya,Software & IT services,Custom computer pr…,Technical Support Ce…,* $15.20m,* 393,Co-Location
+15,Feb 2025,Guangxi Liugong …,Guangxi Liugong …,China,Kenya,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New

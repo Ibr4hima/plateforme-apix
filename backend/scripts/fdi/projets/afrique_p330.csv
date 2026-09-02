@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2020,Sifca,Ghana Rubber Est…,Côte d'Ivoire,Ghana,Rubber,Other rubber products,Manufacturing,$26.51m,260,New
+2,Jan 2020,Access Bank,Access Bank (Gha…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Jan 2020,Bayport Financial …,Bayport Savings a…,Mauritius,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Jan 2020,Bayport Financial …,Bayport Savings a…,Mauritius,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Jan 2020,fairafric,fairafric,Germany,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,$2.20m,* 18,New
+6,Jan 2020,FBN Holdings (Firs…,FBNBank Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Jan 2020,KeyOpsTech,KeyOpsTech,France,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+8,Jan 2020,King's House Scho…,King's House Scho…,United Kingdom,Ghana,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+9,Jan 2020,KOFARB Poland,KOFARB Ghana,Poland,Ghana,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+10,Jan 2020,KOFARB Poland,KOFARB Ghana,Poland,Ghana,Chemicals,"Paints, coatings, add…",Manufacturing,* $285.70m,* 455,New
+11,Jan 2020,Sahara Group,So Energy Ghana,Nigeria,Ghana,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+12,Jan 2020,Schneider Electric,Schneider Electric…,France,Ghana,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+13,Jan 2020,Timken,Timken,United States,Ghana,Metals,"Machine shops, turn…","Sales, Marketing & S…",* $1.90m,* 8,New
+14,Dec 2019,Filatex,Filatex,Madagascar,Ghana,Renewable energy,Solar electric power,Electricity,* $100.00m,* 31,New
+15,Dec 2019,Greenland Resour…,Greenland Resour…,Sweden,Ghana,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$2.80bn,"3,500",New

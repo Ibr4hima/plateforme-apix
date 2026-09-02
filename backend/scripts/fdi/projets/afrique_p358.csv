@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2010,Main One Cable C…,Main One Cable C…,Mauritius,Ghana,Software & IT services,Computer systems d…,ICT & Internet Infras…,* $146.30m,* 85,New
+2,Feb 2010,Olam International,Olam International,Singapore,Ghana,Food and Beverages,Grains & oilseed,Manufacturing,$31.50m,* 206,New
+3,Jan 2010,MTN Group,MTN Group,South Africa,Ghana,Communications,Wireless telecommu…,Headquarters,* $36.90m,* 80,New
+4,Dec 2009,Nippon Kaiji Kyok…,Nippon Kaiji Kyok…,Japan,Ghana,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+5,Dec 2009,Plascon,New Paint Manufa…,South Africa,Ghana,Chemicals,"Paints, coatings, add…",Manufacturing,* $162.20m,* 149,New
+6,Nov 2009,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Nov 2009,International Mon…,International Mon…,United States,Ghana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+8,Nov 2009,MTN Group,MTN Nigeria,South Africa,Ghana,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+9,Nov 2009,United Bank for Af…,United Bank for Af…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Nov 2009,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Wireless telecommu…,Retail,* $6.40m,* 51,New
+11,Oct 2009,Archer Daniels Mi…,Archer Daniels Mi…,United States,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,* $33.90m,"* 1,701",New
+12,Oct 2009,Mercator Transport,Mercator Ghana,Canada,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+13,Oct 2009,Mercator Transport,Mercator Ghana,Canada,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+14,Oct 2009,Mercator Transport,Mercator Transport,Canada,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+15,Sep 2009,Adamus Resources,Adamus Resources,Australia,Ghana,Metals,Gold ore & silver ore…,Manufacturing,$85.00m,* 750,New

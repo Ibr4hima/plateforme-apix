@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2011,CAPS Australia,CAPS Australia,Australia,Ghana,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+2,Dec 2011,Khalid Ali Alturki …,Itsalat Internation…,Saudi Arabia,Ghana,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+3,Dec 2011,MTN Group,MTN Ghana,South Africa,Ghana,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+4,Dec 2011,WH Intermediate …,Herbalife,Cayman Islands,Ghana,Consumer products,"Cosmetics, perfume,…","Logistics, Distributio…",* $32.00m,265,New
+5,Nov 2011,Global Fleet Group,Energy Bank Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Nov 2011,Global Fleet Group,Energy Bank Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Nov 2011,International Busi…,International Busi…,United States,Ghana,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+8,Nov 2011,Marcopolo,Marcopolo,Brazil,Ghana,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.50m,* 864,New
+9,Nov 2011,Noble Mineral Res…,Noble Mineral Res…,Australia,Ghana,Metals,Gold ore & silver ore…,Extraction,* $98.30m,"* 1,012",New
+10,Nov 2011,Rolfes Group,Rolfes Group,South Africa,Ghana,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $6.20m,* 14,New
+11,Nov 2011,SABMiller,SABMiller,United Kingdom,Ghana,Food and Beverages,Breweries,Manufacturing,$40.00m,* 148,Expansion
+12,Nov 2011,The China-Africa …,The China-Africa …,China,Ghana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+13,Oct 2011,Apollo Hospitals G…,Apollo Hospitals G…,India,Ghana,Healthcare,Nursing & residential…,Business Services,$2.40m,* 26,New
+14,Oct 2011,Diageo,Guinness Ghana,United Kingdom,Ghana,Food and Beverages,Breweries,Manufacturing,$6.00m,* 22,Expansion
+15,Oct 2011,Dow Chemical,Dow Chemical,United States,Ghana,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $6.20m,* 14,New

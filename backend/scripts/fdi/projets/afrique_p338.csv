@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2017,Johnson & Johnson,Johnson & Johnson,United States,Ghana,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+2,Mar 2017,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Mar 2017,Olam International,Nutrifoods Ghana,Singapore,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,$8.25m,150,Expansion
+4,Feb 2017,Standard Chartere…,Standard Chartere…,United Kingdom,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Feb 2017,Tata Group,Tata Africa Holdin…,India,Ghana,Automotive OEM,Automobiles,Maintenance & Servi…,* $1.50m,* 8,New
+6,Jan 2017,Aller Aqua,Aller Aqua,Denmark,Ghana,Food and Beverages,Animal food,Manufacturing,* $0.70m,6,New
+7,Jan 2017,Iberchem,Iberchem,Spain,Ghana,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+8,Dec 2016,Douja Promotion …,Ciment d'Afrique (…,Morocco,Ghana,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $45.00m,* 171,New
+9,Dec 2016,Slatecube,Slatecube,Nigeria,Ghana,Business services,"Business schools, co…",Business Services,* $27.80m,* 38,New
+10,Sep 2016,Societe Generale (…,Societe Generale …,France,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Aug 2016,Blackwell Global,Blackwell Global,New Zealand,Ghana,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Aug 2016,Halo International,Halo International,China,Ghana,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
+13,Aug 2016,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+14,Jul 2016,Djembe Communi…,Djembe Communi…,UAE,Ghana,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+15,Jul 2016,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2018,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Communications equ…,Retail,* $6.30m,* 31,Expansion
+2,Jan 2018,Air France,Servair,France,Ghana,Food and Beverages,Food services,Manufacturing,$3.08m,115,New
+3,Jan 2018,Coca-Cola,Voltic Ghana,United States,Ghana,Food and Beverages,Soft drinks & ice,Manufacturing,* $31.10m,* 344,Expansion
+4,Jan 2018,Guangdong Clean …,Guangdong Clean …,China,Ghana,Ceramics & glass,Clay product & refra…,Manufacturing,$77.00m,800,New
+5,Jan 2018,Jethro,Jethro,United Kingdom,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+6,Dec 2017,Canada Containers,Canada Containers,Brazil,Ghana,Industrial equipment,"Boiler, tank, & shippi…",Manufacturing,* $29.80m,* 219,New
+7,Dec 2017,Etix (Etix Everywh…,Etix Energy,Luxembourg,Ghana,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+8,Dec 2017,Etix (Etix Everywh…,Etix (Etix Everywh…,Luxembourg,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,New
+9,Dec 2017,Idai Nature,Idai Nature,Spain,Ghana,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $2.80m,* 13,New
+10,Dec 2017,Merck & Co,Merck & Co,United States,Ghana,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+11,Dec 2017,MTN Group,MTN Ghana,South Africa,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $141.30m,* 100,New
+12,Dec 2017,Zenith Bank,Zenith Bank,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Nov 2017,Eni SpA,Eni SpA,Italy,Ghana,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+14,Nov 2017,iROKO Partners,iROKO Partners,Nigeria,Ghana,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $28.20m,140,New
+15,Nov 2017,Robert Bosch,Bosch Ghana,Germany,Ghana,Automotive compon…,Motor vehicle electri…,"Sales, Marketing & S…",* $1.80m,* 18,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2013,Rider Steel,Rider Steel,Jordan,Ghana,Metals,Steel products,Manufacturing,* $88.70m,* 443,New
+2,May 2013,Sony,Sony,Japan,Ghana,Consumer electronics,Other (Consumer ele…,"Sales, Marketing & S…",* $3.40m,* 29,New
+3,May 2013,Toyota Motor,CFAO Group,Japan,Ghana,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+4,May 2013,United Steel,United Steel,Lebanon,Ghana,Metals,Steel products,Manufacturing,* $73.10m,500,New
+5,May 2013,Usibra,Usibra Ghana Limi…,Brazil,Ghana,Food and Beverages,Snack food,Manufacturing,$25.00m,"2,000",New
+6,Apr 2013,Crown Regency,Crown Regency,United Kingdom,Ghana,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+7,Apr 2013,Deere & Company,John Deere,United States,Ghana,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+8,Apr 2013,Delta Group of Co…,Delta Printing Press,UAE,Ghana,"Paper, printing & pac…",Printing & related ac…,Manufacturing,* $45.00m,* 171,New
+9,Mar 2013,Citigroup,Citibank,United States,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Mar 2013,Heidelberg Materi…,Heidelberg Materi…,Germany,Ghana,Building materials,Cement & concrete p…,Manufacturing,$30.00m,* 74,Expansion
+11,Feb 2013,Atterbury Propert…,Delico Property D…,South Africa,Ghana,Real estate,Commercial & institu…,Construction,* $704.50m,* 578,New
+12,Feb 2013,Aurecon,Aurecon,Australia,Ghana,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+13,Feb 2013,Bharti Group,Bharti Airtel,India,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $141.30m,* 100,New
+14,Feb 2013,Global Fleet Group,Energy Bank Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Feb 2013,Hainan Traffic Ad…,Africa World Airlin…,China,Ghana,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New

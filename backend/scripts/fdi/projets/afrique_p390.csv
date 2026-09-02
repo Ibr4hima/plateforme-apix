@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2022,NALA,NALA,Tanzania,Kenya,Financial services,Retail banking,Headquarters,* $44.20m,* 93,New
+2,Jul 2022,Naspers,MultiChoice Kenya,South Africa,Kenya,Communications,Media streaming dist…,Retail,* $6.30m,* 31,New
+3,Jul 2022,Tema Group,LC Waikiki Kenya,Turkey,Kenya,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Jul 2022,X3M Ideas,X3M Ideas,Nigeria,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 41,New
+5,Jun 2022,C Steinweg,C Steinweg,Netherlands,Kenya,Transportation & Wa…,Warehousing & stora…,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Jun 2022,Dubai Islamic Ban…,Dubai Islamic Ban…,UAE,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Jun 2022,Econet Global,Africa Data Centres,Mauritius,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,Expansion
+8,Jun 2022,GoMyCode,GoMyCode,Tunisia,Kenya,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New
+9,Jun 2022,London Internet E…,London Internet E…,United Kingdom,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+10,Jun 2022,MNK Re,MNK Re,United Kingdom,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+11,Jun 2022,ONErpm,ONErpm,United States,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New
+12,May 2022,BudgIT,BudgIT,Nigeria,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+13,May 2022,CCI Group,CCI Group,UAE,Kenya,Business services,Business support ser…,Customer Contact C…,$50.00m,"5,000",Expansion
+14,May 2022,Deutsche Post,DHL Global Forwa…,Germany,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+15,May 2022,Dynamic Technolo…,Dynamic Visual Te…,South Africa,Kenya,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 146,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2023,BBK Electronics,Oppo Electronics,China,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+2,Apr 2023,Flutterwave,Flutterwave,United States,Kenya,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+3,Apr 2023,HRLeverage,HRLeverage,Nigeria,Kenya,Business services,Employment services,Business Services,* $27.80m,* 41,New
+4,Apr 2023,NetActuate,NetActuate,United States,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+5,Apr 2023,New Forests,New Forests,Australia,Kenya,Financial services,Investment manage…,Business Services,* $1.50m,5,Expansion
+6,Apr 2023,Safic-Alcan,Safic-Alcan,France,Kenya,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+7,Mar 2023,Ashewa Technolog…,Ashewa Technolog…,Ethiopia,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+8,Mar 2023,Atlas AI,Atlas AI,United States,Kenya,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 41,New
+9,Mar 2023,Dusit Thani (Dusit…,Dusit Thani (Dusit…,Thailand,Kenya,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+10,Mar 2023,Exness,Exness,Cyprus,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Mar 2023,Finverity,Finverity,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+12,Mar 2023,Grit Real Estate In…,Grit Real Estate In…,Mauritius,Kenya,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $9.40m,21,New
+13,Mar 2023,Inchcape Shipping…,Inchcape Shipping…,United Kingdom,Kenya,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $167.70m,* 111,Expansion
+14,Mar 2023,Isuzu Motors,Isuzu East Africa (…,Japan,Kenya,Automotive OEM,Light trucks & utility …,Maintenance & Servi…,$0.26m,* 1,New
+15,Mar 2023,Ocean Network Ex…,Ocean Network Ex…,Singapore,Kenya,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New

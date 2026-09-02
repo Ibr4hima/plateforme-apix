@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2009,Access Bank,Access Bank,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Feb 2009,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Feb 2009,Guaranty Trust Ba…,Guaranty Trust Ba…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Feb 2009,Veripos,Veripos,United Kingdom,Ghana,Communications,Navigational instrum…,ICT & Internet Infras…,* $148.60m,* 89,New
+5,Jan 2009,Dominion Gas,Dominion Gas,United Kingdom,Ghana,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$1.50m,5,New
+6,Jan 2009,Standard Bank Gr…,Stanbic Holdings,South Africa,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Dec 2008,Zain (Mobile Telec…,Zain (Mobile Telec…,Kuwait,Ghana,Communications,Wired telecommunic…,ICT & Internet Infras…,$420.00m,* 290,New
+8,Nov 2008,Aker ASA,Aker ASA,Norway,Ghana,"Coal, oil & gas",Oil & gas extraction,Extraction,$25.00m,* 10,New
+9,Nov 2008,Energoprojekt,Energoprojekt,Serbia,Ghana,Leisure & entertainm…,"Performing arts, spe…",Construction,$25.30m,* 108,New
+10,Oct 2008,Mahindra Group,Mahindra & Mahin…,India,Ghana,Industrial equipment,"Agriculture, construc…",Manufacturing,* $94.50m,* 864,New
+11,Oct 2008,Nokia,Nokia,Finland,Ghana,Communications,Communications equ…,Maintenance & Servi…,* $8.40m,* 82,New
+12,Oct 2008,Tullow Oil,Tullow Oil,United Kingdom,Ghana,"Coal, oil & gas",Other petroleum & c…,Extraction,$3.20bn,"* 1,098",New
+13,Aug 2008,DOS Palm Oil Prod…,DOS Palm Oil Prod…,United Kingdom,Ghana,Food and Beverages,Crop production,Manufacturing,* $33.90m,"* 1,701",New
+14,Jul 2008,Bank PHB,Bank PHB,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jul 2008,Ganges Jute,Ganges Jute,India,Ghana,Textiles,Textile product mills,Manufacturing,$1.00m,* 18,New

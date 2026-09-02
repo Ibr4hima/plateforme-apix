@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2025,Bennani & Associés,Bennani & Associés,Morocco,Guinea,Business services,Legal services,Business Services,* $27.80m,* 38,New
+2,Nov 2025,Cybastion,Cybastion,United States,Guinea,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+3,Feb 2025,AgriDex,AgriDex,United Kingdom,Guinea,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+4,Jan 2025,State Power Inves…,State Power Inves…,China,Guinea,Renewable energy,Hydroelectric power,Electricity,* $206.10m,* 57,New
+5,Dec 2024,Shanghai Jin Jian…,Radisson Blu (Rad…,China,Guinea,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,Mar 2024,Forvis Mazars (Ma…,Forvis Mazars (Ma…,France,Guinea,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+7,Feb 2024,SFI & Greentek B…,SFI & Greentek B…,Canada,Guinea,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+8,Dec 2023,Rio Tinto Group,Simfer Jersey,United Kingdom,Guinea,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$3.50bn,"* 3,000",New
+9,Dec 2023,Rio Tinto Group,Simfer Jersey,United Kingdom,Guinea,Metals,Iron ore mining,Extraction,$5.10bn,"* 3,000",New
+10,Nov 2022,TGCC (General Co…,TGCC (General Co…,Morocco,Guinea,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+11,Oct 2022,The Khana Group …,The Khana Group …,United States,Guinea,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+12,Oct 2022,Zeraki (Litemore),Zeraki (Litemore),Kenya,Guinea,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+13,Apr 2022,Mayelia Automotive,Mayelia Automotive,Côte d'Ivoire,Guinea,Business services,"Professional, scientifi…",Business Services,* $1.40m,* 9,New
+14,Apr 2022,Mayelia Automotive,Mayelia Automotive,Côte d'Ivoire,Guinea,Business services,"Professional, scientifi…",Business Services,* $1.20m,* 8,New
+15,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Guinea,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New

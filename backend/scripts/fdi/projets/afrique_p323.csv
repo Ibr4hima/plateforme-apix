@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2023,HD Hyundai (Hyu…,HD Hyundai Infrac…,South Korea,Ghana,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+2,May 2023,Hyundai Motor,Kia Motors,South Korea,Ghana,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,Expansion
+3,Apr 2023,Deutsche Post,DHL Global Forwa…,Germany,Ghana,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+4,Apr 2023,Genser Energy,Genser Energy,United States,Ghana,"Coal, oil & gas",Other electric power …,"Sales, Marketing & S…",* $7.80m,* 30,Expansion
+5,Apr 2023,HRLeverage,HRLeverage,Nigeria,Ghana,Business services,Employment services,Business Services,* $27.80m,* 38,New
+6,Apr 2023,NetActuate,NetActuate,United States,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,New
+7,Mar 2023,Agility,Agility,Kuwait,Ghana,Real estate,Commercial & institu…,Construction,* $704.50m,* 578,New
+8,Mar 2023,Agrolimen,GB Foods,Spain,Ghana,Food and Beverages,Fruits & vegetables …,Manufacturing,$5.00m,* 41,New
+9,Mar 2023,Agrolimen,GB Foods,Spain,Ghana,Food and Beverages,Fruits & vegetables …,Manufacturing,$70.00m,"5,000",New
+10,Mar 2023,MTN Group,MTN Group,South Africa,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,$1.00bn,* 148,New
+11,Mar 2023,Super Group (SG…,Betway,United Kingdom,Ghana,Leisure & entertainm…,Gambling industries,Retail,* $29.30m,* 58,New
+12,Mar 2023,Volkswagen,Volkswagen Ghana,Germany,Ghana,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,Expansion
+13,Feb 2023,FirstRand,First National Ban…,South Africa,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Feb 2023,TapTap Send,TapTap Send,United States,Ghana,Software & IT services,"Software publishers,…",Customer Contact C…,* $1.20m,29,New
+15,Jan 2023,Chartered Institut…,Association of Int…,United Kingdom,Ghana,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,Expansion

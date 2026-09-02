@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2021,Agility,AFAL Manufacturi…,Kuwait,Kenya,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $1.41bn,* 213,New
+2,Oct 2021,United Parcel Serv…,Marken,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+3,Sep 2021,Bertelsmann,Majorel,Germany,Kenya,Business services,Business support ser…,Business Services,* $27.80m,* 41,New
+4,Sep 2021,Digital Realty Trust,iColo,United States,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+5,Sep 2021,Tetra Laval,Sidel,Switzerland,Kenya,Plastics,Plastic bottles,"Sales, Marketing & S…",* $2.00m,* 9,New
+6,Aug 2021,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 171,New
+7,Aug 2021,PureSoftware,PureSoftware,India,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+8,Jul 2021,Execbureau Consu…,Execbureau Consu…,Malaysia,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 41,New
+9,Jul 2021,LG Corp,LG Electronics,South Korea,Kenya,Consumer electronics,Other (Consumer ele…,Retail,* $9.20m,* 78,New
+10,Jul 2021,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $11.00m,200,New
+11,Jul 2021,Prudential,Prudential,United Kingdom,Kenya,Financial services,Insurance,Headquarters,* $44.20m,* 93,New
+12,Jun 2021,CloudFlare,CloudFlare,United States,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+13,Jun 2021,Connex One,Connex One,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+14,Jun 2021,Glovo App,Glovo App,Spain,Kenya,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+15,Jun 2021,Huawei Technologi…,Huawei Technologi…,China,Kenya,Communications,Communications equ…,Education & Training,* $11.10m,* 137,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2023,Trueweb Technolo…,Trueweb Technolo…,India,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+2,Mar 2023,Vodafone Group,M-Pesa Africa,United Kingdom,Kenya,Financial services,Retail banking,Shared Services Cen…,$2.00m,* 83,New
+3,Feb 2023,Africa & More,Africa & More,Israel,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Feb 2023,Afrisam,Tanga Cement,South Africa,Kenya,Building materials,Cement & concrete p…,Manufacturing,* $816.20m,"2,000",New
+5,Feb 2023,Bericap,Bericap,Germany,Kenya,Plastics,Plastics packaging m…,Manufacturing,* $25.20m,* 229,New
+6,Feb 2023,Boehringer Ingelh…,Boehringer Ingelh…,Germany,Kenya,Pharmaceuticals,Pharmaceutical prep…,Headquarters,* $42.10m,* 109,New
+7,Feb 2023,Taifa Gas,Taifa Gas,Tanzania,Kenya,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",$200.00m,* 161,New
+8,Jan 2023,Globeleq Generati…,Globeleq Generati…,United Kingdom,Kenya,Renewable energy,Geothermal electric …,Electricity,* $87.90m,* 57,New
+9,Jan 2023,Intellimedia Netw…,Intellimedia Netw…,United States,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+10,Jan 2023,NOVAIR,NOVAIR,France,Kenya,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+11,Jan 2023,Symbion Power,Symbion Power,United States,Kenya,Renewable energy,Geothermal electric …,Electricity,$97.00m,* 30,New
+12,Dec 2022,Econet Global,Liquid Cloud (Liqu…,Mauritius,Kenya,Communications,Computing infrastruc…,Technical Support Ce…,* $12.70m,* 141,New
+13,Dec 2022,Nexgen Packaging,Nexgen Packaging,United States,Kenya,"Paper, printing & pac…",Converted paper pro…,Headquarters,* $15.60m,* 69,New
+14,Dec 2022,Swissport Internat…,Swissport Internat…,Switzerland,Kenya,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+15,Dec 2022,Trade X,Trade X,Canada,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New

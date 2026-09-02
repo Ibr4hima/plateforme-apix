@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2022,Kerry Group,Kerry Group,Ireland,Kenya,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,Expansion
+2,May 2022,NEAR Foundation,NEAR Foundation,Switzerland,Kenya,Business services,Other support services,Business Services,* $27.80m,* 41,New
+3,Apr 2022,Alphabet Inc,Google,United States,Kenya,Software & IT services,Other (Software & IT…,Research & Develop…,* $18.60m,100,New
+4,Apr 2022,Baron & Cabot,Baron & Cabot,United Kingdom,Kenya,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+5,Apr 2022,BlackHouse Media…,BlackHouse Media…,Nigeria,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 41,New
+6,Apr 2022,Ghabbour Auto (G…,Ghabbour Auto (G…,Egypt,Kenya,Automotive OEM,Automobiles,Manufacturing,* $19.50m,* 884,New
+7,Apr 2022,Odoo,Odoo,Belgium,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $3.80m,* 19,New
+8,Apr 2022,Visa International,Visa International,United States,Kenya,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 146,New
+9,Mar 2022,Microsoft,Microsoft,United States,Kenya,Software & IT services,"Software publishers,…",Research & Develop…,$27.00m,* 145,New
+10,Mar 2022,Redian Software,Redian Software,India,Kenya,Software & IT services,Custom computer pr…,Headquarters,* $12.20m,* 73,New
+11,Mar 2022,Solubag,Solubag,Chile,Kenya,Textiles,Other (Textiles),Headquarters,* $12.10m,* 53,New
+12,Feb 2022,Amazon.com,Amazon Web Serv…,United States,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+13,Feb 2022,Finnish Fund for I…,Finnish Fund for I…,Finland,Kenya,Financial services,Corporate & investm…,Business Services,* $0.90m,3,New
+14,Feb 2022,Naspers,MultiChoice Kenya,South Africa,Kenya,Communications,Media streaming dist…,Retail,* $6.30m,* 31,New
+15,Feb 2022,Transsion Holding…,Transsion Holding…,China,Kenya,Consumer electronics,Household appliances,Retail,* $9.20m,* 78,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2026,SanlamAllianz,SanlamAllianz,South Africa,Kenya,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Jan 2026,Gabriel-Chemie,Gabriel-Chemie,Austria,Kenya,Chemicals,"Paints, coatings, add…","Logistics, Distributio…",* $21.60m,* 26,New
+3,Jan 2026,Network Aviation …,Network Airline S…,United Kingdom,Kenya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,Expansion
+4,Dec 2025,Amsons Group,Bamburi Cement,Tanzania,Kenya,Building materials,Cement & concrete p…,Manufacturing,$250.00m,* 613,New
+5,Dec 2025,K-Elec,K-Elec,South Korea,Kenya,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+6,Dec 2025,Montran,Montran,United States,Kenya,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+7,Dec 2025,Terumo,Terumo BCT,Japan,Kenya,Medical devices,Medical equipment &…,Headquarters,* $11.30m,* 62,New
+8,Nov 2025,Browns,Browns Plantations,Sri Lanka,Kenya,Food and Beverages,Coffee & tea,Manufacturing,* $24.10m,* 162,Expansion
+9,Nov 2025,Saltrans,Saltrans,Uganda,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,Expansion
+10,Nov 2025,Suhara Logistics,Suhara Logistics,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Nov 2025,Suhara Logistics,Suhara Logistics,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+12,Oct 2025,Blue Logistics Gro…,Blue Logistics Gro…,Denmark,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Oct 2025,Blue Logistics Gro…,Blue Logistics Gro…,Denmark,Kenya,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+14,Oct 2025,Deutsche Post,DHL,Germany,Kenya,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+15,Oct 2025,Inteleos,Inteleos,United States,Kenya,Healthcare,Other (Healthcare),Business Services,* $2.70m,* 39,New

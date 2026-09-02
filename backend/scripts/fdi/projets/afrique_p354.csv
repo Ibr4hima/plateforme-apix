@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2011,Herakles Capital,Herakles Farms,United States,Ghana,Food and Beverages,Crop production,Manufacturing,* $33.90m,"* 1,701",New
+2,Sep 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Ghana,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+3,Sep 2011,Toyota Motor,Toyota,Japan,Ghana,Automotive OEM,Automobiles,"Logistics, Distributio…",* $0.30m,2,New
+4,Aug 2011,Funeral Services …,Funeral Services …,Botswana,Ghana,Business services,Other support services,Business Services,* $6.80m,* 15,New
+5,Aug 2011,Intercontinental B…,Intercontinental B…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Aug 2011,Sanford Health,Sanford Health,United States,Ghana,Healthcare,Offices of physicians…,Business Services,* $2.70m,* 39,New
+7,Jul 2011,Access Bank,Access Bank (Gha…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jul 2011,Access Bank,Access Bank (Gha…,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jul 2011,PricewaterhouseC…,PwC Ghana,United Kingdom,Ghana,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,New
+10,Jul 2011,Santowin Corpora…,Santowin Corpora…,India,Ghana,Metals,Gold ore & silver ore…,Extraction,* $98.30m,"* 1,012",New
+11,Jul 2011,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Wireless telecommu…,Retail,* $6.40m,* 51,New
+12,Jun 2011,BSi Steel,BSi Steel,South Africa,Ghana,Metals,Iron & steel mills & f…,"Sales, Marketing & S…",* $2.80m,* 9,New
+13,Jun 2011,Mitsui & Co,Mitsui & Co,Japan,Ghana,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+14,Jun 2011,SRK Consulting,SRK Consulting,South Africa,Ghana,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+15,May 2011,Deutsche Post,DHL Global Forwa…,Germany,Ghana,Transportation & Wa…,Freight/Distribution …,Research & Develop…,* $24.70m,* 138,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2020,Walmart,Massmart,United States,Kenya,Consumer products,Building material & g…,Retail,$4.66m,145,New
+2,Jun 2020,Chipper Cash,Chipper Cash,United States,Kenya,Software & IT services,"Software publishers,…",Headquarters,* $1.00m,* 6,Expansion
+3,Jun 2020,Daikin Industries,Daikin Industries,Japan,Kenya,Industrial equipment,"Ventilation, heating,…","Sales, Marketing & S…",* $2.90m,* 11,Expansion
+4,Jun 2020,FedEx (Federal Ex…,FedEx Express,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,Jun 2020,Vezeeta,Vezeeta,UAE,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,Expansion
+6,May 2020,China Mobile Com…,China Mobile Inter…,China,Kenya,Communications,Wired telecommunic…,ICT & Internet Infras…,* $52.80m,* 100,New
+7,May 2020,CM.com,CM.com,Netherlands,Kenya,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Mar 2020,BASF,BASF,Germany,Kenya,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+9,Mar 2020,Suguna Holdings,Suguna Poultry Ke…,India,Kenya,Food and Beverages,Animal food,Manufacturing,$8.40m,* 135,New
+10,Feb 2020,Acrow Misr,Acrow Misr,Egypt,Kenya,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+11,Feb 2020,Bertelsmann,Majorel,Germany,Kenya,Business services,Business support ser…,Business Services,* $27.80m,* 41,New
+12,Feb 2020,Diageo,East African Brew…,United Kingdom,Kenya,Food and Beverages,Distilleries,Manufacturing,* $24.10m,* 162,New
+13,Feb 2020,Inlaks,Inlaks,Nigeria,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+14,Feb 2020,Puratos,Puratos,Belgium,Kenya,Food and Beverages,Bakeries & tortillas,Manufacturing,* $24.10m,* 162,New
+15,Jan 2020,Catch Taxi,Catch Taxi,Ethiopia,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New

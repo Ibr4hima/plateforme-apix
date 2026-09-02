@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2020,Econet Global,DPA Africa Asset-Co,Mauritius,Kenya,Renewable energy,Solar electric power,Electricity,$1.20m,* -,New
+2,Oct 2020,Maser,Maser,India,Kenya,Consumer electronics,Audio & video equip…,Retail,* $9.20m,* 78,New
+3,Oct 2020,Nium (InstaRem),Nium (InstaRem),Singapore,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Oct 2020,SRI International,Ravenswood Solut…,United States,Kenya,Space & defence,Other (Space & defe…,"Sales, Marketing & S…",* $4.50m,* 59,New
+5,Sep 2020,Investisseurs & Pa…,Investisseurs & Pa…,France,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Sep 2020,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 300,New
+7,Sep 2020,Messier 31 (Pngme),Messier 31 (Pngme),United States,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+8,Sep 2020,Worldwide EduCo…,Worldwide EduCo…,Canada,Kenya,Business services,Management consult…,Business Services,* $27.80m,* 41,New
+9,Aug 2020,Afringa,Afringa,Rwanda,Kenya,Business services,Employment services,Business Services,* $27.80m,* 41,New
+10,Aug 2020,Landmark Group,Landmark Group,UAE,Kenya,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+11,Aug 2020,PAIX Data Centres,PAIX Data Centres,Netherlands,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+12,Jul 2020,Clyde & Co,Clyde & Co,United Kingdom,Kenya,Business services,Legal services,Business Services,* $27.80m,* 41,New
+13,Jul 2020,CO-RO Food,CO-RO Food,Denmark,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$2.50m,100,New
+14,Jul 2020,Josef Seibel,Josef Seibel Africa,Germany,Kenya,Textiles,Footwear,Manufacturing,$1.37m,200,New
+15,Jul 2020,Lionsgate Gas and…,Lionsgate Gas and…,United States,Kenya,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",$6.49m,* 5,New

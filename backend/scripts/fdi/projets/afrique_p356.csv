@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2011,Millicom Internati…,Tigo Ghana,Luxembourg,Ghana,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,Feb 2011,MTN Group,MTN Group,South Africa,Ghana,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+3,Feb 2011,Nestle,Nestle,Switzerland,Ghana,Food and Beverages,Snack food,Shared Services Cen…,* $7.10m,150,New
+4,Feb 2011,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $148.60m,* 89,New
+5,Jan 2011,MTN Group,MTN Ghana,South Africa,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,$250.00m,* 173,New
+6,Dec 2010,Mahindra Group,Tech Mahindra,India,Ghana,Software & IT services,Custom computer pr…,Technical Support Ce…,* $17.00m,* 222,New
+7,Nov 2010,GE Aerospace (Ge…,GE Capital Aviatio…,United States,Ghana,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+8,Nov 2010,Global Voice Grou…,Global Voice Grou…,Haiti,Ghana,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+9,Nov 2010,Tata Group,TATA Africa Holdin…,India,Ghana,Automotive OEM,All other transportati…,"Sales, Marketing & S…",* $10.10m,* 38,New
+10,Oct 2010,African Financial S…,African Financial S…,Mauritius,Ghana,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Oct 2010,DF Deutsche Forfait,DF Deutsche Forfait,Germany,Ghana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+12,Oct 2010,Healthcare Global …,Healthcare Global …,India,Ghana,Healthcare,Outpatient care cent…,Business Services,$2.92m,* 32,New
+13,Oct 2010,Tata Group,Tata Motors,India,Ghana,Automotive OEM,All other transportati…,Manufacturing,* $94.50m,* 864,New
+14,Sep 2010,MacDermid,MacDermid Offsho…,United States,Ghana,Chemicals,Basic chemicals,Research & Develop…,* $10.30m,* 35,New
+15,Sep 2010,Nestle,Nestle Ghana,Switzerland,Ghana,Food and Beverages,Grains & oilseed,Manufacturing,$36.20m,* 237,Expansion

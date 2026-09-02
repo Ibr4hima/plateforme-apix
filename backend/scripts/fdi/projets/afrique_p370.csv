@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2011,Bellzone Mining,Bellzone Mining,United Kingdom,Guinea,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
+2,Jun 2011,Bellzone Mining,Bellzone Mining,United Kingdom,Guinea,Metals,Iron ore mining,"Sales, Marketing & S…",* $2.80m,* 9,New
+3,May 2011,Uriarte Safybox,Uriarte Safybox,Spain,Guinea,Industrial equipment,Mechanical power tr…,Manufacturing,$1.90m,* 13,New
+4,Feb 2011,Vale (Companhia …,Vale (Companhia …,Brazil,Guinea,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
+5,Apr 2010,Skye Bank,Skye Bank,Nigeria,Guinea,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Mar 2010,Rio Tinto Group,Rio Tinto Group,United Kingdom,Guinea,Metals,Iron ore mining,Extraction,$1.35bn,"* 1,898",New
+7,Mar 2010,Stellar Diamonds …,Stellar Diamonds …,United Kingdom,Guinea,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+8,May 2009,Banque Sahelo Sa…,Banque Sahelo Sa…,Libya,Guinea,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Mar 2009,West African Diam…,West African Diam…,Ireland,Guinea,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,New
+10,Nov 2006,BHP Group,BHP Group,Australia,Guinea,Metals,Alumina & aluminiu…,"Sales, Marketing & S…",* $2.80m,* 9,New
+11,Jan 2006,Hyperdynamics,Guinea SARL,United States,Guinea,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+12,Jan 2006,Mitsubishi,Mitsubishi,Japan,Guinea,Metals,Alumina & aluminiu…,Extraction,* $270.00m,"* 1,012",New
+13,Jun 2005,African Diamonds,African Diamonds,Ireland,Guinea,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+14,Apr 2005,Marketing & Prom…,Marketing & Prom…,Nigeria,Guinea,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+15,Dec 2004,Global Alumina,Global Alumina,United States,Guinea,Metals,Alumina & aluminiu…,Manufacturing,* $178.90m,* 342,New

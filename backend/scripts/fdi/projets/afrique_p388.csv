@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2022,Trade X,Trade X,Canada,Kenya,Automotive OEM,Automobiles,"Logistics, Distributio…",* $22.90m,* 93,New
+2,Nov 2022,Econet Global,Africa Data Centres,Mauritius,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,Expansion
+3,Nov 2022,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 171,New
+4,Nov 2022,WeFreight,WeFreight,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $3.50m,10,New
+5,Nov 2022,WeFreight,WeFreight,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Oct 2022,Alphabet Inc,Google,United States,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+7,Oct 2022,Factore Ventures,Factore Ventures,United States,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+8,Oct 2022,Innscor Africa,Simbisa Brands,Zimbabwe,Kenya,Food and Beverages,Food services,Retail,* $11.50m,* 208,New
+9,Oct 2022,Kommlabs,YEGO,India,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New
+10,Oct 2022,MCE Social Capital,MCE Social Capital,United States,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Oct 2022,Sona Machinery,Sona Machinery,India,Kenya,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+12,Oct 2022,Trina Solar,Trina Solar,China,Kenya,Electronic components,All other electrical e…,"Logistics, Distributio…",* $12.90m,* 39,New
+13,Oct 2022,Vertiv (Emerson N…,Vertiv (Emerson N…,United States,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+14,Sep 2022,Aero Africa,Aero Africa,Hong Kong,Kenya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Sep 2022,Alten Renewable E…,Alten Renewable E…,Netherlands,Kenya,Renewable energy,Solar electric power,Electricity,* $87.90m,* 57,New

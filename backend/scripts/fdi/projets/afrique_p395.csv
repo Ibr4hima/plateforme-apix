@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2021,Zunder Systems,AFR-IX Telecom,Spain,Kenya,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+2,Jan 2021,Clear Blue Technol…,Clear Blue Technol…,Canada,Kenya,Electronic components,All other electrical e…,Research & Develop…,* $0.80m,2,New
+3,Jan 2021,Sabi Am,Sabi Am,Nigeria,Kenya,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 19,New
+4,Dec 2020,Djibouti Data Cent…,Wingu.africa,Djibouti,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,Expansion
+5,Dec 2020,Econet Global,Africa Data Centres,Mauritius,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $100.00m,* 15,Expansion
+6,Dec 2020,Econet Global,Africa Data Centres,Mauritius,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $100.00m,* 15,New
+7,Dec 2020,Grit Real Estate In…,Grit Real Estate In…,Mauritius,Kenya,Real estate,Industrial building co…,Construction,* $92.50m,* 578,New
+8,Dec 2020,Huawei Technologi…,Huawei Kenya,China,Kenya,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+9,Dec 2020,Neuberg Diagnosti…,Neuberg Diagnosti…,India,Kenya,Healthcare,Outpatient care cent…,Research & Develop…,* $10.60m,* 82,New
+10,Nov 2020,Angaza,Angaza,United States,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,Expansion
+11,Nov 2020,Banque Misr,Banque Misr,Egypt,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Nov 2020,Grupo Capsulas T…,Torrent East Africa,Spain,Kenya,Plastics,Plastics packaging m…,Manufacturing,$3.04m,* 32,Expansion
+13,Nov 2020,RA Trading,RA Trading,Egypt,Kenya,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+14,Nov 2020,Wadi El Nile,Wadi El Nile,Egypt,Kenya,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+15,Oct 2020,Cencora (Ameriso…,World Courier,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New

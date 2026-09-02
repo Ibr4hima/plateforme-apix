@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2004,Alcoa,Alcoa,United States,Guinea,Metals,Alumina & aluminiu…,Manufacturing,* $178.90m,* 342,New
+2,Mar 2004,Russian Aluminiu…,Russian Aluminiu…,Russia,Guinea,Metals,Alumina & aluminiu…,Manufacturing,$350.00m,"* 3,000",Expansion
+3,Apr 2003,Kenor,Kenor,Norway,Guinea,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+4,Oct 2016,Banque Centrale P…,Groupe Banque At…,Morocco,Guinea Bissau,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Jan 2016,Fujian Ningde Shi…,Fujian Ningde Shi…,China,Guinea Bissau,Food and Beverages,"Fishing, hunting & tr…",Manufacturing,$50.00m,"3,000",New
+6,Nov 2015,PCCI UK,PCCI Group,United Kingdom,Guinea Bissau,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+7,Aug 2014,Dangote Group,Dangote Cement,Nigeria,Guinea Bissau,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+8,May 2014,Standard Bank Gr…,Standard Bank Gr…,South Africa,Guinea Bissau,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Mar 2014,MTN Group,MTN Guinea Bissau,South Africa,Guinea Bissau,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+10,Jun 2009,Banque des Etats …,Banque des Etats …,Cameroon,Guinea Bissau,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Jun 2009,Banque des Etats …,Banque des Etats …,Cameroon,Guinea Bissau,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Nov 2007,Ecobank Transnati…,Ecobank Transnati…,Togo,Guinea Bissau,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,May 2007,Orange (France Te…,Orange S.A.,France,Guinea Bissau,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+14,Jun 2003,Champion Resour…,Champion Resour…,Canada,Guinea Bissau,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+15,Jul 2026,Axian,Yas,Madagascar,Kenya,Communications,Wired telecommunic…,ICT & Internet Infras…,* $52.80m,* 100,Expansion

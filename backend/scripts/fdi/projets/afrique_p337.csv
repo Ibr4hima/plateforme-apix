@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2017,Unique Maritime,Unique Maritime,UAE,Ghana,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,* $7.80m,* 34,New
+2,Oct 2017,Lufthansa,Brussels Airlines,Germany,Ghana,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Sep 2017,FLSmidth,FLSmidth,Denmark,Ghana,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+4,Sep 2017,United Bank for Af…,UBA Ghana,Nigeria,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Sep 2017,Yara International,Yara Ghana,Norway,Ghana,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $285.70m,* 455,New
+6,Aug 2017,Arla Foods,Arla Foods,Denmark,Ghana,Food and Beverages,Dairy products,Manufacturing,* $1.00m,8,New
+7,Aug 2017,Holcim Group (Laf…,CBI Ghana,Switzerland,Ghana,Building materials,Cement & concrete p…,Manufacturing,$55.00m,400,New
+8,Aug 2017,Shirin Asal Food I…,Shirin Asal Food I…,Iran,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,* $31.10m,* 344,New
+9,Jul 2017,Redavia,Redavia,Germany,Ghana,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $0.50m,* 1,New
+10,Jun 2017,Norfund,Norfund,Norway,Ghana,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,May 2017,Absolute Imaging,Absolute Imaging,Canada,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,May 2017,Danone,Fan Milk,France,Ghana,Food and Beverages,Dairy products,Manufacturing,$25.00m,200,Expansion
+13,May 2017,Eni SpA,Eni SpA,Italy,Ghana,"Coal, oil & gas",Oil & gas extraction,Extraction,$7.90bn,"* 2,712",New
+14,Apr 2017,Association Famili…,Decathlon (Oxylan…,France,Ghana,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Mar 2017,GE Aerospace (Ge…,GE Oil and Gas,United States,Ghana,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,* $7.30m,30,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2022,Worldwide Logistics,Worldwide Logistics,United States,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+2,Feb 2022,Xylem,Xylem,United States,Kenya,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $0.60m,6,New
+3,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Kenya,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Jan 2022,Selam,Selam,Sweden,Kenya,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $1.80m,* 29,New
+5,Jan 2022,SQORUS (Des Sys…,SQORUS (Des Sys…,France,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+6,Dec 2021,Bento Africa,Bento Africa,Nigeria,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+7,Dec 2021,Xiaomi (Beijing Xi…,Xiaomi (Beijing Xi…,China,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+8,Nov 2021,European Investm…,European Investm…,Luxembourg,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,Expansion
+9,Nov 2021,Haussmann Group,Haussmann Group,France,Kenya,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+10,Nov 2021,Mono Technologies,Mono Technologies,Nigeria,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $0.20m,1,New
+11,Nov 2021,New Forests,New Forests,Australia,Kenya,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+12,Nov 2021,Novartis,Novartis,Switzerland,Kenya,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $35.30m,* 73,New
+13,Nov 2021,Saint-Gobain,Saint-Gobain,France,Kenya,Building materials,"Asphalt paving, roofi…",Manufacturing,* $211.40m,* 496,New
+14,Nov 2021,StarTimes Media,StarTimes Media,China,Kenya,Communications,Media streaming dist…,Retail,* $6.30m,* 31,New
+15,Nov 2021,Stern-Wywiol Gru…,Mühlenchemie (M…,Germany,Kenya,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,New

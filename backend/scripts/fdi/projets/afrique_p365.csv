@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2003,Diageo,Guinness Ghana,United Kingdom,Ghana,Food and Beverages,Crop production,Manufacturing,* $764.80m,"5,000",Expansion
+2,Jun 2003,Diageo,Guinness Ghana,United Kingdom,Ghana,Food and Beverages,Breweries,Manufacturing,$19.00m,* 70,New
+3,Jun 2003,Kaiser Aluminum,Kaiser Aluminum …,United States,Ghana,Metals,Alumina & aluminiu…,Manufacturing,* $62.00m,* 342,New
+4,May 2003,Admedia Advertisi…,Admedia Advertisi…,United States,Ghana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+5,May 2003,Affiliated Compute…,Affiliated Compute…,United States,Ghana,Business services,Business support ser…,Shared Services Cen…,* $10.00m,* 337,New
+6,May 2003,Belin Textiles Inte…,Belin Textiles Inte…,Mauritius,Ghana,Textiles,Clothing & clothing a…,Manufacturing,$1.20m,200,New
+7,May 2003,Cummings McClor…,Cummings McClor…,United States,Ghana,Business services,Legal services,Business Services,* $6.80m,* 15,New
+8,May 2003,Golden Star Reso…,Golden Star Reso…,United States,Ghana,Metals,Gold ore & silver ore…,Extraction,* $98.30m,"* 1,012",New
+9,May 2003,IAMGold,IAMGold,Canada,Ghana,Metals,Gold ore & silver ore…,Extraction,$159.00m,* 223,New
+10,Apr 2003,Rising Data Soluti…,Rising Data Soluti…,United States,Ghana,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+11,Mar 2003,Universe Group,First Remit,United Kingdom,Ghana,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+12,Jul 2026,Groupe Castel,Groupe Castel,France,Guinea,Food and Beverages,Breweries,Manufacturing,* $45.80m,* 263,New
+13,May 2026,Aluminum Corpor…,Aluminum Corpor…,China,Guinea,Metals,Alumina & aluminiu…,Manufacturing,$1.00bn,"* 3,000",Co-Location
+14,May 2026,CMA CGM,CEVA Logistics,France,Guinea,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Apr 2026,Teyliom Group,Bridge Bank Group,Côte d'Ivoire,Guinea,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2006,Investcom Holding,Areeba,Lebanon,Ghana,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,May 2006,Cargill,Cargill,United States,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,$100.00m,200,New
+3,May 2006,Technology Distrib…,Technology Distrib…,Nigeria,Ghana,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+4,Apr 2006,Embrapa,Embrapa,Brazil,Ghana,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",$0.50m,* 5,New
+5,Mar 2006,Glenayre Technolo…,Glenayre Messaging,United States,Ghana,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 16,New
+6,Jan 2006,Red Sea Housing …,Red Sea Housing …,Saudi Arabia,Ghana,Real estate,Residential building …,Manufacturing,$60.00m,400,New
+7,Jan 2006,Sahara Group,Sahara Energy Re…,Nigeria,Ghana,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$250.00m,* 518,New
+8,Sep 2005,Elsewedy Electric …,Elsewedy Electric …,Egypt,Ghana,Electronic components,Electric lighting equi…,Manufacturing,* $11.80m,* 157,New
+9,Sep 2005,Metropolitan,Metropolitan,South Africa,Ghana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+10,Sep 2005,Red Back Mining,Red Back Mining,Australia,Ghana,Metals,Gold ore & silver ore…,Manufacturing,* $62.00m,* 342,New
+11,Aug 2005,Barry Callebaut,Barry Callebaut,Switzerland,Ghana,Food and Beverages,Sugar & confectionar…,Manufacturing,$10.00m,* 65,Expansion
+12,Aug 2005,Jinadasa Garments,Jinadasa Garments,Sri Lanka,Ghana,Textiles,Clothing & clothing a…,Manufacturing,$3.00m,"1,500",New
+13,Jul 2005,Archer Daniels Mi…,Archer Daniels Mi…,United States,Ghana,Food and Beverages,Grains & oilseed,"Sales, Marketing & S…",* $6.70m,* 21,New
+14,Jul 2005,Keegan Resources,Keegan Resources,Canada,Ghana,Metals,Gold ore & silver ore…,Extraction,* $98.30m,"* 1,012",New
+15,Jul 2005,Newmont Mining,Newmont Mining,United States,Ghana,Metals,Other metal ore mini…,Manufacturing,* $62.00m,* 342,New

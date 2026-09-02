@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2021,Linkfire,Linkfire,Denmark,Ghana,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+2,Nov 2021,Omnium des Indu…,Ciment d'Afrique (…,Morocco,Ghana,Building materials,Cement & concrete p…,Manufacturing,* $408.10m,"* 1,000",Expansion
+3,Nov 2021,Sika,Sika,Switzerland,Ghana,Building materials,Cement & concrete p…,Manufacturing,* $54.40m,* 496,New
+4,Oct 2021,Irvine Partners,Irvine Partners,South Africa,Ghana,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+5,Oct 2021,StarTimes Media,StarTimes Media,China,Ghana,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+6,Oct 2021,United Parcel Serv…,Marken,United States,Ghana,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+7,Sep 2021,Diageo,Guinness Ghana,United Kingdom,Ghana,Food and Beverages,Breweries,Manufacturing,$23.94m,* 196,Expansion
+8,Aug 2021,ABSA,Absa Bank Ghana,South Africa,Ghana,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Aug 2021,Trafigura Beheer,Puma Energy Gha…,Netherlands,Ghana,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+10,Jul 2021,Gravita Group,Recyclers Ghana,India,Ghana,Metals,Nonferrous metal pr…,Recycling,$1.33m,* 2,Expansion
+11,Jul 2021,netuniverse,netuniverse,United States,Ghana,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+12,Jul 2021,Townsway Travels,Townsway Travels,Nigeria,Ghana,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+13,Jul 2021,Wilmar Internatio…,Wilmar Internatio…,Singapore,Ghana,Chemicals,"Soap, cleaning comp…",Manufacturing,$30.00m,220,Expansion
+14,Jun 2021,HackersEra,HackersEra,India,Ghana,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+15,Jun 2021,MainOne,MDXi,Nigeria,Ghana,Communications,Computing infrastruc…,ICT & Internet Infras…,* $141.30m,* 100,Expansion

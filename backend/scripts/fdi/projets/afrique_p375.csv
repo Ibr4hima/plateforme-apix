@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2025,Isuzu Motors,Isuzu East Africa (…,Japan,Kenya,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",$23.99m,80,Expansion
+2,Aug 2025,Marula Mining,Marula Metals Pro…,United Kingdom,Kenya,Electronic components,Batteries,Recycling,$0.59m,* 1,New
+3,Aug 2025,Meta (Facebook),Meta (Facebook),United States,Kenya,Communications,Wired telecommunic…,ICT & Internet Infras…,* $52.80m,* 100,New
+4,Jul 2025,BTS Group,BTS Group,Sweden,Kenya,Business services,Management consult…,Business Services,* $27.80m,* 41,New
+5,Jul 2025,Sechpoint,Sechpoint,UAE,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+6,Jun 2025,De Vierschaar,De Heus Internati…,Netherlands,Kenya,Food and Beverages,Animal food,Manufacturing,* $24.10m,* 162,New
+7,Jun 2025,European Bank fo…,European Bank fo…,United Kingdom,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+8,Jun 2025,FXMeridian,FXMeridian,Bulgaria,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+9,Jun 2025,Omining,Omining,UAE,Kenya,Communications,Computing infrastruc…,ICT & Internet Infras…,* $52.80m,* 100,New
+10,Jun 2025,Sharaf Group,Emirates Logistics,UAE,Kenya,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+11,Jun 2025,Sun King,Sun King,United States,Kenya,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+12,May 2025,Power & Sun,Power & Sun,UAE,Kenya,Electronic components,All other electrical e…,"Logistics, Distributio…",* $12.90m,* 39,New
+13,May 2025,Rad Group,Radware,Israel,Kenya,Software & IT services,"Software publishers,…",Technical Support Ce…,* $15.20m,* 393,New
+14,Apr 2025,Choates Family of …,Choates Family of …,United States,Kenya,Business services,Speciality trade cont…,Business Services,* $27.80m,* 41,New
+15,Apr 2025,Elaraby Group,Elaraby Group,Egypt,Kenya,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.40m,* 29,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2026,Bharti Group,Airtel Kenya,India,Kenya,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+2,Jun 2026,MC-Bauchemie,MC-Bauchemie,Germany,Kenya,Building materials,Cement & concrete p…,Manufacturing,* $211.40m,* 496,New
+3,Jun 2026,Vestige,Vestige,India,Kenya,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New
+4,May 2026,Adamant,Adamant,France,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+5,May 2026,CMA CGM,CMA CGM,France,Kenya,Transportation & Wa…,Water transportation,"Logistics, Distributio…",$820.00m,"* 3,000",Expansion
+6,May 2026,Glovo App,Glovo App,Spain,Kenya,Food and Beverages,Food & beverage ret…,Headquarters,* $27.80m,* 86,New
+7,May 2026,Hench Education,Hench Education,Nigeria,Kenya,Business services,Educational support …,Business Services,* $27.80m,* 37,New
+8,May 2026,MeTL Group,MeTL Group,Tanzania,Kenya,Food and Beverages,Soft drinks & ice,Manufacturing,$41.41m,* 663,New
+9,May 2026,Schneider Electric,Schneider Electric,France,Kenya,Electronic components,Electrical equipment,Research & Develop…,* $21.90m,* 62,New
+10,Apr 2026,Africa Finance Cor…,Africa Finance Cor…,Nigeria,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Apr 2026,Aleph Hospitality,Aleph Hospitality,UAE,Kenya,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+12,Apr 2026,ER Group,ER Group,Mauritius,Kenya,Business services,Business support ser…,Business Services,* $27.80m,* 41,New
+13,Apr 2026,Power Grid Corpor…,Power Grid Corpor…,India,Kenya,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 41,New
+14,Feb 2026,DSM-Firmenich,DSM-Firmenich,Switzerland,Kenya,Chemicals,"Paints, coatings, add…",Research & Develop…,* $14.00m,* 49,New
+15,Feb 2026,Fresh Del Monte P…,Fresh Del Monte P…,United States,Kenya,Food and Beverages,Fruits & vegetables …,Manufacturing,$4.00m,* 64,Expansion

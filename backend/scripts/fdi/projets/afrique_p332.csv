@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2019,Office Cherifien de…,Office Cherifien de…,Morocco,Ghana,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $285.70m,* 455,New
+2,Aug 2019,DTRT Apparel,Dignity DTRT,United States,Ghana,Textiles,Clothing & clothing a…,Manufacturing,* $67.90m,"* 1,375",Expansion
+3,Aug 2019,Habita Internation…,Habita Internation…,Finland,Ghana,Real estate,Real estate services,Business Services,* $1.90m,* 8,New
+4,Aug 2019,Lufthansa,time:matters,Germany,Ghana,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+5,Aug 2019,MC-Bauchemie,MC-Bauchemie Gh…,Germany,Ghana,Building materials,Cement & concrete p…,Education & Training,* $12.50m,* 131,New
+6,Aug 2019,MC-Bauchemie,MC-Bauchemie Gh…,Germany,Ghana,Building materials,Cement & concrete p…,Manufacturing,* $54.40m,* 496,New
+7,Aug 2019,MC-Bauchemie,MC-Bauchemie Gh…,Germany,Ghana,Building materials,Cement & concrete p…,Research & Develop…,* $6.70m,* 50,New
+8,Jul 2019,Bollore Group,Plantations Socfin…,France,Ghana,Food and Beverages,Grains & oilseed,Manufacturing,$20.00m,* 164,New
+9,Jul 2019,Exxon Mobil,Exxon Mobil,United States,Ghana,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,New
+10,Jul 2019,Gravita Group,Recyclers Ghana,India,Ghana,Metals,Nonferrous metal pr…,Recycling,$3.00m,* 4,New
+11,Jul 2019,Guangdong Clean …,Twyford Ghana Ce…,China,Ghana,Ceramics & glass,Clay product & refra…,Manufacturing,* $86.90m,* 844,Expansion
+12,Jul 2019,R Enthoven and S…,Hollard Insurance …,South Africa,Ghana,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+13,Jun 2019,Sirdar Group,Sirdar Group,South Africa,Ghana,Business services,Management consult…,Business Services,* $27.80m,* 38,New
+14,Jun 2019,Xin Printing Techn…,Xin Printing Techn…,China,Ghana,Business machines &…,Computer & peripher…,Maintenance & Servi…,* $2.80m,* 46,New
+15,May 2019,Tullow Oil,Tullow Oil,United Kingdom,Ghana,"Coal, oil & gas",Oil & gas extraction,Extraction,$250.00m,* 86,New

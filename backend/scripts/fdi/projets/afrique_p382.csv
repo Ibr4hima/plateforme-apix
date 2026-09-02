@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2024,Red Sky Foods,Red Sky Foods,United Kingdom,Kenya,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 19,New
+2,Jan 2024,Welcome Tomorrow,Welcome Tomorrow,South Africa,Kenya,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 41,New
+3,Dec 2023,Globaleq Generati…,Globaleq Generati…,United Kingdom,Kenya,Renewable energy,Solar electric power,Electricity,* $87.90m,* 57,Expansion
+4,Dec 2023,Human Biosciences,Human Biosciences,United States,Kenya,Biotechnology,Biological products (…,Manufacturing,* $105.60m,* 146,New
+5,Dec 2023,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Kenya,Food and Beverages,Food & beverage ret…,Retail,* $2.80m,50,New
+6,Nov 2023,AFEX,AFEX,Nigeria,Kenya,Food and Beverages,Grains & oilseed,"Logistics, Distributio…",* $22.50m,* 158,New
+7,Nov 2023,Africa Reframed,Africa Reframed,Denmark,Kenya,Software & IT services,Internet publishing …,Headquarters,* $12.20m,* 73,New
+8,Nov 2023,Bio-Logical,Bio-Logical,United Kingdom,Kenya,Renewable energy,Biomass power,Manufacturing,* $3.07bn,* 993,New
+9,Nov 2023,Export-Import Ba…,Export-Import Ba…,India,Kenya,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+10,Oct 2023,CyberSoc Africa,CyberSoc Africa,Nigeria,Kenya,Software & IT services,Computer systems d…,Headquarters,* $12.20m,* 73,New
+11,Oct 2023,HydroBox,HydroBox,Belgium,Kenya,Renewable energy,Other electric power …,Electricity,* $87.90m,* 57,New
+12,Oct 2023,Old Mutual Limited,Old Mutual Kenya,South Africa,Kenya,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Oct 2023,Septimius Security,Septimius Security,Ireland,Kenya,Business services,Other support services,Business Services,* $27.80m,* 41,New
+14,Oct 2023,TigerLogic Solutions,TigerLogic Solutions,Nigeria,Kenya,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+15,Oct 2023,Vitanova Group,Fruitbox Ltd,South Africa,Kenya,Food and Beverages,Fruits & vegetables …,"Logistics, Distributio…",$1.50m,* 4,New

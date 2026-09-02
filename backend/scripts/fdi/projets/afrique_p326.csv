@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2022,Haussmann Group,Haussmann Group,France,Ghana,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+2,Mar 2022,Paystack,Paystack,Nigeria,Ghana,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+3,Mar 2022,Sushen Medicame…,Sushen Medicame…,India,Ghana,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$50.00m,* 135,New
+4,Mar 2022,Zipline,Zipline,United States,Ghana,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+5,Mar 2022,Zipline,Zipline,United States,Ghana,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+6,Jan 2022,BFree,BFree,Nigeria,Ghana,Business services,Other support services,Business Services,* $27.80m,* 38,New
+7,Jan 2022,Elixir,Elixir,Iran,Ghana,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $2.80m,* 13,New
+8,Jan 2022,Haussmann Group,Haussmann Group,France,Ghana,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+9,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Jan 2022,Worldwide Logistics,Worldwide Logistics,United States,Ghana,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Dec 2021,Bento Africa,Bento Africa,Nigeria,Ghana,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,Dec 2021,First Klass Shippin…,First Klass Shippin…,United Kingdom,Ghana,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+13,Dec 2021,Seed Educational …,Seed Educational …,United Kingdom,Ghana,Business services,Educational support …,Business Services,* $27.80m,* 38,New
+14,Nov 2021,Evdemon & Partne…,Evdemon & Partne…,Greece,Ghana,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+15,Nov 2021,Glovo App,Glovo App,Spain,Ghana,Food and Beverages,Food & beverage ret…,"Sales, Marketing & S…",* $4.50m,* 18,New

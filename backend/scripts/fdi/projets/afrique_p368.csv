@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2019,Porcelanosa,Porcelanosa,Spain,Guinea,Ceramics & glass,Clay product & refra…,Retail,* $9.50m,* 118,New
+2,Dec 2018,Xinjiang Joinworld,Xinjiang Joinworld,China,Guinea,Metals,Alumina & aluminiu…,Manufacturing,* $147.40m,* 443,New
+3,Nov 2018,China Henan Inter…,Henan Internation…,China,Guinea,Metals,Other metal ore mini…,Extraction,$700.00m,"* 1,044",New
+4,Oct 2018,Radisson Hospitali…,Radisson Hospitali…,Belgium,Guinea,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+5,Sep 2018,DERA Energy,DERA Energy,Canada,Guinea,Renewable energy,Hydroelectric power,"Sales, Marketing & S…",* $2.10m,3,New
+6,May 2018,Tebian Electric Ap…,Tebian Electric Ap…,China,Guinea,Metals,Alumina & aluminiu…,Manufacturing,* $580.00m,"* 3,000",New
+7,May 2018,Tebian Electric Ap…,Tebian Electric Ap…,China,Guinea,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $580.00m,* 39,New
+8,May 2018,Tebian Electric Ap…,Tebian Electric Ap…,China,Guinea,Metals,Other metal ore mini…,Extraction,* $1.16bn,"* 1,730",New
+9,May 2018,Tebian Electric Ap…,Tebian Electric Ap…,China,Guinea,Metals,Other metal ore mini…,"Logistics, Distributio…",* $580.00m,"* 1,756",New
+10,Aug 2017,Aluminum Corpor…,Aluminum Corpor…,China,Guinea,Metals,Other metal ore mini…,Extraction,$500.00m,* 746,New
+11,Mar 2017,Regourd Aviation,Regourd Aviation,France,Guinea,Aerospace,Aircraft,"Sales, Marketing & S…",* $5.80m,* 18,New
+12,Mar 2017,Tunisair,Tunisair,Tunisia,Guinea,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Feb 2017,African Developm…,African Developm…,Côte d'Ivoire,Guinea,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Feb 2017,Akwa Group,Akwa Group,Morocco,Guinea,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $7.80m,* 30,New
+15,Oct 2016,Mubadala Develop…,Emirates Global Al…,UAE,Guinea,Metals,Alumina & aluminiu…,"Logistics, Distributio…",* $14.00m,* 28,New

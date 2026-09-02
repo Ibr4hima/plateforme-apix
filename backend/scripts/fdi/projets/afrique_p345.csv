@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2014,Clinix Healthcare,Clinix Healthcare,Kenya,Ghana,Healthcare,Outpatient care cent…,Business Services,* $2.70m,* 39,New
+2,Apr 2014,Merck KGaA,Merck KGaA,Germany,Ghana,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+3,Apr 2014,Nippon Telegraph …,Dimension Data H…,Japan,Ghana,Software & IT services,Computer facilities …,"Sales, Marketing & S…",* $7.50m,37,New
+4,Apr 2014,Remgro,Distell Group,South Africa,Ghana,Food and Beverages,Distilleries,Manufacturing,* $31.10m,* 344,New
+5,Apr 2014,The Emirates Group,The Emirates Group,UAE,Ghana,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,Expansion
+6,Mar 2014,BG International,BG International,United States,Ghana,Real estate,Commercial & institu…,Construction,$80.00m,* 120,New
+7,Mar 2014,Douja Promotion …,Douja Promotion …,Morocco,Ghana,Real estate,Residential building …,Construction,$54.93m,* 82,New
+8,Mar 2014,Douja Promotion …,Ciment d'Afrique (…,Morocco,Ghana,Building materials,Cement & concrete p…,Manufacturing,$82.40m,* 202,New
+9,Mar 2014,James Fisher and …,Fendercare Marine,United Kingdom,Ghana,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 11,New
+10,Mar 2014,Samsung Group,Samsung Electron…,South Korea,Ghana,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+11,Mar 2014,Shoprite,Shoprite,South Africa,Ghana,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+12,Feb 2014,Robert Bosch,Bosch,Germany,Ghana,Automotive compon…,Motor vehicle electri…,"Sales, Marketing & S…",* $1.80m,* 18,New
+13,Jan 2014,Guangzhou Sunda…,Guangzhou Sunda…,China,Ghana,Chemicals,"Soap, cleaning comp…",Manufacturing,* $285.70m,* 455,New
+14,Jan 2014,Guangzhou Sunda…,Guangzhou Sunda…,China,Ghana,Real estate,Residential building …,Construction,* $704.50m,* 578,New
+15,Jan 2014,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,Wireless telecommu…,ICT & Internet Infras…,* $141.30m,* 100,New
