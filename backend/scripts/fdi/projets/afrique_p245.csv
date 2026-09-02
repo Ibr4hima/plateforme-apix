@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2012,TP-Link Technolog…,TP-Link Technolog…,China,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,Feb 2012,Avaya,Avaya,United States,Egypt,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Feb 2012,Iran Garment,Iran Garment,Iran,Egypt,Automotive OEM,Automobiles,Manufacturing,* $750.00m,"* 1,500",New
+4,Feb 2012,Iran Garment,Iran Garment,Iran,Egypt,Industrial equipment,"Boiler, tank, & shippi…",Manufacturing,* $750.00m,"* 1,500",New
+5,Feb 2012,National Bank of …,National Bank of …,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Feb 2012,TotalEnergies (Tot…,Bostik,France,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $395.10m,* 149,New
+7,Jan 2012,Al Khaleej Develo…,Takhzeen,Bahrain,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+8,Jan 2012,Castleplus (John …,Castleplus (John …,United Kingdom,Egypt,Real estate,Rental & leasing ser…,Business Services,* $35.90m,* 20,New
+9,Jan 2012,Dallah Al-Baraka …,Albaraka Bank Eg…,Saudi Arabia,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Jan 2012,Kirloskar Brothers…,Kirloskar Brothers…,India,Egypt,Industrial equipment,General purpose ma…,Manufacturing,* $48.20m,* 401,New
+11,Jan 2012,New Hope Group (…,New Hope Group (…,China,Egypt,Food and Beverages,Animal food,Manufacturing,* $45.70m,* 429,New
+12,Jan 2012,Samsung Group,Samsung Group,South Korea,Egypt,Consumer electronics,Audio & video equip…,Manufacturing,$257.00m,"1,400",New
+13,Dec 2011,Alshaya,MH Alshaya Co (Al…,Kuwait,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+14,Dec 2011,Baalbaki Group,Baalbaki Group,Syria,Egypt,Plastics,"Urethane, foam prod…",Manufacturing,* $141.30m,* 107,Expansion
+15,Dec 2011,Sutherland Global…,Sutherland Global…,United States,Egypt,Business services,Business support ser…,Business Services,* $6.80m,* 15,Expansion

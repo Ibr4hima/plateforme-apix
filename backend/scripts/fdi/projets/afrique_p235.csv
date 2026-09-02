@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2014,Barclays Bank,Attijariwafa Bank …,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Sep 2014,Barclays Bank,Attijariwafa Bank …,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Sep 2014,Grupo Comdifil,Grupo Comdifil,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Sep 2014,Intesa Sanpaolo,Bank of Alexandri…,Italy,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Sep 2014,Mortimer Harvey,Mortimer Harvey,South Africa,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+6,Aug 2014,Dongbu Group,Daewoo Electronics,South Korea,Egypt,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.40m,* 29,New
+7,Aug 2014,LG Corp,Hi-Logistics,South Korea,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+8,Aug 2014,RWE,Suez Oil Company,Germany,Egypt,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $922.30m,* 213,New
+9,Aug 2014,Savola,HyperPanda,Saudi Arabia,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+10,Jul 2014,Mac Optic,Mac Optic,Greece,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,$5.20bn,"* 3,000",New
+11,Jul 2014,Mac Optic,Mac Optic,Greece,Egypt,"Coal, oil & gas",Petroleum refineries,Manufacturing,$4.80bn,* 882,New
+12,Jun 2014,Almarai,Beyti,Saudi Arabia,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,* $51.60m,* 225,New
+13,Jun 2014,Aramex Internatio…,Aramex Internatio…,UAE,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+14,Jun 2014,Coca-Cola,Coca-Cola,United States,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,* $51.60m,* 225,Expansion
+15,Jun 2014,Coca-Cola,Coca-Cola,United States,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,* $261.70m,* 525,Expansion

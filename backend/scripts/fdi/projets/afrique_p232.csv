@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2015,Building Energy,Building Energy,Italy,Egypt,Renewable energy,Solar electric power,Electricity,$200.00m,75,New
+2,Jun 2015,Dallah Al-Baraka …,Albaraka Banking …,Saudi Arabia,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Jun 2015,Mahindra Group,Mahindra & Mahin…,India,Egypt,Automotive OEM,Light trucks & utility …,"Sales, Marketing & S…",* $9.70m,* 26,New
+4,Jun 2015,Mainstream Rene…,Lekela Power,Ireland,Egypt,Renewable energy,Wind electric power,Electricity,* $443.00m,* 57,New
+5,Jun 2015,Mainstream Rene…,Lekela Power,Ireland,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+6,Jun 2015,Nissan,Nissan Motor,Japan,Egypt,Automotive OEM,Automobiles,Manufacturing,* $81.00m,* 942,Expansion
+7,Jun 2015,Spinneys,Spinneys,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $6.60m,120,New
+8,May 2015,Al Ghurair Group,Gulf Extrusions,UAE,Egypt,Metals,Alumina & aluminiu…,"Sales, Marketing & S…",* $1.90m,* 8,New
+9,May 2015,Dupre Investments,Logistics Plus,United States,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+10,May 2015,Dupre Investments,Logistics Plus,United States,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,May 2015,Dupre Investments,Logistics Plus,United States,Egypt,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,May 2015,Electrolux,Electrolux Egypt,Sweden,Egypt,Consumer electronics,Household appliances,Manufacturing,* $27.90m,400,New
+13,May 2015,Minsk Tractor Works,Minsk Tractor Works,Belarus,Egypt,Industrial equipment,"Agriculture, construc…",Manufacturing,* $71.80m,* 219,New
+14,May 2015,Spinneys,Spinneys,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New
+15,May 2015,Unilever,Unilever,United Kingdom,Egypt,Consumer products,Other (Consumer pr…,Manufacturing,* $20.10m,* 969,Expansion

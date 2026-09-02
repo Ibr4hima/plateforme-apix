@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2014,TENDER,Prospectiuni,Romania,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+2,Mar 2014,Alshaya,Alshaya,Kuwait,Egypt,Textiles,Clothing & clothing a…,Retail,* $124.20m,"1,000",New
+3,Mar 2014,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Real estate,Commercial & institu…,Construction,* $405.73m,* 606,New
+4,Mar 2014,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $23.18m,* 420,New
+5,Mar 2014,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Real estate,Commercial & institu…,Construction,$685.26m,"* 1,024",New
+6,Mar 2014,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Real estate,Commercial & institu…,Construction,* $405.73m,* 606,New
+7,Mar 2014,Majid Al Futtaim G…,Majid Al Futtaim C…,UAE,Egypt,Leisure & entertainm…,"Performing arts, spe…",Retail,* $29.30m,* 58,New
+8,Mar 2014,Samsung Group,Samsung Electron…,South Korea,Egypt,Consumer electronics,Other (Consumer ele…,Research & Develop…,* $26.40m,* 150,New
+9,Mar 2014,Samsung Group,Samsung Electron…,South Korea,Egypt,Consumer electronics,Household appliances,Manufacturing,* $69.00m,"* 1,020",Expansion
+10,Mar 2014,SEA-ME-WE 5,SEA-ME-WE 5,Singapore,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,Expansion
+11,Mar 2014,SHV Holdings,Mammoet,Netherlands,Egypt,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+12,Mar 2014,TIME Hotels Mana…,TIME Hotels Mana…,UAE,Egypt,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+13,Feb 2014,Al-Raya United,Al-Raya United,Kuwait,Egypt,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+14,Feb 2014,Aujan Industries,Aujan Coca-Cola …,Saudi Arabia,Egypt,Food and Beverages,Soft drinks & ice,Manufacturing,$100.00m,* 755,New
+15,Feb 2014,Breitbart News Ne…,Breitbart News Ne…,United States,Egypt,Software & IT services,Internet publishing …,Business Services,* $5.90m,* 275,New

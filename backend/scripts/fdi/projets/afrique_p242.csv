@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2012,Islamic P&I Club,Islamic P&I Club,UAE,Egypt,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Nov 2012,Technische Univer…,Technische Univer…,Germany,Egypt,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 37,New
+3,Nov 2012,Travelstart,Travelstart,South Africa,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+4,Nov 2012,WPP,Kantar Millward Br…,United Kingdom,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 37,New
+5,Oct 2012,Al Hokair,Al Hokair,Saudi Arabia,Egypt,Leisure & entertainm…,Other amusement & …,Construction,* $179.10m,* 429,New
+6,Oct 2012,Al Hokair,Al Hokair,Saudi Arabia,Egypt,Leisure & entertainm…,Other amusement & …,Construction,* $179.10m,* 429,New
+7,Oct 2012,Emaar Properties,Emaar Properties,UAE,Egypt,Real estate,Commercial & institu…,Construction,* $1.24bn,* 578,New
+8,Oct 2012,Emaar Properties,Emaar Properties,UAE,Egypt,Real estate,Commercial & institu…,Construction,$820.00m,"* 1,226",New
+9,Oct 2012,Jumia,Jumia,Nigeria,Egypt,Consumer products,General merchandis…,"Logistics, Distributio…",* $56.60m,* 415,New
+10,Oct 2012,PSG,PSG,Czech Republic,Egypt,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 37,New
+11,Oct 2012,Technical Universi…,Technical Universi…,Germany,Egypt,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+12,Sep 2012,Azadea Group,Azadea Group,Lebanon,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+13,Sep 2012,BP (British Petrole…,BP Egypt,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $349.80m,* 230,New
+14,Sep 2012,Daud Group,Daud Arabian,Oman,Egypt,Food and Beverages,Bakeries & tortillas,Retail,* $92.80m,* 107,New
+15,Sep 2012,Euronews,Euronews,France,Egypt,Communications,Radio & TV broadcas…,Business Services,* $5.20m,* 20,New

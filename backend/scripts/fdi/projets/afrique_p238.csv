@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2014,Centamin,Centamin,United Kingdom,Egypt,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,Expansion
+2,Feb 2014,Dana Gas,Dana Gas,UAE,Egypt,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $922.30m,* 213,Expansion
+3,Jan 2014,Fawaz Alhokair Gr…,Fawaz Alhokair Gr…,Saudi Arabia,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Dec 2013,Landmark Group,Emax Electronics,UAE,Egypt,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+5,Dec 2013,Saudi Dar Al-Ma'ali,Saudi Dar Al-Ma'ali,Saudi Arabia,Egypt,Real estate,Residential building …,Construction,$196.50m,* 294,New
+6,Nov 2013,Elif Plastik,Elif Plastik,Turkey,Egypt,Plastics,Plastics packaging m…,Manufacturing,$35.50m,* 370,New
+7,Nov 2013,KDDI,CDNetworks,Japan,Egypt,Communications,Computing infrastruc…,ICT & Internet Infras…,* $275.70m,* 100,New
+8,Nov 2013,Level 3 Communic…,Level 3 Communic…,United States,Egypt,Communications,Wired telecommunic…,ICT & Internet Infras…,* $275.70m,* 100,New
+9,Oct 2013,Avaline Holding,Avaline Holding,UAE,Egypt,Food and Beverages,Soft drinks & ice,"Sales, Marketing & S…",* $4.50m,* 18,New
+10,Oct 2013,Dial An Exchange,Dial An Exchange,Australia,Egypt,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+11,Oct 2013,OnePoint Global,OnePoint Global,United Kingdom,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+12,Oct 2013,Samsung Group,Samsung Electron…,South Korea,Egypt,Consumer electronics,Audio & video equip…,Retail,* $9.20m,* 78,New
+13,Sep 2013,DeFacto Perakend…,DeFacto Perakend…,Turkey,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+14,Sep 2013,Impala SAS,Neoen,France,Egypt,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+15,Sep 2013,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $92.80m,* 107,New

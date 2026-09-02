@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2015,Hyflux,Hyflux,Singapore,Egypt,Business services,"Water, sewage & oth…",Recycling,* $155.90m,* 42,New
+2,Aug 2015,Sagaci Research,Sagaci Research,Kenya,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+3,Jul 2015,Action to Action (…,Action to Action (…,UAE,Egypt,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 37,New
+4,Jul 2015,Electricite de Fran…,Edison,France,Egypt,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$109.07m,* 7,New
+5,Jul 2015,Henkel,Henkel,Germany,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $25.54m,* 373,New
+6,Jul 2015,Henkel,Henkel,Germany,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $12.81m,* 187,Expansion
+7,Jul 2015,Henkel,Henkel,Germany,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $20.10m,* 969,Expansion
+8,Jul 2015,Henkel,Henkel,Germany,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $20.10m,* 969,Expansion
+9,Jul 2015,Middle East Pharm…,Middle East Pharm…,Saudi Arabia,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$102.17m,* 660,New
+10,Jul 2015,Tory Burch,Tory Burch,United States,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Jun 2015,Access Power MEA,Access Infra Africa,UAE,Egypt,Renewable energy,Solar electric power,Electricity,* $113.04m,* 35,New
+12,Jun 2015,Access Power MEA,Access Infra Africa,UAE,Egypt,Renewable energy,Solar electric power,Electricity,* $86.96m,* 27,New
+13,Jun 2015,Ahli United Bank,Ahli United Bank (…,Bahrain,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Jun 2015,Bank Audi sal-Aud…,Bank Audi sal-Aud…,Lebanon,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Jun 2015,Building Energy,Building Energy,Italy,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New

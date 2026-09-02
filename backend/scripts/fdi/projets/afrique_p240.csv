@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2013,HSBC Holdings,HSBC Egypt,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Apr 2013,HSBC Holdings,HSBC Egypt,United Kingdom,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,Expansion
+3,Apr 2013,Quietvox,Quietvox,Switzerland,Egypt,Consumer electronics,Audio & video equip…,"Sales, Marketing & S…",* $3.40m,* 29,New
+4,Apr 2013,Viking SeaTech,Viking SeaTech,United Kingdom,Egypt,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New
+5,Apr 2013,Vodafone Group,Vodafone Egypt,United Kingdom,Egypt,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+6,Mar 2013,Dallah Al-Baraka …,Albaraka Bank Eg…,Saudi Arabia,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Mar 2013,Dana Gas,Dana Gas,UAE,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $349.80m,* 230,New
+8,Mar 2013,Dolphin Dynamics,Dolphin Dynamics,United Kingdom,Egypt,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 199,New
+9,Mar 2013,Eroglu Holding,Eroglu Holding,Turkey,Egypt,Textiles,Clothing & clothing a…,Manufacturing,$500.00m,"1,500",New
+10,Mar 2013,propertyfinder.ae,propertyfinder.ae,UAE,Egypt,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 44,New
+11,Feb 2013,Eni SpA,Eni SpA,Italy,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $349.80m,* 230,New
+12,Feb 2013,Integr8,Integr8,United Kingdom,Egypt,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+13,Feb 2013,Partners & Partner…,Qatar Heart Labor…,Qatar,Egypt,Healthcare,Outpatient care cent…,Research & Develop…,* $10.60m,* 82,New
+14,Jan 2013,Aramex Internatio…,Aramex Internatio…,UAE,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $156.20m,* 111,New
+15,Jan 2013,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

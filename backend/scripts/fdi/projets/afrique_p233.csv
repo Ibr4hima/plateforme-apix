@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2015,BinHendi Enterpri…,BinHendi Enterpri…,UAE,Egypt,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,Apr 2015,Dubai World,DP World,UAE,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $156.20m,* 111,New
+3,Apr 2015,Islamic Developm…,Islamic Developm…,Saudi Arabia,Egypt,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Mar 2015,Apache,Khalda Petroleum,United States,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$35.00m,* 12,Expansion
+5,Mar 2015,Enap,Enap,Chile,Egypt,Transportation & Wa…,Pipeline transportation of crude oil,"Logistics, Distributio…",$30.00m,* 133,New
+6,Mar 2015,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,Egypt,Industrial equipment,All other industrial m…,Manufacturing,$200.00m,500,New
+7,Mar 2015,Shapoorji Pallonji …,Shapoorji Pallonji …,India,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+8,Mar 2015,Siemens,Siemens,Germany,Egypt,Engines & turbines,Engines & Turbines,Manufacturing,* $55.90m,* 215,New
+9,Mar 2015,SkyPower,SkyPower,Canada,Egypt,Electronic components,All other electrical e…,Manufacturing,* $86.00m,* 326,New
+10,Mar 2015,SkyPower,SkyPower,Canada,Egypt,Renewable energy,Solar electric power,Electricity,* $443.00m,* 57,New
+11,Feb 2015,International Busi…,International Busi…,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$3.00m,* 15,New
+12,Feb 2015,International Busi…,International Busi…,United States,Egypt,Software & IT services,Custom computer pr…,Business Services,* $64.50m,800,Expansion
+13,Feb 2015,Terra Sola,Terra Sola,Bahrain,Egypt,Renewable energy,Solar electric power,Electricity,$3.50bn,"* 1,085",New
+14,Jan 2015,Ahli United Bank,Ahli United Bank (…,Bahrain,Egypt,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Jan 2015,Essel Group,EPL (Essel Propack),India,Egypt,Plastics,Plastics packaging m…,Manufacturing,* $140.80m,* 229,Expansion
