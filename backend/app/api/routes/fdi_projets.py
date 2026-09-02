@@ -379,8 +379,20 @@ async def referentiels(db: AsyncSession = Depends(get_db)):
     Tout tient en cinq cents lignes ; on les envoie d'un coup plutôt que de
     faire une requête par frappe.
     """
+    from app.services.fdi_projets import libelles_pays_en
+
     async def q(sql: str) -> list:
         return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
+
+    # ref_pays ne porte pas de nom anglais, et n'a pas à en porter : la graphie
+    # de la source vit dans fdi_pays.csv, à côté de son motif. On rapproche donc
+    # ici par le code ISO. Un pays que la correspondance ignore n'est pas
+    # proposé — le proposer reviendrait à le faire refuser à l'enregistrement.
+    en = libelles_pays_en()
+    pays = [{"id": p["id"], "fr": p["fr"], "en": en[p["code"]]}
+            for p in await q("SELECT id, nom_fr AS fr, code_iso3 AS code FROM ref_pays "
+                             " WHERE code_iso3 IS NOT NULL ORDER BY nom_fr")
+            if p["code"] in en]
 
     return {
         "types": await q(
@@ -392,11 +404,7 @@ async def referentiels(db: AsyncSession = Depends(get_db)):
             "FROM fdi_sous_secteurs ORDER BY libelle_en"),
         "activites": await q(
             "SELECT id, libelle_en AS en, libelle_fr AS fr FROM fdi_activites ORDER BY libelle_en"),
-        # Un pays sans nom anglais ne serait pas rapprochable par l'analyseur :
-        # on ne le propose pas plutôt que de le proposer et le refuser ensuite.
-        "pays": await q(
-            "SELECT id, nom_en AS en, nom_fr AS fr FROM ref_pays "
-            " WHERE coalesce(nom_en, '') <> '' ORDER BY nom_fr"),
+        "pays": pays,
     }
 
 

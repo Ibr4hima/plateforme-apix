@@ -213,6 +213,31 @@ def lire_pays_csv() -> dict[str, str]:
     return table
 
 
+def libelles_pays_en() -> dict[str, str]:
+    """Code ISO → le nom ANGLAIS sous lequel proposer le pays à la saisie.
+
+    Le référentiel ref_pays ne porte que le nom français ; l'anglais vit ici,
+    dans la correspondance, et c'est très bien ainsi — un nom anglais en base
+    serait une seconde autorité sur la graphie de la source, à tenir d'accord
+    avec celle-ci sans que rien ne le garantisse. On lit donc le même fichier
+    que l'import, ce qui donne au formulaire de saisie une propriété qu'aucune
+    colonne ne lui donnerait : tout libellé qu'il propose est, par
+    construction, un libellé que l'analyseur sait rapprocher.
+
+    Quand la source écrit un pays de plusieurs façons — « Macao » et « Macau »,
+    « Turkey » et « Türkiye » — on retient la PREMIÈRE du fichier. Le fichier
+    est rangé par nom français et versionné : le choix est stable, et il se
+    change en déplaçant une ligne, sous revue.
+    """
+    if not FICHIER_PAYS.exists():
+        raise LigneInvalide(f"{FICHIER_PAYS.name} est introuvable")
+    noms: dict[str, str] = {}
+    with FICHIER_PAYS.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            noms.setdefault(l["code_iso3"], l["libelle_en"])
+    return noms
+
+
 FICHIER_ALIAS_ENTREPRISES = DOSSIER_PROJETS.parent / "fdi_entreprises_alias.csv"
 
 

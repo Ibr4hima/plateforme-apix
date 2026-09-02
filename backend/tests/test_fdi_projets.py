@@ -537,3 +537,25 @@ def test_un_verrou_ne_porte_que_sur_une_colonne_connue():
     with pytest.raises(ValueError):
         _garde_si("x; DROP TABLE fdi_projets")
     assert "description_en" not in CHAMPS_MODIFIABLES  # la description a sa propre route
+
+
+def test_tout_pays_proposable_est_un_pays_que_l_analyseur_sait_relire():
+    """Le formulaire de saisie propose les pays sous leur nom ANGLAIS, et c'est
+    ce nom qui repart au serveur pour y être rapproché.
+
+    L'invariant tient tout entier au fait que les deux viennent du MÊME fichier :
+    proposer une graphie que la correspondance ignore reviendrait à faire choisir
+    à l'utilisateur un pays que l'enregistrement refuserait ensuite. Une première
+    version tirait ces noms d'une colonne ref_pays.nom_en qui n'existe pas en
+    production — deux autorités sur la graphie de la source valent moins qu'une.
+    """
+    from app.services.fdi_projets import libelles_pays_en, lire_pays_csv, normaliser
+    correspondance = lire_pays_csv()
+    noms = libelles_pays_en()
+    assert noms, "aucun pays proposable"
+    for code, libelle in noms.items():
+        assert correspondance.get(normaliser(libelle)) == code, (
+            f"« {libelle} » est proposé pour {code} mais l'analyseur ne le rapproche pas")
+    # Tout code visé par la correspondance est proposable : sans quoi un pays du
+    # relevé n'aurait pas de case dans le formulaire.
+    assert set(correspondance.values()) == set(noms)
