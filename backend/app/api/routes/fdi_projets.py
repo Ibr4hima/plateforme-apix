@@ -268,19 +268,45 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
         if cible:
             entreprise_id = cible.id
         else:
-            # On renomme l'entreprise créée à l'import plutôt que d'en créer une
-            # seconde : les projets déjà rattachés suivent sans rien à recoller.
             actuelle = (await db.execute(text(
                 "SELECT entreprise_id FROM fdi_projets WHERE entreprise_brut = :b "
                 "AND entreprise_id IS NOT NULL LIMIT 1"), {"b": brut})).first()
             if not actuelle:
                 raise HTTPException(404, "Aucun projet ne porte ce libellé.")
-            entreprise_id = actuelle.entreprise_id
-            await db.execute(text(
-                "UPDATE fdi_entreprises SET nom = :n, nom_normalise = :c, statut_nom = 'complet', "
-                "  modifie_le = :d, modifie_par = :u WHERE id = :i"),
-                {"n": nom, "c": normaliser(nom), "d": datetime.now(timezone.utc),
-                 "u": signataire, "i": entreprise_id})
+
+            # Renommer l'entreprise déjà rattachée épargne de recoller les
+            # projets — mais ce n'est légitime que si ce libellé est le SEUL à
+            # la porter. Le rapprochement par préfixe range sous une même
+            # entreprise le libellé complet et ses formes tronquées : « Atti…
+            # Bank » et « Atti… Bank … » partagent un rang. Renommer alors ce
+            # rang en « Attijariwafa Bank Egypt » emporterait les projets du
+            # libellé complet, qui eux ne parlent pas d'Égypte, et l'écran
+            # afficherait un nom que la source n'a jamais écrit en face d'eux.
+            partagee = (await db.execute(text(
+                "SELECT 1 FROM fdi_projets "
+                " WHERE (entreprise_id = :i AND entreprise_brut IS DISTINCT FROM :b) "
+                "    OR (parent_id = :i     AND parent_brut     IS DISTINCT FROM :b) "
+                " UNION ALL "
+                "SELECT 1 FROM fdi_entreprise_alias "
+                " WHERE entreprise_id = :i AND alias_normalise <> :c "
+                " LIMIT 1"),
+                {"i": actuelle.entreprise_id, "b": brut, "c": cle})).first()
+
+            if not partagee:
+                entreprise_id = actuelle.entreprise_id
+                await db.execute(text(
+                    "UPDATE fdi_entreprises SET nom = :n, nom_normalise = :c, statut_nom = 'complet', "
+                    "  modifie_le = :d, modifie_par = :u WHERE id = :i"),
+                    {"n": nom, "c": normaliser(nom), "d": datetime.now(timezone.utc),
+                     "u": signataire, "i": entreprise_id})
+            else:
+                # L'entreprise est partagée : on en ouvre une seconde, et seuls
+                # les projets de CE libellé la rejoindront, plus bas.
+                entreprise_id = (await db.execute(text(
+                    "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
+                    "VALUES (:n, :c, 'complet', :d, :u) RETURNING id"),
+                    {"n": nom, "c": normaliser(nom), "d": datetime.now(timezone.utc),
+                     "u": signataire})).scalar_one()
     elif body.mode == "rattacher":
         if not body.entreprise_id:
             raise HTTPException(400, "Aucune entreprise choisie.")

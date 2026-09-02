@@ -128,9 +128,14 @@ const CASES: { cle: keyof LigneBrute; l: string; aide?: string; large?: boolean 
   { cle: "emplois",      l: "Emplois",      aide: "* 1 012" },
 ];
 
-function FormulaireLigne({ valeurs, titre, sousTitre, verrous, onFermer, onEnvoyer }: {
+function FormulaireLigne({ valeurs, titre, sousTitre, verrous, notes, onFermer, onEnvoyer }: {
   valeurs: LigneBrute; titre: string; sousTitre?: React.ReactNode;
-  verrous?: string[]; onFermer: () => void;
+  verrous?: string[];
+  // Ce que la case ne dit pas d'elle-même : le nom arbitré derrière un libellé
+  // tronqué, par exemple. Le formulaire montre le RELEVÉ, le tableau montre le
+  // référentiel ; quand les deux divergent, il faut le dire ici.
+  notes?: Partial<Record<keyof LigneBrute, React.ReactNode>>;
+  onFermer: () => void;
   onEnvoyer: (v: LigneBrute) => Promise<string[] | null>;
 }) {
   const [v, setV] = useState<LigneBrute>(valeurs);
@@ -211,6 +216,10 @@ function FormulaireLigne({ valeurs, titre, sousTitre, verrous, onFermer, onEnvoy
                   onKeyDown={e => { if (e.key === "Enter" && !envoi) envoyer(); }}
                   style={IS}
                 />
+                {notes?.[c.cle] && (
+                  <span style={{ display: "block", fontSize: 11.5, color: "var(--gris)",
+                    lineHeight: 1.5, marginTop: 5 }}>{notes[c.cle]}</span>
+                )}
               </label>
             );
           })}
@@ -508,6 +517,14 @@ function VueProjets({ projets, recherche, onFait }: {
             type: edite.brut.type ?? "", capex: edite.brut.capex, emplois: edite.brut.emplois,
           }}
           verrous={edite === "nouveau" ? [] : edite.champs_verrouilles}
+          // Le tableau affiche le nom ARBITRÉ, le formulaire le libellé que fDi
+          // a écrit : « Attijariwafa Bank … » d'un côté, « Attijariwafa Bank
+          // Egypt » de l'autre. Sans ce rappel, l'écart passe pour une erreur.
+          notes={edite === "nouveau" || !edite.entreprise
+            || edite.entreprise === (edite.brut.entreprise ?? "") ? undefined : {
+            entreprise: <>Rattachée à <strong style={{ color: "var(--gris-fort)" }}>{edite.entreprise}</strong>,
+              le nom que le tableau affiche. Ce champ-ci porte le libellé du relevé.</>,
+          }}
           onFermer={() => setEdite(null)}
           onEnvoyer={async (v) => {
             const nouveau = edite === "nouveau";
