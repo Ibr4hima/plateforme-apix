@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2009,Abu Dhabi Islamic…,National Bank for …,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Nov 2009,Arab Bank,Arab Bank,Jordan,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Nov 2009,Brilliance China A…,Brilliance China A…,Hong Kong,Egypt,Automotive OEM,Automobiles,Manufacturing,$75.00m,* 604,New
+4,Nov 2009,Dalton Maag,Dalton Maag,United Kingdom,Egypt,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+5,Nov 2009,Huawei Technologi…,Huawei Technologi…,China,Egypt,Communications,Communications equ…,Education & Training,* $7.00m,* 94,Expansion
+6,Nov 2009,Majid Al Futtaim G…,Majid Al Futtaim G…,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+7,Nov 2009,Savola,Savola,Saudi Arabia,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$32.08m,* 210,New
+8,Oct 2009,Borges,Borges,Spain,Egypt,Food and Beverages,Grains & oilseed,Manufacturing,* $45.70m,* 429,New
+9,Oct 2009,Cadbury,Cadbury Egypt,United Kingdom,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,$11.52m,* 75,Expansion
+10,Oct 2009,Ceconomy (Metro),Metro Cash & Carry,Germany,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+11,Oct 2009,ClinTec Internatio…,ClinTec Internatio…,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $4.20m,* 40,New
+12,Oct 2009,Polskie Gornictwo …,Polskie Gornictwo …,Poland,Egypt,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+13,Sep 2009,Air Arabia,Air Arabia,UAE,Egypt,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+14,Sep 2009,Crescent Group,Dana Gas,UAE,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,Expansion
+15,Sep 2009,Dell EMC (EMC Co…,Dell EMC (EMC Co…,United States,Egypt,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
