@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2004,Tech Access,Tech Access,UAE,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+2,Mar 2004,AvtoVAZ (Volga A…,Lada Egypt,Russia,Egypt,Automotive OEM,Automobiles,Manufacturing,* $51.70m,* 864,New
+3,Mar 2004,Lyrtech,Lyrtech,Canada,Egypt,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,Feb 2004,Bahrain Telecomm…,Bahrain Telecomm…,Bahrain,Egypt,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Feb 2004,Canon,Canon,Japan,Egypt,Business machines &…,Computer & peripher…,Manufacturing,$1.60m,* 10,New
+6,Jan 2004,Ball,Ball Packaging Eur…,United States,Egypt,Metals,Alumina & aluminiu…,Manufacturing,$49.00m,* 432,New
+7,Nov 2003,Bayerische Motore…,Bayerische Motore…,Germany,Egypt,Automotive OEM,Automobiles,Manufacturing,$60.00m,* 483,New
+8,Nov 2003,Phoenix Acquisitio…,Chesterton,United Kingdom,Egypt,Real estate,Real estate services,Business Services,* $35.90m,* 20,New
+9,Nov 2003,Thai Carbon Black,Thai Carbon Black,Thailand,Egypt,Plastics,Artificial & synthetic …,Manufacturing,$13.00m,* 111,New
+10,Oct 2003,Aditya Birla,Aditya Birla,India,Egypt,Plastics,Artificial & synthetic …,Manufacturing,* $96.00m,"1,000",New
+11,Oct 2003,BNP Paribas,BNP Paribas Le Ca…,France,Egypt,Financial services,Retail banking,Business Services,* $9.50m,* 22,New
+12,Oct 2003,Diamond,Diamond,Switzerland,Egypt,Electronic components,Communication & en…,Manufacturing,* $17.30m,* 266,New
+13,Oct 2003,GAZ,GAZ,Russia,Egypt,Automotive OEM,Automobiles,Manufacturing,* $45.90m,"* 1,044",New
+14,Oct 2003,Ingosstrakh,Ingosstrakh,Russia,Egypt,Financial services,Insurance,Customer Contact C…,* $9.00m,* 227,New
+15,Oct 2003,Norsk Hydro,Hydro Agri,Norway,Egypt,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $395.10m,* 149,New

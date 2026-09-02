@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2005,InterContinental H…,InterContinental H…,United Kingdom,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+2,Dec 2004,Abdul Ghani Huss…,Abdul Ghani Huss…,Saudi Arabia,Egypt,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+3,Dec 2004,Alcoa,Alcoa Closure Syst…,United States,Egypt,Plastics,Plastics packaging m…,Manufacturing,* $141.30m,* 107,New
+4,Dec 2004,Eni SpA,SEGAS,Italy,Egypt,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$1.90m,270,New
+5,Dec 2004,Four Seasons Hot…,Four Seasons Hot…,Canada,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Dec 2004,Magnesium Intern…,Egyptian Magnesi…,Australia,Egypt,Metals,Nonferrous metal pr…,Manufacturing,* $178.90m,* 342,New
+7,Nov 2004,Al Yousuf,Al Yousuf Distribut…,UAE,Egypt,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.30m,* 118,New
+8,Nov 2004,Aramex Internatio…,Aramex Internatio…,UAE,Egypt,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+9,Nov 2004,Legrand,Legrand,France,Egypt,Electronic components,Electrical equipment,Retail,* $11.60m,* 148,New
+10,Nov 2004,Methanex,Methanex,Canada,Egypt,Chemicals,Basic chemicals,Manufacturing,* $395.10m,* 149,New
+11,Nov 2004,Rank Group,Hard Rock Cafe In…,United Kingdom,Egypt,Food and Beverages,Food services,Retail,* $268.00m,* 177,New
+12,Nov 2004,Sonesta,Sonesta Beach Re…,United States,Egypt,Hotels & tourism,Accommodation,Retail,* $11.60m,* 148,New
+13,Oct 2004,Paradigm Ltd,Paradigm Ltd,Cayman Islands,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 44,New
+14,Oct 2004,Sarar,Sarar,Turkey,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Oct 2004,The World Bank G…,International Fina…,United States,Egypt,Financial services,Other (Financial serv…,Business Services,* $11.00m,* 18,New

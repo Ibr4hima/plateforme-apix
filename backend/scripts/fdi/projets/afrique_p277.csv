@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2005,Sociedad Quimica …,Sociedad Quimica …,Chile,Egypt,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $395.10m,* 149,New
+2,Apr 2005,Apache,Apache,United States,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+3,Apr 2005,JLM Industries,JLM International,United States,Egypt,Chemicals,Other chemical prod…,"Logistics, Distributio…",* $13.20m,* 28,New
+4,Apr 2005,Nuqul Group,Nuqul Group,Jordan,Egypt,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,* $54.90m,* 76,New
+5,Mar 2005,Air Arabia,Air Arabia,UAE,Egypt,Transportation & Wa…,Air transportation,Retail,* $11.60m,* 148,New
+6,Mar 2005,Centurion Energy,Centurion Energy,Canada,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$120.00m,* 50,New
+7,Mar 2005,Halliburton,Egypt Basic Indus…,United States,Egypt,Chemicals,Basic chemicals,Manufacturing,* $395.10m,* 149,New
+8,Mar 2005,Hutchison Whamp…,Hutchison Port Hol…,Hong Kong,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+9,Mar 2005,Hutchison Whamp…,Hutchison Port Hol…,Hong Kong,Egypt,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+10,Mar 2005,Oil & Natural Gas …,ONGC Videsh,India,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+11,Mar 2005,Pfizer,Pfizer,United States,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$18.00m,* 197,Expansion
+12,Mar 2005,Sayegh,National Paints Fa…,Jordan,Egypt,Chemicals,"Paints, coatings, add…",Retail,* $11.60m,* 148,New
+13,Mar 2005,Tanganyika Oil,Tanganyika Oil,Canada,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
+14,Feb 2005,Spinneys,Spinneys Egypt,Lebanon,Egypt,Food and Beverages,Food & beverage ret…,Retail,* $268.00m,* 177,New
+15,Jan 2005,Boyner Group,Beymen,Turkey,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New

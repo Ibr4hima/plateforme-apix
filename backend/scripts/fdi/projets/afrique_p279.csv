@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2004,Alcatel,Alcatel,France,Egypt,Communications,Communications equ…,Headquarters,* $36.90m,* 80,New
+2,Sep 2004,CA Technologies (…,Computer Associa…,United States,Egypt,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+3,Sep 2004,Hyundai Motor,Hyundai Motor,South Korea,Egypt,Automotive OEM,Automobiles,Manufacturing,* $51.70m,* 864,New
+4,Sep 2004,Sayegh,National Paints Fa…,Jordan,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,$12.00m,400,New
+5,Aug 2004,EMPA Middle East …,EMPA Middle East …,UAE,Egypt,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+6,Aug 2004,Kuwait Projects (K…,United Realty,Kuwait,Egypt,Hotels & tourism,Accommodation,Construction,$60.00m,* 153,New
+7,Jul 2004,Movenpick Group …,Movenpick Hotels …,Switzerland,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+8,Jul 2004,Obagi Medical Pro…,Obagi Medical Pro…,United States,Egypt,Pharmaceuticals,Pharmaceutical prep…,Business Services,* $11.40m,* 103,New
+9,Jul 2004,Santos,Santos,Australia,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$50.00m,* 21,New
+10,Jul 2004,Silovye Machiny (…,Silovye Machiny (…,Russia,Egypt,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.60m,30,New
+11,Jun 2004,BenQ,BenQ,Taiwan,Egypt,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+12,Jun 2004,Nissan,Nissan,Japan,Egypt,Automotive OEM,All other transportati…,Manufacturing,$60.00m,* 483,Expansion
+13,Jun 2004,Patchi,Patchi,Lebanon,Egypt,Food and Beverages,Sugar & confectionar…,Manufacturing,* $45.70m,* 429,New
+14,May 2004,AstraZeneca,AstraZeneca,United Kingdom,Egypt,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$32.00m,350,New
+15,Apr 2004,Nissan,Nissan,Japan,Egypt,Automotive OEM,Light trucks & utility …,Manufacturing,$100.00m,* 805,New

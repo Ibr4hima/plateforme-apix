@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2005,Shell PLC (Royal D…,Shell PLC (Royal D…,Netherlands,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.00bn,* 415,New
+2,Aug 2005,Emaar Properties,Emaar Properties,UAE,Egypt,Real estate,Residential building …,Construction,$3.90bn,"* 3,000",New
+3,Aug 2005,HP (Hewlett-Packa…,HP ProCurve Netw…,United States,Egypt,Business machines &…,Computer & peripher…,Customer Contact C…,* $8.90m,* 321,New
+4,Aug 2005,Intel,Intel,United States,Egypt,Semiconductors,Semiconductors & ot…,Research & Develop…,* $51.30m,* 118,New
+5,Jul 2005,Brilliance China A…,Brilliance China A…,Hong Kong,Egypt,Automotive OEM,Automobiles,Manufacturing,* $51.70m,* 864,New
+6,Jul 2005,China Textile Mac…,Egypt CTMC Nonw…,China,Egypt,Industrial equipment,Textile machinery,Manufacturing,$12.50m,900,New
+7,Jul 2005,Credit Agricole,CALYON BANK EG…,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jul 2005,EastNets,EastNets,UAE,Egypt,Software & IT services,"Software publishers,…",Shared Services Cen…,* $2.20m,75,New
+9,Jul 2005,Punto FA,Mango,Spain,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+10,Jul 2005,Rotana Hotels,Rotana,UAE,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+11,Jul 2005,Santos,Santos,Australia,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$5.00m,* 2,New
+12,Jun 2005,Flexicon AG,Flexicon AG,Germany,Egypt,Industrial equipment,Printing machinery &…,"Sales, Marketing & S…",* $2.90m,* 17,New
+13,Jun 2005,Ruhrpumpen,Ruhrpumpen-Egypt,Germany,Egypt,Industrial equipment,General purpose ma…,Manufacturing,* $48.20m,* 401,New
+14,May 2005,Lazawardi Group,Lazawardi Group,Saudi Arabia,Egypt,Consumer products,Jewellery & silverware,Manufacturing,* $14.10m,* 243,New
+15,May 2005,Movenpick Group …,Movenpick Hotels …,Switzerland,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
