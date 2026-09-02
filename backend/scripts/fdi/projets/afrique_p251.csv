@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2010,Al-Futtaim Group,Marks & Spencer …,UAE,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+2,Aug 2010,Asian Paints,SCIB,India,Egypt,Chemicals,"Paints, coatings, add…",Manufacturing,$5.41m,* 7,New
+3,Aug 2010,Azadea Group,Azadea Group,Lebanon,Egypt,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+4,Aug 2010,Dabur India,Dabur India,India,Egypt,Consumer products,"Cosmetics, perfume,…",Manufacturing,$4.80m,* 43,New
+5,Aug 2010,Melia Hotels Inter…,Melia Hotels Inter…,Spain,Egypt,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Aug 2010,National Bank of …,National Bank of …,UAE,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Aug 2010,OCI Corporation (…,OCI Corporation (…,South Korea,Egypt,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $2.80m,* 13,New
+8,Aug 2010,Saudi Binladin Gro…,Construction Prod…,Saudi Arabia,Egypt,Ceramics & glass,Clay product & refra…,Manufacturing,$35.00m,"1,000",New
+9,Aug 2010,Saudi Binladin Gro…,Construction Prod…,Saudi Arabia,Egypt,Real estate,Industrial building co…,Construction,$351.00m,"* 2,510",New
+10,Aug 2010,Vandana Luthra C…,Vandana Luthra C…,India,Egypt,Leisure & entertainm…,"Performing arts, spe…",Retail,* $38.10m,* 141,New
+11,Jul 2010,Austal,Austal,Australia,Egypt,Non-automotive tran…,Ships & boats,Maintenance & Servi…,* $15.30m,* 46,New
+12,Jul 2010,British Gas Group …,BG Egypt,United Kingdom,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,$2.00bn,* 830,New
+13,Jul 2010,Credit Agricole,Credit Agricole Eg…,France,Egypt,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Jul 2010,EMKE Group,LuLu,UAE,Egypt,Food and Beverages,Food & beverage ret…,Retail,$32.13m,* 527,New
+15,Jul 2010,Eni SpA,Petrobel,Italy,Egypt,"Coal, oil & gas",Oil & gas extraction,Extraction,* $373.70m,* 214,New
