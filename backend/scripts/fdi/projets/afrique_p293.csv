@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Office Cherifien de…,Office Cherifien de…,Morocco,Ethiopia,Chemicals,"Pesticide, fertilisers …",Manufacturing,$50.00m,* 66,New
+2,Mar 2019,Salalah Mills,Salalah Mills,Oman,Ethiopia,Food and Beverages,Bakeries & tortillas,Manufacturing,* $66.50m,* 294,New
+3,Mar 2019,Unilever,Unilever,United Kingdom,Ethiopia,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,Expansion
+4,Feb 2019,Hyundai Motor,Hyundai Motor,South Korea,Ethiopia,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+5,Feb 2019,Latitude Hotels Gr…,Latitude Hotels Gr…,Mauritius,Ethiopia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,Feb 2019,Volkswagen,Volkswagen,Germany,Ethiopia,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+7,Jan 2019,Volkswagen,Volkswagen,Germany,Ethiopia,Automotive OEM,Automobiles,Education & Training,* $9.40m,* 32,New
+8,Dec 2018,Chongqing Sansh…,Chongqing Sansh…,China,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,$134.00m,* 328,Expansion
+9,Nov 2018,Eagle Hills,Eagle Hills,UAE,Ethiopia,Real estate,Other (Real estate),Construction,* $704.50m,* 578,New
+10,Nov 2018,KEFI Minerals,KEFI Minerals,Cyprus,Ethiopia,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,Expansion
+11,Nov 2018,Milly Glass Works,Milly Glass Works,Kenya,Ethiopia,Ceramics & glass,Glass & glass products,Manufacturing,* $86.90m,* 844,New
+12,Nov 2018,Trident Group,Trident Group,India,Ethiopia,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$150.00m,* 764,New
+13,Oct 2018,Antex Group,Antex Group,China,Ethiopia,Textiles,Clothing & clothing a…,Manufacturing,* $138.90m,"* 5,000",New
+14,Oct 2018,CH International …,EKOS Steel Mill,South Korea,Ethiopia,Metals,Iron & steel mills & f…,Manufacturing,* $8.80m,60,Expansion
+15,Oct 2018,China Communica…,China Communica…,China,Ethiopia,Real estate,Industrial building co…,Headquarters,* $14.40m,* 61,New

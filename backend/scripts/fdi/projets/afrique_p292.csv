@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2019,SGS,SGS,Switzerland,Ethiopia,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+2,Nov 2019,Sika,Sika,Switzerland,Ethiopia,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,Expansion
+3,Jul 2019,Coca-Cola,Coca-Cola,United States,Ethiopia,Food and Beverages,Soft drinks & ice,Manufacturing,* $66.50m,* 294,New
+4,Jun 2019,Coca-Cola,Coca-Cola,United States,Ethiopia,Food and Beverages,Soft drinks & ice,Manufacturing,$70.00m,500,New
+5,May 2019,Accor,Accor,France,Ethiopia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,May 2019,ANTLER Venture C…,ANTLER Venture C…,Singapore,Ethiopia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,May 2019,Demes Kablo,Euro Cable,Turkey,Ethiopia,Electronic components,Communication & en…,Manufacturing,* $31.20m,* 326,Expansion
+8,May 2019,Kuoni,VFS Global,Switzerland,Ethiopia,Business services,Other support services,Business Services,* $27.80m,* 38,New
+9,May 2019,Tradin Organic,Tradin Organic,Netherlands,Ethiopia,Food and Beverages,Fruits & vegetables …,Manufacturing,* $60.70m,260,New
+10,Apr 2019,Commercial Inter…,Commercial Inter…,Egypt,Ethiopia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Apr 2019,FC Bayern Munch…,FC Bayern Munch…,Germany,Ethiopia,Leisure & entertainm…,"Performing arts, spe…",Education & Training,* $8.20m,* 131,New
+12,Apr 2019,Hayel Saeed Ana…,Golden Africa,UAE,Ethiopia,Food and Beverages,Grains & oilseed,Manufacturing,* $350.40m,"1,500",New
+13,Apr 2019,Siemens,Siemens,Germany,Ethiopia,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+14,Mar 2019,Bollore Group,Bollore Logistics,France,Ethiopia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$17.08m,* 76,New
+15,Mar 2019,Mitsubishi Heavy I…,Mitsubishi Aircraft,Japan,Ethiopia,Aerospace,Aircraft,Maintenance & Servi…,* $31.10m,* 147,New
