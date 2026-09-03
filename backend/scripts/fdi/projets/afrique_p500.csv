@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2025,Boxon,Boxon,Sweden,Morocco,Plastics,Plastics packaging m…,"Logistics, Distributio…",* $8.60m,* 27,New
+2,Sep 2025,Cassava Technolo…,Cassava Technolo…,United Kingdom,Morocco,Communications,Computing infrastruc…,ICT & Internet Infras…,* $144.00m,* 21,New
+3,Sep 2025,ECS Group (Europ…,Total Cargo Expert…,France,Morocco,Transportation & Wa…,Support activities for…,Business Services,* $1.10m,5,New
+4,Sep 2025,Groupe ProductLife,Groupe ProductLife,France,Morocco,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 43,New
+5,Sep 2025,Hollyway,Hollyway,Singapore,Morocco,Space & defence,Other (Space & defe…,Manufacturing,* $52.70m,* 145,New
+6,Sep 2025,Hytera Communic…,Hytera Communic…,China,Morocco,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+7,Sep 2025,Hyundai Motor,Hyundai Rotem (R…,South Korea,Morocco,Non-automotive tran…,Railroad rolling stock,Manufacturing,$55.90m,* 583,New
+8,Sep 2025,Wittmann,Wittmann,Austria,Morocco,Industrial equipment,Plastics & rubber ind…,"Sales, Marketing & S…",* $2.90m,* 11,New
+9,Aug 2025,Guizhou Tyre,Guizhou Tyre,China,Morocco,Rubber,Tyres,Manufacturing,$300.00m,"* 1,924",New
+10,Aug 2025,Heilongjiang Tiany…,Heilongjiang Tiany…,China,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$76.12m,"* 1,097",New
+11,Aug 2025,Kuntai Group,Kuntai Group,China,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,$13.70m,* 197,New
+12,Aug 2025,MyOutDesk,MyOutDesk,United States,Morocco,Business services,Business support ser…,Headquarters,* $10.50m,* 995,New
+13,Aug 2025,True Blue Tour,True Blue Tour,Turkey,Morocco,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+14,Jul 2025,Bethel Automotive…,Bethel Automotive…,China,Morocco,Automotive compon…,Motor vehicle steerin…,Manufacturing,$75.00m,"* 1,081",New
+15,Jul 2025,Cox (Cox Energy …,Cox (Cox Energy …,Spain,Morocco,Renewable energy,Wind electric power,Electricity,* $173.04m,* 54,Co-Location

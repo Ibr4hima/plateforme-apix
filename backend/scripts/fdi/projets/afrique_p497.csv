@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2026,Safran Group,Safran Landing Sy…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$305.43m,500,New
+2,Feb 2026,Tesla Motors,Tesla Morocco,United States,Morocco,Automotive OEM,Automobiles,Retail,* $12.50m,* 37,New
+3,Jan 2026,Alsayegh Worldwi…,Alsayegh Worldwi…,UAE,Morocco,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 43,New
+4,Jan 2026,Danosa,Danosa,Spain,Morocco,Plastics,"Urethane, foam prod…",Manufacturing,* $24.10m,* 235,New
+5,Jan 2026,Dumon Partners,Dumon Partners,UAE,Morocco,Business services,Legal services,Business Services,* $27.80m,* 43,New
+6,Jan 2026,FPS Food Process …,FPS Food Process …,Canada,Morocco,Industrial equipment,"Ventilation, heating, …","Logistics, Distributio…",* $15.90m,* 50,New
+7,Jan 2026,HACA Partners,HACA Partners,Luxembourg,Morocco,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 43,New
+8,Jan 2026,Jiangsu Aishelun …,Jiangsu Aishelun …,China,Morocco,Medical devices,Electromedical and E…,Manufacturing,$21.82m,* 68,New
+9,Jan 2026,Makita,Makita,Japan,Morocco,Industrial equipment,Cutlery & handtools,"Logistics, Distributio…",$0.70m,* 3,New
+10,Jan 2026,OfficePlast,OfficePlast,Tunisia,Morocco,Consumer products,Office supplies (exce…,Manufacturing,* $14.40m,* 418,New
+11,Jan 2026,Tata Group,Tata Consultancy …,India,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+12,Jan 2026,TermoFan,TermoFan,Turkey,Morocco,Industrial equipment,"Ventilation, heating, …",Manufacturing,* $29.80m,* 69,New
+13,Jan 2026,Zilla Capital,Zilla Capital,Egypt,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Dec 2025,Alstom,Alstom,France,Morocco,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $5.43m,* 100,Expansion
+15,Dec 2025,Alstom,Alstom,France,Morocco,Non-automotive tran…,Railroad rolling stock,Research & Develop…,* $5.43m,* 100,New

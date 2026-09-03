@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2008,Conyers Dill & Pea…,Conyers Dill & Pea…,Bermuda,Mauritius,Business services,Legal services,Business Services,* $6.80m,* 15,New
+2,Sep 2008,Dubai Holding,Dubai Banking Gr…,UAE,Mauritius,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+3,Aug 2008,Manaksia,Manaksia,India,Mauritius,Metals,Alumina & aluminiu…,"Sales, Marketing & S…",* $2.80m,* 9,New
+4,Jul 2008,Gem Diamonds,Gem Diamonds,United Kingdom,Mauritius,Minerals,Other non-metallic …,Manufacturing,* $26.40m,* 191,New
+5,Jul 2008,Murugappa Group,Coromandel Fertili…,India,Mauritius,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $6.20m,* 14,New
+6,Jun 2008,Four Seasons Hot…,Four Seasons Hot…,Canada,Mauritius,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+7,May 2008,National Institute …,National Institute …,India,Mauritius,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+8,May 2008,TRC Construction …,TRC Construction …,Thailand,Mauritius,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+9,Apr 2008,IJM,IJM,Malaysia,Mauritius,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New
+10,Mar 2008,Apollo Hospitals G…,Apollo Hospitals G…,India,Mauritius,Healthcare,General medical & s…,Construction,$70.00m,* 288,New
+11,Mar 2008,Thomas Cook Gro…,Thomas Cook Gro…,Germany,Mauritius,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+12,Feb 2008,FINANCIAL Techn…,FINANCIAL Techn…,India,Mauritius,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+13,Feb 2008,Kalawave,Kalawave,France,Mauritius,Software & IT services,"Video games, applic…",Research & Develop…,* $15.30m,* 162,New
+14,Sep 2007,Club Med (Club M…,Club Med (Club M…,France,Mauritius,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+15,Jul 2007,Rogers,Rogers Call Centre,United States,Mauritius,Software & IT services,Custom computer pr…,Shared Services Cen…,$8.70m,298,New

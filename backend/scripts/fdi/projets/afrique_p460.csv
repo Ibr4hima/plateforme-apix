@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2010,InterContinental H…,InterContinental H…,United Kingdom,Libya,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+2,Mar 2010,Standard Chartere…,Standard Chartere…,United Kingdom,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Dec 2009,Servicom,Servicom,Tunisia,Libya,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,Sep 2009,Medco Energi Inte…,Medco Energi Inte…,Indonesia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$212.00m,* 88,New
+5,Aug 2009,National Bank of …,National Bank of …,UAE,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,Expansion
+6,Aug 2009,Techint,Tenaris,Italy,Libya,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $5.00m,* 27,New
+7,Aug 2009,Techint,Tenaris,Italy,Libya,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+8,Jun 2009,Hyflux,Hyflux,Singapore,Libya,Business services,"Water, sewage & oth…",Recycling,* $125.30m,* 38,New
+9,Jun 2009,Hyflux,Hyflux,Singapore,Libya,Business services,"Water, sewage & oth…",Recycling,* $600.00m,* 580,New
+10,Jun 2009,Multi Developmen…,Multi Turkmall,Netherlands,Libya,Real estate,Commercial & institu…,Construction,$697.30m,"* 3,000",New
+11,May 2009,Damas Jewellery,Damas Jewellery,UAE,Libya,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+12,May 2009,Groupe Bayahi,Tunisie Profiles Al…,Tunisia,Libya,Metals,Architectural & struc…,Manufacturing,$20.80m,* 184,New
+13,May 2009,Marriott Internatio…,Marriott Internatio…,United States,Libya,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+14,May 2009,Zeropiu,Zeropiu,Italy,Libya,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+15,Apr 2009,Chesterton,Chesterton,United Kingdom,Libya,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New

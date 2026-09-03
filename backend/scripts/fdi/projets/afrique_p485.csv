@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2020,AfricInvest,AfricInvest,Tunisia,Mauritius,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Jan 2020,Bishop Design,Bishop Design,UAE,Mauritius,Business services,Specialised design s…,Business Services,* $27.80m,* 38,New
+3,Jan 2020,Hapag-Lloyd,Hapag-Lloyd,Germany,Mauritius,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $22.50m,100,New
+4,Dec 2019,Filatex,Filatex,Madagascar,Mauritius,Renewable energy,Solar electric power,Electricity,* $15.00m,* 5,New
+5,Nov 2019,Giordano,Giordano,Hong Kong,Mauritius,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+6,Nov 2019,Quantuma,Quantuma,United Kingdom,Mauritius,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+7,Sep 2019,Bowmans (Bowm…,Bowmans (Bowm…,South Africa,Mauritius,Business services,Legal services,Business Services,* $27.80m,* 38,New
+8,Sep 2019,ICECAP,ICECAP,United Kingdom,Mauritius,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+9,Sep 2019,Merlin Software fo…,Merlin Software fo…,South Africa,Mauritius,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+10,Sep 2019,Trenchard Aviatio…,Trenchard Aviatio…,United Kingdom,Mauritius,Aerospace,"Aircraft engines, oth…",Manufacturing,* $15.10m,* 217,New
+11,Aug 2019,Fenway Sports Gr…,The Liverpool Foot…,United States,Mauritius,Leisure & entertainm…,"Performing arts, spe…",Education & Training,* $8.20m,* 131,New
+12,Feb 2019,Casino,GreenYellow,France,Mauritius,Renewable energy,Solar electric power,Electricity,* $24.80m,* 57,New
+13,Jan 2019,Krypton Fund Ser…,Krypton Fund Ser…,Bermuda,Mauritius,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+14,Oct 2018,African Medallion …,African Medallion …,South Africa,Mauritius,Metals,Nonferrous metal pr…,"Sales, Marketing & S…",* $1.90m,* 8,New
+15,Oct 2018,Apelby Communic…,Apelby Communic…,Germany,Mauritius,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New

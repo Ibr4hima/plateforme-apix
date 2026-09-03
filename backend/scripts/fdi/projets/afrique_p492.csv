@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2007,Orange (France Te…,Orange S.A.,France,Mauritius,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+2,Jan 2007,Appleby,Appleby,Bermuda,Mauritius,Business services,Legal services,Business Services,* $0.70m,4,New
+3,Aug 2006,FirstRand,Momentum,South Africa,Mauritius,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+4,Jun 2006,Diadeis,Diadeis,France,Mauritius,"Paper, printing & pac…","Other (Paper, printin…",Manufacturing,* $3.90m,20,Expansion
+5,Dec 2005,Numeric Power Sy…,Numeric Power Sy…,India,Mauritius,Electronic components,Batteries,Manufacturing,* $11.80m,* 157,New
+6,Jul 2005,Mahanagar Teleph…,Mahanagar Teleph…,India,Mauritius,Communications,Wired telecommunic…,ICT & Internet Infras…,$23.00m,* 16,New
+7,Jun 2005,Wensum Company,Wensum Company,United Kingdom,Mauritius,Textiles,Clothing & clothing a…,Manufacturing,* $35.60m,"* 1,080",New
+8,Mar 2005,Euro CRM,Euro CRM,France,Mauritius,Business services,Business support ser…,Customer Contact C…,* $4.80m,240,New
+9,Mar 2005,Famous Pacific Shi…,Somatrans,Australia,Mauritius,Transportation & Wa…,Water transportation,"Logistics, Distributio…",$5.00m,* 18,New
+10,Dec 2004,Hinduja Group,Hinduja TMT (HTM…,India,Mauritius,Business services,Business support ser…,Shared Services Cen…,* $10.00m,* 337,New
+11,Nov 2004,Indian Oil Corpora…,Indian Oil Corpora…,India,Mauritius,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,* 335,New
+12,Aug 2004,Life Insurance Cor…,Life Insurance Cor…,India,Mauritius,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+13,Aug 2004,Thomas Cook Gro…,Thomas Cook Gro…,Germany,Mauritius,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+14,Jul 2004,Tata Group,Indian Hotels (IH…,India,Mauritius,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+15,Jun 2004,Housing Develop…,Housing Develop…,India,Mauritius,Business services,Business support ser…,Shared Services Cen…,* $10.00m,* 337,New

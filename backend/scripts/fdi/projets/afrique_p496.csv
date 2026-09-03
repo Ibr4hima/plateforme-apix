@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2026,Aleph Hospitality,Aleph Hospitality,UAE,Morocco,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Apr 2026,Artex Assurances,Artex Assurances,France,Morocco,Financial services,Insurance,Customer Contact C…,* $9.90m,* 235,New
+3,Apr 2026,China Unionpay (…,China Unionpay (…,China,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+4,Apr 2026,Delair-Tech,Delair-Tech,France,Morocco,Aerospace,Aircraft,Headquarters,* $40.50m,* 103,New
+5,Apr 2026,Hindustan Aerona…,Hindustan Aerona…,India,Morocco,Aerospace,Aircraft,Manufacturing,* $12.00m,* 171,New
+6,Apr 2026,International Wor…,International Wor…,Switzerland,Morocco,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Apr 2026,Jysk Holding,Jysk,Denmark,Morocco,Consumer products,Furniture & related p…,Retail,* $3.20m,20,New
+8,Apr 2026,Mycophyto,Mycophyto,France,Morocco,Biotechnology,Other (Biotechnology),"Sales, Marketing & S…",* $6.90m,* 11,New
+9,Apr 2026,Nexus Core Syste…,Nexus Core Syste…,United Kingdom,Morocco,Communications,Computing infrastruc…,ICT & Internet Infras…,$704.92m,75,New
+10,Mar 2026,GoCab,GoCab,Côte d Ivoire,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+11,Mar 2026,LinSoft,LinSoft,Tunisia,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,Expansion
+12,Feb 2026,Hongyi Precision,Hongyi Precision,China,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$15.00m,* 216,New
+13,Feb 2026,INGIN,INGIN,China,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$20.14m,* 290,New
+14,Feb 2026,Ortus Climate Miti…,ORNX Green Hydr…,United States,Morocco,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+15,Feb 2026,Remondis (Rethm…,Rhenus Logistics,Germany,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,Expansion

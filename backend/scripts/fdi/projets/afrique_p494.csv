@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2026,ACWA Power,ACWA Power,Saudi Arabia,Morocco,Renewable energy,Wind electric power,Electricity,* $218.00m,* 57,Expansion
+2,Jun 2026,Altesia,Altesia,Belgium,Morocco,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 41,New
+3,Jun 2026,China National Bui…,CBMI Construction,China,Morocco,Business services,"Architectural, engine…",Business Services,* $27.80m,* 41,New
+4,Jun 2026,Falcon Energy Mat…,Falcon Energy Mat…,UAE,Morocco,Minerals,Other non-metallic …,Manufacturing,$86.00m,* 701,New
+5,Jun 2026,Ingedetec Line Sy…,Ingedetec Line Sy…,Spain,Morocco,Business services,"Architectural, engine…",Business Services,$0.25m,8,New
+6,Jun 2026,Ingenieria de Com…,Ingenieria de Com…,Spain,Morocco,Plastics,Laminated plastics pl…,Manufacturing,* $22.70m,* 228,New
+7,Jun 2026,Leoni,LEONI Cable Solut…,Germany,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$65.45m,* 953,New
+8,Jun 2026,Leoni,Leoni,Germany,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $206.10m,"3,000",Expansion
+9,Jun 2026,Orkla Group,Jotun Group,Norway,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,$10.07m,60,New
+10,Jun 2026,Pini Parma,Pini Parma,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Jun 2026,QuestionPro,QuestionPro,United States,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,Jun 2026,Recodeal,Recodeal,China,Morocco,Electronic components,All other electrical e…,Manufacturing,$46.32m,* 482,New
+13,Jun 2026,Safran Group,Safran Aerosystems,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$13.80m,140,Expansion
+14,Jun 2026,Safran Group,Safran Electronics…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$35.25m,500,Expansion
+15,Jun 2026,Universal Music G…,Universal Music G…,United States,Morocco,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion

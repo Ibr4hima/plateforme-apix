@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2014,Astonfield,Astonfield,United States,Mauritius,Renewable energy,Solar electric power,Electricity,* $4.10m,* 1,New
+2,Jul 2014,Astonfield,Astonfield,United States,Mauritius,Renewable energy,Solar electric power,Electricity,* $4.10m,* 1,New
+3,Jun 2014,ICICI Bank,ICICI Bank,India,Mauritius,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Apr 2014,LINKBYNET,LINKBYNET,France,Mauritius,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $3.50m,* 17,Expansion
+5,Apr 2014,Woolworths (Sout…,Woolworths (Sout…,South Africa,Mauritius,Consumer products,All other general me…,Retail,* $10.90m,* 170,New
+6,Jan 2014,Petredec,Petredec,Bermuda,Mauritius,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",* $63.40m,* 85,New
+7,Jan 2014,Verizon Communi…,Verizon Communi…,United States,Mauritius,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+8,Dec 2013,JMR Infotech (Tra…,JMR Infotech (Tra…,India,Mauritius,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+9,Nov 2013,Edward Nathan So…,Edward Nathan So…,South Africa,Mauritius,Business services,Legal services,Business Services,* $4.50m,30,New
+10,Jul 2013,Eastern and South…,Eastern and South…,Burundi,Mauritius,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Mar 2013,Broll Property Gro…,Broll Property Gro…,South Africa,Mauritius,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+12,Dec 2012,LG Corp,LG Corp,South Korea,Mauritius,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+13,Dec 2012,Pure Gold Group,Pure Gold Jewellers,UAE,Mauritius,Consumer products,Jewellery & silverware,Retail,* $10.90m,* 170,New
+14,Nov 2012,International Mon…,International Mon…,United States,Mauritius,Financial services,Corporate & investm…,Education & Training,* $73.20m,* 131,New
+15,Sep 2012,IQE,IQE,United Kingdom,Mauritius,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New

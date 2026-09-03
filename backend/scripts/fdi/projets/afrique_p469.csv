@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Tirupati Graphite,Tirupati Graphite,United Kingdom,Madagascar,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,Co-Location
+2,Dec 2018,CloudFlare,CloudFlare,United States,Madagascar,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+3,Oct 2018,Bushveld Minerals,Lemur Holdings,South Africa,Madagascar,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+4,Apr 2018,Kuoni,VFS Global,Switzerland,Madagascar,Business services,Other support services,Business Services,* $27.80m,* 38,New
+5,Nov 2017,Bharti Airtel,Airtel Madagascar,India,Madagascar,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+6,Feb 2017,Webhelp,Webhelp,France,Madagascar,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,Expansion
+7,Oct 2016,Sambirano Valley …,Sambirano Valley …,Canada,Madagascar,Food and Beverages,Sugar & confectionar…,Manufacturing,* $45.80m,* 263,New
+8,Sep 2016,Givaudan,Givaudan,Switzerland,Madagascar,Food and Beverages,Other (Food & Bever…,Manufacturing,* $11.70m,50,New
+9,Nov 2014,MicroCred,MicroCred Bank M…,France,Madagascar,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+10,Oct 2014,Symrise,Symrise,Germany,Madagascar,Chemicals,"Paints, coatings, add…",Manufacturing,$3.80m,* 5,New
+11,Apr 2014,CMA CGM,CMA CGM,France,Madagascar,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Apr 2014,CMA CGM,CMA CGM,France,Madagascar,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+13,Feb 2014,Symrise,Symrise,Germany,Madagascar,Chemicals,"Paints, coatings, add…",Manufacturing,* $285.70m,* 455,New
+14,Jan 2014,Verizon Communi…,Verizon Communi…,United States,Madagascar,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,May 2013,Broll Property Gro…,Broll Property Gro…,South Africa,Madagascar,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New

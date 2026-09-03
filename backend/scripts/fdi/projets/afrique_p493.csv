@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2004,Indian Oil Corpora…,Indian Oil Corpora…,India,Mauritius,"Coal, oil & gas",Other petroleum & c…,Research & Develop…,$0.50m,* 1,New
+2,Feb 2004,Indian Oil Corpora…,Indian Oil Corpora…,India,Mauritius,"Coal, oil & gas",Gasoline stations,Retail,$33.30m,* 335,New
+3,Dec 2003,Investec,Investec,South Africa,Mauritius,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Aug 2003,Groupe Bourbon,Bourbon,France,Mauritius,Real estate,Commercial & institu…,Construction,* $864.90m,* 875,New
+5,Jun 2003,Astek Groupe,Astek Mauritius,France,Mauritius,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+6,May 2003,Infosys Technologi…,Infosys Technologi…,India,Mauritius,Software & IT services,"Software publishers,…",Research & Develop…,$9.70m,* 62,New
+7,Jul 2026,Curtiss-Wright Cor…,Curtiss-Wright Cor…,United States,Morocco,Aerospace,Aircraft,Manufacturing,* $14.90m,* 174,New
+8,Jul 2026,Danone,Centrale Danone,France,Morocco,Food and Beverages,Dairy products,Manufacturing,$6.04m,* 33,Expansion
+9,Jul 2026,Eezee-It,Eezee-It,Belgium,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,Expansion
+10,Jul 2026,Gentex,Gentex,United States,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $27.10m,* 597,New
+11,Jul 2026,La Caixa,CaixaBank,Spain,Morocco,Financial services,Corporate & investm…,Business Services,* $2.40m,8,New
+12,Jul 2026,Samvardhana Mot…,Samvardhana Mot…,India,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $27.10m,* 597,New
+13,Jul 2026,SC Pack,Plastikpack Maroc,France,Morocco,Plastics,Other plastics produ…,Manufacturing,$15.11m,200,Expansion
+14,Jul 2026,Vossloh,Vossloh,Germany,Morocco,Non-automotive tran…,Railroad rolling stock,"Sales, Marketing & S…",* $2.50m,* 16,New
+15,Jul 2026,Wietersdorfer Gro…,Amiblu,Austria,Morocco,Plastics,"Plastic pipes, pipe fit…",Manufacturing,$16.11m,300,Expansion

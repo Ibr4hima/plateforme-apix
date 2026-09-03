@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2006,Randgold Resources,Randgold Resources,United Kingdom,Mali,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,Expansion
+2,Apr 2006,Resolute Mining,Resolute Mining,Australia,Mali,Metals,Gold ore & silver ore…,Extraction,$120.00m,* 169,New
+3,Aug 2005,Randgold Resources,Randgold Resources,United Kingdom,Mali,Metals,Gold ore & silver ore…,Extraction,$113.00m,* 159,New
+4,Jul 2005,Avnel Gold,Avnel Gold,United Kingdom,Mali,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+5,Jun 2005,Etruscan Resources,Etruscan Resources,Canada,Mali,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+6,Jun 2026,OLEA Insurance S…,OLEA Insurance S…,France,Mauritania,Financial services,Insurance,"Sales, Marketing & S…",* $0.80m,5,New
+7,Nov 2025,Möhring Energie G…,Möhring Energie G…,Germany,Mauritania,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+8,Oct 2025,Resources Invest…,Mayan Properties,UAE,Mauritania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+9,Mar 2023,Mubadala Investm…,Infinity Power,UAE,Mauritania,Renewable energy,Other electric power …,Manufacturing,$34.00bn,"1,000",New
+10,Feb 2022,Kinross Gold,Kinross Gold,Canada,Mauritania,Renewable energy,Solar electric power,Electricity,$55.00m,* 17,Co-Location
+11,Nov 2021,Tunisie Telecom,Mattel Mauritania …,Tunisia,Mauritania,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Aug 2021,Mitsumi Distribution,Mitsumi Distribution,UAE,Mauritania,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+13,Aug 2021,Sudatel,Chinguitel,Sudan,Mauritania,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+14,Feb 2021,AB Sport,AB Sport,Morocco,Mauritania,Textiles,Clothing & clothing a…,Headquarters,* $12.10m,* 53,New
+15,Feb 2021,Tunisie Telecom,Mattel Mauritania …,Tunisia,Mauritania,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,Casino,GreenYellow,France,Madagascar,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Expansion
+2,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Madagascar,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Sep 2021,CloudFlare,CloudFlare,United States,Madagascar,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+4,Apr 2021,DizzitUp,DizzitUp,France,Madagascar,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+5,Nov 2020,Akuo Energy,Akuo Energy,France,Madagascar,Renewable energy,Solar electric power,Electricity,$7.27m,* 2,New
+6,Jul 2020,Bollore Group,Bollore Logistics,France,Madagascar,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $17.10m,* 49,New
+7,May 2020,China Mobile Com…,China Mobile Inter…,China,Madagascar,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+8,May 2020,Mobilitas Group,Mobilitas Group,France,Madagascar,Business services,Other support services,Business Services,* $27.80m,* 38,New
+9,Apr 2020,NextSource Materi…,NextSource Materi…,Canada,Madagascar,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,New
+10,Apr 2020,Raysut Cement,Raysut Cement,Oman,Madagascar,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+11,Mar 2020,IBL Ltd,DTOS,Mauritius,Madagascar,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+12,Aug 2019,Webhelp,Webhelp,France,Madagascar,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+13,Mar 2019,BGFI Bank,BGFIBank Madaga…,Gabon,Madagascar,Financial services,Retail banking,Business Services,* $9.60m,* 27,Expansion
+14,Mar 2019,BGFI Bank,BGFIBank Madaga…,Gabon,Madagascar,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Mar 2019,Tirupati Graphite,Tirupati Graphite,United Kingdom,Madagascar,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,Co-Location

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2007,Yara International,Yara International,Norway,Libya,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $2.80m,* 13,Expansion
+2,Feb 2007,Shell PLC (Royal D…,Shell PLC (Royal D…,Netherlands,Libya,"Coal, oil & gas","Natural, liquefied an…",Extraction,* $123.00m,* 214,New
+3,Dec 2006,CPC (Chinese Petr…,CPC (Chinese Petr…,Taiwan,Libya,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+4,Dec 2006,Equinor (Statoil),Equinor (Statoil),Norway,Libya,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+5,Dec 2006,HSBC Holdings,HSBC Bank,United Kingdom,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Dec 2006,Tubosider,Tubosider,Italy,Libya,Metals,Steel products,Manufacturing,$31.50m,300,New
+7,Nov 2006,Entrepose Contrac…,Entrepose Contrac…,France,Libya,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New
+8,Nov 2006,RanHill,Amona Ranhill Co…,Malaysia,Libya,Real estate,Residential building …,Construction,$413.00m,"* 2,953",New
+9,Sep 2006,Qatar National Ba…,Qatar National Ba…,Qatar,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Aug 2006,Al Khaleej Develo…,Tameer Holding,Bahrain,Libya,Real estate,Residential building …,Construction,$20.00bn,"* 3,000",New
+11,May 2006,Global Oil Tools,Grifco International,United States,Libya,Industrial equipment,General purpose ma…,Manufacturing,* $48.20m,* 401,New
+12,Feb 2006,Det Norske Verita…,Det Norske Verita…,Norway,Libya,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+13,Jan 2006,Hess,Amerada Hess,United States,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$366.00m,* 152,New
+14,Jan 2006,Lukoil,Lukoil,Russia,Libya,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+15,Dec 2005,FedEx (Federal Ex…,FedEx (Federal Ex…,United States,Libya,Transportation & Wa…,Postal service,"Logistics, Distributio…",* $45.70m,* 93,New

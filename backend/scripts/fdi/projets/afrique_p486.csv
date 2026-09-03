@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2018,NEC,NEC XON,Japan,Mauritius,Software & IT services,Custom computer pr…,Technical Support Ce…,* $15.20m,* 393,New
+2,Jun 2018,Solarise Africa,Solarise Africa,Kenya,Mauritius,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+3,Apr 2018,CWT,CWT Globelink,Singapore,Mauritius,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Mar 2018,CloudFlare,CloudFlare,United States,Mauritius,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+5,Mar 2018,Club Med (Club M…,Club Med (Club M…,France,Mauritius,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,Expansion
+6,Feb 2018,Ecommpay,Ecommpay,United Kingdom,Mauritius,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+7,Sep 2017,Oracle,Oracle,United States,Mauritius,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+8,Aug 2017,Sanlam Group,Sanlam Private W…,South Africa,Mauritius,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+9,May 2017,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,Mauritius,"Coal, oil & gas",Other electric power …,Customer Contact C…,* $9.00m,* 163,New
+10,Mar 2017,Big Bang ERP,Big Bang ERP,Canada,Mauritius,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+11,Oct 2016,Convergys,Convergys,United States,Mauritius,Business services,Business support ser…,Customer Contact C…,* $4.80m,600,New
+12,Sep 2016,ImmuPharma,ImmuPharma,United Kingdom,Mauritius,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $35.30m,* 73,New
+13,Sep 2016,WISeKey,WISeKey,Switzerland,Mauritius,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 146,New
+14,Jul 2016,Djembe Communi…,Djembe Communi…,UAE,Mauritius,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+15,Jun 2016,BlueMind,BlueMind,France,Mauritius,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New

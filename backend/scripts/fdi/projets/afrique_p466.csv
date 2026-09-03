@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2005,Norsk Hydro,Hydro Aluminium,Norway,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+2,Dec 2005,Woodside Energy …,Woodside Energy …,Australia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+3,Dec 2005,Woodside Energy …,Woodside Energy …,Australia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+4,Oct 2005,IMBank,IMBank,Tunisia,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Sep 2005,Nippon Oil,Nippon Oil Explora…,Japan,Libya,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+6,Jul 2005,BAWAG P.S.K. Gro…,LBBW Bank CZ (B…,Austria,Libya,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jul 2005,Occidental Petrole…,Occidental Petrole…,United States,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+8,Jun 2005,Intracom Holdings,Intrakat,Greece,Libya,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.80m,* 16,New
+9,May 2005,INA Group,Crosco,Croatia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,Expansion
+10,May 2005,Shell PLC (Royal D…,Shell Exploration …,Netherlands,Libya,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$105.00m,* 21,New
+11,May 2005,Shell PLC (Royal D…,Shell Exploration …,Netherlands,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$187.00m,* 78,New
+12,Feb 2005,Petrobras,Petrobras,Brazil,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$21.00m,* 9,New
+13,Nov 2004,Atkins,Atkins,United Kingdom,Libya,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+14,Nov 2004,Dardanel,Dardanel,Turkey,Libya,Food and Beverages,Fruits & vegetables …,Manufacturing,* $58.40m,* 429,New
+15,Oct 2004,BASF,Wintershall,Germany,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New

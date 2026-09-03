@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2013,MicroCred,MicroCred Mali,France,Mali,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Apr 2013,Hyundai Motor,Hyundai Motor,South Korea,Mali,Automotive OEM,Automobiles,Manufacturing,* $16.90m,100,New
+3,Nov 2012,Islamic Developm…,Islamic Corporatio…,Saudi Arabia,Mali,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Jul 2012,Resolute Mining,Resolute Mining,Australia,Mali,Metals,Gold ore & silver ore…,Extraction,$241.00m,* 359,Expansion
+5,Apr 2012,Robex Resources,Robex Resources,Canada,Mali,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+6,Feb 2012,Avion Resources,Avion Resources,Canada,Mali,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",Expansion
+7,Aug 2011,MicroCred,MicroCred,France,Mali,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+8,Jan 2011,Youngsan Glonet,Youngsan Glonet,South Korea,Mali,Automotive OEM,Light trucks & utility …,Manufacturing,$0.01m,* -,New
+9,Dec 2010,Atlas Copco,Atlas Copco,Sweden,Mali,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $1.20m,14,New
+10,Dec 2010,Mobiserve,Mobiserve,Egypt,Mali,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+11,Mar 2010,BASF,BASF,Germany,Mali,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $6.20m,* 14,New
+12,Jan 2009,Lonrho,Lonrho Agriculture,United Kingdom,Mali,Food and Beverages,Animal slaughtering …,Manufacturing,* $58.40m,* 429,New
+13,Dec 2008,Avion Resources,Avion Resources,Canada,Mali,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+14,Aug 2008,Carlson Companies,Carlson Hotel Gro…,United States,Mali,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+15,Oct 2006,Banco de Desarrol…,Banco de Desarrol…,Venezuela,Mali,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

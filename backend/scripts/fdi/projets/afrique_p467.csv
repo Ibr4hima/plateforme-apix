@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2004,Norsk Hydro,Norsk Hydro,Norway,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+2,Oct 2004,Socotherm,Socotherm,Italy,Libya,Metals,"Coating, engraving, …",Manufacturing,$12.80m,150,New
+3,Aug 2004,Enap,Sipetrol,Chile,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+4,Apr 2004,Tatneft,Tatneft,Russia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $123.00m,* 214,New
+5,Dec 2003,Woodside Energy …,Woodside Energy …,Australia,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$100.00m,* 42,New
+6,Aug 2003,Naftogaz Ukrainy,Naftogaz Ukrainy,Ukraine,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$58.00m,* 24,New
+7,Aug 2003,Oil & Natural Gas …,ONGC Videsh,India,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$30.00m,* 12,New
+8,May 2003,Repsol SA,Repsol SA,Spain,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$90.00m,* 37,New
+9,May 2026,International Flav…,International Flav…,United States,Madagascar,Food and Beverages,Fruits & vegetables …,Research & Develop…,* $12.00m,* 55,New
+10,Dec 2025,Forges Tardieu,Electrical & Contro…,Mauritius,Madagascar,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 11,New
+11,Nov 2025,OBT Shipping Gro…,OBT Shipping Gro…,UAE,Madagascar,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,May 2025,Tersea,Tersea,France,Madagascar,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+13,Oct 2024,R A Consulting Se…,R A Consulting Se…,Botswana,Madagascar,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+14,Jan 2024,Cybernaptics,Cybernaptics Africa,Mauritius,Madagascar,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+15,Feb 2023,Easy Skill,Easy Skill,France,Madagascar,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2012,The Emirates Group,Emirates Airline,UAE,Mauritania,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+2,Jan 2012,PT Bumi Resources,PT Bumi Resource…,Indonesia,Mauritania,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
+3,Jan 2011,First Quantum Min…,Mauritanian Copp…,Canada,Mauritania,Metals,"Copper, nickel, lead,…",Extraction,* $270.00m,"* 1,012",Expansion
+4,Jan 2011,SEMS Exploration,SEMS Exploration,Ghana,Mauritania,"Coal, oil & gas",Support activities for…,Business Services,* $4.30m,* 45,New
+5,Oct 2010,Group of Kaunas …,Group of Kaunas …,Lithuania,Mauritania,Food and Beverages,Seafood products,Manufacturing,$4.14m,* 27,New
+6,Oct 2010,Vasco Catalana,Vasco Catalana,Spain,Mauritania,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+7,Oct 2010,Vasco Catalana,Vasco Catalana,Spain,Mauritania,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+8,Jul 2010,Qatar National Ba…,Qatar National Ba…,Qatar,Mauritania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jan 2008,ArcelorMittal,ArcelorMittal,Luxembourg,Mauritania,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
+10,Nov 2007,Attijariwafa Bank,Attijariwafa Bank,Morocco,Mauritania,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Jul 2007,Al Kharafi Group,Al Kharafi Group,Kuwait,Mauritania,Hotels & tourism,Accommodation,Construction,$27.50m,250,New
+12,Dec 2006,Groupe Ortec,Ortec Groupe,France,Mauritania,Business services,Speciality trade cont…,Business Services,* $6.80m,* 15,New
+13,Nov 2006,Integra Group,Integra Group,Russia,Mauritania,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New
+14,Sep 2006,BNP Paribas,BNP Paribas,France,Mauritania,Financial services,Retail banking,Business Services,* $8.60m,20,New
+15,Jan 2006,Hardman Resources,Hardman Resources,Australia,Mauritania,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New

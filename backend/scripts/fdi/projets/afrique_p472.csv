@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2005,Pan African Mining,Pan African Mining,Canada,Madagascar,Minerals,Other non-metallic …,Research & Develop…,* $24.70m,* 200,New
+2,Jan 2005,D1 Oils,D1 Africa,United Kingdom,Madagascar,Food and Beverages,Crop production,Manufacturing,* $58.40m,* 429,New
+3,Nov 2004,Accor,Accor,France,Madagascar,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+4,Jul 2004,Maruha Nichiro (M…,Maruha Nichiro (M…,Japan,Madagascar,Food and Beverages,Animal production & …,Manufacturing,$1.00m,* 7,Expansion
+5,Nov 2003,British Airways,British Airways,United Kingdom,Madagascar,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+6,Nov 2003,Diamond Fields In…,Diamond Fields In…,Canada,Madagascar,Metals,"Copper, nickel, lead,…",Extraction,* $270.00m,"* 1,012",New
+7,Oct 2003,Vanco Energy,Vanco Energy,United States,Madagascar,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+8,May 2003,Rio Tinto Group,Rio Tinto Group,United Kingdom,Madagascar,Metals,Nonferrous metal pr…,Extraction,$350.00m,* 492,New
+9,Aug 2025,Lindian Resources,Lindian Resources,Australia,Malawi,Minerals,Nonmetallic mineral …,Extraction,* $107.10m,"* 1,366",Expansion
+10,Jul 2025,Burn Stoves,Burn Stoves,Kenya,Malawi,Consumer electronics,Household appliances,Manufacturing,$1.00m,520,New
+11,Jul 2025,Hayo,Hayo,United States,Malawi,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+12,Apr 2025,Coca-Cola,Coca-Cola Bevera…,United States,Malawi,Food and Beverages,Soft drinks & ice,Manufacturing,$14.90m,* 64,Expansion
+13,Oct 2024,Lotus Resources,Lotus Resources,Australia,Malawi,Metals,Other metal ore mini…,Extraction,$50.00m,* 75,New
+14,Nov 2023,Mkango Resources,Mkango Resources,Canada,Malawi,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+15,May 2023,GoGlobal,GoGlobal,Japan,Malawi,Business services,Employment services,Business Services,* $27.80m,* 38,New

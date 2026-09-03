@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2012,TENDER,Prospectiuni,Romania,Mauritius,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+2,Jul 2012,Atlas Corporate S…,Atlas Corporate S…,UAE,Mauritius,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+3,Jul 2012,Europlus Direct,Europlus Direct,United Kingdom,Mauritius,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+4,Jun 2012,Comztek,Comztek,South Africa,Mauritius,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+5,Apr 2012,Vistra,Vistra,Luxembourg,Mauritius,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+6,Mar 2012,Don't Waste Servi…,Don't Waste Servi…,South Africa,Mauritius,Business services,Waste management …,Business Services,* $6.80m,* 15,New
+7,Mar 2012,University of Wolv…,University of Wolv…,United Kingdom,Mauritius,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+8,Feb 2012,deVere & Partners…,deVere & Partners…,Switzerland,Mauritius,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+9,Jan 2012,AFB,AFB,Ghana,Mauritius,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Oct 2011,Equinoxe,Equinoxe,Bermuda,Mauritius,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+11,Sep 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Mauritius,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+12,Jun 2011,Atterbury Propert…,Atterbury Propert…,South Africa,Mauritius,Real estate,Commercial & institu…,Construction,* $864.90m,* 875,New
+13,May 2011,Thomas Cook Gro…,Thomas Cook India,United Kingdom,Mauritius,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+14,Mar 2011,Matrix Partners,Matrix Partners In…,United States,Mauritius,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,Feb 2011,Bedell Cristin,Bedell Cristin,United Kingdom,Mauritius,Business services,Legal services,Business Services,* $6.80m,* 15,New

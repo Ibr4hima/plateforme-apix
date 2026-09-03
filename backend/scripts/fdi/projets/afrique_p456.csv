@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2022,EgyptAir Holding…,EgyptAir,Egypt,Libya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+2,Jun 2022,Alpha Dhabi Holdi…,W Solar Investment,UAE,Libya,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+3,Jun 2022,Tunisair,Tunisair,Tunisia,Libya,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,May 2022,Albayrak Group,Albayrak Group,Turkey,Libya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+5,May 2022,Eni SpA,Eni SpA,Italy,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,* $6.00bn,"* 2,060",Expansion
+6,Mar 2021,International Wor…,International Wor…,Switzerland,Libya,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Feb 2021,Karanfil Group,Karanfil Group,Turkey,Libya,Building materials,Cement & concrete p…,Manufacturing,$10.00m,250,New
+8,Jul 2020,Cement Design,Cement Design,Spain,Libya,Building materials,Cement & concrete p…,"Sales, Marketing & S…",* $0.50m,* 8,New
+9,Nov 2019,Danone,Danone,France,Libya,Food and Beverages,Dairy products,Manufacturing,* $45.80m,* 263,New
+10,Jul 2019,SLB (Schlumberge…,SLB (Schlumberge…,United States,Libya,"Coal, oil & gas",Oil & gas extraction,Education & Training,* $22.20m,* 131,New
+11,Aug 2018,The Guidry Group,The Guidry Group,United States,Libya,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$1.00bn,"* 3,000",New
+12,Jul 2018,Eni SpA,Eni SpA,Italy,Libya,"Coal, oil & gas",Oil & gas extraction,Extraction,$5.60bn,"* 1,922",New
+13,Feb 2018,LACASA Holding,LACASA Holding,UAE,Libya,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+14,Mar 2014,Arabian Constructi…,Reyada Constructi…,Egypt,Libya,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+15,Mar 2014,Landmark Group,Centrepoint,UAE,Libya,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
