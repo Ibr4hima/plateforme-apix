@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2022,FORVIA (Faurecia),FORVIA (Faurecia),France,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,$14.36m,"1,400",New
+2,Dec 2022,Qair,Qair,France,Morocco,Renewable energy,Solar electric power,Electricity,* $208.20m,* 57,Co-Location
+3,Dec 2022,Qair,Qair,France,Morocco,Renewable energy,Solar electric power,Electricity,* $208.20m,* 57,Co-Location
+4,Dec 2022,Qingdao Sentury …,Qingdao Sentury …,China,Morocco,Rubber,Tyres,Manufacturing,$296.78m,"* 1,904",New
+5,Dec 2022,Thales Group,Thales Group,France,Morocco,Software & IT services,Other (Software & IT…,Technical Support Ce…,$34.23m,150,Expansion
+6,Dec 2022,XEV,XEV,Hong Kong,Morocco,Automotive OEM,Automobiles,Manufacturing,* $351.60m,"* 2,332",New
+7,Nov 2022,Agroberries,Agroberries,Chile,Morocco,Food and Beverages,Fruits & vegetables …,Manufacturing,$41.17m,222,New
+8,Nov 2022,Groupe Industriel …,Sabca,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$16.10m,240,New
+9,Nov 2022,SDX Energy,SDX Energy,United Kingdom,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,* $730.30m,* 230,New
+10,Nov 2022,Stellantis,Stellantis,Netherlands,Morocco,Automotive OEM,Automobiles,Manufacturing,$308.06m,"2,000",Expansion
+11,Nov 2022,XPO Logistics (Ex…,XPO Logistics (Ex…,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New
+12,Oct 2022,Alpha Networks.tv,Alpha Networks.tv,Belgium,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+13,Oct 2022,Eczacibasi Group,Eczacibasi Consu…,Turkey,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$25.00m,* 127,New
+14,Oct 2022,GMD Group (Grou…,GMD Métal Tanger,France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$48.45m,450,Expansion
+15,Oct 2022,IFCO Systems,IFCO Systems,Germany,Morocco,Plastics,Laminated plastics pl…,"Sales, Marketing & S…",* $2.00m,* 9,New

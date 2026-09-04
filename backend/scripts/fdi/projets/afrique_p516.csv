@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2023,SKF,SKF,Sweden,Morocco,Metals,"Machine shops, turn…",Manufacturing,$4.90m,* 20,New
+2,May 2023,SMC Corporation,SMC Corporation,Japan,Morocco,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+3,May 2023,Telus,Telus Digital (Telu…,Canada,Morocco,Business services,Business support ser…,Business Services,* $27.80m,* 43,New
+4,May 2023,Valerius Texteis,Valerius Texteis,Portugal,Morocco,Textiles,Textile product mills,Recycling,$98.34m,"1,500",New
+5,Apr 2023,Accenture,AFD Technologies,Ireland,Morocco,Software & IT services,Custom computer pr…,Research & Develop…,* $55.80m,300,New
+6,Apr 2023,Brilliant Planet,Brilliant Planet,United Kingdom,Morocco,Renewable energy,Biomass power,Manufacturing,* $3.07bn,* 993,New
+7,Apr 2023,China Coal Group,CEI Construction I…,China,Morocco,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+8,Apr 2023,Commercial Vehicl…,Commercial Vehicl…,United States,Morocco,Electronic components,All other electrical e…,Manufacturing,* $25.40m,250,New
+9,Apr 2023,E2IP,E2IP,Canada,Morocco,Electronic components,All other electrical e…,Manufacturing,$20.00m,* 197,Expansion
+10,Apr 2023,FPS Food Process …,FPS Food Process …,Canada,Morocco,Industrial equipment,"Ventilation, heating,…","Sales, Marketing & S…",* $2.90m,* 11,New
+11,Apr 2023,Hallotex,Reciclados Tanger,Spain,Morocco,Textiles,Textile product mills,Manufacturing,$69.35m,"* 1,500",New
+12,Apr 2023,LG Corp,LG Energy Solution,South Korea,Morocco,Chemicals,Basic chemicals,Manufacturing,* $83.30m,* 455,New
+13,Apr 2023,Pentalog,Pentalog HR (Skill…,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $4.00m,50,New
+14,Mar 2023,ADQ (Abu Dhabi …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Wind electric power,Electricity,* $115.90m,* 36,New
+15,Mar 2023,ADQ (Abu Dhabi …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Wind electric power,Electricity,* $231.80m,* 72,New

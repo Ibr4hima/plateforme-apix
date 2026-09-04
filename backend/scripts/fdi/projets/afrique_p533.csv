@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2019,Weare Aerospace,EFOA,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$5.19m,55,New
+2,Sep 2019,America-Mideast …,America-Mideast …,United States,Morocco,Business services,"Business schools, co…",Business Services,* $27.80m,* 43,New
+3,Sep 2019,Asafo & Co,Asafo & Co,France,Morocco,Business services,Legal services,Business Services,* $27.80m,* 43,New
+4,Sep 2019,Bata,Bata,Switzerland,Morocco,Textiles,Footwear,Retail,* $4.40m,* 50,New
+5,Sep 2019,MyOpla,MyOpla,France,Morocco,Business services,Business support ser…,Customer Contact C…,$2.06m,* 259,Expansion
+6,Sep 2019,National Basketba…,National Basketba…,United States,Morocco,Leisure & entertainm…,Other amusement & …,Construction,* $179.10m,* 429,New
+7,Sep 2019,National Basketba…,National Basketba…,United States,Morocco,Leisure & entertainm…,Other amusement & …,Construction,* $179.10m,* 429,New
+8,Sep 2019,Oberoi Group,Oberoi Group,India,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+9,Sep 2019,Proma,Proma,Italy,Morocco,Automotive compon…,Motor vehicle body &…,Manufacturing,$33.09m,121,New
+10,Sep 2019,Segula Technologi…,Segula Technologi…,France,Morocco,Business services,"Architectural, engine…",Business Services,* $11.30m,75,New
+11,Sep 2019,Yazaki Group,Yazaki Group,Japan,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $17.30m,"2,500",New
+12,Aug 2019,Air Arabia,Air Arabia Maroc,UAE,Morocco,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 11,New
+13,Aug 2019,Grupo Eurotex,Eurotex Maroc,Spain,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,$0.35m,* -,Expansion
+14,Aug 2019,Olympique de Mar…,Olympique de Mar…,France,Morocco,Leisure & entertainm…,"Performing arts, spe…",Education & Training,* $8.20m,* 131,New
+15,Aug 2019,Phoenix Contact,Phoenix Contact,Germany,Morocco,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New

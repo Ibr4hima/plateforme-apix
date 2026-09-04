@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2016,Lockton,Lockton,United States,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+2,Apr 2016,Medic'Air Internati…,Medic'Air Internati…,France,Morocco,Healthcare,Home health care se…,"Sales, Marketing & S…",* $0.80m,* 36,New
+3,Apr 2016,Relats,Relats,Spain,Morocco,Textiles,Other (Textiles),Manufacturing,$8.30m,* 117,Expansion
+4,Apr 2016,TransInvest,Militzer & Münch,Switzerland,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+5,Mar 2016,AP Moller - Maersk,APM Terminals,Denmark,Morocco,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$862.31m,"* 2,758",Co-Location
+6,Mar 2016,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,Electricity,* $282.35m,* 88,New
+7,Mar 2016,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,Electricity,* $141.18m,* 44,New
+8,Mar 2016,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,Electricity,* $423.53m,* 131,New
+9,Mar 2016,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,Electricity,* $141.18m,* 44,New
+10,Mar 2016,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,Electricity,* $211.77m,* 66,New
+11,Mar 2016,Eurosearch & Ass…,Eurosearch & Ass…,France,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+12,Mar 2016,Financiere SNOP …,SNOP Morocco,France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$7.98m,* 115,Expansion
+13,Mar 2016,Geos Group,Geos Group,France,Morocco,Business services,Other support services,Business Services,* $27.80m,* 43,New
+14,Mar 2016,Mantu Group (Am…,Mantu Group (Am…,Switzerland,Morocco,Software & IT services,Custom computer pr…,Business Services,* $2.80m,35,New
+15,Mar 2016,United Technologi…,Ratier-Figeac,United States,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $12.30m,* 163,Expansion

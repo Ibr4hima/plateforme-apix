@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2023,Airseas,Airseas,France,Morocco,Non-automotive tran…,Ships & boats,Research & Develop…,* $15.40m,* 68,New
+2,Sep 2023,Hunan Zhongwei …,CNGR Advanced M…,China,Morocco,Metals,Nonferrous metal pr…,Manufacturing,* $112.10m,* 413,New
+3,Sep 2023,LG Corp,LG Chem,South Korea,Morocco,Chemicals,Basic chemicals,Manufacturing,* $83.30m,* 455,New
+4,Sep 2023,LG Corp,LG Chem,South Korea,Morocco,Chemicals,Basic chemicals,Manufacturing,* $83.30m,* 455,New
+5,Sep 2023,Project Cypher (C…,Project Cypher (C…,UAE,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+6,Sep 2023,Yadea Group Holdi…,Yadea Group Holdi…,China,Morocco,Non-automotive tran…,"Motorcycle, bicycle, …",Retail,* $13.70m,* 8,New
+7,Aug 2023,Construcciones Gr…,Gravesa Maroc,Spain,Morocco,Industrial equipment,General purpose ma…,Manufacturing,* $29.80m,* 69,Expansion
+8,Aug 2023,Dalrada Financial …,Dalrada Financial …,United States,Morocco,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+9,Aug 2023,DXN (DXN Holdin…,DXN (DXN Holdin…,Malaysia,Morocco,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,New
+10,Aug 2023,Fracht,Fracht Netherlands,Switzerland,Morocco,Transportation & Wa…,Freight/Distribution …,Headquarters,* $19.90m,* 106,New
+11,Aug 2023,LODISNA,LODISNA,Spain,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+12,Aug 2023,Padel Nuestro,Padel Nuestro,Spain,Morocco,Consumer products,"Sporting goods, hob…",Retail,* $10.90m,* 170,New
+13,Aug 2023,Sharabati Denim,Sharabati Denim,Egypt,Morocco,Textiles,Textile product mills,"Sales, Marketing & S…",* $1.40m,* 13,New
+14,Jul 2023,Alstom,Alstom,France,Morocco,Non-automotive tran…,Railroad rolling stock,Manufacturing,$16.48m,200,Co-Location
+15,Jul 2023,Finance Consult,Finance Consult,France,Morocco,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 43,New

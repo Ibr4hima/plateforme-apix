@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2006,Lenovo Group,Lenovo Group,Hong Kong,Morocco,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+2,Mar 2006,Amiantit,Amiantit,Saudi Arabia,Morocco,Plastics,"Plastic pipes, pipe fit…",Manufacturing,$23.00m,* 197,New
+3,Mar 2006,Dubai Holding,Dubai Internation…,UAE,Morocco,Real estate,Commercial & institu…,Construction,* $411.00m,* 875,New
+4,Mar 2006,Emaar Properties,Emaar Properties,UAE,Morocco,Leisure & entertainm…,"Performing arts, spe…",Construction,* $118.20m,* 629,New
+5,Mar 2006,Emaar Properties,Emaar Properties,UAE,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+6,Mar 2006,Emaar Properties,Emaar Properties,UAE,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+7,Mar 2006,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,$6.00m,300,New
+8,Mar 2006,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,$3.00m,150,New
+9,Feb 2006,Groupe OPEN,LOGIX Maroc,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+10,Feb 2006,Safran Group,Aircelle,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $8.90m,100,New
+11,Jan 2006,Alain Crenn,Alain Crenn,France,Morocco,Leisure & entertainm…,"Performing arts, spe…",Construction,$288.00m,"1,500",New
+12,Jan 2006,Dkode,Dkode,Portugal,Morocco,Textiles,Footwear,Manufacturing,$74.30m,"* 1,080",New
+13,Jan 2006,Iberdrola,Iberdrola,Spain,Morocco,Renewable energy,Wind electric power,Electricity,* $197.60m,* 54,New
+14,Jan 2006,Monte dei Paschi …,Monte dei Paschi …,Italy,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Dec 2005,App-line,App-line,France,Morocco,Communications,Computing infrastruc…,"Sales, Marketing & S…",$3.60m,12,New

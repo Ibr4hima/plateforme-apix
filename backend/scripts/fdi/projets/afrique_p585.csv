@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2009,Al-Futtaim Group,Al-Futtaim Capital,UAE,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+2,Jun 2009,Constructions Ind…,Constructions Ind…,France,Morocco,Industrial equipment,"Boiler, tank, & shippi…",Manufacturing,* $48.20m,* 401,New
+3,Jun 2009,Gras Savoye,Gras Savoye,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+4,Jun 2009,Nexans,Nexans Morocco,France,Morocco,Electronic components,Communication & en…,Manufacturing,$11.33m,160,Expansion
+5,May 2009,Al Maabar Interna…,Al Maabar Interna…,UAE,Morocco,Real estate,Residential building …,Construction,$750.00m,"* 3,000",New
+6,May 2009,TransInvest,Militzer & Münch,Switzerland,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$3.50m,* 13,New
+7,May 2009,TransInvest,Militzer & Münch,Switzerland,Morocco,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+8,May 2009,Vivendi (Vivendi U…,Maroc Telecom,France,Morocco,Communications,Wired telecommunic…,ICT & Internet Infras…,$1.30bn,* 898,Expansion
+9,Apr 2009,Banco Sabadell,Banco Sabadell,Spain,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Apr 2009,Circle Oil,Circle Oil,Ireland,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+11,Apr 2009,Legris,Clextral,France,Morocco,Industrial equipment,Food product machin…,"Sales, Marketing & S…",* $2.90m,* 17,New
+12,Apr 2009,Outsourcia,Outsourcia,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 261,New
+13,Apr 2009,TUI,RIU Hotels & Reso…,Germany,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+14,Mar 2009,Abu Dhabi Water …,Taqa Morocco (Jor…,UAE,Morocco,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$1.40bn,135,Expansion
+15,Mar 2009,Adecco Group,Adecco Group,Switzerland,Morocco,Business services,Employment services,Business Services,* $6.80m,40,New

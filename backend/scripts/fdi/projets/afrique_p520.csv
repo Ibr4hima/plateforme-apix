@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2022,Engel,Engel,Austria,Morocco,Industrial equipment,Plastics & rubber ind…,"Sales, Marketing & S…",* $2.90m,* 11,New
+2,Jun 2022,Orange (France Te…,Orange Morocco,France,Morocco,Communications,Other telecommunic…,ICT & Internet Infras…,$574.40m,* 85,New
+3,Jun 2022,Qatar Internationa…,Qatar Internationa…,Qatar,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+4,Jun 2022,Safran Group,Safran Nacelles M…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$11.24m,100,Expansion
+5,Jun 2022,Sharaf Group,Emirates Logistics,UAE,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $31.30m,100,New
+6,Jun 2022,SICPA Holding,Sicpa Morocco,Switzerland,Morocco,Chemicals,Other chemical prod…,Manufacturing,* $83.30m,* 455,New
+7,Jun 2022,Stahlschmidt Cabl…,Stahlschmidt Cabl…,Germany,Morocco,Electronic components,Communication & en…,Manufacturing,$10.53m,"1,000",New
+8,Jun 2022,STMicroelectronics,STMicroelectronics,Switzerland,Morocco,Semiconductors,Semiconductors & ot…,Manufacturing,$244.00m,700,Expansion
+9,May 2022,Aramex Internatio…,Aramex Internatio…,UAE,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+10,May 2022,Aramex Internatio…,Aramex Internatio…,UAE,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+11,May 2022,Barry Callebaut,Barry Callebaut,Switzerland,Morocco,Food and Beverages,Sugar & confectionar…,Education & Training,* $2.00m,* 131,New
+12,May 2022,Erum,Erum,Spain,Morocco,Plastics,Other plastics produ…,Manufacturing,$23.26m,400,Expansion
+13,May 2022,Hotpack Packagin…,Hotpack Packagin…,UAE,Morocco,Plastics,Plastics packaging m…,Manufacturing,* $24.10m,* 235,New
+14,May 2022,LiteFinance,LiteFinance,Saint Vincent and…,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,May 2022,Optimum Commu…,i24NEWS,United States,Morocco,Communications,Radio & TV broadcas…,Business Services,* $5.20m,* 20,New

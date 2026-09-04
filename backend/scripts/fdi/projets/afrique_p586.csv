@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2009,Bim Birlesik Maga…,Bim Birlesik Maga…,Turkey,Morocco,Food and Beverages,Food & beverage ret…,Retail,$63.00m,"* 1,034",New
+2,Mar 2009,Dana Petroleum plc,Dana Petroleum plc,United Kingdom,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,$12.00m,* 5,New
+3,Mar 2009,Robert Bosch,Bosch AA,Germany,Morocco,Automotive compon…,Motor vehicle gasolin…,"Sales, Marketing & S…",* $2.30m,* 26,New
+4,Feb 2009,Auvergne Aeronau…,Casablanca Aeron…,France,Morocco,Aerospace,Aircraft,Manufacturing,$11.55m,125,New
+5,Feb 2009,Populis (GoAdv),Populis (GoAdv),Ireland,Morocco,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,40,New
+6,Jan 2009,Makita,Makita,Japan,Morocco,Industrial equipment,Cutlery & handtools,"Sales, Marketing & S…",* $2.90m,* 17,New
+7,Dec 2008,BNP Paribas,BNP Paribas,France,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Dec 2008,Eolane,Eolane,France,Morocco,Electronic components,All other electrical e…,"Logistics, Distributio…",* $10.80m,* 58,Expansion
+9,Dec 2008,Fujikura,Fujikura,Japan,Morocco,Electronic components,Wiring devices,Manufacturing,* $13.70m,* 259,New
+10,Dec 2008,Garrigues,Garrigues,Spain,Morocco,Business services,Legal services,Business Services,$0.50m,3,New
+11,Dec 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+12,Dec 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+13,Dec 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+14,Dec 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+15,Dec 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New

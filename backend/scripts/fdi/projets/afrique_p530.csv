@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,Next,Next,United Kingdom,Morocco,Textiles,Clothing & clothing a…,"Sales, Marketing & S…",* $1.40m,* 13,New
+2,Jan 2020,Orange (France Te…,Orange Middle Ea…,France,Morocco,Communications,Wireless telecommu…,Headquarters,$36.10m,* 95,New
+3,Jan 2020,Pestana,Pestana,Portugal,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+4,Jan 2020,Robert Bosch,Bosch,Germany,Morocco,Automotive OEM,Automobiles,Maintenance & Servi…,* $1.70m,* 61,New
+5,Jan 2020,Stoopen & Meeûs,Stoopen & Meeûs,Belgium,Morocco,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+6,Jan 2020,Trox Group (Gebr…,Trox España,Germany,Morocco,Industrial equipment,"Ventilation, heating,…",Manufacturing,* $29.80m,* 69,New
+7,Dec 2019,Avolta,Hudson Group,Switzerland,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+8,Dec 2019,Bankia SA,Bankia SA,Spain,Morocco,Financial services,Corporate & investm…,Business Services,* $0.90m,3,New
+9,Dec 2019,Bata,Bata,Switzerland,Morocco,Textiles,Footwear,Retail,* $4.40m,* 50,New
+10,Dec 2019,Berardi,Berardi,Italy,Morocco,Metals,"Machine shops, turn…","Logistics, Distributio…",* $14.00m,* 28,New
+11,Dec 2019,Chevron,Afriquia Lubrifiants,United States,Morocco,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $148.70m,120,New
+12,Dec 2019,Grupo Konecta,Grupo Konecta,Spain,Morocco,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 267,New
+13,Dec 2019,Spirit Aerosystems,Spirit Aerosystems,United States,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $46.10m,500,Expansion
+14,Dec 2019,Tema Group,LC Waikiki,Turkey,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Nov 2019,Binsard Avocats,Binsard Avocats,France,Morocco,Business services,Legal services,Business Services,* $27.80m,* 43,New

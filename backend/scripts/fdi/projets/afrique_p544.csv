@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2017,Martinez Otero Co…,Martinez Otero Co…,Spain,Morocco,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+2,Dec 2017,Martinez Otero Co…,Martinez Otero Co…,Spain,Morocco,Consumer products,Furniture & related p…,Manufacturing,* $14.40m,* 418,New
+3,Dec 2017,Nippon Express,Nippon Express (E…,Japan,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New
+4,Dec 2017,PMP (Performance…,PMP (Performance…,France,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+5,Dec 2017,Remade,Remade,France,Morocco,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+6,Dec 2017,Valeo,Valeo,France,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $26.00m,* 497,New
+7,Dec 2017,Varroc Group,Varroc Lighting Sy…,India,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $26.00m,* 497,New
+8,Nov 2017,Biocad Biopharma…,Biocad Biopharma…,Russia,Morocco,Biotechnology,Biological products (…,Manufacturing,* $105.60m,* 146,New
+9,Nov 2017,Bombardier,Bombardier,Canada,Morocco,Non-automotive tran…,Railroad rolling stock,Manufacturing,$71.10m,* 495,New
+10,Nov 2017,Finance in Motion,Finance in Motion,Germany,Morocco,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+11,Nov 2017,Saudi Pharmaceut…,SPIMACO Maroc,Saudi Arabia,Morocco,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$42.42m,350,New
+12,Oct 2017,Air Arabia,Air Arabia Maroc,UAE,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $76.60m,* 178,New
+13,Oct 2017,Burelle,OPmobility (Plasti…,France,Morocco,Automotive compon…,Motor vehicle body &…,Manufacturing,$16.38m,250,New
+14,Oct 2017,Globalia Corporati…,Globalia Corporati…,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+15,Oct 2017,Globalia Corporati…,Globalia Corporati…,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New

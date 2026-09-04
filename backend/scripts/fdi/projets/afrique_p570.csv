@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2012,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Jun 2012,Anadolu Ajansi (A…,Anadolu Ajansi (A…,Turkey,Morocco,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,Jun 2012,Assistance Aerona…,Assistance Aerona…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $12.30m,* 163,New
+4,Jun 2012,Boydak Group,Istikbal Furniture,Turkey,Morocco,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+5,Jun 2012,Hirschmann Auto…,Hirschmann Auto…,Austria,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$20.00m,"1,400",New
+6,Jun 2012,Invest AD,Invest AD,UAE,Morocco,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+7,Jun 2012,Mivisa Envases,Mivisa Envases,Spain,Morocco,Metals,Alumina & aluminiu…,Manufacturing,* $112.10m,* 413,Expansion
+8,Jun 2012,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Jun 2012,University of New …,University of New …,United States,Morocco,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+10,May 2012,Agco,Agco,United States,Morocco,Industrial equipment,"Agriculture, construc…",Education & Training,* $6.40m,60,New
+11,May 2012,Fujifilm,Fujifilm,Japan,Morocco,Consumer electronics,Audio & video equip…,"Sales, Marketing & S…",$0.10m,2,New
+12,May 2012,Fujikura,Fujikura,Japan,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$23.00m,* 702,New
+13,May 2012,Hotelsa Alimentaci…,Hotelsa Morocco,Spain,Morocco,Food and Beverages,Soft drinks & ice,"Logistics, Distributio…",* $22.50m,* 158,New
+14,Apr 2012,Andaltec,Plasticos Tuccitan…,Spain,Morocco,Plastics,Other plastics produ…,Manufacturing,$1.30m,12,New
+15,Apr 2012,BABEL Sistemas d…,BABEL Sistemas d…,Spain,Morocco,Software & IT services,Custom computer pr…,Business Services,$0.70m,12,New

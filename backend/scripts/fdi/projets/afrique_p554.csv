@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2016,Yura Corporation (…,Yura Corporation (…,South Korea,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$27.66m,"1,000",New
+2,Feb 2016,Acte International,Acte International,France,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+3,Feb 2016,Association Famili…,Decathlon (Oxylan…,France,Morocco,Textiles,Clothing & clothing a…,"Logistics, Distributio…",* $36.40m,* 249,New
+4,Feb 2016,Koc Holding,Otokar (Otokar Ot…,Turkey,Morocco,Automotive OEM,Heavy duty trucks,Research & Develop…,* $60.40m,* 161,New
+5,Feb 2016,Koc Holding,Otokar (Otokar Ot…,Turkey,Morocco,Automotive OEM,Heavy duty trucks,Manufacturing,* $351.60m,"* 2,332",New
+6,Feb 2016,Unione di Banche …,Unione di Banche …,Italy,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Jan 2016,Abu Dhabi Water …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Wind electric power,Electricity,$151.08m,* 47,New
+8,Jan 2016,Daher,Daher,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$16.35m,250,New
+9,Jan 2016,Groupe PSA (PSA …,Groupe PSA (PSA …,France,Morocco,Automotive OEM,Automobiles,Research & Develop…,$60.40m,* 161,New
+10,Jan 2016,Hexcel,Hexcel,United States,Morocco,Plastics,Artificial & synthetic …,Manufacturing,$21.74m,250,New
+11,Jan 2016,United Parcel Serv…,United Parcel Serv…,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New
+12,Jan 2016,United Parcel Serv…,UPS Maroc,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+13,Jan 2016,United Parcel Serv…,UPS Maroc,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+14,Jan 2016,United Parcel Serv…,UPS Maroc,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+15,Dec 2015,Chedid Re,Chedid Re,Lebanon,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New

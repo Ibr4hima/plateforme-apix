@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2025,Lingyun Industrial,Lingyun Industrial,China,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$8.22m,* 118,New
+2,Feb 2025,Lingyun Industrial,Lingyun Industrial,China,Morocco,Automotive compon…,Motor vehicle body &…,Manufacturing,$13.78m,* 199,New
+3,Feb 2025,Nesevo,Nesevo,Austria,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+4,Feb 2025,Otto Krahn,Albis Plastic,Germany,Morocco,Plastics,"Urethane, foam prod…","Sales, Marketing & S…",* $2.00m,* 9,New
+5,Feb 2025,SACE,SACE,Italy,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Feb 2025,Segula Technologi…,Segula Technologi…,France,Morocco,Business services,"Architectural, engine…",Business Services,* $6.00m,40,New
+7,Feb 2025,Stihl,Stihl,Germany,Morocco,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Jan 2025,Inter HECS,Inter HECS,Bulgaria,Morocco,Business services,Educational support …,Business Services,* $27.80m,* 43,New
+9,Jan 2025,Shenzhen Kaizhon…,Shenzhen Kaizhon…,China,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$5.50m,* 79,New
+10,Jan 2025,TBS Education (To…,TBS Education (To…,France,Morocco,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,Expansion
+11,Jan 2025,Unilever,Unilever,United Kingdom,Morocco,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,Expansion
+12,Dec 2024,Asarisk Corporation,Asarisk Corporation,Switzerland,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+13,Dec 2024,Expleo (Assystem),Expleo (Assystem),France,Morocco,Business services,"Architectural, engine…",Business Services,* $27.80m,* 43,New
+14,Dec 2024,Jerusalem Factory…,Jerusalem Factory…,Jordan,Morocco,Metals,Alumina & aluminiu…,"Sales, Marketing & S…",* $1.90m,* 8,New
+15,Dec 2024,Smollan,Smollan,South Africa,Morocco,Business services,Other support services,Business Services,* $27.80m,* 43,New

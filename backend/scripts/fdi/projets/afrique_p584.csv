@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2009,America-Mideast …,America-Mideast …,United States,Morocco,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+2,Sep 2009,Clientela,Clientela,France,Morocco,Business services,Business support ser…,Customer Contact C…,$1.00m,50,New
+3,Sep 2009,Dollar Thrifty Auto…,Dollar Rent A Car,United States,Morocco,Automotive OEM,Automobiles,Retail,* $12.70m,* 33,New
+4,Sep 2009,Eleven Shop,Eleven Shop,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+5,Sep 2009,Silk Invest Limited,Silk Invest Limited,United Kingdom,Morocco,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+6,Sep 2009,SUPINFO,SUPINFO,France,Morocco,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+7,Sep 2009,SUPINFO,SUPINFO,France,Morocco,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+8,Sep 2009,XCOM,XCOM,France,Morocco,Business services,Other support services,Business Services,* $6.80m,40,New
+9,Aug 2009,Circle Oil,Circle Oil,Ireland,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,Expansion
+10,Aug 2009,Hispajuris,Bolonia Abogados,Spain,Morocco,Business services,Legal services,Business Services,* $6.80m,40,New
+11,Aug 2009,Hispajuris,Bolonia Abogados,Spain,Morocco,Business services,Legal services,Business Services,* $6.80m,40,New
+12,Jul 2009,BSA Proyecta,BSA Proyecta,Spain,Morocco,Business services,"Professional, scientifi…",Business Services,* $6.80m,40,New
+13,Jul 2009,La Caixa,La Caixa,Spain,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Jul 2009,Orascom Develop…,Oued Chbika Deve…,Switzerland,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+15,Jun 2009,Air France-KLM Gr…,Air France Industr…,France,Morocco,Aerospace,Aircraft,Maintenance & Servi…,* $18.10m,* 142,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Residential building …,Construction,$33.00m,* 236,New
+2,Jun 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+3,Jun 2008,Marina d'Or Group,Marina d'Or,Spain,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+4,Jun 2008,Tessera Technolog…,Tessera Technolog…,United States,Morocco,Consumer electronics,Audio & video equip…,Manufacturing,* $27.20m,* 641,New
+5,May 2008,Cimpor,Cimpor,Portugal,Morocco,Building materials,Cement & concrete p…,Manufacturing,$158.00m,* 302,New
+6,May 2008,Danosa,Danosa,Spain,Morocco,Plastics,"Urethane, foam prod…","Sales, Marketing & S…",* $2.00m,* 12,New
+7,May 2008,Fidelity Investmen…,HR Access,United States,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $3.30m,15,New
+8,May 2008,Riva y Garcia,Riva y Garcia,Spain,Morocco,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+9,May 2008,Strugal,Strugal,Spain,Morocco,Metals,Alumina & aluminiu…,Manufacturing,* $65.00m,* 148,New
+10,May 2008,Sunseeker,Sunseeker Yachts,United Kingdom,Morocco,Non-automotive tran…,Ships & boats,"Sales, Marketing & S…",* $2.50m,* 8,New
+11,May 2008,Vietnam Oil and G…,Petrovietnam Ferti…,Vietnam,Morocco,Chemicals,"Pesticide, fertilisers …",Manufacturing,$600.00m,* 745,New
+12,Apr 2008,Accenture,Accenture,Bermuda,Morocco,Software & IT services,Custom computer pr…,Technical Support Ce…,* $17.00m,* 222,New
+13,Apr 2008,AT&T,AT&T,United States,Morocco,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Apr 2008,Auvergne Aeronau…,Casablanca Aeron…,France,Morocco,Aerospace,Aircraft,Manufacturing,$15.50m,175,New
+15,Apr 2008,Barcelo,Barcelo Hotel and …,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New

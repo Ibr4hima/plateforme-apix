@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2018,Bombardier,Bombardier Aeros…,Canada,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $12.30m,* 163,Expansion
+2,Dec 2018,International Wor…,International Wor…,Switzerland,Morocco,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+3,Dec 2018,Ste E.J. Barbier,EPC Maroc,France,Morocco,Chemicals,Other chemical prod…,Manufacturing,$20.95m,* 28,New
+4,Dec 2018,Vistony,Vistony,Peru,Morocco,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+5,Nov 2018,Barcelo,Barcelo,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+6,Nov 2018,Groupe Realites,Groupe Realites,France,Morocco,Hotels & tourism,Accommodation,Construction,$15.89m,40,New
+7,Nov 2018,Groupe Realites,Groupe Realites,France,Morocco,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+8,Nov 2018,Hainan Traffic Ad…,Swissport Internat…,China,Morocco,Transportation & Wa…,Support activities for…,"Logistics, Distributio…",* $76.60m,* 178,New
+9,Nov 2018,Kohler,Jacob Delafon,United States,Morocco,Consumer products,Furniture & related p…,Manufacturing,* $14.40m,* 418,Expansion
+10,Nov 2018,Robert Bosch,Bosch Rexroth,Germany,Morocco,Automotive OEM,All other transportati…,"Sales, Marketing & S…",* $9.70m,* 26,New
+11,Nov 2018,Saint-Gobain,Saint-Gobain Weber,France,Morocco,Building materials,Cement & concrete p…,Education & Training,* $12.50m,* 131,New
+12,Oct 2018,Airbus Group (Eur…,Airbus Helicopters…,Netherlands,Morocco,Aerospace,Aircraft,Maintenance & Servi…,* $31.10m,* 147,New
+13,Oct 2018,Alten,Alten,France,Morocco,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 181,New
+14,Oct 2018,Chongqing Regal …,Regal Automotive …,China,Morocco,Automotive compon…,Motor vehicle transm…,Manufacturing,* $26.00m,* 497,New
+15,Oct 2018,Elsewedy Electric …,Elsewedy Electric …,Egypt,Morocco,Electronic components,Communication & en…,"Sales, Marketing & S…",* $1.80m,* 13,New

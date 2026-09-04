@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2023,ADQ (Abu Dhabi …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Wind electric power,Electricity,* $231.80m,* 72,New
+2,Mar 2023,ADQ (Abu Dhabi …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Solar electric power,Electricity,* $278.25m,* 86,New
+3,Mar 2023,ADQ (Abu Dhabi …,Taqa Morocco (Jor…,UAE,Morocco,Renewable energy,Wind electric power,Electricity,* $695.60m,* 216,New
+4,Mar 2023,Delaware Consulti…,Delaware Consulti…,Belgium,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+5,Mar 2023,Renault,Automobile Dacia,France,Morocco,Automotive OEM,Automobiles,Manufacturing,* $85.20m,550,Expansion
+6,Mar 2023,TotalEnergies (Tot…,Hutchinson,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$12.00m,400,New
+7,Feb 2023,ATEQ,ATEQ,France,Morocco,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Feb 2023,Grupo Empresaria…,Netafim,Mexico,Morocco,Industrial equipment,"Agriculture, construc…",Manufacturing,* $21.50m,200,New
+9,Feb 2023,Helukabel,Helukabel,Germany,Morocco,Electronic components,Communication & en…,"Sales, Marketing & S…",* $1.80m,* 13,New
+10,Jan 2023,Cheil Worldwide,Cheil Worldwide,South Korea,Morocco,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 43,New
+11,Jan 2023,Epitome Advisory,Epitome Advisory,United Kingdom,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+12,Jan 2023,Figeac-Aero (Fige…,Casablanca Aeron…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$12.97m,55,Expansion
+13,Jan 2023,International Hold…,Atlantic Coast Hos…,UAE,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+14,Jan 2023,John Cockerill (Co…,John Cockerill (Co…,Belgium,Morocco,Industrial equipment,All other industrial m…,Manufacturing,* $29.80m,* 69,New
+15,Jan 2023,OQEMA (Overlack),OQEMA (Overlack),Germany,Morocco,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New

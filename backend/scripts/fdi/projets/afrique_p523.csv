@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2021,Compagnie Optorg,Tractafric Equipme…,France,Morocco,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,$4.94m,40,New
+2,Nov 2021,Samsung Group,Samsung Group,South Korea,Morocco,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+3,Oct 2021,Grupo Ditech,Grupo Ditech,Spain,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+4,Oct 2021,Solarity,Solarity,Czech Republic,Morocco,Electronic components,All other electrical e…,"Logistics, Distributio…",* $12.90m,* 39,New
+5,Sep 2021,Aptiv,Aptiv,Ireland,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$43.50m,"3,500",New
+6,Sep 2021,Hapag-Lloyd,Hapag-Lloyd,Germany,Morocco,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $5.20m,* 15,New
+7,Sep 2021,Hapag-Lloyd,Hapag-Lloyd,Germany,Morocco,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $5.20m,* 15,New
+8,Sep 2021,Hapag-Lloyd,Hapag-Lloyd,Germany,Morocco,Transportation & Wa…,Water transportation,Headquarters,* $3.40m,* 17,Expansion
+9,Sep 2021,Hexcel,Hexcel,United States,Morocco,Plastics,Artificial & synthetic …,Manufacturing,* $22.20m,280,Expansion
+10,Sep 2021,Holcim Group (Laf…,LafargeHolcim Ma…,Switzerland,Morocco,Building materials,Cement & concrete p…,Manufacturing,$330.00m,"1,400",New
+11,Sep 2021,Sistemas Avanzad…,Sistemas Avanzad…,Spain,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+12,Sep 2021,Sothebys,Sothebys Internat…,United States,Morocco,Real estate,Real estate services,Business Services,* $1.90m,* 8,New
+13,Aug 2021,Alithya,Alithya,Canada,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+14,Aug 2021,PPG Industries,PPG Industries,United States,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,* $83.30m,* 455,New
+15,Aug 2021,Unicâmbio,Unicâmbio,Portugal,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

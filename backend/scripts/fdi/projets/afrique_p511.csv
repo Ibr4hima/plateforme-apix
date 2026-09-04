@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2024,Pérez y Cía,Pérez y Cía,Spain,Morocco,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 11,New
+2,Jan 2024,Africa Specialty Ri…,Africa Specialty Ri…,United Kingdom,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+3,Jan 2024,Giambrone & Part…,Giambrone & Part…,United Kingdom,Morocco,Business services,Legal services,Business Services,* $0.30m,2,New
+4,Jan 2024,Kostal,Kostal,Germany,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$27.18m,700,New
+5,Jan 2024,MSA Safety,MSA Safety,United States,Morocco,Textiles,Clothing & clothing a…,Manufacturing,* $83.80m,"* 1,750",Expansion
+6,Dec 2023,Beaumanoir Group,Morgan de Toi,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,Dec 2023,China Baoan Group,BTR New Material …,China,Morocco,Metals,Other (Metals),Manufacturing,$490.63m,"* 1,970",New
+8,Dec 2023,ESP Solutions,ESP Solutions,Spain,Morocco,Transportation & Wa…,Truck transportation,"Sales, Marketing & S…",* $6.30m,* 11,New
+9,Dec 2023,Hyatt Hotels,Hyatt Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+10,Dec 2023,Nexans,Nexans,France,Morocco,Electronic components,Communication & en…,Manufacturing,$109.43m,200,New
+11,Dec 2023,S2H2+Bm,S2H2+Bm,Sweden,Morocco,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+12,Nov 2023,ALFA Innovations …,ALFA Innovations …,Canada,Morocco,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 43,New
+13,Nov 2023,Alpla (Alpla Werke…,Alpla Morocco,Austria,Morocco,Plastics,Plastics packaging m…,Manufacturing,* $24.10m,* 235,Expansion
+14,Nov 2023,Antal International,Antal International,United Kingdom,Morocco,Business services,Employment services,Business Services,* $27.80m,* 43,New
+15,Nov 2023,Business Plane Gr…,Business Plane Gr…,Italy,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New

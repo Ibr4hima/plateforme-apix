@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2007,Naturgy Energy G…,Naturgy Energy G…,Spain,Morocco,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",$400.00m,"2,000",New
+2,Mar 2007,Robert Bosch,Bosch,Germany,Morocco,Consumer electronics,Household appliances,Retail,* $12.30m,* 97,New
+3,Feb 2007,Atento Marruecos,Atento Marruecos,Spain,Morocco,Software & IT services,Custom computer pr…,Customer Contact C…,* $41.80m,"1,000",New
+4,Feb 2007,BNP Paribas,BNP Paribas,France,Morocco,Financial services,Retail banking,Shared Services Cen…,* $15.50m,600,New
+5,Feb 2007,Brico Usine (Brico…,Brico Usine (Brico…,France,Morocco,Consumer products,Building material & g…,Retail,$30.00m,"1,000",New
+6,Feb 2007,Electronic Data Sy…,Electronic Data Sy…,United States,Morocco,"Coal, oil & gas",Support activities for…,Shared Services Cen…,$46.26m,700,New
+7,Feb 2007,Inditex,Zara,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+8,Feb 2007,Lafarge,Lafarge Morocco,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,$163.30m,* 312,Expansion
+9,Feb 2007,Lucien Barriere Ho…,Lucien Barriere Ho…,France,Morocco,Hotels & tourism,Accommodation,Construction,$59.10m,* 151,New
+10,Jan 2007,Call Marketing,Call Marketing,France,Morocco,Business services,"Professional, scientifi…",Customer Contact C…,* $1.80m,90,New
+11,Jan 2007,Exlabesa,Exlabesa,Spain,Morocco,Metals,Alumina & aluminiu…,Manufacturing,$10.40m,35,New
+12,Jan 2007,Neocium,Neocium,Spain,Morocco,Leisure & entertainm…,Amusement & them…,Construction,$44.20m,* 189,New
+13,Jan 2007,Orascom Construc…,Orascom Hotels a…,Egypt,Morocco,Hotels & tourism,Travel arrangement …,Construction,* $116.60m,* 202,New
+14,Dec 2006,Aero Lorraine,Casablanca Precisi…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$2.00m,50,New
+15,Dec 2006,Tata Group,Tata Consultancy …,India,Morocco,Software & IT services,Custom computer pr…,Technical Support Ce…,* $53.60m,500,New

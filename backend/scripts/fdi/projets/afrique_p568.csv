@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2013,Protesa,Protesa,Spain,Morocco,Plastics,"Plastic pipes, pipe fit…",Manufacturing,* $24.10m,* 235,New
+2,Jan 2013,Ryanair,Ryanair,Ireland,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $76.60m,* 178,New
+3,Jan 2013,Ryanair,Ryanair,Ireland,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $76.60m,* 178,New
+4,Jan 2013,Tinned Food,Tinned Food,Spain,Morocco,Food and Beverages,Seafood products,Manufacturing,* $13.30m,* 176,New
+5,Dec 2012,Lear,Lear,United States,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $48.60m,700,New
+6,Dec 2012,TBS Education (To…,TBS Education (To…,France,Morocco,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+7,Dec 2012,Waterleau,Waterleau,Belgium,Morocco,Business services,"Water, sewage & oth…",Recycling,$10.50m,* 10,New
+8,Nov 2012,Elec'Recyclage,Elec'Recyclage,France,Morocco,Business services,Waste management …,Recycling,$4.08m,* 4,New
+9,Nov 2012,Giorgi Global Hold…,Morocco Beverage…,United States,Morocco,Metals,Alumina & aluminiu…,Manufacturing,* $112.10m,* 413,Expansion
+10,Nov 2012,HLi Group,HLi Group,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+11,Nov 2012,SEKO Worldwide,SEKO Worldwide,United States,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New
+12,Oct 2012,Banco de Chile,Banco de Chile,Chile,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Oct 2012,Cast Info,Cast Info,Spain,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$0.65m,40,New
+14,Oct 2012,Continental,Continental,Germany,Morocco,Rubber,Tyres,Maintenance & Servi…,* $2.80m,* 36,New
+15,Oct 2012,Huawei Technologi…,Huawei Technologi…,China,Morocco,Communications,Communications equ…,Education & Training,$6.50m,200,New

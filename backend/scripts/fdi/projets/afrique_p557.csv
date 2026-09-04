@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2015,Continental,ContiTech,Germany,Morocco,Industrial equipment,General purpose ma…,Manufacturing,* $12.90m,120,New
+2,Aug 2015,CSTI Group,CSTI Group,France,Morocco,Industrial equipment,"Boiler, tank, & shippi…",Manufacturing,$0.65m,12,New
+3,Aug 2015,Sondrel,Sondrel,United Kingdom,Morocco,Semiconductors,Semiconductors & ot…,Research & Develop…,* $59.30m,* 103,New
+4,Jul 2015,Renault,Renault,France,Morocco,Automotive OEM,Automobiles,Manufacturing,* $351.60m,"* 2,332",Expansion
+5,Jun 2015,Figeac-Aero (Fige…,Figeac-Aero (Fige…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$27.97m,40,New
+6,Jun 2015,Furukawa,Furukawa Electric,Japan,Morocco,Electronic components,Communication & en…,Manufacturing,$8.07m,* 79,New
+7,Jun 2015,Groupe PSA (PSA …,Groupe PSA (PSA …,France,Morocco,Automotive OEM,Automobiles,Manufacturing,$633.42m,"2,500",New
+8,Jun 2015,Huawei Technologi…,Huawei Technologi…,China,Morocco,Communications,Communications equ…,Headquarters,* $36.10m,* 95,New
+9,Jun 2015,Projar,Projar,Spain,Morocco,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $2.80m,* 13,New
+10,Jun 2015,ServeVac,ServeVac,Portugal,Morocco,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+11,Jun 2015,Tecalemit Aerospa…,Tecalemit Aerospa…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$2.17m,40,New
+12,May 2015,China Eximbank,China Eximbank,China,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,May 2015,Enel,Enel Green Power,Italy,Morocco,Renewable energy,Wind electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+14,May 2015,Etix (Etix Everywh…,Etix (Etix Everywh…,Luxembourg,Morocco,Communications,Computing infrastruc…,ICT & Internet Infras…,$3.60m,* 1,New
+15,May 2015,Ford Motor Compa…,Ford Motor Compa…,United States,Morocco,Automotive OEM,Automobiles,Manufacturing,* $351.60m,"* 2,332",New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2011,Francisco Gil Comes,Francisco Gil Comes,Spain,Morocco,Food and Beverages,Seafood products,"Logistics, Distributio…",$2.60m,* 9,New
+2,Jan 2011,Lasry Glass,Lasry Glass,France,Morocco,Ceramics & glass,Glass & glass products,Manufacturing,$58.60m,* 160,New
+3,Jan 2011,MoneyGram Inter…,MoneyGram Inter…,United States,Morocco,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Jan 2011,Qatar Petrochemic…,Qatar Petrochemic…,Qatar,Morocco,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $6.20m,* 14,New
+5,Jan 2011,Relats,Relats,Spain,Morocco,Textiles,Other (Textiles),Manufacturing,* $74.30m,"* 1,080",New
+6,Dec 2010,Club Med (Club M…,Club Med (Club M…,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+7,Dec 2010,Emtelle,Emtelle,United Kingdom,Morocco,Plastics,"Plastic pipes, pipe fit…",Manufacturing,* $9.30m,* 107,New
+8,Dec 2010,Microplan,Microplan,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+9,Dec 2010,Orange (France Te…,Medi Telecom (Me…,France,Morocco,Communications,Communications equ…,Retail,$6.40m,* 51,New
+10,Nov 2010,AXA,AXA,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $320.10m,"1,500",Expansion
+11,Nov 2010,Cleverlance,TrustPort,Czech Republic,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+12,Nov 2010,Logica (LogicaCMG),Logica (LogicaCMG),United Kingdom,Morocco,Software & IT services,"Software publishers,…",Business Services,* $31.40m,240,New
+13,Nov 2010,Societe Generale (…,Societe Generale (…,France,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Nov 2010,Sony,Sony,Japan,Morocco,Consumer electronics,Electronics & applian…,Retail,* $12.30m,* 97,New
+15,Nov 2010,Tata Group,Tata Hispano Moto…,India,Morocco,Automotive OEM,Heavy duty trucks,Manufacturing,$12.16m,350,New

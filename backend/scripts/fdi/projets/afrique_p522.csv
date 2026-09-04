@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2022,Selina,Selina,United Kingdom,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+2,Mar 2022,Tectag,Tectag,Germany,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+3,Mar 2022,Ustunberk Holding,Martur,Turkey,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,$35.41m,"1,150",New
+4,Feb 2022,CITIC Group,CiTiC Dicastal,China,Morocco,Metals,Alumina & aluminiu…,Manufacturing,$191.00m,760,New
+5,Feb 2022,Eren Groupe,Total Eren,Luxembourg,Morocco,Renewable energy,Other electric power …,Manufacturing,$10.28bn,"* 3,000",New
+6,Feb 2022,Factor Energia,Factor Energia,Spain,Morocco,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+7,Feb 2022,Xylem,Xylem,United States,Morocco,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Jan 2022,IDinsight,IDinsight,India,Morocco,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 43,New
+9,Jan 2022,LUG,LUG,Poland,Morocco,Electronic components,Electric lighting equi…,"Sales, Marketing & S…",* $1.80m,* 13,New
+10,Jan 2022,Mondi Group,Mondi Group,United Kingdom,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$17.00m,* 87,New
+11,Jan 2022,Neoxia,Neoxia,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $0.60m,8,Expansion
+12,Jan 2022,SQORUS (Des Sys…,SQORUS (Des Sys…,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+13,Dec 2021,Alstom,Alstom,France,Morocco,Electronic components,Communication & en…,Manufacturing,$11.82m,* 116,Expansion
+14,Dec 2021,Renault,Renault,France,Morocco,Automotive compon…,Motor vehicle metal …,Manufacturing,* $26.00m,* 497,Expansion
+15,Dec 2021,Zenika,Zenika,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $1.00m,12,New

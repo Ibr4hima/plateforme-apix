@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2006,Daher,Daher,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$9.00m,* 102,New
+2,Jun 2006,Fadesa,Fadesa,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$381.80m,* 975,New
+3,Jun 2006,Grupo Konecta,Grupo Konecta,Spain,Morocco,Business services,Business support ser…,Business Services,* $6.80m,* 40,New
+4,Jun 2006,Ippon Technologies,Ippon Technologies,France,Morocco,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $2.20m,10,New
+5,Jun 2006,Kosmos Energy,Kosmos Energy,United States,Morocco,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+6,Jun 2006,Lafarge,LafargeHolcim Ma…,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,* $190.00m,* 342,Expansion
+7,Jun 2006,Lafarge,LafargeHolcim Ma…,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,* $190.00m,* 342,Expansion
+8,Jun 2006,Lafarge,LafargeHolcim Ma…,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,* $190.00m,* 342,New
+9,Jun 2006,STMicroelectronics,STMicroelectronics,Switzerland,Morocco,Semiconductors,Semiconductors & ot…,Research & Develop…,* $224.90m,670,New
+10,Jun 2006,STMicroelectronics,STMicroelectronics,Switzerland,Morocco,Semiconductors,Semiconductors & ot…,Research & Develop…,* $224.90m,670,New
+11,May 2006,Cisco Systems,Cisco Systems,United States,Morocco,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 16,New
+12,May 2006,Dell Technologies,Dell Technologies,United States,Morocco,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+13,Apr 2006,Dachser,Graveleau,Germany,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+14,Apr 2006,Fadesa,Fadesa,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$190.10m,* 485,New
+15,Apr 2006,Haworth,Haworth,United States,Morocco,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $4.40m,* 18,New

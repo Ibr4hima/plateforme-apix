@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2014,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Sep 2014,Satys (Finaero),STTS,France,Morocco,Aerospace,Aircraft,Manufacturing,* $12.00m,130,New
+3,Sep 2014,Transportes GLT (…,Transportes GLT (…,Spain,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 11,New
+4,Aug 2014,Bank of China,Bank of China,China,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Aug 2014,Industrias Lacteas…,Industrias Lacteas…,Spain,Morocco,Food and Beverages,Dairy products,Manufacturing,* $13.30m,* 176,New
+6,Jul 2014,Airbus Group (Eur…,STELIA Aerospace…,Netherlands,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$43.76m,450,New
+7,Jul 2014,Alcoa,Alcoa,United States,Morocco,Metals,Other fabricated met…,Manufacturing,* $49.80m,200,New
+8,Jul 2014,Danone,Danone,France,Morocco,Food and Beverages,Dairy products,Education & Training,* $2.00m,* 131,New
+9,Jul 2014,Dentons,Dentons,United Kingdom,Morocco,Business services,Legal services,Business Services,* $27.80m,* 43,New
+10,Jul 2014,Goma-Camps,Goma-Camps,Spain,Morocco,"Paper, printing & pac…",Converted paper pro…,"Sales, Marketing & S…",* $2.10m,* 10,New
+11,Jul 2014,Outsourcia,Outsourcia,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $0.80m,100,New
+12,Jul 2014,Shandong Iron & …,Shandong Iron & …,China,Morocco,Metals,Steel products,Manufacturing,$150.00m,* 602,New
+13,Jun 2014,Abengoa,Abengoa,Spain,Morocco,Business services,"Water, sewage & oth…",Recycling,$111.87m,* 108,New
+14,Jun 2014,Armor,Armor,France,Morocco,Chemicals,Other chemical prod…,Manufacturing,$88.18m,150,Expansion
+15,Jun 2014,Bontaz Centre,Bontaz Centre,France,Morocco,Automotive compon…,Motor vehicle steerin…,Manufacturing,$29.45m,150,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2008,Alltech,Alltech,United States,Morocco,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $6.20m,* 14,New
+2,Sep 2008,Berggruen Holdings,Berggruen Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+3,Sep 2008,Berggruen Holdings,Berggruen Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+4,Sep 2008,Berggruen Holdings,Berggruen Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+5,Sep 2008,Berggruen Holdings,Berggruen Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+6,Sep 2008,Berggruen Holdings,Berggruen Hotels,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+7,Sep 2008,BPI Group,BPI Group,France,Morocco,Business services,Management consult…,Business Services,* $6.80m,40,New
+8,Sep 2008,Dell Technologies,Dell Technologies,United States,Morocco,Business machines &…,Computer & peripher…,Shared Services Cen…,* $31.10m,200,New
+9,Sep 2008,Descours Group,Descours Group,France,Morocco,Food and Beverages,Fruits & vegetables …,Manufacturing,$4.20m,400,New
+10,Sep 2008,Fairmont Raffles H…,Fairmont Hotels &…,Canada,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+11,Sep 2008,Gulf Holding Com…,Gulf Holding Com…,Kuwait,Morocco,Real estate,Real estate services,Construction,$800.00m,"* 3,000",New
+12,Sep 2008,Renault,Renault,France,Morocco,Automotive OEM,Automobiles,Manufacturing,* $633.40m,"6,000",New
+13,Aug 2008,Renault,Renault,France,Morocco,Automotive OEM,Automobiles,Education & Training,$1.30m,* 2,New
+14,Aug 2008,Typsa,Typsa,Spain,Morocco,Business services,"Architectural, engine…",Business Services,* $6.80m,40,New
+15,Jul 2008,Damas Jewellery,Damas Jewellery,UAE,Morocco,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New

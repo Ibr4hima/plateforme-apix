@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2017,A Raymond,A Raymond,France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $26.00m,* 497,New
+2,Jan 2017,Faiveley Transport…,Faiveley Transport…,France,Morocco,Non-automotive tran…,Railroad rolling stock,Maintenance & Servi…,* $24.10m,* 55,Expansion
+3,Jan 2017,Grupo Iberostar,Iberostar,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+4,Jan 2017,Les Laboratoires S…,Servier Morocco,France,Morocco,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $17.50m,* 205,Expansion
+5,Jan 2017,Qatar Internation…,Qatar Internation…,Qatar,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Jan 2017,Sodercan (Socied…,Sodercan (Socied…,Spain,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Jan 2017,Underwriters Labo…,Underwriters Labo…,United States,Morocco,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 43,New
+8,Dec 2016,Vicky Foods (Dulc…,Vicky Foods (Dulc…,Spain,Morocco,Food and Beverages,Bakeries & tortillas,Manufacturing,* $13.30m,* 176,New
+9,Nov 2016,ACWA Power,ACWA Power,Saudi Arabia,Morocco,Renewable energy,Solar electric power,Electricity,* $25.88m,* 8,New
+10,Nov 2016,ACWA Power,ACWA Power,Saudi Arabia,Morocco,Renewable energy,Solar electric power,Electricity,* $103.53m,* 32,New
+11,Nov 2016,Cemos Group,Global Oil Shale G…,United Kingdom,Morocco,Building materials,Cement & concrete p…,Manufacturing,$296.50m,* 307,New
+12,Nov 2016,Cemos Group,Cemos Group,United Kingdom,Morocco,Building materials,Other (Building mate…,"Sales, Marketing & S…",* $0.50m,* 8,New
+13,Nov 2016,Digital Virgo,Digital Virgo,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+14,Nov 2016,Earth Holding,Earth Holding,UAE,Morocco,Real estate,Residential building …,Construction,$20.73m,* 31,New
+15,Nov 2016,Novallia,Novallia,France,Morocco,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 43,New

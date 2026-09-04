@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2010,Viza Automocion,Viza Automocion,Spain,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $7.60m,100,New
+2,Dec 2009,Nestle,Nestle,Switzerland,Morocco,Food and Beverages,Snack food,Shared Services Cen…,* $7.10m,150,New
+3,Dec 2009,Witbe,Witbe,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+4,Dec 2009,Witbe,Witbe,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+5,Nov 2009,Baglioni Hotles,Baglioni Hotles,Italy,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+6,Nov 2009,Chopard,Chopard,Switzerland,Morocco,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+7,Nov 2009,Phatisa,Phatisa,South Africa,Morocco,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+8,Nov 2009,Rieker,Rieker,Switzerland,Morocco,Textiles,Footwear,Manufacturing,$26.10m,"1,000",New
+9,Oct 2009,Accor,Hotel Sofitel,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+10,Oct 2009,Accor,Accor,France,Morocco,Hotels & tourism,Travel arrangement …,Education & Training,* $4.60m,* 94,New
+11,Oct 2009,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+12,Oct 2009,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+13,Oct 2009,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+14,Oct 2009,Grupo Fersa,Grupo Fersa,Spain,Morocco,Industrial equipment,Commercial & servic…,"Sales, Marketing & S…",* $2.90m,* 17,New
+15,Oct 2009,Jacobs Engineerin…,Jacobs Engineerin…,United States,Morocco,Business services,Heavy & civil engine…,Business Services,* $6.80m,40,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2011,Christian Dior,Christian Dior,France,Morocco,Textiles,Apparel accessories …,Retail,* $11.90m,* 86,New
+2,Dec 2011,Grupo Mecanotubo,Grupo Mecanotubo,Spain,Morocco,Business services,Speciality trade cont…,Business Services,* $6.80m,40,New
+3,Dec 2011,Inditex,Stradivarius,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+4,Dec 2011,Inditex,Bershka,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+5,Dec 2011,Inditex,Pull & Bear,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+6,Dec 2011,Inditex,Uterque,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+7,Dec 2011,Inditex,Massimo Dutti,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+8,Dec 2011,Inditex,Zara Home,Spain,Morocco,Consumer products,Furniture & related p…,Retail,* $36.90m,* 179,New
+9,Dec 2011,Inditex,Zara,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+10,Dec 2011,LVMH Group,Louis Vuitton,France,Morocco,Textiles,Apparel accessories …,Retail,* $11.90m,* 86,New
+11,Dec 2011,Samar't,Samar't,Spain,Morocco,Consumer products,Sign manufacturing,Manufacturing,* $16.30m,* 243,New
+12,Dec 2011,Tasweek Real Esta…,Tasweek Real Esta…,UAE,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+13,Nov 2011,Bombardier,Bombardier Aeros…,Canada,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$200.00m,850,New
+14,Nov 2011,Katara Hospitality …,Katara Hospitality …,Qatar,Morocco,Hotels & tourism,Accommodation,Construction,$55.00m,200,New
+15,Nov 2011,Leoni,Leoni,Germany,Morocco,Electronic components,Wiring devices,Manufacturing,* $13.70m,* 259,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2007,Safran Group,SAGEM,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+2,Sep 2007,Futuren (Theolia),Futuren (Theolia),France,Morocco,Renewable energy,Wind electric power,"Sales, Marketing & S…",* $155.50m,* 22,New
+3,Sep 2007,Nissan,Nissan,Japan,Morocco,Automotive OEM,Automobiles,Manufacturing,$818.00m,"6,000",New
+4,Sep 2007,Procter & Gamble …,Procter & Gamble …,United States,Morocco,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $16.30m,* 243,Expansion
+5,Sep 2007,Procter & Gamble …,Procter & Gamble …,United States,Morocco,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $16.30m,* 243,Expansion
+6,Sep 2007,Valeo,Valeo,France,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$25.87m,* 340,Expansion
+7,Aug 2007,DPH Holdings (Del…,DPH Holdings (Del…,United States,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$36.00m,"2,500",New
+8,Jul 2007,Abengoa,Abner,Spain,Morocco,Renewable energy,Solar electric power,Electricity,$641.00m,* 170,New
+9,Jul 2007,Groupe PSA (PSA …,Gefco Morocco,France,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $13.10m,42,New
+10,Jul 2007,Industrias Titan,Industrias Titan,Spain,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,$4.14m,* 5,New
+11,Jul 2007,Lubasa,Lubasa,Spain,Morocco,Building materials,Cement & concrete p…,Manufacturing,$246.12m,170,New
+12,Jul 2007,Punto FA,Mango,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+13,Jun 2007,August & Debouzy,August & Debouzy,France,Morocco,Business services,Legal services,Business Services,* $6.80m,* 40,New
+14,Jun 2007,Avalo,Casaconfort,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$199.00m,* 508,New
+15,Jun 2007,Freshuelva,Freshuelva,Spain,Morocco,Food and Beverages,Fruits & vegetables …,Manufacturing,* $5.10m,* 429,New

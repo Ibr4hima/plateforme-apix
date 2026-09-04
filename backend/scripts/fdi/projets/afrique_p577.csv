@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2011,Wilo SE,Wilo SE,Germany,Morocco,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+2,Mar 2011,Anixter,Anixter,United States,Morocco,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Mar 2011,CCA International,CCA International,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $6.00m,300,New
+4,Mar 2011,Eversheds,Eversheds,United Kingdom,Morocco,Business services,Legal services,Business Services,* $6.80m,40,New
+5,Mar 2011,Grupo Dabel,DabelsaMaroc,Spain,Morocco,Electronic components,Wiring devices,Manufacturing,* $13.70m,* 259,New
+6,Mar 2011,Jobelsa,Jobelsa,Spain,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,$15.30m,240,Expansion
+7,Mar 2011,Lippi,Lippi,France,Morocco,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+8,Mar 2011,Oxo Consulting,Oxo Pharma,France,Morocco,Business services,Management consult…,Business Services,* $6.80m,40,New
+9,Mar 2011,Saint-Gobain,Saint-Gobain Sek…,France,Morocco,Ceramics & glass,Glass & glass products,Manufacturing,$13.20m,* 36,New
+10,Mar 2011,Yazaki Group,Yazaki Group,Japan,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $23.00m,* 702,New
+11,Mar 2011,Yazaki Group,Yazaki Group,Japan,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $23.00m,* 702,New
+12,Mar 2011,Yazaki Group,Yazaki Group,Japan,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $23.00m,* 702,New
+13,Mar 2011,Yazaki Group,Yazaki Group,Japan,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $23.00m,* 702,New
+14,Feb 2011,Compagnie Financ…,Cartier,Switzerland,Morocco,Consumer products,Jewellery & silverware,Retail,* $36.90m,* 179,New
+15,Feb 2011,Diesel,Diesel,Italy,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New

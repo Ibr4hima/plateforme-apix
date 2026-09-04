@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2006,Accor,Ibis,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+2,Nov 2006,CA Technologies (…,CA Technologies (…,United States,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+3,Nov 2006,CAPELEC,CAPELEC,France,Morocco,Industrial equipment,Measuring & control …,Manufacturing,* $29.80m,* 69,New
+4,Nov 2006,Capgemini,Capgemini,France,Morocco,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+5,Nov 2006,Garrigues,Garrigues,Spain,Morocco,Business services,Legal services,Business Services,* $1.10m,6,New
+6,Nov 2006,Impress Group,Impress Group,Netherlands,Morocco,Metals,Steel products,Manufacturing,* $65.00m,* 148,New
+7,Oct 2006,Al Qudra Holding,Al Qudra Holding,UAE,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+8,Oct 2006,Inetum (Gfi Infor…,Inetum (Gfi Infor…,France,Morocco,Software & IT services,"Software publishers,…",Research & Develop…,* $6.30m,40,New
+9,Oct 2006,Premo,Premo,Spain,Morocco,Electronic components,Electrical equipment,Manufacturing,* $8.10m,100,New
+10,Sep 2006,BMP Groupe,Atlas Productions,France,Morocco,Industrial equipment,General purpose ma…,Manufacturing,* $4.30m,30,New
+11,Sep 2006,Caja de Ahorros d…,Caja de Ahorros d…,Spain,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Sep 2006,Golden Tulip,Golden Tulip,Netherlands,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+13,Sep 2006,SQLI,SQLI,France,Morocco,Software & IT services,Custom computer pr…,Research & Develop…,* $16.80m,* 136,New
+14,Sep 2006,TUI Group,TUI,Germany,Morocco,Hotels & tourism,Accommodation,Construction,$51.80m,400,New
+15,Jul 2006,Legler,Legler,Italy,Morocco,Textiles,Textile product mills,Manufacturing,$85.26m,800,New

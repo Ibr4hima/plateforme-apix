@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2015,DPH Holdings (Del…,DPH Holdings (Del…,United States,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$40.28m,"3,500",New
+2,Dec 2015,Fairmont Raffles H…,Fairmont Hotels &…,Canada,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+3,Dec 2015,Heidelberg Materi…,Meastro Drymix,Italy,Morocco,Building materials,Cement & concrete p…,Manufacturing,* $238.60m,* 562,New
+4,Dec 2015,Siemens,Siemens Gamesa …,Germany,Morocco,Plastics,Laminated plastics pl…,Manufacturing,$117.38m,600,New
+5,Dec 2015,Societe Industriell…,Latelec,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$10.81m,300,New
+6,Dec 2015,Thales Group,Thales Group,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $12.30m,* 163,New
+7,Nov 2015,Bin Omeir Holding,Kia Motors Bin O…,UAE,Morocco,Automotive OEM,Motor vehicle & part…,Retail,* $12.50m,* 37,New
+8,Nov 2015,Delfingen,Delfingen,France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$1.60m,* 36,New
+9,Nov 2015,Eagle Hills,Eagle Hills,UAE,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+10,Nov 2015,ESSEC Business S…,ESSEC Business S…,France,Morocco,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New
+11,Nov 2015,Fourth Day,Fourth Day,United Kingdom,Morocco,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 43,New
+12,Nov 2015,GTI Software & N…,GTI Software & N…,Spain,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+13,Nov 2015,Seche Environne…,Tredi,France,Morocco,Business services,Waste management …,Recycling,* $150.80m,* 42,New
+14,Nov 2015,SYLOB,SYLOB,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $1.40m,7,Expansion
+15,Oct 2015,Cegidim,Cegidim,France,Morocco,Business services,"Professional, scientifi…",Headquarters,* $83.90m,"1,000",New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2008,Gat rooms,Gat rooms,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$9.40m,* 24,New
+2,Jul 2008,Gat rooms,Gat rooms,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$9.40m,* 24,New
+3,Jul 2008,Gazprom,Inteco,Russia,Morocco,Real estate,Residential building …,Construction,$691.80m,"* 3,000",New
+4,Jul 2008,Gazprom,Inteco,Russia,Morocco,Hotels & tourism,Accommodation,Construction,$618.00m,"* 1,578",New
+5,Jul 2008,Gazprom,Inteco,Russia,Morocco,Real estate,Residential building …,Construction,$765.00m,"* 3,000",New
+6,Jul 2008,Grupo Polanco,Grupo Polanco,Spain,Morocco,Wood products,Wood products,Manufacturing,* $44.40m,* 152,New
+7,Jul 2008,Irizar,Irizar Morocco,Spain,Morocco,Automotive OEM,Heavy duty trucks,Manufacturing,$39.60m,200,New
+8,Jul 2008,Mainetti,Mainetti,Italy,Morocco,Consumer products,Furniture & related p…,Manufacturing,* $16.30m,* 243,New
+9,Jul 2008,Sanofi,Sanofi,France,Morocco,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$46.40m,* 508,New
+10,Jun 2008,Cegedim,Cegedim,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+11,Jun 2008,Cegedim,Cegedim,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+12,Jun 2008,Crown Holdings,Carnaud Maroc,United States,Morocco,Metals,Alumina & aluminiu…,Manufacturing,* $65.00m,* 148,New
+13,Jun 2008,Crown Holdings,Carnaud Maroc,United States,Morocco,Metals,Alumina & aluminiu…,Manufacturing,* $65.00m,* 148,Co-Location
+14,Jun 2008,Futuren (Theolia),Futuren (Theolia),France,Morocco,Renewable energy,Wind electric power,Electricity,* $197.60m,* 54,New
+15,Jun 2008,International Petr…,International Petr…,UAE,Morocco,"Coal, oil & gas",Petroleum refineries,Manufacturing,$5.00bn,"* 1,007",New

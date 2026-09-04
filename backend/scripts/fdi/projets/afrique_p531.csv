@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2019,Continental,ContiTech,Germany,Morocco,Automotive compon…,Motor vehicle gasolin…,Manufacturing,$3.99m,58,New
+2,Nov 2019,European Bank fo…,European Bank fo…,United Kingdom,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Nov 2019,Ezzayra Solutions,Ezzayra Solutions,Tunisia,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+4,Nov 2019,Forsides Consultin…,Forsides Consultin…,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+5,Nov 2019,GMD Group (Grou…,Sealynx Automoti…,France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$24.39m,180,New
+6,Nov 2019,GMD Group (Grou…,Sealynx Automoti…,France,Morocco,Automotive compon…,Other motor vehicle …,Research & Develop…,* $23.30m,* 213,New
+7,Nov 2019,International Wor…,International Wor…,Switzerland,Morocco,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+8,Nov 2019,Midis Group,iSTYLE MENA,Lebanon,Morocco,Business machines &…,Computer & peripher…,Retail,* $1.00m,* 62,New
+9,Nov 2019,Nexum People Sol…,Nexum People Sol…,Belgium,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+10,Nov 2019,Seeds&Chips,Seeds&Chips,Italy,Morocco,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+11,Nov 2019,Seiko Epson,Seiko Epson,Japan,Morocco,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+12,Nov 2019,Vitol Group,Vivo Energy,Netherlands,Morocco,"Coal, oil & gas",Gasoline stations,"Logistics, Distributio…",* $63.40m,* 85,New
+13,Oct 2019,Al Dahra Agricultu…,Al Dahra Agricultu…,UAE,Morocco,Food and Beverages,Grains & oilseed,Manufacturing,$5.70m,* 31,New
+14,Oct 2019,Amazon.com,Amazon.com,United States,Morocco,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+15,Oct 2019,Artcurial,Artcurial,France,Morocco,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 43,New

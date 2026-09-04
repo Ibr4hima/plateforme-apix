@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2007,CRIT,CRIT,France,Morocco,Business services,Employment services,Business Services,* $6.80m,* 40,New
+2,Dec 2007,Cuatrecasas,Cuatrecasas,Spain,Morocco,Business services,Legal services,Business Services,* $6.80m,* 40,New
+3,Dec 2007,Fercam,Fercam,Italy,Morocco,Transportation & Wa…,Truck transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Dec 2007,IPI,IPI Beverage Pack…,Italy,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $11.90m,* 76,New
+5,Dec 2007,Patrizia Pepe,Patrizia Pepe,Italy,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+6,Nov 2007,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,$32.33m,* 83,New
+7,Nov 2007,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,$20.57m,* 53,New
+8,Nov 2007,Air Arabia,Air Arabia,UAE,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+9,Nov 2007,Data Base Factory,Data Base Factory,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+10,Nov 2007,Deutsche Kraftfah…,Dekra Automotive,Germany,Morocco,Automotive compon…,Other motor vehicle …,Research & Develop…,* $17.00m,* 88,New
+11,Nov 2007,Indo International,Indo Maroc,Spain,Morocco,Consumer products,Other (Consumer pr…,Manufacturing,$2.34m,* 21,Expansion
+12,Nov 2007,Kohler,Jacob Delafon,United States,Morocco,Consumer products,Furniture & related p…,Manufacturing,$27.00m,150,Expansion
+13,Nov 2007,Nuqul Group,Nuqul Group,Jordan,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $11.90m,* 76,New
+14,Nov 2007,Renta Corporacion,Renta Corporacion,Spain,Morocco,Real estate,Residential building …,Construction,$14.56m,* 104,New
+15,Oct 2007,CYO,CYO,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New

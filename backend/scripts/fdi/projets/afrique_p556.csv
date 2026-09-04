@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2015,DLA Piper,DLA Piper,United States,Morocco,Business services,Legal services,Business Services,* $27.80m,* 43,New
+2,Oct 2015,MGI Coutier,MGI Coutier,France,Morocco,Automotive compon…,Motor vehicle gasolin…,Manufacturing,$4.41m,50,New
+3,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Oct 2015,NMC Group,UAE Exchange Ce…,UAE,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Oct 2015,Omia,Omia,France,Morocco,Industrial equipment,All other industrial m…,Manufacturing,* $2.50m,23,New
+10,Oct 2015,Telecom Egypt,Xceed,Egypt,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.00m,500,New
+11,Oct 2015,Vestas,Vestas,Denmark,Morocco,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $2.20m,* 14,New
+12,Oct 2015,Yves Salomon,Yves Salomon,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+13,Sep 2015,3M,3M,United States,Morocco,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+14,Sep 2015,Imperial Brands (I…,Habanos,United Kingdom,Morocco,Food and Beverages,Tobacco,Manufacturing,$103.46m,600,New
+15,Sep 2015,Kromberg & Schu…,Kromberg & Schu…,Germany,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$26.87m,"2,200",New

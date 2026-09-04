@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2014,Philipp Plein,Philipp Plein,Switzerland,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,May 2014,Sonae,Sonae Sierra,Portugal,Morocco,Real estate,Commercial & institu…,Construction,$136.36m,* 204,New
+3,Apr 2014,Clariant,Clariant Mining So…,Switzerland,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,* $83.30m,* 455,Expansion
+4,Apr 2014,First Solar,First Solar,United States,Morocco,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+5,Apr 2014,Gras Savoye,Gras Savoye,France,Morocco,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+6,Apr 2014,Ingenico,Ingenico,France,Morocco,Business machines &…,Other (Business mac…,"Sales, Marketing & S…",* $11.10m,* 37,New
+7,Apr 2014,Lucibel,Lucibel,France,Morocco,Electronic components,Electric lighting equi…,"Sales, Marketing & S…",* $1.80m,* 13,New
+8,Apr 2014,One Tech,One Tech,Tunisia,Morocco,Electronic components,Communication & en…,Manufacturing,$26.10m,* 746,New
+9,Apr 2014,Palettes Managem…,Palettes Managem…,France,Morocco,Wood products,Wood products,"Sales, Marketing & S…",* $0.60m,* 8,New
+10,Apr 2014,Palettes Managem…,Palettes Managem…,France,Morocco,Wood products,Wood products,Manufacturing,* $56.90m,"* 2,573",New
+11,Apr 2014,Tecnicarton,Tecnicarton,Spain,Morocco,"Paper, printing & pac…","Other (Paper, printin…",Manufacturing,$2.77m,15,New
+12,Mar 2014,AEMI,AEMI,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $12.30m,* 163,New
+13,Mar 2014,AxxonSoft (Axxon),AxxonSoft (Axxon),Russia,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+14,Mar 2014,Blue Lions,Blue Lions,France,Morocco,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 43,New
+15,Mar 2014,Invertaresa,Made,Spain,Morocco,Metals,Other fabricated met…,Manufacturing,$27.60m,150,New

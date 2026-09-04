@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2018,AD Industrie,Exameca,France,Morocco,Metals,Other fabricated met…,Manufacturing,* $112.10m,* 413,New
+2,Jan 2018,Association Famili…,Decathlon (Oxylan…,France,Morocco,Textiles,Clothing & clothing a…,Retail,$1.08m,* 9,New
+3,Jan 2018,Atlas Private Educ…,Atlas Private Educ…,Turkey,Morocco,Business services,Educational support …,Business Services,* $27.80m,* 43,New
+4,Jan 2018,Chongqing Regal …,Chongqing Regal …,China,Morocco,Automotive compon…,Motor vehicle transm…,"Sales, Marketing & S…",* $1.80m,* 18,New
+5,Jan 2018,Prettl,Prettl,Germany,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$9.88m,800,New
+6,Dec 2017,Al Baraka Bankin…,Al Tamweel wa In…,Bahrain,Morocco,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+7,Dec 2017,Al Baraka Bankin…,Al Tamweel wa In…,Bahrain,Morocco,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+8,Dec 2017,BYD,BYD,China,Morocco,Automotive OEM,Automobiles,Manufacturing,* $96.80m,* 625,New
+9,Dec 2017,BYD,BYD,China,Morocco,Electronic components,Batteries,Manufacturing,* $63.50m,* 625,Co-Location
+10,Dec 2017,BYD,BYD,China,Morocco,Automotive OEM,Heavy duty trucks,Manufacturing,* $96.80m,* 625,Co-Location
+11,Dec 2017,BYD,BYD,China,Morocco,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $89.80m,* 625,Co-Location
+12,Dec 2017,Chemipharm,Kemipharm,Egypt,Morocco,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$10.65m,* 69,New
+13,Dec 2017,Edita Food Industr…,Edita Food Industr…,Egypt,Morocco,Food and Beverages,Snack food,Manufacturing,$20.00m,* 108,New
+14,Dec 2017,Marriott Internatio…,Ritz-Carlton,United States,Morocco,Hotels & tourism,Accommodation,Construction,* $116.60m,* 202,New
+15,Dec 2017,Martinez Otero Co…,Martinez Otero Co…,Spain,Morocco,Consumer products,Furniture & related p…,"Sales, Marketing & S…",* $3.20m,* 37,New

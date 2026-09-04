@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2021,Phi Partners,Phi Partners,United Kingdom,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+2,May 2021,SI-UK,SI-UK,Japan,Morocco,Business services,Educational support …,Business Services,* $27.80m,* 43,New
+3,May 2021,Societe Nationale …,Geodis,France,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+4,Apr 2021,InnoVent SAS,InnoVent Maroc,France,Morocco,Renewable energy,Wind electric power,Electricity,$33.80m,* 10,New
+5,Apr 2021,Secure-IC,Secure-IC,France,Morocco,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 181,New
+6,Mar 2021,Cognitus Consulting,Cognitus Consulting,United States,Morocco,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 54,New
+7,Mar 2021,Dachser,Dachser Morocco,Germany,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $76.60m,* 178,New
+8,Mar 2021,Eni SpA,Saipem SpA,Italy,Morocco,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+9,Mar 2021,The App Lab (Tou…,The App Lab (Tou…,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+10,Feb 2021,Gas Servei,Gas Servei,Spain,Morocco,Chemicals,Basic chemicals,"Logistics, Distributio…",* $21.60m,* 26,New
+11,Feb 2021,IBIS Consulting,IBIS Consulting,South Africa,Morocco,Business services,Environmental consu…,Business Services,* $27.80m,* 43,New
+12,Jan 2021,DS Smith,Tecnicarton,United Kingdom,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$15.80m,* 171,New
+13,Jan 2021,Incide Engineering,Incide Engineering,Italy,Morocco,Business services,Heavy & civil engine…,Headquarters,* $10.50m,* 995,New
+14,Jan 2021,Nexans,Nexans,France,Morocco,Electronic components,Communication & en…,Manufacturing,* $27.90m,275,New
+15,Jan 2021,Opticalia,Opticalia,Spain,Morocco,Consumer products,Other (Consumer pr…,Headquarters,* $19.20m,* 123,New

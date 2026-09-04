@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2010,Hotusa,Hotusa,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+2,Apr 2010,Punto FA,Mango,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+3,Apr 2010,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 261,New
+4,Apr 2010,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 261,New
+5,Mar 2010,Boston Consulting…,Boston Consulting…,United States,Morocco,Business services,Management consult…,Business Services,* $6.80m,40,New
+6,Mar 2010,Burelle,OPmobility (Plasti…,France,Morocco,Automotive compon…,Motor vehicle gasolin…,Manufacturing,$2.01m,* 26,New
+7,Mar 2010,Denso,Denso,Japan,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$15.41m,90,New
+8,Mar 2010,Exton Consulting,Exton Consulting,France,Morocco,Business services,Management consult…,Business Services,* $27.80m,* 43,New
+9,Mar 2010,Maniega & Soler,Maniega & Soler,Spain,Morocco,Business services,Legal services,Business Services,$0.50m,3,New
+10,Feb 2010,Decisiones Geoco…,Decisiones Geoco…,Spain,Morocco,Business services,Heavy & civil engine…,Business Services,* $6.80m,40,New
+11,Feb 2010,Oak Overseas,Oak Overseas,United States,Morocco,Business services,Other support services,Business Services,* $6.80m,40,New
+12,Feb 2010,Samvardhana Mot…,Samvardhana Mot…,India,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $26.00m,* 497,New
+13,Jan 2010,AE Photonics,AE Photonics,Germany,Morocco,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New
+14,Jan 2010,BNP Paribas,BNP Paribas,France,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Jan 2010,Grupo Sese,Grupo Sese,Spain,Morocco,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New

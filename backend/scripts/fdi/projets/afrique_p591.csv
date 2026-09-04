@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2008,Cahors,Omnium General …,France,Morocco,Industrial equipment,Mechanical power tr…,Manufacturing,$6.50m,* 45,New
+2,Apr 2008,International Busi…,IBM MAROC,United States,Morocco,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 129,New
+3,Apr 2008,International Busi…,IBM MAROC,United States,Morocco,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 129,New
+4,Apr 2008,Pierre et Vacances,Pierre et Vacances,France,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+5,Apr 2008,Pierre et Vacances,Pierre et Vacances,France,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+6,Apr 2008,Pierre et Vacances,Pierre et Vacances,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+7,Apr 2008,Pierre et Vacances,Pierre et Vacances,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+8,Apr 2008,Pierre et Vacances,Pierre et Vacances,France,Morocco,Real estate,Residential building …,Construction,* $411.00m,* 875,New
+9,Apr 2008,Universitat Auton…,Universitat Auton…,Spain,Morocco,Business services,"Schools, colleges, un…",Business Services,* $6.80m,* 40,New
+10,Mar 2008,Aertec,Aertec,Spain,Morocco,Aerospace,"Aircraft engines, oth…","Sales, Marketing & S…",* $1.50m,* 14,New
+11,Mar 2008,Fonterra,Fonterra,New Zealand,Morocco,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$3.40m,* 17,New
+12,Mar 2008,Groupe PSA (PSA …,FORVIA (Faurecia),France,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$15.35m,650,New
+13,Mar 2008,Marcotran Transpo…,Marcotran Transpo…,Spain,Morocco,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+14,Mar 2008,Pearl Of Kuwait Re…,Pearl Of Kuwait Re…,Kuwait,Morocco,Hotels & tourism,Accommodation,Construction,$75.00m,* 191,New
+15,Feb 2008,Emirates National …,Horizon Tangiers T…,UAE,Morocco,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$103.00m,* 214,New

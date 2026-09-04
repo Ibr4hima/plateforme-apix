@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2017,Bridgestone,Bridgestone,Japan,Morocco,Rubber,Tyres,"Sales, Marketing & S…",* $2.70m,* 19,Expansion
+2,Jul 2017,Dow Chemical,Corteva Agriscienc…,United States,Morocco,Food and Beverages,Grains & oilseed,Manufacturing,* $13.30m,* 176,New
+3,Jul 2017,European Bank fo…,European Bank fo…,United Kingdom,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Jul 2017,Groupe PSA (PSA …,FORVIA (Faurecia),France,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $26.00m,* 497,New
+5,Jul 2017,Mekkin SGPS,Cabopol,Portugal,Morocco,Plastics,"Urethane, foam prod…",Manufacturing,* $24.10m,* 235,New
+6,Jul 2017,MTA,MTA,Italy,Morocco,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $11.40m,50,New
+7,Jul 2017,Sensient Technolo…,Sensient Technolo…,United States,Morocco,Chemicals,"Paints, coatings, add…",Manufacturing,* $83.30m,* 455,New
+8,Jun 2017,Adidas,Adidas,Germany,Morocco,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+9,Jun 2017,Bayt.com,Bayt.com,UAE,Morocco,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+10,Jun 2017,China CAMC Engin…,China CAMC Engin…,China,Morocco,Rubber,Tyres,Manufacturing,$250.00m,950,New
+11,Jun 2017,JTEKT (Koyo Seiko),JTEKT (Koyo Seiko),Japan,Morocco,Automotive compon…,Motor vehicle steerin…,Manufacturing,$17.10m,60,New
+12,Jun 2017,La Caixa,CaixaBank,Spain,Morocco,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Jun 2017,MTA,MTA,Italy,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,$59.95m,500,New
+14,Jun 2017,Novares (Mecapla…,Novares (Mecapla…,Monaco,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,$33.87m,300,New
+15,Jun 2017,Siemens,Siemens Gamesa …,Germany,Morocco,Renewable energy,Wind electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
