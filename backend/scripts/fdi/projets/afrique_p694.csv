@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2014,NMC Group,UAE Exchange Ce…,UAE,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Nov 2014,Persado,Persado,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+3,Nov 2014,Vallourec,Vallourec,France,Nigeria,Metals,Steel products,"Sales, Marketing & S…",* $5.20m,50,Expansion
+4,Nov 2014,Vodafone Group,Vodacom Nigeria,United Kingdom,Nigeria,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+5,Nov 2014,Vodafone Group,Vodacom Nigeria,United Kingdom,Nigeria,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+6,Oct 2014,Asseco Poland,Asseco Poland,Poland,Nigeria,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 146,New
+7,Oct 2014,Deutsche Welle,Deutsche Welle,Germany,Nigeria,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Oct 2014,Samsung Group,Samsung Heavy I…,South Korea,Nigeria,Non-automotive tran…,Ships & boats,Manufacturing,$300.00m,* 2087,New
+9,Oct 2014,Software Business…,Software Business…,India,Nigeria,Software & IT services,Custom computer pr…,Headquarters,* $12.20m,* 73,New
+10,Oct 2014,Symrise,Symrise,Germany,Nigeria,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+11,Sep 2014,China Petrochemic…,Addax Petroleum,China,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.30bn,* 446,New
+12,Sep 2014,Lafarge,Lafarge Africa (Laf…,France,Nigeria,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$400.00m,* 27,Expansion
+13,Aug 2014,Eaton,Eaton,Ireland,Nigeria,Electronic components,Electrical equipment,"Sales, Marketing & S…",* $1.80m,* 13,New
+14,Aug 2014,Shell PLC (Royal D…,Shell Nigeria Expl…,Netherlands,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.26bn,* 230,Expansion
+15,Jul 2014,Trend Micro,Trend Micro,Japan,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New

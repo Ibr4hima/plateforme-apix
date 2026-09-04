@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2011,Orange (France Te…,Orange S.A.,France,Niger,Communications,Communications equ…,Recycling,* $5.00m,6,New
+2,May 2011,Spanco,Spanco,India,Niger,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+3,Jan 2011,Gazprom,Gazprombank,Russia,Niger,Metals,Other metal ore mini…,Extraction,* $270.00m,* 1012,New
+4,Jul 2010,Bharti Group,Bharti Airtel,India,Niger,Communications,Wired telecommunic…,ICT & Internet Infras…,$100.00m,* 69,Expansion
+5,Jun 2008,China National Pet…,China National Pet…,China,Niger,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.64bn,* 146,New
+6,Jan 2008,Orano Société (Ar…,Orano Société (Ar…,France,Niger,Metals,"Copper, nickel, lead,…",Extraction,$1.50bn,1400,Expansion
+7,Jan 2006,Orezone Resources,Orezone Resources,Canada,Niger,Metals,Gold ore & silver ore…,Extraction,$0.90m,* 1,New
+8,Nov 2003,China National Pet…,China National Pet…,China,Niger,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.41bn,* 213,New
+9,Jul 2026,Exxon Mobil,Esso Exploration a…,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.00bn,* 343,Expansion
+10,Jul 2026,Picama Group,Sono Global,United Kingdom,Nigeria,Food and Beverages,Fruits & vegetables …,Manufacturing,* $55.70m,* 267,Expansion
+11,Jul 2026,VFS Global,VFS Global,Switzerland,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+12,Jun 2026,Axian,WeLight,Madagascar,Nigeria,Renewable energy,Solar electric power,Electricity,* $178.00m,* 57,New
+13,Jun 2026,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+14,Jun 2026,Orkla Group,Jotun Group,Norway,Nigeria,Chemicals,"Paints, coatings, add…",Retail,* $9.50m,* 118,New
+15,Jun 2026,Vestige,Vestige,India,Nigeria,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2013,Oracle,Oracle,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+2,Nov 2013,Pixel Projects,Pixel Projects,United Kingdom,Nigeria,Electronic components,Audio & video equip…,"Sales, Marketing & S…",* $1.80m,* 13,New
+3,Nov 2013,TE Connectivity (T…,TE Connectivity (T…,Switzerland,Nigeria,Electronic components,Communication & en…,"Sales, Marketing & S…",* $1.80m,* 13,New
+4,Oct 2013,Avaline Holding,Avaline Trading,UAE,Nigeria,Food and Beverages,Soft drinks & ice,"Sales, Marketing & S…",* $4.50m,* 18,New
+5,Oct 2013,Barclays Bank,Barclays Bank,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Oct 2013,CAE,CAE,Canada,Nigeria,Aerospace,"Aircraft engines, oth…",Education & Training,* $31.80m,* 91,New
+7,Oct 2013,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,Nigeria,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,Expansion
+8,Oct 2013,Lafarge,Lafarge Africa (Laf…,France,Nigeria,Building materials,Cement & concrete p…,Manufacturing,* $454.90m,* 496,Expansion
+9,Oct 2013,Naspers,konga.com,South Africa,Nigeria,Textiles,Clothing & clothing a…,"Logistics, Distributio…",* $36.40m,* 249,New
+10,Oct 2013,National Bank of …,National Bank of …,UAE,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Oct 2013,Panasonic (Matsus…,Panasonic (Matsus…,Japan,Nigeria,Consumer electronics,Household appliances,Manufacturing,$40.00m,* 504,New
+12,Oct 2013,Radio France Inter…,Radio France Inter…,France,Nigeria,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $2.70m,13,New
+13,Oct 2013,Sirplay,Sirplay,Malta,Nigeria,Software & IT services,"Video games, applic…",Technical Support Ce…,* $15.20m,* 393,New
+14,Oct 2013,The Sage Group,Sage South Africa,United Kingdom,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+15,Oct 2013,Zambeef (Zambee…,Zambeef (Zambee…,Zambia,Nigeria,Food and Beverages,Animal slaughtering …,Retail,* $12.70m,* 107,New

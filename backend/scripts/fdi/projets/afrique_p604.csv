@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2004,Four Seasons Hot…,Four Seasons Hot…,Canada,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+2,Dec 2004,Telefonica,Atento,Spain,Morocco,Business services,Business support ser…,Customer Contact C…,* $10.10m,500,New
+3,Nov 2004,Amitelo Communi…,Amitelo Communi…,Switzerland,Morocco,Communications,Wired telecommunic…,Customer Contact C…,* $10.50m,* 657,New
+4,Nov 2004,Eolane,Eolane,France,Morocco,Electronic components,All other electrical e…,Manufacturing,* $5.70m,70,New
+5,Nov 2004,Holcim,Holcim,Switzerland,Morocco,Building materials,Cement & concrete p…,Manufacturing,$304.00m,200,New
+6,Nov 2004,Inditex,Stradivarius,Spain,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+7,Nov 2004,Percall,Percall Developme…,France,Morocco,Software & IT services,Custom computer pr…,Technical Support Ce…,* $3.20m,30,New
+8,Nov 2004,Tavex Algodonera,Settavex,Spain,Morocco,Textiles,Clothing & clothing a…,Manufacturing,$75.00m,* 1332,Expansion
+9,Oct 2004,Association Famili…,Acima,France,Morocco,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+10,Oct 2004,Eybl International,Eybl International,Austria,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $15.20m,200,New
+11,Oct 2004,HP (Hewlett-Packa…,HP Maroc,United States,Morocco,Business machines &…,Computer & peripher…,Retail,* $1.40m,* 55,New
+12,Sep 2004,Berkshire Hathaway,Fruit of the Loom,United States,Morocco,Textiles,Clothing & clothing a…,Manufacturing,$164.00m,1150,New
+13,Sep 2004,ClientLogic,ClientLogic,United States,Morocco,Business services,Business support ser…,Customer Contact C…,* $9.10m,450,New
+14,Sep 2004,Promod,Promod,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Aug 2004,Kerzner Internatio…,Kerzner Internatio…,Bahamas,Morocco,Hotels & tourism,Accommodation,Construction,$230.00m,* 587,New

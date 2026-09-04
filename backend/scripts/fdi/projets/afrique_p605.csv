@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2004,Lafarge,Lafarge,France,Morocco,Renewable energy,Wind electric power,Electricity,$11.40m,* 3,New
+2,Aug 2004,Pancontinental Oil…,Pancontinental Oil…,Australia,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+3,Jul 2004,Pellenc,Pellenc,France,Morocco,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $0.30m,4,New
+4,Jun 2004,Etam Developpem…,Etam Developpem…,France,Morocco,Textiles,Clothing & clothing a…,Retail,$1.00m,* 9,New
+5,Jun 2004,Mr Bricolage,Mr Bricolage,France,Morocco,Consumer products,Building material & g…,Retail,* $36.90m,* 179,New
+6,Jun 2004,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.00m,200,New
+7,May 2004,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,* $49.00m,125,New
+8,May 2004,Lafarge,Lafarge Cements,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,$120.00m,* 229,New
+9,May 2004,McDonalds,McDonalds,United States,Morocco,Food and Beverages,Food services,Retail,$2.00m,60,New
+10,Apr 2004,Bertelsmann,Arvato Services,Germany,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 261,New
+11,Apr 2004,Comdata France (…,Comdata France (…,France,Morocco,Communications,Wired telecommunic…,Customer Contact C…,* $10.50m,* 657,New
+12,Apr 2004,Pininfarina,Matra Automobile …,Italy,Morocco,Automotive OEM,Automobiles,Research & Develop…,$4.00m,40,New
+13,Mar 2004,Accor,Accor,France,Morocco,Hotels & tourism,Accommodation,Construction,$37.00m,* 94,New
+14,Mar 2004,Lafarge,Lafarge Cements,France,Morocco,Building materials,Cement & concrete p…,Manufacturing,$80.00m,* 153,Expansion
+15,Feb 2004,Suzuki Motor,Suzuki Maroc,Japan,Morocco,Automotive OEM,Motor vehicle & part…,Maintenance & Servi…,$2.70m,* 18,New

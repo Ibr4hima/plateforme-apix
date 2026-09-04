@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2004,TAP Air Portugal,SPdH,Portugal,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+2,Feb 2004,TAP Air Portugal,SPdH,Portugal,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+3,Feb 2004,TAP Air Portugal,SPdH,Portugal,Morocco,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+4,Jan 2004,Noos,Noos,France,Morocco,Communications,Wireless telecommu…,Technical Support Ce…,* $9.70m,* 151,New
+5,Dec 2003,Etam Developpem…,Etam Developpem…,France,Morocco,Textiles,Clothing & clothing a…,Retail,$1.00m,* 9,New
+6,Dec 2003,Hyperburo,Hyperburo,France,Morocco,Consumer products,Office supplies (exce…,Retail,* $36.90m,* 179,New
+7,Dec 2003,Transmediterranea,Transmediterranea,Spain,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$11.00m,* 41,New
+8,Nov 2003,Dell Technologies,Dell Technologies,United States,Morocco,Business machines &…,Computer & peripher…,Customer Contact C…,* $6.40m,250,New
+9,Nov 2003,Prevent,Prevent,Germany,Morocco,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $2.30m,30,New
+10,Nov 2003,Valeo,Valeo,France,Morocco,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $28.80m,* 180,New
+11,Nov 2003,Valeo,Valeo,France,Morocco,Automotive compon…,Motor vehicle electri…,Manufacturing,* $114.00m,1500,New
+12,Oct 2003,Boiron,Boiron,France,Morocco,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $2.90m,* 28,New
+13,Oct 2003,SQLI,SQLI,France,Morocco,Software & IT services,Custom computer pr…,Research & Develop…,* $6.30m,40,New
+14,Aug 2003,Souriau,Souriau,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,* $14.40m,* 190,Expansion
+15,Jul 2003,International Wor…,International Wor…,United Kingdom,Morocco,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New

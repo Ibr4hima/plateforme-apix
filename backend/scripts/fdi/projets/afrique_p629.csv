@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2011,Africa Great Wall …,Africa Great Wall …,China,Mozambique,Building materials,Cement & concrete p…,Manufacturing,$78.00m,* 149,New
+2,Oct 2011,Globe Metals & Mi…,Globe Metals & Mi…,Australia,Mozambique,Metals,Other metal ore mini…,"Sales, Marketing & S…",* $2.80m,* 9,New
+3,Oct 2011,Jindal Organisatio…,Jindal Steel & Pow…,India,Mozambique,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$3.00bn,* 294,New
+4,Sep 2011,Cimpor,Cimentos de Moca…,Portugal,Mozambique,Building materials,Cement & concrete p…,Manufacturing,* $96.40m,* 342,Expansion
+5,Sep 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Mozambique,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+6,Aug 2011,Choppies,Choppies,Botswana,Mozambique,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+7,Jul 2011,Associated British …,Maragra Açúcar,United Kingdom,Mozambique,Food and Beverages,Sugar & confectionar…,Manufacturing,* $48.10m,* 429,Expansion
+8,Jun 2011,Ecobank Transnati…,Ecobank Transnati…,Togo,Mozambique,Financial services,Retail banking,Business Services,* $11.00m,* 18,Expansion
+9,Jun 2011,Essar Group,Essar Global,India,Mozambique,Metals,Iron & steel mills & f…,"Logistics, Distributio…",* $15.60m,* 29,New
+10,Jun 2011,Grindrod,Grindrod,South Africa,Mozambique,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $63.40m,* 85,Expansion
+11,Jun 2011,Henan Tongli Cem…,Henan Tongli Cem…,China,Mozambique,Building materials,Cement & concrete p…,Manufacturing,* $96.40m,* 342,New
+12,Jun 2011,Mitsui & Co,Mitsui & Co,Japan,Mozambique,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+13,Jun 2011,Plasteuropa,Plasteuropa,Portugal,Mozambique,Plastics,Plastics packaging m…,Manufacturing,$1.20m,30,New
+14,Apr 2011,Noventa Limited,Noventa Limited,United Kingdom,Mozambique,Metals,Other metal ore mini…,Extraction,* $270.00m,* 1012,Expansion
+15,Mar 2011,Embrapa,Embrapa,Brazil,Mozambique,Chemicals,"Pesticide, fertilisers …",Manufacturing,$1.65m,* 2,New

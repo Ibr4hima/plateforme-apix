@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2016,Petroplan,Petroplan,United Kingdom,Mozambique,Business services,Employment services,Business Services,* $27.80m,* 38,New
+2,Feb 2016,Nippon Telegraph …,ContinuitySA,Japan,Mozambique,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,Expansion
+3,Dec 2015,Energias de Portu…,Energias de Portu…,Portugal,Mozambique,Renewable energy,Other electric power …,Electricity,* $87.90m,* 57,New
+4,Nov 2015,Berry Appleman &…,Berry Appleman &…,United States,Mozambique,Business services,Legal services,Business Services,* $27.80m,* 38,New
+5,Nov 2015,Novonor (Odebrec…,Novonor (Odebrec…,Brazil,Mozambique,Food and Beverages,Fruits & vegetables …,Manufacturing,$20.00m,* 49,New
+6,Nov 2015,Novonor (Odebrec…,Novonor (Odebrec…,Brazil,Mozambique,Food and Beverages,Animal slaughtering …,Manufacturing,$65.00m,* 158,New
+7,Nov 2015,SASOL,Republic of Moza…,South Africa,Mozambique,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",$210.00m,* 933,Expansion
+8,Oct 2015,Deugro,Deugro,Germany,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,Oct 2015,Xtract Resources (…,Xtract Resources (…,United Kingdom,Mozambique,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,New
+10,Sep 2015,ALE,ALE,United Kingdom,Mozambique,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+11,Sep 2015,Petronas,Engen,Malaysia,Mozambique,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+12,Sep 2015,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Mozambique,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$15.00m,* 67,New
+13,Sep 2015,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Mozambique,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$15.00m,* 67,New
+14,Aug 2015,Petronas,Engen,Malaysia,Mozambique,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+15,Aug 2015,Shoprite,Shoprite,South Africa,Mozambique,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New

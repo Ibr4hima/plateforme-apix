@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2026,Qualitech IRM,Qualitech IRM,Brazil,Namibia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+2,Apr 2026,Andrada Mining (A…,Andrada Mining (A…,United Kingdom,Namibia,Metals,Other metal ore mini…,Extraction,* $308.40m,* 717,Expansion
+3,Apr 2026,Computer Informa…,Hiperdist,Lebanon,Namibia,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+4,Mar 2026,Sarens,Sarens,Belgium,Namibia,Industrial equipment,General purpose ma…,"Logistics, Distributio…",* $15.90m,* 50,New
+5,Dec 2025,Choppies,Choppies,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $2.20m,40,New
+6,Dec 2025,Mediterranean Shi…,Africa Global Logis…,Switzerland,Namibia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$12.14m,* 54,New
+7,Nov 2025,Yinson Holdings,Yinson Production,Malaysia,Namibia,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $7.80m,* 30,New
+8,Oct 2025,Grindrod,Grindrod,South Africa,Namibia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,Expansion
+9,Aug 2025,Cliffe Dekker Hof…,Cliffe Dekker Hof…,South Africa,Namibia,Business services,Legal services,Business Services,* $0.60m,* 4,Expansion
+10,Aug 2025,Jones & Wagener,Jones & Wagener,South Africa,Namibia,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+11,Jul 2025,Crane Worldwide …,Crane Worldwide …,United States,Namibia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Jul 2025,Dangote Group,Dangote Group,Nigeria,Namibia,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",* $167.70m,* 111,New
+13,May 2025,Det Norske Verita…,Det Norske Verita…,Norway,Namibia,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+14,May 2025,Geoxyz,Geoxyz,Belgium,Namibia,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+15,Apr 2025,Dubai World,Seapride Foods C…,UAE,Namibia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$2.00m,* 9,Expansion

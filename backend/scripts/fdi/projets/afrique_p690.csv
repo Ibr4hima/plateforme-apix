@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2015,Access Power MEA,Access Infra Africa,UAE,Nigeria,Renewable energy,Solar electric power,Electricity,$100.00m,* 31,New
+2,Nov 2015,Merck KGaA,Merck KGaA,Germany,Nigeria,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+3,Nov 2015,Strong Structural …,Strong Structural …,United States,Nigeria,Metals,Architectural & struc…,Manufacturing,$36.00m,300,New
+4,Nov 2015,The Valuator Group,The Valuator Group,South Africa,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+5,Oct 2015,BASF,BASF,Germany,Nigeria,Chemicals,"Paints, coatings, add…",Manufacturing,* $653.80m,* 455,New
+6,Oct 2015,Kaonmedia,Kaonmedia,South Korea,Nigeria,Consumer electronics,Audio & video equip…,Manufacturing,$988.86m,1000,New
+7,Oct 2015,Mondelez Internat…,Cadbury Nigeria,United States,Nigeria,Food and Beverages,Sugar & confectionar…,Manufacturing,* $56.40m,* 288,Co-Location
+8,Oct 2015,Oracle,Oracle,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+9,Oct 2015,Upetrom,Grup Servicii Petr…,Romania,Nigeria,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $7.80m,* 30,New
+10,Oct 2015,Volkswagen,MAN Energy Solut…,Germany,Nigeria,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $2.20m,* 14,New
+11,Sep 2015,Cluttons,Cluttons,United Kingdom,Nigeria,Real estate,Real estate services,Business Services,* $1.90m,* 8,New
+12,Sep 2015,Knauf Gips,Knauf Gips,Germany,Nigeria,Building materials,Building material & g…,Manufacturing,$70.26m,* 172,New
+13,Sep 2015,Leventis Holdings,AG Leventis Nigeria,Luxembourg,Nigeria,Automotive OEM,Light trucks & utility …,Manufacturing,* $94.80m,* 884,New
+14,Sep 2015,Sika,Sika,Switzerland,Nigeria,Chemicals,"Paints, coatings, add…",Manufacturing,* $653.80m,* 455,New
+15,Sep 2015,Smile Telecoms H…,Smile Telecoms H…,Mauritius,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,* $443.10m,* 100,Expansion

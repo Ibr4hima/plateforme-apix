@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2008,Forsys Metals,Forsys Metals,Canada,Namibia,Metals,Other metal ore mini…,Extraction,* $270.00m,* 1012,New
+2,Jun 2008,Orano Société (Ar…,Orano Société (Ar…,France,Namibia,Metals,Other metal ore mini…,Extraction,$750.00m,* 1054,New
+3,May 2008,Banco Bic,Banco Bic,Angola,Namibia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Feb 2008,Wartsila (Waertsil…,Wartsila (Waertsil…,Finland,Namibia,Engines & turbines,Engines & Turbines,Maintenance & Servi…,* $0.80m,4,New
+5,Oct 2007,Electrawinds,Electrawinds,Belgium,Namibia,Renewable energy,Wind electric power,Electricity,$170.00m,* 45,New
+6,Sep 2007,Dali Diamond,Dali Diamond,Belgium,Namibia,Minerals,Other non-metallic …,Manufacturing,$2.70m,150,New
+7,Sep 2007,Weatherly Interna…,Weatherly Interna…,United Kingdom,Namibia,Metals,"Copper, nickel, lead,…",Extraction,* $308.40m,* 717,New
+8,Jul 2007,The Omnia Group,Protea Chemicals,South Africa,Namibia,Chemicals,Other chemical prod…,"Logistics, Distributio…",$2.37m,* 5,New
+9,May 2007,Eonmetall Group,Eonmetall Group,Malaysia,Namibia,Metals,Architectural & struc…,Manufacturing,$20.00m,* 177,New
+10,Mar 2007,Trau Bros,Trau Bros Diamon…,Belgium,Namibia,Minerals,Other non-metallic …,Manufacturing,* $6.10m,50,New
+11,Aug 2006,Vneshtorgbank (V…,Vneshtorgbank (V…,Russia,Namibia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+12,May 2006,Tarsus Technologies,Tarsus Technologies,South Africa,Namibia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+13,May 2006,Verizon Communi…,Verizon Internatio…,United States,Namibia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,May 2006,Verizon Communi…,Verizon Business,United States,Namibia,Communications,Wired telecommunic…,"Sales, Marketing & S…",$3.60m,12,New
+15,Mar 2006,Distell Group,Distell Group,South Africa,Namibia,Food and Beverages,Wineries,"Logistics, Distributio…",$1.50m,* 4,New

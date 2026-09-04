@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2022,Amazon.com,Amazon Web Serv…,United States,Nigeria,Communications,Computing infrastruc…,Research & Develop…,$3.50m,10,New
+2,Jun 2022,GoMyCode,GoMyCode,Tunisia,Nigeria,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,Expansion
+3,Jun 2022,Lynice General Tra…,Lynice Winery,South Africa,Nigeria,Food and Beverages,Wineries,"Sales, Marketing & S…",* $4.50m,* 18,New
+4,Jun 2022,Mauritius Commer…,Mauritius Commer…,Mauritius,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,May 2022,Bergman Industri…,Bergman Industri…,Israel,Nigeria,Food and Beverages,Animal food,Manufacturing,$4.90m,* 19,Expansion
+6,May 2022,China National Bui…,China National Bui…,China,Nigeria,Building materials,Cement & concrete p…,Manufacturing,* $454.90m,* 496,New
+7,May 2022,China National Bui…,China National Bui…,China,Nigeria,Building materials,Cement & concrete p…,Manufacturing,$50.00m,119,New
+8,May 2022,GCMT Group,CMTrading,Seychelles,Nigeria,Financial services,Corporate & investm…,Business Services,* $2.40m,8,New
+9,May 2022,James Fisher and …,James Fisher Asse…,United Kingdom,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+10,May 2022,Trade X,Trade X,Canada,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 14,New
+11,Apr 2022,Bharti Group,Airtel Nigeria,India,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,New
+12,Apr 2022,bloXmove,bloXmove,Ireland,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $0.80m,4,New
+13,Apr 2022,Diageo,Guinness Nigeria,United Kingdom,Nigeria,Food and Beverages,Breweries,Headquarters,* $27.80m,* 86,Expansion
+14,Apr 2022,GTC Global Trade …,GTC Global Trade …,UAE,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,Apr 2022,Robust Internatio…,Robust Internatio…,Singapore,Nigeria,Food and Beverages,Grains & oilseed,"Logistics, Distributio…",* $22.50m,* 158,New

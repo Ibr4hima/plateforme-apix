@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2013,Aggreko,Aggreko,United Kingdom,Mozambique,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$200.00m,* 13,Expansion
+2,Mar 2013,Bollore Group,Africa Global Logis…,France,Mozambique,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $96.90m,* 111,New
+3,Mar 2013,Crane Worldwide …,Crane Worldwide …,United States,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Mar 2013,Jindal Organisatio…,Jindal Steel & Pow…,India,Mozambique,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $1.04bn,* 101,New
+5,Mar 2013,Siemens,Siemens,Germany,Mozambique,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+6,Feb 2013,Petronas,Engen,Malaysia,Mozambique,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",* $96.90m,* 111,New
+7,Jan 2013,UPM-Kymmene,Forestal Oriental,Finland,Mozambique,Wood products,Forestry & logging,Manufacturing,* $2.83bn,6000,New
+8,Dec 2012,Coca-Cola,Coca-Cola,United States,Mozambique,Food and Beverages,Soft drinks & ice,Manufacturing,$20.00m,* 49,Expansion
+9,Dec 2012,Coca-Cola,Coca-Cola,United States,Mozambique,Food and Beverages,Soft drinks & ice,Manufacturing,* $49.50m,120,New
+10,Dec 2012,Dingsheng Intern…,Dingsheng Intern…,Hong Kong,Mozambique,Real estate,Commercial & institu…,Construction,$500.00m,* 747,New
+11,Nov 2012,Baker Tilly,Baker Tilly Portugal,United Kingdom,Mozambique,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+12,Nov 2012,Carbon Neutral In…,Carbon Neutral In…,United Kingdom,Mozambique,Financial services,Other (Financial serv…,Business Services,* $9.60m,* 27,New
+13,Oct 2012,Astral Foods,Astral Foods,South Africa,Mozambique,Food and Beverages,Animal production & …,Manufacturing,* $51.90m,* 285,New
+14,Oct 2012,Haitong Bank (Ba…,Moza Banco,Portugal,Mozambique,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Sep 2012,ABB (Asea Brown …,ABB (Asea Brown …,Switzerland,Mozambique,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2024,API Global,API Global,United Kingdom,Nigeria,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+2,Dec 2024,Global Pageant In…,ENSPEK,UAE,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+3,Dec 2024,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+4,Dec 2024,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+5,Dec 2024,Vonza,Vonza,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+6,Nov 2024,Cronos Airlines,Cronos Airlines,Equatorial Guinea,Nigeria,Aerospace,Aircraft,Maintenance & Servi…,* $31.10m,* 147,New
+7,Nov 2024,JBS,JBS,Brazil,Nigeria,Food and Beverages,Animal slaughtering …,Manufacturing,* $56.40m,* 288,New
+8,Nov 2024,Pim-Pam,Pim-Pam,United Kingdom,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 8,New
+9,Nov 2024,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+10,Nov 2024,Sun King,Sun King,United States,Nigeria,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+11,Oct 2024,Harvest Waste,Harvest Waste,Netherlands,Nigeria,Renewable energy,Biomass power,Electricity,* $178.00m,* 57,New
+12,Oct 2024,Vesti Technology …,Vesti Technology …,United States,Nigeria,Software & IT services,"Software publishers,…",Research & Develop…,* $111.70m,600,New
+13,Sep 2024,Direkci Group,Direkci Group,Turkey,Nigeria,Food and Beverages,Fruits & vegetables …,Manufacturing,* $56.40m,* 288,New
+14,Sep 2024,Direkci Group,Direkci Group,Turkey,Nigeria,Food and Beverages,Animal slaughtering …,Manufacturing,* $56.40m,* 288,New
+15,Sep 2024,Huawei Technologi…,Huawei Technologi…,China,Nigeria,Electronic components,All other electrical e…,Research & Develop…,* $21.90m,* 62,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Synlab Bondco,Synlab Nigeria,United Kingdom,Nigeria,Healthcare,Outpatient care cent…,Research & Develop…,* $10.60m,* 82,New
+2,Mar 2019,Themis,Neo Themis,Morocco,Nigeria,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$600.00m,* 40,New
+3,Feb 2019,Kimberly-Clark,Kimberly-Clark,United States,Nigeria,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $45.00m,* 171,New
+4,Feb 2019,Luno (BitX),Luno (BitX),United Kingdom,Nigeria,Financial services,Other (Financial serv…,Headquarters,* $44.20m,* 93,New
+5,Feb 2019,Synlab Bondco,Synlab Nigeria,United Kingdom,Nigeria,Healthcare,Outpatient care cent…,Research & Develop…,* $10.60m,* 82,New
+6,Jan 2019,54gene,54gene,United States,Nigeria,Biotechnology,Biological products (…,"Sales, Marketing & S…",* $6.90m,* 11,New
+7,Jan 2019,Bayer,Bayer Middle Africa,Germany,Nigeria,Pharmaceuticals,Pharmaceutical prep…,Headquarters,* $42.10m,* 109,Expansion
+8,Jan 2019,GIBC Digital,GIBC Digital,United States,Nigeria,Business services,Management consult…,Business Services,* $27.80m,* 8,New
+9,Jan 2019,PropertyMonk,PropertyMonk,India,Nigeria,Real estate,Real estate services,Business Services,* $1.90m,* 8,New
+10,Dec 2018,Frigoglass,Beta Glass,Greece,Nigeria,Ceramics & glass,Glass & glass products,Manufacturing,* $31.53m,* 187,Expansion
+11,Dec 2018,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+12,Nov 2018,CDC Group,CDC Group,United Kingdom,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Nov 2018,Exxon Mobil,Mobil Producing Ni…,United States,Nigeria,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $314.90m,* 111,New
+14,Oct 2018,BASF,BASF,Germany,Nigeria,Chemicals,"Paints, coatings, add…",Headquarters,* $14.10m,* 66,New
+15,Oct 2018,CloudFlare,CloudFlare,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2014,Minsk Tractor Works,Minsk Tractor Works,Belarus,Nigeria,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+2,Jan 2014,SABMiller,SABMiller,United Kingdom,Nigeria,Food and Beverages,Breweries,Manufacturing,$110.00m,400,New
+3,Jan 2014,Sika,Sika,Switzerland,Nigeria,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+4,Jan 2014,Toro-Atlantic Global,Toro-Atlantic Global,UAE,Nigeria,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+5,Jan 2014,TVS Group,TVS Motor Compa…,India,Nigeria,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $55.90m,* 583,New
+6,Jan 2014,UNO International,UNO International,Philippines,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 8,New
+7,Dec 2013,Ajinomoto,Ajinomoto,Japan,Nigeria,Food and Beverages,Snack food,"Sales, Marketing & S…",* $4.50m,* 18,New
+8,Dec 2013,China Aerospace …,China Great Wall I…,China,Nigeria,Electronic components,All other electrical e…,Manufacturing,* $57.00m,* 502,New
+9,Dec 2013,China Aerospace …,China Great Wall I…,China,Nigeria,Industrial equipment,Mechanical power tr…,Manufacturing,* $20.10m,* 187,New
+10,Dec 2013,China Aerospace …,China Great Wall I…,China,Nigeria,Industrial equipment,Mechanical power tr…,Research & Develop…,* $57.00m,* 137,New
+11,Dec 2013,e& (Etisalat Group),Etisalat Nigeria,UAE,Nigeria,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+12,Dec 2013,IronForex,IronForex,Cyprus,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Nov 2013,Chain Rail Group,Chain Rail Group,Taiwan,Nigeria,Consumer electronics,Household appliances,Manufacturing,* $40.00m,* 504,New
+14,Nov 2013,Chevron Training,Chevron Training,Ireland,Nigeria,Business services,"Technical, trade & ot…",Education & Training,* $9.40m,* 46,New
+15,Nov 2013,Edcon Holdings (P…,Edcon Holdings (P…,South Africa,Nigeria,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New

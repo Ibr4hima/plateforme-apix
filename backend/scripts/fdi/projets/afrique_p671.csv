@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2020,Orange (France Te…,Orange (France Te…,France,Nigeria,Communications,Wired telecommunic…,ICT & Internet Infras…,* $443.10m,* 100,New
+2,Oct 2020,Danone,Fan Milk,France,Nigeria,Business services,"Water, sewage & oth…",Recycling,* $150.80m,* 42,Co-Location
+3,Oct 2020,Isoplus,Isoplus,Austria,Nigeria,Plastics,"Plastic pipes, pipe fit…",Manufacturing,* $40.80m,425,New
+4,Oct 2020,Sanmerna Paper P…,Sanmerna Paper P…,Jamaica,Nigeria,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $45.00m,* 171,New
+5,Sep 2020,Environmental Sci…,Environmental Sci…,United Kingdom,Nigeria,Chemicals,"Soap, cleaning comp…",Manufacturing,* $653.80m,* 455,New
+6,Sep 2020,Hapag-Lloyd,Hapag-Lloyd,Germany,Nigeria,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+7,Sep 2020,Meta (Facebook),Meta (Facebook),United States,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 14,New
+8,Aug 2020,Agrolimen,GBfoods Nigeria,Spain,Nigeria,Food and Beverages,Seasoning & dressing,Manufacturing,$14.22m,* 54,New
+9,Aug 2020,Qualified Cargo S…,Qualified Cargo S…,Germany,Nigeria,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $314.90m,* 111,New
+10,Aug 2020,The NAGA Group,The NAGA Group,Germany,Nigeria,Financial services,Corporate & investm…,Education & Training,* $73.20m,* 131,New
+11,Aug 2020,The NAGA Group,The NAGA Group,Germany,Nigeria,Financial services,Corporate & investm…,Education & Training,* $73.20m,* 131,New
+12,Jul 2020,4SiGHT Research …,4SiGHT Research …,Saudi Arabia,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+13,Jul 2020,Audiomack,Audiomack,United States,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $0.60m,3,New
+14,Jul 2020,Guangxi Liugong …,Guangxi Liugong …,China,Nigeria,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+15,Jul 2020,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New

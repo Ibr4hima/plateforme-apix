@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2018,B2Gold,B2Gold,Canada,Namibia,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+2,Apr 2018,Choppies,Choppies,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+3,Mar 2018,Canadian Solar In…,Canadian Solar In…,Canada,Namibia,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+4,Mar 2018,Groupe PSA (PSA …,Groupe PSA (PSA …,France,Namibia,Automotive OEM,Automobiles,Manufacturing,$3.35m,50,New
+5,Feb 2018,Jindal Organisatio…,Blake Trading,India,Namibia,Metals,Iron ore mining,Extraction,* $308.40m,* 717,New
+6,Dec 2017,Choppies,Choppies,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+7,Dec 2017,Iran Tractor Indus…,Iran Tractor Indus…,Iran,Namibia,Industrial equipment,"Agriculture, construc…",Manufacturing,$11.01m,* 103,New
+8,Dec 2017,Iran Tractor Indus…,Iran Tractor Indus…,Iran,Namibia,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",$15.90m,* 50,New
+9,Dec 2017,Standard Bank Gr…,Standard Bank Na…,South Africa,Namibia,Financial services,Retail banking,Business Services,$0.36m,* 1,Expansion
+10,Dec 2017,Standard Bank Gr…,Standard Bank Na…,South Africa,Namibia,Financial services,Retail banking,Business Services,* $9.60m,* 13,New
+11,Nov 2017,PricewaterhouseC…,PricewaterhouseC…,United Kingdom,Namibia,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,Expansion
+12,Nov 2017,Standard Bank Gr…,Standard Bank Na…,South Africa,Namibia,Financial services,Retail banking,Business Services,* $1.50m,5,New
+13,Nov 2017,Standard Bank Gr…,Standard Bank Na…,South Africa,Namibia,Financial services,Retail banking,Business Services,* $9.60m,* 13,New
+14,Oct 2017,Choppies,Choppies,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $4.10m,75,New
+15,Oct 2017,Cotton On,Cotton On,Australia,Namibia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New

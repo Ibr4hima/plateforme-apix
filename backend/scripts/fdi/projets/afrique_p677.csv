@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2019,54gene,54gene,United States,Nigeria,Biotechnology,In-Vitro diagnostic s…,"Sales, Marketing & S…",* $6.90m,* 11,Expansion
+2,Jul 2019,Advans Group,Advans Nigeria,Luxembourg,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Jul 2019,Advans Group,Advans Nigeria,Luxembourg,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Jul 2019,Advans Group,Advans Nigeria,Luxembourg,Nigeria,Financial services,Corporate & investm…,Business Services,* $197.80m,650,Expansion
+5,Jul 2019,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+6,Jul 2019,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Jul 2019,MTN Group,MTN Group,South Africa,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Jun 2019,Alphabet Inc,Google,United States,Nigeria,Communications,Wired telecommunic…,ICT & Internet Infras…,* $443.10m,* 100,New
+9,Jun 2019,fonYou,fonYou,Spain,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+10,Jun 2019,Grand Capital,Grand Capital,Russia,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Jun 2019,KPMG,KPMG Nigeria,Netherlands,Nigeria,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 8,Expansion
+12,Jun 2019,MTN Group,MTN Nigeria,South Africa,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,* $443.10m,* 100,New
+13,Jun 2019,PricewaterhouseC…,PricewaterhouseC…,United Kingdom,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+14,Jun 2019,XBT Holding,Servers.com,Luxembourg,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,New
+15,May 2019,Accor,Accor,France,Nigeria,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New

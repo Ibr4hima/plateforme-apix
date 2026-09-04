@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2025,Equinix,Equinix,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,$22.00m,* 3,New
+2,Nov 2025,Verto,Verto,United Kingdom,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.00m,25,New
+3,Oct 2025,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+4,Oct 2025,S&P Global (McGr…,S&P Global (McGr…,United States,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+5,Oct 2025,Seclore Technology,Seclore Technology,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+6,Oct 2025,Tetra Laval,Sidel,Switzerland,Nigeria,Plastics,Plastic bottles,"Sales, Marketing & S…",* $2.00m,* 9,New
+7,Oct 2025,Wanyang Group,Vanyo Battery,China,Nigeria,Electronic components,Batteries,"Logistics, Distributio…",* $12.90m,* 39,New
+8,Sep 2025,Cassava Technolo…,Cassava Technolo…,United Kingdom,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $144.00m,* 21,New
+9,Sep 2025,Lafarge,Lafarge Africa (Laf…,France,Nigeria,Building materials,Cement & concrete p…,Manufacturing,* $454.90m,* 496,New
+10,Sep 2025,Shanghai Haiqi In…,Shanghai Haiqi In…,China,Nigeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+11,Aug 2025,Digital Realty Trust,Digital Realty Trust,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,Expansion
+12,Aug 2025,PepsiCo,PepsiCo,United States,Nigeria,Food and Beverages,Snack food,Manufacturing,$20.00m,* 76,New
+13,Aug 2025,VFS Global,VFS Global,Switzerland,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+14,Aug 2025,VFS Global,VFS Global,Switzerland,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+15,Jul 2025,EBTeam,EBTeam,United States,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New

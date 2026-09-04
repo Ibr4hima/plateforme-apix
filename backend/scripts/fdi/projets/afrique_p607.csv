@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2003,Marriott Internatio…,Marriott Internatio…,United States,Morocco,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $0.90m,* 13,New
+2,Jul 2003,STMicroelectronics,STMicroelectronics,Switzerland,Morocco,Semiconductors,Semiconductors & ot…,Research & Develop…,* $51.30m,* 118,Expansion
+3,Jun 2003,Neptune Software,Neptune Software,United Kingdom,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+4,Jun 2003,Sofanou,Sofanou,France,Morocco,Automotive compon…,Motor vehicle electri…,"Logistics, Distributio…",* $18.20m,* 65,New
+5,Jun 2003,Vanco Energy,Vanco Petroleum I…,United States,Morocco,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+6,May 2003,Ceconomy (Metro),Ceconomy (Metro),Germany,Morocco,Food and Beverages,Food & beverage ret…,Retail,$16.00m,350,New
+7,May 2003,Ford Motor Compa…,Volvo,United States,Morocco,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+8,May 2003,Gide Loyrette Nouel,Gide Loyrette Nouel,France,Morocco,Business services,Legal services,Business Services,* $6.80m,* 40,New
+9,May 2003,McDonalds,McDonalds,United States,Morocco,Food and Beverages,Food services,Retail,$1.50m,100,New
+10,May 2003,Roche Group,Roche Group,Switzerland,Morocco,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$14.00m,* 153,New
+11,May 2003,TransInvest,Militzer & Münch,Switzerland,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$4.00m,* 15,New
+12,Apr 2003,Cegos,Cegos,France,Morocco,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+13,Apr 2003,European Investm…,European Investm…,Luxembourg,Morocco,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Apr 2003,Gil Gomez,Gil Gomez,Spain,Morocco,Food and Beverages,Seafood products,Manufacturing,* $10.70m,70,New
+15,Apr 2003,Mecca-Cola,Mecca-Cola,UAE,Morocco,Food and Beverages,Soft drinks & ice,Manufacturing,$9.00m,100,New

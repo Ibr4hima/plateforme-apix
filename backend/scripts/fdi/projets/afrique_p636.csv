@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2025,Atlas Professionals,Atlas Professionals,Netherlands,Namibia,Business services,Employment services,Business Services,* $27.80m,* 38,New
+2,Mar 2025,One Eighty Degrees,One Eighty Degrees,South Africa,Namibia,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+3,Feb 2025,ABL Group (Aquali…,ABL Group (Aquali…,United Kingdom,Namibia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+4,Feb 2025,Andrada Mining (A…,Andrada Mining (A…,United Kingdom,Namibia,Metals,Other metal ore mini…,Extraction,* $308.40m,* 717,Expansion
+5,Feb 2025,Bathu Group,Bathu Group,South Africa,Namibia,Textiles,Footwear,Retail,* $4.40m,* 50,New
+6,Feb 2025,Kaleido Logistics,Kaleido Logistics,Spain,Namibia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+7,Feb 2025,Sefalana Holding …,Sefalana Shopper,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+8,Jan 2025,Orafol,Orafol,Germany,Namibia,Plastics,Other plastics produ…,"Sales, Marketing & S…",* $2.00m,* 9,New
+9,Nov 2024,AJM,AJM,South Africa,Namibia,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+10,Nov 2024,Baker Hughes,Baker Hughes,United States,Namibia,"Coal, oil & gas",Support activities for…,Manufacturing,* $1.41bn,* 213,New
+11,Nov 2024,Choppies,Choppies,Botswana,Namibia,Food and Beverages,Food & beverage ret…,Retail,* $1.90m,34,New
+12,Nov 2024,Coca-Cola,Coca-Cola Bevera…,United States,Namibia,Food and Beverages,Soft drinks & ice,Manufacturing,$50.00m,* 214,Expansion
+13,Nov 2024,Halliburton,Halliburton,United States,Namibia,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $8.00m,* 50,New
+14,Nov 2024,Halliburton,Halliburton,United States,Namibia,Chemicals,Other chemical prod…,"Logistics, Distributio…",* $21.40m,* 50,New
+15,Nov 2024,Halliburton,Halliburton,United States,Namibia,"Coal, oil & gas",Support activities for…,Maintenance & Servi…,* $11.70m,* 50,New

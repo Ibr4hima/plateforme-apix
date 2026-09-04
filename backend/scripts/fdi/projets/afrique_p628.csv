@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2012,Techint,Tenaris,Italy,Mozambique,Metals,Other fabricated met…,"Sales, Marketing & S…",* $2.80m,* 9,New
+2,Mar 2012,Bluepharma,Bluepharma,Portugal,Mozambique,Pharmaceuticals,Pharmaceutical prep…,Headquarters,* $34.10m,* 96,New
+3,Feb 2012,deVere & Partners…,deVere & Partners…,Switzerland,Mozambique,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Feb 2012,Haitong Bank (Ba…,Moza Banco,Portugal,Mozambique,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Feb 2012,Haitong Bank (Ba…,Moza Banco,Portugal,Mozambique,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Feb 2012,Weir Group,Weir Minerals Africa,United Kingdom,Mozambique,Rubber,Rubber hoses & belti…,"Sales, Marketing & S…",* $2.80m,* 12,New
+7,Jan 2012,Pan Africa Busines…,CNBC Africa,South Africa,Mozambique,Communications,Radio & TV broadcas…,Business Services,* $5.20m,* 20,New
+8,Dec 2011,Lacatoni,Lacatoni,Portugal,Mozambique,Textiles,Clothing & clothing a…,Manufacturing,* $16.90m,300,New
+9,Nov 2011,Beacon Hill Resou…,Beacon Hill Resou…,South Africa,Mozambique,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+10,Nov 2011,Eni SpA,Eni SpA,Italy,Mozambique,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.64bn,* 146,New
+11,Nov 2011,Eni SpA,Eni SpA,Italy,Mozambique,"Coal, oil & gas",Oil & gas extraction,Extraction,* $484.60m,* 214,New
+12,Nov 2011,SASOL,Sasol Petroleum I…,South Africa,Mozambique,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.64bn,* 146,New
+13,Nov 2011,The Foschini Group,The Foschini Group,South Africa,Mozambique,Consumer products,General merchandis…,Retail,* $36.90m,* 179,New
+14,Nov 2011,Vale (Companhia …,Vale (Companhia …,Brazil,Mozambique,"Coal, oil & gas",Coal mining,Extraction,* $484.60m,* 214,Expansion
+15,Nov 2011,Vale (Companhia …,Vale (Companhia …,Brazil,Mozambique,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",* $154.10m,* 130,New

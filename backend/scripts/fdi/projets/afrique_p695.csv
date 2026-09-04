@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2014,Bharti Group,Airtel Nigeria,India,Nigeria,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+2,Jun 2014,Exotix,Exotix,United Kingdom,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Jun 2014,First Technology H…,Phoenix Distribution,South Africa,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+4,Jun 2014,Remgro,Distell Group,South Africa,Nigeria,Food and Beverages,Distilleries,Manufacturing,* $56.40m,* 288,New
+5,Jun 2014,Suitsupply,Suitsupply,Netherlands,Nigeria,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+6,Jun 2014,Techno Brain,Techno Brain,Tanzania,Nigeria,Software & IT services,"Software publishers,…",Education & Training,* $7.80m,* 67,New
+7,Jun 2014,TotalEnergies (Tot…,Total Nigeria,France,Nigeria,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+8,May 2014,Kewalram Chanrai,Kewalram Chanrai,Singapore,Nigeria,Automotive OEM,Light trucks & utility …,Manufacturing,$61.95m,* 366,New
+9,May 2014,SkyPower,SkyPower FAS En…,Canada,Nigeria,Renewable energy,Solar electric power,Electricity,$5.00bn,* 1550,New
+10,May 2014,Standard Chartere…,Standard Chartere…,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,May 2014,Wunderbrand,Wunderbrand,South Africa,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 8,New
+12,Apr 2014,Carmichael Fisher,Carmichael Fisher,Australia,Nigeria,Business services,Employment services,Business Services,* $27.80m,* 8,New
+13,Apr 2014,Clinix Healthcare,Clinix Healthcare,Kenya,Nigeria,Healthcare,Outpatient care cent…,Business Services,* $2.70m,* 39,New
+14,Apr 2014,United Aviation Se…,United Aviation Se…,UAE,Nigeria,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Mar 2014,Hyflux,Hyflux,Singapore,Nigeria,Business services,"Water, sewage & oth…",Recycling,* $150.80m,* 42,New

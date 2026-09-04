@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2023,AMEA Power,AMEA Power,UAE,Mozambique,Renewable energy,Solar electric power,Electricity,$150.00m,* 47,New
+2,Oct 2023,DSV,DSV,Denmark,Mozambique,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $96.90m,* 111,New
+3,Aug 2023,Gemfields Resourc…,Montepuez Ruby …,United Kingdom,Mozambique,Minerals,Nonmetallic mineral …,Extraction,$70.00m,* 204,Expansion
+4,Aug 2023,West China Cement,Mozambique Dugo…,China,Mozambique,Building materials,Cement & concrete p…,Manufacturing,$200.00m,600,New
+5,Jul 2023,Inter RAO Unified …,Inter RAO - Export,Russia,Mozambique,Renewable energy,Hydroelectric power,Electricity,* $87.90m,* 57,New
+6,Jul 2023,Jearrard Energy R…,Jearrard Energy R…,United Kingdom,Mozambique,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+7,Jul 2023,Paratus Africa Gro…,Paratus Mozambiq…,Namibia,Mozambique,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Jul 2023,UPF Group,UPF Group,Denmark,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,May 2023,FPT Group,FPT Group,South Africa,Mozambique,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $96.90m,* 111,New
+10,Feb 2023,Digital Realty Trust,iColo,United States,Mozambique,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+11,Nov 2022,Paratus Africa Gro…,Paratus Mozambiq…,Namibia,Mozambique,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+12,May 2022,Banyan Tree,Banyan Tree,Singapore,Mozambique,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+13,Apr 2022,Pro Africa,Pro Africa,South Africa,Mozambique,Transportation & Wa…,Truck transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Apr 2022,Tschudi Group,Tschudi Mozambiq…,Norway,Mozambique,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Feb 2022,Grindrod,Grindrod,South Africa,Mozambique,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $96.90m,* 111,Expansion

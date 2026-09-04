@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2025,International Wor…,International Wor…,Switzerland,Nigeria,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+2,May 2025,Sycomp Technolo…,Sycomp Technolo…,United States,Nigeria,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+3,May 2025,Transsion Holding…,itel Energy,China,Nigeria,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+4,Apr 2025,Equinix,Equinix,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,Expansion
+5,Mar 2025,Lada Auto Holding,AvtoVAZ (Volga A…,Russia,Nigeria,Automotive OEM,Automobiles,Maintenance & Servi…,* $1.70m,* 61,New
+6,Mar 2025,Nabisar Films,Nabisar Films,United States,Nigeria,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+7,Mar 2025,Visa International,Visa International,United States,Nigeria,Software & IT services,"Software publishers,…",ICT & Internet Infras…,* $243.50m,* 81,New
+8,Mar 2025,West Indian Ocea…,Open Access Data…,Mauritius,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,$240.00m,* 36,Expansion
+9,Feb 2025,Archer Daniels Mi…,Archer Daniels Mi…,United States,Nigeria,Food and Beverages,Animal food,Research & Develop…,* $12.00m,* 55,New
+10,Feb 2025,Beforc,Beforc,United Kingdom,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Feb 2025,CF Banque,CF Banque,United Kingdom,Nigeria,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+12,Feb 2025,Coca-Cola,Coca-Cola Nigeria,United States,Nigeria,Plastics,Plastic bottles,Recycling,* $29.80m,* 55,New
+13,Feb 2025,Jiuling Lithium,Jiuling Lithium,China,Nigeria,Chemicals,Basic chemicals,Manufacturing,$200.00m,* 265,New
+14,Feb 2025,Spiro (MAuto Elec…,Spiro (MAuto Elec…,Benin,Nigeria,Non-automotive tran…,"Motorcycle, bicycle,…",Manufacturing,* $55.90m,* 583,New
+15,Jan 2025,Rough Bones Reco…,Rough Bones Reco…,United Kingdom,Nigeria,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New

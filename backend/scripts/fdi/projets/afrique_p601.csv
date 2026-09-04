@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2005,Tata Group,Indian Motors,India,Morocco,Automotive OEM,Heavy duty trucks,Manufacturing,$24.70m,2070,New
+2,Sep 2005,Emaar Properties,Emaar Malls,UAE,Morocco,Real estate,Commercial & institu…,Construction,* $411.00m,* 875,New
+3,Sep 2005,Fauji Group,Fauji Group,Pakistan,Morocco,Chemicals,"Pesticide, fertilisers …",Manufacturing,$300.00m,180,New
+4,Sep 2005,Ligne Roset,Ligne Roset,France,Morocco,Consumer products,Furniture & related p…,Retail,* $36.90m,* 179,New
+5,Sep 2005,Unibel,Bel,France,Morocco,Food and Beverages,Dairy products,"Sales, Marketing & S…",$3.20m,* 32,New
+6,Aug 2005,Demos,Formademos,France,Morocco,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+7,Aug 2005,Grupo Calvo,Grupo Calvo,Spain,Morocco,Food and Beverages,Seafood products,Manufacturing,* $42.10m,275,New
+8,Aug 2005,Intel,Intel,United States,Morocco,Semiconductors,Semiconductors & ot…,"Sales, Marketing & S…",* $3.10m,* 13,New
+9,Aug 2005,Promod,Promod,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+10,Jul 2005,AP Moller - Maersk,Maersk Logistics,Denmark,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,Expansion
+11,Jul 2005,Boccard,Boccard,France,Morocco,Metals,Other fabricated met…,"Sales, Marketing & S…",$102.80m,* 932,New
+12,Jul 2005,Creuzet Aeronauti…,Creuzet Aeronauti…,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$12.20m,250,New
+13,Jul 2005,Heidelberg Materi…,Ciments du Maroc,Italy,Morocco,Building materials,Cement & concrete p…,Manufacturing,$185.00m,* 353,New
+14,Jul 2005,La Poste,EMS Chronopost I…,France,Morocco,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+15,Jul 2005,Renault,Renault,France,Morocco,Automotive OEM,Automobiles,Manufacturing,$35.80m,* 339,New

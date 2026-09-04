@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2022,Banyan Tree,Banyan Tree,Singapore,Mozambique,Hotels & tourism,Accommodation,Construction,$98.00m,* 202,New
+2,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Jan 2022,Renco Group,Renco Group,Italy,Mozambique,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $1.04bn,* 101,New
+4,Dec 2021,Globeleq Generati…,Globeleq Generati…,United Kingdom,Mozambique,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$2.00bn,90,New
+5,Dec 2021,Renco Group,Renco Group,Italy,Mozambique,Business services,Employment services,Business Services,* $27.80m,* 38,New
+6,Oct 2021,Dubai World,DP World Maputo,UAE,Mozambique,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$90.00m,* 400,Expansion
+7,Jun 2021,Intra Energy (Ato…,Intra Energy (Ato…,Australia,Mozambique,Metals,Gold ore & silver ore…,Extraction,* $410.90m,* 717,New
+8,May 2021,Advanced Maritim…,Advanced Maritim…,Switzerland,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+9,May 2021,Advanced Maritim…,Advanced Maritim…,Switzerland,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Feb 2021,EnerMech,EnerMech,United Kingdom,Mozambique,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+11,Feb 2021,Move One,Move One,UAE,Mozambique,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Dec 2020,Solarcentury,Solar Century Africa,United Kingdom,Mozambique,Renewable energy,Solar electric power,Electricity,* $87.90m,* 57,New
+13,Nov 2020,Raxio Group,Raxio Group,United States,Mozambique,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+14,Sep 2020,Heineken Holding,Heineken,Netherlands,Mozambique,Food and Beverages,Breweries,Manufacturing,$20.00m,* 49,Expansion
+15,Jul 2020,Keda Industrial Gr…,Keda Industrial Gr…,China,Mozambique,Ceramics & glass,Clay product & refra…,Manufacturing,$33.50m,* 198,New

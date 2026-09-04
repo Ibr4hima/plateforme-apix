@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2009,Gazprom,Gazprom Internati…,Russia,Namibia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$1.00bn,* 98,New
+2,Jul 2009,Pacific Bay Mineral…,Pacific Bay Mineral…,Canada,Namibia,Metals,Other metal ore mini…,"Sales, Marketing & S…",* $2.80m,* 9,New
+3,Jul 2009,Sintezneftegaz,Sintezneftegaz,Russia,Namibia,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+4,Jan 2009,Ankit Gems,Ankit Gems,India,Namibia,Minerals,Other non-metallic …,Manufacturing,* $1.00m,8,New
+5,Jan 2009,Bava Technologies,Bava Technologies,South Africa,Namibia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+6,Oct 2008,African Queen Min…,African Queen Min…,Canada,Namibia,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+7,Oct 2008,George Forrest Int…,George Forrest Int…,Democratic Repu…,Namibia,Building materials,Cement & concrete p…,Manufacturing,$160.00m,* 305,New
+8,Oct 2008,Redefine Income …,Redefine Income …,South Africa,Namibia,Real estate,Real estate services,Construction,$197.50m,* 1412,New
+9,Sep 2008,Barclays Bank,ABSA,United Kingdom,Namibia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Sep 2008,Leviev Group of C…,Leviev Group of C…,Israel,Namibia,Food and Beverages,Crop production,Manufacturing,* $58.40m,* 429,New
+11,Sep 2008,Orano Société (Ar…,Uramin,France,Namibia,Business services,"Water, sewage & oth…",Recycling,$200.00m,* 182,New
+12,Sep 2008,Paladin Energy (P…,Paladin Energy (P…,Australia,Namibia,Metals,Other metal ore mini…,Extraction,* $35.60m,50,Expansion
+13,Sep 2008,Standard Bank Gr…,Liberty Group,South Africa,Namibia,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+14,Jul 2008,TotalEnergies (Tot…,Total Namibia,France,Namibia,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,* 335,New
+15,Jun 2008,Arlan,Arlan,Russia,Namibia,Metals,Nonferrous metal pr…,Extraction,$4.50m,* 6,New

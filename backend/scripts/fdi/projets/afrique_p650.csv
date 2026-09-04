@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2005,Helio Resource (H…,Helio Resource (H…,Canada,Namibia,Metals,Gold ore & silver ore…,Extraction,* $270.00m,* 1012,New
+2,Sep 2005,Boulder Mining Co…,Boulder Mining Co…,Canada,Namibia,Metals,Gold ore & silver ore…,Extraction,* $308.40m,* 717,New
+3,Jul 2005,Extract Resources,Extract Resources,Australia,Namibia,Metals,Other metal ore mini…,Extraction,* $270.00m,* 1012,New
+4,Jun 2005,De Beers,Diamdel,South Africa,Namibia,Minerals,Other non-metallic …,"Sales, Marketing & S…",* $2.10m,* 24,New
+5,Jun 2005,Diamond Fields In…,Diamond Fields In…,Canada,Namibia,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+6,May 2005,Paladin Resources,Paladin Resources,Australia,Namibia,Metals,Other metal ore mini…,Extraction,$90.00m,* 127,New
+7,Mar 2005,Motapa Diamonds,Motapa Diamonds,United States,Namibia,Minerals,Nonmetallic mineral …,Extraction,$1.20m,* 2,Expansion
+8,Jun 2004,Africa Israel Inves…,Africa Israel Inves…,Israel,Namibia,Real estate,Commercial & institu…,Construction,$50.00m,* 357,New
+9,Jun 2004,Leviev Group of C…,Leviev Group of C…,Israel,Namibia,Minerals,Other non-metallic …,Manufacturing,$3.00m,* 24,New
+10,May 2004,Gensec,Gensec Property S…,South Africa,Namibia,Real estate,Real estate services,Business Services,* $35.90m,* 20,New
+11,May 2004,Gensec,Gensec Property S…,South Africa,Namibia,Real estate,Real estate services,Business Services,* $35.90m,* 20,New
+12,Aug 2003,Alrosa,Alrosa,Russia,Namibia,Minerals,Other non-metallic …,"Sales, Marketing & S…",* $2.10m,* 24,New
+13,Aug 2003,Anglo American,Namdeb,United Kingdom,Namibia,Minerals,Nonmetallic mineral …,Extraction,$52.00m,* 69,New
+14,May 2003,Anglo American,Anglo American,United Kingdom,Namibia,Metals,Nonferrous metal pr…,Extraction,$454.00m,* 638,New
+15,Jan 2003,R Enthoven and S…,Hollard Insurance,South Africa,Namibia,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New

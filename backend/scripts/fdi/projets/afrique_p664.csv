@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2023,Amazon.com,Amazon Web Serv…,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,New
+2,Jan 2023,Husk Power Syste…,Husk Power Syste…,United States,Nigeria,Renewable energy,Solar electric power,Electricity,* $129.00m,40,New
+3,Jan 2023,Jungheung Constr…,Daewoo Engineeri…,South Korea,Nigeria,Business services,"Technical, trade & ot…",Education & Training,* $9.40m,* 46,New
+4,Jan 2023,NOVAIR,NOVAIR,France,Nigeria,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+5,Jan 2023,Renewvia Energy,Renewvia Energy,United States,Nigeria,Renewable energy,Solar electric power,Electricity,* $178.00m,* 57,New
+6,Jan 2023,Zipline,Zipline,United States,Nigeria,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $314.90m,* 111,New
+7,Dec 2022,FedEx (Federal Ex…,FedEx Express,United States,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Nov 2022,GoMyCode,GoMyCode,Tunisia,Nigeria,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New
+9,Nov 2022,GoMyCode,GoMyCode,Tunisia,Nigeria,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New
+10,Nov 2022,SHELT,SHELT,Cyprus,Nigeria,Software & IT services,Custom computer pr…,Technical Support Ce…,* $15.20m,* 393,New
+11,Oct 2022,Groupe Baobab,Groupe Baobab,France,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Oct 2022,Groupe Baobab,Groupe Baobab,France,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Oct 2022,Groupe Baobab,Groupe Baobab,France,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Oct 2022,Harren & Partner,Harren & Partner,Germany,Nigeria,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Sep 2022,Bar-Magen,Argo Bar-Magen N…,Israel,Nigeria,Food and Beverages,Animal food,Manufacturing,* $56.40m,* 288,New

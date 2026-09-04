@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Lonrho,Lonrho Agriculture,United Kingdom,Mozambique,Food and Beverages,Seafood products,Manufacturing,* $48.10m,* 429,New
+2,Nov 2008,GAC Group,GAC Group,UAE,Mozambique,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+3,Nov 2008,GAC Group,GAC Group,UAE,Mozambique,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Nov 2008,Radisson Hospitali…,Radisson Hospitali…,Belgium,Mozambique,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+5,Nov 2008,Vale (Companhia …,Vale (Companhia …,Brazil,Mozambique,"Coal, oil & gas",Other petroleum & c…,Extraction,$250.00m,* 104,New
+6,Oct 2008,African Queen Min…,African Queen Min…,Canada,Mozambique,Metals,Gold ore & silver ore…,Extraction,* $270.00m,* 1012,New
+7,Oct 2008,African Queen Min…,African Queen Min…,Canada,Mozambique,Metals,Gold ore & silver ore…,Extraction,* $270.00m,* 1012,New
+8,Oct 2008,Petronas,Petronas,Malaysia,Mozambique,"Coal, oil & gas",Oil & gas extraction,Extraction,$5.60m,* 2,New
+9,Oct 2008,SASOL,SASOL,South Africa,Mozambique,"Coal, oil & gas",Oil & gas extraction,Extraction,* $484.60m,* 214,New
+10,Sep 2008,Kenmare Resources,Kenmare Resources,Ireland,Mozambique,Metals,Nonferrous metal pr…,Extraction,$100.00m,* 141,Expansion
+11,Aug 2008,Jindal Organisatio…,JSW Steel,India,Mozambique,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $1.64bn,* 146,New
+12,Jul 2008,Rio Tinto Coal Moz…,Rio Tinto Coal Moz…,Australia,Mozambique,"Coal, oil & gas",Coal mining,Extraction,* $484.60m,* 214,New
+13,Jul 2008,Sahara Computers,Sahara Computers,South Africa,Mozambique,Business machines &…,Computer & peripher…,Manufacturing,$1.00m,* 6,New
+14,Jul 2008,Three Cities Group,Three Cities Group,South Africa,Mozambique,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+15,Jun 2008,ArcelorMittal,ArcelorMittal Sout…,Luxembourg,Mozambique,Metals,Steel products,Manufacturing,* $178.90m,* 342,New

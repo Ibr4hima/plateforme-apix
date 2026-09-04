@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2023,Rosatom,Uranium One Hold…,Russia,Namibia,Metals,Other metal ore mini…,Extraction,$500.00m,600,New
+2,May 2023,Arcadia Minerals,Arcadia Minerals,Australia,Namibia,Metals,Other metal ore mini…,Extraction,* $308.40m,* 717,New
+3,May 2023,Old Mutual Limited,Old Mutual Limited,South Africa,Namibia,Financial services,Retail banking,Business Services,* $9.60m,* 13,New
+4,May 2023,SLB (Schlumberge…,SLB (Schlumberge…,United States,Namibia,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $7.80m,* 30,New
+5,Apr 2023,Andrada Mining (A…,Andrada Mining (A…,United Kingdom,Namibia,Metals,Other (Metals),Manufacturing,* $147.40m,* 443,New
+6,Apr 2023,China Energy Engi…,Cerim Luderitz En…,China,Namibia,Renewable energy,Wind electric power,Electricity,$96.40m,* 30,New
+7,Feb 2023,Andrada Mining (A…,Andrada Mining (A…,United Kingdom,Namibia,Minerals,Nonmetallic mineral …,Extraction,* $107.10m,* 1366,Expansion
+8,Jan 2023,Abercrombie & Kent,Abercrombie & Kent,United States,Namibia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+9,Dec 2022,Blumaq,Blumaq,Spain,Namibia,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",* $15.90m,* 50,New
+10,Sep 2022,HDF Energy (Hydr…,HDF Energy (Hydr…,France,Namibia,Renewable energy,Other electric power …,Electricity,$181.25m,* 56,New
+11,Jun 2022,Old Mutual Limited,Nedbank Namibia,South Africa,Namibia,Financial services,Retail banking,Headquarters,$26.89m,* 156,Expansion
+12,May 2022,AIT Technology,AIT Technology,Ethiopia,Namibia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+13,May 2022,Stewarts & Lloyds,Stewarts & Lloyds,South Africa,Namibia,Metals,Steel products,"Sales, Marketing & S…",* $1.90m,* 8,New
+14,May 2022,Trigon Metals,Trigon Metals,Canada,Namibia,Metals,"Copper, nickel, lead,…",Extraction,* $308.40m,* 717,Expansion
+15,Mar 2022,Vizi Solutions,Vizi Solutions,South Africa,Namibia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New

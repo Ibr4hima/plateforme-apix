@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2005,Safran Group,Labinal Maroc,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$44.00m,400,New
+2,Jul 2005,Safran Group,Teuchos,France,Morocco,Aerospace,Aircraft,Research & Develop…,$14.30m,400,New
+3,Jul 2005,Somefor,Somefor Peintures…,France,Morocco,Plastics,"Urethane, foam prod…","Sales, Marketing & S…",* $2.00m,* 12,New
+4,Jul 2005,SQLI,SQLI,France,Morocco,Software & IT services,Custom computer pr…,Research & Develop…,* $4.70m,30,Expansion
+5,Jul 2005,Tests e Performan…,Tests e Performan…,France,Morocco,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,Jun 2005,Savola,Savola,Saudi Arabia,Morocco,Food and Beverages,Grains & oilseed,Manufacturing,$1.20m,* 8,Expansion
+7,May 2005,Banchereau Viand…,Banchereau Viand…,France,Morocco,Food and Beverages,Animal slaughtering …,Manufacturing,* $5.10m,* 429,New
+8,May 2005,Diar Real Estate I…,Diar Real Estate I…,Qatar,Morocco,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+9,May 2005,Foundever,SITEL Maroc,United States,Morocco,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 261,New
+10,May 2005,Legler,Legler,Italy,Morocco,Textiles,Textile product mills,Manufacturing,$87.00m,800,New
+11,May 2005,Raina,Rainatech,United States,Morocco,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+12,May 2005,Somfy,Somfy,France,Morocco,Electronic components,Electrical equipment,Manufacturing,* $13.70m,* 259,New
+13,May 2005,Vedior,Ma Foi,Netherlands,Morocco,Business services,Employment services,Business Services,* $6.80m,* 40,New
+14,Apr 2005,Accor,Accor Maroc,France,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New
+15,Apr 2005,Fadesa,Fadesa,Spain,Morocco,Hotels & tourism,Accommodation,Construction,* $131.20m,* 219,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2017,Arla Foods,TG Arla Dairy Pro…,Denmark,Nigeria,Food and Beverages,Dairy products,Manufacturing,* $37.50m,* 142,New
+2,Aug 2017,Irvine Partners,Irvine Partners,South Africa,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 8,New
+3,Aug 2017,Kellanova (Kellogg…,Kellanova (Kellogg…,United States,Nigeria,Food and Beverages,Snack food,Manufacturing,* $37.50m,* 142,New
+4,Aug 2017,Meta (Facebook),Branch Media,United States,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 14,New
+5,Jul 2017,Grand Capital,Grand Capital,Russia,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,Jul 2017,Shandong Ruyi Te…,Shandong Ruyi Te…,China,Nigeria,Textiles,Textile product mills,Manufacturing,$600.00m,* 3000,New
+7,Jul 2017,Uber Technologies,Uber Technologies,United States,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 14,New
+8,Jun 2017,Procter & Gamble …,Procter & Gamble …,United States,Nigeria,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $45.00m,* 171,Expansion
+9,May 2017,Management Envi…,Management Envi…,Italy,Nigeria,Business services,Waste management …,Business Services,$45.12m,700,New
+10,May 2017,Otello Corporation…,Otello Corporation…,Norway,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $10.10m,* 50,New
+11,Apr 2017,Bitzer GmbH,Bitzer GmbH,Germany,Nigeria,Industrial equipment,General purpose ma…,"Logistics, Distributio…",* $15.90m,* 50,New
+12,Apr 2017,Bitzer GmbH,Bitzer GmbH,Germany,Nigeria,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+13,Apr 2017,Huajian Group,Huajian Group,China,Nigeria,Textiles,Footwear,Manufacturing,$1.50bn,* 3000,New
+14,Apr 2017,Reckitt Benckiser,Reckitt Benckiser …,United Kingdom,Nigeria,Consumer products,"Cosmetics, perfume,…","Logistics, Distributio…",* $56.60m,* 415,New
+15,Apr 2017,Wanfeng Auto Hol…,Diamond Aircraft I…,China,Nigeria,Aerospace,Aircraft,Manufacturing,* $15.10m,* 217,New

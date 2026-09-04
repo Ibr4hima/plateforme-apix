@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2023,GoGlobal,GoGlobal,Japan,Nigeria,Business services,Employment services,Business Services,* $27.80m,* 8,New
+2,May 2023,Holcim Group (Laf…,Lafarge Africa (Laf…,Switzerland,Nigeria,Building materials,Other (Building mate…,Manufacturing,* $103.70m,254,Co-Location
+3,May 2023,StoneX Group (IN…,StoneX Group (IN…,United States,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,May 2023,Technological Univ…,Technological Univ…,Ireland,Nigeria,Business services,Educational support …,Business Services,* $27.80m,* 8,New
+5,Apr 2023,Avanti Communic…,Avanti Communic…,United Kingdom,Nigeria,Communications,Satellite telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+6,Apr 2023,Gatwick Advisory …,Gatwick Advisory …,Hong Kong,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+7,Apr 2023,Golar LNG,Golar LNG,Bermuda,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.73bn,* 213,New
+8,Apr 2023,Intellia,Intellia,United Kingdom,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+9,Mar 2023,Advans Group,Advans Nigeria,Luxembourg,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+10,Mar 2023,Deutsche Post,DHL,Germany,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Mar 2023,SLB (Schlumberge…,SLB (Schlumberge…,United States,Nigeria,"Coal, oil & gas",Support activities for…,Headquarters,* $37.90m,* 140,New
+12,Feb 2023,Evtec Energy,Evtec Energy,United Kingdom,Nigeria,Renewable energy,Solar electric power,Electricity,* $178.00m,* 57,Co-Location
+13,Feb 2023,Nestle,Nestle Nigeria,Switzerland,Nigeria,Food and Beverages,Other (Food & Bever…,Education & Training,* $2.00m,* 131,Co-Location
+14,Feb 2023,Smile Telecoms H…,Smile Communica…,Mauritius,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,* $443.10m,* 100,New
+15,Feb 2023,Standard Bank Gr…,Stanbic IBTC Pens…,South Africa,Nigeria,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New

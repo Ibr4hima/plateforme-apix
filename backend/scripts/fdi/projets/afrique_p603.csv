@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2005,LG Corp,LG Electronics Mor…,South Korea,Morocco,Consumer electronics,Other (Consumer ele…,Headquarters,* $22.20m,* 99,New
+2,Apr 2005,Motorola Solution…,Motorola Maroc,United States,Morocco,Communications,Communications equ…,Maintenance & Servi…,* $8.40m,* 82,New
+3,Apr 2005,Turkish Airlines,Turkish Airlines,Turkey,Morocco,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Apr 2005,Webhelp,Webhelp,France,Morocco,Business services,Business support ser…,Customer Contact C…,* $3.00m,150,New
+5,Mar 2005,Association Famili…,Auchan Holding (…,France,Morocco,Food and Beverages,Food & beverage ret…,Retail,$32.00m,* 525,New
+6,Mar 2005,Barcelo,Barcelo Hotel and …,Spain,Morocco,Hotels & tourism,Accommodation,Construction,$15.00m,* 38,New
+7,Mar 2005,Blackstone,Octopus Travel,United States,Morocco,Hotels & tourism,Travel arrangement …,Customer Contact C…,* $0.30m,10,New
+8,Mar 2005,Kate Spade & Co…,Mexx,United States,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+9,Mar 2005,Safran Group,Hurel-Hispano,France,Morocco,Aerospace,"Aircraft engines, oth…",Manufacturing,$13.00m,300,New
+10,Mar 2005,Tata Group,Tata Chemicals,India,Morocco,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,New
+11,Feb 2005,Arthur Bonnet,Arthur Bonnet,France,Morocco,Plastics,Laminated plastics pl…,Retail,* $11.90m,* 148,New
+12,Jan 2005,Odyssey Resources,Odyssey Resources,Canada,Morocco,Metals,Gold ore & silver ore…,Extraction,$1.45m,* 2,New
+13,Dec 2004,AP Moller - Maersk,APM Terminals,Denmark,Morocco,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$158.90m,300,New
+14,Dec 2004,Christian Dior,Christian Dior,France,Morocco,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Dec 2004,eSys Technologies,eSys Technologies,Singapore,Morocco,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New

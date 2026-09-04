@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,African Export-Im…,African Export-Im…,Egypt,Nigeria,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+2,Jan 2020,Alphabet Inc,Google,United States,Nigeria,Software & IT services,Other (Software & IT…,Business Services,* $5.90m,* 162,New
+3,Jan 2020,KudiGo,KudiGo,Ghana,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+4,Jan 2020,Siat,Presco,Belgium,Nigeria,Food and Beverages,Grains & oilseed,Manufacturing,* $56.40m,* 288,New
+5,Dec 2019,Carry1st,Carry1st,South Africa,Nigeria,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.20m,* 14,New
+6,Dec 2019,Conflux,Conflux,Singapore,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+7,Dec 2019,Naspers,MultiChoice Nigeria,South Africa,Nigeria,Communications,Media streaming dist…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Dec 2019,Shell PLC (Royal D…,Nigeria LNG,Netherlands,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.73bn,* 213,Expansion
+9,Dec 2019,ZKTeco,ZKTeco,China,Nigeria,Electronic components,All other electrical e…,Research & Develop…,* $21.90m,* 62,New
+10,Dec 2019,ZKTeco,ZKTeco,China,Nigeria,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+11,Nov 2019,BIO-key Internati…,BIO-key Internati…,United States,Nigeria,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.20m,* 14,New
+12,Nov 2019,China Railway Con…,China Civil Engine…,China,Nigeria,Non-automotive tran…,Railroad rolling stock,Manufacturing,* $718.70m,5000,New
+13,Nov 2019,Consolidated Infra…,Conlog,South Africa,Nigeria,Industrial equipment,Measuring & control …,Manufacturing,* $29.80m,* 219,New
+14,Nov 2019,Cummins,Cummins West Afr…,United States,Nigeria,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $2.20m,* 14,New
+15,Nov 2019,Dakota Wesleyan …,Dakota Wesleyan …,United States,Nigeria,Business services,"Schools, colleges, un…",Business Services,* $0.50m,3,New

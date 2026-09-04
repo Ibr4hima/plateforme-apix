@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2012,SASOL,SASOL,South Africa,Namibia,Chemicals,Other chemical prod…,"Logistics, Distributio…",* $13.20m,* 28,New
+2,Mar 2012,Provantage Media,Provantage Media,South Africa,Namibia,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+3,Dec 2011,Efficient Group,Efficient Group,South Africa,Namibia,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+4,Dec 2011,Efficient Group,Efficient Group (N…,South Africa,Namibia,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+5,Dec 2011,Efficient Group,Efficient Group (N…,South Africa,Namibia,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+6,Dec 2011,Efficient Group,Efficient Group (N…,South Africa,Namibia,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+7,Dec 2011,Standard Bank Gr…,Standard Bank Na…,South Africa,Namibia,Financial services,Retail banking,Business Services,* $9.60m,* 13,New
+8,Nov 2011,Deep Yellow,Reptile Uranium,Australia,Namibia,Metals,Iron ore mining,Extraction,$250.15m,150,New
+9,Nov 2011,Eco Oil & Gas,Eco Oil & Gas,Canada,Namibia,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+10,Sep 2011,FirstRand,Rand Merchant Ba…,South Africa,Namibia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+11,Sep 2011,GPT Group,GPT-TransNamibia…,India,Namibia,Building materials,Cement & concrete p…,Manufacturing,$6.38m,70,New
+12,Aug 2011,NMI Group,NMI Group,South Africa,Namibia,Food and Beverages,Animal slaughtering …,Manufacturing,$69.53m,450,New
+13,Aug 2011,NMI Group,Feedmaster,South Africa,Namibia,Food and Beverages,Animal food,Manufacturing,$9.04m,40,Co-Location
+14,Aug 2011,Paladin Energy (P…,Paladin Energy (P…,Australia,Namibia,Metals,Other metal ore mini…,Extraction,* $270.00m,* 1012,Expansion
+15,Aug 2011,Tiffany & Co,Laurelton Reign Di…,United States,Namibia,Minerals,Other non-metallic …,Manufacturing,$3.72m,* 30,New

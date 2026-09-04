@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2024,Partech Ventures,Partech Ventures,France,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Feb 2024,Shell PLC (Royal D…,Shell PLC (Royal D…,United Kingdom,Nigeria,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",* $63.40m,* 85,New
+3,Jan 2024,Avvashya Group,Ecu Worldwide,India,Nigeria,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Jan 2024,Kampus Group,Kampus Group,United Kingdom,Nigeria,Business services,Educational support …,Business Services,* $27.80m,* 8,New
+5,Jan 2024,Martech Technolo…,AMASS Fintech,Belize,Nigeria,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+6,Dec 2023,Blockchain,Blockchain,United Kingdom,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.00m,* 25,New
+7,Dec 2023,ISMMART Group o…,ISMMART Group o…,Pakistan,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+8,Nov 2023,Tata Group,Tata International,India,Nigeria,Industrial equipment,All other industrial m…,Manufacturing,* $29.80m,* 219,Expansion
+9,Nov 2023,Zara FX,Zara FX,UAE,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+10,Oct 2023,BancTrust,BancTrust,United Kingdom,Nigeria,Financial services,Corporate & investm…,Business Services,* $0.90m,3,New
+11,Oct 2023,Beijing Automotiv…,Beiqi Foton Motor,China,Nigeria,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+12,Oct 2023,Burn Stoves,Burn Stoves,Kenya,Nigeria,Consumer electronics,Household appliances,Manufacturing,$40.00m,* 504,New
+13,Oct 2023,Deere & Company,John Deere,United States,Nigeria,Industrial equipment,"Agriculture, construc…",Manufacturing,* $29.80m,* 219,New
+14,Oct 2023,Digital Realty Trust,Medallion Data Ce…,United States,Nigeria,Communications,Computing infrastruc…,ICT & Internet Infras…,* $443.10m,* 100,Co-Location
+15,Oct 2023,FuelCell Energy,FuelCell Energy,United States,Nigeria,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New

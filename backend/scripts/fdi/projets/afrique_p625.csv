@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2013,LG Corp,LG Electronics,South Korea,Mozambique,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+2,Aug 2013,Smeg (Smalterie …,Smeg (Smalterie …,Italy,Mozambique,Consumer electronics,Household appliances,Retail,* $9.20m,* 78,New
+3,Jul 2013,Cimpor,Cimentos de Moca…,Portugal,Mozambique,Building materials,Cement & concrete p…,Manufacturing,* $109.50m,* 496,New
+4,Jul 2013,Pylos,Pylos,Belgium,Mozambique,Real estate,Commercial & institu…,"Sales, Marketing & S…",* $15.90m,* 25,New
+5,Jun 2013,Norton Rose Fulbri…,Norton Rose Fulbri…,United Kingdom,Mozambique,Business services,Legal services,Business Services,* $27.80m,* 38,New
+6,May 2013,Aveng Group,Aveng Group,South Africa,Mozambique,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+7,May 2013,Grupo Visabeira,Sogitel Mozambique,Portugal,Mozambique,Building materials,Cement & concrete p…,Manufacturing,$2.50m,* 6,New
+8,May 2013,Olam International,Olam Mozambique,Singapore,Mozambique,Textiles,Textile product mills,Manufacturing,$2.00m,* 50,New
+9,May 2013,OM Residual UK (…,Nedbank,United Kingdom,Mozambique,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,May 2013,Sumol+Compal,Sumol+Compal,Portugal,Mozambique,Food and Beverages,Soft drinks & ice,Manufacturing,$10.33m,* 25,New
+11,May 2013,Walmart,Builders Warehouse,United States,Mozambique,Consumer products,Building material & g…,Retail,* $10.90m,* 170,New
+12,Apr 2013,Beacon Hill Resou…,Beacon Hill Resou…,South Africa,Mozambique,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $1.41bn,* 213,Co-Location
+13,Apr 2013,Nippon Steel Corp…,Nippon Steel Corp…,Japan,Mozambique,"Coal, oil & gas",Coal mining,Extraction,* $484.60m,* 230,New
+14,Apr 2013,Turner & Townsend,Turner & Townsend,United Kingdom,Mozambique,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+15,Apr 2013,Walmart,Massmart,United States,Mozambique,Consumer products,Wholesale Trade (Co…,Retail,$3.23m,59,New

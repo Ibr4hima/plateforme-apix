@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2020,Vivendi (Vivendi U…,Universal Music G…,France,Nigeria,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+2,Mar 2020,Compagnie Financ…,Compagnie Financ…,Côte d Ivoire,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+3,Mar 2020,Dan Holdings,Dan Holdings,UAE,Nigeria,Financial services,Other (Financial serv…,Business Services,* $9.60m,* 27,New
+4,Mar 2020,Mansour,Mantrac Nigeria,Egypt,Nigeria,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",* $15.90m,* 50,New
+5,Mar 2020,MTN Group,MTN Nigeria,South Africa,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,$1.57bn,* 234,Expansion
+6,Mar 2020,YNV Holdings,Tek Experts Nigeria,Cyprus,Nigeria,Software & IT services,Custom computer pr…,Technical Support Ce…,* $79.90m,800,Expansion
+7,Mar 2020,YNV Holdings,Everty Group,Cyprus,Nigeria,Real estate,Commercial & institu…,Construction,* $115.40m,* 578,New
+8,Feb 2020,Advans Group,Advans Nigeria,Luxembourg,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+9,Feb 2020,Ariel Foods,Ariel Foods,Kenya,Nigeria,Food and Beverages,Fruits & vegetables …,Manufacturing,* $56.40m,* 288,New
+10,Feb 2020,Heavy Machinery …,Heavy Machinery …,Lebanon,Nigeria,Industrial equipment,"Agriculture, construc…",Education & Training,* $5.50m,* 35,New
+11,Feb 2020,Heavy Machinery …,Heavy Machinery …,Lebanon,Nigeria,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",* $15.90m,* 50,New
+12,Feb 2020,Netflix,Netflix,United States,Nigeria,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 14,New
+13,Feb 2020,World Citizen Equi…,World Citizen Equi…,UAE,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+14,Jan 2020,African Export-Im…,African Export-Im…,Egypt,Nigeria,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+15,Jan 2020,African Export-Im…,African Export-Im…,Egypt,Nigeria,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New

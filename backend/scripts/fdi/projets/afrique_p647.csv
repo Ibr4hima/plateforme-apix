@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2011,Rolls-Royce Holdin…,Rolls Royce Marine,United Kingdom,Namibia,Non-automotive tran…,Ships & boats,Maintenance & Servi…,* $1.60m,14,New
+2,Mar 2011,Seacom,Seacom,Mauritius,Namibia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+3,Jan 2011,KAAP Agrimark,KAAP Agrimark,South Africa,Namibia,Consumer products,Building material & g…,Retail,* $36.90m,* 179,New
+4,Oct 2010,Deloitte Touche To…,Deloitte Touche To…,United States,Namibia,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,Expansion
+5,Oct 2010,Edcon Holdings (P…,Edgars,South Africa,Namibia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+6,Aug 2010,Schwenk,Ohorongo Cement,Germany,Namibia,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,New
+7,Jun 2010,PescaNova,NovaNam,Spain,Namibia,Food and Beverages,Seafood products,"Logistics, Distributio…",$9.58m,45,New
+8,Apr 2010,Belmet Marine,Belmet Marine,South Africa,Namibia,Metals,Steel products,Manufacturing,* $178.90m,* 342,New
+9,Feb 2010,Financial Systems…,Financial Systems…,Switzerland,Namibia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Nov 2009,Schwenk,Schwenk Zement,Germany,Namibia,Building materials,Cement & concrete p…,Manufacturing,$344.40m,300,New
+11,Oct 2009,AECI,AEL Mining Services,South Africa,Namibia,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $6.20m,* 14,New
+12,Oct 2009,AECI,AEL Namibia,South Africa,Namibia,Chemicals,Other chemical prod…,"Logistics, Distributio…",* $13.20m,* 28,New
+13,Oct 2009,Pescapuerta,Pescapuerta,Spain,Namibia,Food and Beverages,Seafood products,Manufacturing,* $58.40m,* 429,New
+14,Sep 2009,Letshego Holdings…,Letshego Holdings…,Botswana,Namibia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Sep 2009,SABMiller,SABMiller,United Kingdom,Namibia,Food and Beverages,Breweries,Manufacturing,$34.00m,* 126,New

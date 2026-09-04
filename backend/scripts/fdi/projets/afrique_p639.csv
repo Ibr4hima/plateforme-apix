@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2022,4Sight Holdings,4Sight Holdings,Mauritius,Namibia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,Expansion
+2,Feb 2022,CMB.TECH,CMB.TECH,Belgium,Namibia,Renewable energy,Other electric power …,Manufacturing,$18.00m,* 9,New
+3,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Namibia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Dec 2021,Swoop Aero,Swoop Aero,Australia,Namibia,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+5,Nov 2021,Enertrag,Hyphen Hydrogen…,Germany,Namibia,Renewable energy,Other electric power …,Manufacturing,$4.40bn,* 1500,New
+6,Aug 2021,Agilitee,Agilitee,South Africa,Namibia,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+7,Mar 2021,Aegir-Marine,Aegir-Marine,Netherlands,Namibia,Non-automotive tran…,Ships & boats,"Sales, Marketing & S…",* $0.30m,5,New
+8,Mar 2021,Steinert Industries,Steinert Industries,Germany,Namibia,Industrial equipment,Measuring & control …,Research & Develop…,* $27.30m,* 62,New
+9,Dec 2020,Mureza Auto Com…,Mureza Auto Com…,South Africa,Namibia,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+10,Nov 2020,Gratomic (CKR Ca…,Gratomic (CKR Ca…,Canada,Namibia,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,Co-Location
+11,Mar 2020,Grand Capital,Grand Capital,Russia,Namibia,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+12,Feb 2020,Bateel,Bateel,Saudi Arabia,Namibia,Food and Beverages,Fruits & vegetables …,Manufacturing,* $45.80m,* 263,New
+13,Jan 2020,Impala Car Rental,Impala Car Rental,Zimbabwe,Namibia,Automotive OEM,Automobiles,Retail,* $12.50m,* 37,New
+14,Jan 2020,MFG Design,MFG Design,South Africa,Namibia,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+15,Dec 2019,Oracle Media,Oracle Media,South Africa,Namibia,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New

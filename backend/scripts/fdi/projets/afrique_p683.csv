@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2018,Oteda Group,Leagoo,China,Nigeria,Communications,Communications equ…,Maintenance & Servi…,* $10.10m,* 54,New
+2,Mar 2018,Standard Bank Gr…,Stanbic IBTC Bank,South Africa,Nigeria,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 146,New
+3,Mar 2018,Standard Bank Gr…,Stanbic IBTC Bank,South Africa,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Mar 2018,Timah,Timah,Indonesia,Nigeria,Metals,Nonferrous metal pr…,Manufacturing,* $30.50m,* 708,New
+5,Mar 2018,Walmart,Massmart,United States,Nigeria,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+6,Feb 2018,Instadeep,Instadeep,United Kingdom,Nigeria,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 146,New
+7,Feb 2018,Nestle,Nestle Nigeria,Switzerland,Nigeria,Food and Beverages,Soft drinks & ice,Manufacturing,* $56.40m,* 288,New
+8,Feb 2018,Seedstars,Seedstars,Switzerland,Nigeria,Business services,Other support services,Business Services,* $27.80m,* 8,New
+9,Feb 2018,Sido Muncul,Sido Muncul,Indonesia,Nigeria,Pharmaceuticals,Medicinal & botanical,"Sales, Marketing & S…",* $5.60m,* 34,New
+10,Jan 2018,African Developm…,African Developm…,Côte d Ivoire,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Jan 2018,LG Corp,Pantos Logistics,South Korea,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Jan 2018,mSurvey,mSurvey,Kenya,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+13,Jan 2018,StarLink,StarLink,UAE,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 14,New
+14,Dec 2017,Unilever,Unilever,United Kingdom,Nigeria,Food and Beverages,Dairy products,Manufacturing,$12.00m,* 46,New
+15,Nov 2017,Anheuser-Busch I…,Anheuser-Busch I…,Belgium,Nigeria,Food and Beverages,Breweries,Manufacturing,$250.00m,* 948,New
