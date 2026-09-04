@@ -352,32 +352,78 @@ def test_un_prefixe_de_pays_ambigu_est_refuse(pays):
 # ── Le relevé Afrique ─────────────────────────────────────────────────────────
 
 def test_les_pages_afrique_sont_lisibles():
-    """Même exigence que pour le Sénégal : pagination continue, quinze lignes
-    par page. Sur mille cent vingt-six pages annoncées par la source, c'est le
-    seul contrôle qui verra une page sautée ou relevée deux fois."""
+    """Sur mille cent vingt-six pages annoncées par la source, c'est le seul
+    contrôle qui verra une page sautée ou relevée deux fois.
+
+    La pagination peut comporter des TROUS, mais seulement déclarés : une page
+    tout entière occupée par un pays déjà relevé pour lui-même n'a aucune ligne
+    à porter ici. Un trou non déclaré, lui, ne se distingue pas d'un oubli —
+    c'est justement ce que ce test doit refuser.
+
+    Une page peut aussi être incomplète, pour la même raison, et ses rangs
+    sauter : le rang est celui de la ligne CHEZ fDi, pas un numéro d'ordre.
+    """
     import re
-    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    from app.services.fdi_projets import (lire_lot_csv, lire_pages_absentes,
+                                          DOSSIER_PROJETS, LIGNES_PAR_PAGE)
     # Tri NUMÉRIQUE : par nom, « p100 » se rangerait entre « p10 » et « p11 »,
     # et la continuité paraîtrait rompue là où elle ne l'est pas.
     pages = sorted(DOSSIER_PROJETS.glob("afrique_p*.csv"),
                    key=lambda c: int(re.search(r"_p(\d+)$", c.stem).group(1)))
-    assert [int(re.search(r"_p(\d+)$", c.stem).group(1)) for c in pages] \
-        == list(range(1, len(pages) + 1))
-    tailles = [len(lire_lot_csv(p)) for p in pages]
-    assert set(tailles[:-1]) == {15} and 1 <= tailles[-1] <= 15
-    for chemin in pages:
+    numeros = [int(re.search(r"_p(\d+)$", c.stem).group(1)) for c in pages]
+    absentes = lire_pages_absentes().get("afrique", set())
+    attendus = [n for n in range(1, max(numeros) + 1) if n not in absentes]
+    assert numeros == attendus, (
+        f"pages manquantes : {sorted(set(attendus) - set(numeros))} · "
+        f"pages en trop : {sorted(set(numeros) - set(attendus))}")
+    assert not (absentes - set(range(1, max(numeros) + 1))), \
+        "une page déclarée absente est hors du relevé"
+
+    for chemin, n in zip(pages, numeros):
         lignes = lire_lot_csv(chemin)
-        assert [l["ligne"] for l in lignes] == list(range(1, len(lignes) + 1))
+        rangs = [l["ligne"] for l in lignes]
+        assert rangs == sorted(rangs) and len(set(rangs)) == len(rangs), chemin.name
+        assert 1 <= min(rangs) and max(rangs) <= LIGNES_PAR_PAGE, chemin.name
+        # Seule la DERNIÈRE page du relevé peut être courte sans qu'un pays
+        # exclu l'explique : ailleurs, un manque doit venir d'un trou de rang.
+        if len(lignes) < LIGNES_PAR_PAGE and n != max(numeros):
+            assert max(rangs) == LIGNES_PAR_PAGE or (n + 1) in absentes, (
+                f"{chemin.name} : {len(lignes)} lignes, rangs {rangs} — page courte "
+                "sans raison visible")
 
 
-def test_le_releve_afrique_ne_reprend_pas_le_senegal():
+def test_le_senegal_ne_peut_pas_entrer_deux_fois_dans_les_totaux():
     """Le Sénégal est relevé pays par pays. S'il revenait par le relevé
     continental, ses projets seraient comptés deux fois — et le faux total ne
-    se verrait qu'au moment où quelqu'un le citerait."""
-    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
-    for chemin in sorted(DOSSIER_PROJETS.glob("afrique_p*.csv")):
-        for ligne in lire_lot_csv(chemin):
-            assert ligne["dest"].strip().lower() != "senegal", f"{chemin.name} L{ligne['ligne']}"
+    se verrait qu'au moment où quelqu'un le citerait.
+
+    Le tri se fait à l'ÉCRITURE, pas à la transcription : une ligne sénégalaise
+    a le droit de figurer dans un fichier de page « Afrique », puisque la page
+    l'affichait. Ce qu'elle n'a pas le droit de faire, c'est d'entrer dans le
+    lot. C'est donc le filtre qu'on éprouve ici, et non l'absence des lignes.
+    """
+    from app.services.fdi_projets import ecarter_deja_releves, EXCLUS
+    assert "senegal" in EXCLUS["Afrique"]
+    lignes = [{"ligne": 1, "dest": "Nigeria"}, {"ligne": 2, "dest": "Senegal"},
+              {"ligne": 3, "dest": " senegal "}, {"ligne": 4, "dest": "Seychelles"}]
+    gardees, ecartees = ecarter_deja_releves(lignes, "Afrique", "destination")
+    assert [l["ligne"] for l in gardees] == [1, 4]
+    assert [l["ligne"] for l in ecartees] == [2, 3]
+    # Dans un relevé « Source = Sénégal », le Sénégal n'est pas ce qu'on compte :
+    # écarter ses lignes de destination n'aurait aucun sens.
+    assert ecarter_deja_releves(lignes, "Afrique", "source")[1] == []
+    # Et le relevé du Sénégal lui-même n'exclut rien.
+    assert ecarter_deja_releves(lignes, "Sénégal", "destination")[1] == []
+
+
+def test_toute_page_absente_porte_son_motif():
+    """Un trou dans la pagination est une affirmation : « la source montrait
+    quelque chose ici, et nous savons quoi ». Sans motif écrit, ce n'est plus
+    qu'un manque qu'on n'ose plus toucher."""
+    from app.services.fdi_projets import lire_pages_absentes
+    absentes = lire_pages_absentes()
+    for perimetre, pages in absentes.items():
+        assert perimetre and pages, perimetre
 
 
 def test_les_pays_du_releve_afrique_menent_tous_a_un_seul_pays():

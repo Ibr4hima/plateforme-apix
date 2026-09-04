@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2003,Union Bank,Union Assurance,Algeria,Nigeria,Financial services,Retail banking,Business Services,* $9.50m,* 22,New
+2,Aug 2003,Medical Services I…,Medical Services I…,Canada,Nigeria,Medical devices,Medical equipment &…,Manufacturing,* $25.00m,* 126,New
+3,Jul 2003,British American T…,British American T…,United Kingdom,Nigeria,Food and Beverages,Tobacco,Manufacturing,$150.00m,"1,000",New
+4,Jul 2003,Exxon Mobil,Mobil Producing Ni…,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.26bn,* 230,Expansion
+5,Jul 2003,Toyota Motor,Toyota Nigeria,Japan,Nigeria,Automotive OEM,Automobiles,Manufacturing,* $94.50m,* 864,New
+6,Jun 2003,Chipita Internatio…,Chipita Internatio…,Greece,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+7,Jun 2003,Katselis,Katselis,Greece,Nigeria,Food and Beverages,Bakeries & tortillas,Manufacturing,* $55.70m,* 429,Expansion
+8,Jun 2003,LG Corp,LG Electronics,South Korea,Nigeria,Consumer electronics,Household appliances,Manufacturing,$5.11m,* 71,New
+9,Jun 2003,Universe Group,First Remit,United Kingdom,Nigeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+10,May 2003,Avon Products,Pamojek,United States,Nigeria,Consumer products,"Cosmetics, perfume,…",Manufacturing,$50.00m,* 449,New
+11,May 2003,Etruscan Resources,Etruscan Resources,Canada,Nigeria,Metals,Gold ore & silver ore…,Extraction,$27.00m,* 38,New
+12,May 2003,GlaxoSmithKline (…,GlaxoSmithKline …,United Kingdom,Nigeria,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$7.50m,* 82,Expansion
+13,Apr 2003,Cadbury,Cadbury,United Kingdom,Nigeria,Food and Beverages,Soft drinks & ice,Manufacturing,* $132.80m,* 222,Expansion
+14,Apr 2003,Fomosa Bottling C…,Fomosa Bottling C…,China,Nigeria,Food and Beverages,Soft drinks & ice,Manufacturing,$20.00m,400,New
+15,Mar 2003,China Petrochemic…,China Petroleum a…,China,Nigeria,"Coal, oil & gas",Other petroleum & c…,Extraction,* $1.38bn,* 227,New

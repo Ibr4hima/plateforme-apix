@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2010,Skipper Energy,Skipper Energy,Mauritius,Nigeria,"Coal, oil & gas",Other petroleum & c…,Electricity,$775.00m,* 76,New
+2,Oct 2010,Skipper Energy,Skipper Energy,Mauritius,Nigeria,"Coal, oil & gas",Other petroleum & c…,Electricity,$775.00m,* 76,New
+3,Oct 2010,Southern African …,Southern African …,South Africa,Nigeria,Non-automotive tran…,Ships & boats,Manufacturing,$31.52m,* 242,New
+4,Oct 2010,Southern African …,Southern African …,South Africa,Nigeria,Non-automotive tran…,Ships & boats,Manufacturing,* $60.60m,* 348,New
+5,Oct 2010,Spanco,Spanco,India,Nigeria,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+6,Sep 2010,Computer Assiste…,Computer Assiste…,South Africa,Nigeria,Communications,Wired telecommunic…,"Sales, Marketing & S…",$0.14m,* 1,New
+7,Sep 2010,Loc Group,London Offshore …,United Kingdom,Nigeria,Business services,Management consult…,Business Services,* $27.80m,* 8,New
+8,Sep 2010,Oxford Business G…,Oxford Business G…,United Kingdom,Nigeria,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+9,Sep 2010,Qualcomm,QCOM Wireless Te…,United States,Nigeria,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,Sep 2010,SkyVision,SkyVision,United Kingdom,Nigeria,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+11,Sep 2010,Standard Chartere…,Standard Chartere…,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Aug 2010,Indorama,Indorama Polymers,Singapore,Nigeria,Plastics,Laminated plastics pl…,Manufacturing,* $26.90m,* 107,New
+13,Aug 2010,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+14,Jul 2010,Bharti Group,Bharti Airtel,India,Nigeria,Communications,Wireless telecommu…,Customer Contact C…,* $45.30m,"1,000",New
+15,Jul 2010,MTN Group,MTN Nigeria,South Africa,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,$2.19bn,"* 1,513",Expansion

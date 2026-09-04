@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2013,Canara Bank,Canara Bank,India,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Apr 2013,e& (Etisalat Group),Etisalat Nigeria,UAE,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,$500.00m,* 74,New
+3,Apr 2013,Exxon Mobil,Esso Exploration a…,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.26bn,* 230,Expansion
+4,Apr 2013,Standard Bank Gr…,Stanbic IBTC Pens…,South Africa,Nigeria,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+5,Mar 2013,Ajinomoto,West African Seas…,Japan,Nigeria,Food and Beverages,Seasoning & dressing,Manufacturing,* $56.40m,* 288,Expansion
+6,Mar 2013,e& (Etisalat Group),Etisalat Nigeria,UAE,Nigeria,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+7,Mar 2013,Samsung Group,Samsung Group,South Korea,Nigeria,Consumer electronics,Other (Consumer ele…,Maintenance & Servi…,* $1.80m,* 129,New
+8,Feb 2013,Estee Lauder,MAC Cosmetics,United States,Nigeria,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New
+9,Feb 2013,Hugo Boss,Hugo Boss,Germany,Nigeria,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+10,Feb 2013,ISON,ISON BPO,India,Nigeria,Business services,Business support ser…,Customer Contact C…,* $7.90m,"1,000",New
+11,Feb 2013,Nestle,Nestle,Switzerland,Nigeria,Food and Beverages,Seasoning & dressing,"Logistics, Distributio…",$34.00m,* 95,New
+12,Feb 2013,Procter & Gamble …,Procter & Gamble …,United States,Nigeria,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,New
+13,Feb 2013,Protea Hospitality,Protea Hospitality,South Africa,Nigeria,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+14,Feb 2013,Protea Hospitality,Protea Hospitality,South Africa,Nigeria,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+15,Feb 2013,Smile Telecoms H…,Smile Communica…,Mauritius,Nigeria,Communications,Wireless telecommu…,ICT & Internet Infras…,* $443.10m,* 100,New

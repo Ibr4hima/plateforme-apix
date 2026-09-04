@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2003,African Aura Minin…,African Aura Minin…,Canada,Sierra Leone,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+2,Jun 2003,Caldera Resources,Caldera Resources,Canada,Sierra Leone,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+3,Sep 2025,Seacom,Seacom,Mauritius,Somalia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+4,Jan 2025,Qatar Airways,Qatar Airways,Qatar,Somalia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,May 2020,China Mobile Com…,China Mobile Inter…,China,Somalia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+6,Nov 2019,The World Bank G…,The World Bank G…,United States,Somalia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Mar 2019,Kenya Commercia…,Kenya Commercia…,Kenya,Somalia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Dec 2018,Raysut Cement,Raysut Cement,Oman,Somalia,Building materials,Cement & concrete p…,Manufacturing,* $158.60m,* 496,New
+9,Nov 2018,Zepz,Zepz,United Kingdom,Somalia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Jan 2018,Banque Misr,Banque Misr,Egypt,Somalia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Feb 2016,Oman Telecommu…,Oman Telecommu…,Oman,Somalia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Oct 2014,Djibouti Data Cent…,Djibouti Data Cent…,Djibouti,Somalia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+13,Aug 2014,Internews Europe,Internews Europe,United Kingdom,Somalia,Business services,Educational support …,Education & Training,* $9.40m,* 46,New
+14,Nov 2013,Econet Global,Liquid Intelligent …,Mauritius,Somalia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,Nov 2013,Saladin Security,Saladin Security,United Kingdom,Somalia,Business services,Other support services,Business Services,* $27.80m,* 38,New

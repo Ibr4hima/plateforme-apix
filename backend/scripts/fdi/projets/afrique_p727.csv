@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2019,Allianz Group,Allianz Congo Ass…,Germany,Republic of the C…,Financial services,Insurance,Headquarters,* $44.20m,* 93,Expansion
+2,Sep 2018,Webb Fontaine,Webb Fontaine,UAE,Republic of the C…,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+3,Apr 2018,African Developm…,African Developm…,Côte d Ivoire,Republic of the C…,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Dec 2017,Compagnie Financ…,Compagnie Financ…,Côte d Ivoire,Republic of the C…,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+5,Dec 2017,Compagnie Financ…,Compagnie Financ…,Côte d Ivoire,Republic of the C…,Financial services,Corporate & investm…,Business Services,* $14.60m,48,New
+6,Dec 2017,Compagnie Financ…,Compagnie Financ…,Côte d Ivoire,Republic of the C…,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Aug 2016,China Railway Con…,China Railway Con…,China,Republic of the C…,Business services,Heavy & civil engine…,Business Services,* $27.80m,* 38,New
+8,Feb 2016,BGFI Bank,BGFIBank Congo,Gabon,Republic of the C…,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Nov 2015,PCCI UK,PCCI Group,United Kingdom,Republic of the C…,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 514,New
+10,Oct 2015,Aviation Industry …,International Aero…,China,Republic of the C…,Aerospace,Aircraft,"Logistics, Distributio…",* $16.40m,* 52,New
+11,Oct 2015,Aviation Industry …,International Aero…,China,Republic of the C…,Aerospace,Aircraft,Maintenance & Servi…,* $31.10m,* 147,New
+12,Sep 2015,Carlson Companies,Radisson Hospitali…,United States,Republic of the C…,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+13,Feb 2015,Google,Google,United States,Republic of the C…,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+14,Sep 2014,Africom Commodi…,Africom Commodi…,South Africa,Republic of the C…,Industrial equipment,"Agriculture, construc…",Manufacturing,* $29.80m,* 219,New
+15,Jun 2014,New Leaf Africa,New Leaf Africa,United States,Republic of the C…,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New

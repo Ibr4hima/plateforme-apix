@@ -32,6 +32,7 @@ from app.services.fdi_projets import (  # noqa: E402
     DOSSIER_PROJETS,
     LigneInvalide,
     appliquer_alias_entreprises,
+    ecarter_deja_releves,
     importer_lot,
     lire_arbitrages,
     lire_lot_csv,
@@ -46,15 +47,6 @@ NOM = re.compile(r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?P<sens>_source)?_p
 # africains, et la route publique le résout sur le continent de ref_pays.
 PERIMETRES = {"senegal": "Sénégal", "afrique": "Afrique"}
 
-# Ce qu'une ZONE ne doit PAS reprendre, parce que c'est déjà relevé pays par
-# pays. Le Sénégal est dans l'Afrique : sans cette garde, ses projets
-# entreraient une seconde fois par le relevé continental et tous les totaux
-# seraient faux — deux fois le nombre de projets, deux fois les montants.
-#
-# Le contrôle est fait ICI, à l'import, et non laissé à la vigilance de qui
-# transcrit : sur mille cent pages, une ligne oubliée est une certitude, et
-# elle ne se verrait qu'au moment où quelqu'un citerait le total en réunion.
-EXCLUS = {"Afrique": {"senegal"}}
 
 # Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
 # rapports d'import et dans l'administration.
@@ -117,21 +109,11 @@ async def main() -> int:
                 libelle, perimetre, sens = decrire(chemin)
                 lignes = lire_lot_csv(chemin)
 
-                # Un pays déjà relevé pour lui-même n'entre pas dans le lot de
-                # sa zone : ses projets y seraient comptés deux fois. Mais ses
-                # lignes RESTENT dans le fichier, parce que le fichier dit ce
-                # que la page affichait — et que les retirer du relevé décalerait
-                # les rangs, donc les frontières de page, donc l'identité même
-                # des lots. On écarte à l'écriture, jamais à la transcription.
-                interdits = EXCLUS.get(perimetre, set())
-                if interdits and sens == "destination":
-                    gardees = [l for l in lignes
-                               if (l.get("dest") or "").strip().lower() not in interdits]
-                    ecartes += len(lignes) - len(gardees)
-                    lignes = gardees
-                    if not lignes:
-                        print(f"  {libelle:<30} page entière déjà relevée ailleurs")
-                        continue
+                lignes, mis_de_cote = ecarter_deja_releves(lignes, perimetre, sens)
+                ecartes += len(mis_de_cote)
+                if not lignes:
+                    print(f"  {libelle:<30} page entière déjà relevée ailleurs")
+                    continue
 
                 rapport = await importer_lot(db, libelle, perimetre,
                                              lignes, "import", sens,

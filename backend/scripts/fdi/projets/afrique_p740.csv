@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2013,People Performance,People Performance,Uganda,Rwanda,Business services,Employment services,Business Services,* $27.80m,* 38,New
+2,Aug 2013,Scatec AS,Scatec Solar,Norway,Rwanda,Renewable energy,Solar electric power,Electricity,$23.70m,* 7,New
+3,Jun 2013,KT,KT,South Korea,Rwanda,Communications,Wireless telecommu…,ICT & Internet Infras…,$8.00m,* 1,New
+4,May 2013,Imports Internatio…,Imports Internatio…,Tanzania,Rwanda,Building materials,Other (Building mate…,Retail,* $14.50m,* 35,New
+5,May 2013,Uchumi Supermar…,Uchumi Supermar…,Kenya,Rwanda,Food and Beverages,Food & beverage ret…,Retail,* $8.30m,150,New
+6,Apr 2013,Broll Property Gro…,Broll Property Gro…,South Africa,Rwanda,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+7,Mar 2013,Barefoot Power,Barefoot Power,Australia,Rwanda,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+8,Mar 2013,Harleys,Harleys,Kenya,Rwanda,Medical devices,Medical equipment &…,"Logistics, Distributio…",* $22.20m,* 76,New
+9,Mar 2013,Mi-Fone,Mi-Fone,Hong Kong,Rwanda,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+10,Mar 2013,Techno Brain,Techno Brain,Tanzania,Rwanda,Software & IT services,"Software publishers,…",Education & Training,* $7.80m,* 67,New
+11,Feb 2013,Terra Incognita Ec…,Terra Incognita Ec…,United States,Rwanda,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+12,Jan 2013,WPP,Hill+Knowlton Str…,United Kingdom,Rwanda,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+13,Nov 2012,UAP Group,UAP Group,Kenya,Rwanda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+14,Sep 2012,Hakkan Mining an…,Hakkan Mining an…,Turkey,Rwanda,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,Co-Location
+15,Sep 2012,Hakkan Mining an…,Hakkan Mining an…,Turkey,Rwanda,"Coal, oil & gas",Other petroleum & c…,Extraction,* $730.30m,* 230,New

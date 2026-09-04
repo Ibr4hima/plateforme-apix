@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2007,Yuemei Group,Yuemei Group,China,Nigeria,Real estate,Industrial building co…,Construction,$49.80m,* 356,New
+2,May 2007,Petrobras,Petrobras,Brazil,Nigeria,Renewable energy,Biomass power,Manufacturing,$200.00m,* 122,New
+3,May 2007,University of Wolv…,University of Wolv…,United Kingdom,Nigeria,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+4,Mar 2007,Frigoglass,Frigoglass,Greece,Nigeria,Industrial equipment,"Ventilation, heating, …",Manufacturing,$19.66m,* 137,Expansion
+5,Mar 2007,Xechem,Xechem,United States,Nigeria,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,$7.00m,* 16,New
+6,Feb 2007,Mandriva,Mandriva West Afr…,France,Nigeria,Software & IT services,"Software publishers,…",Headquarters,* $16.00m,* 61,New
+7,Jan 2007,Global Formwork,Global Formwork,Malaysia,Nigeria,Real estate,Commercial & institu…,Construction,$600.00m,* 897,New
+8,Jan 2007,Lemna Internation…,Lemna Internation…,United States,Nigeria,Renewable energy,Biomass power,Manufacturing,$50.00m,* 30,New
+9,Jan 2007,Omega Performan…,Omega Performan…,United States,Nigeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+10,Jan 2007,Roxar,Roxar,Norway,Nigeria,Software & IT services,"Software publishers,…",Customer Contact C…,* $9.40m,* 250,New
+11,Nov 2006,Glanbia,Glanbia,Ireland,Nigeria,Food and Beverages,Dairy products,Manufacturing,$29.57m,* 193,Expansion
+12,Sep 2006,Business Cost Ma…,Business Cost Ma…,Ireland,Nigeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+13,Sep 2006,CA Technologies (…,CA Technologies (…,United States,Nigeria,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+14,Sep 2006,Eni SpA,Eni SpA,Italy,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.73bn,* 146,New
+15,Sep 2006,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,Nigeria,Business machines &…,Computer & peripher…,Maintenance & Servi…,* $2.50m,* 64,New

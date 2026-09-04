@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2022,IFFCO,IFFCO,UAE,Somaliland,Plastics,Plastics packaging m…,Manufacturing,* $25.20m,* 229,New
+2,Feb 2022,Djibouti Data Cent…,Wingu.africa,Djibouti,Somaliland,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+3,Nov 2019,Commercial Bank …,Commercial Bank …,Ethiopia,Somaliland,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Dec 2018,Raysut Cement,Raysut Cement,Oman,Somaliland,Building materials,Cement & concrete p…,Manufacturing,$40.00m,* 98,New
+5,Nov 2017,Dubai World,DP World,UAE,Somaliland,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+6,May 2016,Dubai World,DP World,UAE,Somaliland,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$442.00m,"* 1,963",New
+7,Feb 2016,Oman Telecommu…,Oman Telecommu…,Oman,Somaliland,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+8,Jun 2013,Raysut Cement,Raysut Cement,Oman,Somaliland,Building materials,Cement & concrete p…,"Logistics, Distributio…",* $18.60m,* 28,New
+9,Apr 2012,Germany Pharmac…,Germany Pharmac…,Germany,Somaliland,Pharmaceuticals,Health & personal ca…,"Sales, Marketing & S…",* $4.20m,* 40,New
+10,Feb 2012,GlaxoSmithKline (…,GlaxoSmithKline (…,United Kingdom,Somaliland,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $4.20m,* 40,New
+11,Jul 2026,Chery Automobile,Chery Automobile,China,South Africa,Automotive OEM,Automobiles,Manufacturing,* $319.20m,"* 1,500",Expansion
+12,Jul 2026,Midea Group,Midea Group,China,South Africa,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.40m,* 29,New
+13,Jul 2026,Midea Group,Midea Group,China,South Africa,Consumer electronics,Household appliances,Manufacturing,* $40.00m,* 504,New
+14,Jul 2026,Represent,Represent,United Kingdom,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Jul 2026,Toyota Motor,Toyota South Africa,Japan,South Africa,Automotive OEM,Automobiles,"Logistics, Distributio…",* $22.90m,* 93,Co-Location

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2012,Societe Generale (…,Societe Generale (…,France,Republic of the C…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Mar 2012,Societe Generale (…,Societe Generale (…,France,Republic of the C…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Jan 2012,Allianz Group,Allianz Congo Ass…,Germany,Republic of the C…,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+4,Jan 2012,Allianz Group,Allianz Africa,Germany,Republic of the C…,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+5,Dec 2011,GAC Group,GAC Group,UAE,Republic of the C…,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+6,May 2011,Mahindra Group,Tech Mahindra,India,Republic of the C…,Software & IT services,Custom computer pr…,Technical Support Ce…,* $17.00m,* 222,New
+7,Mar 2011,ZTE,ZTE,China,Republic of the C…,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
+8,Aug 2009,Murphy Oil,Murphy Oil,United States,Republic of the C…,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+9,May 2009,Bollore Group,Bollore Group,France,Republic of the C…,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+10,May 2009,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Republic of the C…,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,Expansion
+11,Mar 2008,Ecobank Transnati…,Ecobank Transnati…,Togo,Republic of the C…,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Feb 2007,Century Aluminiu…,Century Aluminiu…,United States,Republic of the C…,Metals,Alumina & aluminiu…,Manufacturing,* $178.90m,* 342,New
+13,Dec 2004,MagIndustries,MagIndustries,Canada,Republic of the C…,Metals,Nonferrous metal pr…,Extraction,* $270.00m,"* 1,012",Expansion
+14,May 2003,Murphy Oil,Murphy Oil,United States,Republic of the C…,"Coal, oil & gas",Other petroleum & c…,Extraction,* $536.90m,* 214,New
+15,Jun 2026,Kenya Reinsuranc…,Kenya Reinsuranc…,Kenya,Rwanda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2014,EMKE Group,LuLu International…,UAE,Seychelles,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Jun 2014,Mihin Lanka,Mihin Lanka,Sri Lanka,Seychelles,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Jun 2014,Sri Lanka Insurance,Sri Lanka Insurance,Sri Lanka,Seychelles,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+4,Feb 2014,Bank of Ceylon,Bank of Ceylon,Sri Lanka,Seychelles,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Feb 2013,Bharti Group,Bharti Airtel,India,Seychelles,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+6,Jan 2013,Prism Informatics,Prism Informatics,India,Seychelles,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+7,Dec 2012,Pure Gold Group,Pure Gold Jewellers,UAE,Seychelles,Consumer products,Jewellery & silverware,Retail,* $10.90m,* 170,New
+8,Oct 2011,NMC Group,UAE Exchange Ce…,UAE,Seychelles,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jun 2010,Fairmont Raffles H…,Raffles Hotels & R…,Canada,Seychelles,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,Jun 2009,Appleby,Appleby,Bermuda,Seychelles,Business services,Legal services,Business Services,* $0.70m,4,New
+11,Jun 2008,Four Seasons Hot…,Four Seasons Hot…,Canada,Seychelles,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+12,Mar 2008,BMI Bank (BankM…,BMI Bank (BankM…,Bahrain,Seychelles,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Nov 2007,The Emirates Group,Emirates Hotels & …,UAE,Seychelles,Hotels & tourism,Accommodation,Construction,$117.60m,281,New
+14,Apr 2007,Jordans,Jordans,United Kingdom,Seychelles,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+15,Dec 2005,Bharti Group,Telecom Seychelles,India,Seychelles,Communications,Wireless telecommu…,ICT & Internet Infras…,$8.32m,* 6,New

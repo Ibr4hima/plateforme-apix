@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2006,Harwood Kirsten L…,Harwood Kirsten L…,South Africa,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+2,Feb 2006,Nampak,Nampak,South Africa,Nigeria,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$13.23m,* 67,Expansion
+3,Jan 2006,Cotecna,Cotecna,Switzerland,Nigeria,Business services,"Professional, scientifi…",Business Services,$70.00m,* 382,New
+4,Dec 2005,Massmart,Game Stores,South Africa,Nigeria,Consumer products,"Dolls, toy, & games",Retail,* $36.90m,* 179,New
+5,Dec 2005,NTPC Limited (Nat…,NTPC Limited (Nat…,India,Nigeria,Renewable energy,Geothermal electric …,Electricity,* $178.00m,* 54,New
+6,Dec 2005,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+7,Nov 2005,ACP,ACP,United Kingdom,Nigeria,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+8,Nov 2005,Cadbury,7Up Bottling,United Kingdom,Nigeria,Food and Beverages,Soft drinks & ice,Manufacturing,* $132.80m,* 222,New
+9,Nov 2005,Chevron,Chevron Nigeria Li…,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.38bn,* 214,New
+10,Oct 2005,Chembio Diagnost…,Chembio Diagnost…,United States,Nigeria,Medical devices,Medical equipment &…,"Sales, Marketing & S…",* $1.50m,* 15,New
+11,Oct 2005,Industrie Rolli Ali…,Industrie Alimentari,Italy,Nigeria,Food and Beverages,Fruits & vegetables …,Manufacturing,$25.00m,* 163,New
+12,Oct 2005,Industrie Rolli Ali…,Industrie Alimentari,Italy,Nigeria,Food and Beverages,Fruits & vegetables …,Manufacturing,$25.00m,* 163,New
+13,Oct 2005,Panasonic (Matsus…,Panasonic (Matsus…,Japan,Nigeria,Consumer electronics,Household appliances,Maintenance & Servi…,* $0.90m,* 118,New
+14,Oct 2005,Synergy Group,Santos Air,Brazil,Nigeria,Aerospace,Aircraft,Maintenance & Servi…,$10.00m,100,New
+15,Sep 2005,Chevron,Chevron Nigeria Li…,United States,Nigeria,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",$590.00m,"* 2,183",New

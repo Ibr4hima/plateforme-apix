@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2013,Brookside Dairy,Brookside Dairy,Kenya,Nigeria,Food and Beverages,Dairy products,Manufacturing,* $56.40m,* 288,New
+2,Sep 2013,Clover Industries,Clover Industries,South Africa,Nigeria,Food and Beverages,Dairy products,Manufacturing,* $56.40m,* 288,New
+3,Sep 2013,Honda Motor Com…,Honda Motor Com…,Japan,Nigeria,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+4,Sep 2013,Rocket Internet,Rocket Internet,Germany,Nigeria,Software & IT services,Other (Software & IT…,"Sales, Marketing & S…",* $5.20m,* 14,New
+5,Sep 2013,Samsung Group,Samsung Electron…,South Korea,Nigeria,Consumer electronics,Electronics & applian…,Retail,* $9.20m,* 78,New
+6,Sep 2013,Wings Global Travel,Wings Global Travel,South Africa,Nigeria,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+7,Aug 2013,Brickcom,Brickcom,Taiwan,Nigeria,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Aug 2013,Estee Lauder,MAC Cosmetics,United States,Nigeria,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New
+9,Aug 2013,Guardian Global R…,Guardian Global R…,United Kingdom,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+10,Aug 2013,Lee Group,Lee Group,Hong Kong,Nigeria,Automotive OEM,Heavy duty trucks,Headquarters,* $63.70m,* 187,New
+11,Aug 2013,Metrofile,Metrofile,South Africa,Nigeria,Business services,Other support services,Business Services,* $1.50m,10,New
+12,Aug 2013,Samsung Group,Samsung Electron…,South Korea,Nigeria,Consumer electronics,Other (Consumer ele…,Education & Training,* $2.90m,* 131,New
+13,Aug 2013,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+14,Aug 2013,Unique Maritime,Unique Maritime,UAE,Nigeria,Business services,"Architectural, engine…",Business Services,* $27.80m,* 8,New
+15,Jul 2013,Bharti Group,Airtel Nigeria,India,Nigeria,Communications,Communications equ…,Retail,* $6.30m,* 31,New

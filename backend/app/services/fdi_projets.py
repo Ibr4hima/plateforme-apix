@@ -160,6 +160,10 @@ DOSSIER_PROJETS = Path(__file__).resolve().parents[2] / "scripts" / "fdi" / "pro
 COLONNES = ["ligne", "date", "parent", "entreprise", "source", "dest",
             "secteur", "sous_secteur", "activite", "capex", "emplois", "type"]
 
+# La pagination de la source. Elle borne les rangs d'une page et sert à
+# reconstruire une page dont on n'a pas toutes les lignes.
+LIGNES_PAR_PAGE = 15
+
 
 def lire_lot_csv(chemin: Path) -> list[dict]:
     """Un fichier de page, tel que relevé sur la source.
@@ -177,9 +181,81 @@ def lire_lot_csv(chemin: Path) -> list[dict]:
     for l in lignes:
         l["ligne"] = int(l["ligne"])
     rangs = [l["ligne"] for l in lignes]
-    if sorted(rangs) != list(range(1, len(lignes) + 1)):
-        raise LigneInvalide(f"{chemin.name} : les rangs ne sont pas 1..{len(lignes)}")
+
+    # Le rang est celui de la LIGNE CHEZ fDi, pas un numéro d'ordre dans le
+    # fichier. Une page peut donc arriver trouée : c'est le cas quand un pays y
+    # figure alors qu'il est déjà relevé pour lui-même et que ses lignes n'ont
+    # pas été reprises. Le trou est une information — il dit que la page en
+    # montrait davantage — et le combler en renumérotant ferait mentir le
+    # fichier sur ce que la source affichait.
+    #
+    # Ce qui reste exigé : des rangs uniques, dans les bornes d'une page de la
+    # source. C'est là qu'on attrape une ligne recopiée deux fois ou un rang
+    # fautif, qui sont les erreurs réelles de transcription.
+    if len(set(rangs)) != len(rangs):
+        doubles = sorted({r for r in rangs if rangs.count(r) > 1})
+        raise LigneInvalide(f"{chemin.name} : rang(s) en double {doubles}")
+    hors = [r for r in rangs if not 1 <= r <= LIGNES_PAR_PAGE]
+    if hors:
+        raise LigneInvalide(
+            f"{chemin.name} : rang(s) hors des bornes d'une page {hors} — "
+            f"la source en montre au plus {LIGNES_PAR_PAGE}")
     return sorted(lignes, key=lambda l: l["ligne"])
+
+
+# Ce qu'un relevé de ZONE ne doit pas reprendre, parce que c'est déjà relevé
+# pays par pays. Le Sénégal est dans l'Afrique : sans cette garde, ses projets
+# entreraient une seconde fois par le relevé continental et tous les totaux
+# seraient faux — deux fois le nombre de projets, deux fois les montants.
+EXCLUS = {"Afrique": {"senegal"}}
+
+
+def ecarter_deja_releves(lignes: list[dict], perimetre: str,
+                         sens: str) -> tuple[list[dict], list[dict]]:
+    """(lignes du lot, lignes écartées). Le tri se fait à l'ÉCRITURE.
+
+    Les lignes écartées restent dans le fichier de page : le fichier dit ce que
+    la source affichait, et les en retirer décalerait les rangs de celles qui
+    restent — donc les frontières de page, donc l'identité des lots. Elles ne
+    sont pas perdues pour autant : elles sont en base sous le relevé du pays
+    lui-même, le seul qui le rende exhaustif.
+
+    Ne s'applique qu'au sens « destination » : dans un relevé « Source = X », le
+    pays exclu n'est pas ce qu'on compte.
+    """
+    interdits = EXCLUS.get(perimetre, set())
+    if not interdits or sens != "destination":
+        return lignes, []
+    gardees, ecartees = [], []
+    for l in lignes:
+        (ecartees if (l.get("dest") or "").strip().lower() in interdits else gardees).append(l)
+    return gardees, ecartees
+
+
+# Les pages que le relevé de zone n'a AUCUNE ligne à montrer, parce qu'un pays
+# déjà relevé pour lui-même les occupait en entier. Sans cette déclaration, un
+# trou dans la numérotation ne se distinguerait pas d'une page oubliée — et sur
+# mille cent vingt-six pages, l'oubli est une certitude.
+FICHIER_PAGES_ABSENTES = DOSSIER_PROJETS.parent / "fdi_pages_absentes.csv"
+
+
+def lire_pages_absentes() -> dict[str, set[int]]:
+    """{ préfixe de fichier : pages sans fichier }, motif exigé."""
+    if not FICHIER_PAGES_ABSENTES.exists():
+        return {}
+    par_perimetre: dict[str, set[int]] = {}
+    with FICHIER_PAGES_ABSENTES.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            if not (l.get("motif") or "").strip():
+                raise LigneInvalide(
+                    f"{FICHIER_PAGES_ABSENTES.name} : {l['fichier']} pages "
+                    f"{l['page_debut']}-{l['page_fin']} sans motif écrit")
+            d, fin = int(l["page_debut"]), int(l["page_fin"])
+            if fin < d:
+                raise LigneInvalide(
+                    f"{FICHIER_PAGES_ABSENTES.name} : {l['fichier']} plage inversée")
+            par_perimetre.setdefault(l["fichier"].strip(), set()).update(range(d, fin + 1))
+    return par_perimetre
 
 
 FICHIER_PAYS = DOSSIER_PROJETS.parent / "fdi_pays.csv"

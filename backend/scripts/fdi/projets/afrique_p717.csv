@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2008,Shoprite,Shoprite,South Africa,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+2,Sep 2008,Sun International,Sun International,South Africa,Nigeria,Hotels & tourism,Accommodation,Construction,$150.00m,* 383,New
+3,Sep 2008,TSMarine,TSMarine,United Kingdom,Nigeria,"Coal, oil & gas",Support activities for…,Business Services,* $4.30m,* 45,New
+4,Aug 2008,Furmanite (Xanser),Furmanite (Xanser),United States,Nigeria,"Coal, oil & gas",Support activities for…,Business Services,* $4.30m,* 45,New
+5,Aug 2008,Manaksia,Manaksia,India,Nigeria,Metals,Steel products,Manufacturing,$35.00m,* 309,New
+6,Aug 2008,Tulsyan NEC,Tulsyan NEC,India,Nigeria,Metals,Iron & steel mills & f…,Manufacturing,$15.59m,* 138,New
+7,Aug 2008,Zhonghao Overse…,Zhonghao Overse…,China,Nigeria,Building materials,Cement & concrete p…,Manufacturing,$362.21m,* 691,New
+8,Jul 2008,Petrobras,Petrobras,Brazil,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.38bn,* 214,New
+9,Jul 2008,Revonergy,Revonergy,United Kingdom,Nigeria,Renewable energy,Biomass power,Electricity,* $178.00m,* 54,New
+10,Jun 2008,Africa Sun (Zimba…,Africa Sun (Zimba…,Zimbabwe,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+11,Jun 2008,Gazprom,Gazprom,Russia,Nigeria,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $45.70m,* 93,New
+12,Jun 2008,New Horizons,New Horizons,United States,Nigeria,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+13,May 2008,Toshiba,Toshiba,Japan,Nigeria,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+14,May 2008,TotalEnergies (Tot…,Elf Petroleum Nige…,France,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.38bn,* 214,New
+15,Apr 2008,Africa Sun (Zimba…,Zimsun Leisure Gr…,Zimbabwe,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New

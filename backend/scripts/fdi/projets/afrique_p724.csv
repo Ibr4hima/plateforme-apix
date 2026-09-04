@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2004,Titlas,Titlas,United States,Nigeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+2,Apr 2004,Diageo,Guinness Nigeria,United Kingdom,Nigeria,Food and Beverages,Breweries,Manufacturing,$3.70m,* 14,New
+3,Mar 2004,GE Aerospace (Ge…,GE Energy,United States,Nigeria,"Coal, oil & gas",Support activities for…,Education & Training,* $22.20m,* 94,New
+4,Mar 2004,Standard Chartere…,Standard Chartere…,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Mar 2004,Toshiba,Toshiba Tungaloy,Japan,Nigeria,Electronic components,Audio & video equip…,Manufacturing,* $11.80m,* 157,New
+6,Mar 2004,TotalEnergies (Tot…,TotalfinaElf,France,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.40bn,* 581,New
+7,Feb 2004,Avelon,Avelon,Greece,Nigeria,Consumer products,Building material & g…,Retail,* $36.90m,* 179,New
+8,Feb 2004,Eurochem Technol…,Vivas Methanol,Singapore,Nigeria,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,Expansion
+9,Feb 2004,Shiron Satellite,Shiron Satellite,Israel,Nigeria,Communications,Satellite telecommu…,Maintenance & Servi…,* $8.40m,* 82,New
+10,Nov 2003,Standard Bank Gr…,Stanlib,South Africa,Nigeria,Financial services,Investment manage…,Business Services,* $11.00m,* 18,New
+11,Oct 2003,Glanbia,Glanbia,Ireland,Nigeria,Food and Beverages,Dairy products,Manufacturing,$20.00m,* 131,New
+12,Oct 2003,Heineken Holding,Nigerian Breweries,Netherlands,Nigeria,Food and Beverages,Breweries,Manufacturing,$257.00m,* 751,New
+13,Sep 2003,Chevron,Chevron,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+14,Sep 2003,Johnnic,Johnnic,South Africa,Nigeria,Real estate,Commercial & institu…,Construction,* $122.20m,* 875,New
+15,Sep 2003,Union Bank,Union Assurance,Algeria,Nigeria,Financial services,Retail banking,Business Services,* $9.50m,* 22,New

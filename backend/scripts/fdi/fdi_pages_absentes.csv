@@ -1,0 +1,2 @@
+fichier,page_debut,page_fin,motif
+afrique,747,761,"Ces quinze pages du relevé « Dest = Africa » ne montrent que des projets sénégalais, et le Sénégal est relevé pour lui-même (senegal_pNN.csv). Elles n'ont donc aucune ligne à porter ici. Le trou est déclaré parce qu'un trou non déclaré ne se distingue pas d'une page oubliée."

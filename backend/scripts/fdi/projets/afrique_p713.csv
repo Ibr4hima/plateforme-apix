@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2009,Radisson Hospitali…,Park Inn,Belgium,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+2,Dec 2009,Wincor Nixdorf Int…,Wincor Nixdorf Int…,Germany,Nigeria,Electronic components,All other electrical e…,"Logistics, Distributio…",* $10.80m,* 58,New
+3,Nov 2009,Deutsche Post,DHL,Germany,Nigeria,Transportation & Wa…,Air transportation,"Logistics, Distributio…",$2.69m,* 10,New
+4,Nov 2009,InterContinental H…,InterContinental H…,United Kingdom,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+5,Nov 2009,International Busi…,International Busi…,United States,Nigeria,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 16,New
+6,Nov 2009,Miswa Chemicals,Miswa Chemicals,United Kingdom,Nigeria,Chemicals,Other chemical prod…,Retail,* $11.60m,* 148,New
+7,Oct 2009,AJ Excel Automati…,AJ Excel Automati…,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+8,Oct 2009,AstraZeneca,AstraZeneca,United Kingdom,Nigeria,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $4.20m,* 40,New
+9,Oct 2009,Procter & Gamble …,Procter & Gamble …,United States,Nigeria,Consumer products,Other (Consumer pr…,Manufacturing,* $16.30m,* 243,New
+10,Oct 2009,Sponge Ltd,Sponge Ltd,United Kingdom,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $0.70m,4,New
+11,Sep 2009,Barclays Bank,ABSA,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Sep 2009,FirstRand,FirstRand,South Africa,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Sep 2009,Glanbia,Nutricima Nigeria,Ireland,Nigeria,Food and Beverages,Dairy products,Manufacturing,$22.76m,* 149,New
+14,Aug 2009,Afren,Afren,United Kingdom,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.38bn,* 214,New
+15,Jul 2009,Afren,Afren,United Kingdom,Nigeria,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New

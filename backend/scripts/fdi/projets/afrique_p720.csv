@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2006,TotalEnergies (Tot…,TotalEnergies (Tot…,France,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$2.00bn,* 403,New
+2,Aug 2006,Life Insurance Cor…,Life Insurance Int…,India,Nigeria,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+3,Jul 2006,Exxon Mobil,Mobil Producing Ni…,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.30bn,* 540,New
+4,Jul 2006,POSCO (Pohang Ir…,POSCO Engineerin…,South Korea,Nigeria,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+5,Jun 2006,IDG (International…,IDC,United States,Nigeria,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+6,Jun 2006,Standard Chartere…,Standard Chartere…,United Kingdom,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jun 2006,Zim Integrated Sh…,Tin-Can Island Co…,Israel,Nigeria,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+8,May 2006,Ashapura Group,Ashapura Minechem,India,Nigeria,Metals,Nonferrous metal pr…,Manufacturing,$2.00m,* 18,New
+9,May 2006,Golden Tulip,Golden Tulip West…,Netherlands,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,May 2006,Indian Oil Corpora…,Indian Oil Corpora…,India,Nigeria,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+11,May 2006,Piriou,Piriou,France,Nigeria,Non-automotive tran…,Ships & boats,Manufacturing,$30.00m,* 230,New
+12,Apr 2006,Nokia,Nokia,Finland,Nigeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Apr 2006,Tata Group,Tata Motors,India,Nigeria,Automotive compon…,Motor vehicle gasolin…,"Sales, Marketing & S…",* $2.30m,* 26,New
+14,Mar 2006,Intel,Intel,United States,Nigeria,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $7.50m,* 16,New
+15,Mar 2006,Neptune Software,Neptune Software,United Kingdom,Nigeria,Software & IT services,"Software publishers,…",Research & Develop…,* $15.60m,100,New

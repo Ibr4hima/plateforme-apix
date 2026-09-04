@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2012,MTN Group,MTN Rwanda,South Africa,Rwanda,Communications,Communications equ…,Retail,$0.12m,* 2,New
+2,Aug 2012,International Wor…,International Wor…,Luxembourg,Rwanda,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+3,Jun 2012,Madras Institute o…,Madras Institute o…,India,Rwanda,Healthcare,General medical & s…,Construction,$40.00m,* 140,New
+4,Apr 2012,Spice Global Inves…,Spice VAS Africa,Singapore,Rwanda,Communications,Other telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Feb 2012,Altech Group,Altech Group,South Africa,Rwanda,Communications,Computing infrastruc…,ICT & Internet Infras…,* $1.93m,* -,New
+6,Jan 2012,African Trade Insu…,African Trade Insu…,Kenya,Rwanda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+7,Dec 2011,Deacons,Deacons,Kenya,Rwanda,Textiles,Clothing & clothing a…,Retail,$1.40m,* 11,New
+8,Dec 2011,Millicom Internati…,Tigo Rwanda,Luxembourg,Rwanda,Communications,Communications equ…,Retail,* $6.40m,* 51,New
+9,Dec 2011,Visa International,Visa International,United States,Rwanda,Financial services,Retail banking,Business Services,* $11.00m,* 15,New
+10,Nov 2011,Equity Bank,Equity Bank Rwan…,Kenya,Rwanda,Financial services,Retail banking,Business Services,* $11.00m,* 15,New
+11,Nov 2011,Equity Bank,Equity Bank Rwan…,Kenya,Rwanda,Financial services,Retail banking,Business Services,* $11.00m,* 15,New
+12,Oct 2011,Techno Brain,Techno Brain,Tanzania,Rwanda,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+13,Sep 2011,Bharti Group,Bharti Airtel,India,Rwanda,Communications,Wireless telecommu…,ICT & Internet Infras…,$100.00m,* 69,New
+14,Sep 2011,Carnegie Mellon U…,Carnegie Mellon U…,United States,Rwanda,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+15,Aug 2011,Augere,Augere,United Kingdom,Rwanda,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New

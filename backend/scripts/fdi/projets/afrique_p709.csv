@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2011,Lafarge,Lafarge Africa (Laf…,France,Nigeria,Building materials,Cement & concrete p…,Manufacturing,$456.15m,* 871,Expansion
+2,Jun 2011,rLG Communicatio…,rLG Communicatio…,Ghana,Nigeria,Communications,Communications equ…,Manufacturing,$20.00m,* 272,New
+3,Jun 2011,rLG Communicatio…,rLG Communicatio…,Ghana,Nigeria,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,Jun 2011,Skipper Energy,Skipper Electricals…,Mauritius,Nigeria,Industrial equipment,Mechanical power tr…,Manufacturing,* $48.20m,* 401,New
+5,May 2011,Indorama,Eleme Petrochemi…,Singapore,Nigeria,Renewable energy,Other electric power …,Manufacturing,* $187.60m,* 109,New
+6,May 2011,Indorama,Eleme Petrochemi…,Singapore,Nigeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $653.80m,* 455,New
+7,May 2011,Kingdom Holding …,Kingdom Zephyr …,Saudi Arabia,Nigeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+8,May 2011,Nestor Pharmaceu…,Nestor Pharmaceu…,India,Nigeria,Pharmaceuticals,Medicinal & botanical,Manufacturing,$5.00m,60,New
+9,May 2011,Spanco,Spanco,India,Nigeria,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+10,May 2011,Xodus,Xodus,United Kingdom,Nigeria,Business services,"Architectural, engine…",Business Services,* $3.70m,20,New
+11,Apr 2011,Ad Dynamo,Ad Dynamo,South Africa,Nigeria,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+12,Apr 2011,Radisson Hospitali…,Park Inn,Belgium,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+13,Mar 2011,BNP Paribas,BNP Paribas,France,Nigeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+14,Mar 2011,Carlyle Group,Carlyle Group,United States,Nigeria,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+15,Mar 2011,JPMorgan Chase &…,JPMorgan Chase &…,United States,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

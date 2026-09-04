@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2010,Nagarjuna Group,Nagarjuna Fertiliz…,India,Nigeria,Chemicals,"Pesticide, fertilisers …",Manufacturing,$1.06bn,"* 1,316",New
+2,Jul 2010,Radisson Hospitali…,Park Inn,Belgium,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+3,Jul 2010,Spar,Spar,Netherlands,Nigeria,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+4,Jun 2010,Nokia,Nokia,Finland,Nigeria,Communications,Communications equ…,Maintenance & Servi…,* $8.40m,* 82,New
+5,Jun 2010,Rainbow Group,Rainbow Papers,India,Nigeria,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$7.66m,* 39,New
+6,May 2010,Shell PLC (Royal D…,Shell Petroleum D…,Netherlands,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $722.60m,300,New
+7,Apr 2010,Aviareps,Aviareps,Germany,Nigeria,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+8,Apr 2010,Kasapreko,Kasapreko,Ghana,Nigeria,Food and Beverages,Breweries,Manufacturing,$10.00m,* 37,New
+9,Mar 2010,Standard Bank Gr…,Stanbic IBTC Bank,South Africa,Nigeria,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Feb 2010,Exxon Mobil,Exxon Mobil,United States,Nigeria,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $558.00m,* 116,New
+11,Feb 2010,Main One Cable C…,Main One Cable C…,Mauritius,Nigeria,Software & IT services,Computer systems d…,ICT & Internet Infras…,* $146.30m,* 85,New
+12,Feb 2010,Microsoft,Microsoft Nigeria,United States,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,Expansion
+13,Jan 2010,Globalstar,Spot,United States,Nigeria,Communications,Satellite telecommu…,ICT & Internet Infras…,* $919.80m,* 89,New
+14,Dec 2009,Deutsche Post,DHL Global Forwa…,Germany,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $3.40m,12,New
+15,Dec 2009,Eni SpA,Eni SpA,Italy,Nigeria,"Coal, oil & gas",Oil & gas extraction,Extraction,* $1.38bn,* 214,New

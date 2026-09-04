@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2012,Kulczyk Oil Ventur…,Kulczyk Oil Ventur…,Canada,Nigeria,"Coal, oil & gas",Oil & gas extraction,Manufacturing,* $1.73bn,* 146,Expansion
+2,Jan 2012,NEC,NEC Africa,Japan,Nigeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Dec 2011,Moody's,Moody's,United States,Nigeria,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Nov 2011,Altech Group,Altech West Africa,South Africa,Nigeria,Electronic components,All other electrical e…,Manufacturing,* $24.20m,300,New
+5,Nov 2011,Banque Libano-Fr…,Banque Libano-Fr…,Lebanon,Nigeria,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Nov 2011,Cambridge Broad…,Cambridge Broad…,United Kingdom,Nigeria,Communications,Wireless telecommu…,Education & Training,* $7.00m,* 94,New
+7,Nov 2011,Daewoo Engineeri…,Daewoo Engineeri…,South Korea,Nigeria,"Coal, oil & gas",Other electric power …,Electricity,$723.00m,* 71,New
+8,Nov 2011,Deutsche Post,DHL,Germany,Nigeria,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,Expansion
+9,Nov 2011,Deutsche Post,DHL Express,Germany,Nigeria,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,Expansion
+10,Nov 2011,Mr Price Group,Mr Price Group,South Africa,Nigeria,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+11,Nov 2011,Rad Group,RAD Data Commu…,Israel,Nigeria,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+12,Nov 2011,Roland Berger Str…,Roland Berger Str…,Germany,Nigeria,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+13,Nov 2011,The Foschini Group,The Foschini Group,South Africa,Nigeria,Consumer products,General merchandis…,Retail,* $36.90m,* 179,New
+14,Oct 2011,Apollo Hospitals G…,Apollo Hospitals G…,India,Nigeria,Healthcare,Nursing & residential…,Business Services,$2.40m,* 26,New
+15,Oct 2011,Europe-ex-Stock,Europe-ex-Stock,United Kingdom,Nigeria,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",$2.34m,* 13,New

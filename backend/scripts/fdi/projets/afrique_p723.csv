@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2005,Orascom Construc…,United Cement Co…,Egypt,Nigeria,Building materials,Cement & concrete p…,Manufacturing,* $498.20m,* 342,New
+2,Feb 2005,Voice of America (…,Voice of America (…,United States,Nigeria,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+3,Jan 2005,Chevron,Chevron,United States,Nigeria,"Coal, oil & gas",Oil & gas extraction,Manufacturing,$6.00m,* 1,New
+4,Jan 2005,Exxon Mobil,Exxon Mobil,United States,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.73bn,* 146,New
+5,Jan 2005,KT,KT,South Korea,Nigeria,Communications,Wired telecommunic…,ICT & Internet Infras…,* $919.80m,* 89,New
+6,Jan 2005,Mattr (ShawCor),Bredero Shaw (Ni…,Canada,Nigeria,Building materials,Cement & concrete p…,Manufacturing,* $498.20m,* 342,New
+7,Dec 2004,Chevron,Chevron Nigeria Li…,United States,Nigeria,"Coal, oil & gas",Support activities for…,Research & Develop…,* $24.50m,* 112,New
+8,Dec 2004,Piriou,Bourbon Offshore …,France,Nigeria,Non-automotive tran…,Ships & boats,Manufacturing,* $60.60m,* 348,New
+9,Nov 2004,ZTE,ZTE,China,Nigeria,Communications,Communications equ…,Manufacturing,* $9.40m,* 434,New
+10,Sep 2004,BOC,BOC,United Kingdom,Nigeria,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,New
+11,Aug 2004,Tsogo Sun Holdings,Southern Sun Hot…,South Africa,Nigeria,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+12,Jul 2004,Eni SpA,Eni SpA,Italy,Nigeria,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$400.00m,* 81,Expansion
+13,Jun 2004,Exide Aldobow,Exide Aldobow,UAE,Nigeria,Electronic components,Batteries,Manufacturing,$10.00m,300,New
+14,Jun 2004,Indian Oil Corpora…,Indian Oil Corpora…,India,Nigeria,"Coal, oil & gas",Petroleum refineries,Manufacturing,$3.50bn,* 705,New
+15,May 2004,Filanto,Filanto,Italy,Nigeria,Textiles,Footwear,Manufacturing,* $35.60m,"* 1,080",New

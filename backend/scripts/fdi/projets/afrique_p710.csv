@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,Kraft Foods,Cadbury Nigeria,United States,Nigeria,Food and Beverages,Sugar & confectionar…,Manufacturing,$51.00m,* 333,New
+2,Mar 2011,SABMiller,SABMiller,United Kingdom,Nigeria,Food and Beverages,Breweries,Manufacturing,$100.00m,180,New
+3,Feb 2011,Diageo,Guinness Nigeria,United Kingdom,Nigeria,Food and Beverages,Breweries,Manufacturing,* $132.80m,* 222,Expansion
+4,Feb 2011,Nestle,Nestle,Switzerland,Nigeria,Food and Beverages,Seasoning & dressing,Manufacturing,$91.90m,180,New
+5,Feb 2011,Su-Kam,Su-Kam,India,Nigeria,Electronic components,Batteries,Manufacturing,* $11.80m,* 157,New
+6,Jan 2011,CEVA Group,CEVA Logistics,United Kingdom,Nigeria,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+7,Jan 2011,Coca-Cola Helleni…,Nigerian Bottling …,Greece,Nigeria,Food and Beverages,Soft drinks & ice,Manufacturing,$300.00m,"* 1,111",Expansion
+8,Jan 2011,Perla Group Inter…,Perla Group Inter…,United States,Nigeria,Space & defence,Military armoured ve…,"Sales, Marketing & S…",* $7.90m,* 38,New
+9,Jan 2011,PZ Cussons,PZ Cussons,United Kingdom,Nigeria,Food and Beverages,Grains & oilseed,Manufacturing,$27.00m,* 177,New
+10,Dec 2010,Mahindra Group,Tech Mahindra,India,Nigeria,Software & IT services,Custom computer pr…,Technical Support Ce…,* $17.00m,* 222,New
+11,Dec 2010,Olam International,Olam International,Singapore,Nigeria,Food and Beverages,Sugar & confectionar…,Manufacturing,$200.00m,"* 1,308",New
+12,Oct 2010,Amarante,Amarante,France,Nigeria,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 8,New
+13,Oct 2010,Healthcare Global …,Healthcare Global …,India,Nigeria,Healthcare,Outpatient care cent…,Business Services,$2.92m,* 32,New
+14,Oct 2010,Pedersen & Partne…,Pedersen & Partne…,Czech Republic,Nigeria,Business services,Employment services,Business Services,* $6.80m,* 15,New
+15,Oct 2010,SecureData Holdi…,SecureData Securi…,South Africa,Nigeria,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
