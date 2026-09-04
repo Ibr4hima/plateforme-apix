@@ -97,7 +97,7 @@ async def main() -> int:
         print("  aucune page de projets à importer.")
         return 0
 
-    total = preserves = arbitrer = 0
+    total = preserves = arbitrer = ecartes = 0
     non_resolus: list[str] = []
     # Les arbitrages de troncature effectivement appliqués. Ceux qui ne le sont
     # pas méritent d'être signalés : soit la page a changé, soit la décision ne
@@ -117,18 +117,21 @@ async def main() -> int:
                 libelle, perimetre, sens = decrire(chemin)
                 lignes = lire_lot_csv(chemin)
 
-                # Un pays déjà relevé pour lui-même n'a rien à faire dans le
-                # relevé de sa zone.
+                # Un pays déjà relevé pour lui-même n'entre pas dans le lot de
+                # sa zone : ses projets y seraient comptés deux fois. Mais ses
+                # lignes RESTENT dans le fichier, parce que le fichier dit ce
+                # que la page affichait — et que les retirer du relevé décalerait
+                # les rangs, donc les frontières de page, donc l'identité même
+                # des lots. On écarte à l'écriture, jamais à la transcription.
                 interdits = EXCLUS.get(perimetre, set())
                 if interdits and sens == "destination":
-                    fautives = [l for l in lignes
-                                if (l.get("dest") or "").strip().lower() in interdits]
-                    if fautives:
-                        raise LigneInvalide(
-                            f"{chemin.name} : "
-                            + ", ".join(f"ligne {l['ligne']} (dest « {l['dest']} »)" for l in fautives[:5])
-                            + f" — ce pays est déjà relevé pour lui-même, le reprendre dans "
-                              f"« {perimetre} » compterait ses projets deux fois. Retirez ces lignes.")
+                    gardees = [l for l in lignes
+                               if (l.get("dest") or "").strip().lower() not in interdits]
+                    ecartes += len(lignes) - len(gardees)
+                    lignes = gardees
+                    if not lignes:
+                        print(f"  {libelle:<30} page entière déjà relevée ailleurs")
+                        continue
 
                 rapport = await importer_lot(db, libelle, perimetre,
                                              lignes, "import", sens,
@@ -150,6 +153,11 @@ async def main() -> int:
         await engine.dispose()
 
     print(f"  → {total} projets, {preserves} saisies humaines conservées")
+    if ecartes:
+        # Ni une perte ni une erreur : ces lignes sont en base, sous le relevé
+        # du pays lui-même, qui est le seul à le rendre exhaustif.
+        print(f"  {ecartes} ligne(s) écartée(s) du relevé de zone — pays déjà relevé "
+              f"pour lui-même")
     if utilises:
         print(f"  {len(utilises)} troncature(s) ambiguë(s) tranchée(s) à la main "
               f"(fdi_arbitrages.csv)")

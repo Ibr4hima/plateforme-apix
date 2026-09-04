@@ -880,10 +880,16 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     # fDi, donc rien dans le CSV ne peut jamais venir « en face » d'eux, et les
     # supprimer au premier réimport serait la manière la plus sûre de rendre la
     # saisie inutilisable.
+    #
+    # On supprime les rangs ABSENTS de ce qui vient d'être écrit, et non les
+    # rangs supérieurs au compte : une page peut arriver trouée. C'est le cas
+    # dès qu'un pays y figure alors qu'il est déjà relevé pour lui-même — ses
+    # lignes gardent leur rang chez fDi mais n'entrent pas dans ce lot. Compter
+    # au lieu d'énumérer effacerait alors des lignes qu'on vient d'écrire.
     supprimes = (await db.execute(text(
-        "DELETE FROM fdi_projets WHERE lot_id = :i AND ligne > :n "
-        "AND origine = 'import' RETURNING id"),
-        {"i": lot_id, "n": len(lignes)})).fetchall()
+        "DELETE FROM fdi_projets WHERE lot_id = :i AND origine = 'import' "
+        "AND NOT (ligne = ANY(:rangs)) RETURNING id"),
+        {"i": lot_id, "rangs": [l["ligne"] for l in lignes]})).fetchall()
     rapport["supprimes"] = len(supprimes)
     rapport["lot_id"] = lot_id
     return rapport
