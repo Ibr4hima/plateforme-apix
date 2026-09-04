@@ -33,6 +33,7 @@ from app.services.fdi_projets import (  # noqa: E402
     LigneInvalide,
     appliquer_alias_entreprises,
     importer_lot,
+    lire_arbitrages,
     lire_lot_csv,
 )
 
@@ -98,6 +99,10 @@ async def main() -> int:
 
     total = preserves = arbitrer = 0
     non_resolus: list[str] = []
+    # Les arbitrages de troncature effectivement appliqués. Ceux qui ne le sont
+    # pas méritent d'être signalés : soit la page a changé, soit la décision ne
+    # sert plus, et un fichier de décisions mortes finit par n'être plus relu.
+    utilises: set = set()
     try:
         async with AsyncSessionLocal() as db:
             # AVANT les lots : une graphie fautive déclarée doit déjà pointer
@@ -126,7 +131,8 @@ async def main() -> int:
                               f"« {perimetre} » compterait ses projets deux fois. Retirez ces lignes.")
 
                 rapport = await importer_lot(db, libelle, perimetre,
-                                             lignes, "import", sens)
+                                             lignes, "import", sens,
+                                             chemin.stem, utilises)
                 total += rapport["lignes"]
                 preserves += rapport["preserves"]
                 arbitrer += rapport["entreprises_a_arbitrer"]
@@ -144,6 +150,13 @@ async def main() -> int:
         await engine.dispose()
 
     print(f"  → {total} projets, {preserves} saisies humaines conservées")
+    if utilises:
+        print(f"  {len(utilises)} troncature(s) ambiguë(s) tranchée(s) à la main "
+              f"(fdi_arbitrages.csv)")
+    dormants = sorted(set(lire_arbitrages()) - utilises)
+    for f, ligne, colonne in dormants:
+        print(f"  ⚠ arbitrage inutilisé : {f} L{ligne} « {colonne} » — la ligne se "
+              f"rattache désormais seule, ou la page a changé")
     if arbitrer:
         # Ni un échec ni un oubli : un nom tronqué se tranche à l'écran.
         print(f"  ⚠ {arbitrer} ligne(s) dont l'entreprise reste à arbitrer "

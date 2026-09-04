@@ -559,3 +559,58 @@ def test_tout_pays_proposable_est_un_pays_que_l_analyseur_sait_relire():
     # Tout code visé par la correspondance est proposable : sans quoi un pays du
     # relevé n'aurait pas de case dans le formulaire.
     assert set(correspondance.values()) == set(noms)
+
+
+# ── Arbitrages de troncature : une décision par ligne, versionnée ─────────────
+
+def test_le_fichier_d_arbitrages_est_lisible_et_chaque_ligne_porte_son_motif():
+    """Une troncature ambiguë se tranche à la main, et la décision se relit.
+
+    « Pipeline transportati… » recouvre deux postes : Sasol au Mozambique
+    transporte du gaz, la CNPC au Niger du pétrole. La décision est donc
+    attachée à un rang précis d'une page précise — ce qu'une variante de graphie,
+    globale par nature, ne saurait pas exprimer.
+    """
+    from app.services.fdi_projets import lire_arbitrages, FAMILLES_VARIANTES
+    arb = lire_arbitrages()
+    for (fichier, ligne, colonne), a in arb.items():
+        assert colonne in FAMILLES_VARIANTES, colonne
+        assert ligne >= 1
+        assert a["brut"], f"{fichier} L{ligne} : libellé brut manquant"
+        assert a["motif"], f"{fichier} L{ligne} : motif manquant"
+
+
+def test_chaque_arbitrage_vise_une_ligne_qui_existe_et_porte_bien_ce_libelle():
+    """Le fichier ne peut pas dériver du relevé sans que ce test le dise.
+
+    Un arbitrage pointe sur (page, rang). Si la page disparaît, ou si son rang
+    porte désormais autre chose, la décision ne vaut plus pour ce projet — et
+    l'appliquer quand même serait la coller sur un projet qui n'est pas le sien.
+    L'import lève sur ce cas ; ce test l'attrape avant l'import.
+    """
+    from app.services.fdi_projets import lire_arbitrages, lire_lot_csv, DOSSIER_PROJETS
+    for (fichier, rang, colonne), a in lire_arbitrages().items():
+        chemin = DOSSIER_PROJETS / f"{fichier}.csv"
+        assert chemin.exists(), f"{fichier} : page absente du relevé"
+        ligne = next((l for l in lire_lot_csv(chemin) if l["ligne"] == rang), None)
+        assert ligne is not None, f"{fichier} : rang {rang} absent"
+        assert (ligne[colonne] or "").strip() == a["brut"], (
+            f"{fichier} L{rang} porte « {ligne[colonne]} », l'arbitrage vise « {a['brut']} »")
+
+
+def test_un_arbitrage_ne_sert_que_si_le_rapprochement_a_echoue():
+    """La nomenclature d'abord, la décision humaine seulement en second.
+
+    Si la source cesse un jour de tronquer, le libellé entier se rapproche tout
+    seul et l'arbitrage devient inutile — pas faux. C'est l'ordre inverse qui
+    serait dangereux : une décision ancienne écraserait alors ce que la source
+    dit clairement aujourd'hui.
+    """
+    from app.services.fdi_projets import lire_arbitrages, lire_lot_csv, DOSSIER_PROJETS
+    from app.services.fdi_projets import est_tronque
+    for (fichier, rang, colonne), a in lire_arbitrages().items():
+        ligne = next(l for l in lire_lot_csv(DOSSIER_PROJETS / f"{fichier}.csv")
+                     if l["ligne"] == rang)
+        assert est_tronque(ligne[colonne]), (
+            f"{fichier} L{rang} : « {ligne[colonne] } » n'est pas tronqué — "
+            "il n'y a rien à arbitrer, le rapprochement suffit")

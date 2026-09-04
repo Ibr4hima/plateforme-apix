@@ -368,6 +368,60 @@ def lire_variantes() -> dict[str, list[tuple[str, str]]]:
     return par_famille
 
 
+# ── Les arbitrages de troncature, ligne par ligne ────────────────────────────
+FICHIER_ARBITRAGES = DOSSIER_PROJETS.parent / "fdi_arbitrages.csv"
+
+
+def lire_arbitrages() -> dict[tuple[str, int, str], dict]:
+    """Les tranchages humains d'une troncature AMBIGUË, page et rang à l'appui.
+
+    Quand la source coupe « Pipeline transportati… », deux postes commencent
+    ainsi — pétrole brut par oléoduc, gaz naturel par gazoduc — et l'import
+    refuse de choisir : deviner rangerait un gazoduc sous le pétrole, et la
+    ligne serait alors RATTACHÉE, donc silencieuse. Aucun contrôle ultérieur ne
+    la rattraperait.
+
+    Pourquoi pas fdi_variantes.csv ? Parce qu'une variante est GLOBALE : elle
+    dit qu'une graphie désigne toujours le même poste. Ici la même troncature
+    recouvre plusieurs postes selon la ligne — Sasol au Mozambique transporte du
+    gaz, la CNPC au Niger du pétrole. La décision est donc attachée à un rang
+    précis d'une page précise, et à rien d'autre.
+
+    Pourquoi pas l'écran de correction ? Parce qu'il écrit dans la base, et que
+    la base se reconstruit. Une décision qui ne survit pas à une remise à zéro
+    est une décision qu'il faudra reprendre, sans savoir qu'on l'avait déjà
+    prise. Ici elle est versionnée, relue en revue, et rejouée à chaque import.
+
+    LE LIBELLÉ BRUT EST RECOPIÉ DANS LE FICHIER, et vérifié à l'import. Si la
+    source republie la page avec d'autres lignes, le rang pointe sur autre
+    chose : mieux vaut arrêter l'import que d'appliquer à une ligne inconnue une
+    décision prise pour une autre. C'est la règle déjà retenue pour les
+    descriptions et pour les colonnes verrouillées, et elle vaut ici de même.
+    """
+    if not FICHIER_ARBITRAGES.exists():
+        return {}
+    par_cle: dict[tuple[str, int, str], dict] = {}
+    with FICHIER_ARBITRAGES.open(encoding="utf-8") as f:
+        for l in csv.DictReader(f):
+            colonne = (l["colonne"] or "").strip()
+            if colonne not in FAMILLES_VARIANTES:
+                raise LigneInvalide(
+                    f"{FICHIER_ARBITRAGES.name} : colonne inconnue « {colonne} » — "
+                    f"attendu {', '.join(sorted(FAMILLES_VARIANTES))}")
+            if not (l.get("motif") or "").strip():
+                raise LigneInvalide(
+                    f"{FICHIER_ARBITRAGES.name} : {l['fichier']} ligne {l['ligne']} — "
+                    "un arbitrage sans motif écrit est un arbitrage qu'on n'ose plus toucher")
+            cle = (l["fichier"].strip(), int(l["ligne"]), colonne)
+            if cle in par_cle:
+                raise LigneInvalide(
+                    f"{FICHIER_ARBITRAGES.name} : {cle[0]} ligne {cle[1]} « {colonne} » "
+                    "arbitré deux fois")
+            par_cle[cle] = {"brut": l["brut"].strip(), "code": l["code"].strip(),
+                            "motif": l["motif"].strip()}
+    return par_cle
+
+
 # ── Réécrire une valeur dans la notation de la source ─────────────────────────
 # L'écran de correction ne saisit pas des colonnes de base mais des CASES DE
 # RELEVÉ : « Mar 2014 », « * $9.60m », « * 1 012 ». C'est ce que l'utilisateur a
@@ -555,7 +609,10 @@ def _garde_si(colonne: str, verrou: str | None = None) -> str:
 
 
 async def resoudre_ligne(db: "AsyncSession", l: dict, ref: dict, pays_en: dict,
-                         utilisateur: str | None = None) -> tuple[dict, list[tuple]]:
+                         utilisateur: str | None = None,
+                         arbitrages: dict | None = None,
+                         fichier: str = "", utilises: set | None = None
+                         ) -> tuple[dict, list[tuple]]:
     """Une ligne de relevé — brute, telle qu'elle est lue ou saisie — devient les
     colonnes d'un projet : montants convertis, pays et nomenclatures rapprochés,
     entreprises créées ou retrouvées.
@@ -576,12 +633,43 @@ async def resoudre_ligne(db: "AsyncSession", l: dict, ref: dict, pays_en: dict,
     rang = l.get("ligne")
     manques: list[tuple] = []
 
+    def arbitrer(colonne: str, brut, secteur_attendu: int | None = None) -> int | None:
+        """Le tranchage humain de cette case, s'il y en a un. Sinon None.
+
+        Consulté SEULEMENT quand le rapprochement automatique a échoué : si la
+        source cesse un jour de tronquer, le poste se retrouve tout seul et
+        l'arbitrage devient inutile plutôt que faux.
+        """
+        a = (arbitrages or {}).get((rang, colonne))
+        if a is None:
+            return None
+        ou = f"{fichier or '?'} ligne {rang}"
+        if (brut or "").strip() != a["brut"]:
+            raise LigneInvalide(
+                f"{FICHIER_ARBITRAGES.name} : {ou} porte « {brut} » alors que "
+                f"l'arbitrage a été rendu pour « {a['brut']} ». La ligne a changé : "
+                "reprendre la décision plutôt que l'appliquer à un autre projet.")
+        poste = next((p for p in ref[FAMILLES_VARIANTES[colonne]] if p["code"] == a["code"]), None)
+        if poste is None:
+            raise LigneInvalide(
+                f"{FICHIER_ARBITRAGES.name} : {ou} vise le code « {a['code']} », "
+                "absent de la nomenclature")
+        if secteur_attendu is not None and poste.get("secteur_id") != secteur_attendu:
+            raise LigneInvalide(
+                f"{FICHIER_ARBITRAGES.name} : {ou} range « {a['code']} » sous un secteur "
+                "qui n'est pas celui de la ligne")
+        if utilises is not None:
+            utilises.add((fichier, rang, colonne))
+        return poste["id"]
+
     annee, mois = lire_date(l["date"])
     capex, capex_est = lire_montant(l.get("capex"))
     emplois, emplois_est = lire_entier(l.get("emplois"))
 
     vs, cs = rapprocher(l.get("secteur", ""), ref["secteurs"])
     secteur_id = cs[0]["id"] if vs in ("exact", "unique") else None
+    if secteur_id is None:
+        secteur_id = arbitrer("secteur", l.get("secteur"))
     if secteur_id is None:
         manques.append((rang, "secteur", l.get("secteur"), vs))
 
@@ -590,15 +678,21 @@ async def resoudre_ligne(db: "AsyncSession", l: dict, ref: dict, pays_en: dict,
         vss, css = rapprocher(l.get("sous_secteur", ""), par_secteur.get(secteur_id, []))
         sous_id = css[0]["id"] if vss in ("exact", "unique") else None
         if sous_id is None:
+            sous_id = arbitrer("sous_secteur", l.get("sous_secteur"), secteur_id)
+        if sous_id is None:
             manques.append((rang, "sous-secteur", l.get("sous_secteur"), vss))
 
     va, ca = rapprocher(l.get("activite", ""), ref["activites"])
     activite_id = ca[0]["id"] if va in ("exact", "unique") else None
     if activite_id is None:
+        activite_id = arbitrer("activite", l.get("activite"))
+    if activite_id is None:
         manques.append((rang, "activité", l.get("activite"), va))
 
     vt, ct = rapprocher(l.get("type", ""), ref["types"])
     type_id = ct[0]["id"] if vt in ("exact", "unique") else None
+    if type_id is None and (l.get("type") or "").strip():
+        type_id = arbitrer("type", l.get("type"))
     if type_id is None and (l.get("type") or "").strip():
         manques.append((rang, "type", l.get("type"), vt))
 
@@ -630,7 +724,8 @@ async def resoudre_ligne(db: "AsyncSession", l: dict, ref: dict, pays_en: dict,
 
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
                        lignes: list[dict], utilisateur: str | None = None,
-                       sens: str = "destination") -> dict:
+                       sens: str = "destination", fichier: str = "",
+                       utilises: set | None = None) -> dict:
     """Écrit un lot de projets. Rejouable, et respectueux des saisies humaines.
 
     Le lot est remplacé, jamais fusionné ligne à ligne avec l'existant : sans
@@ -653,6 +748,9 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
 
     ref = await _referentiels(db)
     pays_en = lire_pays_csv()
+    # Les tranchages humains qui concernent CE fichier, indexés par (rang,
+    # colonne) : resoudre_ligne n'a pas à connaître le reste du relevé.
+    arbitrages = {(r, c): a for (f, r, c), a in lire_arbitrages().items() if f == fichier}
     par_secteur: dict[int, list] = {}
     for s in ref["sous"]:
         par_secteur.setdefault(s["secteur_id"], []).append(s)
@@ -681,7 +779,8 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     rapport = {"lignes": len(lignes), "non_resolus": [], "preserves": 0, "entreprises_a_arbitrer": 0}
 
     for l in lignes:
-        col, manques = await resoudre_ligne(db, l, ref, pays_en, utilisateur)
+        col, manques = await resoudre_ligne(db, l, ref, pays_en, utilisateur,
+                                            arbitrages, fichier, utilises)
         rapport["non_resolus"].extend(manques)
         annee, mois = col["annee"], col["mois"]
         capex, capex_est = col["capex_musd"], col["capex_estime"]
