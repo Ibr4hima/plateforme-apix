@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2003,Pioneer Natural R…,Pioneer Natural R…,United States,South Africa,"Coal, oil & gas",Oil & gas extraction,Extraction,* $96.50m,* 214,New
+2,Aug 2003,Renaissaince Indu…,Renaissance Indu…,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+3,Aug 2003,Saab AB,Saab AB,Sweden,South Africa,Software & IT services,"Software publishers,…",Manufacturing,* $14.90m,* 159,New
+4,Jul 2003,Anglo American,Anglo American Pl…,United Kingdom,South Africa,Metals,Other metal ore mini…,Extraction,* $319.90m,"* 1,012",New
+5,Jul 2003,HSBC Bank Berm…,Global Fund Servi…,Bermuda,South Africa,Financial services,Investment manage…,Business Services,* $11.00m,* 21,New
+6,Jul 2003,L'Oreal,L'Oreal,France,South Africa,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New
+7,Jul 2003,Orkla Group,LignoTech,Norway,South Africa,Chemicals,"Pesticide, fertilisers …",Manufacturing,$45.00m,36,Expansion
+8,Jul 2003,State Bank of Indi…,State Bank of Indi…,India,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+9,Jun 2003,Amino Acitves,Amino Actives,Germany,South Africa,Chemicals,Basic chemicals,Manufacturing,* $33.80m,* 149,New
+10,Jun 2003,Aquarius Platinum,Aquarius Platinum,Australia,South Africa,Metals,Other metal ore mini…,Extraction,* $319.90m,"* 1,012",Expansion
+11,Jun 2003,Bank Of New York,Bank Of New York,United States,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+12,Jun 2003,BP (British Petrole…,BP (British Petrole…,United Kingdom,South Africa,"Coal, oil & gas",Support activities for…,Headquarters,$15.00m,* 305,New
+13,Jun 2003,De La Rue,De La Rue,United Kingdom,South Africa,"Paper, printing & pac…",Printing & related ac…,Manufacturing,$6.00m,75,New
+14,Jun 2003,Elite International…,Elite International…,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+15,Jun 2003,eSay Solutions,eSay Solutions,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $1.30m,10,New

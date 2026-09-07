@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2008,Nissan,Nissan,Japan,South Africa,Automotive OEM,Automobiles,Manufacturing,$130.16m,300,Expansion
+2,Jul 2008,SACE,SACE,Italy,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+3,Jun 2008,AdMob,AdMob,United States,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+4,Jun 2008,ADVA Optical Net…,ADVA Optical Net…,Germany,South Africa,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Jun 2008,Africa Sun (Zimba…,Africa Sun (Zimba…,Zimbabwe,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Jun 2008,Apollo Tyres,Apollo Tyres,India,South Africa,Rubber,Tyres,Manufacturing,* $43.20m,* 217,Expansion
+7,Jun 2008,Apollo Tyres,Apollo Tyres,India,South Africa,Rubber,Tyres,Manufacturing,* $43.20m,* 217,Expansion
+8,Jun 2008,Bank of India (BOI),Bank of India (BOI),India,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,Expansion
+9,Jun 2008,BHP Group,BHP Group,Australia,South Africa,Metals,Other metal ore mini…,Extraction,$19.00m,* 27,Expansion
+10,Jun 2008,BHP Group,BHP Group,Australia,South Africa,Metals,Other metal ore mini…,Extraction,$37.00m,* 52,Expansion
+11,Jun 2008,BPL Global,BPL Global,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+12,Jun 2008,Copernicus Consul…,Copernicus Consul…,United Kingdom,South Africa,Business services,Management consult…,Business Services,* $27.80m,* 17,New
+13,Jun 2008,Cyret Technologies,Cyret Technologies,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+14,Jun 2008,Delta Partners Gro…,Delta Partners Gro…,UAE,South Africa,Business services,Management consult…,Business Services,* $1.80m,10,New
+15,Jun 2008,DiamondTech,Primus Special Pr…,Switzerland,South Africa,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,New

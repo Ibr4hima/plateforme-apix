@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2006,Spar,Spar,Netherlands,South Africa,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",$41.00m,* 147,New
+2,Sep 2006,Strategy (MicroStr…,Strategy (MicroStr…,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+3,Sep 2006,Tekelec,Tekelec,United States,South Africa,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,Sep 2006,Uniross,Uniross South Afri…,France,South Africa,Electronic components,Batteries,Manufacturing,* $11.80m,* 136,New
+5,Sep 2006,Ziehl-Abegg,Ziehl-Abegg,Germany,South Africa,Industrial equipment,"Ventilation, heating,…","Sales, Marketing & S…",* $2.90m,* 11,New
+6,Aug 2006,Google,Google,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 9,New
+7,Aug 2006,JAS Forwarding,JAS Forwarding,Italy,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $9.90m,* 31,New
+8,Aug 2006,JAS Forwarding,JAS Forwarding,Italy,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $9.90m,* 31,New
+9,Aug 2006,Omega Performan…,Omega Performan…,United States,South Africa,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+10,Aug 2006,Punto FA,Mango,Spain,South Africa,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+11,Aug 2006,Sun Ace Corporati…,Sun Ace Corporati…,Japan,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,* $33.80m,* 149,Expansion
+12,Aug 2006,Tangerine Group,VetPlus,United Kingdom,South Africa,Food and Beverages,Animal food,"Sales, Marketing & S…",* $6.70m,* 21,New
+13,Jul 2006,Cambridge Broad…,Cambridge Broad…,United Kingdom,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Jul 2006,China National Bui…,Jushi Group,China,South Africa,Ceramics & glass,Glass & glass products,"Sales, Marketing & S…",* $1.00m,* 6,New
+15,Jul 2006,Expand Networks,Expand Networks,United States,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New

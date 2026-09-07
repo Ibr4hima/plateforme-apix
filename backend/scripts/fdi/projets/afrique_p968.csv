@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2004,Wilh. Wilhelmsen …,Wilhelmsen Bunke…,Norway,South Africa,Transportation & Wa…,Water transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+2,Feb 2004,AF Group,AF Group,Sweden,South Africa,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+3,Feb 2004,Air Liquide,Air Liquide,France,South Africa,Chemicals,Basic chemicals,Manufacturing,* $33.80m,* 149,New
+4,Feb 2004,Angpannefoerenin…,Angpannefoerenin…,Sweden,South Africa,Business services,Environmental consu…,Business Services,* $6.80m,* 15,New
+5,Feb 2004,FBN Holdings (Firs…,FBN Holdings (Firs…,Nigeria,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+6,Feb 2004,Toyota Motor,Toyota,Japan,South Africa,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",$2.00m,* 8,New
+7,Feb 2004,Vietnam National …,Vietnam National …,Vietnam,South Africa,Textiles,Clothing & clothing a…,"Sales, Marketing & S…",* $1.70m,* 17,New
+8,Jan 2004,Azibo,Currencies Direct,United Kingdom,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+9,Jan 2004,Escrow Europe Ho…,Escrow Europe-Afr…,Netherlands,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+10,Jan 2004,Nestle,Nestle,Switzerland,South Africa,Food and Beverages,Snack food,Manufacturing,$9.00m,* 59,Expansion
+11,Dec 2003,Albert Trostel & S…,Eagle Ottawa,United States,South Africa,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $16.10m,* 112,New
+12,Dec 2003,Budget Insurance,Budget Insurance,United Kingdom,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+13,Dec 2003,Environmental Re…,Environmental Re…,United Kingdom,South Africa,Business services,Environmental consu…,Business Services,* $2.10m,14,New
+14,Dec 2003,Xstrata PLC,Xstrata PLC,Switzerland,South Africa,Metals,Foundries,Manufacturing,$192.00m,"* 2,395",New
+15,Nov 2003,General Motors (G…,General Motors (G…,United States,South Africa,Automotive OEM,Motor vehicle & part…,Retail,* $12.70m,* 33,New

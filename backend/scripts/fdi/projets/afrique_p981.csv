@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2012,Hospitality Manag…,Hospitality Manag…,UAE,Sudan,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Feb 2012,Ramco Systems,Ramco Systems,India,Sudan,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+3,Jan 2012,China Central Tele…,China Central Tele…,China,Sudan,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,Nov 2011,Dallah Al-Baraka …,Albaraka Banking …,Saudi Arabia,Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Sep 2011,Landmark Group,Babyshop,UAE,Sudan,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+6,Sep 2011,Samsung Group,Samsung Electron…,South Korea,Sudan,Consumer electronics,Other (Consumer ele…,Manufacturing,* $27.20m,* 641,New
+7,Jun 2011,National Bank of E…,National Bank of E…,Egypt,Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,May 2011,Abu Dhabi Islamic…,Abu Dhabi Islamic…,UAE,Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,Dec 2010,Nissan,Zhengzhou Nissan…,Japan,Sudan,Automotive compon…,Other motor vehicle …,Manufacturing,* $22.70m,* 511,New
+10,Sep 2010,Gras Savoye,Gras Savoye,France,Sudan,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+11,Sep 2010,Saipa,Saipa,Iran,Sudan,Automotive OEM,Automobiles,Manufacturing,* $94.50m,* 864,New
+12,Jul 2010,Arab Swiss Engine…,ASEC Cement Hol…,Egypt,Sudan,Building materials,Cement & concrete p…,Manufacturing,$253.00m,450,New
+13,Jul 2010,Arab Swiss Engine…,ASCOM Geology &…,Egypt,Sudan,Metals,Other metal ore mini…,Extraction,* $270.00m,"* 1,012",New
+14,Feb 2010,FUCHS (Fuchs Pet…,FUCHS (Fuchs Pet…,Germany,Sudan,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $1.64bn,* 146,New
+15,Nov 2009,China National Pet…,China National Pet…,China,Sudan,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.64bn,* 146,Expansion

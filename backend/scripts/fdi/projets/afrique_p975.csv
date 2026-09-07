@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2012,Commercial Bank …,Commercial Bank …,Ethiopia,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,May 2012,Commercial Bank …,Commercial Bank …,Ethiopia,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Apr 2012,United Bank,United Bank,Ethiopia,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Mar 2012,British American I…,British American I…,Mauritius,South Sudan,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+5,Mar 2012,Kenya Commercia…,KCB South Sudan,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Mar 2012,Standard Bank Gr…,CfC Stanbic Bank,South Africa,South Sudan,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Feb 2012,Dubai Islamic Ban…,Bank of Khartoum…,UAE,South Sudan,Financial services,Retail banking,Business Services,* $208.80m,485,New
+8,Nov 2011,Exim Bank (Tanza…,Exim Bank (Tanza…,Tanzania,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Oct 2011,Qatar National Ba…,Qatar National Ba…,Qatar,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Aug 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Aug 2011,Family Bank,Family Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Jul 2011,Deutsche Post,DHL,Germany,South Sudan,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+13,Jul 2011,Mt Kenya Universi…,Mt Kenya Universi…,Kenya,South Sudan,Business services,"Schools, colleges, un…",Education & Training,* $14.60m,* 39,New
+14,Jul 2011,PricewaterhouseC…,PricewaterhouseC…,United Kingdom,South Sudan,Business services,"Accounting, tax prep…",Business Services,* $6.80m,* 15,New
+15,Jul 2011,SolutionPoint Inte…,SolutionPoint Inte…,United States,South Sudan,Business services,Other support services,Business Services,* $6.80m,* 15,New

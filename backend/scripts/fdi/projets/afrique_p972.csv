@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2003,Legato Systems,Legato Systems,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 9,New
+2,Mar 2003,Condor,Condor,Netherlands,South Africa,Communications,Motion picture & sou…,ICT & Internet Infras…,* $96.50m,* 77,New
+3,Mar 2003,ITXC,ITXC,United States,South Africa,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 25,New
+4,Feb 2003,Barclays Bank,Barclays Bank,United Kingdom,South Africa,Financial services,Retail banking,Headquarters,$65.00m,* 251,New
+5,Feb 2003,Cadbury,Bromor Foods,United Kingdom,South Africa,Food and Beverages,Soft drinks & ice,Manufacturing,$15.00m,* 56,New
+6,Feb 2003,London Bridge Sof…,London Bridge Sof…,United Kingdom,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $38.60m,250,New
+7,Feb 2003,Maximum Dynamics,Maximum Dynamics,United States,South Africa,Software & IT services,"Software publishers,…",Customer Contact C…,$9.00m,* 263,New
+8,Feb 2003,Radisson Hospitali…,Radisson Hospitali…,Belgium,South Africa,Hotels & tourism,Accommodation,Construction,* $115.40m,* 219,New
+9,Feb 2003,Ramco Systems,Ramco Systems,India,South Africa,Software & IT services,Custom computer pr…,Business Services,$10.00m,76,New
+10,Feb 2003,Ridge Mining,Cluff Mining,United Kingdom,South Africa,Metals,Other metal ore mini…,Extraction,* $319.90m,"* 1,012",New
+11,Feb 2003,Scania,Scania,Sweden,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,* $112.90m,* 771,New
+12,Jan 2003,Flex Ltd (Flextroni…,Flex Ltd (Flextroni…,Singapore,South Africa,Software & IT services,Computer systems d…,Research & Develop…,* $17.30m,* 93,Expansion
+13,Jan 2003,Zorlu Holding,Zorlu Textile,Turkey,South Africa,Textiles,Furniture & related p…,Manufacturing,* $19.70m,350,Expansion
+14,Jul 2023,My 1Health (MyHe…,My 1Health (MyHe…,Kenya,South Sudan,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+15,Mar 2023,Kenya Commercia…,Kenya Commercia…,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $6.10m,20,Expansion

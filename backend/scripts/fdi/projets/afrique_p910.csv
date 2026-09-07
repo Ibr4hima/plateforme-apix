@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2012,Powerway Renewa…,Powerway Renewa…,China,South Africa,Metals,Steel products,Manufacturing,* $0.02m,* 333,New
+2,Jan 2012,Powerway Renewa…,Powerway Renewa…,China,South Africa,Metals,Other fabricated met…,Manufacturing,* $0.02m,* 333,New
+3,Jan 2012,Powerway Renewa…,Powerway Renewa…,China,South Africa,Metals,"Coating, engraving, …",Manufacturing,* $0.02m,* 333,New
+4,Jan 2012,Powerway Renewa…,Powerway Renewa…,China,South Africa,Metals,Other fabricated met…,Education & Training,* $7.00m,* 94,New
+5,Jan 2012,SeeGee Technolog…,SeeGee Technolog…,United States,South Africa,Software & IT services,Computer facilities …,Business Services,* $13.80m,* 49,New
+6,Jan 2012,Shrenuj,Shrenuj,India,South Africa,Consumer products,Jewellery & silverware,Manufacturing,* $14.40m,* 418,New
+7,Jan 2012,Vacancy Poster,Vacancy Poster,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+8,Jan 2012,Veeam Software,Veeam Software,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+9,Dec 2011,3CX,3CX,Cyprus,South Africa,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 9,New
+10,Dec 2011,Abengoa,Abengoa,Spain,South Africa,Renewable energy,Solar electric power,Electricity,$891.00m,35,New
+11,Dec 2011,Abengoa,Abengoa,Spain,South Africa,Renewable energy,Solar electric power,Electricity,* $177.10m,35,New
+12,Dec 2011,Anglo American,Anglo American,United Kingdom,South Africa,Metals,Iron ore mining,Extraction,$1.00bn,"* 1,406",New
+13,Dec 2011,Elixirr (Elix-IRR),Elixirr (Elix-IRR),United Kingdom,South Africa,Business services,Management consult…,Business Services,* $27.80m,* 17,New
+14,Dec 2011,IGE Resources (In…,IGE Resources (In…,Sweden,South Africa,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+15,Dec 2011,Koc Holding,Defy Appliances,Turkey,South Africa,Consumer electronics,Household appliances,Manufacturing,* $5.80m,* 100,Expansion

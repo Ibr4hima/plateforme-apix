@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2011,FedEx (Federal Ex…,FedEx Logistics (F…,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+2,Nov 2011,Forbes and Manha…,Slater Coal,Canada,South Africa,"Coal, oil & gas",Coal mining,Extraction,* $96.50m,* 214,Expansion
+3,Nov 2011,Forbes and Manha…,Slater Coal,Canada,South Africa,"Coal, oil & gas",Coal mining,Extraction,* $96.50m,* 214,Expansion
+4,Nov 2011,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Nov 2011,Industrial and Co…,Industrial and Co…,China,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+6,Nov 2011,LG Corp,LG Electronics,South Korea,South Africa,Consumer electronics,Audio & video equip…,Manufacturing,$8.00m,* 110,New
+7,Nov 2011,Linde,Afrox,Germany,South Africa,Chemicals,Basic chemicals,Manufacturing,* $33.80m,* 149,Co-Location
+8,Nov 2011,Moncada Costruzi…,Moncada Costruzi…,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $186.20m,* 41,New
+9,Nov 2011,New Hope Group (…,New Hope Group (…,China,South Africa,Food and Beverages,Animal food,Manufacturing,* $33.70m,* 106,New
+10,Nov 2011,OM Residual UK (…,Nedbank,United Kingdom,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+11,Nov 2011,Sonru,Sonru,Ireland,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+12,Nov 2011,Walmart,Massmart,United States,South Africa,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $19.90m,* 147,Expansion
+13,Nov 2011,Wasabi Energy,Wasabi Energy,Australia,South Africa,Renewable energy,Biomass power,Electricity,* $186.20m,* 41,New
+14,Nov 2011,Wipro,Wipro Technologies,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $131.00m,"1,000",New
+15,Oct 2011,Building Energy,Building Energy,Italy,South Africa,Renewable energy,Biomass power,Electricity,* $169.60m,* 21,New

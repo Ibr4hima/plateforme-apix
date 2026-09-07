@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2009,Benteler,Benteler Automoti…,Germany,South Africa,Automotive compon…,Motor vehicle body &…,Manufacturing,$25.00m,250,New
+2,Oct 2009,Deutsche Telekom,T-Systems,Germany,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+3,Oct 2009,ITC,ITC Infotech,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+4,Oct 2009,Lonmin,Lonmin,United Kingdom,South Africa,Metals,Other metal ore mini…,Headquarters,* $9.80m,* 37,New
+5,Oct 2009,Shrenuj,Shrenuj,India,South Africa,Consumer products,Jewellery & silverware,"Sales, Marketing & S…",* $4.40m,* 18,New
+6,Oct 2009,World Courier,World Courier,United States,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+7,Sep 2009,AD Software,AD Software,France,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+8,Sep 2009,Astrom Technical …,Astrom Technical …,Spain,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,New
+9,Sep 2009,Electrawinds,Electrawinds,Belgium,South Africa,Renewable energy,Wind electric power,Electricity,$159.00m,* 31,New
+10,Sep 2009,Globitel,Globitel,Jordan,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+11,Sep 2009,International Busi…,International Busi…,United States,South Africa,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+12,Sep 2009,JFC Manufacturing,JFC Manufacturing,Ireland,South Africa,Plastics,Laminated plastics pl…,Manufacturing,$2.92m,* 25,New
+13,Sep 2009,Mimecast,Mimecast,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+14,Sep 2009,Nestle,Nestle,Switzerland,South Africa,Food and Beverages,Coffee & tea,Manufacturing,$5.75m,* 6,Expansion
+15,Sep 2009,P21,P21,Germany,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New

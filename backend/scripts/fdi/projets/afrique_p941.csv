@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Strategic Natural …,Elitheni Coal,United Kingdom,South Africa,"Coal, oil & gas",Other petroleum & c…,Extraction,* $96.50m,* 214,New
+2,Jan 2009,Toshiba,Westinghouse Ele…,Japan,South Africa,"Coal, oil & gas",Nuclear electric pow…,"Sales, Marketing & S…",* $22.20m,* 54,New
+3,Jan 2009,Upthebeanstalk Ltd,Upthebeanstalk Ltd,United Kingdom,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 9,New
+4,Dec 2008,ArcelorMittal,ArcelorMittal Sout…,Luxembourg,South Africa,Metals,Steel products,Education & Training,$1.18m,* 4,New
+5,Dec 2008,Aylesford Internat…,Aylesford Internat…,United Kingdom,South Africa,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+6,Dec 2008,Clyde Blowers,Clyde Process Sol…,United Kingdom,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+7,Dec 2008,Hella KGaA Hueck…,Hella KGaA Hueck…,Germany,South Africa,Automotive compon…,Motor vehicle electri…,"Sales, Marketing & S…",* $2.30m,* 26,New
+8,Dec 2008,Infrax Systems (O…,Infrax Systems (O…,United States,South Africa,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 9,New
+9,Dec 2008,Kaspersky Lab,Kaspersky Lab,Russia,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+10,Dec 2008,Metocean Service…,Metocean Service…,Australia,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,Expansion
+11,Dec 2008,Networkers Intern…,Networkers Intern…,United Kingdom,South Africa,Business services,Employment services,Business Services,* $6.80m,* 15,New
+12,Dec 2008,Tega Industries,Tega Industries,India,South Africa,Industrial equipment,Metalworking machi…,Manufacturing,$10.24m,* 72,New
+13,Nov 2008,Aker Solutions (A…,Aker Solutions (A…,Norway,South Africa,"Coal, oil & gas",Support activities for…,Business Services,* $4.30m,* 45,New
+14,Nov 2008,Anglo American,Anglo Platinum,United Kingdom,South Africa,Metals,Other metal ore mini…,Extraction,* $319.90m,"* 1,012",New
+15,Nov 2008,Astellia,Astellia,France,South Africa,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 9,New

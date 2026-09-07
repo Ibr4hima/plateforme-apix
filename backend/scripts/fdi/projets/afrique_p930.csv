@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2010,Avis Budget Grou…,Avis Budget Grou…,United States,South Africa,Automotive OEM,Automobiles,Retail,* $12.70m,* 33,Expansion
+2,Mar 2010,Continental,Continental,Germany,South Africa,Rubber,Tyres,Manufacturing,$13.50m,* 32,Expansion
+3,Mar 2010,Gemu,Gemu Valves Africa,Germany,South Africa,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 17,Expansion
+4,Mar 2010,Inmarsat,Stratos Global,United Kingdom,South Africa,Communications,Wireless telecommu…,Headquarters,* $36.90m,* 80,Expansion
+5,Mar 2010,Linde,Linde Gas,Germany,South Africa,Chemicals,Basic chemicals,Research & Develop…,* $10.30m,* 35,Co-Location
+6,Mar 2010,M&C Saatchi,M&C Saatchi,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+7,Mar 2010,Mobile Interactive…,Mobile Interactive…,United Kingdom,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+8,Mar 2010,Tenesol,Tenesol,France,South Africa,Electronic components,All other electrical e…,Manufacturing,* $11.80m,* 136,Expansion
+9,Mar 2010,WE Communicatio…,WE Communicatio…,United States,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+10,Feb 2010,AfrAsia Bank,AfrAsia Bank,Mauritius,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+11,Feb 2010,AfrAsia Bank,AfrAsia Bank,Mauritius,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+12,Feb 2010,Arch Capital Group,Arch Insurance,Bermuda,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+13,Feb 2010,A-Tec Industries,Austrian Energy &…,Austria,South Africa,Renewable energy,Biomass power,"Sales, Marketing & S…",* $155.50m,* 22,New
+14,Feb 2010,Ecobank Transnati…,Ecobank Transnati…,Togo,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+15,Feb 2010,International Ferr…,International Ferr…,Australia,South Africa,"Coal, oil & gas",Other electric power …,Electricity,* $558.00m,* 116,New

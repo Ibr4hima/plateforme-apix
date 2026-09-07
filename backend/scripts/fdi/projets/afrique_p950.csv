@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2008,Paul Smith,Paul Smith,United Kingdom,South Africa,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+2,Jan 2008,Paul Smith,Paul Smith,United Kingdom,South Africa,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+3,Jan 2008,Radisson Hospitali…,Park Inn,Belgium,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+4,Jan 2008,SCOR,SCOR,France,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+5,Dec 2007,BHP Group,BHP Group,Australia,South Africa,"Coal, oil & gas",Coal mining,Extraction,* $96.50m,* 214,New
+6,Dec 2007,Institut Merieux,bioMerieux,France,South Africa,Biotechnology,In-Vitro diagnostic s…,"Sales, Marketing & S…",* $3.30m,* 18,New
+7,Dec 2007,MAN Trucks,MAN Truck & Bus …,Germany,South Africa,Automotive OEM,Heavy duty trucks,Retail,* $12.70m,* 33,New
+8,Dec 2007,TTEC (TeleTech),TTEC (TeleTech),United States,South Africa,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 350,Expansion
+9,Nov 2007,AAI Pharma,AAI Pharma,United States,South Africa,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,$4.30m,10,New
+10,Nov 2007,Bisichi Mining,Bisichi Mining,United Kingdom,South Africa,"Coal, oil & gas",Coal mining,Extraction,$36.50m,* 15,Expansion
+11,Nov 2007,KimCor Diamonds…,KimCor Diamonds…,United Kingdom,South Africa,Minerals,Other non-metallic …,Manufacturing,$12.30m,31,Expansion
+12,Nov 2007,Mindray Medical I…,Mindray Medical I…,China,South Africa,Medical devices,Medical equipment &…,"Sales, Marketing & S…",* $1.50m,* 15,New
+13,Nov 2007,Numara Software …,Numara Software …,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+14,Nov 2007,Platinum Australia,Platinum Australia,Australia,South Africa,Metals,Other metal ore mini…,Extraction,$40.00m,* 56,New
+15,Nov 2007,Tata Group,Tata Consultancy …,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New

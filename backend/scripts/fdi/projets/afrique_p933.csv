@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2009,Vodafone Group,Vodafone Global E…,United Kingdom,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,Nov 2009,Aquarius Platinum,Aquarius Platinum,Australia,South Africa,Metals,Other metal ore mini…,Extraction,$35.05m,* 49,Expansion
+3,Nov 2009,Europlus Direct,Europlus Direct,United Kingdom,South Africa,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+4,Nov 2009,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Wireless telecommu…,Research & Develop…,* $60.50m,* 123,New
+5,Nov 2009,Informa,Informa Telecoms …,United Kingdom,South Africa,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+6,Nov 2009,InterContinental H…,InterContinental H…,United Kingdom,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+7,Nov 2009,International Busi…,International Busi…,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 9,New
+8,Nov 2009,J&C Joel Limited,J&C Joel Limited,United Kingdom,South Africa,Textiles,Furniture & related p…,"Sales, Marketing & S…",* $1.70m,* 17,New
+9,Nov 2009,Kaspersky Lab,Kaspersky Lab,Russia,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $2.20m,10,New
+10,Nov 2009,Robert Bosch,Bosch Packaging T…,Germany,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+11,Nov 2009,TOA (TOA Electro…,TOA (TOA Electro…,Japan,South Africa,Electronic components,Audio & video equip…,"Sales, Marketing & S…",* $1.80m,* 13,New
+12,Nov 2009,TP (Teleperforman…,TP (Teleperforman…,France,South Africa,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 350,New
+13,Nov 2009,TP (Teleperforman…,TP (Teleperforman…,France,South Africa,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 350,New
+14,Nov 2009,Woolworths Group,Woolworths Group,Australia,South Africa,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+15,Oct 2009,Bayerische Motore…,Bayerische Motore…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$299.07m,750,Expansion

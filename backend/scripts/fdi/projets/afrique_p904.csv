@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2012,Building Energy,Building Energy,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+2,Jun 2012,Choppies,Choppies,Botswana,South Africa,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+3,Jun 2012,Credit Suisse Group,Credit Suisse Group,Switzerland,South Africa,Financial services,Corporate & investm…,Business Services,* $1.80m,6,Expansion
+4,Jun 2012,Jampp,Jampp,United Kingdom,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+5,Jun 2012,OM Residual UK (…,Nedbank,United Kingdom,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+6,Jun 2012,Rapidrop,Rapidrop,United Kingdom,South Africa,Industrial equipment,General purpose ma…,"Logistics, Distributio…",* $15.90m,* 50,New
+7,Jun 2012,ReadSoft,ReadSoft,Sweden,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+8,Jun 2012,Robert Bosch,Bosch Packaging T…,Germany,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+9,Jun 2012,SES,SES,Luxembourg,South Africa,Communications,Satellite telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Jun 2012,Stefanini IT Soluti…,Stefanini IT Soluti…,Brazil,South Africa,Software & IT services,Custom computer pr…,Business Services,* $0.80m,10,New
+11,Jun 2012,Tramigo,Tramigo,Finland,South Africa,Communications,Navigational instrum…,Technical Support Ce…,* $12.70m,* 141,New
+12,Jun 2012,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,Education & Training,* $11.10m,* 137,New
+13,May 2012,Agco,Agco,United States,South Africa,Industrial equipment,"Agriculture, construc…",Education & Training,* $6.40m,* 60,New
+14,May 2012,Agco,Agco,United States,South Africa,Industrial equipment,"Agriculture, construc…","Logistics, Distributio…",* $15.90m,* 50,New
+15,May 2012,Baker McKenzie (…,Baker McKenzie (…,United States,South Africa,Business services,Legal services,Business Services,* $6.80m,* 15,New

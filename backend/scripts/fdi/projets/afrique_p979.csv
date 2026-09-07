@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2021,LG Corp,LG Electronics,South Korea,Sudan,Consumer electronics,Other (Consumer ele…,Retail,* $9.20m,* 78,New
+2,Mar 2021,InCube,InCube,UAE,Sudan,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+3,Feb 2021,Move One,Move One,UAE,Sudan,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+4,Oct 2020,International Hold…,IHC Food,UAE,Sudan,Food and Beverages,Crop production,Manufacturing,$225.00m,"* 2,500",New
+5,May 2020,China Mobile Com…,China Mobile Inter…,China,Sudan,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+6,Nov 2019,Sabayik Company,Sabayik Company,Kuwait,Sudan,Metals,Other fabricated met…,"Sales, Marketing & S…",* $1.90m,* 8,New
+7,Jun 2019,Mahindra Group,Mahindra & Mahin…,India,Sudan,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+8,Sep 2018,Careem,Careem,UAE,Sudan,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $2.00m,10,New
+9,Mar 2018,The Association of…,The Association of…,Ghana,Sudan,Business services,Educational support …,Business Services,* $27.80m,* 38,New
+10,Feb 2018,LACASA Holding,LACASA Holding,UAE,Sudan,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+11,Nov 2016,United Trademark …,United Trademark …,UAE,Sudan,Business services,Legal services,Business Services,* $27.80m,* 38,New
+12,Feb 2016,Commercial Bank …,Commercial Bank …,Ethiopia,Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Nov 2015,Saudi Arabian Airli…,Saudi Arabian Airli…,Saudi Arabia,Sudan,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Oct 2015,Pharmaoverseas,Pharmaoverseas,Egypt,Sudan,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,Co-Location
+15,Oct 2015,Pharmaoverseas,Pharmaoverseas,Egypt,Sudan,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$500.00m,* 965,New

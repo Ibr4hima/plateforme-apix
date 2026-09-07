@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2008,Airbus Group (Eur…,Airbus Helicopters…,Netherlands,South Africa,Aerospace,Aircraft,Maintenance & Servi…,$0.24m,* 2,Expansion
+2,Sep 2008,Airbus Group (Eur…,Airbus Helicopters…,Netherlands,South Africa,Aerospace,Aircraft,Maintenance & Servi…,* $18.10m,* 142,Expansion
+3,Sep 2008,ArcelorMittal,ArcelorMittal,Luxembourg,South Africa,Metals,Other metal ore mini…,Extraction,$432.50m,* 608,New
+4,Sep 2008,Cisco Systems,Cisco Systems,United States,South Africa,Software & IT services,"Software publishers,…",Education & Training,$27.00m,200,New
+5,Sep 2008,Ericsson,Ericsson,Sweden,South Africa,Communications,Communications equ…,Research & Develop…,* $60.50m,* 123,New
+6,Sep 2008,Evonik Industries,Evonik Industries,Germany,South Africa,Chemicals,Basic chemicals,Manufacturing,$3.88m,* 5,Expansion
+7,Sep 2008,ExecuJet,ExecuJet,Switzerland,South Africa,Aerospace,Aircraft,Maintenance & Servi…,* $18.10m,* 142,Expansion
+8,Sep 2008,General Motors (G…,General Motors So…,United States,South Africa,Automotive OEM,Automobiles,"Logistics, Distributio…",$18.55m,* 111,New
+9,Sep 2008,SEKO Worldwide,SEKO Worldwide,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+10,Sep 2008,SEKO Worldwide,SEKO Worldwide,United States,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+11,Sep 2008,SEKO Worldwide,SEKO Worldwide,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+12,Sep 2008,SKF,SKF,Sweden,South Africa,Metals,"Machine shops, turn…",Maintenance & Servi…,* $20.20m,* 34,Co-Location
+13,Sep 2008,VF Corporation,Eastpak,United States,South Africa,Textiles,Apparel accessories …,Retail,* $11.90m,* 86,New
+14,Sep 2008,Walvis Bay Corrid…,Walvis Bay Corrid…,Namibia,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+15,Sep 2008,Willis Towers Wats…,Willis Towers Wats…,United Kingdom,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New

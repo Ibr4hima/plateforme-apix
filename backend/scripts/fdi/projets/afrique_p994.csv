@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2019,Gravita Group,Gravita Tanzania,India,Tanzania,Metals,Alumina & aluminiu…,Recycling,$0.87m,* 1,Expansion
+2,Jul 2019,Smubu,Smubu,Kenya,Tanzania,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+3,Jun 2019,Barclays Bank,Barclays Bank Tan…,United Kingdom,Tanzania,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Jun 2019,Marriott Internatio…,Four Points by Sh…,United States,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+5,Jun 2019,The House of S T …,Bhatia Traders,UAE,Tanzania,Consumer products,All other general me…,Retail,* $10.90m,* 170,New
+6,May 2019,Dutco Group of Co…,JA Resorts & Hotels,UAE,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+7,May 2019,Dutco Group of Co…,JA Resorts & Hotels,UAE,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+8,May 2019,Grand Capital,Grand Capital,Russia,Tanzania,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+9,May 2019,Onomo Hotels,Onomo Hotels,Morocco,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+10,Apr 2019,Grand Capital,Grand Capital,Russia,Tanzania,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Apr 2019,Gravita Group,Gravita Tanzania,India,Tanzania,Metals,Alumina & aluminiu…,Recycling,$0.13m,* -,New
+12,Apr 2019,NMB Bank,NMB Bank,Zimbabwe,Tanzania,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Mar 2019,Diamond Trust Ba…,Diamond Trust Ba…,Kenya,Tanzania,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Mar 2019,Radian Q Bio,Radian Q Bio,South Korea,Tanzania,Medical devices,Electromedical and E…,Manufacturing,* $30.00m,* 145,New
+15,Mar 2019,Rotana Hotels,Rotana Hotels,UAE,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New

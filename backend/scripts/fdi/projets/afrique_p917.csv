@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2011,Goldwind,Goldwind,China,South Africa,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $7.90m,* 13,New
+2,Jul 2011,Great Western Mi…,Great Western Mi…,Canada,South Africa,Minerals,Other non-metallic …,Manufacturing,* $26.40m,* 191,New
+3,Jul 2011,Hankook & Compa…,Hankook & Compa…,South Korea,South Africa,Rubber,Tyres,Manufacturing,* $43.20m,* 217,New
+4,Jul 2011,Larsen & Toubro (…,Larsen & Toubro (…,India,South Africa,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 17,New
+5,Jul 2011,Lonrho,Oceanfresh Seafo…,United Kingdom,South Africa,Food and Beverages,Seafood products,Manufacturing,* $33.70m,* 106,New
+6,Jul 2011,Noble Group Limit…,Noble Resources …,Hong Kong,South Africa,Food and Beverages,Grains & oilseed,Manufacturing,* $22.90m,150,New
+7,Jul 2011,Toshiba,Toshiba,Japan,South Africa,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.20m,15,Expansion
+8,Jul 2011,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+9,Jul 2011,Zagranstroy,Zagranstroy,Russia,South Africa,Business services,"Architectural, engine…",Business Services,$5.02m,50,New
+10,Jun 2011,boxPAY,boxPAY,Ireland,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+11,Jun 2011,Brightpoint,Brightpoint Africa,United States,South Africa,Communications,Wireless telecommu…,"Logistics, Distributio…",* $55.40m,* 151,Expansion
+12,Jun 2011,China Motor Corp…,China Motor Corp…,Taiwan,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,$1.00bn,"2,500",New
+13,Jun 2011,Cummins,Cummins,United States,South Africa,Automotive compon…,Motor vehicle gasolin…,Headquarters,* $19.70m,* 129,New
+14,Jun 2011,NetApp (Network …,NetApp (Network …,United States,South Africa,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+15,Jun 2011,Orange (France Te…,Orange Business …,France,South Africa,Software & IT services,Custom computer pr…,ICT & Internet Infras…,* $146.30m,* 85,New

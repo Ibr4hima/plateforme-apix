@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2006,Petronas,Petronas,Malaysia,South Sudan,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+2,Apr 2005,CMC Motors Group,CMC Motors Group,Kenya,South Sudan,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+3,Feb 2005,Kenya Commercia…,Kenya Commercia…,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Apr 2004,Delta Industries (I…,Delta Industries (I…,Egypt,South Sudan,Consumer electronics,Household appliances,Manufacturing,* $27.20m,* 641,New
+5,Feb 2004,TotalEnergies (Tot…,TotalEnergies (Tot…,France,South Sudan,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+6,Sep 2003,Petronas,Petronas Carigali …,Malaysia,South Sudan,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+7,Jul 2003,Emirates Bio Fertil…,Emirates Bio Fertil…,UAE,South Sudan,Chemicals,"Pesticide, fertilisers …",Manufacturing,* $162.20m,* 149,New
+8,Jun 2026,Wildcat Gold,Wildcat Gold,United Kingdom,Sudan,Metals,Gold ore & silver ore…,"Sales, Marketing & S…",* $1.90m,* 8,New
+9,Mar 2026,TigerX,TigerX,Poland,Sudan,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+10,Oct 2025,Eco Buildings Group,Eco Buildings Group,United Kingdom,Sudan,Real estate,Residential building …,Manufacturing,$5.40m,* 41,New
+11,Sep 2025,Seacom,Seacom,Mauritius,Sudan,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Oct 2022,Public Investment…,Public Investment…,Saudi Arabia,Sudan,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+13,Jun 2022,Abu Dhabi Ports,Abu Dhabi Ports,UAE,Sudan,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New
+14,Sep 2021,International Hold…,Emirates Stallions…,UAE,Sudan,Real estate,Residential building …,Construction,$65.30m,* 98,New
+15,Aug 2021,Visa International,Visa International,United States,Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

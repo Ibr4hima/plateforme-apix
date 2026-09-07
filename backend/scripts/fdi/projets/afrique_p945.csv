@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2008,ABB (Asea Brown …,ABB South Africa …,Switzerland,South Africa,Industrial equipment,Mechanical power tr…,Manufacturing,$51.18m,* 358,New
+2,Aug 2008,Anglo American,Anglo American,United Kingdom,South Africa,Metals,Iron ore mining,Extraction,* $319.90m,"* 1,012",Expansion
+3,Aug 2008,Braemore Resourc…,Braemore Resourc…,United Kingdom,South Africa,Metals,"Coating, engraving, …",Manufacturing,$4.23m,* 53,Expansion
+4,Aug 2008,Chevron,Chevron,United States,South Africa,Business services,"Water, sewage & oth…",Recycling,$13.79m,* 13,Co-Location
+5,Aug 2008,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Communications equ…,Education & Training,* $7.00m,* 94,New
+6,Aug 2008,International Busi…,International Busi…,United States,South Africa,Software & IT services,Custom computer pr…,ICT & Internet Infras…,* $146.30m,* 85,New
+7,Aug 2008,International Fina…,IFA Hotels & Reso…,Kuwait,South Africa,Hotels & tourism,Accommodation,Construction,$223.00m,* 569,New
+8,Aug 2008,Navistar Internati…,Navistar Internati…,United States,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,$40.00m,* 215,New
+9,Aug 2008,Wabtec Corporation,Wabtec Corporation,United States,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $16.10m,* 112,New
+10,Aug 2008,Wabtec Corporation,Wabtec Corporation,United States,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $16.10m,* 112,New
+11,Jul 2008,ArcelorMittal,ArcelorMittal Sout…,Luxembourg,South Africa,Metals,Iron & steel mills & f…,Manufacturing,$39.05m,* 487,Expansion
+12,Jul 2008,Bonaparte Diamo…,Bonaparte Diamo…,Australia,South Africa,Metals,Gold ore & silver ore…,Extraction,* $319.90m,"* 1,012",New
+13,Jul 2008,Enertis Solar,Enertis Solar,Spain,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+14,Jul 2008,Lafarge,Lafarge,France,South Africa,"Coal, oil & gas",Other electric power …,Electricity,$5.50m,* 1,New
+15,Jul 2008,Microsoft,Microsoft South Af…,United States,South Africa,Software & IT services,"Video games, applic…",Research & Develop…,* $15.30m,* 162,New

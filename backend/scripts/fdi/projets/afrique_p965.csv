@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2005,Toyota Motor,Toyota South Africa,Japan,South Africa,Automotive OEM,Automobiles,Manufacturing,$0.20m,* 1,New
+2,Jan 2005,Volkswagen,Volkswagen South…,Germany,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,$48.00m,400,New
+3,Dec 2004,European Investm…,European Investm…,Luxembourg,South Africa,Financial services,Corporate & investm…,Headquarters,* $45.10m,* 91,New
+4,Dec 2004,Metocean Service…,Metocean Service…,Australia,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,Expansion
+5,Dec 2004,Safety Componen…,Safety Componen…,United States,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $16.10m,* 112,New
+6,Dec 2004,Teledata Informati…,Teledata Informati…,India,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $2.00m,9,New
+7,Nov 2004,Candico,Candico,Belgium,South Africa,Food and Beverages,Sugar & confectionar…,Manufacturing,$5.00m,* 33,New
+8,Oct 2004,Anglo American,Anglo Coal,United Kingdom,South Africa,"Coal, oil & gas",Coal mining,Extraction,$241.00m,* 100,Expansion
+9,Oct 2004,Boeing,Boeing-Denel,United States,South Africa,Aerospace,"Aircraft engines, oth…",Manufacturing,* $19.80m,* 349,New
+10,Oct 2004,ICICI Bank,ICICI Bank,India,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+11,Oct 2004,Logitech,Logitech,Switzerland,South Africa,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+12,Oct 2004,LVMH Group,Louis Vuitton,France,South Africa,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+13,Oct 2004,Tawana Resources,Tawana Resources,Australia,South Africa,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,New
+14,Sep 2004,Alltech,Alltech,United States,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,$5.00m,* 6,New
+15,Sep 2004,Cimpor,Cimpor,Portugal,South Africa,Building materials,Cement & concrete p…,Manufacturing,$123.00m,* 235,Expansion

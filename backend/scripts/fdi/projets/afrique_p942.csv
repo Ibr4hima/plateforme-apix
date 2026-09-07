@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2008,Ceragon Networks…,Ceragon Networks…,Israel,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+2,Nov 2008,First Uranium Cor…,First Uranium Cor…,Canada,South Africa,Metals,Nonferrous metal pr…,Extraction,* $319.90m,"* 1,012",New
+3,Nov 2008,Gemu,Gemu,Germany,South Africa,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 17,New
+4,Nov 2008,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,South Africa,Metals,Nonferrous metal pr…,Extraction,* $319.90m,"* 1,012",New
+5,Nov 2008,Lonrho,e-Kwikbuild,United Kingdom,South Africa,Building materials,Other (Building mate…,Manufacturing,* $158.60m,* 496,New
+6,Nov 2008,OnePath Networks,Foxcom,United States,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+7,Nov 2008,Open-Tec Ltd,Open-Tec Ltd,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+8,Nov 2008,Pedersen & Partne…,Pedersen & Partne…,Czech Republic,South Africa,Business services,Employment services,Business Services,* $6.80m,* 15,New
+9,Nov 2008,Radisson Hospitali…,Radisson Hospitali…,Belgium,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,Nov 2008,Rio Tinto Group,Palabora,United Kingdom,South Africa,Metals,"Copper, nickel, lead, …",Extraction,* $319.90m,"* 1,012",Expansion
+11,Nov 2008,Synexus Clinical R…,Synexus Clinical R…,United Kingdom,South Africa,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $35.30m,* 73,New
+12,Nov 2008,Synexus Clinical R…,Synexus Clinical R…,United Kingdom,South Africa,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $34.60m,* 80,Expansion
+13,Nov 2008,Synexus Clinical R…,Synexus Clinical R…,United Kingdom,South Africa,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $34.60m,* 80,New
+14,Nov 2008,Volkswagen,Volkswagen South…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$62.10m,* 333,Expansion
+15,Oct 2008,ASG Technologies,ASG Software Sol…,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New

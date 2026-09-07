@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2010,Shantui Constructi…,Shantui Constructi…,China,South Africa,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+2,Apr 2010,African Medical In…,VIP Healthcare So…,United Kingdom,South Africa,Healthcare,Outpatient care cent…,Construction,* $49.40m,* 209,New
+3,Apr 2010,Ford Motor Compa…,Ford South Africa,United States,South Africa,Automotive compon…,Motor vehicle gasolin…,Manufacturing,* $16.10m,* 112,Expansion
+4,Apr 2010,Ford Motor Compa…,Ford South Africa,United States,South Africa,Automotive OEM,Light trucks & utility …,Manufacturing,* $116.30m,* 844,Expansion
+5,Apr 2010,Lapp Group,Lapp Group,Germany,South Africa,Electronic components,Communication & en…,"Sales, Marketing & S…",* $1.80m,* 13,New
+6,Apr 2010,Ludus Tours,Ludus Tours,United States,South Africa,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+7,Apr 2010,Peacock Travels a…,Peacock Travels a…,Nigeria,South Africa,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+8,Apr 2010,RedPrairie,RedPrairie,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+9,Apr 2010,Sharp,Sharp,Japan,South Africa,Consumer electronics,Other (Consumer ele…,"Sales, Marketing & S…",* $3.90m,* 20,New
+10,Apr 2010,Sonangol Group,Banco Africano de…,Angola,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+11,Apr 2010,Unboxed Consulting,Unboxed Consulting,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Research & Develop…,* $1.30m,8,New
+12,Apr 2010,Wolverine World …,Hush Puppies,United States,South Africa,Textiles,Footwear,Retail,* $11.90m,* 86,New
+13,Mar 2010,60 Layers of Cake,60 Layers of Cake,Netherlands,South Africa,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.80m,* 9,New
+14,Mar 2010,Apollo Tyres,Apollo Tyres,India,South Africa,Rubber,Tyres,Manufacturing,* $43.20m,* 217,Expansion
+15,Mar 2010,Apollo Tyres,Apollo Tyres,India,South Africa,Rubber,Tyres,Manufacturing,$35.00m,* 224,Expansion

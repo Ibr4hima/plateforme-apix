@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2005,Liberty Mutual Hol…,Liberty Properties,United States,South Africa,Real estate,Real estate services,Construction,$18.30m,* 131,Expansion
+2,Sep 2005,Omnicom Group,Sellbytel,United States,South Africa,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 350,New
+3,Sep 2005,Piaggio Group,Piaggio Group,Italy,South Africa,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,$78.00m,800,New
+4,Aug 2005,Toyota Motor,Toyoda Gosei,Japan,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $0.90m,13,New
+5,Jul 2005,Amazon.com,Amazon.com,United States,South Africa,Software & IT services,Other (Software & IT…,Research & Develop…,* $15.30m,* 162,New
+6,Jul 2005,Anglo American,Anglo Coal,United Kingdom,South Africa,"Coal, oil & gas",Other petroleum & c…,Extraction,$65.00m,* 27,New
+7,Jul 2005,Exel,Exel,United Kingdom,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+8,Jul 2005,Lafarge,Lafarge,France,South Africa,Building materials,"Asphalt paving, roofi…",Manufacturing,* $159.80m,* 342,New
+9,Jul 2005,SAP,SAP,Germany,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $2.70m,10,New
+10,Jun 2005,Boxtonic,Boxtonic,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+11,Jun 2005,Etruscan Resources,Etruscan Resources,Canada,South Africa,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+12,Jun 2005,Mittal Steel,Mittal Steel South…,Netherlands,South Africa,Metals,Iron & steel mills & f…,Manufacturing,$30.00m,* 374,New
+13,Jun 2005,Toyota Motor,Toyota Boshoku,Japan,South Africa,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $16.10m,* 112,New
+14,Jun 2005,TPA Global,Transfer Pricing As…,Netherlands,South Africa,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+15,Jun 2005,Volvo,Volvo South Africa,Sweden,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,$6.90m,82,New

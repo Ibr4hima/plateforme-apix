@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2003,GAC Group,GAC Logistics,UAE,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+2,Jun 2003,Great Basin Gold,Great Basin Gold,Canada,South Africa,Metals,Gold ore & silver ore…,Extraction,$3.00m,* 4,Expansion
+3,Jun 2003,KAP AG,Da Gama Textiles,Germany,South Africa,Textiles,Textile product mills,Manufacturing,$13.00m,* 231,New
+4,Jun 2003,KAP AG,Da Gama Textiles,Germany,South Africa,Textiles,Textile product mills,Manufacturing,$16.00m,* 284,Expansion
+5,Jun 2003,Monroe Minerals,Monroe Minerals,Canada,South Africa,Minerals,Other non-metallic …,Extraction,* $55.60m,* 383,Expansion
+6,Jun 2003,Ridge Mining,Ridge Mining,United Kingdom,South Africa,Metals,Other metal ore mini…,Extraction,* $319.90m,"* 1,012",Expansion
+7,Jun 2003,Scania,Scania,Sweden,South Africa,Automotive OEM,Heavy duty trucks,Maintenance & Servi…,* $6.10m,* 27,New
+8,Jun 2003,Spirax Sarco Engi…,Watson-Marlow Fl…,United Kingdom,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+9,May 2003,Anglo American,Anglo American,United Kingdom,South Africa,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,Expansion
+10,May 2003,Anglo American,Mondi Group,United Kingdom,South Africa,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$220.00m,"* 1,121",Expansion
+11,May 2003,Etruscan Resources,Etruscan Resources,Canada,South Africa,Minerals,Other non-metallic …,Extraction,$1.00m,* 1,Expansion
+12,May 2003,Standard Chartere…,Standard Chartere…,United Kingdom,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+13,Apr 2003,Computer Science…,Computer Science…,United States,South Africa,Software & IT services,Custom computer pr…,Shared Services Cen…,$68.00m,"1,000",New
+14,Apr 2003,Globeleq Generati…,Globeleq Generati…,United Kingdom,South Africa,"Coal, oil & gas",Fossil fuel electric po…,"Sales, Marketing & S…",* $7.80m,* 30,New
+15,Apr 2003,GRD Group,GRD Minproc,Australia,South Africa,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New

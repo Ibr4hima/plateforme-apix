@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2022,Jubilee Holdings,Jubilee Holdings,Kenya,Tanzania,Financial services,Insurance,Headquarters,$4.00m,* 23,Expansion
+2,Apr 2022,Millicom Internati…,Tigo Tanzania,Luxembourg,Tanzania,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+3,Mar 2022,Flutterwave,Flutterwave,United States,Tanzania,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+4,Mar 2022,Raxio Group,Raxio Group,United States,Tanzania,Communications,Computing infrastruc…,ICT & Internet Infras…,* $69.70m,* 100,New
+5,Mar 2022,Sinotruk (China N…,Sinotruk (China N…,China,Tanzania,Automotive compon…,Other motor vehicle …,Manufacturing,$20.00m,500,New
+6,Feb 2022,Djibouti Data Cent…,Wingu.africa,Djibouti,Tanzania,Communications,Computing infrastruc…,ICT & Internet Infras…,* $69.70m,* 100,New
+7,Feb 2022,Sika,Sika,Switzerland,Tanzania,Building materials,Cement & concrete p…,Manufacturing,* $128.00m,* 496,Expansion
+8,Jan 2022,Basra Textiles,Basra Textiles,Kenya,Tanzania,Textiles,Textile product mills,Manufacturing,$51.30m,"1,600",New
+9,Jan 2022,Kuehne + Nagel I…,Kuehne + Nagel I…,Switzerland,Tanzania,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Dec 2021,Elsewedy Electric …,Elsewedy Electric …,Egypt,Tanzania,Electronic components,Communication & en…,Manufacturing,$50.00m,500,New
+11,Dec 2021,Standard Chartere…,Standard Chartere…,United Kingdom,Tanzania,Financial services,Retail banking,Business Services,* $15.20m,50,New
+12,Dec 2021,The Emirates Group,Dnata,UAE,Tanzania,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",$7.00m,400,New
+13,Nov 2021,Laterite,Laterite,Rwanda,Tanzania,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+14,Nov 2021,Sika,Sika Tanzania,Switzerland,Tanzania,Building materials,Cement & concrete p…,Manufacturing,$3.50m,* 9,New
+15,Nov 2021,SMH Rail,SMH Rail,Malaysia,Tanzania,Non-automotive tran…,Railroad rolling stock,Manufacturing,$70.00m,* 487,New

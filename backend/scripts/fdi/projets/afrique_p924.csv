@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2010,Mercedes-Benz Gr…,Mercedes-Benz So…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$302.00m,"* 1,419",Expansion
+2,Dec 2010,Norconsult AS,Norconsult AS,Norway,South Africa,Business services,"Architectural, engine…",Business Services,* $0.90m,5,New
+3,Dec 2010,OLIVER,OLIVER,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+4,Dec 2010,Outpost24,Outpost24,Sweden,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+5,Dec 2010,Pantos Logistics,Pantos Logistics,South Korea,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+6,Dec 2010,Sarens,Sarens South Africa,Belgium,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+7,Dec 2010,White Digital Media,White Digital Media,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $4.40m,20,New
+8,Nov 2010,Delton,Logwin AG (Thiel …,Germany,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $197.10m,* 122,New
+9,Nov 2010,GE Aerospace (Ge…,GE Capital Aviatio…,United States,South Africa,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+10,Nov 2010,IC Group,Tiger of Sweden,Denmark,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Nov 2010,ORBCOMM,ORBCOMM,United States,South Africa,Communications,Satellite telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+12,Nov 2010,Procter & Gamble …,Procter & Gamble …,United States,South Africa,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$50.68m,* 255,Expansion
+13,Nov 2010,Radisson Hospitali…,Park Inn,Belgium,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+14,Nov 2010,Radisson Hospitali…,Radisson Blu (Rad…,Belgium,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+15,Oct 2010,BP (British Petrole…,BP (British Petrole…,United Kingdom,South Africa,"Coal, oil & gas",Other petroleum & c…,Research & Develop…,$5.81m,* 9,New

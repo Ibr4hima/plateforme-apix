@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2004,Forsyth Partners,Forsyth Partners,United Kingdom,South Africa,Financial services,Investment manage…,Business Services,* $11.00m,* 21,New
+2,Sep 2004,Mahindra Group,Mahindra & Mahin…,India,South Africa,Automotive OEM,Light trucks & utility …,"Sales, Marketing & S…",* $10.10m,* 38,New
+3,Aug 2004,C & C Technologies,C & C Technologies,United States,South Africa,"Coal, oil & gas",Support activities for…,"Sales, Marketing & S…",* $22.20m,* 54,New
+4,Aug 2004,Firestone Diamonds,Firestone Diamonds,United Kingdom,South Africa,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+5,Aug 2004,INTTRA,INTTRA,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+6,Aug 2004,Platinum Group M…,Platinum Group M…,Canada,South Africa,Metals,Gold ore & silver ore…,Extraction,* $319.90m,"* 1,012",Expansion
+7,Aug 2004,Renova,Renova,Russia,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+8,Aug 2004,Usha Martin,Usha Comm,India,South Africa,Software & IT services,Computer systems d…,Research & Develop…,* $15.30m,* 162,New
+9,Jul 2004,BGL Group,Fusion Outsourcing,United Kingdom,South Africa,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 408,New
+10,Jul 2004,DaimlerChrysler,DaimlerChrysler,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,* $116.30m,* 844,Expansion
+11,Jul 2004,General Motors (G…,General Motors (G…,United States,South Africa,Automotive OEM,Light trucks & utility …,Manufacturing,$81.00m,* 435,New
+12,Jul 2004,Jinchuan Group,Jinchuan Group,China,South Africa,Metals,"Copper, nickel, lead, …","Sales, Marketing & S…",* $2.80m,* 9,New
+13,Jul 2004,Tribal Group,Nightingale Associ…,United Kingdom,South Africa,Business services,"Architectural, engine…",Business Services,* $6.80m,* 15,New
+14,Jul 2004,Volkswagen,Volkswagen,Germany,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,* $116.30m,* 844,New
+15,May 2004,Fujitsu,Fujitsu Services,Japan,South Africa,Software & IT services,Custom computer pr…,Technical Support Ce…,$9.00m,30,New

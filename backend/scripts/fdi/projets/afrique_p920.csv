@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,AfrAsia Bank,AfrAsia Bank,Mauritius,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+2,Mar 2011,Aggreko,Aggreko,United Kingdom,South Africa,Industrial equipment,"Ventilation, heating,…","Sales, Marketing & S…",* $2.90m,* 17,New
+3,Mar 2011,ASK,ASK,France,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $2.90m,* 11,New
+4,Mar 2011,BNP Paribas,BNP Paribas,France,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,Expansion
+5,Mar 2011,BP (British Petrole…,BP (British Petrole…,United Kingdom,South Africa,"Coal, oil & gas",Oil & gas extraction,"Logistics, Distributio…",$200.00m,* 70,New
+6,Mar 2011,BP (British Petrole…,BP (British Petrole…,United Kingdom,South Africa,"Coal, oil & gas",Other petroleum & c…,"Logistics, Distributio…",$20.30m,* 7,Expansion
+7,Mar 2011,Carlyle Group,Carlyle Group,United States,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+8,Mar 2011,Deffinity MSA,Deffinity MSA,United Kingdom,South Africa,Software & IT services,"Software publishers,…",Headquarters,* $16.00m,* 61,New
+9,Mar 2011,Electricite de Fran…,Electricite de Fran…,France,South Africa,Renewable energy,Geothermal electric …,Education & Training,* $7.00m,* 94,New
+10,Mar 2011,Elixirr (Elix-IRR),Elixirr (Elix-IRR),United Kingdom,South Africa,Business services,Management consult…,Business Services,* $27.80m,* 17,New
+11,Mar 2011,Global Edge Cons…,Global Edge Cons…,United States,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+12,Mar 2011,Infobip,Infobip,United Kingdom,South Africa,Communications,Wireless telecommu…,Headquarters,* $36.10m,* 95,New
+13,Mar 2011,Nissan,Nissan South Africa,Japan,South Africa,Automotive OEM,Automobiles,Manufacturing,* $116.30m,* 844,Expansion
+14,Mar 2011,Samsung Group,Samsung Group,South Korea,South Africa,Electronic components,All other electrical e…,Education & Training,* $7.20m,* 47,New
+15,Mar 2011,SMS Streamer,SMS Streamer,United States,South Africa,Software & IT services,Internet publishing …,Headquarters,* $16.00m,* 61,New

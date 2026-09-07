@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2003,Medco Energi Inte…,Medco Energi Inte…,Indonesia,Sudan,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+2,Sep 2003,Petronas,Petronas,Malaysia,Sudan,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,335,New
+3,Aug 2003,RAK Ceramics,RAK Ceramics,UAE,Sudan,Ceramics & glass,Clay product & refra…,Manufacturing,$15.00m,40,New
+4,May 2003,Arab Poultry Bree…,Arab Poultry Bree…,Saudi Arabia,Sudan,Food and Beverages,Animal production & …,Manufacturing,* $58.40m,* 429,New
+5,Mar 2003,Byblos Bank,Byblos Bank,Lebanon,Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Jan 2003,Savola,Savola,Saudi Arabia,Sudan,Food and Beverages,Grains & oilseed,Manufacturing,$5.00m,* 33,New
+7,Jul 2026,Xinhai Mining (Sh…,Xinhai Mining (Sh…,China,Tanzania,Minerals,Support Activities fo…,"Sales, Marketing & S…",* $1.30m,* 7,New
+8,Jun 2026,Kenya Reinsuranc…,Kenya Reinsuranc…,Kenya,Tanzania,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+9,Jun 2026,Mansour,Al-Mansour Autom…,Egypt,Tanzania,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+10,Jun 2026,Mansour,Al-Mansour Autom…,Egypt,Tanzania,Automotive OEM,Heavy duty trucks,Maintenance & Servi…,* $1.70m,* 61,New
+11,Apr 2026,Dangote Group,Dangote Group,Nigeria,Tanzania,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.41bn,* 213,New
+12,Mar 2026,Dangote Group,Dangote Cement,Nigeria,Tanzania,Building materials,Cement & concrete p…,Manufacturing,* $165.20m,* 496,Expansion
+13,Mar 2026,Trafigura Beheer,Puma Energy Inte…,Netherlands,Tanzania,"Coal, oil & gas",Gasoline stations,Retail,* $29.00m,* 164,New
+14,Feb 2026,Sika,Sika,Switzerland,Tanzania,Building materials,Cement & concrete p…,Manufacturing,* $128.00m,* 496,New
+15,Jan 2026,Vodafone Group,Vodacom Tanzania,United Kingdom,Tanzania,Communications,Communications equ…,Retail,* $6.30m,* 31,Expansion

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2011,SABMiller,Southern Sudan B…,United Kingdom,South Sudan,Food and Beverages,Breweries,Manufacturing,$15.00m,* 56,Expansion
+2,Jan 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Jan 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Jan 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jan 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Jan 2011,Equity Bank,Equity Bank,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jan 2011,Kenya Commercia…,Kenya Commercia…,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Nov 2010,The Cooperative B…,The Cooperative B…,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Sep 2010,Kenya Commercia…,KCB South Sudan,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Sep 2010,Kenya Commercia…,KCB South Sudan,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Aug 2010,Diageo,East African Brew…,United Kingdom,South Sudan,Food and Beverages,Breweries,Manufacturing,* $34.10m,* 222,New
+12,Aug 2010,SABMiller,SABMiller,United Kingdom,South Sudan,Food and Beverages,Breweries,Manufacturing,* $34.10m,* 222,Expansion
+13,May 2010,Abu Dhabi Water …,TAQA Arabia,UAE,South Sudan,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$70.00m,* 7,New
+14,Sep 2009,Ethiopian Insuran…,Ethiopian Insuran…,Ethiopia,South Sudan,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+15,Apr 2009,Kenya Commercia…,Kenya Commercia…,Kenya,South Sudan,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

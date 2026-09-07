@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2006,Bank of India (BOI),Bank of India (BOI),India,South Africa,Financial services,Retail banking,Business Services,* $11.00m,* 21,New
+2,May 2006,Indian Oil Corpora…,Indian Oil Corpora…,India,South Africa,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New
+3,May 2006,PAS,PAS,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+4,May 2006,Procter & Gamble …,Procter & Gamble …,United States,South Africa,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $4.40m,* 18,New
+5,May 2006,Qualcomm,Qualcomm,United States,South Africa,Communications,Wireless telecommu…,Technical Support Ce…,* $9.70m,* 151,New
+6,May 2006,ThyssenKrupp,Uhde,Germany,South Africa,Renewable energy,Biomass power,Manufacturing,$93.74m,* 57,New
+7,May 2006,WH Intermediate …,Herbalife,Cayman Islands,South Africa,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $4.40m,* 18,New
+8,Apr 2006,Eastman Kodak,Eastman Kodak,United States,South Africa,Business machines &…,Computer & peripher…,Maintenance & Servi…,* $2.50m,* 64,New
+9,Apr 2006,Embrapa,Embrapa,Brazil,South Africa,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $6.20m,* 14,New
+10,Apr 2006,Macquarie Group,Macquarie Bank,Australia,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+11,Apr 2006,Panda Security (P…,Panda Security (P…,Spain,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+12,Apr 2006,Tata Group,Indian Hotels (IH…,India,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+13,Apr 2006,Tata Group,Indian Hotels (IH…,India,South Africa,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+14,Apr 2006,Tata Group,Indian Hotels (IH…,India,South Africa,Hotels & tourism,Accommodation,Construction,* $109.70m,280,New
+15,Mar 2006,Anglo American,Anglo American,United Kingdom,South Africa,Metals,Nonferrous metal pr…,Extraction,$1.00bn,"* 1,492",Expansion

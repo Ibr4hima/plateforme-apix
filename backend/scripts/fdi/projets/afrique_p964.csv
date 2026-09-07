@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2005,ADI International,ADI International,United States,South Africa,Consumer electronics,Audio & video equip…,"Sales, Marketing & S…",* $3.90m,* 20,New
+2,May 2005,Farsands Solutions,Farsands Solutions,Australia,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+3,Apr 2005,General Motors (G…,General Motors So…,United States,South Africa,Automotive OEM,Automobiles,Manufacturing,$100.00m,450,Expansion
+4,Apr 2005,Thule,Thule,Sweden,South Africa,Automotive compon…,Motor vehicle body &…,Retail,* $14.50m,* 91,New
+5,Apr 2005,UTair Aviation,UTair South Africa,Russia,South Africa,Aerospace,Aircraft,"Sales, Marketing & S…",* $7.90m,* 14,New
+6,Apr 2005,Volkswagen,Volkswagen South…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$118.00m,* 633,New
+7,Mar 2005,Environmental Re…,Environmental Re…,United Kingdom,South Africa,Business services,Environmental consu…,Business Services,* $27.80m,* 17,New
+8,Mar 2005,International Busi…,International Busi…,United States,South Africa,Software & IT services,Custom computer pr…,Research & Develop…,* $15.30m,* 162,New
+9,Mar 2005,Mandorin Goldfields,Mandorin Goldfields,Australia,South Africa,Metals,Gold ore & silver ore…,Extraction,* $319.90m,"* 1,012",New
+10,Feb 2005,AP Moller - Maersk,Martinair Cargo,Denmark,South Africa,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+11,Feb 2005,Juniper Networks,Juniper Networks …,United States,South Africa,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 9,New
+12,Jan 2005,Allied Mineral Prod…,Allied Mineral Prod…,United States,South Africa,Metals,Other (Metals),Manufacturing,* $76.80m,* 223,Expansion
+13,Jan 2005,Computer Aid Inte…,Computer Aid Sou…,United Kingdom,South Africa,Business machines &…,Computer & peripher…,Education & Training,* $7.00m,* 94,New
+14,Jan 2005,Groupe Banque Po…,Coface,France,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+15,Jan 2005,Kendle Internatio…,Kendle Internatio…,United States,South Africa,Pharmaceuticals,Pharmaceutical prep…,Research & Develop…,* $34.60m,* 80,New

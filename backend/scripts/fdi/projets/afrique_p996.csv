@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2018,Hester Biosciences,Hester Biosciences,India,Tanzania,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$18.00m,* 116,New
+2,Mar 2018,Anheuser-Busch I…,Tanzania Brewerie…,Belgium,Tanzania,Food and Beverages,Breweries,Manufacturing,$100.00m,* 428,New
+3,Mar 2018,Carrick Wealth,Carrick Wealth,South Africa,Tanzania,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+4,Feb 2018,Seedstars,Seedstars,Switzerland,Tanzania,Business services,Other support services,Business Services,* $27.80m,* 38,New
+5,Jan 2018,Associated British …,Kilombero Sugar …,United Kingdom,Tanzania,Food and Beverages,Sugar & confectionar…,Manufacturing,* $26.40m,* 263,New
+6,Jan 2018,City Lodge,City Lodge,South Africa,Tanzania,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+7,Dec 2017,Mobisol,Mobisol Tanzania,Germany,Tanzania,Electronic components,All other electrical e…,Retail,* $9.50m,* 118,New
+8,Dec 2017,Uber Technologies,Uber Technologies,United States,Tanzania,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+9,Nov 2017,Citigroup,Citibank Tanzania,United States,Tanzania,Financial services,Retail banking,Headquarters,* $44.20m,* 93,Expansion
+10,Oct 2017,Serba Dinamik Ho…,Serba Dinamik Ho…,Malaysia,Tanzania,Chemicals,Basic chemicals,Manufacturing,$69.80m,* 92,New
+11,Sep 2017,Choppies,Choppies,Botswana,Tanzania,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+12,Sep 2017,Neusoft Group,Neusoft Medical S…,China,Tanzania,Medical devices,Electromedical and E…,Manufacturing,* $30.00m,* 145,New
+13,Aug 2017,Apelby Communic…,Apelby Communic…,Germany,Tanzania,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+14,Aug 2017,Banque Misr,Banque Misr,Egypt,Tanzania,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Aug 2017,SEW-Eurodrive,SEW-Eurodrive,Germany,Tanzania,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $1.40m,13,New

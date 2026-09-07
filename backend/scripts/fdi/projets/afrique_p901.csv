@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2012,Cotton On,Cotton On,Australia,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,Sep 2012,Deutsche Post,DHL,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,Co-Location
+3,Sep 2012,Gameloft,Gameloft,France,South Africa,Software & IT services,"Video games, applic…","Sales, Marketing & S…",* $5.20m,* 9,New
+4,Sep 2012,Hilton Hotels (Hilt…,Hilton Hotels (Hilt…,United States,South Africa,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+5,Sep 2012,Knight Frank,Knight Frank,United Kingdom,South Africa,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+6,Sep 2012,Knight Frank,Knight Frank,United Kingdom,South Africa,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+7,Sep 2012,Knight Frank,Knight Frank,United Kingdom,South Africa,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+8,Sep 2012,Noble Dream Fina…,Noble Dream Fina…,Ghana,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+9,Sep 2012,Opodo,Vacaciones eDrea…,United Kingdom,South Africa,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+10,Sep 2012,Sirane,Sirane,United Kingdom,South Africa,Plastics,Plastics packaging m…,Manufacturing,* $19.00m,* 229,New
+11,Sep 2012,SunEdison Inc (M…,SunEdison,United States,South Africa,Renewable energy,Solar electric power,Electricity,$250.00m,* 49,New
+12,Aug 2012,Assured Capital H…,Coracall,United Kingdom,South Africa,Business services,Business support ser…,Customer Contact C…,* $0.70m,93,New
+13,Aug 2012,BlackRock,BlackRock,United States,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New
+14,Aug 2012,Europcar,Europcar,France,South Africa,Business services,Other support services,Education & Training,$0.80m,* 3,New
+15,Aug 2012,Forcepoint (Webse…,Forcepoint (Webse…,United States,South Africa,Software & IT services,"Software publishers,…",ICT & Internet Infras…,* $243.50m,* 81,New

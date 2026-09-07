@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2011,HP (Hewlett-Packa…,HP (Hewlett-Packa…,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.80m,* 9,Expansion
+2,Jan 2011,Jardine Lloyd Tho…,Jardine Lloyd Tho…,United Kingdom,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $2.50m,15,New
+3,Jan 2011,Kimberly-Clark,Kimberly-Clark of …,United States,South Africa,"Paper, printing & pac…",Converted paper pro…,Manufacturing,$17.40m,50,Expansion
+4,Jan 2011,MindLeaders Third…,MindLeaders Third…,Ireland,South Africa,Software & IT services,"Software publishers,…",Business Services,* $13.80m,* 49,New
+5,Jan 2011,Minerals and Meta…,Minerals and Meta…,India,South Africa,Minerals,Other non-metallic …,"Sales, Marketing & S…",* $2.10m,* 13,New
+6,Jan 2011,MyABCM,MyABCM,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+7,Jan 2011,Oniqua Enterprise…,Oniqua Enterprise…,Australia,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+8,Jan 2011,Qatar Petrochemic…,Qatar Petrochemic…,Qatar,South Africa,Chemicals,Basic chemicals,"Sales, Marketing & S…",* $6.20m,* 14,New
+9,Jan 2011,Spice Global Inves…,Spice VAS Africa,India,South Africa,Communications,Other telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,Jan 2011,Toyota Motor,Toyota South Africa,Japan,South Africa,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",$52.30m,* 220,New
+11,Jan 2011,Velocity Trade,Velocity Trade,Canada,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+12,Jan 2011,Yuri Arcurs Produc…,Yuri Arcurs Produc…,Denmark,South Africa,Business services,Specialised design s…,Research & Develop…,$6.02m,80,New
+13,Dec 2010,Building Energy,Building Energy,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+14,Dec 2010,Gehrlicher Solar,Gehrlicher Solar,Germany,South Africa,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+15,Dec 2010,Guangxi Liugong …,Guangxi Liugong …,China,South Africa,Industrial equipment,"Agriculture, construc…",Headquarters,$4.70m,* 25,New

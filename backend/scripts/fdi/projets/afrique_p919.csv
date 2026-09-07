@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2011,HRsmart,HRsmart,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 9,New
+2,May 2011,Inditex,Zara,Spain,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+3,May 2011,Kentrox,Kentrox,United States,South Africa,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+4,May 2011,Kruse Group,Kruse Group,Germany,South Africa,"Coal, oil & gas",Petroleum refineries,Manufacturing,* $1.64bn,* 146,New
+5,May 2011,Lindt & Sprüngli,Lindt & Sprüngli,Switzerland,South Africa,Food and Beverages,Sugar & confectionar…,"Sales, Marketing & S…",* $6.70m,* 21,New
+6,May 2011,Lucy Group (W Lu…,Lucy Electric (Luc…,United Kingdom,South Africa,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 11,New
+7,May 2011,SkyPower,SkyPower,Canada,South Africa,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+8,May 2011,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,ICT & Internet Infras…,$914.80m,* 632,New
+9,Apr 2011,Artificial Life,Artificial Life,Hong Kong,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,Apr 2011,Blancco Technolog…,Blancco Technolog…,United Kingdom,South Africa,Communications,Communications equ…,Recycling,* $104.50m,* 46,New
+11,Apr 2011,Building Energy,Building Energy,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+12,Apr 2011,Country Club Indi…,Country Club Indi…,India,South Africa,Leisure & entertainm…,"Performing arts, spe…","Sales, Marketing & S…",* $7.90m,* 4,New
+13,Apr 2011,Incentage,Incentage,Switzerland,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $0.90m,4,New
+14,Apr 2011,London Commodit…,London Commodit…,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $11.00m,* 21,New
+15,Apr 2011,Monsanto,Monsanto,United States,South Africa,Food and Beverages,Grains & oilseed,Manufacturing,$22.50m,* 147,New
