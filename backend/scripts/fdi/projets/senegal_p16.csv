@@ -1,11 +1,13 @@
 ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
-1,Jul 2006,China Metallurgica…,China Metallurgica…,China,Senegal,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $558.00m,* 116,New
-2,Sep 2005,Nuxeo,Nuxeo,France,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
-3,Apr 2005,Swapcom,Swapcom,France,Senegal,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 16,New
-4,Jan 2005,African Developm…,African Developm…,Côte d Ivoire,Senegal,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
-5,Dec 2004,European Investm…,European Investm…,Luxembourg,Senegal,Financial services,Corporate & investm…,Headquarters,* $45.10m,* 91,New
-6,Aug 2004,Radio France Inter…,Radio France Inter…,France,Senegal,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $7.50m,* 16,New
-7,May 2004,Kumba Resources,Kumba Resources,South Africa,Senegal,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
-8,Jul 2003,Tullow Oil,Energy Africa,United Kingdom,Senegal,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
-9,Apr 2003,Lam Hoa,Lam Hoa,Vietnam,Senegal,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $60.60m,* 348,New
-10,Feb 2003,Protek,Protek,United Kingdom,Senegal,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.20m,* 19,New
+1,Oct 2006,Amitelo Communi…,Amitelo Communi…,Switzerland,Senegal,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+2,Jul 2006,Attijariwafa Bank,Attijariwafa Bank,Morocco,Senegal,Financial services,Retail banking,Business Services,* $21.50m,50,New
+3,Jul 2006,China Metallurgica…,China Metallurgica…,China,Senegal,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $558.00m,* 116,New
+4,Sep 2005,Nuxeo,Nuxeo,France,Senegal,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+5,Apr 2005,Swapcom,Swapcom,France,Senegal,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.80m,* 16,New
+6,Jan 2005,African Developm…,African Developm…,Côte d Ivoire,Senegal,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Dec 2004,European Investm…,European Investm…,Luxembourg,Senegal,Financial services,Corporate & investm…,Headquarters,* $45.10m,* 91,New
+8,Aug 2004,Radio France Inter…,Radio France Inter…,France,Senegal,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $7.50m,* 16,New
+9,May 2004,Kumba Resources,Kumba Resources,South Africa,Senegal,Metals,Iron ore mining,Extraction,* $270.00m,"* 1,012",New
+10,Jul 2003,Tullow Oil,Energy Africa,United Kingdom,Senegal,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+11,Apr 2003,Lam Hoa,Lam Hoa,Vietnam,Senegal,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $60.60m,* 348,New
+12,Feb 2003,Protek,Protek,United Kingdom,Senegal,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $5.20m,* 19,New

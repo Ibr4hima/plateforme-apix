@@ -160,12 +160,21 @@ def test_l_empreinte_ignore_les_variations_de_graphie():
 
 
 def test_le_csv_versionne_est_lisible_et_ordonne():
-    from app.services.fdi_projets import lire_lot_csv, DOSSIER_PROJETS
+    """La première page du relevé Sénégal, et son ordre.
+
+    Ce test épinglait autrefois le nom de la première entreprise et le type de
+    la sixième ligne. Deux projets de juillet 2026 se sont insérés en tête et
+    ont décalé tout le reste : les deux repères sont tombés d'un coup, alors
+    que le relevé était juste. On vérifie donc ce qui NE bouge pas quand la
+    source grandit — la forme de la page et l'ordre des dates — plutôt qu'un
+    contenu à telle position.
+    """
+    from app.services.fdi_projets import lire_lot_csv, lire_date, DOSSIER_PROJETS
     lignes = lire_lot_csv(DOSSIER_PROJETS / "senegal_p01.csv")
     assert len(lignes) == 15
     assert [l["ligne"] for l in lignes] == list(range(1, 16))
-    assert lignes[0]["entreprise"] == "AVCI Global"
-    assert lignes[5]["type"] == "Expansion"
+    dates = [lire_date(l["date"]) for l in lignes]
+    assert dates == sorted(dates, reverse=True), "la page 1 n'est pas du plus récent au plus ancien"
 
 
 # ── Pays : la correspondance anglais → référentiel ────────────────────────────
@@ -302,9 +311,10 @@ def test_la_page_2_est_lisible_et_ordonnee():
     lignes = lire_lot_csv(DOSSIER_PROJETS / "senegal_p02.csv")
     assert len(lignes) == 15
     assert [l["ligne"] for l in lignes] == list(range(1, 16))
-    # Le milliard de DP World, déclaré ; ses 3 000 emplois, estimés.
-    dp = lignes[12]
-    assert dp["entreprise"] == "DP World"
+    # Le milliard de DP World, déclaré ; ses 3 000 emplois, estimés. On le
+    # cherche par son NOM et non à son rang : le rang bouge dès que la source
+    # ajoute un projet plus récent, et un test qui casse alors ne signale rien.
+    dp = next(l for l in lignes if l["entreprise"] == "DP World")
     assert lire_montant(dp["capex"]) == (1200.0, False)
     assert lire_entier(dp["emplois"]) == (3000, True)
 
@@ -323,8 +333,17 @@ def test_les_pages_relevees_sont_lisibles():
     tailles = [len(lire_lot_csv(p)) for p in pages]
     assert set(tailles[:-1]) == {15} and 1 <= tailles[-1] <= 15
     # Le compte annoncé par fDi pour le périmètre Sénégal. Une page relevée
-    # deux fois, ou une ligne oubliée, se verrait ici.
-    assert sum(tailles) == 235
+    # deux fois, ou une ligne oubliée, se verrait ici. Il monte quand la source
+    # publie : 235 au relevé initial, 237 depuis les deux projets de juillet
+    # 2026 (Axian/Yas et SYGMA), relevés le 7 septembre 2026.
+    assert sum(tailles) == 237
+
+    # L'ordre du relevé, d'un bout à l'autre : du plus récent au plus ancien.
+    # C'est lui qui donne son sens au rang, et c'est ce qu'une insertion faite
+    # au mauvais endroit briserait — sans qu'aucun autre contrôle le voie.
+    from app.services.fdi_projets import lire_date
+    dates = [lire_date(l["date"]) for p in pages for l in lire_lot_csv(p)]
+    assert dates == sorted(dates, reverse=True), "le relevé Sénégal n'est plus dans l'ordre"
 
 
 def test_la_source_ecrit_la_cote_d_ivoire_sans_apostrophe(pays):
