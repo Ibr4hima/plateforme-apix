@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2025,TUI,TUI,Germany,Tunisia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Dec 2024,Shanghai Jin Jian…,Radisson Blu (Rad…,China,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+3,Nov 2024,Compagnie Mariti…,Compagnie Mariti…,UAE,Tunisia,Renewable energy,Solar electric power,Electricity,* $70.60m,* 57,New
+4,Nov 2024,Compagnie Mariti…,Compagnie Mariti…,UAE,Tunisia,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+5,Nov 2024,Compagnie Mariti…,Compagnie Mariti…,UAE,Tunisia,Renewable energy,Wind electric power,Electricity,* $70.60m,* 57,New
+6,Oct 2024,Yura Corporation (…,Yura Corporation (…,South Korea,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $278.20m,"6,000",Expansion
+7,Sep 2024,Marquardt,Marquardt,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,$55.89m,"1,500",New
+8,Aug 2024,Archetype Group,Archetype Group,Vietnam,Tunisia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 29,New
+9,Aug 2024,HDF Energy (Hydr…,HDF Energy (Hydr…,France,Tunisia,Renewable energy,Other electric power …,Manufacturing,$3.33bn,"* 1,707",New
+10,Aug 2024,Scatec AS,Scatec AS,Norway,Tunisia,Renewable energy,Solar electric power,Electricity,* $43.94m,* 14,New
+11,Aug 2024,Scatec AS,Scatec AS,Norway,Tunisia,Renewable energy,Solar electric power,Electricity,* $43.94m,* 14,New
+12,Jul 2024,Crown Holdings,Crown Holdings,United States,Tunisia,Metals,Alumina & aluminiu…,Manufacturing,* $147.40m,* 443,Expansion
+13,Jul 2024,H2 Global Energy,H2 Global Energy,UAE,Tunisia,Renewable energy,Other electric power …,Manufacturing,$6.00bn,"* 3,000",New
+14,Jul 2024,Tendam (Cortefiel …,Women's Secret,Spain,Tunisia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Jul 2024,Tendam (Cortefiel …,Springfield,Spain,Tunisia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New

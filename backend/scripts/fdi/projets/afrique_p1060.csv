@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2003,Prometic Life Scie…,Prometic Life Scie…,Canada,Tunisia,Biotechnology,In-Vitro diagnostic s…,Manufacturing,$46.00m,* 63,New
+2,Aug 2003,Centurion Energy,Centurion Energy,Canada,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,$13.50m,* 6,New
+3,Aug 2003,Gaither Petroleum,Gaither Petroleum,United States,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,$1.30m,* 1,New
+4,Jul 2003,Centurion Energy,Centurion Energy,Canada,Tunisia,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $45.70m,* 93,New
+5,Jun 2003,Neptune Software,Neptune Software,United Kingdom,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+6,May 2003,Centurion Energy,Centurion Energy,Canada,Tunisia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$30.00m,* 3,New
+7,May 2003,Mersen (Carbone …,Ferraz Shawmut,France,Tunisia,Electronic components,Electrical equipment,Manufacturing,* $5.30m,* 143,Expansion
+8,Mar 2003,Centurion Energy,Centurion Energy,Canada,Tunisia,"Coal, oil & gas",Other petroleum & c…,Extraction,$1.40m,* -,New
+9,Feb 2003,Benetton Group S…,Benetton,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,$16.00m,* 284,New
+10,Feb 2003,Golden Tulip,Golden Tulip,Netherlands,Tunisia,Hotels & tourism,Accommodation,Construction,* $115.40m,* 219,New
+11,Feb 2003,Pioneer Natural R…,Pioneer Natural R…,United States,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,$550.00m,* 181,New
+12,Jun 2026,Vestige,Vestige,India,Uganda,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New
+13,May 2026,Renewvia Energy,Renewvia Solar Af…,United States,Uganda,Renewable energy,Solar electric power,Electricity,* $187.50m,* 58,New
+14,Dec 2025,TerraCapX,TerraCapX,Norway,Uganda,Chemicals,"Pesticide, fertilisers …",Recycling,$12.00m,* 21,New
+15,Nov 2025,Devki Group of Co…,Devki Group of Co…,Kenya,Uganda,Metals,Iron & steel mills & f…,Manufacturing,$500.00m,"3,000",New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2019,Meker,Meker Africa,Lebanon,Togo,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+2,Aug 2019,Lufthansa,time:matters,Germany,Togo,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+3,Jul 2019,Bertelsmann,Majorel,Germany,Togo,Business services,Business support ser…,Customer Contact C…,* $1.20m,150,New
+4,Apr 2019,Gozem,Gozem,Singapore,Togo,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+5,Apr 2019,Logistik Unicorp,Logistik Unicorp,Canada,Togo,Textiles,Apparel accessories …,Manufacturing,* $20.00m,500,New
+6,Feb 2019,Bertelsmann,Phone Group,Germany,Togo,Business services,Business support ser…,Customer Contact C…,* $0.80m,100,New
+7,Jan 2019,Kobo360,Kobo360,Nigeria,Togo,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+8,Dec 2018,WaystoCap,WaystoCap,Morocco,Togo,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+9,Jun 2018,Emaar Properties,Address Hotels + …,UAE,Togo,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+10,Oct 2017,Vivendi (Vivendi U…,Vivendi (Vivendi U…,France,Togo,Leisure & entertainm…,"Performing arts, spe…",Retail,$2.70m,* 16,New
+11,Oct 2016,United Bank for Af…,United Bank for Af…,Nigeria,Togo,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Apr 2016,China South Indus…,Luoyang Northern…,China,Togo,Non-automotive tran…,"Motorcycle, bicycle, …",Manufacturing,* $55.90m,* 583,New
+13,Jun 2015,Mambo Commodit…,CIAT (Compagnie …,France,Togo,Chemicals,"Pesticide, fertilisers …",Manufacturing,$3.36m,* 4,New
+14,Jun 2015,Societe Generale (…,Societe Generale …,France,Togo,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Jan 2015,Heidelberg Materi…,Heidelberg Materi…,Germany,Togo,Building materials,Cement & concrete p…,Manufacturing,$15.00m,* 37,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2024,Inventum Global,Inventum Global,Turkey,Zambia,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+2,Oct 2024,Jiangxi Naipu Mini…,Jiangxi Naipu Mini…,China,Zambia,Industrial equipment,"Agriculture, construc…",Manufacturing,$34.00m,150,New
+3,Aug 2024,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $144.10m,* 443,Expansion
+4,Aug 2024,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $144.10m,* 443,Expansion
+5,Jun 2024,Dangote Group,Dangote Group,Nigeria,Zambia,Building materials,Cement & concrete p…,Manufacturing,$450.00m,"* 1,103",New
+6,May 2024,Alphabet Inc,Google,United States,Zambia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+7,May 2024,NFT Consult,NFT Consult,Uganda,Zambia,Business services,Business support ser…,Business Services,* $27.80m,* 38,New
+8,May 2024,YEO,YEO,Turkey,Zambia,Renewable energy,Solar electric power,Electricity,$65.00m,* 20,New
+9,Apr 2024,Epiroc,Epiroc Zambia,Sweden,Zambia,Industrial equipment,"Agriculture, construc…",Education & Training,* $5.50m,* 35,New
+10,Apr 2024,Star Agriwarehous…,Star Agriwarehous…,India,Zambia,Transportation & Wa…,Warehousing & stora…,"Sales, Marketing & S…",* $6.30m,* 18,New
+11,Jan 2024,Plastige Flooring S…,Plastige Flooring S…,South Africa,Zambia,Plastics,Laminated plastics pl…,"Sales, Marketing & S…",* $2.00m,* 9,New
+12,Dec 2023,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$200.00m,* 298,Expansion
+13,Oct 2023,Airlink,Airlink,South Africa,Zambia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+14,Oct 2023,International Wor…,International Wor…,Switzerland,Zambia,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+15,Oct 2023,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $144.10m,* 443,New

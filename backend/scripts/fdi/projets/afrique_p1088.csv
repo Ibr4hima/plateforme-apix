@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2003,EG Solar,EG Solar,Germany,Uganda,Consumer electronics,Household appliances,Manufacturing,* $27.20m,* 641,New
+2,May 2003,Zain (Mobile Telec…,Celtel,Kuwait,Uganda,Communications,Wireless telecommu…,ICT & Internet Infras…,* $113.10m,* 89,New
+3,Apr 2003,Kenol-Kobil Group…,Kobil,Kenya,Uganda,"Coal, oil & gas",Gasoline stations,Retail,* $33.30m,* 335,New
+4,Jul 2026,Project Global Min…,Project Global Min…,United Kingdom,Zambia,Business services,Employment services,Business Services,* $27.80m,* 38,New
+5,Jun 2026,Shanghai Metals …,Shanghai Metals …,China,Zambia,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+6,Jun 2026,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$317.00m,* 21,New
+7,May 2026,Midnight Sun Mini…,Midnight Sun Mini…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $354.90m,* 717,Expansion
+8,Apr 2026,Globeleq Generati…,Globeleq Generati…,United Kingdom,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+9,Apr 2026,RPG Enterprises,Zensar Technologi…,India,Zambia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+10,Mar 2026,Dangote Group,Dangote Cement,Nigeria,Zambia,Building materials,Cement & concrete p…,Manufacturing,* $369.20m,* 496,Expansion
+11,Mar 2026,SRK Consulting,SRK Consulting,United Kingdom,Zambia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+12,Feb 2026,SGC Investment,SGC Investment,UAE,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+13,Dec 2025,Glencore (Glencor…,GenVision Power,Switzerland,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+14,Nov 2025,Ericsson,Ericsson,Sweden,Zambia,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+15,Sep 2025,COSCO SHIPPING…,COSCO SHIPPING…,China,Zambia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,New

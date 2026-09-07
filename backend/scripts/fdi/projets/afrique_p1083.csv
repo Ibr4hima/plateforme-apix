@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2008,ENOVA Healthcare,ENOVA Healthcare,United Kingdom,Uganda,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$22.92m,* 251,New
+2,Nov 2008,Enviro Fuels Manu…,Enviro Fuels Manu…,United States,Uganda,Consumer electronics,Household appliances,Manufacturing,$25.00m,"1,000",New
+3,Nov 2008,Neotel,Transtel,South Africa,Uganda,Consumer electronics,Audio & video equip…,Retail,$0.08m,* 1,New
+4,Nov 2008,United Bank for Af…,United Bank for Af…,Nigeria,Uganda,Financial services,Retail banking,Business Services,$12.00m,150,New
+5,Oct 2008,Heritage Oil,Heritage Oil,United Kingdom,Uganda,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+6,Oct 2008,Heritage Oil,Heritage Oil,United Kingdom,Uganda,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+7,Oct 2008,Leicester Paper Co…,Leicester Paper Co…,United Kingdom,Uganda,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,* $54.90m,* 76,New
+8,Oct 2008,Orange (France Te…,Orange (France Te…,France,Uganda,Communications,Wireless telecommu…,ICT & Internet Infras…,$200.00m,* 138,New
+9,Sep 2008,A-Tec Industries,A-Tec Industries,Austria,Uganda,Metals,Nonferrous metal pr…,Business Services,* $8.90m,* 21,New
+10,Sep 2008,Bidco Africa (Bidc…,Bidco Africa (Bidc…,Kenya,Uganda,Food and Beverages,Grains & oilseed,Manufacturing,* $24.20m,* 429,New
+11,Sep 2008,Fina Bank,Fina Bank,Kenya,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Sep 2008,Fina Bank,Fina Bank,Kenya,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,Aug 2008,Industrial and Ge…,Industrial and Ge…,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Aug 2008,Lafarge,Hima Cement,France,Uganda,Minerals,Nonmetallic mineral …,Extraction,$108.00m,* 144,Expansion
+15,Aug 2008,Nakumatt Holdings,Nakumatt Holdings,Kenya,Uganda,Food and Beverages,Food & beverage ret…,Retail,* $2.90m,* 177,New

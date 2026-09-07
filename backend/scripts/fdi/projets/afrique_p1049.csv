@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Societe Generale (…,Union Internation…,France,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Jan 2009,Sumitomo Group,Sumitomo Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $17.80m,250,New
+3,Dec 2008,Altran Technologies,Altran Technologies,France,Tunisia,Business services,"Professional, scientifi…",Research & Develop…,* $14.30m,* 48,New
+4,Dec 2008,BNP Paribas,BNP Paribas,France,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Dec 2008,Génitech,Génitech,France,Tunisia,Software & IT services,"Software publishers,…",Business Services,* $13.80m,* 49,New
+6,Dec 2008,Groupe Industriel …,Dassault Systemes,France,Tunisia,Software & IT services,"Software publishers,…",Research & Develop…,* $16.80m,* 136,New
+7,Dec 2008,Kromberg & Schu…,Kromberg & Schu…,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $44.50m,200,New
+8,Dec 2008,Societe Generale (…,Union Internation…,France,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Dec 2008,Yazaki Group,Yazaki Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,$33.29m,"1,000",New
+10,Nov 2008,Bukhatir,Bukhatir,UAE,Tunisia,Leisure & entertainm…,"Performing arts, spe…",Construction,* $179.10m,* 429,New
+11,Nov 2008,Cementos Molins,Cementos Molins,Spain,Tunisia,Building materials,Cement & concrete p…,Manufacturing,$336.00m,* 641,New
+12,Nov 2008,Coroplast (Coropl…,Coroplast (Coropl…,Germany,Tunisia,Electronic components,Wiring devices,Manufacturing,$22.80m,* 490,New
+13,Nov 2008,Dräxlmaier (Draex…,Dräxlmaier (Draex…,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",Expansion
+14,Nov 2008,PSSSY,PSSSY,France,Tunisia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Nov 2008,StormAircraft,StormAircraft,Italy,Tunisia,Aerospace,Aircraft,Manufacturing,* $19.80m,* 349,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2012,Access Holding,AccessBank Tanza…,Germany,Tanzania,Financial services,Retail banking,Business Services,* $12.20m,40,New
+2,Aug 2012,Atlas Copco,Atlas Copco,Sweden,Tanzania,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+3,Aug 2012,Crown Paints Ken…,Crown Paints Ken…,Kenya,Tanzania,Chemicals,"Paints, coatings, add…",Manufacturing,$3.00m,* 4,New
+4,Aug 2012,Millicom Internati…,Tigo Tanzania,Luxembourg,Tanzania,Communications,Wireless telecommu…,ICT & Internet Infras…,$100.00m,* 15,New
+5,Jul 2012,Naivas Supermark…,Naivas Supermark…,Kenya,Tanzania,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+6,Jun 2012,Egyptian African C…,Egyptian African C…,Egypt,Tanzania,Food and Beverages,Sugar & confectionar…,Manufacturing,* $26.40m,* 263,New
+7,Jun 2012,Uchumi Supermar…,Uchumi Supermar…,Kenya,Tanzania,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+8,May 2012,ABC Holdings (Ba…,BancABC Tanzania,Botswana,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,May 2012,Bluekey Software …,Bluekey Software …,South Africa,Tanzania,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+10,May 2012,Smile Telecoms H…,Smile Communica…,Mauritius,Tanzania,Communications,Wireless telecommu…,ICT & Internet Infras…,* $69.70m,* 100,New
+11,Apr 2012,Eden Square Busi…,Eden Square Busi…,Kenya,Tanzania,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+12,Apr 2012,Jetlink Express,Jetlink Express,Kenya,Tanzania,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+13,Apr 2012,Novonor (Odebrec…,Novonor (Odebrec…,Brazil,Tanzania,Business services,Heavy & civil engine…,Business Services,* $6.80m,* 15,New
+14,Apr 2012,Winterhill Largo,Winterhill Largo,United Kingdom,Tanzania,Business services,Other support services,Business Services,* $6.80m,* 15,New
+15,Mar 2012,Heineken Holding,Heineken,Netherlands,Tanzania,Food and Beverages,Breweries,"Sales, Marketing & S…",* $19.00m,* 22,New

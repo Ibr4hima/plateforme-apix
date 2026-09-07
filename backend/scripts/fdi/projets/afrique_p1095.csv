@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2019,Mukuru,Mukuru,United Kingdom,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Apr 2019,Pick n Pay Holdings,Pick n Pay,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+3,Mar 2019,BIA Group,BIA Zambia,Mauritius,Zambia,Industrial equipment,"Agriculture, construc…",Maintenance & Servi…,* $7.80m,* 34,Expansion
+4,Mar 2019,Thos Begbie,Thos Begbie,South Africa,Zambia,Metals,Other fabricated met…,Maintenance & Servi…,* $20.20m,* 34,New
+5,Jan 2019,Heriot-Watt Unive…,Heriot-Watt Unive…,United Kingdom,Zambia,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 38,New
+6,Jan 2019,Newrest Group,Newrest Zambia,France,Zambia,Food and Beverages,Food services,Manufacturing,* $54.60m,"* 1,392",Expansion
+7,Dec 2018,WorldVentures,WorldVentures,United States,Zambia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+8,Oct 2018,African Medallion …,African Medallion …,South Africa,Zambia,Metals,Nonferrous metal pr…,"Sales, Marketing & S…",* $1.90m,* 8,New
+9,Oct 2018,British American T…,British America To…,United Kingdom,Zambia,Food and Beverages,Tobacco,Manufacturing,$25.00m,72,New
+10,Aug 2018,Apelby Communic…,Apelby Communic…,Germany,Zambia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+11,Aug 2018,Multiconsult,Multiconsult,Norway,Zambia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+12,Aug 2018,Zillionaire Mobile …,Zillionaire Mobile …,South Africa,Zambia,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $14.57m,200,New
+13,Jul 2018,Choppies,Choppies,Botswana,Zambia,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+14,Jul 2018,Fracht,Fracht,Switzerland,Zambia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+15,Jul 2018,Tsogo Sun Holdings,Tsogo Sun Holdings,South Africa,Zambia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New

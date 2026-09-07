@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2018,Chenguang Biotec…,Chenguang Biotec…,China,Zambia,Food and Beverages,Crop production,Manufacturing,$26.30m,* 123,New
+2,Apr 2018,Shoprite,Shoprite,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,* $7.60m,137,New
+3,Mar 2018,Chinese Academy …,Chinese Academy …,China,Zambia,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 38,New
+4,Mar 2018,Walmart,Massmart,United States,Zambia,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+5,Feb 2018,Elsewedy Electric …,Elsewedy Electric …,Egypt,Zambia,Real estate,Industrial building co…,Construction,* $704.50m,* 578,New
+6,Jan 2018,Ethiopian Airlines,Ethiopian Airlines,Ethiopia,Zambia,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+7,Jan 2018,Mera Group Corpo…,Mera Group Corpo…,Japan,Zambia,Electronic components,All other electrical e…,Manufacturing,* $31.20m,* 326,New
+8,Dec 2017,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,"Copper, nickel, lead,…",Education & Training,* $5.20m,* 131,New
+9,Dec 2017,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$400.00m,* 597,Expansion
+10,Dec 2017,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,Other metal ore mini…,Manufacturing,$400.00m,"* 2,738",New
+11,Dec 2017,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,$400.00m,* 27,New
+12,Oct 2017,Claro Group,Compania Electro …,Chile,Zambia,Metals,Other fabricated met…,Manufacturing,$25.00m,* 171,New
+13,Oct 2017,Seidor,Bluekey Software …,Spain,Zambia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+14,Oct 2017,Walmart,Builders Warehouse,United States,Zambia,Consumer products,Building material & g…,Retail,* $8.60m,54,New
+15,Sep 2017,Jembi Health Syst…,Jembi Health Syst…,South Africa,Zambia,Software & IT services,Custom computer pr…,Business Services,* $0.30m,4,New

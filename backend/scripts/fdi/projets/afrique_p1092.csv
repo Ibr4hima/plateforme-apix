@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2022,Econet Global,Liquid Intelligent …,Mauritius,Zambia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+2,Jul 2022,Fodere Titanium,Fodere Titanium,United Kingdom,Zambia,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,New
+3,Jun 2022,Anheuser-Busch I…,Zambian Brewerie…,Belgium,Zambia,Food and Beverages,Breweries,Manufacturing,$80.00m,* 375,Expansion
+4,May 2022,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$1.25bn,"* 1,864",Expansion
+5,May 2022,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$100.00m,* 149,New
+6,Apr 2022,Carrick Wealth,Carrick Wealth,South Africa,Zambia,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+7,Apr 2022,Moxico Resources,Mimbula Minerals,United Kingdom,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$100.00m,* 149,Expansion
+8,Feb 2022,Haussmann Group,Haussmann Group,France,Zambia,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+9,Nov 2021,Paratus Africa Gro…,Paratus Zambia,Namibia,Zambia,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+10,Nov 2021,Paratus Africa Gro…,Paratus Zambia,Namibia,Zambia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+11,Nov 2021,Rangel Group,Rangel Group,Portugal,Zambia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.25m,* 1,New
+12,Sep 2021,Sepuya Inc Agency,Sepuya Inc Agency,Greece,Zambia,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+13,Aug 2021,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $144.10m,* 443,New
+14,Aug 2021,Jubilee Metals Gro…,Jubilee Metals Gro…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $144.10m,* 443,New
+15,Jul 2021,Paratus Africa Gro…,Paratus Zambia,Namibia,Zambia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2021,College de Paris,College de Paris,France,Togo,Business services,"Schools, colleges, un…",Business Services,* $27.80m,* 38,New
+2,Feb 2021,Move One,Move One,UAE,Togo,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+3,Dec 2020,Bourse Régionale …,Bourse Régionale …,Côte d Ivoire,Togo,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+4,Mar 2020,Compagnie Financ…,Compagnie Financ…,Côte d Ivoire,Togo,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+5,Feb 2020,VIPP Intersis,VIPP Intersis,France,Togo,Business services,Business support ser…,Customer Contact C…,* $0.80m,100,New
+6,Jan 2020,African Lease & Tr…,African Lease & Tr…,Denmark,Togo,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+7,Jan 2020,CimMetal Group,CimMetal Group,Burkina Faso,Togo,Building materials,Cement & concrete p…,Manufacturing,* $103.10m,* 496,New
+8,Jan 2020,Heidelberg Materi…,Cimtogo,Germany,Togo,Building materials,Cement & concrete p…,Manufacturing,$30.00m,250,Expansion
+9,Dec 2019,Hydrimpex,Hydrimpex,France,Togo,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+10,Nov 2019,AMEA Power,AMEA Togo Solar,UAE,Togo,Renewable energy,Solar electric power,Electricity,$33.51m,* 10,New
+11,Nov 2019,Banque de dévelo…,Banque de dévelo…,Mali,Togo,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Nov 2019,Dangote Group,Dangote Group,Nigeria,Togo,Chemicals,"Pesticide, fertilisers …",Manufacturing,$2.00bn,"* 2,500",New
+13,Nov 2019,Dangote Group,Dangote Group,Nigeria,Togo,Building materials,Cement & concrete p…,Manufacturing,$60.00m,* 147,New
+14,Oct 2019,Outre-Mer Network,Outre-Mer Network,France,Togo,Business services,Employment services,Business Services,* $27.80m,* 38,New
+15,Oct 2019,The World Bank G…,International Fina…,United States,Togo,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New

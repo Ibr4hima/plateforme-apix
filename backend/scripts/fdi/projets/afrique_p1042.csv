@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2011,Promochimica,Promochimica,Italy,Tunisia,Pharmaceuticals,Medicinal & botanical,Manufacturing,$27.50m,* 301,New
+2,Jan 2011,AsteelFlash,AsteelFlash,France,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $5.30m,* 143,New
+3,Jan 2011,Carta Isnardo,Précontraints du …,Italy,Tunisia,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,New
+4,Jan 2011,Credit Lyonnais,Credit Lyonnais,France,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jan 2011,IP-Label,IP-Label,France,Tunisia,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+6,Dec 2010,Air Liquide,Air Liquide Tunisia,France,Tunisia,Chemicals,Basic chemicals,Manufacturing,* $162.20m,* 149,Co-Location
+7,Dec 2010,Club Med (Club M…,Club Med (Club M…,France,Tunisia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+8,Dec 2010,Success Insights I…,Success Insights I…,United States,Tunisia,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+9,Dec 2010,Toga Beteiligungs…,van Laack,Germany,Tunisia,Textiles,Clothing & clothing a…,Research & Develop…,* $3.10m,* 34,New
+10,Dec 2010,TUI,RIU Hotels & Reso…,Germany,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+11,Nov 2010,Cleverlance,TrustPort,Czech Republic,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+12,Nov 2010,Deutsche Post,DHL,Germany,Tunisia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+13,Nov 2010,Groupe Zannier,Groupe Zannier,France,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $13.90m,"* 1,080",New
+14,Oct 2010,Liu Jo,Liu Jo,Italy,Tunisia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+15,Oct 2010,Movenpick Group …,Movenpick Hotels …,Switzerland,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New

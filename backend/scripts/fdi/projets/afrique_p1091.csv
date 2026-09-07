@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2023,KoBold Metals,KoBold Metals,United States,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $356.50m,* 717,New
+2,Sep 2023,ZTE,ZTE,China,Zambia,Communications,Communications equ…,Manufacturing,* $10.30m,* 490,New
+3,Aug 2023,Gigawatt Global,Gigawatt Global,Netherlands,Zambia,Renewable energy,Other electric power …,Electricity,$100.00m,* 31,New
+4,Jun 2023,Deep Catch Nami…,Deep Catch Nami…,Namibia,Zambia,Food and Beverages,Seafood products,"Logistics, Distributio…",* $22.50m,* 158,New
+5,May 2023,AFEX Commoditie…,AFEX Commoditie…,Nigeria,Zambia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+6,May 2023,GoGlobal,GoGlobal,Japan,Zambia,Business services,Employment services,Business Services,* $27.80m,* 38,New
+7,May 2023,Klinger,Klinger Zambia,Austria,Zambia,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,Expansion
+8,May 2023,Wasoko (Sokowat…,Wasoko (Sokowat…,Kenya,Zambia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$1.00m,* 4,New
+9,Apr 2023,HRLeverage,HRLeverage,Nigeria,Zambia,Business services,Employment services,Business Services,* $27.80m,* 38,New
+10,Mar 2023,Econet Global,Liquid Cloud (Liqu…,Mauritius,Zambia,Communications,Computing infrastruc…,Technical Support Ce…,* $12.70m,* 141,New
+11,Mar 2023,Econet Global,Liquid Intelligent …,Mauritius,Zambia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+12,Mar 2023,Econet Global,Liquid Intelligent …,Mauritius,Zambia,Communications,Computing infrastruc…,ICT & Internet Infras…,* $122.20m,* 100,New
+13,Feb 2023,United Bank for Af…,United Bank for Af…,Nigeria,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Jan 2023,Mubadala Investm…,Masdar,UAE,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+15,Oct 2022,New World Develo…,Hip Hing Construc…,Hong Kong,Zambia,Hotels & tourism,Accommodation,Construction,$110.00m,* 275,New

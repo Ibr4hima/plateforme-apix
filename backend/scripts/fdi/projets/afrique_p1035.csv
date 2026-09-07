@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2015,Chomarat,Chomarat,France,Tunisia,Plastics,Artificial & synthetic …,Manufacturing,* $25.20m,* 293,Expansion
+2,Feb 2015,Desjardins,Développement In…,Canada,Tunisia,Financial services,Retail banking,Business Services,* $39.60m,130,New
+3,Feb 2015,Michigan State Un…,Michigan State Un…,United States,Tunisia,Business services,"Schools, colleges, un…",Education & Training,$103.00m,* 385,New
+4,Sep 2014,OMV,OMV Tunisie Prod…,Austria,Tunisia,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,$291.00m,* 54,New
+5,Jun 2014,Fomento de Const…,Aqualia,Spain,Tunisia,Industrial equipment,General purpose ma…,Manufacturing,$94.91m,* 883,New
+6,May 2014,Association Famili…,Auchan Holding (…,France,Tunisia,Food and Beverages,Food & beverage ret…,Retail,$623.83m,"* 3,000",New
+7,May 2014,HD Hyundai (Hyu…,Hyundai Elevator,South Korea,Tunisia,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,May 2014,Marquardt,Marquardt,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,$25.00m,200,New
+9,Apr 2014,Yazaki Group,Yazaki Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $148.40m,"3,200",New
+10,Feb 2014,Dallah Al-Baraka …,Albaraka Banking …,Saudi Arabia,Tunisia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Feb 2014,Neo-Soft Group,Neo-Soft Group,France,Tunisia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+12,Feb 2014,OMV,OMV,Austria,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,$685.41m,* 235,New
+13,Feb 2014,Robert Bosch,Bosch,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,"Sales, Marketing & S…",* $1.80m,* 18,New
+14,Jan 2014,Lauterbach,Lauterbach,Germany,Tunisia,Semiconductors,Semiconductors & ot…,"Sales, Marketing & S…",* $3.90m,* 15,New
+15,Jan 2014,Verizon Communi…,Verizon Communi…,United States,Tunisia,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New

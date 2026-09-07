@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Eni SpA,Eni SpA,Italy,Tunisia,Renewable energy,Solar electric power,Electricity,* $70.60m,* 57,Co-Location
+2,Jan 2019,ABO Wind,ABO Wind,Germany,Tunisia,Renewable energy,Wind electric power,Electricity,* $70.60m,* 57,New
+3,Jan 2019,Grupo Iberostar,Grupo Iberostar,Spain,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+4,Jan 2019,Grupo Iberostar,Grupo Iberostar,Spain,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+5,Jan 2019,International Wor…,International Wor…,Switzerland,Tunisia,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+6,Jan 2019,TotalEnergies (Tot…,Lucia Holding,France,Tunisia,Renewable energy,Wind electric power,Electricity,* $70.60m,* 57,New
+7,Jan 2019,UPC Renewables,UPC Tunisia Rene…,Hong Kong,Tunisia,Renewable energy,Wind electric power,Electricity,* $70.60m,* 57,New
+8,Jan 2019,VSB Group,VSB Energies Nou…,Germany,Tunisia,Renewable energy,Wind electric power,Electricity,* $70.60m,* 57,New
+9,Nov 2018,Orange (France Te…,Orange Tunisie,France,Tunisia,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+10,Oct 2018,ABO Wind,ABO Wind,Germany,Tunisia,Renewable energy,Wind electric power,"Sales, Marketing & S…",* $22.90m,* 25,New
+11,Oct 2018,Radisson Hospitali…,Radisson Hospitali…,Belgium,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+12,Oct 2018,SGS,SGS,Switzerland,Tunisia,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,Expansion
+13,Sep 2018,SAIC Motor (Shan…,SAIC Motor (Shan…,China,Tunisia,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+14,Sep 2018,SAIC Motor (Shan…,SAIC Motor (Shan…,China,Tunisia,Automotive OEM,Automobiles,Manufacturing,* $94.80m,* 884,New
+15,Jul 2018,FTI Touristik,FTI Touristik,Germany,Tunisia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2020,Impala Car Rental,Impala Car Rental,Zimbabwe,Zambia,Automotive OEM,Automobiles,Retail,* $12.50m,* 37,New
+2,Dec 2019,Standard Chartere…,Standard Chartere…,United Kingdom,Zambia,Financial services,Retail banking,Headquarters,* $44.20m,* 93,New
+3,Dec 2019,Thos Begbie,Thos Begbie,South Africa,Zambia,Metals,Other fabricated met…,Maintenance & Servi…,* $20.20m,* 34,Expansion
+4,Nov 2019,TotalEnergies (Tot…,Total Zambia,France,Zambia,"Coal, oil & gas",Gasoline stations,Retail,$0.08m,* -,New
+5,Oct 2019,Seaboard Corpora…,National Milling C…,United States,Zambia,Food and Beverages,Grains & oilseed,Manufacturing,$37.50m,* 176,New
+6,Sep 2019,Shaanxi Automobi…,Shaanxi Automobi…,China,Zambia,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",* $27.80m,* 73,New
+7,Sep 2019,Shoprite,Shoprite,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,$3.04m,200,New
+8,Sep 2019,Toyota Motor,Toyota Tsusho,Japan,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+9,Sep 2019,Toyota Motor,Toyota Tsusho,Japan,Zambia,Renewable energy,Solar electric power,Electricity,* $173.80m,* 57,New
+10,Aug 2019,Access Bank,Access Bank (Zam…,Nigeria,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Aug 2019,Agco,Agco,United States,Zambia,Industrial equipment,"Agriculture, construc…",Education & Training,* $5.50m,* 35,Expansion
+12,Aug 2019,Atlas Mara,Atlas Mara Bank Z…,United Kingdom,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Aug 2019,Sefalana Holding …,Sefalana Shopper,Botswana,Zambia,Food and Beverages,Food & beverage ret…,Retail,* $3.90m,70,New
+14,Jul 2019,Zhongkai Internat…,Zhongkai Internat…,China,Zambia,Renewable energy,Biomass power,Manufacturing,$9.00m,200,New
+15,Jun 2019,Fujian Haian Rubb…,Fujian Haian Rubb…,China,Zambia,Rubber,Tyres,Headquarters,* $8.40m,* 49,New

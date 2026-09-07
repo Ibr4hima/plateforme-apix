@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2010,Qatari Diar,Qatari Diar,Qatar,Tunisia,Hotels & tourism,Accommodation,Construction,$80.00m,* 200,New
+2,Oct 2010,Sony,Sony,Japan,Tunisia,Consumer electronics,Other (Consumer ele…,Technical Support Ce…,* $15.00m,* 122,New
+3,Oct 2010,Worldwide Energy…,Worldwide Energy…,United Kingdom,Tunisia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Sep 2010,Optitec,Optitec,France,Tunisia,Chemicals,"Paints, coatings, add…",Manufacturing,$2.70m,50,New
+5,Sep 2010,Saiv Group,Saiv Group,Italy,Tunisia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+6,Aug 2010,Coroplast (Coropl…,Coroplast (Coropl…,Germany,Tunisia,Electronic components,Wiring devices,Manufacturing,$0.69m,250,New
+7,Aug 2010,Lytess,Lytess,France,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,$0.53m,* 9,New
+8,Jul 2010,Havas,Havas,France,Tunisia,Business services,"Advertising, PR, & re…",Business Services,* $5.50m,30,New
+9,Jul 2010,Huber+Suhner Gr…,Huber+Suhner Gr…,Switzerland,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $9.00m,* 245,New
+10,Jul 2010,Kromberg & Schu…,Kromberg & Schu…,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",Expansion
+11,Jul 2010,TotalEnergies (Tot…,Hutchinson,France,Tunisia,Rubber,Rubber hoses & belti…,Manufacturing,$13.30m,100,New
+12,Jun 2010,Groupe Zannier,Groupe Zannier,France,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $13.90m,"* 1,080",New
+13,Jun 2010,Linde,Linde Gas Tunisia,Germany,Tunisia,Chemicals,Basic chemicals,Manufacturing,$15.70m,* 19,New
+14,Jun 2010,Norama,Norama,Italy,Tunisia,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $0.90m,* 13,New
+15,Jun 2010,Univar,Univar,United States,Tunisia,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $2.80m,* 13,New

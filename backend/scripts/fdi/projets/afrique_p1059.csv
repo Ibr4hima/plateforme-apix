@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2004,Le Must Air Marin,Le Must Air Marin,Switzerland,Tunisia,Hotels & tourism,Travel arrangement …,Retail,* $11.60m,* 148,New
+2,Oct 2004,Accor,Accor,France,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+3,Oct 2004,Stream Global Ser…,Stream Global Ser…,United States,Tunisia,Business services,Business support ser…,Customer Contact C…,* $4.50m,* 335,New
+4,Aug 2004,Albidon,Albidon,Australia,Tunisia,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New
+5,Jul 2004,Grupo Iberostar,Iberostar,Spain,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+6,Feb 2004,Banca Intesa,Banca Intesa,Italy,Tunisia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+7,Feb 2004,European Investm…,European Investm…,Luxembourg,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Jan 2004,Ahmad Hamad Al…,Ahmad Hamad Al…,Saudi Arabia,Tunisia,Metals,Alumina & aluminiu…,Manufacturing,$39.00m,* 344,New
+9,Jan 2004,Crown Holdings,Crown Cork & Seal,United States,Tunisia,Metals,Alumina & aluminiu…,Manufacturing,$40.00m,* 353,New
+10,Dec 2003,Alcatel,Alcatel,France,Tunisia,Communications,Communications equ…,Research & Develop…,* $60.50m,* 123,New
+11,Dec 2003,Cairo Far East Ban…,Cairo Far East Ban…,Egypt,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Dec 2003,Starwood Hotels …,Sheraton Damma…,United States,Tunisia,Hotels & tourism,Accommodation,Construction,$20.00m,* 51,New
+13,Nov 2003,Caterpillar,Caterpillar,United States,Tunisia,"Coal, oil & gas",Other electric power …,Electricity,* $558.00m,* 116,New
+14,Oct 2003,Koninklijke Frans …,Koninklijke Frans …,Netherlands,Tunisia,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $6.00m,10,New
+15,Oct 2003,Plastiques du Val …,Plastiques du Val …,France,Tunisia,Plastics,Laminated plastics pl…,Manufacturing,$5.00m,150,New

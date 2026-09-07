@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2005,Telinfor,Telinfor,Spain,Tunisia,Business services,"Business schools, co…",ICT & Internet Infras…,* $146.90m,* 94,New
+2,Jul 2005,Benetton Group S…,Benetton,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,$13.00m,* 231,New
+3,Jun 2005,Alcatel,Alcatel,France,Tunisia,Communications,Communications equ…,Maintenance & Servi…,* $3.50m,20,New
+4,Jun 2005,Piranha Advertising,Piranha Advertising,United States,Tunisia,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+5,Jun 2005,Safran Group,SAGEM,France,Tunisia,Communications,Communications equ…,Manufacturing,$7.60m,"2,000",New
+6,May 2005,Van de Velde,Van de Velde,Belgium,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $22.50m,400,New
+7,Apr 2005,Leoni,Leoni,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,$18.00m,* 388,Expansion
+8,Apr 2005,NIEF Plastique,NIEF Plastique,France,Tunisia,Plastics,Laminated plastics pl…,Manufacturing,$3.20m,40,New
+9,Apr 2005,Omnicom Group,Sellbytel,United States,Tunisia,Business services,Business support ser…,Technical Support Ce…,* $21.00m,220,New
+10,Apr 2005,Qatar Airways,Qatar Airways,Qatar,Tunisia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+11,Mar 2005,FE Industries,FE Industries,France,Tunisia,Metals,Other fabricated met…,Manufacturing,$0.20m,25,New
+12,Feb 2005,Nocibe,Nocibe,France,Tunisia,Consumer products,"Cosmetics, perfume,…",Retail,* $36.90m,* 179,New
+13,Jan 2005,Orron Energy (Lu…,Orron Energy (Lu…,Sweden,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,* $207.80m,* 214,Expansion
+14,Jan 2005,PA Resources,Hydrocarbure Tuni…,Sweden,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,* $207.80m,* 214,New
+15,Jan 2005,Socomec,Timelec,France,Tunisia,Electronic components,All other electrical e…,Manufacturing,$2.60m,80,New

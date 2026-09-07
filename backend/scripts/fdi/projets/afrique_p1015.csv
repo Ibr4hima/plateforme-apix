@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2006,Bank of India (BOI),Bank of India (BOI),India,Tanzania,Financial services,Retail banking,Business Services,$10.00m,* 23,New
+2,Sep 2006,Bank of India (BOI),Bank of India (BOI),India,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+3,Aug 2006,Al-Futtaim Group,Al Futtaim Technol…,UAE,Tanzania,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+4,Aug 2006,FirstRand,Momentum,South Africa,Tanzania,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+5,May 2006,Letshego Holdings…,Letshego Holdings…,Botswana,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Feb 2006,De Beers,De Beers,South Africa,Tanzania,Minerals,Other non-metallic …,Manufacturing,$150.00m,"* 1,222",New
+7,Jan 2006,GH Group,Island View,Botswana,Tanzania,Real estate,Commercial & institu…,Construction,$80.00m,* 572,New
+8,Sep 2005,Sumitomo Chemical,Sumitomo Chemical,Japan,Tanzania,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $16.30m,* 243,New
+9,Aug 2005,Bank of India (BOI),Bank of India (BOI),India,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Jul 2005,Goldstream Mining,Goldstream Mining,Australia,Tanzania,Metals,"Copper, nickel, lead,…",Extraction,* $270.00m,"* 1,012",New
+11,Apr 2005,CMC Motors Group,CMC Motors Group,Kenya,Tanzania,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $10.10m,* 38,New
+12,Mar 2005,Barrick Gold,Barrick Gold,Canada,Tanzania,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",Expansion
+13,Mar 2005,EnerGulf Resources,EnerGulf Resources,Canada,Tanzania,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+14,Mar 2005,Gallery Gold,Gallery Gold,Australia,Tanzania,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",Expansion
+15,Mar 2005,Northern Mining E…,Northern Mining E…,Canada,Tanzania,Metals,Gold ore & silver ore…,Extraction,* $270.00m,"* 1,012",New

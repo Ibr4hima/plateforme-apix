@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2012,RIU Hotels & Reso…,Riusa II,Spain,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+2,Feb 2012,Accor,Ibis,France,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+3,Feb 2012,Societe BIC,Societe BIC,France,Tunisia,Consumer products,Office supplies (exce…,Manufacturing,$16.00m,* 144,New
+4,Feb 2012,Union of Arab Ban…,Union of Arab Ban…,Lebanon,Tunisia,Financial services,Other (Financial serv…,Business Services,* $11.00m,* 18,New
+5,Jan 2012,Airbus Group (Eur…,Airbus,Netherlands,Tunisia,Aerospace,Aircraft,Manufacturing,$79.55m,"1,500",Expansion
+6,Jan 2012,Nur Energie,Nur Energie,United Kingdom,Tunisia,Renewable energy,Solar electric power,Electricity,* $231.70m,* 54,New
+7,Jan 2012,Qanawat,Qanawat,UAE,Tunisia,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.80m,* 16,New
+8,Dec 2011,Préfélectrique (Pr…,Préfélectrique (Pr…,France,Tunisia,Electronic components,Wiring devices,Manufacturing,* $5.30m,* 143,New
+9,Dec 2011,Viscom,Viscom,Germany,Tunisia,Industrial equipment,Mechanical power tr…,"Sales, Marketing & S…",* $2.90m,* 17,New
+10,Nov 2011,Dallah Al-Baraka …,Albaraka Banking …,Saudi Arabia,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Nov 2011,GT,GT,France,Tunisia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+12,Nov 2011,Hamman Marketin…,Hamman Marketin…,United States,Tunisia,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+13,Nov 2011,Leoni,Leoni,Germany,Tunisia,Electronic components,Communication & en…,Manufacturing,* $5.30m,* 143,Expansion
+14,Oct 2011,Cevital,Cevital,Algeria,Tunisia,Food and Beverages,Sugar & confectionar…,Manufacturing,* $58.40m,* 429,New
+15,Oct 2011,China National Pet…,China National Pet…,China,Tunisia,"Coal, oil & gas",Other petroleum & c…,"Sales, Marketing & S…",* $22.20m,* 54,New

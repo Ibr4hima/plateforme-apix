@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2007,Iccrea Holding,Banca Agrileasing,Italy,Tunisia,Financial services,Corporate & investm…,Business Services,$60.80m,17,New
+2,Dec 2007,Siemens,Siemens,Germany,Tunisia,Consumer electronics,Other (Consumer ele…,Technical Support Ce…,* $0.50m,5,New
+3,Dec 2007,Zollner,Zollner,Germany,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $5.30m,* 143,New
+4,Nov 2007,Anite Group,Datavance,United Kingdom,Tunisia,Software & IT services,Custom computer pr…,Business Services,$10.30m,30,New
+5,Nov 2007,Heidelberg Materi…,Heidelberg Materi…,Italy,Tunisia,Building materials,Cement & concrete p…,Manufacturing,$204.95m,300,New
+6,Nov 2007,Sumitomo Group,Sumitomo Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $177.70m,"2,500",New
+7,Nov 2007,West Pharmaceuti…,West Pharmaceuti…,United States,Tunisia,Medical devices,Medical equipment &…,Manufacturing,* $25.00m,* 126,New
+8,Oct 2007,Open Wide,Open Wide,France,Tunisia,Software & IT services,Internet publishing …,Research & Develop…,* $15.60m,100,New
+9,Oct 2007,WPP,Memac Ogilvy,United Kingdom,Tunisia,Business services,"Advertising, PR, & re…",Headquarters,* $13.80m,* 85,New
+10,Sep 2007,Christ Water Tech…,Aqua Engineering,Switzerland,Tunisia,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 17,New
+11,Sep 2007,Groupe PSA (PSA …,Groupe PSA (PSA …,France,Tunisia,Automotive OEM,Automobiles,Customer Contact C…,* $8.90m,* 336,New
+12,Sep 2007,Stream Global Ser…,Stream Global Ser…,United States,Tunisia,Business services,Business support ser…,Customer Contact C…,* $11.10m,550,New
+13,Sep 2007,TFO,TFO,Spain,Tunisia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Aug 2007,Aricam,Aricam,Spain,Tunisia,Building materials,Cement & concrete p…,Manufacturing,* $271.93m,* 519,New
+15,Aug 2007,Fram,Fram,France,Tunisia,Hotels & tourism,Travel arrangement …,Construction,$9.20m,12,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2019,Inditex,Lefties,Spain,Tunisia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,Nov 2019,Sumitomo Group,Sumitomo Electric…,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,$16.04m,"2,000",New
+3,Oct 2019,Advans Group,Advans Tunisie,Luxembourg,Tunisia,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+4,Oct 2019,Airbus Group (Eur…,Airbus,Netherlands,Tunisia,Aerospace,Aircraft,Education & Training,* $31.80m,* 91,New
+5,Oct 2019,Minor International,"Anantara Hotels, …",Thailand,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+6,Oct 2019,Transpare,Transpare,France,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+7,Sep 2019,Bono,Bono,Italy,Tunisia,Food and Beverages,Grains & oilseed,Manufacturing,* $45.80m,* 154,New
+8,Sep 2019,Olympique de Mar…,Olympique de Mar…,France,Tunisia,Leisure & entertainm…,"Performing arts, spe…",Education & Training,* $8.20m,* 131,New
+9,Aug 2019,Advans Group,Advans Tunisie,Luxembourg,Tunisia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+10,Jul 2019,Holberton School,Holberton School,United States,Tunisia,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+11,Jun 2019,TUI Group,TUI Magic Life,Germany,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+12,May 2019,Advans Group,Advans Tunisie,Luxembourg,Tunisia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Apr 2019,Sopra Steria,Momentum Techn…,France,Tunisia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+14,Mar 2019,ABO Wind,ABO Wind,Germany,Tunisia,Renewable energy,Solar electric power,Electricity,* $70.60m,* 57,New
+15,Mar 2019,Benetton Group S…,Benetton Group S…,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $6.00m,150,New

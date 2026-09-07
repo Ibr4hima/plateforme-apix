@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2006,Roullier,Roullier,France,Tunisia,Chemicals,"Pesticide, fertilisers …",Manufacturing,$13.00m,* 16,Expansion
+2,Nov 2006,Innotelco,Innotelco,United States,Tunisia,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+3,Nov 2006,Kuwait Projects (K…,Kuwait Projects (K…,Kuwait,Tunisia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Nov 2006,The Emirates Group,Emirates Airline,UAE,Tunisia,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+5,Nov 2006,Valeo,Valeo,France,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $4.30m,60,New
+6,Nov 2006,Zodiac Aerospace,Zodiac Aerospace,France,Tunisia,Aerospace,"Aircraft engines, oth…",Manufacturing,* $19.80m,* 349,New
+7,Oct 2006,Calida Holding,Aubade,Switzerland,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $13.90m,"* 1,080",New
+8,Oct 2006,IP Télécoms,IP Télécoms,France,Tunisia,Communications,Wireless telecommu…,ICT & Internet Infras…,* $150.00m,* 89,New
+9,Oct 2006,Lefrancq,Lefrancq,France,Tunisia,"Paper, printing & pac…",Printing & related ac…,Manufacturing,* $6.00m,30,Expansion
+10,Oct 2006,Pierre Fabre,Pierre Fabre,France,Tunisia,Pharmaceuticals,Medicinal & botanical,Manufacturing,* $31.10m,* 376,New
+11,Sep 2006,Benetton Group S…,Benetton,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,$28.22m,* 707,New
+12,Sep 2006,Tubor,Tubor,Italy,Tunisia,Industrial equipment,"Ventilation, heating, …",Manufacturing,* $48.20m,* 401,New
+13,Aug 2006,Crown Holdings,Crown Bevcan Eur…,United States,Tunisia,Metals,Alumina & aluminiu…,Manufacturing,* $178.90m,* 342,New
+14,Aug 2006,Medialeader,Medialeader,UAE,Tunisia,Business services,"Newspaper, periodic…",Business Services,* $6.80m,* 15,New
+15,Jul 2006,Barclays Bank,ABSA,United Kingdom,Tunisia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

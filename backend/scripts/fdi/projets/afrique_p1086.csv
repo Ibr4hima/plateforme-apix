@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2007,Toyota Motor,Toyota Uganda,Japan,Uganda,Automotive OEM,Automobiles,Maintenance & Servi…,* $1.70m,* 61,New
+2,Nov 2006,Dooka Industrial a…,Dooka Industrial a…,Iran,Uganda,Food and Beverages,Animal slaughtering …,Manufacturing,$60.00m,* 392,New
+3,Nov 2006,Lafarge,Hima Cement,France,Uganda,Building materials,Cement & concrete p…,Manufacturing,$93.00m,* 178,New
+4,Nov 2006,Tata Group,Tata Coffee,India,Uganda,Food and Beverages,Coffee & tea,Manufacturing,$20.00m,* 131,New
+5,Oct 2006,Smile Phan,Smile Phan,Thailand,Uganda,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $16.30m,* 243,New
+6,Aug 2006,Al-Futtaim Group,Al Futtaim Technol…,UAE,Uganda,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+7,Aug 2006,Korbitec,Compustat,South Africa,Uganda,Business services,Other support services,Business Services,* $6.80m,* 15,New
+8,Aug 2006,MTN Group,MTN Uganda,South Africa,Uganda,Communications,Wireless telecommu…,Maintenance & Servi…,* $8.40m,* 82,New
+9,Jun 2006,Kingdom Hotel In…,Kingdom Hotel In…,UAE,Uganda,Hotels & tourism,Accommodation,Construction,$60.00m,* 153,New
+10,Jun 2006,Neptune Software,Neptune Software,United Kingdom,Uganda,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+11,May 2006,East African Malti…,Kenya Maltings,Kenya,Uganda,Food and Beverages,Distilleries,"Sales, Marketing & S…",* $19.00m,* 22,New
+12,May 2006,Letshego Holdings…,Letshego Holdings…,Botswana,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,May 2006,Nokia,Nokia,Finland,Uganda,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+14,Mar 2006,Toyota Motor,Toyota Uganda,Japan,Uganda,Automotive compon…,Other motor vehicle …,Headquarters,$4.00m,* 28,New
+15,Jan 2006,Crown Paints Ken…,Crown Paints Ken…,Kenya,Uganda,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",$37.10m,48,New

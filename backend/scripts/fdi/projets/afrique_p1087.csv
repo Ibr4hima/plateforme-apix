@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2006,Leewadee,Leewadee,Thailand,Uganda,Food and Beverages,Food & beverage ret…,Retail,$0.05m,20,New
+2,Dec 2005,Libyan Arab Africa…,Libyan Arab Africa…,Libya,Uganda,Food and Beverages,Coffee & tea,Manufacturing,* $24.20m,* 429,New
+3,Dec 2005,Worldwide Immigr…,Worldwide Immigr…,Canada,Uganda,Business services,Other support services,Business Services,* $6.80m,* 15,New
+4,Nov 2005,Toyota Motor,Toyota Uganda,Japan,Uganda,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",* $18.20m,* 65,New
+5,Sep 2005,MTN Group,MTN International,South Africa,Uganda,Communications,Communications equ…,Maintenance & Servi…,* $8.40m,* 82,New
+6,May 2005,International Busi…,International Busi…,United States,Uganda,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+7,Apr 2005,Bidco Africa (Bidc…,BIDCO Uganda,Kenya,Uganda,Food and Beverages,Grains & oilseed,Manufacturing,$10.00m,* 65,New
+8,Oct 2004,Shoprite,Shoprite,South Africa,Uganda,Food and Beverages,Food & beverage ret…,Retail,$8.00m,* 131,New
+9,Oct 2004,Siemens,Siemens,Germany,Uganda,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+10,May 2004,African Developm…,African Developm…,Côte d Ivoire,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Apr 2004,Massmart,Game Stores,South Africa,Uganda,Consumer products,"Dolls, toy, & games",Retail,* $7.50m,* 43,New
+12,Jan 2004,Petronas,Engen,Malaysia,Uganda,"Coal, oil & gas",Gasoline stations,"Sales, Marketing & S…",* $22.20m,* 54,New
+13,Oct 2003,Bowmans (Bowm…,Bowmans (Bowm…,South Africa,Uganda,Business services,Legal services,Business Services,* $27.80m,* 38,New
+14,Oct 2003,Toyota Motor,Toyota,Japan,Uganda,Automotive OEM,Automobiles,Maintenance & Servi…,* $6.10m,* 27,New
+15,Aug 2003,Yue Yang Paper,Yue Yang Paper,China,Uganda,"Paper, printing & pac…","Pulp, paper, & paper…",Manufacturing,$9.90m,114,New

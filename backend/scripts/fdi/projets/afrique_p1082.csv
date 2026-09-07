@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2009,Bank of Africa,Bank of Africa,Mali,Uganda,Financial services,Retail banking,Business Services,$0.35m,* 1,New
+2,Feb 2009,Chapman Freeborn,Chapman Freeborn,United Kingdom,Uganda,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $15.30m,* 10,New
+3,Feb 2009,Japanese Auto Mart,Japanese Auto Mart,Japan,Uganda,Automotive OEM,Motor vehicle & part…,"Sales, Marketing & S…",* $10.10m,* 38,New
+4,Feb 2009,SOMAF,AFRICA Aptitude,Luxembourg,Uganda,"Coal, oil & gas",Oil & gas extraction,Extraction,$700.00m,* 291,New
+5,Feb 2009,Tamoil (Oilinvest …,Tamoil (Oilinvest …,Netherlands,Uganda,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",$250.00m,* 925,New
+6,Feb 2009,Toyota Motor,Toyota Uganda,Japan,Uganda,Automotive OEM,Automobiles,Maintenance & Servi…,* $1.70m,* 61,New
+7,Jan 2009,Kenya Commercia…,KCB Bank Uganda,Kenya,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Dec 2008,Aga Khan Develop…,Diamond Trust Ba…,Switzerland,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Dec 2008,Bank of Baroda,Bank of Baroda,India,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Dec 2008,Ecobank Transnati…,Ecobank Transnati…,Togo,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+11,Dec 2008,Heritage Oil,Heritage Oil,United Kingdom,Uganda,"Coal, oil & gas",Oil & gas extraction,Extraction,* $536.90m,* 214,New
+12,Dec 2008,Lafarge,Hima Cement,France,Uganda,Building materials,Cement & concrete p…,Manufacturing,$108.00m,* 206,Expansion
+13,Dec 2008,Sameer Group,SAMEER Agricultu…,Kenya,Uganda,Food and Beverages,Dairy products,Manufacturing,* $24.20m,* 429,Expansion
+14,Dec 2008,United Bank for Af…,United Bank for Af…,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Nov 2008,Bank of Africa,Bank of Africa,Mali,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New

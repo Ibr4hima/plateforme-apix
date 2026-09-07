@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2010,Yazaki Group,Yazaki Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",New
+2,Jun 2010,Yazaki Group,Yazaki Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $28.40m,400,New
+3,Jun 2010,Yazaki Group,Yazaki Group,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",New
+4,May 2010,Carrefour,Carrefour Express,France,Tunisia,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+5,May 2010,Carrefour,Carrefour,France,Tunisia,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+6,May 2010,Continental,Continental,Germany,Tunisia,Consumer electronics,Audio & video equip…,Manufacturing,* $1.40m,20,New
+7,May 2010,Mokhtar Groupe,Sacinor,Turkey,Tunisia,Metals,Iron & steel mills & f…,Manufacturing,* $178.90m,* 342,New
+8,May 2010,Plastiques du Val …,Plastiques du Val …,France,Tunisia,Plastics,Laminated plastics pl…,Manufacturing,$1.23m,* 11,New
+9,May 2010,Risc Group,Risc Group,France,Tunisia,Software & IT services,"Software publishers,…",Customer Contact C…,* $9.40m,* 250,New
+10,Apr 2010,GfK,GfK,Germany,Tunisia,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+11,Apr 2010,Giordano,Giordano,Hong Kong,Tunisia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+12,Mar 2010,C2F Implants,C2F Implants,France,Tunisia,Medical devices,Medical equipment &…,Manufacturing,$0.49m,10,New
+13,Feb 2010,Aeroconseil,Aeroconseil,France,Tunisia,Aerospace,Aircraft,Manufacturing,* $19.80m,* 349,New
+14,Feb 2010,Continental,Continental,Germany,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",New
+15,Feb 2010,Grupo Iberostar,Iberostar,Spain,Tunisia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New

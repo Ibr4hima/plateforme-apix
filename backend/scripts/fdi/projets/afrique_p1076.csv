@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2013,WPP,Hill+Knowlton Str…,United Kingdom,Uganda,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+2,Dec 2012,Asset Managemen…,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Dec 2012,Deacons,Deacons,Kenya,Uganda,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Nov 2012,Asset Managemen…,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Nov 2012,Bank of India (BOI),Bank of India (BOI),India,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Nov 2012,ConvergeNet,Simat Group,South Africa,Uganda,Business services,Other support services,Business Services,* $27.80m,* 38,New
+7,Nov 2012,Gras Savoye,Gras Savoye,France,Uganda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+8,Nov 2012,Nakumatt Holdings,Nakumatt Holdings,Kenya,Uganda,Food and Beverages,Food & beverage ret…,Retail,$3.00m,* 54,New
+9,Nov 2012,SEKO Worldwide,SEKO Worldwide,United States,Uganda,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+10,Nov 2012,Simba Group,Electro-Maxx,Nigeria,Uganda,Renewable energy,Geothermal electric …,Electricity,$60.00m,* 19,New
+11,Oct 2012,NMC Group,UAE Exchange Ce…,UAE,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Sep 2012,China National Ma…,China Machine-Bu…,China,Uganda,Metals,Steel products,Manufacturing,$100.00m,* 684,New
+13,Aug 2012,Aanjaneya Lifecare,Aanjaneya Lifecare,India,Uganda,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+14,Aug 2012,Mount Meru Group,Mount Meru Group,Tanzania,Uganda,Food and Beverages,Grains & oilseed,Manufacturing,$15.00m,120,New
+15,Jul 2012,Naivas Supermark…,Naivas Supermark…,Kenya,Uganda,Food and Beverages,Food & beverage ret…,Retail,* $2.90m,* 107,New

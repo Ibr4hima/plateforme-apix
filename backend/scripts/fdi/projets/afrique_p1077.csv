@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2012,Asset Managemen…,Orient Bank,Nigeria,Uganda,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+2,Apr 2012,Airkenya Express,Airkenya Express,Kenya,Uganda,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $45.70m,* 93,New
+3,Apr 2012,Apollo Hospitals G…,Apollo Hospitals G…,India,Uganda,Healthcare,General medical & s…,Construction,* $49.40m,* 209,New
+4,Apr 2012,Eden Square Busi…,Eden Square Busi…,Kenya,Uganda,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+5,Apr 2012,NIC Bank,NIC Bank,Kenya,Uganda,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+6,Apr 2012,Techno Brain,Techno Brain,Tanzania,Uganda,Software & IT services,Custom computer pr…,Shared Services Cen…,* $13.50m,* 537,New
+7,Mar 2012,Bank of Kigali,Bank of Kigali,Rwanda,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Feb 2012,Altech Group,Altech Group,South Africa,Uganda,Communications,Computing infrastruc…,ICT & Internet Infras…,* $1.93m,* -,New
+9,Feb 2012,Asset Managemen…,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Jan 2012,MTN Group,MTN Uganda,South Africa,Uganda,Communications,Wireless telecommu…,ICT & Internet Infras…,$80.00m,* 12,New
+11,Jan 2012,Samasource,Samasource,United States,Uganda,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+12,Nov 2011,Nippon Telegraph …,Internet Solutions…,Japan,Uganda,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Nov 2011,SABMiller,NILE Breweries (N…,United Kingdom,Uganda,Food and Beverages,Breweries,Manufacturing,$90.00m,140,Expansion
+14,Oct 2011,IHS Plc,IHS Plc,Nigeria,Uganda,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+15,Sep 2011,Asset Managemen…,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New

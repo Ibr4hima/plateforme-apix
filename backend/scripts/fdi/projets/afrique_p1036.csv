@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2013,BRB International,BRB International,Netherlands,Tunisia,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+2,Dec 2013,Six Senses,Six Senses,Thailand,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+3,Nov 2013,Acciona,Acciona,Spain,Tunisia,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+4,Nov 2013,Amanie Advisors,Amanie Advisors,Malaysia,Tunisia,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New
+5,Nov 2013,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,Tunisia,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+6,Oct 2013,Eversheds,Eversheds,United Kingdom,Tunisia,Business services,Legal services,Business Services,* $27.80m,* 29,New
+7,Oct 2013,P2 Acquisition,P2 Energy Solutions,United States,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,Expansion
+8,Sep 2013,Chubb Limited (A…,ACE American Ins…,Switzerland,Tunisia,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+9,Sep 2013,WPP,MediaCom,United Kingdom,Tunisia,Business services,"Advertising, PR, & re…",Business Services,* $1.80m,12,New
+10,Jun 2013,Nexans,Nexans Autoelectric,France,Tunisia,Electronic components,Communication & en…,Manufacturing,* $9.00m,* 245,Expansion
+11,Jun 2013,Remondis (Rethm…,Rhenus Freight Lo…,Germany,Tunisia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New
+12,Jun 2013,Societe Generale (…,Societe Generale …,France,Tunisia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+13,Jun 2013,TransInvest,Militzer & Münch,Switzerland,Tunisia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",$19.92m,* 88,Expansion
+14,May 2013,Cadfem,Cadfem,Germany,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",$0.06m,* -,New
+15,Apr 2013,ThyssenKrupp,ThyssenKrupp Aer…,Germany,Tunisia,Metals,Alumina & aluminiu…,Manufacturing,* $1.80m,12,New

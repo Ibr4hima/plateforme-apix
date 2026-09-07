@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2009,Zodiac Aerospace,Aerazur,France,Tunisia,Aerospace,"Aircraft engines, oth…",Manufacturing,* $19.80m,* 349,Expansion
+2,Nov 2009,Cevital,Cevital,Algeria,Tunisia,Food and Beverages,Other (Food & Bever…,Manufacturing,* $58.40m,* 429,New
+3,Nov 2009,Siapi,Siapi,Italy,Tunisia,Industrial equipment,Plastics & rubber ind…,"Sales, Marketing & S…",* $2.90m,* 17,New
+4,Nov 2009,Sumitomo Group,Sumitomo Electric…,Japan,Tunisia,Automotive compon…,Motor vehicle electri…,Manufacturing,* $22.70m,"* 1,168",Expansion
+5,Oct 2009,Aban Singapore Pte,Aban Singapore Pte,Singapore,Tunisia,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+6,Oct 2009,Aiseiri Extractive …,Aiseiri Extractive …,Ireland,Tunisia,Minerals,Other non-metallic …,Manufacturing,$2.39m,* 19,New
+7,Oct 2009,Cultisol,Cultisol,France,Tunisia,Consumer products,Building material & g…,Customer Contact C…,* $10.50m,* 229,New
+8,Oct 2009,Leoni,Leoni,Germany,Tunisia,Electronic components,Communication & en…,Manufacturing,* $5.30m,* 143,New
+9,Oct 2009,Maxter Catheters,Maxter Catheters,France,Tunisia,Medical devices,Medical equipment &…,Manufacturing,* $25.00m,* 126,New
+10,Oct 2009,Metinvest Group,Metinvest Internat…,Ukraine,Tunisia,Metals,Steel products,"Sales, Marketing & S…",* $2.80m,* 9,New
+11,Oct 2009,TAV Airports Holdi…,TAV Airports Holdi…,Turkey,Tunisia,Real estate,Real estate services,Construction,$500.00m,"5,000",New
+12,Sep 2009,Moncada Costruzi…,Moncada Costruzi…,Italy,Tunisia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $558.00m,* 116,New
+13,Sep 2009,Moncada Costruzi…,Moncada Costruzi…,Italy,Tunisia,Transportation & Wa…,Other pipeline trans…,"Logistics, Distributio…",* $45.70m,* 93,New
+14,Sep 2009,Moncada Costruzi…,Moncada Costruzi…,Italy,Tunisia,Renewable energy,Solar electric power,Electricity,* $231.70m,* 54,New
+15,Sep 2009,TeleTRADE,TeleTRADE,Hong Kong,Tunisia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2007,Heineken Holding,Heineken,Netherlands,Tunisia,Food and Beverages,Breweries,Manufacturing,$37.68m,150,New
+2,Jul 2007,High Arctic Energy…,High Arctic Energy…,Canada,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,* $207.80m,* 214,New
+3,Jul 2007,Sicep,Sicep,Italy,Tunisia,Communications,Wireless telecommu…,Manufacturing,$19.94m,144,New
+4,Jun 2007,Marriott Internatio…,Marriott Internatio…,United States,Tunisia,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $0.90m,* 13,New
+5,Jun 2007,Microsoft,Microsoft,United States,Tunisia,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+6,Jun 2007,Phone Control,Phone Control,France,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+7,Jun 2007,Piterion,Piterion,Germany,Tunisia,Software & IT services,Custom computer pr…,Business Services,* $13.80m,* 49,New
+8,Mar 2007,Groupe Lacroix (L…,LACROIX ELECTR…,France,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $24.20m,300,New
+9,Mar 2007,La Prairie,La Prairie,Switzerland,Tunisia,Hotels & tourism,Accommodation,Retail,* $11.60m,* 148,New
+10,Feb 2007,Damartex,Damartex,France,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $13.90m,"* 1,080",New
+11,Feb 2007,Procidec AIEV,Procidec AIEV,France,Tunisia,Metals,Other fabricated met…,Manufacturing,$0.70m,30,New
+12,Jan 2007,Fujitsu Siemens C…,Fujitsu Siemens C…,Netherlands,Tunisia,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+13,Jan 2007,Groupe Lacroix (L…,LACROIX ELECTR…,France,Tunisia,Electronic components,All other electrical e…,Manufacturing,$6.00m,75,Expansion
+14,Jan 2007,Zinifex,Zinifex,Australia,Tunisia,Metals,Nonferrous metal pr…,Extraction,* $270.00m,"* 1,012",New
+15,Dec 2006,Cahors,Cahors,France,Tunisia,Electronic components,Electrical equipment,Manufacturing,* $5.30m,* 143,New

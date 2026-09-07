@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2011,Dimelco,Dimelco,France,Tunisia,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 17,New
+2,Aug 2011,Eni SpA,Eni SpA,Italy,Tunisia,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $45.70m,* 93,New
+3,Aug 2011,Garvalin,Garvalin,Spain,Tunisia,Textiles,Footwear,Retail,* $11.90m,* 86,New
+4,Jul 2011,Heineken Holding,Societe Nouvelle d…,Netherlands,Tunisia,Food and Beverages,Soft drinks & ice,Manufacturing,* $32.40m,120,Expansion
+5,Jul 2011,Heineken Holding,Societe Nouvelle d…,Netherlands,Tunisia,Food and Beverages,Soft drinks & ice,Manufacturing,$3.00m,250,Expansion
+6,Jul 2011,Hermisan,Hermisan,Spain,Tunisia,Industrial equipment,"Agriculture, construc…",Retail,* $2.10m,* 148,New
+7,Jul 2011,International Busi…,International Busi…,United States,Tunisia,Software & IT services,Custom computer pr…,Headquarters,* $16.00m,* 61,New
+8,Jul 2011,New Zealand Oil &…,New Zealand Oil &…,New Zealand,Tunisia,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $22.20m,* 54,New
+9,Jul 2011,Orange (France Te…,Orange Tunisie,France,Tunisia,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $38.60m,150,New
+10,Jul 2011,Zafco,Zafco,UAE,Tunisia,Rubber,Tyres,"Sales, Marketing & S…",* $2.80m,* 12,New
+11,Jun 2011,Darin Communica…,Darin Communica…,Italy,Tunisia,Financial services,Corporate & investm…,Business Services,* $12.90m,30,New
+12,Jun 2011,Grisport,Grisport,Italy,Tunisia,Textiles,Footwear,Manufacturing,* $56.30m,"1,000",New
+13,May 2011,Airbus Group (Eur…,STELIA Aerospace…,Netherlands,Tunisia,Aerospace,"Aircraft engines, oth…",Manufacturing,* $56.70m,750,New
+14,May 2011,ESI Group,ESI Group,France,Tunisia,Software & IT services,"Software publishers,…",Research & Develop…,* $15.30m,* 162,New
+15,May 2011,Hotelsa Alimentaci…,Hotelsa Alimentaci…,Spain,Tunisia,Food and Beverages,Other (Food & Bever…,"Logistics, Distributio…",* $22.50m,* 158,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2026,Advanced Semico…,AsteelFlash,Taiwan,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $9.00m,* 245,Expansion
+2,Jan 2026,GFA Group,GKW Consult,Germany,Tunisia,Business services,"Architectural, engine…",Business Services,* $27.80m,* 29,Expansion
+3,Jan 2026,Lear,Lear,United States,Tunisia,Automotive compon…,Motor vehicle seatin…,Manufacturing,$10.07m,"4,500",New
+4,Jan 2026,MYC Beauty Innov…,MYC Beauty Innov…,China,Tunisia,Plastics,Plastics packaging m…,Manufacturing,$5.48m,350,New
+5,Dec 2025,Autoliv,Autoliv Tunisia,Sweden,Tunisia,Automotive compon…,Motor vehicle steerin…,Manufacturing,* $30.90m,"* 1,265",New
+6,Dec 2025,HandsOn Systems,HandsOn Systems,Malta,Tunisia,Renewable energy,Solar electric power,Electricity,$567.22m,* 176,New
+7,Dec 2025,Lapp Group,Lapp Group,Germany,Tunisia,Electronic components,Communication & en…,Research & Develop…,* $21.90m,* 62,New
+8,Dec 2025,Visteon,Visteon,United States,Tunisia,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $23.30m,* 213,New
+9,Nov 2025,Foxit,Foxit,United States,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+10,Nov 2025,Hikma Pharmaceu…,Hikma Pharmaceu…,United Kingdom,Tunisia,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $6.20m,40,Expansion
+11,Oct 2025,Happypunt,Happypunt,Spain,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $5.20m,130,New
+12,Oct 2025,NTN,NTN,Japan,Tunisia,Automotive compon…,Other motor vehicle …,Manufacturing,* $30.90m,"* 1,265",New
+13,Oct 2025,PrimeIT,PrimeIT,Portugal,Tunisia,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 162,New
+14,Oct 2025,Save Your Wardro…,Save Your Wardro…,United Kingdom,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+15,Oct 2025,Xpert Digital,Xpert Digital,UAE,Tunisia,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 97,New

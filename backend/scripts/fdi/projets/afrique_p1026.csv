@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2023,Akumplast,Akumplast,Bulgaria,Tunisia,Plastics,Other plastics produ…,Manufacturing,* $25.20m,* 293,New
+2,Mar 2023,Dräxlmaier (Draex…,Dräxlmaier (Draex…,Germany,Tunisia,Software & IT services,Other (Software & IT…,Research & Develop…,* $186.10m,"1,000",Co-Location
+3,Mar 2023,Star Agritech Inte…,Star Agritech Inte…,Turkey,Tunisia,Food and Beverages,Tobacco,Manufacturing,* $45.80m,* 154,New
+4,Mar 2023,Star Agritech Inte…,Star Agritech Inte…,Turkey,Tunisia,Food and Beverages,Tobacco,"Sales, Marketing & S…",* $4.50m,* 18,New
+5,Feb 2023,Carresa Group,Carresa Group,Morocco,Tunisia,Transportation & Wa…,Other (Transportatio…,"Sales, Marketing & S…",* $6.30m,* 18,New
+6,Dec 2022,Eni SpA,Eni SpA,Italy,Tunisia,Renewable energy,Solar electric power,Electricity,* $70.60m,* 57,New
+7,Nov 2022,Isitec International,Isitec International,France,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+8,Nov 2022,Qatar Investment …,Inetum (Gfi Infor…,Qatar,Tunisia,Software & IT services,Custom computer pr…,Headquarters,* $12.20m,* 73,New
+9,Oct 2022,Zollner,Zollner,Germany,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $4.70m,100,New
+10,Sep 2022,Actia Group,Actia Group,France,Tunisia,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $91.20m,400,New
+11,Jul 2022,Ooredoo (Qatar Te…,Ooredoo Tunisia (…,Qatar,Tunisia,Communications,Communications equ…,Retail,* $6.30m,* 31,Co-Location
+12,May 2022,Oniverse (Calzedo…,Oniverse (Calzedo…,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $18.00m,* 450,New
+13,May 2022,Oniverse (Calzedo…,Oniverse (Calzedo…,Italy,Tunisia,Textiles,Clothing & clothing a…,Manufacturing,* $18.00m,* 450,New
+14,May 2022,Sartorius,Sartorius,Germany,Tunisia,Biotechnology,Biological products (…,Manufacturing,$21.15m,* 23,Expansion
+15,Apr 2022,Maystro Delivery,Maystro Delivery,UAE,Tunisia,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 18,New

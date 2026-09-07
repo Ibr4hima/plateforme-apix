@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2010,JHI,JHI,South Africa,Tanzania,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+2,Apr 2010,Mercator Transport,Mercator Transport,Canada,Tanzania,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+3,Mar 2010,ABC Holdings (Ba…,ABC Holdings (Ba…,Botswana,Tanzania,Financial services,Retail banking,Business Services,* $9.50m,* 22,New
+4,Feb 2010,Kenya Commercia…,Kenya Commercia…,Kenya,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Feb 2010,Vodafone Group,Vodacom Tanzania,United Kingdom,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+6,Feb 2010,Vodafone Group,Vodacom Tanzania,United Kingdom,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jan 2010,Ecobank Transnati…,Ecobank Transnati…,Togo,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Dec 2009,NMB Bank,NMB Bank,Zimbabwe,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Nov 2009,InterContinental H…,InterContinental H…,United Kingdom,Tanzania,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,Sep 2009,Korea Rural Com…,Korea Rural Com…,South Korea,Tanzania,Food and Beverages,Crop production,Education & Training,* $1.70m,* 94,New
+11,Aug 2009,Seacom,Seacom,Mauritius,Tanzania,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+12,May 2009,First Community …,First Community …,Kenya,Tanzania,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+13,May 2009,SABMiller,Tanzania Brewerie…,United Kingdom,Tanzania,Food and Beverages,Breweries,Manufacturing,* $34.10m,* 222,Expansion
+14,Apr 2009,SABMiller,Tanzania Brewerie…,United Kingdom,Tanzania,Food and Beverages,Breweries,Manufacturing,$20.00m,* 74,Expansion
+15,Feb 2009,African Medical In…,VIP Healthcare So…,United Kingdom,Tanzania,Healthcare,General medical & s…,Construction,* $49.40m,* 209,New

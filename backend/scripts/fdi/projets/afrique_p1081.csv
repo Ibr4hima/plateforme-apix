@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2010,Tullow Oil,Tullow Oil,United Kingdom,Uganda,"Coal, oil & gas",Petroleum refineries,Manufacturing,$5.00bn,"* 1,007",New
+2,Dec 2009,Bank PHB,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Dec 2009,SABMiller,NILE Breweries (N…,United Kingdom,Uganda,Food and Beverages,Breweries,Manufacturing,$16.00m,* 59,Co-Location
+4,Nov 2009,Bank PHB,Orient Bank,Nigeria,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Oct 2009,Commercial Bank …,Commercial Bank …,Kenya,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+6,Aug 2009,Seacom,Seacom,Mauritius,Uganda,Communications,Wired telecommunic…,ICT & Internet Infras…,* $113.10m,* 89,New
+7,Aug 2009,Toyota Motor,Toyota Uganda,Japan,Uganda,Automotive compon…,Other motor vehicle …,Maintenance & Servi…,* $9.10m,* 93,New
+8,Jul 2009,Wilmar Internatio…,Wilmar Plantation …,Singapore,Uganda,Food and Beverages,Crop production,Manufacturing,$10.00m,147,New
+9,Jun 2009,Mount Meru Group,Mount Meru Millers,Tanzania,Uganda,Food and Beverages,Grains & oilseed,Manufacturing,$30.00m,* 196,New
+10,May 2009,African Trade Insu…,African Trade Insu…,Kenya,Uganda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 100,New
+11,May 2009,First Community …,First Community …,Kenya,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,May 2009,MTN Group,MTN Uganda,South Africa,Uganda,Communications,Wireless telecommu…,ICT & Internet Infras…,* $113.10m,* 89,Expansion
+13,May 2009,MTN Group,MTN Uganda,South Africa,Uganda,Communications,Wireless telecommu…,Retail,* $6.40m,* 51,New
+14,Mar 2009,Equity Bank,Equity Bank,Kenya,Uganda,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Mar 2009,Orange (France Te…,Orange S.A.,France,Uganda,Communications,Wireless telecommu…,ICT & Internet Infras…,* $113.10m,* 89,Expansion

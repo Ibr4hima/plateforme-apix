@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2017,Grupo Alonso,Grupo Alonso,Spain,Tunisia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+2,Dec 2017,Marriott Internatio…,Ritz-Carlton,United States,Tunisia,Hotels & tourism,Accommodation,Construction,* $98.00m,* 202,New
+3,Dec 2017,Societe Maghrebin…,Societe Maghrebin…,Morocco,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $9.00m,* 245,New
+4,Nov 2017,Association Famili…,Decathlon (Oxylan…,France,Tunisia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+5,Nov 2017,Inditex,Zara Home,Spain,Tunisia,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+6,Oct 2017,Bobst Group SA,Bobst Africa & Mid…,Switzerland,Tunisia,Industrial equipment,General purpose ma…,Manufacturing,* $29.80m,* 219,New
+7,Sep 2017,Emka Electronique,Emka Electronique,France,Tunisia,Electronic components,All other electrical e…,Manufacturing,* $9.00m,* 245,Expansion
+8,Sep 2017,Mantu Group (Am…,Mantu Group (Am…,Switzerland,Tunisia,Software & IT services,Custom computer pr…,Business Services,* $8.10m,100,New
+9,Sep 2017,Metis Innovations …,Metis Innovations …,Belgium,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $40.30m,200,New
+10,Sep 2017,Wyplay,Wyplay,France,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $10.10m,50,New
+11,Jul 2017,MicroCred,MicroCred Tunisia,France,Tunisia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Apr 2017,China National Bui…,Sinoma Energy Co…,China,Tunisia,Renewable energy,Biomass power,"Sales, Marketing & S…",* $22.90m,* 25,New
+13,Mar 2017,Unionaire,Unionaire,Egypt,Tunisia,Consumer electronics,Household appliances,Manufacturing,$2.19m,200,New
+14,Feb 2017,Samsung Group,Samsung Group,South Korea,Tunisia,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+15,Jan 2017,Renner Energies (…,Renner Energies (…,Belgium,Tunisia,Renewable energy,Wind electric power,Electricity,* $76.25m,* 15,New

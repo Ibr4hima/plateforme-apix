@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2006,MENACOM Group …,MENACOM Group …,UAE,Tunisia,Business services,"Advertising, PR, & re…",Business Services,* $6.80m,* 15,New
+2,Jun 2006,Elvstrom Sobstad,Elvstrom Sobstad,Denmark,Tunisia,Textiles,Textile product mills,Manufacturing,* $13.90m,"* 1,080",Expansion
+3,Jun 2006,Siemens,Siemens,Germany,Tunisia,Consumer electronics,Other (Consumer ele…,Manufacturing,* $2.90m,40,Expansion
+4,Jun 2006,Societe Industriell…,Latelec,France,Tunisia,Aerospace,"Aircraft engines, oth…",Manufacturing,* $19.80m,* 349,New
+5,May 2006,AGQ (Agriquem),AGQ (Agriquem),Spain,Tunisia,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+6,May 2006,Mayr-Melnhof Gro…,Mayr-Melnhof Kart…,Austria,Tunisia,"Paper, printing & pac…",Converted paper pro…,Manufacturing,* $54.90m,* 76,New
+7,Apr 2006,Dachser,Graveleau,Germany,Tunisia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $45.70m,* 93,New
+8,Apr 2006,Valeo,Valeo,France,Tunisia,Automotive compon…,Motor vehicle electri…,Research & Develop…,* $28.80m,* 180,New
+9,Mar 2006,Inditex,Zara,Spain,Tunisia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+10,Feb 2006,Orron Energy (Lu…,Orron Energy (Lu…,Sweden,Tunisia,"Coal, oil & gas",Oil & gas extraction,Extraction,$45.00m,* 19,Expansion
+11,Jan 2006,LCH Consultant,LCH Consultant,France,Tunisia,Business services,Management consult…,Business Services,* $6.80m,* 15,New
+12,Dec 2005,Oxymetal,Oxymetal,France,Tunisia,Industrial equipment,Metalworking machi…,Manufacturing,* $8.60m,60,New
+13,Nov 2005,Andium,Andium Internatio…,France,Tunisia,Software & IT services,Computer systems d…,"Sales, Marketing & S…",* $4.40m,20,Expansion
+14,Nov 2005,GL Trade,GL Trade,France,Tunisia,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+15,Nov 2005,Groupe Altrad,Altrad,France,Tunisia,Industrial equipment,"Agriculture, construc…",Manufacturing,* $48.20m,* 401,New

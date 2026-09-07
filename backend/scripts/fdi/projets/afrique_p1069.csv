@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2017,British American I…,Britam Insurance …,Kenya,Uganda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,Expansion
+2,Oct 2017,Airswift,Airswift,United States,Uganda,Business services,Employment services,Business Services,* $27.80m,* 38,New
+3,Oct 2017,Deutsche Welle,Deutsche Welle,Germany,Uganda,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $4.70m,* 62,New
+4,Oct 2017,NMC Group,UAE Exchange Ce…,UAE,Uganda,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+5,Jul 2017,Onafriq (MFS Afric…,Onafriq (MFS Afric…,South Africa,Uganda,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+6,May 2017,Meta (Facebook),Meta (Facebook),United States,Uganda,Software & IT services,Internet publishing …,ICT & Internet Infras…,$170.00m,* 38,New
+7,Mar 2017,Toyota Motor,Toyota,Japan,Uganda,Automotive OEM,Automobiles,Retail,* $12.50m,* 37,New
+8,Feb 2017,Bravo Pharma,Bravo Pharma,India,Uganda,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+9,Jan 2017,Lori Systems,Lori Systems,Kenya,Uganda,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 18,New
+10,Jan 2017,Wangkang Group,Wangkang Group,China,Uganda,Ceramics & glass,Clay product & refra…,Manufacturing,$30.00m,"2,000",New
+11,Jan 2017,Zanchick,Zanchick,Tanzania,Uganda,Food and Beverages,Animal slaughtering …,Manufacturing,* $22.70m,* 263,New
+12,Nov 2016,Dupre Investments,Logistics Plus,United States,Uganda,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+13,Nov 2016,SGS,SGS,Switzerland,Uganda,Business services,"Professional, scientifi…",Research & Develop…,* $8.60m,* 73,New
+14,Oct 2016,Valoso,Valoso,New Zealand,Uganda,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+15,Sep 2016,Holcim Group (Laf…,Hima Cement,Switzerland,Uganda,Building materials,Cement & concrete p…,Manufacturing,$40.00m,* 98,Expansion
