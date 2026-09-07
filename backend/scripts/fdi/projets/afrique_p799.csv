@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2023,Millar Cameron,Millar Cameron,United Kingdom,South Africa,Business services,Employment services,Business Services,* $0.90m,6,New
+2,Sep 2023,Paxton Access,Paxton Access,United Kingdom,South Africa,Electronic components,Electrical equipment,"Sales, Marketing & S…",* $1.80m,* 13,New
+3,Sep 2023,Yavica,Yavica,Denmark,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+4,Aug 2023,First Mode,First Mode,United Kingdom,South Africa,Industrial equipment,All other industrial m…,Business Services,* $2.00m,* 19,New
+5,Aug 2023,Hubtek,Hubtek,United States,South Africa,Business services,Business support ser…,Technical Support Ce…,* $6.40m,* 401,New
+6,Aug 2023,Hytera Communic…,Hytera Communic…,China,South Africa,Communications,Communications equ…,Headquarters,* $36.10m,* 95,Expansion
+7,Aug 2023,Jindal Organisatio…,Jindal Steel & Pow…,India,South Africa,Metals,Iron ore mining,Extraction,$2.00bn,"* 2,983",New
+8,Aug 2023,Quixy,Quixy,India,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+9,Aug 2023,Redington,Redington,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+10,Aug 2023,Redington,Redington,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+11,Aug 2023,Redington,Redington,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+12,Aug 2023,Redington,Redington,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+13,Aug 2023,Scan Global Logist…,Scan Global Logist…,Denmark,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+14,Aug 2023,Terranova Defens…,Terranova Defens…,Canada,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+15,Aug 2023,Umicore,Umicore,Belgium,South Africa,Metals,Other (Metals),"Sales, Marketing & S…",* $1.90m,* 8,New

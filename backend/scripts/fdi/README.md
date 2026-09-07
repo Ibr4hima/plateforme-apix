@@ -227,3 +227,35 @@ La base le sait : `fdi_lots_import.sens` (migration 135), et la page publique
 ne propose au filtre que les pays dont le périmètre est complet dans le sens
 demandé. La bascule « Reçoit / Investit » n'apparaît qu'une fois les deux
 relevés présents.
+
+### La source bouge pendant qu'on la relève
+
+fDi ajoute des projets en continu, et sa liste est triée du plus récent au plus
+ancien : **toute nouveauté s'insère en tête et décale d'autant la pagination.**
+La page 772 d'aujourd'hui n'est donc pas la page 772 d'il y a un mois.
+
+Trois conséquences, à connaître avant de s'étonner d'un compte qui ne tombe pas
+juste :
+
+  1. **Deux versements consécutifs ne se recollent pas exactement.** Entre eux,
+     la source a pu grandir de quelques lignes : le second commence alors un peu
+     avant ou un peu après là où le premier s'est arrêté. Mesuré en septembre
+     2026 sur les versements 699-771 puis 772-800 : 3 lignes d'écart.
+
+  2. **Le numéro de page est une référence MOBILE.** Il sert de clé de lot parce
+     qu'il faut bien une clé, et parce qu'il est stable au réimport d'un même
+     fichier. Il ne dit pas où la ligne se trouve chez fDi aujourd'hui.
+
+  3. **Le compte est le seul garde-fou.** Chaque versement doit porter
+     `nb_pages × 15` lignes ; l'écart se signale à la découpe et se documente.
+     Sans ce contrôle, une ligne perdue par l'extraction ne se distinguerait pas
+     d'une ligne ajoutée par la source, et aucune des deux ne se verrait.
+
+Repères relevés chez fDi le 7 septembre 2026 : **Dest = Africa, 16 876 lignes**
+(soit 1 126 pages, la dernière n'en portant qu'une) et **Dest = Senegal, 237
+lignes**. Cible du relevé Afrique une fois complet : 16 876 − 237 = **16 639
+lignes**, le Sénégal étant relevé pour lui-même.
+
+La réconciliation finale se fera par une capture **chronologique** : les projets
+apparus depuis le début du relevé se lisent en tête de liste, et se rattrapent
+là, sans reprendre les mille cent pages.

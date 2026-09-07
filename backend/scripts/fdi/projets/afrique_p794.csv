@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2024,Ideematec,Ideematec,Germany,South Africa,Electronic components,All other electrical e…,Manufacturing,* $8.00m,* 134,New
+2,Apr 2024,Leagas Delaney,Leagas Delaney,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+3,Apr 2024,MBH Design Studio,MBH Design Studio,United Kingdom,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,Expansion
+4,Mar 2024,Aztech IT Solutions,Aztech IT Solutions,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+5,Mar 2024,C&L Aviation Group,C&L Aerospace,United States,South Africa,Aerospace,"Aircraft engines, oth…","Logistics, Distributio…",* $16.40m,* 52,New
+6,Mar 2024,Charles Hope,Charles Hope,United Kingdom,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Mar 2024,Energiequelle,Energiequelle,Germany,South Africa,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+8,Mar 2024,GenerAtion IT Gro…,GenerAtion IT Gro…,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,Expansion
+9,Mar 2024,HX5 Encrypted,HX5 Encrypted,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+10,Mar 2024,Mediterranean Shi…,Mediterranean Shi…,Switzerland,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $9.90m,* 31,New
+11,Mar 2024,Scan Global Logist…,Scan Global Logist…,Denmark,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,Expansion
+12,Mar 2024,TRENDS Research…,TRENDS Research…,UAE,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+13,Feb 2024,Bard Santner,Bard Santner,Zimbabwe,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+14,Feb 2024,Bulheller Consulting,Bulheller Consulting,Germany,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+15,Feb 2024,Eisai,Eisai,Japan,South Africa,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New

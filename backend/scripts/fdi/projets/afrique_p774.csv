@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2026,Equinix,Equinix,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+2,Apr 2026,Equinix,Equinix,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+3,Apr 2026,Fynor,Fynor,United States,South Africa,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+4,Apr 2026,HJS Emission Tech…,HJS Emission Tech…,Germany,South Africa,Automotive compon…,Motor vehicle gasolin…,Manufacturing,* $12.80m,* 160,New
+5,Apr 2026,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+6,Apr 2026,Metso Corporation,Metso Corporation,Finland,South Africa,Industrial equipment,General purpose ma…,Technical Support Ce…,* $5.50m,60,New
+7,Apr 2026,Vitol Group,Vivo Energy,Netherlands,South Africa,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",$130.00m,"* 3,000",Expansion
+8,Mar 2026,BASF,BASF,Germany,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,* $27.70m,* 455,Expansion
+9,Mar 2026,Gridlines,Gridlines,United Kingdom,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+10,Mar 2026,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+11,Mar 2026,Mr DIY,Mr DIY,Malaysia,South Africa,Consumer products,Building material & g…,Retail,* $10.90m,* 170,New
+12,Mar 2026,Ninety One (Ninet…,Ninety One (Ninet…,United Kingdom,South Africa,Financial services,Investment manage…,Headquarters,* $44.20m,* 93,New
+13,Mar 2026,OryxAlign,OryxAlign,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,Expansion
+14,Mar 2026,SAMY (SamyRoad),Team5pm,Spain,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,Expansion
+15,Mar 2026,Scatec AS,Lyra Energy,Norway,South Africa,Renewable energy,Solar electric power,Electricity,$213.33m,* 42,New

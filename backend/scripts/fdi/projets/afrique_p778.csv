@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2025,HW3 (Hamlyn Will…,HW3 (Hamlyn Will…,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+2,Sep 2025,Revolut,Revolut,United Kingdom,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+3,Sep 2025,RIA Advisory,RIA Advisory,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+4,Sep 2025,Seacom,Seacom,Mauritius,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+5,Sep 2025,Walmart,Walmart,United States,South Africa,Food and Beverages,Food & beverage ret…,Retail,* $4.40m,80,New
+6,Aug 2025,Ascela,Ascela,India,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,New
+7,Aug 2025,capital.com,capital.com,Cyprus,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+8,Aug 2025,Digital Realty Trust,Teraco Data Envir…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,Expansion
+9,Aug 2025,EED Advisory,EED Advisory,Kenya,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+10,Aug 2025,Epicenter (Epicent…,Epicenter (Epicent…,India,South Africa,Business services,Business support ser…,Business Services,* $27.80m,* 17,New
+11,Aug 2025,EssilorLuxottica,Oakley,France,South Africa,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+12,Aug 2025,FUCHS (Fuchs Pet…,Fuchs Lubricants …,Germany,South Africa,Chemicals,"Paints, coatings, add…","Logistics, Distributio…",* $21.60m,* 26,Expansion
+13,Aug 2025,Golazo,Golazo,Belgium,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+14,Aug 2025,Grupo Gransolar,Grupo Gransolar,Spain,South Africa,Renewable energy,Solar electric power,"Sales, Marketing & S…",* $22.90m,* 25,Expansion
+15,Aug 2025,Haleon,Haleon,United Kingdom,South Africa,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$28.78m,* 186,Expansion

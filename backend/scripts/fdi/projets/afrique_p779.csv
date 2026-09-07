@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2025,Hexaware Technol…,Hexaware Technol…,India,South Africa,Software & IT services,Custom computer pr…,Headquarters,* $12.20m,* 73,New
+2,Aug 2025,Hoxton Wealth,Hoxton Wealth,UAE,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New
+3,Aug 2025,Mahindra Group,Mahindra & Mahin…,India,South Africa,Automotive OEM,Light trucks & utility …,Manufacturing,* $21.30m,100,New
+4,Aug 2025,Office Beacon,Office Beacon,United States,South Africa,Business services,Business support ser…,Business Services,* $30.10m,200,Expansion
+5,Aug 2025,Sandoz,Sandoz,Switzerland,South Africa,Pharmaceuticals,Pharmaceutical prep…,"Sales, Marketing & S…",* $5.60m,* 34,New
+6,Aug 2025,SpaceEX,SpaceEX,Bahamas,South Africa,Software & IT services,"Software publishers,…",Customer Contact C…,* $8.50m,* 328,New
+7,Aug 2025,Talal Abu-Ghazale…,Abu-Ghazaleh Int…,Jordan,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+8,Aug 2025,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,ICT & Internet Infras…,* $8.64m,* 1,New
+9,Aug 2025,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,ICT & Internet Infras…,* $8.64m,* 1,New
+10,Jul 2025,Braemar Shipping…,Braemar Shipping…,United Kingdom,South Africa,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 9,New
+11,Jul 2025,Coca-Cola,Coca-Cola Bevera…,United States,South Africa,Food and Beverages,Soft drinks & ice,Manufacturing,$20.15m,* 20,Expansion
+12,Jul 2025,D3 Energy,D3 Energy,Australia,South Africa,"Coal, oil & gas","Natural, liquefied an…","Sales, Marketing & S…",* $7.80m,* 30,New
+13,Jul 2025,Fasken Martineau …,Fasken Martineau …,Canada,South Africa,Business services,Legal services,Business Services,* $0.60m,4,Expansion
+14,Jul 2025,FLSmidth,FLSmidth,Denmark,South Africa,Industrial equipment,"Agriculture, construc…",Manufacturing,* $21.30m,* 60,Expansion
+15,Jul 2025,FLSmidth,FLSmidth,Denmark,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,Expansion

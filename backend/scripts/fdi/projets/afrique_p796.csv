@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2024,Koenig Solutions,Koenig Solutions,India,South Africa,Business services,"Business schools, co…",Education & Training,* $9.40m,* 46,New
+2,Jan 2024,Rainbow Rare Eart…,Rainbow Rare Eart…,United Kingdom,South Africa,Metals,Other metal ore mini…,Extraction,$295.50m,* 441,New
+3,Jan 2024,Remondis (Rethm…,Rhenus South Afri…,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,New
+4,Jan 2024,Remondis (Rethm…,Rhenus South Afri…,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,New
+5,Jan 2024,Remondis (Rethm…,Rhenus South Afri…,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,Expansion
+6,Jan 2024,Spencer West,Spencer West,United Kingdom,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+7,Jan 2024,STid,STid,France,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+8,Jan 2024,Tradecore Interna…,Tradecore Interna…,United Kingdom,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,New
+9,Jan 2024,Tradecore Interna…,Tradecore Interna…,United Kingdom,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+10,Dec 2023,ACWA Power,ACWA Power,Saudi Arabia,South Africa,Renewable energy,Solar electric power,Electricity,$800.00m,* 158,New
+11,Dec 2023,AMIRI,AMIRI,United States,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+12,Dec 2023,Asbis Group,Asbis Group,Cyprus,South Africa,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.50m,* 118,Expansion
+13,Dec 2023,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+14,Dec 2023,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+15,Dec 2023,GameChange Solar,GameChange Solar,United States,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New

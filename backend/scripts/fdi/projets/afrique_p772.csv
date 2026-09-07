@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2026,Toyota Motor,Toyota South Africa,Japan,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $11.60m,* 160,Expansion
+2,Jul 2026,Toyota Motor,Toyota South Africa,Japan,South Africa,Automotive compon…,Other motor vehicle …,Manufacturing,* $11.60m,* 160,Expansion
+3,Jul 2026,Zuari Industries,Texmaco,India,South Africa,Non-automotive tran…,Railroad rolling stock,Manufacturing,$30.01m,* 209,New
+4,Jun 2026,Business Critical S…,Business Critical S…,United Kingdom,South Africa,Communications,Other telecommunic…,Business Services,* $5.20m,* 20,New
+5,Jun 2026,Envision Energy,Envision Energy,China,South Africa,Engines & turbines,Engines & Turbines,"Sales, Marketing & S…",* $2.20m,* 14,New
+6,Jun 2026,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Jun 2026,Isuzu Motors,KANU Commercial…,Japan,South Africa,Automotive compon…,Motor vehicle body &…,Manufacturing,$1.33m,* 15,Expansion
+8,Jun 2026,MasterCard,MasterCard,United States,South Africa,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 47,New
+9,Jun 2026,PillerSoft Technolo…,PillerSoft Technolo…,India,South Africa,Software & IT services,Custom computer pr…,"Sales, Marketing & S…",* $5.20m,* 9,New
+10,Jun 2026,SAMY (SamyRoad),Team5pm,Spain,South Africa,Business services,"Advertising, PR, & re…",Research & Develop…,* $8.60m,* 73,New
+11,Jun 2026,Slimstock,Slimstock,Netherlands,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+12,Jun 2026,Taiyuan Heavy Ma…,Taiyuan Heavy In…,China,South Africa,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 11,New
+13,Jun 2026,Vestige,Vestige,India,South Africa,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New
+14,Jun 2026,Winson,Winson,China,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+15,Jun 2026,XTransfer,XTransfer,China,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New

@@ -1,0 +1,14 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2023,Ascensos,Ascensos,United Kingdom,South Africa,Business services,Business support ser…,Business Services,* $27.80m,* 17,New
+2,Jul 2023,ConeTec,ConeTec,Canada,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,New
+3,Jul 2023,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Other telecommunic…,Research & Develop…,* $6.60m,* 84,New
+4,Jul 2023,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+5,Jul 2023,Jearrard Energy R…,Jearrard Energy R…,United Kingdom,South Africa,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+6,Jul 2023,Kirby Group Engin…,Kirby Group Engin…,Ireland,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,New
+7,Jul 2023,Kura,Kura,United Kingdom,South Africa,Business services,Business support ser…,Customer Contact C…,* $10.00m,* 408,Expansion
+8,Jul 2023,Mediterranean Shi…,Cisalpina Tours,Switzerland,South Africa,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+9,Jul 2023,Mobiloitte,Mobiloitte,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+10,Jul 2023,Nestle,Nestle South Africa,Switzerland,South Africa,Food and Beverages,Coffee & tea,Manufacturing,$4.41m,27,Expansion
+11,Jul 2023,retailsolutions,retailsolutions,Switzerland,South Africa,Business services,Management consult…,Business Services,* $27.80m,* 17,New
+12,Jul 2023,TransPerfect Trans…,TransPerfect Trans…,United States,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+13,Jun 2023,Agility,Air Menzies Intern…,Kuwait,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,Expansion
