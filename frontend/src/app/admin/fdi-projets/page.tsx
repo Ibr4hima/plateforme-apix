@@ -26,7 +26,7 @@
 //                 projet à la fois, sans jamais quitter le clavier.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Pencil, Search, X } from "lucide-react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
@@ -780,7 +780,10 @@ function ABientot({ base }: { base: "signaux" | "entreprises" }) {
 
 // ── Vue 1 : les projets ───────────────────────────────────────────────────────
 
-const PAR_PAGE = 20;
+// Quinze, comme une page de la source : l'écran et le relevé se lisent alors
+// au même rythme, et vérifier une page revient à comparer deux fois quinze
+// lignes plutôt qu'à chercher où la seconde commence.
+const PAR_PAGE = 15;
 
 /** Les numéros à afficher autour de la page courante, sans jamais dérouler les
     centaines de pages que compte le relevé : premières, dernières, et une
@@ -807,6 +810,7 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
   const [page, setPage] = useState(1);
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
   const [edite, setEdite] = useState<Projet | "nouveau" | null>(null);
+  const [survol, setSurvol] = useState<number | null>(null);
 
   // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
   // résultat qui n'en compte plus que deux n'aurait aucun sens. L'ajustement se
@@ -849,12 +853,22 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
                   <th style={TH}>Type</th>
                   <th style={{ ...TH, textAlign: "right" }}>Capex (M$)</th>
                   <th style={{ ...TH, textAlign: "right" }}>Emplois</th>
-                  <th style={{ ...TH, width: 1 }}></th>
+                  {/* Collée à droite : la table est plus large que l'écran, et
+                      une action qu'il faut aller chercher au défilement n'est
+                      pas une action, c'est un obstacle. */}
+                  <th style={{ ...TH, width: 1, position: "sticky", right: 0, top: 0, zIndex: 2 }}></th>
                 </tr>
               </thead>
               <tbody>
                 {visibles.map(p => (
-                  <tr key={p.id}>
+                  <tr key={p.id}
+                    onMouseEnter={() => setSurvol(p.id)}
+                    onMouseLeave={() => setSurvol(s => (s === p.id ? null : s))}
+                    // Le focus clavier vaut survol : sans cela le bouton
+                    // resterait invisible pour qui n'emploie pas la souris.
+                    onFocus={() => setSurvol(p.id)}
+                    style={{ background: survol === p.id
+                      ? "color-mix(in srgb, var(--bleu) 4%, transparent)" : undefined }}>
                     <td style={{ ...TD, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
                     <td style={TD}>
                       <span style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
@@ -896,11 +910,25 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
                     <td style={{ ...TD, textAlign: "right" }}>
                       <Valeur v={p.emplois} estime={p.emplois_estime} />
                     </td>
-                    <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                    <td style={{
+                      ...TD, textAlign: "right", whiteSpace: "nowrap", width: 1,
+                      position: "sticky", right: 0, zIndex: 1,
+                      // Opaque, sinon les colonnes défilent en transparence dessous.
+                      background: survol === p.id
+                        ? "color-mix(in srgb, var(--bleu) 4%, var(--carte))" : "var(--carte)",
+                    }}>
+                      {/* Toujours dans le document, seulement rendu visible au
+                          survol : le faire apparaître et disparaître du DOM
+                          ferait sauter la largeur de la colonne à chaque ligne
+                          parcourue, et le tableau tremblerait sous la souris. */}
                       <button type="button" onClick={() => setEdite(p)}
-                        title="Corriger cette ligne"
-                        style={{ ...btnSecondaire, padding: "3px 10px", fontSize: 11.5 }}>
-                        Corriger
+                        title="Corriger cette ligne" aria-label="Corriger cette ligne"
+                        style={{
+                          ...btnSecondaire, padding: 6, lineHeight: 0, gap: 0,
+                          opacity: survol === p.id ? 1 : 0,
+                          transition: "opacity 0.12s",
+                        }}>
+                        <Pencil size={14} />
                       </button>
                     </td>
                   </tr>
