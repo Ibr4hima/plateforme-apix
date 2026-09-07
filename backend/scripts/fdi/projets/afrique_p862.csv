@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2016,Linde,Afrox,Germany,South Africa,Chemicals,Basic chemicals,Manufacturing,* $27.70m,* 455,New
+2,May 2016,RPM International,Flowcrete,United States,South Africa,Chemicals,"Paints, coatings, add…","Logistics, Distributio…",* $2.10m,5,Expansion
+3,May 2016,Terni Research,TerniEnergia,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $98.50m,* 19,New
+4,May 2016,Terni Research,TerniEnergia,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $98.50m,* 19,New
+5,May 2016,Toyota Motor,Toyota Motor,Japan,South Africa,Automotive OEM,Automobiles,Manufacturing,$381.82m,"4,000",New
+6,May 2016,Walmart,Massmart,United States,South Africa,Consumer products,Other (Consumer pr…,Retail,* $10.90m,* 170,New
+7,May 2016,Yokogawa Electric,Yokogawa Middle …,Japan,South Africa,Industrial equipment,Measuring & control …,"Sales, Marketing & S…",* $2.90m,* 11,Expansion
+8,Apr 2016,Adidas,Reebok,Germany,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+9,Apr 2016,Biocair Internatio…,Biocair Internatio…,United Kingdom,South Africa,Transportation & Wa…,Couriers & messeng…,"Sales, Marketing & S…",* $6.30m,* 9,New
+10,Apr 2016,Cotton On,Cotton On,Australia,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Apr 2016,Estee Lauder,MAC Cosmetics,United States,South Africa,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New
+12,Apr 2016,Ford Motor Compa…,Ford Motor Compa…,United States,South Africa,Automotive OEM,Automobiles,Manufacturing,$164.89m,"1,200",Expansion
+13,Apr 2016,Fossil,Fossil,United States,South Africa,Consumer products,Jewellery & silverware,Retail,* $10.90m,* 170,New
+14,Apr 2016,Frutarom Industries,Frutarom Industries,Israel,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,* $27.70m,* 455,New
+15,Apr 2016,Hennes & Mauritz …,Hennes & Mauritz …,Sweden,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New

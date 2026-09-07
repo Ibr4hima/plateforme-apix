@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2014,Enel,Enel Green Power,Italy,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+2,May 2014,Helion Research,Helion Research,Belgium,South Africa,Business services,"Professional, scientifi…",Headquarters,* $10.50m,* 995,New
+3,May 2014,HostDime,HostDime,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+4,May 2014,Kerry Group,Kerry Group,Ireland,South Africa,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,New
+5,May 2014,Lonrho,Fastjet,United Kingdom,South Africa,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $9.90m,* 31,New
+6,May 2014,SAS (SAS Institute),SAS (SAS Institute),United States,South Africa,Software & IT services,"Software publishers,…",ICT & Internet Infras…,* $243.50m,* 81,New
+7,May 2014,ShapeBlue,ShapeBlue,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+8,May 2014,Smeg (Smalterie …,Smeg South Africa,Italy,South Africa,Consumer electronics,Household appliances,Retail,* $9.20m,* 78,New
+9,May 2014,The Corporate Exe…,The Corporate Exe…,United States,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+10,Apr 2014,Burger King Corpo…,Burger King Corpo…,United States,South Africa,Food and Beverages,Animal slaughtering …,Manufacturing,$4.72m,* 5,New
+11,Apr 2014,East Asiatic Comp…,Santa Fe Group,Denmark,South Africa,Business services,Other support services,Business Services,* $27.80m,* 17,New
+12,Apr 2014,East Asiatic Comp…,Santa Fe Group,Denmark,South Africa,Business services,Other support services,Business Services,* $27.80m,* 17,New
+13,Apr 2014,ENEOS Holdings (…,JX Nippon Oil & E…,Japan,South Africa,"Coal, oil & gas",Oil & gas extraction,"Sales, Marketing & S…",* $7.80m,* 30,New
+14,Apr 2014,Energy Exemplar,Energy Exemplar,Australia,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+15,Apr 2014,Gazprom,Gazprombank,Russia,South Africa,Financial services,Corporate & investm…,Business Services,* $8.20m,27,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2023,Anglo American,Anglo American,United Kingdom,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+2,Apr 2023,BSA International …,Lactalis South Afri…,Belgium,South Africa,Food and Beverages,Dairy products,Manufacturing,$7.65m,* 7,Expansion
+3,Apr 2023,Heineken Holding,Heineken South A…,Netherlands,South Africa,Food and Beverages,Breweries,Manufacturing,$94.00m,* 91,New
+4,Apr 2023,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+5,Apr 2023,Johnson Health Te…,Johnson Health Te…,Taiwan,South Africa,Consumer products,"Sporting goods, hob…",Headquarters,* $19.20m,* 123,Expansion
+6,Apr 2023,Kroll (Duff & Phel…,Kroll (Duff & Phel…,United States,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+7,Apr 2023,M4Markets,M4Markets,Seychelles,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+8,Apr 2023,M-KOPA,M-KOPA,Kenya,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+9,Apr 2023,Polarium,Polarium,Sweden,South Africa,Electronic components,Batteries,Manufacturing,* $8.00m,* 134,Expansion
+10,Apr 2023,Rheinmetall,Rheinmetall Denel…,Germany,South Africa,Renewable energy,Solar electric power,Electricity,$3.91m,* 1,Co-Location
+11,Apr 2023,RoomRaccoon,RoomRaccoon,Netherlands,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+12,Apr 2023,Teltonika Networks,Teltonika Networks,Lithuania,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+13,Apr 2023,ThinkMarkets (Thi…,ThinkMarkets (Thi…,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+14,Apr 2023,Troop,Troop,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+15,Apr 2023,Twyco (Twynham …,Twyco (Twynham …,United Kingdom,South Africa,Automotive compon…,Motor vehicle seatin…,Manufacturing,* $12.80m,* 160,New

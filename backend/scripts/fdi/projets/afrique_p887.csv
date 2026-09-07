@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2013,Unilever,Unilever,United Kingdom,South Africa,Food and Beverages,Dairy products,Manufacturing,$44.60m,150,New
+2,Oct 2013,Belgacom SA,Belgacom Interna…,Belgium,South Africa,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+3,Oct 2013,Building Energy,Building Energy,Italy,South Africa,Renewable energy,Biomass power,Electricity,$92.04m,240,New
+4,Oct 2013,Coal of Africa (Co…,Coal of Africa (Co…,Australia,South Africa,"Coal, oil & gas",Coal mining,Extraction,$22.26m,* 8,Expansion
+5,Oct 2013,Endress+Hauser,Endress+Hauser,Switzerland,South Africa,Industrial equipment,Measuring & control …,Headquarters,$4.28m,* 17,Expansion
+6,Oct 2013,IC Group,Tiger of Sweden,Denmark,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,Oct 2013,Intuitive Business …,Intuitive Business …,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+8,Oct 2013,InventCommerce,InventCommerce,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+9,Oct 2013,ITHR Group,ITHR Group,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+10,Oct 2013,Mainstream Rene…,Mainstream Rene…,Ireland,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+11,Oct 2013,Mainstream Rene…,Mainstream Rene…,Ireland,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+12,Oct 2013,Mainstream Rene…,Mainstream Rene…,Ireland,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+13,Oct 2013,Mercedes-Benz Gr…,Mercedes-Benz So…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$302.00m,"* 1,419",Expansion
+14,Oct 2013,Nes Group,NES Global (NES …,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+15,Oct 2013,NICE Systems,NICE Systems,Israel,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New

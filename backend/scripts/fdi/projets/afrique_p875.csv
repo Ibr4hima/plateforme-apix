@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2015,Schneider Electric,Schneider Electric,France,South Africa,Electronic components,Electrical equipment,Manufacturing,* $29.10m,256,New
+2,Feb 2015,uberall,uberall,Germany,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+3,Feb 2015,Wipro,Wipro,India,South Africa,Software & IT services,Custom computer pr…,Business Services,* $4.40m,55,New
+4,Feb 2015,YourCulture,YourCulture,United Kingdom,South Africa,Business services,"Professional, scientifi…",Business Services,* $0.20m,* 1,New
+5,Feb 2015,Zoom International,Zoom International,Czech Republic,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+6,Jan 2015,ACWA Power,ACWA Power,Saudi Arabia,South Africa,Renewable energy,Solar electric power,Electricity,$1.20bn,* 237,New
+7,Jan 2015,Amazon.com,Amazon.com,United States,South Africa,Consumer products,General merchandis…,Customer Contact C…,* $6.20m,150,New
+8,Jan 2015,Arcade,Arcade,Singapore,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+9,Jan 2015,Busch,Busch South Africa,Germany,South Africa,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+10,Jan 2015,Busch,Busch South Africa,Germany,South Africa,Industrial equipment,General purpose ma…,Maintenance & Servi…,* $7.80m,* 34,New
+11,Jan 2015,Chadbourne & Par…,Chadbourne & Par…,United States,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+12,Jan 2015,CLG (Centurion La…,CLG (Centurion La…,Equatorial Guinea,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+13,Jan 2015,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+14,Jan 2015,Monster Beverage…,Monster Beverage…,United States,South Africa,Food and Beverages,Soft drinks & ice,Manufacturing,* $36.00m,* 100,New
+15,Jan 2015,Octavian Security,Octavian Security,United Kingdom,South Africa,Business services,Other support services,Business Services,* $75.30m,500,New

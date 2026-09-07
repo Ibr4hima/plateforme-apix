@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2018,Polytec Group,Polytec Group,Austria,South Africa,Plastics,Laminated plastics pl…,Manufacturing,$11.28m,* 118,New
+2,Nov 2018,Royal Vopak,Royal Vopak,Netherlands,South Africa,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",* $9.90m,* 31,New
+3,Nov 2018,Schroders,Schroders,United Kingdom,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New
+4,Nov 2018,Terra Drone,Terra Drone,Japan,South Africa,Aerospace,Other (Aerospace),"Sales, Marketing & S…",* $5.80m,* 18,New
+5,Oct 2018,Air Products and C…,Air Products Sout…,United States,South Africa,Chemicals,Basic chemicals,Manufacturing,$6.46m,* 9,Expansion
+6,Oct 2018,Amazon.com,Amazon Web Serv…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+7,Oct 2018,ArcelorMittal,ArcelorMittal Sout…,Luxembourg,South Africa,Metals,Steel products,Manufacturing,* $7.50m,100,New
+8,Oct 2018,Association Famili…,Leroy Merlin,France,South Africa,Consumer products,Building material & g…,Retail,* $10.90m,* 170,New
+9,Oct 2018,Axalta Coating Sy…,Axalta Coating Sy…,United States,South Africa,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New
+10,Oct 2018,Control Risks Group,Control Risks Group,United Kingdom,South Africa,Business services,Management consult…,ICT & Internet Infras…,* $90.30m,* 88,New
+11,Oct 2018,Ecole hoteliere de …,Ecole hoteliere de …,Switzerland,South Africa,Business services,"Schools, colleges, un…",Education & Training,* $9.40m,* 46,New
+12,Oct 2018,Helios Towers,Helios Towers,United Kingdom,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",$102.25m,* 499,New
+13,Oct 2018,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+14,Oct 2018,Hurricane Electric,Hurricane Electric,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+15,Oct 2018,Organo Gold,Organo Gold,Canada,South Africa,Food and Beverages,Fruits & vegetables …,Headquarters,* $27.80m,* 86,New

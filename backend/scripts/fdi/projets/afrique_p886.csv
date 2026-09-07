@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2013,Caixa Geral de De…,Mercantile Bank,Portugal,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+2,Dec 2013,Enable-U,Enable-U,Netherlands,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+3,Dec 2013,Hunting,Hunting,United Kingdom,South Africa,Industrial equipment,"Agriculture, construc…",Manufacturing,$30.00m,90,New
+4,Dec 2013,Orthman Manufac…,Orthman Manufac…,United States,South Africa,Industrial equipment,"Agriculture, construc…",Manufacturing,* $21.30m,* 60,New
+5,Dec 2013,Rocket Internet,Rocket Internet,Germany,South Africa,Software & IT services,Other (Software & IT…,"Sales, Marketing & S…",* $5.20m,* 9,New
+6,Dec 2013,Royal Vopak,Royal Vopak,Netherlands,South Africa,Transportation & Wa…,Petroleum bulk stati…,"Logistics, Distributio…",* $9.90m,* 31,Expansion
+7,Nov 2013,AgilityWorks,AgilityWorks,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+8,Nov 2013,Capillary Technolo…,Capillary Technolo…,India,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+9,Nov 2013,Cotton On,Cotton On,Australia,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+10,Nov 2013,Electricity Supply …,ESB International …,Ireland,South Africa,"Coal, oil & gas",Other electric power …,"Sales, Marketing & S…",* $7.80m,* 30,New
+11,Nov 2013,Level 3 Communic…,Level 3 Communic…,United States,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+12,Nov 2013,MCI Group,MCI Group,Switzerland,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+13,Nov 2013,RPM International,Flowcrete,United States,South Africa,Chemicals,"Paints, coatings, add…","Logistics, Distributio…",* $21.60m,* 26,Co-Location
+14,Nov 2013,TotalEnergies (Tot…,Sunpower,France,South Africa,Renewable energy,Solar electric power,Electricity,$200.00m,* 40,New
+15,Nov 2013,Toyota Motor,Toyota Motor,Japan,South Africa,Automotive OEM,Automobiles,Manufacturing,$90.30m,* 424,Expansion

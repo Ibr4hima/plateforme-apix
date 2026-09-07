@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2021,Aten International,Aten International,Taiwan,South Africa,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+2,Nov 2021,CDC Group,CDC Group,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+3,Nov 2021,CrossCountry Con…,CrossCountry Con…,United States,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+4,Nov 2021,Econet Global,Africa Data Centres,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+5,Nov 2021,Econet Global,Africa Data Centres,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,Expansion
+6,Nov 2021,Econet Global,Africa Data Centres,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,Expansion
+7,Nov 2021,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+8,Nov 2021,Pluczenik,Pluczenik,Belgium,South Africa,Minerals,Other non-metallic …,Manufacturing,* $3.70m,30,New
+9,Nov 2021,Rangel Group,Rangel Group,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.25m,* 20,New
+10,Nov 2021,Rangel Group,Rangel Group,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.47m,* 20,New
+11,Nov 2021,Rangel Group,Rangel Group,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.87m,* 20,Expansion
+12,Nov 2021,Rangel Group,Rangel Group,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.25m,* 20,New
+13,Nov 2021,Rangel Group,Rangel Group,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $0.25m,* 20,New
+14,Nov 2021,Soloplan,Soloplan,Germany,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+15,Nov 2021,Zoho (AdventNet),Zoho (AdventNet),India,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2016,Waypoint Leasing …,Waypoint Leasing …,Ireland,South Africa,Aerospace,Aircraft,"Sales, Marketing & S…",* $5.80m,* 18,New
+2,Jan 2016,Clariter,Clariter,Luxembourg,South Africa,Plastics,Other plastics produ…,Recycling,* $29.80m,* 55,New
+3,Jan 2016,Johnson & Johnson,Johnson & Johnson,United States,South Africa,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,$17.77m,* 115,New
+4,Jan 2016,L'Oreal,L'Oreal,France,South Africa,Consumer products,"Cosmetics, perfume,…",Research & Develop…,$4.00m,19,New
+5,Jan 2016,Nulatex,Nulatex,Malaysia,South Africa,Consumer products,"Cosmetics, perfume,…",Manufacturing,* $14.40m,* 418,New
+6,Jan 2016,Orka Group,Orka Group,Turkey,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,Dec 2015,Choppies,Choppies,Botswana,South Africa,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+8,Dec 2015,Econet Global,Liquid Intelligent …,Mauritius,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+9,Dec 2015,Hydra,Datalogic,Italy,South Africa,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+10,Dec 2015,Lindt & Sprüngli,Lindt & Sprüngli,Switzerland,South Africa,Food and Beverages,Sugar & confectionar…,Retail,* $12.70m,* 107,New
+11,Dec 2015,Renaissance Group,Renaissance Capital,Russia,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+12,Dec 2015,Salmon Software,Salmon Software,Ireland,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+13,Dec 2015,Tesla Motors,Tesla Motors,United States,South Africa,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $0.80m,5,New
+14,Dec 2015,Yangtze Optical Fi…,Yangtze Optical Fi…,China,South Africa,Electronic components,Communication & en…,Manufacturing,$10.42m,100,New
+15,Dec 2015,Yi Li Da Sa Manuf…,Yi Li Da Sa Manuf…,China,South Africa,Textiles,Furniture & related p…,Manufacturing,$10.00m,"1,000",New

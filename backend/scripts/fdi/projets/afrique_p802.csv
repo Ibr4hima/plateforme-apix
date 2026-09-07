@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2023,ARD Holdings,Ardagh Group,Luxembourg,South Africa,Software & IT services,Other (Software & IT…,Research & Develop…,* $32.40m,* 47,New
+2,May 2023,Azelis,Azelis,Belgium,South Africa,Chemicals,"Paints, coatings, add…",Research & Develop…,* $14.00m,* 49,New
+3,May 2023,Daimler Truck,Daimler Truck Sou…,Germany,South Africa,Automotive OEM,Heavy duty trucks,Headquarters,$10.60m,* 67,Expansion
+4,May 2023,Heat and Control,Heat and Control,United States,South Africa,Industrial equipment,Food product machin…,"Sales, Marketing & S…",* $2.90m,* 11,New
+5,May 2023,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+6,May 2023,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,May 2023,Secure IT Consult,Secure IT Consult,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+8,May 2023,Secure IT Consult,Secure IT Consult,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+9,May 2023,SEND,SEND,Nigeria,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+10,May 2023,Stern-Wywiol Gru…,Mühlenchemie (M…,Germany,South Africa,Food and Beverages,Other (Food & Bever…,Research & Develop…,* $12.00m,* 55,New
+11,May 2023,Telus,Telus Digital (Telu…,Canada,South Africa,Business services,Business support ser…,Business Services,* $27.80m,* 17,New
+12,Apr 2023,Altum,Altum,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+13,Apr 2023,AMEA Power,AMEA Power,UAE,South Africa,Renewable energy,Other electric power …,Headquarters,* $0.70m,10,New
+14,Apr 2023,AMEA Power,AMEA Power,UAE,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+15,Apr 2023,Anglo American,Anglo American,United Kingdom,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New

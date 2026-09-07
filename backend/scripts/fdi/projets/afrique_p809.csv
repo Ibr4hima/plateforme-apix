@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2022,Exness,Exness,Cyprus,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+2,Oct 2022,Givaudan,Givaudan,Switzerland,South Africa,Chemicals,"Paints, coatings, add…",Research & Develop…,* $14.00m,* 49,Co-Location
+3,Oct 2022,Grieshaber Group,VEGA Grieshaber,Germany,South Africa,Industrial equipment,Measuring & control …,Headquarters,* $13.60m,* 54,Expansion
+4,Oct 2022,La Poste,Biocair Internatio…,France,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $1.00m,3,New
+5,Oct 2022,La Poste,Biocair Internatio…,France,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $1.40m,4,Expansion
+6,Oct 2022,LG Corp,LG Electronics,South Korea,South Africa,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.40m,* 29,New
+7,Oct 2022,Reckitt Benckiser,Reckitt Benckiser,United Kingdom,South Africa,Consumer products,"Cosmetics, perfume,…","Sales, Marketing & S…",* $3.20m,* 37,New
+8,Oct 2022,Spayse,Spayse,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+9,Oct 2022,TMF Group,TMF Group,Netherlands,South Africa,Business services,"Accounting, tax prep…",Headquarters,* $10.50m,* 995,New
+10,Oct 2022,Travelwings,Travelwings,UAE,South Africa,Hotels & tourism,Travel arrangement …,"Sales, Marketing & S…",* $1.30m,* 18,New
+11,Oct 2022,URB,URB,UAE,South Africa,Real estate,Residential building …,Construction,$20.00bn,"* 3,000",New
+12,Oct 2022,Volvo,Volvo Trucks Sout…,Sweden,South Africa,Automotive OEM,Heavy duty trucks,Manufacturing,* $125.30m,* 609,Expansion
+13,Oct 2022,Xero Limited (Xer…,Xero Limited (Xer…,New Zealand,South Africa,Software & IT services,"Software publishers,…",Headquarters,* $12.20m,* 73,New
+14,Sep 2022,Advance Global C…,Advance Global C…,United Kingdom,South Africa,Financial services,Investment manage…,Business Services,* $1.50m,5,Expansion
+15,Sep 2022,Alphabet Inc,Google,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New

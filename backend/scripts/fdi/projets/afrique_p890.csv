@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2013,Evonik Industries,Evonik Acrylics Afr…,Germany,South Africa,Plastics,Laminated plastics pl…,Manufacturing,* $1.90m,20,New
+2,Aug 2013,L'Oreal,L'Oreal,France,South Africa,Consumer products,"Cosmetics, perfume,…",Education & Training,$2.10m,* 131,New
+3,Aug 2013,STI Norland,STI Norland,Spain,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+4,Aug 2013,Wilh. Wilhelmsen …,Wallenius Wilhelm…,Norway,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+5,Jul 2013,Alstom,Alstom,France,South Africa,Non-automotive tran…,Railroad rolling stock,Manufacturing,$215.60m,"1,500",New
+6,Jul 2013,Associated British …,Illovo Sugar Ltd,United Kingdom,South Africa,Food and Beverages,Sugar & confectionar…,"Logistics, Distributio…",* $22.50m,* 158,New
+7,Jul 2013,Bombardier,Bombardier Aeros…,Canada,South Africa,Aerospace,Aircraft,"Sales, Marketing & S…",* $5.80m,* 18,Co-Location
+8,Jul 2013,Bombardier,Bombardier Aeros…,Canada,South Africa,Aerospace,"Aircraft engines, oth…","Logistics, Distributio…",* $16.40m,* 52,Co-Location
+9,Jul 2013,Eurogerm,Eurogerm,France,South Africa,Food and Beverages,Other (Food & Bever…,"Sales, Marketing & S…",* $4.50m,* 18,New
+10,Jul 2013,FircoSoft,FircoSoft,France,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+11,Jul 2013,GAC Group,GAC Group,UAE,South Africa,Transportation & Wa…,Water transportation,"Sales, Marketing & S…",* $6.30m,* 9,New
+12,Jul 2013,Hennes & Mauritz …,Hennes & Mauritz …,Sweden,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+13,Jul 2013,IOActive,IOActive,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+14,Jul 2013,Keystone Law,Keystone Law,United Kingdom,South Africa,Business services,Legal services,Business Services,* $27.80m,* 17,New
+15,Jul 2013,Mazda,Mazda Motor,Japan,South Africa,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $2.05m,* 13,New

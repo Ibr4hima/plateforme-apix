@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2014,Air Products and C…,Air Products Sout…,United States,South Africa,Chemicals,Basic chemicals,Manufacturing,$75.38m,25,Expansion
+2,Jun 2014,Beijing Automotiv…,BAIC International,China,South Africa,Automotive OEM,Automobiles,Manufacturing,$839.08m,120,New
+3,Jun 2014,Bizerba & Co,Bizerba & Co,Germany,South Africa,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+4,Jun 2014,Bizerba & Co,Bizerba & Co,Germany,South Africa,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+5,Jun 2014,Black Swan,Black Swan,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+6,Jun 2014,Coesia,FlexLink Systems,Italy,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+7,Jun 2014,eBay,Gumtree,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $1.60m,* 8,New
+8,Jun 2014,eBay,Gumtree,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $1.40m,* 7,New
+9,Jun 2014,Export Developme…,Export Developme…,Canada,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+10,Jun 2014,Exterity,Exterity,United Kingdom,South Africa,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+11,Jun 2014,GE Aerospace (Ge…,GE Aerospace (Ge…,United States,South Africa,Medical devices,Medical equipment &…,Research & Develop…,$33.16m,* 61,New
+12,Jun 2014,Hareon Solar Tech…,Hareon Solar Tech…,China,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+13,Jun 2014,Hermes Internatio…,Hermes Internatio…,France,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+14,Jun 2014,ICICI Bank,ICICI Bank,India,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,Expansion
+15,Jun 2014,Ixerv,Ixerv,Belgium,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New

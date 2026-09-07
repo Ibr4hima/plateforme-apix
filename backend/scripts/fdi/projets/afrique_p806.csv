@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2023,TotalEnergies (Tot…,TotalEnergies (Tot…,France,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+2,Jan 2023,Ace Green Recycli…,Ace Green Recycli…,Singapore,South Africa,Electronic components,Batteries,Recycling,* $67.50m,* 71,New
+3,Jan 2023,Advanced Call Ce…,Advanced Call Ce…,United States,South Africa,Business services,Business support ser…,Customer Contact C…,* $7.90m,"1,000",New
+4,Jan 2023,Baker McKenzie (…,Baker McKenzie (…,United States,South Africa,Business services,Legal services,Business Services,* $0.50m,3,Expansion
+5,Jan 2023,Hilton Food Group,Foods Connected,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+6,Jan 2023,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Jan 2023,Malabar Group,Malabar Gold and …,India,South Africa,Consumer products,Jewellery & silverware,Retail,* $32.00m,* 200,New
+8,Jan 2023,Menlo Electric,Menlo Electric,Poland,South Africa,Electronic components,All other electrical e…,Headquarters,* $21.90m,* 55,New
+9,Jan 2023,PepsiCo,PepsiCo,United States,South Africa,Renewable energy,Biomass power,Electricity,* $169.60m,* 21,Co-Location
+10,Jan 2023,Torsa,Torsa,Spain,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+11,Jan 2023,Toyota Motor,Toyota South Africa,Japan,South Africa,Renewable energy,Solar electric power,Electricity,$46.57m,* 9,Co-Location
+12,Jan 2023,VoltVision,VoltVision,United Kingdom,South Africa,Software & IT services,"Software publishers,…",Technical Support Ce…,* $15.20m,* 393,New
+13,Dec 2022,Amazon.com,Amazon Web Serv…,United States,South Africa,Communications,Computing infrastruc…,Education & Training,* $11.10m,* 137,New
+14,Dec 2022,AMEA Power,AMEA Power,UAE,South Africa,Renewable energy,Solar electric power,Electricity,$120.00m,* 24,New
+15,Dec 2022,Carl-Zeiss-Stiftung,Carl Zeiss Meditec…,Germany,South Africa,Medical devices,Electromedical and E…,Education & Training,$1.06m,* 4,Co-Location

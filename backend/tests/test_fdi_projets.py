@@ -364,14 +364,15 @@ def test_les_pages_afrique_sont_lisibles():
     sauter : le rang est celui de la ligne CHEZ fDi, pas un numéro d'ordre.
     """
     import re
-    from app.services.fdi_projets import (lire_lot_csv, lire_pages_absentes,
+    from app.services.fdi_projets import (lire_lot_csv, lire_lacunes,
                                           DOSSIER_PROJETS, LIGNES_PAR_PAGE)
     # Tri NUMÉRIQUE : par nom, « p100 » se rangerait entre « p10 » et « p11 »,
     # et la continuité paraîtrait rompue là où elle ne l'est pas.
     pages = sorted(DOSSIER_PROJETS.glob("afrique_p*.csv"),
                    key=lambda c: int(re.search(r"_p(\d+)$", c.stem).group(1)))
     numeros = [int(re.search(r"_p(\d+)$", c.stem).group(1)) for c in pages]
-    absentes = lire_pages_absentes().get("afrique", set())
+    lacunes = lire_lacunes().get("afrique", {})
+    absentes = {p for p, r in lacunes.items() if r is None}
     attendus = [n for n in range(1, max(numeros) + 1) if n not in absentes]
     assert numeros == attendus, (
         f"pages manquantes : {sorted(set(attendus) - set(numeros))} · "
@@ -384,12 +385,15 @@ def test_les_pages_afrique_sont_lisibles():
         rangs = [l["ligne"] for l in lignes]
         assert rangs == sorted(rangs) and len(set(rangs)) == len(rangs), chemin.name
         assert 1 <= min(rangs) and max(rangs) <= LIGNES_PAR_PAGE, chemin.name
-        # Seule la DERNIÈRE page du relevé peut être courte sans qu'un pays
-        # exclu l'explique : ailleurs, un manque doit venir d'un trou de rang.
+        # Une page courte au MILIEU du relevé doit s'expliquer : soit la page
+        # suivante est tout entière absente et celle-ci finit sur le trou, soit
+        # les rangs qui manquent sont déclarés. Sinon c'est un oubli.
         if len(lignes) < LIGNES_PAR_PAGE and n != max(numeros):
-            assert max(rangs) == LIGNES_PAR_PAGE or (n + 1) in absentes, (
-                f"{chemin.name} : {len(lignes)} lignes, rangs {rangs} — page courte "
-                "sans raison visible")
+            manquants = set(range(1, LIGNES_PAR_PAGE + 1)) - set(rangs)
+            declares = lacunes.get(n) or set()
+            assert (n + 1) in absentes or manquants <= declares, (
+                f"{chemin.name} : rangs {sorted(manquants)} absents et non déclarés "
+                f"dans fdi_pages_absentes.csv")
 
 
 def test_le_senegal_ne_peut_pas_entrer_deux_fois_dans_les_totaux():
@@ -416,14 +420,37 @@ def test_le_senegal_ne_peut_pas_entrer_deux_fois_dans_les_totaux():
     assert ecarter_deja_releves(lignes, "Sénégal", "destination")[1] == []
 
 
-def test_toute_page_absente_porte_son_motif():
-    """Un trou dans la pagination est une affirmation : « la source montrait
-    quelque chose ici, et nous savons quoi ». Sans motif écrit, ce n'est plus
-    qu'un manque qu'on n'ose plus toucher."""
-    from app.services.fdi_projets import lire_pages_absentes
-    absentes = lire_pages_absentes()
-    for perimetre, pages in absentes.items():
+def test_toute_lacune_porte_son_motif_et_reste_dans_les_bornes():
+    """Un trou dans le relevé est une affirmation : « la source montrait quelque
+    chose ici, et nous savons quoi ». Sans motif écrit, ce n'est plus qu'un
+    manque qu'on n'ose plus toucher.
+
+    Le lecteur refuse un motif vide, une plage inversée et un rang hors page ;
+    ce test vérifie surtout que le fichier livré passe ces trois portes."""
+    from app.services.fdi_projets import lire_lacunes, LIGNES_PAR_PAGE
+    for perimetre, pages in lire_lacunes().items():
         assert perimetre and pages, perimetre
+        for page, rangs in pages.items():
+            assert page >= 1
+            if rangs is not None:
+                assert rangs and all(1 <= r <= LIGNES_PAR_PAGE for r in rangs)
+
+
+def test_une_lacune_partielle_correspond_a_ce_qui_manque_vraiment():
+    """Déclarer des rangs absents qui, en fait, sont là serait pire que de ne
+    rien déclarer : le fichier dirait le contraire de ce qu'il porte."""
+    from app.services.fdi_projets import lire_lacunes, lire_lot_csv, DOSSIER_PROJETS
+    for perimetre, pages in lire_lacunes().items():
+        for page, rangs in pages.items():
+            chemin = DOSSIER_PROJETS / f"{perimetre}_p{page}.csv"
+            if rangs is None:
+                assert not chemin.exists(), f"{chemin.name} est déclaré absent mais existe"
+                continue
+            assert chemin.exists(), f"{chemin.name} manque alors que seuls des rangs le sont"
+            presents = {l["ligne"] for l in lire_lot_csv(chemin)}
+            assert not (rangs & presents), (
+                f"{chemin.name} : rangs {sorted(rangs & presents)} déclarés absents "
+                "mais bien présents")
 
 
 def test_les_pays_du_releve_afrique_menent_tous_a_un_seul_pays():

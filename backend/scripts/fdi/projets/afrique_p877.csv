@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Nov 2014,NMC Group,UAE Exchange Ce…,UAE,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+2,Nov 2014,Societe Nationale …,Geodis Wilson,France,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,New
+3,Nov 2014,SpaceVac,SpaceVac,United Kingdom,South Africa,Industrial equipment,Commercial & servic…,"Sales, Marketing & S…",* $2.90m,* 11,New
+4,Nov 2014,TotalEnergies (Tot…,Sunpower,France,South Africa,Electronic components,All other electrical e…,Manufacturing,* $17.00m,150,New
+5,Nov 2014,Vedanta Resources,Sesa Sterlite,United Kingdom,South Africa,Metals,"Copper, nickel, lead,…",Extraction,$630.00m,500,New
+6,Oct 2014,Air Botswana,Air Botswana,Botswana,South Africa,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 9,New
+7,Oct 2014,Deutsche Post,DHL Supply Chain,Germany,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$18.10m,* 740,New
+8,Oct 2014,Deutsche Post,DHL Global Forwa…,Germany,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$19.90m,* 813,New
+9,Oct 2014,Hadid Internation…,Hadid Internation…,UAE,South Africa,Transportation & Wa…,Support activities for…,"Sales, Marketing & S…",* $6.30m,* 9,New
+10,Oct 2014,Milk & Honey Films,Milk & Honey Films,United States,South Africa,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+11,Oct 2014,Sumitomo Group,Sumitomo Rubber…,Japan,South Africa,Rubber,Tyres,Manufacturing,$97.63m,* 626,Expansion
+12,Oct 2014,Trina Solar,Trina Solar,China,South Africa,Electronic components,All other electrical e…,"Logistics, Distributio…",* $12.90m,* 39,New
+13,Oct 2014,Tronox,Tronox,United States,South Africa,Minerals,Nonmetallic mineral …,Manufacturing,$182.69m,250,New
+14,Sep 2014,Armor,Armor,France,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,* $27.70m,* 455,New
+15,Sep 2014,Barentz,Barentz,Netherlands,South Africa,Chemicals,"Paints, coatings, add…","Sales, Marketing & S…",* $2.80m,* 13,New

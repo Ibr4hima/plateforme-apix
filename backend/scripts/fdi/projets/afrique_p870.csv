@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2015,Minor International,Minor Hotel Group,Thailand,South Africa,Hotels & tourism,Accommodation,"Sales, Marketing & S…",* $1.30m,* 18,New
+2,Aug 2015,Pulse Holdings,Pulse Combustion …,United States,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+3,Aug 2015,Volkswagen,Volkswagen South…,Germany,South Africa,Automotive OEM,Automobiles,Manufacturing,$223.91m,"* 1,052",Expansion
+4,Aug 2015,WindSim,WindSim,Norway,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Jul 2015,Airbnb,Airbnb,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+6,Jul 2015,Codan,Codan,Australia,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+7,Jul 2015,Evonik Industries,Evonik Industries,Germany,South Africa,Chemicals,"Paints, coatings, add…",Research & Develop…,* $14.00m,* 49,New
+8,Jul 2015,Festo,Festo,Germany,South Africa,Industrial equipment,General purpose ma…,Research & Develop…,* $27.30m,* 62,Co-Location
+9,Jul 2015,FlightPath Interna…,FlightPath Interna…,Canada,South Africa,Aerospace,Other (Aerospace),Education & Training,* $31.80m,* 91,New
+10,Jul 2015,Forever 21,Forever 21,United States,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+11,Jul 2015,JPMorgan Chase & …,JP Morgan,United States,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+12,Jul 2015,Mota Engil Group,Transitex,Portugal,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+13,Jul 2015,MS&AD Insurance…,Mitsui Sumitomo I…,Japan,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+14,Jul 2015,Orkla Group,LignoTech South A…,Norway,South Africa,Chemicals,"Pesticide, fertilisers …",Manufacturing,$8.62m,* 11,Expansion
+15,Jul 2015,Startupbootcamp,Startupbootcamp,United Kingdom,South Africa,Financial services,Other (Financial serv…,Business Services,* $9.60m,* 31,New

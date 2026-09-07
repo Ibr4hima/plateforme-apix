@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2016,Grand Capital,Grand Capital,Russia,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+2,Sep 2016,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Communications equ…,Retail,* $6.30m,* 31,New
+3,Sep 2016,Liwayway Holding…,Liwayway Holding…,China,South Africa,Food and Beverages,Snack food,Manufacturing,* $36.00m,* 100,New
+4,Sep 2016,Monsanto,Monsanto South A…,United States,South Africa,Food and Beverages,Grains & oilseed,Research & Develop…,$11.36m,25,Expansion
+5,Sep 2016,Petrofac,TNEI Services,United Kingdom,South Africa,Business services,"Architectural, engine…",Business Services,* $27.80m,* 17,New
+6,Sep 2016,Struto,Struto,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,Expansion
+7,Sep 2016,Transearch,Transearch,France,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+8,Sep 2016,Transearch,Transearch,France,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+9,Sep 2016,WPP,Cognifide,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+10,Aug 2016,Bombardier,Bombardier Trans…,Canada,South Africa,Non-automotive tran…,Railroad rolling stock,Headquarters,* $10.80m,100,New
+11,Aug 2016,Cotton On,Cotton On,Australia,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+12,Aug 2016,FUCHS (Fuchs Pet…,Fuchs Lubricants …,Germany,South Africa,Chemicals,"Paints, coatings, add…",Manufacturing,* $27.70m,* 455,New
+13,Aug 2016,Hennes & Mauritz …,Hennes & Mauritz …,Sweden,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,Expansion
+14,Aug 2016,Inditex,Zara,Spain,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+15,Aug 2016,Lindt & Sprüngli,Lindt & Sprüngli,Switzerland,South Africa,Food and Beverages,Sugar & confectionar…,Retail,* $12.70m,* 107,New

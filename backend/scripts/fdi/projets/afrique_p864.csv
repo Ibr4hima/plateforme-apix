@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2016,Aero Group,Woodland,India,South Africa,Textiles,Footwear,Retail,$0.23m,* 2,New
+2,Mar 2016,Avaya,Avaya,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+3,Mar 2016,Brazin,Bras N Things,Australia,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+4,Mar 2016,China National Pet…,China Petroleum P…,China,South Africa,Transportation & Wa…,Pipeline transportati…,"Logistics, Distributio…",* $2.00bn,"* 3,000",New
+5,Mar 2016,Econet Global,Liquid Intelligent …,Mauritius,South Africa,Communications,Satellite telecommu…,ICT & Internet Infras…,$3.50m,* 1,Expansion
+6,Mar 2016,General Energy S…,General Energy S…,Taiwan,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+7,Mar 2016,Honeywell,ADI International,United States,South Africa,Consumer electronics,Audio & video equip…,"Sales, Marketing & S…",* $3.40m,* 29,New
+8,Mar 2016,Inditex,Zara Home,Spain,South Africa,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+9,Mar 2016,Infinidat,Infinidat,United States,South Africa,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Mar 2016,International Busi…,International Busi…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+11,Mar 2016,Mitsubishi Electric,Mitsubishi Electric,Japan,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $0.40m,4,New
+12,Mar 2016,Molecor,Molecor,Spain,South Africa,Plastics,"Plastic pipes, pipe fit…",Manufacturing,* $19.00m,* 229,New
+13,Mar 2016,Nippon Telegraph …,Dimension Data H…,Japan,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+14,Mar 2016,Nomura Holdings,Nomura Holdings,Japan,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+15,Mar 2016,Samsung Group,Samsung Group,South Korea,South Africa,Consumer electronics,Other (Consumer ele…,Retail,* $9.20m,* 78,New

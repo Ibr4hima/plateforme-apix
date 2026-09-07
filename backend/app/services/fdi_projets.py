@@ -232,30 +232,61 @@ def ecarter_deja_releves(lignes: list[dict], perimetre: str,
     return gardees, ecartees
 
 
-# Les pages que le relevé de zone n'a AUCUNE ligne à montrer, parce qu'un pays
-# déjà relevé pour lui-même les occupait en entier. Sans cette déclaration, un
-# trou dans la numérotation ne se distinguerait pas d'une page oubliée — et sur
-# mille cent vingt-six pages, l'oubli est une certitude.
-FICHIER_PAGES_ABSENTES = DOSSIER_PROJETS.parent / "fdi_pages_absentes.csv"
+# Ce que le relevé NE PORTE PAS, et pourquoi. Une page entière que la source
+# consacrait à un pays déjà relevé pour lui-même ; ou quelques rangs qu'un
+# export n'a pas rendus parce que la source avait grandi entre deux captures.
+#
+# Sans cette déclaration, un trou ne se distinguerait pas d'un oubli — et sur
+# mille cent vingt-six pages, l'oubli est une certitude. Le motif est exigé :
+# une lacune sans raison écrite est une lacune qu'on n'ose plus toucher.
+FICHIER_LACUNES = DOSSIER_PROJETS.parent / "fdi_pages_absentes.csv"
 
 
-def lire_pages_absentes() -> dict[str, set[int]]:
-    """{ préfixe de fichier : pages sans fichier }, motif exigé."""
-    if not FICHIER_PAGES_ABSENTES.exists():
+def _rangs(v: str) -> set[int]:
+    """« 14-15 » ou « 3,14-15 » → {3, 14, 15}."""
+    sortie: set[int] = set()
+    for morceau in (v or "").split(","):
+        morceau = morceau.strip()
+        if not morceau:
+            continue
+        if "-" in morceau:
+            d, f = (int(x) for x in morceau.split("-", 1))
+            sortie.update(range(d, f + 1))
+        else:
+            sortie.add(int(morceau))
+    return sortie
+
+
+def lire_lacunes() -> dict[str, dict[int, set[int] | None]]:
+    """{ préfixe : { page : rangs manquants, ou None si la page entière manque } }."""
+    if not FICHIER_LACUNES.exists():
         return {}
-    par_perimetre: dict[str, set[int]] = {}
-    with FICHIER_PAGES_ABSENTES.open(encoding="utf-8") as f:
+    par_perimetre: dict[str, dict[int, set[int] | None]] = {}
+    with FICHIER_LACUNES.open(encoding="utf-8") as f:
         for l in csv.DictReader(f):
             if not (l.get("motif") or "").strip():
                 raise LigneInvalide(
-                    f"{FICHIER_PAGES_ABSENTES.name} : {l['fichier']} pages "
+                    f"{FICHIER_LACUNES.name} : {l['fichier']} pages "
                     f"{l['page_debut']}-{l['page_fin']} sans motif écrit")
             d, fin = int(l["page_debut"]), int(l["page_fin"])
             if fin < d:
                 raise LigneInvalide(
-                    f"{FICHIER_PAGES_ABSENTES.name} : {l['fichier']} plage inversée")
-            par_perimetre.setdefault(l["fichier"].strip(), set()).update(range(d, fin + 1))
+                    f"{FICHIER_LACUNES.name} : {l['fichier']} plage inversée")
+            rangs = _rangs(l.get("rangs", ""))
+            if rangs and not all(1 <= r <= LIGNES_PAR_PAGE for r in rangs):
+                raise LigneInvalide(
+                    f"{FICHIER_LACUNES.name} : {l['fichier']} rang hors page {sorted(rangs)}")
+            pages = par_perimetre.setdefault(l["fichier"].strip(), {})
+            for page in range(d, fin + 1):
+                pages[page] = rangs or None
     return par_perimetre
+
+
+def lire_pages_absentes() -> dict[str, set[int]]:
+    """Les pages dont AUCUNE ligne n'est relevée — les lacunes partielles ont
+    leur fichier, elles n'ont pas leur place ici."""
+    return {f: {p for p, r in pages.items() if r is None}
+            for f, pages in lire_lacunes().items()}
 
 
 FICHIER_PAYS = DOSSIER_PROJETS.parent / "fdi_pays.csv"

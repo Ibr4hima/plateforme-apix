@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2013,BHP Group,BHP Group,Australia,South Africa,Metals,Nonferrous metal pr…,Manufacturing,$91.20m,"* 1,218",Expansion
+2,Feb 2013,Coal India Limited…,Coal India Limited…,India,South Africa,"Coal, oil & gas",Coal mining,"Sales, Marketing & S…",* $7.80m,* 30,New
+3,Feb 2013,Globeleq Generati…,Globeleq Generati…,United Kingdom,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+4,Feb 2013,Globeleq Generati…,Globeleq Generati…,United Kingdom,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+5,Feb 2013,International Con…,International Con…,Netherlands,South Africa,Business services,Other support services,Business Services,* $27.80m,* 17,New
+6,Feb 2013,Magzter,Magzter,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+7,Feb 2013,Mahindra Group,Mahindra & Mahin…,India,South Africa,Automotive OEM,Automobiles,Education & Training,* $9.40m,* 32,New
+8,Feb 2013,MCI Group,MCI Group,Switzerland,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+9,Feb 2013,Namibia Post and …,Telecom Namibia,Namibia,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+10,Feb 2013,Namibia Post and …,Telecom Namibia,Namibia,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+11,Feb 2013,Russian Railways …,Gefco,Russia,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $4.50m,13,Expansion
+12,Feb 2013,TransPerfect Trans…,TransPerfect Trans…,United States,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+13,Feb 2013,Virgin Group,Virgin Active,United Kingdom,South Africa,Leisure & entertainm…,"Performing arts, spe…",Construction,$16.51m,* 66,New
+14,Feb 2013,Walmart,Builders Warehouse,United States,South Africa,Consumer products,Building material & g…,Retail,* $10.90m,* 170,New
+15,Jan 2013,CLX Networks,CLX Networks,Sweden,South Africa,Communications,Wireless telecommu…,"Sales, Marketing & S…",* $4.70m,* 62,New

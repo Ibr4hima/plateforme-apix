@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2021,Ford Motor Compa…,Ford South Africa,United States,South Africa,Automotive OEM,Automobiles,Manufacturing,$686.00m,"1,240",Expansion
+2,Feb 2021,Hine,Hine,Spain,South Africa,Industrial equipment,All other industrial m…,Manufacturing,* $21.30m,* 60,New
+3,Feb 2021,Lotus Bakeries,Lotus Bakeries,Belgium,South Africa,Food and Beverages,Snack food,Manufacturing,* $36.00m,* 100,Expansion
+4,Feb 2021,Pagero,Pagero,Sweden,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Feb 2021,The MCG Group,The MCG Group,United Kingdom,South Africa,Business services,Employment services,Business Services,* $1.20m,8,New
+6,Jan 2021,Asfertglobal,Asfertglobal,Portugal,South Africa,Biotechnology,Biological products (…,"Sales, Marketing & S…",* $6.90m,* 11,New
+7,Jan 2021,Audience DNA (A…,Audience DNA (A…,Singapore,South Africa,Business services,"Advertising, PR, & re…",Headquarters,* $10.50m,* 995,New
+8,Jan 2021,Connex One,Connex One,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+9,Jan 2021,Deutsche Post,DHL Global Forwa…,Germany,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",$8.36m,* 342,Expansion
+10,Dec 2020,Bernet Internation…,Bernet Internation…,Hong Kong,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+11,Dec 2020,Crane Worldwide …,Crane Worldwide …,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,New
+12,Dec 2020,Econet Global,Africa Data Centres,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,Expansion
+13,Dec 2020,Engie (GDF SUEZ)…,Engie (GDF SUEZ)…,France,South Africa,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+14,Dec 2020,Haussmann Group,Haussmann Group,France,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+15,Dec 2020,HKD Group,HKD Group,Hong Kong,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New

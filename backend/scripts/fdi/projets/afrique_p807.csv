@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2022,Cellulant,Cellulant,Kenya,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+2,Dec 2022,Equinix,Equinix,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,$160.00m,* 24,New
+3,Dec 2022,Kocho,Kocho,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+4,Dec 2022,MarkIT,MarkIT,Estonia,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+5,Dec 2022,PepsiCo,PepsiCo,United States,South Africa,Food and Beverages,Snack food,Manufacturing,$3.55m,* 3,Expansion
+6,Dec 2022,PepsiCo,PepsiCo,United States,South Africa,Food and Beverages,Snack food,Manufacturing,$17.36m,14,Expansion
+7,Dec 2022,QZ Asset Manage…,QZ Asset Manage…,China,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+8,Dec 2022,Rheinmetall,Rheinmetall,Germany,South Africa,Electronic components,All other electrical e…,Manufacturing,* $8.00m,* 134,New
+9,Dec 2022,Two AM Music Glo…,Two AM Music Glo…,Malaysia,South Africa,Communications,Motion picture & sou…,"Sales, Marketing & S…",* $4.70m,* 62,New
+10,Dec 2022,Vantage Data Cen…,Vantage Data Cen…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+11,Dec 2022,Vantage Data Cen…,Vantage Data Cen…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $750.00m,* 111,Expansion
+12,Dec 2022,Voltalia,Voltalia,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+13,Dec 2022,West Indian Ocea…,Open Access Data…,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+14,Dec 2022,West Indian Ocea…,Open Access Data…,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,Expansion
+15,Nov 2022,Apex Group (Apex…,Apex Group (Apex…,Bermuda,South Africa,Financial services,Investment manage…,Business Services,* $273.80m,* 900,Expansion

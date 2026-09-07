@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2019,Komatsu,Komatsu Africa Ho…,Japan,South Africa,Industrial equipment,"Agriculture, construc…",Manufacturing,$21.15m,* 197,Expansion
+2,Mar 2019,Krannich Solar,Krannich Solar,Germany,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+3,Mar 2019,Microsoft,Microsoft,United States,South Africa,Software & IT services,Other (Software & IT…,"Sales, Marketing & S…",* $5.20m,* 9,New
+4,Mar 2019,Vehere,Vehere,United States,South Africa,Communications,Other telecommunic…,"Sales, Marketing & S…",* $4.70m,* 62,New
+5,Mar 2019,Walmart,Massmart,United States,South Africa,Consumer products,Wholesale Trade (Co…,Retail,* $10.90m,* 170,New
+6,Feb 2019,BidX1,BidX1,Ireland,South Africa,Real estate,Real estate services,"Sales, Marketing & S…",* $15.90m,* 25,New
+7,Feb 2019,Enel,Enel Green Power,Italy,South Africa,Renewable energy,Wind electric power,Electricity,$226.53m,* 45,New
+8,Feb 2019,GPTech,GPTech,Spain,South Africa,Electronic components,All other electrical e…,Manufacturing,* $8.00m,* 134,New
+9,Feb 2019,Huawei Technologi…,Huawei Technologi…,China,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+10,Feb 2019,Jellyfish,Jellyfish,United Kingdom,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+11,Feb 2019,Lego,Lego,Denmark,South Africa,Consumer products,"Dolls, toy, & games",Headquarters,* $19.20m,* 123,New
+12,Feb 2019,RFIB Holdings,RFIB Group,United Kingdom,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+13,Feb 2019,UPM-Kymmene,UPM Adhesive Mat…,Finland,South Africa,"Paper, printing & pac…",Converted paper pro…,"Logistics, Distributio…",* $52.30m,* 62,New
+14,Feb 2019,UPM-Kymmene,UPM Adhesive Mat…,Finland,South Africa,"Paper, printing & pac…",Converted paper pro…,"Sales, Marketing & S…",* $2.10m,10,Expansion
+15,Feb 2019,WeWork (We Holdi…,WeWork (We Holdi…,United States,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New

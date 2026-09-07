@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2020,Hyvec Group,Hyvec Group,Mauritius,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+2,Dec 2020,Mauritius Telecom…,Mauritius Telecom…,Mauritius,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $90.30m,* 100,New
+3,Dec 2020,Swiss Reinsurance…,Swiss Re Corporat…,Switzerland,South Africa,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,Expansion
+4,Nov 2020,Hive Energy,Hive Energy,United Kingdom,South Africa,Wood products,Wood products,Manufacturing,* $47.20m,100,New
+5,Nov 2020,Infinox,Infinox,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+6,Nov 2020,LegacyFx,LegacyFx,Cyprus,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+7,Nov 2020,PepsiCo,PepsiCo,United States,South Africa,Food and Beverages,Other (Food & Bever…,Manufacturing,$356.89m,* 346,Expansion
+8,Nov 2020,Plug and Play,Plug and Play,United States,South Africa,Business services,Other support services,Business Services,* $27.80m,* 17,New
+9,Nov 2020,Salt,Salt,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+10,Nov 2020,Walmart,Massmart,United States,South Africa,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,Expansion
+11,Oct 2020,Econet Global,DPA Africa Asset-Co,Mauritius,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+12,Oct 2020,KAPICO Group,KAPICO South Afri…,Kuwait,South Africa,Automotive compon…,Motor vehicle & part…,"Sales, Marketing & S…",* $1.80m,* 18,New
+13,Oct 2020,SEW-Eurodrive,SEW Eurodrive (Pt…,Germany,South Africa,Industrial equipment,Mechanical power tr…,Headquarters,$23.98m,* 93,Expansion
+14,Oct 2020,Tsurumi,Tsurumi,Japan,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+15,Sep 2020,Acacium,Hobson Prior,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New

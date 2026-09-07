@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2022,Vontier,Gilbarco Veeder-R…,United States,South Africa,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,Expansion
+2,Aug 2022,Alexander Beard,Alexander Beard,United Kingdom,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New
+3,Aug 2022,Apeel Sciences,Apeel Sciences,United States,South Africa,Chemicals,Other chemical prod…,"Sales, Marketing & S…",* $2.80m,* 13,New
+4,Aug 2022,Atlantis Media Ven…,Atlantis Media Ven…,India,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+5,Aug 2022,Automatic Data Pr…,Automatic Data Pr…,United States,South Africa,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 17,New
+6,Aug 2022,Cititec,Cititec,United Kingdom,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+7,Aug 2022,Deutsche Bank,Deutsche Bank,Germany,South Africa,Financial services,Corporate & investm…,Business Services,* $1.50m,5,Expansion
+8,Aug 2022,GoGlobal,GoGlobal,Japan,South Africa,Business services,Employment services,Business Services,* $27.80m,* 17,New
+9,Aug 2022,Instinctif Partners,Instinctif Partners,United Kingdom,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+10,Aug 2022,Isuzu Motors,Isuzu Motors Sout…,Japan,South Africa,Automotive compon…,Other motor vehicle …,"Logistics, Distributio…",* $27.80m,* 73,New
+11,Aug 2022,Magnora,Magnora,Norway,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+12,Aug 2022,NEC,NEC XON,Japan,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,Co-Location
+13,Aug 2022,Shezlong,Shezlong,Egypt,South Africa,Healthcare,Other (Healthcare),"Sales, Marketing & S…",* $0.80m,* 36,New
+14,Aug 2022,Systems Limited,Systems Limited,Pakistan,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+15,Aug 2022,Thunes,Thunes,Singapore,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New

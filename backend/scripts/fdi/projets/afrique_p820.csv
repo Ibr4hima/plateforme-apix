@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2021,Electricite de Fran…,EDF Renewables S…,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+2,Oct 2021,Electricite de Fran…,EDF Renewables S…,France,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+3,Oct 2021,Electricite de Fran…,EDF Renewables S…,France,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+4,Oct 2021,Electricite de Fran…,EDF Renewables S…,France,South Africa,Renewable energy,Wind electric power,Electricity,* $169.60m,* 21,New
+5,Oct 2021,Ethos Asset Mana…,Ethos Asset Mana…,United States,South Africa,Financial services,Investment manage…,Business Services,* $9.60m,* 31,New
+6,Oct 2021,Finergreen,Finergreen,France,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+7,Oct 2021,Scatec AS,Scatec AS,Norway,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+8,Oct 2021,Tetra Laval,Tetra Pak South Af…,Switzerland,South Africa,Plastics,Plastics packaging m…,Manufacturing,$33.83m,* 353,Expansion
+9,Oct 2021,TheSize Surfaces,Neolith,Spain,South Africa,Consumer products,Furniture & related p…,Retail,* $10.90m,* 170,New
+10,Oct 2021,United Parcel Serv…,Marken,United States,South Africa,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $9.90m,* 31,Expansion
+11,Oct 2021,Vantage Data Cen…,Vantage Data Cen…,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $250.00m,* 37,New
+12,Sep 2021,ABB (Asea Brown …,ABB (Asea Brown …,Switzerland,South Africa,Industrial equipment,General purpose ma…,Research & Develop…,* $27.30m,* 62,Co-Location
+13,Sep 2021,Ascensos,Ascensos,United Kingdom,South Africa,Business services,Business support ser…,Customer Contact C…,* $1.20m,150,New
+14,Sep 2021,Econet Global,Liquid Intelligent …,Mauritius,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+15,Sep 2021,Globe-Cann,Globe-Cann,Canada,South Africa,Pharmaceuticals,Medicinal & botanical,"Sales, Marketing & S…",* $5.60m,* 34,New

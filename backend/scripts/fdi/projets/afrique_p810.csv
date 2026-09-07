@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2022,Amazon.com,Amazon Web Serv…,United States,South Africa,Communications,Computing infrastruc…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+2,Sep 2022,Arctic Wolf Networ…,Arctic Wolf Networ…,United States,South Africa,Software & IT services,All other information…,Business Services,* $5.90m,* 63,New
+3,Sep 2022,ARD Holdings,Ardagh Group,Luxembourg,South Africa,Ceramics & glass,Glass & glass products,Manufacturing,* $86.90m,* 844,Expansion
+4,Sep 2022,CyborgIntell,CyborgIntell,India,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Sep 2022,Deutsche Post,DHL Global Forwa…,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,Headquarters,$7.00m,* 35,Expansion
+6,Sep 2022,ESCO Technologies,Xtensible,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+7,Sep 2022,Giyani Metals,Giyani Metals,Canada,South Africa,Metals,Nonferrous metal pr…,Manufacturing,$9.20m,* 123,New
+8,Sep 2022,INGOT Broker,INGOT Broker,Saint Vincent and…,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+9,Sep 2022,inlumi,inlumi,Netherlands,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,Expansion
+10,Sep 2022,Jakson Group,Jakson Green,India,South Africa,Renewable energy,Other electric power …,"Sales, Marketing & S…",* $22.90m,* 25,New
+11,Sep 2022,KoinKoin,KoinKoin,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+12,Sep 2022,Ponea Health,Ponea Health,Kenya,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+13,Sep 2022,QCIC,QCIC,United Kingdom,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,Expansion
+14,Sep 2022,Remondis (Rethm…,Rhenus Logistics,Germany,South Africa,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $2.40m,100,Expansion
+15,Sep 2022,Rogers Group,Rogers Aviation,Mauritius,South Africa,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 9,New

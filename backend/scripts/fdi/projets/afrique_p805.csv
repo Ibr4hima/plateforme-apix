@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2023,Stellantis,Stellantis,Netherlands,South Africa,Automotive OEM,Automobiles,Manufacturing,$157.72m,"1,000",New
+2,Mar 2023,Sumitomo Group,Sumitomo Rubber…,Japan,South Africa,Rubber,Tyres,Manufacturing,* $40.80m,* 592,Expansion
+3,Mar 2023,Sygma,Sygma,Belgium,South Africa,Metals,"Machine shops, turn…",Headquarters,* $13.20m,* 57,New
+4,Mar 2023,Thought Machine,Thought Machine,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Feb 2023,Asbis Group,Asbis Group,Cyprus,South Africa,Business machines &…,Computer & peripher…,"Logistics, Distributio…",* $12.50m,* 118,New
+6,Feb 2023,Avia Solutions Gro…,Chapman Freeborn,Cyprus,South Africa,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 9,Expansion
+7,Feb 2023,Bolt (Taxify),Bolt (Taxify),Estonia,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,Expansion
+8,Feb 2023,Bordeaux & Burgu…,Bordeaux & Burgu…,United Kingdom,South Africa,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 17,New
+9,Feb 2023,CleverProfits,CleverProfits,United States,South Africa,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 17,Expansion
+10,Feb 2023,Ener-G-Africa,Ener-G-Africa,Malawi,South Africa,Electronic components,All other electrical e…,Manufacturing,$1.45m,53,New
+11,Feb 2023,Ivanhoe Mines,Ivanhoe Mines,Canada,South Africa,Metals,Other metal ore mini…,Extraction,$490.00m,* 731,New
+12,Feb 2023,KHIPU Networks,KHIPU Networks,United Kingdom,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+13,Feb 2023,Nivoda,Nivoda,United Kingdom,South Africa,Consumer products,Jewellery & silverware,"Sales, Marketing & S…",* $3.20m,* 37,New
+14,Feb 2023,PNE Group,WKN,Germany,South Africa,Renewable energy,Other electric power …,Manufacturing,* $3.07bn,* 993,New
+15,Feb 2023,TotalEnergies (Tot…,TotalEnergies (Tot…,France,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New

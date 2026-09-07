@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2022,TTEC (TeleTech),TTEC (TeleTech),United States,South Africa,Business services,Business support ser…,Business Services,* $27.80m,* 17,New
+2,Jul 2022,ARD Holdings,Ardagh Group,Luxembourg,South Africa,Ceramics & glass,Glass & glass products,Manufacturing,$95.00m,150,Expansion
+3,Jul 2022,Blenheim Chalcot,Blenheim Chalcot,United Kingdom,South Africa,Financial services,Corporate & investm…,Business Services,* $9.60m,* 31,New
+4,Jul 2022,Coupa Software,Coupa Software,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Jul 2022,Hightech Payment…,Hightech Payment…,Morocco,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,Expansion
+6,Jul 2022,International Wor…,International Wor…,Switzerland,South Africa,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+7,Jul 2022,Onnu,Onnu,United Kingdom,South Africa,Business services,Environmental consu…,Business Services,* $27.80m,* 17,New
+8,Jul 2022,Pan African Resou…,Pan African Resou…,United Kingdom,South Africa,Metals,Gold ore & silver ore…,Extraction,$149.47m,* 223,New
+9,Jul 2022,Russia Today (RT),Russia Today (RT),Russia,South Africa,Communications,Radio & TV broadcas…,Headquarters,* $36.10m,* 95,New
+10,Jul 2022,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,Wireless telecommu…,ICT & Internet Infras…,$36.19m,* 5,New
+11,Jun 2022,Admirals,Admirals,Estonia,South Africa,Financial services,Corporate & investm…,Headquarters,* $44.20m,* 93,New
+12,Jun 2022,Berda Fruit,Berda Fruit,China,South Africa,Food and Beverages,Fruits & vegetables …,Manufacturing,* $36.00m,* 100,New
+13,Jun 2022,BioNTech,BioNTech,Germany,South Africa,Biotechnology,Biological products (…,Manufacturing,* $105.60m,* 146,New
+14,Jun 2022,Blue Projects,Blue Projects,Romania,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+15,Jun 2022,Blue Projects,Blue Projects,Romania,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jul 2019,BFG International,BFG International,Bahrain,South Africa,Plastics,Artificial & synthetic …,Manufacturing,$3.60m,27,New
+2,Jul 2019,Denso,Denso,Japan,South Africa,Automotive compon…,Other motor vehicle …,"Sales, Marketing & S…",* $1.80m,* 18,New
+3,Jul 2019,Enel,Enel Green Power,Italy,South Africa,Renewable energy,Wind electric power,Electricity,$203.09m,* 40,New
+4,Jul 2019,Enel,Enel Green Power,Italy,South Africa,Renewable energy,Wind electric power,Electricity,$225.67m,* 45,New
+5,Jul 2019,Ford Motor Compa…,Ford South Africa,United States,South Africa,Automotive OEM,Automobiles,Manufacturing,* $255.30m,"1,200",Expansion
+6,Jul 2019,Philip Morris Inter…,Philip Morris Inter…,United States,South Africa,Food and Beverages,Tobacco,Retail,* $12.70m,* 107,New
+7,Jul 2019,Segen,SegenSolar,United Kingdom,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+8,Jul 2019,Shenzhen Zhouji …,Hengtong Aberdar…,China,South Africa,Electronic components,Communication & en…,Manufacturing,$8.85m,* 78,Expansion
+9,Jul 2019,TeMa Corporation,TeMa Corporation,Italy,South Africa,Building materials,Other (Building mate…,"Sales, Marketing & S…",* $0.50m,* 8,New
+10,Jul 2019,TUEV NORD (TÜV …,DMT Kai Batla,Germany,South Africa,Minerals,Support Activities fo…,Business Services,* $2.00m,* 22,Co-Location
+11,Jul 2019,Zimmer Biomet H…,Zimmer Biomet H…,United States,South Africa,Medical devices,Medical equipment &…,Headquarters,* $11.30m,* 62,Expansion
+12,Jun 2019,Alphabet Inc,Google,United States,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,$144.26m,* 21,New
+13,Jun 2019,Bystronic Group (…,Bystronic Laser,Switzerland,South Africa,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+14,Jun 2019,Canopy Growth C…,Canopy Growth C…,Canada,South Africa,Pharmaceuticals,Medicinal & botanical,Manufacturing,* $16.70m,* 205,New
+15,Jun 2019,Elahi Enterprises,Akorbi,United States,South Africa,Business services,Business support ser…,Business Services,* $27.80m,* 17,New

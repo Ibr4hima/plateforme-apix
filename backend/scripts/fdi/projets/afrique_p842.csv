@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2018,Nippon Telegraph …,Internet Solutions…,Japan,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,$34.89m,* 5,New
+2,Dec 2018,Seraphim Solar S…,Seraphim Solar S…,China,South Africa,Electronic components,All other electrical e…,Manufacturing,* $8.00m,* 134,Expansion
+3,Dec 2018,Seraphim Solar S…,Seraphim Solar S…,China,South Africa,Electronic components,All other electrical e…,Manufacturing,* $8.00m,* 134,New
+4,Dec 2018,Switch Media,Switch Media,Australia,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+5,Dec 2018,Vedanta Resources,Vedanta Zinc Inte…,United Kingdom,South Africa,Metals,Nonferrous metal pr…,Manufacturing,$800.00m,"* 3,000",Co-Location
+6,Dec 2018,Vedanta Resources,Vedanta Zinc Inte…,United Kingdom,South Africa,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New
+7,Nov 2018,BP (British Petrole…,British Petroleum …,United Kingdom,South Africa,"Coal, oil & gas",Petroleum refineries,Manufacturing,$270.00m,* 50,Expansion
+8,Nov 2018,Cisco Systems,Cisco Systems,United States,South Africa,Communications,Communications equ…,Education & Training,$0.71m,* 2,New
+9,Nov 2018,Gold One Internat…,Gold One Internat…,Australia,South Africa,Metals,Gold ore & silver ore…,Extraction,$7.74m,* 12,Expansion
+10,Nov 2018,Julius Baer,Julius Baer,Switzerland,South Africa,Financial services,Corporate & investm…,Business Services,* $2.10m,7,New
+11,Nov 2018,Komatsu,Komatsu Africa Ho…,Japan,South Africa,Industrial equipment,"Agriculture, construc…",Headquarters,$64.63m,* 252,New
+12,Nov 2018,M&I Materials,M&I Materials,United Kingdom,South Africa,Chemicals,Other chemical prod…,Manufacturing,* $27.70m,* 455,New
+13,Nov 2018,Mara Group,Mara Phones,UAE,South Africa,Communications,Communications equ…,Manufacturing,$100.00m,"1,500",New
+14,Nov 2018,Oracle,Oracle,United States,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 47,New
+15,Nov 2018,Philipp Plein,Billionaire,Switzerland,South Africa,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New

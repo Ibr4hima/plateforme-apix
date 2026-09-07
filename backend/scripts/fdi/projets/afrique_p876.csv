@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2015,Oracle,Oracle,United States,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 47,Expansion
+2,Jan 2015,Sonnedix,Sonnedix,Spain,South Africa,Renewable energy,Solar electric power,Electricity,* $169.60m,* 21,New
+3,Jan 2015,United Bank for Af…,United Bank for Af…,Nigeria,South Africa,Financial services,Retail banking,Business Services,* $9.60m,* 31,New
+4,Jan 2015,Vallourec,Vallourec,France,South Africa,Metals,Steel products,"Sales, Marketing & S…",* $1.90m,* 8,New
+5,Jan 2015,Vizury Interactive,Vizury Interactive,India,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
+6,Jan 2015,Weir Group,Weir Minerals Africa,United Kingdom,South Africa,Industrial equipment,General purpose ma…,Manufacturing,* $21.30m,* 60,Expansion
+7,Dec 2014,Choppies,Choppies,Botswana,South Africa,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+8,Dec 2014,CloudFlare,CloudFlare,United States,South Africa,Communications,Computing infrastruc…,ICT & Internet Infras…,* $90.30m,* 100,New
+9,Dec 2014,Cosentino,Cosentino,Spain,South Africa,Minerals,Other non-metallic …,"Logistics, Distributio…",* $2.30m,* 7,New
+10,Dec 2014,Delta Drone,Delta Drone,France,South Africa,Aerospace,Aircraft,"Sales, Marketing & S…",* $5.80m,* 18,New
+11,Dec 2014,Eseye,Eseye,United Kingdom,South Africa,Communications,Communications equ…,"Sales, Marketing & S…",* $4.70m,* 62,New
+12,Dec 2014,Fico (Fair Isaac),Fico (Fair Isaac),United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+13,Dec 2014,Techwave Consulti…,Techwave Consulti…,United States,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+14,Nov 2014,GlobeScan,GlobeScan,Canada,South Africa,Business services,"Professional, scientifi…",Business Services,* $27.80m,* 17,New
+15,Nov 2014,Koc Holding,Defy Appliances,Turkey,South Africa,Consumer electronics,Household appliances,Manufacturing,$10.89m,200,Expansion

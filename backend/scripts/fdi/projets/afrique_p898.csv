@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2012,First Solar,First Solar,United States,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+2,Dec 2012,Hisense,Hisense,China,South Africa,Consumer electronics,Household appliances,"Sales, Marketing & S…",* $3.40m,* 29,New
+3,Dec 2012,Intrinsys,Intrinsys,United Kingdom,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+4,Dec 2012,KCI Konecranes,KCI Konecranes,Finland,South Africa,Industrial equipment,General purpose ma…,"Sales, Marketing & S…",* $2.90m,* 11,New
+5,Dec 2012,"Nasdaq, Inc (NAS…",Bwise,United States,South Africa,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.20m,* 9,New
+6,Dec 2012,Orange (France Te…,Orange (France Te…,France,South Africa,Communications,Wired telecommunic…,ICT & Internet Infras…,* $30.44m,* 5,New
+7,Dec 2012,Russian Railways …,Gefco,Russia,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $5.90m,17,New
+8,Dec 2012,SMA Solar Technol…,SMA Solar Technol…,Germany,South Africa,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+9,Dec 2012,Volkswagen,MAN Truck & Bus …,Germany,South Africa,Automotive OEM,Heavy duty trucks,"Logistics, Distributio…",$11.70m,* 61,New
+10,Nov 2012,Accenture,Accenture,Ireland,South Africa,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 47,New
+11,Nov 2012,Beijing Automotiv…,Beijing Automobil…,China,South Africa,Automotive OEM,Automobiles,Manufacturing,$22.24m,469,New
+12,Nov 2012,BlackBerry (Resea…,BlackBerry (Resea…,Canada,South Africa,Software & IT services,"Software publishers,…",Research & Develop…,* $32.40m,* 47,New
+13,Nov 2012,Dachser,Dachser South Afr…,Germany,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+14,Nov 2012,Edrington Group,Edrington Group,United Kingdom,South Africa,Food and Beverages,Distilleries,"Sales, Marketing & S…",* $4.50m,* 18,New
+15,Nov 2012,Fotolia,Fotolia,United States,South Africa,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 9,New
