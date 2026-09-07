@@ -839,6 +839,10 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
           {recherche ? `Aucun projet ne correspond à « ${recherche} ».` : "Aucun projet importé."}
         </p>
       ) : (
+        <>
+        {/* La même navigation en haut. Les deux barres lisent et écrivent le
+            MÊME état : il n'y a rien à synchroniser, il n'y a qu'une vérité. */}
+        <Navigation courante={courante} pages={pages} onPage={setPage} marge={0} bas={14} />
         <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -937,6 +941,7 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
             </table>
           </div>
         </div>
+        </>
       )}
 
       {edite && (
@@ -986,26 +991,78 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
         />
       )}
 
-      {pages > 1 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", marginTop: 16 }}>
-          <BoutonPage onClick={() => setPage(courante - 1)} inactif={courante === 1} titre="Page précédente">
-            <ChevronLeft size={14} />
-          </BoutonPage>
-          {fenetre(courante, pages).map((n, i) =>
-            n === "…" ? (
-              <span key={`e${i}`} style={{ fontSize: 12, color: "var(--gris)", padding: "0 2px" }}>…</span>
-            ) : (
-              <BoutonPage key={n} onClick={() => setPage(n)} actif={n === courante} titre={`Page ${n}`}>
-                {n}
-              </BoutonPage>
-            )
-          )}
-          <BoutonPage onClick={() => setPage(courante + 1)} inactif={courante === pages} titre="Page suivante">
-            <ChevronRight size={14} />
-          </BoutonPage>
-        </div>
-      )}
+      <Navigation courante={courante} pages={pages} onPage={setPage} marge={16} />
     </Carte>
+  );
+}
+
+/** La navigation entre pages, et le saut direct à l'une d'elles.
+ *
+ *  Sur huit cents pages, atteindre la 540 de proche en proche n'est pas une
+ *  navigation, c'est un renoncement. La case de saut est donc l'outil principal
+ *  et les numéros ne servent plus qu'au voisinage immédiat.
+ *
+ *  Le composant ne garde AUCUN état de page : il reçoit la page courante et
+ *  rend la nouvelle. Deux barres affichées ensemble lisent donc la même valeur
+ *  et ne peuvent pas diverger — il n'y a rien à synchroniser. */
+function Navigation({ courante, pages, onPage, marge = 16, bas = 0 }: {
+  courante: number; pages: number; onPage: (n: number) => void;
+  marge?: number; bas?: number;
+}) {
+  const [saut, setSaut] = useState("");
+  if (pages <= 1) return null;
+
+  const aller = () => {
+    const n = parseInt(saut, 10);
+    if (!Number.isFinite(n)) return;
+    // On borne au lieu de refuser : taper 900 sur 800 pages veut dire « la
+    // dernière », et renvoyer une erreur pour cela serait de la pédanterie.
+    onPage(Math.min(Math.max(n, 1), pages));
+    setSaut("");
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
+      gap: 6, flexWrap: "wrap", marginTop: marge, marginBottom: bas }}>
+      <BoutonPage onClick={() => onPage(courante - 1)} inactif={courante === 1} titre="Page précédente">
+        <ChevronLeft size={14} />
+      </BoutonPage>
+      {fenetre(courante, pages).map((n, i) =>
+        n === "…" ? (
+          <span key={`e${i}`} style={{ fontSize: 12, color: "var(--gris)", padding: "0 2px" }}>…</span>
+        ) : (
+          <BoutonPage key={n} onClick={() => onPage(n)} actif={n === courante} titre={`Page ${n}`}>
+            {n}
+          </BoutonPage>
+        )
+      )}
+      <BoutonPage onClick={() => onPage(courante + 1)} inactif={courante === pages} titre="Page suivante">
+        <ChevronRight size={14} />
+      </BoutonPage>
+
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 10 }}>
+        <label htmlFor={`saut-${bas}`} style={{ fontSize: 12, color: "var(--gris)" }}>
+          Aller à
+        </label>
+        <input
+          id={`saut-${bas}`} value={saut} inputMode="numeric"
+          placeholder={String(courante)}
+          onChange={e => setSaut(e.target.value.replace(/\D/g, "").slice(0, 5))}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); aller(); } }}
+          style={{ ...IS, width: 68, padding: "6px 8px", fontSize: 12.5,
+            textAlign: "center", fontVariantNumeric: "tabular-nums" }}
+        />
+        <button type="button" onClick={aller} disabled={!saut}
+          title={`Aller à la page indiquée (1 à ${pages})`}
+          style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12,
+            opacity: saut ? 1 : 0.45, cursor: saut ? "pointer" : "default" }}>
+          OK
+        </button>
+        <span style={{ fontSize: 12, color: "var(--gris)", whiteSpace: "nowrap" }}>
+          sur {pages}
+        </span>
+      </span>
+    </div>
   );
 }
 
