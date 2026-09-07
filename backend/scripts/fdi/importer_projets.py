@@ -27,12 +27,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from sqlalchemy import text as sa_text  # noqa: E402
+
 from app.core.database import AsyncSessionLocal, engine  # noqa: E402
 from app.services.fdi_projets import (  # noqa: E402
     DOSSIER_PROJETS,
     LigneInvalide,
     appliquer_alias_entreprises,
     ecarter_deja_releves,
+    empreinte_contexte,
+    empreinte_lot,
     importer_lot,
     lire_arbitrages,
     lire_lot_csv,
@@ -89,12 +93,20 @@ async def main() -> int:
         print("  aucune page de projets à importer.")
         return 0
 
-    total = preserves = arbitrer = ecartes = 0
+    total = preserves = arbitrer = ecartes = inchanges = 0
+    # Ce qui gouverne l'interprétation des pages. Une page dont ni le fichier ni
+    # ce contexte n'ont bougé n'est pas réécrite : la base contient déjà
+    # exactement ce que cet import y mettrait.
+    tout = "--tout" in sys.argv
+    contexte = empreinte_contexte()
     non_resolus: list[str] = []
     # Les arbitrages de troncature effectivement appliqués. Ceux qui ne le sont
     # pas méritent d'être signalés : soit la page a changé, soit la décision ne
     # sert plus, et un fichier de décisions mortes finit par n'être plus relu.
     utilises: set = set()
+    # Les pages effectivement réécrites. Une page ignorée n'exerce aucun de ses
+    # arbitrages : les déclarer inutilisés serait une fausse alerte.
+    rejouees: set = set()
     try:
         async with AsyncSessionLocal() as db:
             # AVANT les lots : une graphie fautive déclarée doit déjà pointer
@@ -115,16 +127,42 @@ async def main() -> int:
                     print(f"  {libelle:<30} page entière déjà relevée ailleurs")
                     continue
 
-                rapport = await importer_lot(db, libelle, perimetre,
-                                             lignes, "import", sens,
-                                             chemin.stem, utilises)
+                rapport = await importer_lot(
+                    db, libelle, perimetre, lignes, "import", sens,
+                    chemin.stem, utilises,
+                    None if tout else empreinte_lot(chemin, contexte))
                 total += rapport["lignes"]
                 preserves += rapport["preserves"]
-                arbitrer += rapport["entreprises_a_arbitrer"]
-                for ligne, champ, brut, verdict in rapport["non_resolus"]:
-                    non_resolus.append(f"{libelle} L{ligne} · {champ} « {brut} » → {verdict}")
+                # Une page inchangée ne s'annonce pas : mille cent lignes de
+                # journal identiques à chaque fois, c'est un journal qu'on ne
+                # lit plus — et un journal qu'on ne lit plus ne signale rien.
+                if rapport["inchange"]:
+                    inchanges += 1
+                    continue
+                rejouees.add(chemin.stem)
                 suffixe = f", {rapport['supprimes']} ligne(s) retirée(s)" if rapport["supprimes"] else ""
                 print(f"  {libelle:<30} {rapport['lignes']:>3} lignes{suffixe}")
+            # LE RAPPORT DÉCRIT L'ÉTAT DE LA BASE, PAS LE TRAVAIL FAIT. C'est
+            # la différence qui compte depuis que les pages inchangées ne sont
+            # plus réécrites : compter sur les seuls lots rejoués annoncerait
+            # tranquillement « aucun champ non rattaché » alors que quatre le
+            # sont depuis trois versements. Ce qu'on veut savoir, c'est ce que
+            # la base contient — pas ce que cet import y a écrit.
+            arbitrer = (await db.execute(sa_text(
+                "SELECT count(*) FROM fdi_projets WHERE statut_entreprise <> 'resolu'"
+            ))).scalar_one()
+            for nom, cid, cbrut in (("pays d'origine", "pays_source_id", "pays_source_brut"),
+                                    ("pays de destination", "pays_dest_id", "pays_dest_brut"),
+                                    ("secteur", "secteur_id", "secteur_brut"),
+                                    ("sous-secteur", "sous_secteur_id", "sous_secteur_brut"),
+                                    ("activité", "activite_id", "activite_brut"),
+                                    ("type", "type_projet_id", "type_brut")):
+                for r in (await db.execute(sa_text(
+                    f"SELECT l.libelle, p.ligne, p.{cbrut} AS brut "
+                    f"  FROM fdi_projets p JOIN fdi_lots_import l ON l.id = p.lot_id "
+                    f" WHERE p.{cid} IS NULL AND coalesce(p.{cbrut}, '') <> '' "
+                    f" ORDER BY l.id, p.ligne"))).fetchall():
+                    non_resolus.append(f"{r.libelle} L{r.ligne} · {nom} « {r.brut} »")
             await db.commit()
     except LigneInvalide as e:
         # Rien n'est écrit : une page illisible s'arrête avant la base plutôt
@@ -134,6 +172,9 @@ async def main() -> int:
     finally:
         await engine.dispose()
 
+    if inchanges:
+        print(f"  {inchanges} page(s) inchangée(s), non réécrite(s) "
+              f"— « --tout » pour les rejouer quand même")
     print(f"  → {total} projets, {preserves} saisies humaines conservées")
     if ecartes:
         # Ni une perte ni une erreur : ces lignes sont en base, sous le relevé
@@ -143,7 +184,10 @@ async def main() -> int:
     if utilises:
         print(f"  {len(utilises)} troncature(s) ambiguë(s) tranchée(s) à la main "
               f"(fdi_arbitrages.csv)")
-    dormants = sorted(set(lire_arbitrages()) - utilises)
+    # Seuls les arbitrages des pages RÉÉCRITES peuvent être jugés : une page
+    # ignorée n'en exerce aucun. La complétude du fichier est garantie ailleurs,
+    # par les tests, qui le relisent contre tout le relevé à chaque exécution.
+    dormants = sorted(k for k in set(lire_arbitrages()) - utilises if k[0] in rejouees)
     for f, ligne, colonne in dormants:
         print(f"  ⚠ arbitrage inutilisé : {f} L{ligne} « {colonne} » — la ligne se "
               f"rattache désormais seule, ou la page a changé")
@@ -151,10 +195,18 @@ async def main() -> int:
         # Ni un échec ni un oubli : un nom tronqué se tranche à l'écran.
         print(f"  ⚠ {arbitrer} ligne(s) dont l'entreprise reste à arbitrer "
               f"(administration → Projets fDi Markets → Entreprises)")
+    if non_resolus:
+        # LE TOTAL D'ABORD, le détail ensuite. Les lignes de détail portent le
+        # libellé du lot — « Afrique reçoit · page 1040 » — et se confondent
+        # donc avec les lignes de progression dans un journal filtré à la hâte.
+        # C'est exactement ce qui est arrivé : quatre sous-secteurs non
+        # rattachés sont passés inaperçus plusieurs versements de suite, cachés
+        # par un filtre de lecture. Ce total-ci ne ressemble à rien d'autre.
+        print(f"  ⚠ {len(non_resolus)} CHAMP(S) NON RATTACHÉ(S) :")
     for message in non_resolus:
         # La ligne est en base avec son texte brut : c'est le rattachement qui
         # manque, et le signaler vaut mieux que de deviner le voisin le plus proche.
-        print(f"  ⚠ {message}")
+        print(f"      {message}")
     return 0
 
 

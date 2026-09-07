@@ -20,6 +20,7 @@ rend l'interprétation rejouable, et une erreur détectable.
 from __future__ import annotations
 
 import csv
+import hashlib
 import re
 import unicodedata
 from pathlib import Path
@@ -287,6 +288,40 @@ def lire_pages_absentes() -> dict[str, set[int]]:
     leur fichier, elles n'ont pas leur place ici."""
     return {f: {p for p, r in pages.items() if r is None}
             for f, pages in lire_lacunes().items()}
+
+
+# ── L'empreinte d'un lot ─────────────────────────────────────────────────────
+# Tout ce qui gouverne l'interprétation d'une page : si l'un de ces fichiers
+# change, la page doit être réécrite même si son CSV n'a pas bougé — sans quoi
+# une correction du référentiel ne redescendrait jamais jusqu'aux lignes.
+#
+# L'ANALYSEUR EN FAIT PARTIE. C'est le terme qu'on oublie : corriger la lecture
+# des montants sans rejouer les pages laisserait en base les valeurs lues par
+# l'ancienne règle, et rien ne le signalerait.
+FICHIERS_GOUVERNANTS = (
+    "fdi_pays.csv", "fdi_variantes.csv", "fdi_entreprises_alias.csv",
+    "fdi_arbitrages.csv", "fdi_secteurs.csv", "fdi_sous_secteurs.csv",
+    "fdi_activites.csv", "fdi_types_projet.csv",
+)
+
+
+def empreinte_contexte() -> str:
+    """L'empreinte de ce qui interprète les pages, analyseur compris."""
+    h = hashlib.sha256()
+    for nom in sorted(FICHIERS_GOUVERNANTS):
+        chemin = DOSSIER_PROJETS.parent / nom
+        h.update(nom.encode())
+        h.update(chemin.read_bytes() if chemin.exists() else b"")
+    h.update(Path(__file__).read_bytes())
+    return h.hexdigest()
+
+
+def empreinte_lot(chemin: Path, contexte: str) -> str:
+    """L'empreinte d'une page : son contenu, et le contexte qui la lit."""
+    h = hashlib.sha256()
+    h.update(chemin.read_bytes())
+    h.update(contexte.encode())
+    return h.hexdigest()
 
 
 FICHIER_PAYS = DOSSIER_PROJETS.parent / "fdi_pays.csv"
@@ -832,7 +867,11 @@ async def resoudre_ligne(db: "AsyncSession", l: dict, ref: dict, pays_en: dict,
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
                        lignes: list[dict], utilisateur: str | None = None,
                        sens: str = "destination", fichier: str = "",
-                       utilises: set | None = None) -> dict:
+                       utilises: set | None = None,
+                       # Nommée « page » sans ambiguïté : `empreinte()` désigne
+                       # déjà, dans ce module, la signature d'une LIGNE — celle
+                       # qui décide si une description est préservée.
+                       empreinte_page: str | None = None) -> dict:
     """Écrit un lot de projets. Rejouable, et respectueux des saisies humaines.
 
     Le lot est remplacé, jamais fusionné ligne à ligne avec l'existant : sans
@@ -862,8 +901,19 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     for s in ref["sous"]:
         par_secteur.setdefault(s["secteur_id"], []).append(s)
 
-    lot = (await db.execute(text("SELECT id FROM fdi_lots_import WHERE libelle = :l"),
-                            {"l": libelle})).first()
+    lot = (await db.execute(text(
+        "SELECT id, empreinte FROM fdi_lots_import WHERE libelle = :l"),
+        {"l": libelle})).first()
+
+    # Rien n'a changé, ni la page ni ce qui l'interprète : le lot en base est
+    # déjà exactement ce que cet import écrirait. On le laisse tel quel.
+    if lot and empreinte_page and lot.empreinte == empreinte_page:
+        n = (await db.execute(text(
+            "SELECT count(*) FROM fdi_projets WHERE lot_id = :i"), {"i": lot.id})).scalar_one()
+        return {"lignes": n, "non_resolus": [], "preserves": n,
+                "entreprises_a_arbitrer": 0, "supprimes": 0,
+                "lot_id": lot.id, "inchange": True}
+
     if lot:
         lot_id = lot.id
         await db.execute(text(
@@ -883,7 +933,8 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         "       annee, mois, capex_musd, emplois, type_brut, champs_verrouilles "
         "FROM fdi_projets WHERE lot_id = :i"), {"i": lot_id})).fetchall()}
 
-    rapport = {"lignes": len(lignes), "non_resolus": [], "preserves": 0, "entreprises_a_arbitrer": 0}
+    rapport = {"lignes": len(lignes), "non_resolus": [], "preserves": 0,
+               "entreprises_a_arbitrer": 0, "inchange": False}
 
     for l in lignes:
         col, manques = await resoudre_ligne(db, l, ref, pays_en, utilisateur,
@@ -999,6 +1050,11 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
         {"i": lot_id, "rangs": [l["ligne"] for l in lignes]})).fetchall()
     rapport["supprimes"] = len(supprimes)
     rapport["lot_id"] = lot_id
+    # L'empreinte n'est posée QU'APRÈS l'écriture : si celle-ci échoue, le lot
+    # reste sans empreinte valable et sera rejoué au prochain passage.
+    if empreinte_page:
+        await db.execute(text("UPDATE fdi_lots_import SET empreinte = :e WHERE id = :i"),
+                         {"e": empreinte_page, "i": lot_id})
     return rapport
 
 
