@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2010,African Medical In…,VIP Healthcare So…,United Kingdom,Zimbabwe,Healthcare,General medical & s…,Construction,* $49.40m,* 209,Co-Location
+2,Jan 2010,ZTS International …,ZTS International …,China,Zimbabwe,Communications,Communications equ…,"Logistics, Distributio…",* $55.40m,* 151,New
+3,Jan 2010,ZTS International …,ZTS International …,China,Zimbabwe,Communications,Communications equ…,Manufacturing,* $9.40m,* 434,New
+4,Dec 2009,ZTS International …,ZTS International …,China,Zimbabwe,Communications,Communications equ…,"Sales, Marketing & S…",* $7.50m,* 16,New
+5,Oct 2009,Aveng Group,Moolmans,South Africa,Zimbabwe,Metals,Other metal ore mini…,"Sales, Marketing & S…",* $2.80m,* 9,New
+6,Sep 2009,AP Moller - Maersk,Damco,Denmark,Zimbabwe,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $15.30m,* 10,New
+7,Sep 2009,Apollo Tyres,Dunlop Zimbabwe,India,Zimbabwe,Rubber,Tyres,Manufacturing,$3.70m,* 9,Expansion
+8,Sep 2009,ComTrade Group,ComTrade Group,Serbia,Zimbabwe,Software & IT services,"Software publishers,…","Sales, Marketing & S…",* $5.80m,* 16,New
+9,Sep 2009,Haber,Haber,United States,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $236.70m,"* 1,012",New
+10,Sep 2009,New Dawn Mining,New Dawn Mining,Canada,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $236.70m,"* 1,012",Expansion
+11,Sep 2009,New Dawn Mining,New Dawn Mining,Canada,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $236.70m,"* 1,012",Expansion
+12,Aug 2009,Tongaat Hulett,Tongaat Hulett,South Africa,Zimbabwe,Food and Beverages,Sugar & confectionar…,Manufacturing,$8.85m,* 58,Expansion
+13,May 2009,Dubai World,Dubai World Africa,UAE,Zimbabwe,Leisure & entertainm…,Scenic & sightseeing…,Construction,* $118.20m,* 629,New
+14,May 2009,Panasonic Busines…,Panasonic Busines…,South Africa,Zimbabwe,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+15,Mar 2009,Mwana Africa,Mwana Africa,United Kingdom,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,$6.00m,* 8,Expansion

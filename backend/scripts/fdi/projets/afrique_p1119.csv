@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Feb 2017,Lesaffre,Lesaffre Zimbabwe,France,Zimbabwe,Food and Beverages,Bakeries & tortillas,Manufacturing,* $23.50m,* 263,Expansion
+2,Feb 2017,Lesaffre,Lesaffre Zimbabwe,France,Zimbabwe,Food and Beverages,Bakeries & tortillas,Research & Develop…,$12.00m,* 55,New
+3,Oct 2016,Choppies,Choppies Zimbabwe,Botswana,Zimbabwe,Food and Beverages,Food & beverage ret…,Retail,* $2.80m,50,New
+4,Sep 2016,Gold Leaf Tobacco…,Gold Leaf Tobacco…,South Africa,Zimbabwe,Food and Beverages,Tobacco,Manufacturing,* $23.50m,* 263,New
+5,Aug 2016,Taesung Chemical,Art Corporation,South Korea,Zimbabwe,Electronic components,Batteries,Manufacturing,$3.00m,* 26,New
+6,Apr 2016,Choppies,Choppies Zimbabwe,Botswana,Zimbabwe,Food and Beverages,Food & beverage ret…,"Logistics, Distributio…",* $22.50m,* 158,New
+7,Apr 2016,Choppies,Choppies Zimbabwe,Botswana,Zimbabwe,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+8,Apr 2016,ZTE,ZTE,China,Zimbabwe,Communications,Communications equ…,Retail,$0.03m,* -,New
+9,Feb 2016,Magna Carta,Magna Carta,South Africa,Zimbabwe,Business services,"Advertising, PR, & re…",Business Services,* $27.80m,* 38,New
+10,Oct 2015,Aviation Industry …,International Aero…,China,Zimbabwe,Aerospace,Aircraft,"Logistics, Distributio…",* $16.40m,* 52,New
+11,Oct 2015,Choppies,Choppies,Botswana,Zimbabwe,Food and Beverages,Food & beverage ret…,Retail,* $12.70m,* 107,New
+12,Sep 2015,Sable Mining Africa,Sable Mining Africa,United Kingdom,Zimbabwe,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,Co-Location
+13,Jun 2015,Lonrho,Fastjet,United Kingdom,Zimbabwe,Transportation & Wa…,Air transportation,"Logistics, Distributio…",* $167.70m,* 111,New
+14,Apr 2015,Equity Bank,Equity Bank,Kenya,Zimbabwe,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+15,Dec 2014,Carrick Wealth,Carrick Wealth,South Africa,Zimbabwe,Financial services,Investment manage…,Business Services,* $9.60m,* 27,New

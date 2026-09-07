@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,May 2024,Alphabet Inc,Google,United States,Zimbabwe,Communications,Wired telecommunic…,ICT & Internet Infras…,* $122.20m,* 100,New
+2,Apr 2024,Zarephath Health,Zarephath Health,South Africa,Zimbabwe,Biotechnology,In-Vitro diagnostic s…,"Sales, Marketing & S…",* $6.90m,* 11,New
+3,Jan 2024,Jin Yi Enterprises,Jin Yi Enterprises,China,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+4,Oct 2023,Tanzania Ports Aut…,Tanzania Ports Aut…,Tanzania,Zimbabwe,Transportation & Wa…,Warehousing & stora…,"Sales, Marketing & S…",* $6.30m,* 18,New
+5,Sep 2023,Septimius Security,Septimius Security,Ireland,Zimbabwe,Business services,Other support services,Business Services,* $27.80m,* 38,New
+6,Sep 2023,Tsingshan Holding…,Dinson Iron & Ste…,China,Zimbabwe,"Coal, oil & gas",Other electric power …,"Logistics, Distributio…",* $63.40m,* 85,New
+7,Aug 2023,Qatar Airways,Qatar Airways,Qatar,Zimbabwe,Transportation & Wa…,Air transportation,"Sales, Marketing & S…",* $6.30m,* 18,New
+8,Jul 2023,Positive Visa,Positive Visa,Turkey,Zimbabwe,Business services,Other support services,Business Services,* $27.80m,* 38,New
+9,Jul 2023,Sinomine Resourc…,Sinomine Resourc…,China,Zimbabwe,Minerals,Other non-metallic …,Manufacturing,* $66.50m,* 171,Co-Location
+10,Jul 2023,TASS Russian Ne…,TASS Russian Ne…,Russia,Zimbabwe,Business services,"Newspaper, periodic…",Business Services,* $27.80m,* 38,New
+11,May 2023,GoGlobal,GoGlobal,Japan,Zimbabwe,Business services,Employment services,Business Services,* $27.80m,* 38,New
+12,Mar 2023,Contango Holdings,Contango Holdings,United Kingdom,Zimbabwe,"Coal, oil & gas",Other petroleum & c…,Manufacturing,* $1.41bn,* 213,Co-Location
+13,Mar 2023,Marula Mining,Marula Mining,United Kingdom,Zimbabwe,Metals,Other (Metals),"Sales, Marketing & S…",* $1.90m,* 8,New
+14,Jan 2023,Caledonia Mining,Caledonia Mining,United Kingdom,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,$28.80m,* 43,Expansion
+15,Jan 2023,Livetouch Investm…,Livetouch Investm…,China,Zimbabwe,Building materials,Cement & concrete p…,Manufacturing,$17.50m,330,New

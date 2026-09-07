@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jun 2013,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Jun 2013,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+3,Jun 2013,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+4,Jun 2013,InnoVent Rental a…,InnoVent Rental a…,South Africa,Zambia,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+5,May 2013,Remgro,Rainbow Chicken,South Africa,Zambia,Food and Beverages,Animal production & …,Manufacturing,* $54.60m,"* 1,392",New
+6,Apr 2013,Bell Equipment,Bell Equipment,South Africa,Zambia,Industrial equipment,General purpose ma…,Manufacturing,* $13.70m,* 219,New
+7,Apr 2013,Bell Equipment,Bell Equipment,South Africa,Zambia,Industrial equipment,General purpose ma…,Manufacturing,$9.00m,* 84,New
+8,Apr 2013,Deloitte Touche To…,Deloitte Southern …,United States,Zambia,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,Expansion
+9,Apr 2013,Standard Bank Gr…,Stanbic Bank Zam…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Apr 2013,Toll Group,Toll Group,Australia,Zambia,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $1.40m,6,New
+11,Mar 2013,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+12,Mar 2013,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+13,Mar 2013,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+14,Feb 2013,Bharti Group,Bharti Airtel,India,Zambia,Communications,Wireless telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,Feb 2013,Estee Lauder,MAC Cosmetics,United States,Zambia,Consumer products,"Cosmetics, perfume,…",Retail,* $10.90m,* 170,New

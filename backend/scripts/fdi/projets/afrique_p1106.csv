@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2010,Exim Bank (Tanza…,Exim Bank (Tanza…,Tanzania,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+2,Apr 2010,Pick n Pay Holdings,Pick n Pay,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,$25.00m,150,New
+3,Apr 2010,The World Bank G…,International Fina…,United States,Zambia,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+4,Mar 2010,BASF,BASF,Germany,Zambia,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $6.20m,* 14,New
+5,Mar 2010,Hitachi,Hitachi Constructi…,Japan,Zambia,Industrial equipment,"Agriculture, construc…",Manufacturing,$15.00m,* 105,New
+6,Feb 2010,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,$170.00m,"* 1,500",New
+7,Jan 2010,United Bank for Af…,United Bank for Af…,Nigeria,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+8,Dec 2009,China Nonferrous …,China Nonferrous …,China,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$400.00m,* 562,Expansion
+9,Nov 2009,Fraunhofer-Gesell…,Fraunhofer Fokus,Germany,Zambia,Business services,"Professional, scientifi…",ICT & Internet Infras…,* $150.00m,* 89,New
+10,Oct 2009,China Nonferrous …,China Nonferrous …,China,Zambia,Metals,"Copper, nickel, lead,…",Manufacturing,* $96.20m,* 342,Expansion
+11,Oct 2009,Dangote Group,Dangote Cement,Nigeria,Zambia,Building materials,Cement & concrete p…,Manufacturing,* $159.80m,* 342,New
+12,Oct 2009,Dangote Group,Dangote Cement,Nigeria,Zambia,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,Co-Location
+13,Oct 2009,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Oct 2009,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Sep 2009,Denison Mines,Denison Mines Za…,Canada,Zambia,Metals,Other metal ore mini…,Extraction,$118.00m,384,New

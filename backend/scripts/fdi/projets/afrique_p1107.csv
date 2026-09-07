@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Sep 2009,Glencore (Glencor…,Mopani Copper Mi…,Switzerland,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $328.80m,"* 1,012",New
+2,Aug 2009,SABMiller,Zambian Brewerie…,United Kingdom,Zambia,Food and Beverages,Breweries,Manufacturing,* $34.10m,* 222,Expansion
+3,Aug 2009,The Omnia Group,Bulk Mining Explo…,South Africa,Zambia,Chemicals,Other chemical prod…,Manufacturing,$1.20m,15,New
+4,Jul 2009,China Nonferrous …,China Nonferrous …,China,Zambia,Metals,Nonferrous metal pr…,Extraction,* $328.80m,"* 1,012",New
+5,Jun 2009,Ecobank Transnati…,Ecobank Transnati…,Togo,Zambia,Financial services,Retail banking,Business Services,* $21.50m,50,New
+6,Jun 2009,MAN Trucks,MAN Ferrostaal,Germany,Zambia,Renewable energy,Biomass power,Manufacturing,$500.00m,* 304,New
+7,Apr 2009,MTN Group,MTN Zambia,South Africa,Zambia,Communications,Wireless telecommu…,ICT & Internet Infras…,$95.00m,* 66,Expansion
+8,Feb 2009,Elsewedy Electric …,Elsewedy Electric …,Egypt,Zambia,Industrial equipment,Mechanical power tr…,Manufacturing,$8.00m,* 56,New
+9,Feb 2009,Radisson Hospitali…,Radisson Blu (Rad…,Belgium,Zambia,Hotels & tourism,Accommodation,Construction,* $129.80m,* 219,New
+10,Nov 2008,Teal Exploration &…,Teal Exploration &…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$215.00m,* 302,New
+11,Oct 2008,Standard Bank Gr…,Liberty Group Pro…,South Africa,Zambia,Real estate,Real estate services,Construction,$200.00m,"* 1,430",New
+12,Sep 2008,RKJ Group,RKJ Group,India,Zambia,Food and Beverages,Soft drinks & ice,Manufacturing,$30.00m,"2,000",New
+13,Sep 2008,Sinohydro,Sinohydro,China,Zambia,Renewable energy,Hydroelectric power,Electricity,$400.00m,106,Expansion
+14,Aug 2008,African Developm…,African Developm…,Côte d Ivoire,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+15,Aug 2008,Hitachi,Hitachi Constructi…,Japan,Zambia,Industrial equipment,"Agriculture, construc…","Sales, Marketing & S…",* $2.90m,* 17,New

@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2019,Choppies,Choppies Zimbabwe,Botswana,Zimbabwe,Food and Beverages,Food & beverage ret…,Retail,* $2.80m,50,New
+2,Dec 2019,Jaipuria Group,Varun Beverages,India,Zimbabwe,Food and Beverages,Soft drinks & ice,Manufacturing,$20.00m,* 86,Expansion
+3,Nov 2019,Eco Equity,Eco Equity,United Kingdom,Zimbabwe,Pharmaceuticals,Medicinal & botanical,Manufacturing,$12.95m,* 84,New
+4,Oct 2019,Edcon Holdings (P…,Jet Stores,South Africa,Zimbabwe,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+5,Sep 2019,Zura Consulting,Zura Consulting,United States,Zimbabwe,Real estate,Industrial building co…,Construction,$160.00m,* 239,New
+6,Aug 2019,Neopost,Van Dyck Floors,France,Zimbabwe,Textiles,Furniture & related p…,Retail,* $4.40m,* 50,New
+7,Jul 2019,Africure Pharmace…,Africure Pharmace…,India,Zimbabwe,Pharmaceuticals,Pharmaceutical prep…,Manufacturing,* $33.60m,* 205,New
+8,Jul 2019,Exion Corporation,Exion Corporation,South Africa,Zimbabwe,Electronic components,Electric lighting equi…,"Sales, Marketing & S…",* $1.80m,* 13,New
+9,Jul 2019,Yaowei Technology,Yaowei Technology,China,Zimbabwe,Electronic components,All other electrical e…,Manufacturing,$15.00m,* 132,New
+10,Jun 2019,Impala Platinum …,Zimplats,South Africa,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+11,Jun 2019,Seiko Epson,Epson Europe,Japan,Zimbabwe,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $11.10m,* 37,New
+12,May 2019,Profica,Profica,South Africa,Zimbabwe,Business services,"Architectural, engine…",Business Services,* $27.80m,* 38,New
+13,Apr 2019,Econet Global,Econet Wireless Zi…,Mauritius,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+14,Apr 2019,Huajian Group,Huajian Group,China,Zimbabwe,Textiles,Leather & hide tanni…,Manufacturing,* $67.90m,"* 1,375",New
+15,Apr 2019,Tsingshan Holding…,Tsingshan Holding…,China,Zimbabwe,Metals,Iron & steel mills & f…,Manufacturing,$1.00bn,"* 3,000",New

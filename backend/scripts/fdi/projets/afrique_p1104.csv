@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2011,PS International,PS International,United States,Zambia,Food and Beverages,Fruits & vegetables …,Manufacturing,$42.00m,* 275,New
+2,Sep 2011,Equistock,Equistock,South Africa,Zambia,Metals,Nonferrous metal pr…,Manufacturing,$6.00m,* 53,New
+3,Aug 2011,China Nonferrous …,Non-Ferrous Chin…,China,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$700.00m,* 984,Expansion
+4,Aug 2011,Edcon Holdings (P…,Edgars,South Africa,Zambia,Textiles,Clothing & clothing a…,Retail,* $11.90m,* 86,New
+5,Aug 2011,Glencore (Glencor…,Mopani Copper Mi…,Switzerland,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$320.00m,* 450,Expansion
+6,Aug 2011,Standard Bank Gr…,Stanbic Bank Zam…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+7,Jul 2011,ABC Holdings (Ba…,BancABC Zambia,Botswana,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+8,Jun 2011,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+9,May 2011,Xiamen King Long…,Higer Bus,China,Zambia,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.80m,* 884,New
+10,Apr 2011,Dharni Sampda (T…,Taurian Manganes…,India,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $96.20m,* 342,New
+11,Apr 2011,Econet Global,Liquid Intelligent …,Mauritius,Zambia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+12,Apr 2011,Mahindra Group,Mahindra & Mahin…,India,Zambia,Automotive OEM,Heavy duty trucks,Manufacturing,* $94.50m,* 864,New
+13,Apr 2011,Monsanto,Monsanto,United States,Zambia,Food and Beverages,Grains & oilseed,Manufacturing,* $32.20m,* 429,New
+14,Apr 2011,Sanlam Group,Santam,South Africa,Zambia,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 91,New
+15,Mar 2011,Pick n Pay Holdings,Pick n Pay,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,$3.50m,* 57,New

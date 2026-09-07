@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2005,China Nonferrous …,Sino Metals,China,Zambia,Metals,"Copper, nickel, lead,…",Manufacturing,$19.60m,* 173,Expansion
+2,Oct 2005,Lafarge,Lafarge,France,Zambia,Building materials,Cement & concrete p…,Manufacturing,$100.00m,* 191,New
+3,Oct 2005,TotalEnergies (Tot…,Arkema,France,Zambia,"Coal, oil & gas",Petroleum refineries,Manufacturing,$200.00m,* 40,Expansion
+4,Sep 2005,Cotecna,Cotecna,Switzerland,Zambia,Business services,"Professional, scientifi…",Business Services,* $6.80m,* 15,New
+5,Sep 2005,Equinox Resources,Equinox Copper V…,Australia,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$822.00m,"* 1,155",New
+6,Aug 2005,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,$125.00m,* 856,Expansion
+7,Jul 2005,Mayfair Mining & …,Mayfair Mining & …,United States,Zambia,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+8,May 2005,Vedanta Resources,Vedanta Resources,United Kingdom,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$600.00m,* 843,New
+9,Apr 2005,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$29.00m,* 41,Expansion
+10,Mar 2005,Motapa Diamonds,Motapa Diamonds,United States,Zambia,Minerals,Nonmetallic mineral …,Extraction,$0.52m,* 1,New
+11,Jan 2005,Spirit of the River,Spirit of the River,United States,Zambia,Industrial equipment,All other industrial m…,Manufacturing,$1.00m,400,New
+12,Mar 2004,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $328.80m,"* 1,012",Expansion
+13,Mar 2004,Xstrata PLC,Xstrata PLC,Switzerland,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $96.20m,* 342,Expansion
+14,Feb 2004,First Quantum Min…,First Quantum Min…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$224.00m,* 315,New
+15,Jan 2004,Zain (Mobile Telec…,Celtel,Kuwait,Zambia,Communications,Wireless telecommu…,ICT & Internet Infras…,$50.00m,* 35,Expansion

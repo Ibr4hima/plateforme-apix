@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Oct 2003,Beijing General Re…,Beijing General Re…,China,Zambia,Chemicals,Other chemical prod…,Manufacturing,$7.60m,* 6,New
+2,Oct 2003,Ellerines Holdings,FurnCity,South Africa,Zambia,Wood products,Furniture & related p…,Retail,* $11.00m,* 119,New
+3,May 2003,Equinox Resources,Equinox Resources,Australia,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$450.00m,* 633,New
+4,Mar 2003,China Nonferrous …,China Nonferrous …,China,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$150.00m,* 211,New
+5,Feb 2003,Metorex Group,Metorex Group,South Africa,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $328.80m,"* 1,012",Expansion
+6,Jun 2026,Tianci International,Tianci International,Hong Kong,Zimbabwe,Transportation & Wa…,Freight/Distribution …,"Logistics, Distributio…",* $167.70m,* 111,New
+7,May 2026,Ariana Resources …,Ariana Resources …,United Kingdom,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $249.80m,* 717,Expansion
+8,Apr 2026,Xintai,Xintai,China,Zimbabwe,Chemicals,"Pesticide, fertilisers …",Manufacturing,$200.00m,* 265,New
+9,Mar 2026,Mushambi & Asso…,Mushambi & Asso…,United Kingdom,Zimbabwe,Business services,"Accounting, tax prep…",Business Services,* $27.80m,* 38,New
+10,Jan 2026,Private Infrastruct…,InfraCo Africa,United Kingdom,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,New
+11,Nov 2025,Caledonia Mining,Caledonia Mining,United Kingdom,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,$132.00m,* 197,New
+12,Aug 2025,Tsingshan Holding…,Dinson Iron & Ste…,China,Zimbabwe,Metals,Iron & steel mills & f…,Manufacturing,$800.00m,"* 3,000",Expansion
+13,Jul 2025,Namib Minerals,Namib Minerals,Cayman Islands,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $150.00m,* 224,Expansion
+14,Jul 2025,Namib Minerals,Namib Minerals,Cayman Islands,Zimbabwe,Metals,Gold ore & silver ore…,Extraction,* $150.00m,* 224,Expansion
+15,Jul 2025,Shungai Investme…,Shungai Investme…,China,Zimbabwe,Building materials,Cement & concrete p…,Manufacturing,$70.00m,* 172,New

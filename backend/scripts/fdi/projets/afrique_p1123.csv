@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2011,ABC Holdings (Ba…,BancABC Zimbabwe,Botswana,Zimbabwe,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Mar 2011,Impala Platinum …,Zimplats,South Africa,Zimbabwe,Metals,Other metal ore mini…,Extraction,$500.00m,* 703,Expansion
+3,Mar 2011,Seacom,Seacom,Mauritius,Zimbabwe,Communications,Wired telecommunic…,ICT & Internet Infras…,* $150.00m,* 89,New
+4,Jan 2011,POSCO (Pohang Ir…,POSCO (Pohang Ir…,South Korea,Zimbabwe,"Coal, oil & gas",Coal mining,Extraction,* $536.90m,* 214,New
+5,Dec 2010,InnoVent,InnoVent,South Africa,Zimbabwe,Financial services,Corporate & investm…,Business Services,* $11.00m,* 18,New
+6,Nov 2010,Jaipuria Group,RJ Corporation,India,Zimbabwe,Food and Beverages,Soft drinks & ice,Manufacturing,* $34.10m,* 222,New
+7,Nov 2010,Kenol-Kobil Group…,Kenol-Kobil Group…,Kenya,Zimbabwe,"Coal, oil & gas",Gasoline stations,"Sales, Marketing & S…",* $22.20m,* 54,New
+8,Aug 2010,Rio Tinto Group,Rio Tinto Diamonds,United Kingdom,Zimbabwe,Minerals,Nonmetallic mineral …,Extraction,$300.00m,300,Expansion
+9,Jul 2010,African Developm…,African Developm…,Côte d Ivoire,Zimbabwe,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Jul 2010,deVere & Partners…,deVere & Partners…,Switzerland,Zimbabwe,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Jul 2010,Nestle,Nestle Equatorial …,Switzerland,Zimbabwe,Food and Beverages,Snack food,Manufacturing,$27.00m,* 177,Expansion
+12,Jul 2010,Tourvest,Tourvest,South Africa,Zimbabwe,Hotels & tourism,Accommodation,Construction,$1.00m,* 3,New
+13,May 2010,Standard Bank Gr…,Stanbic IBTC Bank,South Africa,Zimbabwe,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+14,Apr 2010,JHI,JHI,South Africa,Zimbabwe,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+15,Mar 2010,Basil Read,TWP Investments,South Africa,Zimbabwe,Metals,Gold ore & silver ore…,Manufacturing,* $178.90m,* 342,New

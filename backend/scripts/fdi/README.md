@@ -259,3 +259,30 @@ lignes**, le Sénégal étant relevé pour lui-même.
 La réconciliation finale se fera par une capture **chronologique** : les projets
 apparus depuis le début du relevé se lisent en tête de liste, et se rattrapent
 là, sans reprendre les mille cent pages.
+
+### Le relevé Afrique est complet
+
+Achevé le 7 septembre 2026 : **1 126 pages, 16 635 lignes, 1 976 416,62 M$ et
+3 516 133 emplois annoncés vers 54 pays et territoires africains.**
+
+Le compte se referme sur celui de la source : 16 876 lignes chez fDi, moins les
+237 lignes sénégalaises — relevées à part sous `senegal_pNN.csv`, le Sénégal
+étant le pays de la plateforme — moins 4 lignes déclarées absentes dans
+`fdi_pages_absentes.csv`. Aucune page n'est ni écrite ni déclarée.
+
+Ce que le relevé N'EST PAS ENCORE :
+
+  · **six mille cent sept lignes attendent un arbitrage d'entreprise.** Le nom
+    y est tronqué par la source, et le rapprochement n'a pas tranché seul. Tant
+    qu'il ne l'est pas, ces projets comptent dans les totaux mais ne se
+    regroupent pas correctement par investisseur ;
+  · **aucune description n'est saisie.** La source ne les donne pas dans son
+    tableau ; il faut les déplier une par une ;
+  · **quatre lignes manquent**, et deux captures faites à des dates différentes
+    ne se recollent jamais exactement, la source grandissant en continu. La
+    réconciliation se fera par une capture CHRONOLOGIQUE : les projets apparus
+    depuis le début du relevé se lisent en tête de liste.
+
+Ce qui est acquis, en revanche : chaque pays, chaque secteur, chaque
+sous-secteur, chaque activité et chaque type de projet est rattaché à la
+nomenclature. L'import ne signale plus aucun champ non résolu.

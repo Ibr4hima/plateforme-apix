@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Jan 2009,Lonrho,Lonrho Agriculture,United Kingdom,Zimbabwe,Food and Beverages,Animal slaughtering …,Manufacturing,* $58.40m,* 429,New
+2,Dec 2008,Hebei Jingniu Group,Hebei Jingniu Group,China,Zimbabwe,Ceramics & glass,Glass & glass products,Manufacturing,$400.00m,"* 1,077",New
+3,Jul 2008,Central African Mi…,Central African Mi…,United Kingdom,Zimbabwe,Metals,Other metal ore mini…,Extraction,* $236.70m,"* 1,012",New
+4,Apr 2008,Anglo American,Anglo Platinum,United Kingdom,Zimbabwe,Metals,Other metal ore mini…,Extraction,$300.00m,* 422,New
+5,Apr 2008,Chas Everitt Inter…,Chas Everitt Inter…,South Africa,Zimbabwe,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+6,Feb 2008,Lonrho,LonZim,United Kingdom,Zimbabwe,Food and Beverages,Soft drinks & ice,Manufacturing,* $34.10m,* 222,New
+7,Oct 2007,Nucoal,Nucoal,South Africa,Zimbabwe,"Coal, oil & gas",Coal mining,Extraction,* $536.90m,* 214,New
+8,Jun 2006,HMT Limited,HMT International,India,Zimbabwe,Industrial equipment,Metalworking machi…,Research & Develop…,$2.50m,* 7,New
+9,Jun 2006,HMT Limited,HMT International,India,Zimbabwe,Industrial equipment,Metalworking machi…,Research & Develop…,$2.40m,* 7,New
+10,Jun 2006,Rio Tinto Group,Rio Tinto Group,United Kingdom,Zimbabwe,Minerals,Nonmetallic mineral …,Extraction,$120.00m,"1,200",Expansion
+11,Jan 2006,Aljazeera (Al Jaze…,Al Jazeera Interna…,Qatar,Zimbabwe,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+12,Sep 2005,Aquarius Platinum,Aquarius Platinum,Australia,Zimbabwe,Metals,Other metal ore mini…,Extraction,$14.00m,* 20,Expansion
+13,Feb 2005,Circle Three,Circle Three,South Africa,Zimbabwe,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+14,Apr 2004,Rio Tinto Group,Rio Tinto Group,United Kingdom,Zimbabwe,Minerals,Nonmetallic mineral …,Extraction,* $55.60m,* 383,New
+15,Apr 2003,Anglo American,Anglo American Pl…,United Kingdom,Zimbabwe,Metals,Nonferrous metal pr…,Extraction,$90.00m,"1,300",New

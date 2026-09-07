@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2008,Kosmo Technology…,M.Mobile,Malaysia,Zambia,Communications,Communications equ…,Manufacturing,$10.00m,200,New
+2,Aug 2008,Vedanta Resources,Konkola Copper M…,United Kingdom,Zambia,Metals,Nonferrous metal pr…,Manufacturing,* $96.20m,* 342,New
+3,Aug 2008,Zambezi Resource…,Zambezi Resource…,Australia,Zambia,Metals,"Copper, nickel, lead,…",Extraction,* $328.80m,"* 1,012",New
+4,Jul 2008,MKP Group,MKP Group,Malaysia,Zambia,Healthcare,General medical & s…,Construction,$12.00m,65,New
+5,Jul 2008,Zambezi Resource…,Zambezi Resource…,Australia,Zambia,Metals,"Copper, nickel, lead,…",Research & Develop…,* $11.00m,* 110,New
+6,Jun 2008,Starafricacorporati…,Red Star Holdings,Zimbabwe,Zambia,Food and Beverages,Food & beverage ret…,Retail,* $16.60m,* 177,New
+7,Apr 2008,Chas Everitt Inter…,Chas Everitt Inter…,South Africa,Zambia,Real estate,Real estate services,"Sales, Marketing & S…",* $28.30m,* 18,New
+8,Mar 2008,Access Bank,Access Bank,Nigeria,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Jan 2008,Raman Internatio…,Raman Internatio…,India,Zambia,Business services,"Business schools, co…",Education & Training,* $14.60m,* 39,New
+10,Oct 2007,China Nonferrous …,Non-Ferrous Chin…,China,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$100.00m,* 141,New
+11,Jul 2007,International Cop…,International Cop…,Canada,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$47.70m,* 67,New
+12,Apr 2007,Albidon,Albidon,Australia,Zambia,Metals,"Copper, nickel, lead,…",Extraction,$65.00m,* 91,New
+13,Apr 2007,Associated British …,Illovo Sugar Ltd,United Kingdom,Zambia,Food and Beverages,Sugar & confectionar…,Manufacturing,* $32.20m,* 429,Expansion
+14,Jan 2007,Tata Group,TATA Africa Holdin…,India,Zambia,Renewable energy,Hydroelectric power,Electricity,$150.00m,* 40,New
+15,Nov 2006,China Nonferrous …,NFC Africa,China,Zambia,Metals,Foundries,Manufacturing,$200.00m,"1,000",New

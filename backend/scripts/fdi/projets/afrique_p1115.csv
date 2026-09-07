@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Dec 2021,Zhejiang Huayou …,Zhejiang Huayou …,China,Zimbabwe,Minerals,Nonmetallic mineral …,Extraction,$300.00m,900,New
+2,Oct 2021,Impala Platinum …,Zimplats,South Africa,Zimbabwe,Metals,Other metal ore mini…,Extraction,$586.20m,* 874,Expansion
+3,Oct 2021,Impala Platinum …,Zimplats,South Africa,Zimbabwe,Metals,Other metal ore mini…,Extraction,$569.00m,* 849,Expansion
+4,Sep 2021,InspiraFarms,InspiraFarms,United Kingdom,Zimbabwe,Industrial equipment,"Ventilation, heating, …","Sales, Marketing & S…",* $2.90m,* 11,New
+5,Sep 2021,Uralchem Holding,United Fertilizers …,Cyprus,Zimbabwe,Chemicals,"Pesticide, fertilisers …","Sales, Marketing & S…",* $2.80m,* 13,New
+6,Jul 2021,Impala Platinum …,Zimplats,South Africa,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+7,Jul 2021,Mount Meru Group,Mount Meru Millers,UAE,Zimbabwe,Food and Beverages,Grains & oilseed,Manufacturing,$15.00m,200,New
+8,Jul 2021,Old Mutual Limited,Old Mutual Zimba…,South Africa,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+9,Jul 2021,Prospect Resources,Prospect Resources,Australia,Zimbabwe,Minerals,Nonmetallic mineral …,Manufacturing,* $66.50m,* 171,New
+10,Jul 2021,Sandvik,Sandvik Mining an…,Sweden,Zimbabwe,Industrial equipment,"Agriculture, construc…",Technical Support Ce…,* $1.60m,* 24,New
+11,Dec 2020,Mureza Auto Com…,Mureza Auto Com…,South Africa,Zimbabwe,Automotive OEM,Automobiles,"Sales, Marketing & S…",* $9.70m,* 26,New
+12,Jul 2020,Caledonia Mining,Caledonia Mining,United Kingdom,Zimbabwe,Renewable energy,Solar electric power,Electricity,$18.00m,* 6,Co-Location
+13,Jul 2020,PPC (Pretoria Portl…,PPC Zimbabwe,South Africa,Zimbabwe,Renewable energy,Solar electric power,Electricity,* $206.10m,* 57,Co-Location
+14,Feb 2020,Saint-Gobain,Saint-Gobain Con…,France,Zimbabwe,Chemicals,"Paints, coatings, add…",Manufacturing,$1.00m,15,New
+15,Jan 2020,African Export-Im…,African Export-Im…,Egypt,Zimbabwe,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New

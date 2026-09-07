@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Mar 2012,Europlus Direct,Europlus Direct,United Kingdom,Zambia,Business machines &…,Computer & peripher…,"Sales, Marketing & S…",* $1.30m,* 29,New
+2,Mar 2012,Guotai Iron and S…,Guotai Iron and S…,China,Zambia,Metals,Steel products,Manufacturing,* $96.20m,* 342,New
+3,Jan 2012,ABC Holdings (Ba…,BancABC Zambia,Botswana,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+4,Jan 2012,ABC Holdings (Ba…,BancABC Zambia,Botswana,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+5,Jan 2012,China Central Tele…,China Central Tele…,China,Zambia,Communications,Radio & TV broadcas…,"Sales, Marketing & S…",* $7.50m,* 16,New
+6,Jan 2012,GAIG Stock (Guan…,Zhejiang Gonow A…,China,Zambia,Automotive OEM,Light trucks & utility …,Manufacturing,$3.00m,500,New
+7,Jan 2012,Pan Africa Busines…,CNBC Africa,South Africa,Zambia,Communications,Radio & TV broadcas…,Business Services,* $2.80m,* 24,New
+8,Dec 2011,ABC Holdings (Ba…,BancABC Zambia,Botswana,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+9,Dec 2011,ABC Holdings (Ba…,BancABC Zambia,Botswana,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+10,Dec 2011,International Wor…,International Wor…,Luxembourg,Zambia,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+11,Nov 2011,FirstRand,First National Ban…,South Africa,Zambia,Financial services,Retail banking,Business Services,* $11.00m,* 18,New
+12,Nov 2011,Nippon Telegraph …,Internet Solutions…,Japan,Zambia,Communications,Wired telecommunic…,"Sales, Marketing & S…",* $7.50m,* 16,New
+13,Nov 2011,Pick n Pay Holdings,Pick n Pay,South Africa,Zambia,Food and Beverages,Food & beverage ret…,Retail,$4.67m,* 77,New
+14,Nov 2011,SABMiller,Zambian Brewerie…,United Kingdom,Zambia,Food and Beverages,Breweries,Manufacturing,* $34.10m,* 222,Expansion
+15,Oct 2011,Apollo Hospitals G…,Apollo Hospitals G…,India,Zambia,Healthcare,Nursing & residential…,Business Services,$2.40m,* 26,New

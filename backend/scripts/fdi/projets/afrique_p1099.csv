@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Apr 2015,Equity Bank,Equity Bank,Kenya,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+2,Apr 2015,Lafarge,Lafarge Cement Z…,France,Zambia,Building materials,Cement & concrete p…,Manufacturing,$217.00m,* 532,Expansion
+3,Feb 2015,Associated British …,Zambia Sugar,United Kingdom,Zambia,Food and Beverages,Sugar & confectionar…,Manufacturing,$82.00m,* 384,Expansion
+4,Jan 2015,Econet Global,Liquid Telecom Za…,Mauritius,Zambia,Communications,Wired telecommunic…,ICT & Internet Infras…,$5.00m,* 1,New
+5,Jan 2015,Securico,Securico,Zimbabwe,Zambia,Business services,Other support services,Business Services,* $27.80m,* 38,New
+6,Oct 2014,Master Power Tec…,Master Power Tec…,South Africa,Zambia,Electronic components,Electrical equipment,"Sales, Marketing & S…",* $1.80m,* 13,New
+7,Oct 2014,Master Power Tec…,Master Power Tec…,South Africa,Zambia,Electronic components,Electrical equipment,"Sales, Marketing & S…",* $1.80m,* 13,New
+8,Sep 2014,Webtickets,Webtickets,South Africa,Zambia,Software & IT services,Internet publishing …,"Sales, Marketing & S…",* $5.20m,* 18,New
+9,Aug 2014,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+10,Aug 2014,Ecobank Transnati…,Ecobank Zambia,Togo,Zambia,Financial services,Retail banking,Business Services,* $9.60m,* 27,New
+11,Aug 2014,Funeral Services …,Funeral Services …,Botswana,Zambia,Business services,Other support services,Business Services,* $27.80m,* 38,New
+12,Aug 2014,Lafarge,Lafarge Cement Z…,France,Zambia,Building materials,Cement & concrete p…,Manufacturing,* $369.20m,* 496,Expansion
+13,Aug 2014,Lafarge,Lafarge Cement Z…,France,Zambia,Building materials,Cement & concrete p…,Manufacturing,* $369.20m,* 496,Expansion
+14,Aug 2014,Wananchi Group (…,iSAT Africa,Kenya,Zambia,Communications,Satellite telecommu…,ICT & Internet Infras…,* $122.20m,* 100,New
+15,Jun 2014,Enviro Board,Enviro Board,United States,Zambia,Building materials,Building material & g…,Manufacturing,* $1.31bn,"3,200",New
