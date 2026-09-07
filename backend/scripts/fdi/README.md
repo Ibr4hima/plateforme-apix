@@ -278,10 +278,18 @@ Ce que le relevé N'EST PAS ENCORE :
     regroupent pas correctement par investisseur ;
   · **aucune description n'est saisie.** La source ne les donne pas dans son
     tableau ; il faut les déplier une par une ;
-  · **quatre lignes manquent**, et deux captures faites à des dates différentes
-    ne se recollent jamais exactement, la source grandissant en continu. La
-    réconciliation se fera par une capture CHRONOLOGIQUE : les projets apparus
-    depuis le début du relevé se lisent en tête de liste.
+  · **deux captures faites à des dates différentes ne se recollent jamais
+    exactement**, la source grandissant en continu. Deux pages du relevé — 800
+    et 1097 — portent treize lignes au lieu de quinze, et l'on a d'abord cru
+    que deux lignes y manquaient à chaque fois. Vérification faite contre fDi,
+    ce n'est pas le cas pour la page 800 : nos vingt-huit lignes autour de sa
+    frontière sont exactement celles de la source, dans le même ordre. Notre
+    pagination avait simplement pris deux rangs de retard sur la sienne. La
+    page 1097 attend la même vérification.
+
+    La leçon vaut d'être retenue : **une page courte ne prouve pas une ligne
+    perdue.** Seule la comparaison du CONTENU avec la source le dit, et aucun
+    contrôle interne au relevé ne peut la remplacer.
 
 Ce qui est acquis, en revanche : chaque pays, chaque secteur, chaque
 sous-secteur, chaque activité et chaque type de projet est rattaché à la
