@@ -10,19 +10,20 @@ from app.core.database import get_db
 from app.services.fdi_projets import (date_brute, entier_brut, est_tronque,
                                       montant_brut, normaliser)
 
-# Projets fDi Markets — consultation, arbitrage des entreprises, saisie des
-# descriptions.
+# Projets fDi Markets — consultation, correction d'une ligne, arbitrage des
+# entreprises.
 #
-# Deux tâches humaines vivent ici, et elles n'ont pas la même nature :
+# Deux tâches humaines vivent ici, et elles n'ont pas la même PORTÉE :
+#
+#   * CORRIGER une ligne — ses cases de relevé, ses descriptions — ne touche
+#     que cette ligne. Tout passe par une seule route, PATCH /projets/{id} :
+#     décrire un projet et corriger son montant sont deux gestes sur le même
+#     objet, et les séparer obligeait à ouvrir deux écrans pour une ligne.
 #
 #   * ARBITRER une entreprise, c'est trancher une ambiguïté que la source a
 #     créée en tronquant ses libellés. La décision porte sur TOUS les projets
 #     qui portent le même texte brut — sinon il faudrait la répéter quatre fois
 #     pour la Banque de développement.
-#
-#   * SAISIR une description, c'est ajouter ce que la source ne donne pas dans
-#     son tableau. La saisie est projet par projet, et il y en a des centaines :
-#     l'écran doit être fait pour la série.
 router = APIRouter(prefix="/fdi", tags=["fdi"])
 
 
@@ -141,28 +142,6 @@ async def lister_projets(
         "totaux": {"total": totaux.total, "sans_description": totaux.sans_desc,
                    "a_arbitrer": totaux.a_arbitrer},
     }
-
-
-class DescriptionIn(BaseModel):
-    description_en: str = ""
-    description_fr: str = ""
-
-
-@router.patch("/projets/{projet_id}/description")
-async def enregistrer_description(projet_id: int, body: DescriptionIn,
-                                  db: AsyncSession = Depends(get_db),
-                                  user: dict = Depends(require_admin)):
-    """Les deux descriptions d'un projet. Le français reste facultatif."""
-    r = (await db.execute(text(
-        "UPDATE fdi_projets SET description_en = :en, description_fr = :fr, "
-        "  modifie_le = :d, modifie_par = :u WHERE id = :i RETURNING id"
-    ), {"en": body.description_en.strip() or None, "fr": body.description_fr.strip() or None,
-        "d": datetime.now(timezone.utc), "u": str(user.get("email") or "admin"),
-        "i": projet_id})).first()
-    if not r:
-        raise HTTPException(404, "Projet introuvable.")
-    await db.commit()
-    return {"id": projet_id}
 
 
 # ── L'arbitrage des entreprises ───────────────────────────────────────────────
@@ -425,6 +404,18 @@ class LigneIn(BaseModel):
     type: str = ""
     capex: str = ""
     emplois: str = ""
+    # Les descriptions ne sont PAS des cases de relevé : la source ne les donne
+    # pas dans son tableau, elles s'écrivent à la main. Elles voyagent avec la
+    # ligne pour qu'un seul enregistrement suffise, mais ne passent jamais par
+    # l'analyseur — il n'y a rien à y interpréter.
+    description_en: str = ""
+    description_fr: str = ""
+
+
+def _texte(v: str) -> str | None:
+    """Une description vide vaut « pas de description », pas « description vide ».
+    C'est sur ce NULL que se comptent les lignes qui restent à décrire."""
+    return (v or "").strip() or None
 
 
 def _brutes(body: LigneIn) -> dict:
@@ -524,10 +515,16 @@ async def corriger_projet(projet_id: int, body: LigneIn,
             type_brut = :type_brut, type_projet_id = :type_projet_id,
             capex_musd = :capex_musd, capex_estime = :capex_estime,
             emplois = :emplois, emplois_estime = :emplois_estime,
+            description_en = :den, description_fr = :dfr,
             champs_verrouilles = :verrous,
             modifie_le = :d, modifie_par = :u
         WHERE id = :i
     """), {**col, "statut": statut, "verrous": sorted(verrous),
+           # Pas de verrou sur les descriptions : elles n'en ont pas besoin.
+           # Le réimport les préserve déjà tant que la ligne décrit le même
+           # projet (cf. empreinte), et aucune colonne du CSV ne peut les
+           # écraser puisque la source ne les fournit pas.
+           "den": _texte(body.description_en), "dfr": _texte(body.description_fr),
            "d": datetime.now(timezone.utc), "u": signataire, "i": projet_id})
     await db.commit()
     return {"id": projet_id, "champs_verrouilles": sorted(verrous),
@@ -574,6 +571,7 @@ async def ajouter_projet(body: LigneIn, db: AsyncSession = Depends(get_db),
             secteur_brut, secteur_id, sous_secteur_brut, sous_secteur_id,
             activite_brut, activite_id, type_brut, type_projet_id,
             capex_musd, capex_estime, emplois, emplois_estime,
+            description_en, description_fr,
             champs_verrouilles, modifie_par)
         VALUES (:lot, :rang, 'saisie', :annee, :mois,
             :parent_brut, :parent_id, :entreprise_brut, :entreprise_id, 'resolu',
@@ -581,9 +579,11 @@ async def ajouter_projet(body: LigneIn, db: AsyncSession = Depends(get_db),
             :secteur_brut, :secteur_id, :sous_secteur_brut, :sous_secteur_id,
             :activite_brut, :activite_id, :type_brut, :type_projet_id,
             :capex_musd, :capex_estime, :emplois, :emplois_estime,
+            :den, :dfr,
             '{}', :u)
         RETURNING id
-    """), {**col, "lot": lot_id, "rang": rang, "u": signataire})).first()
+    """), {**col, "lot": lot_id, "rang": rang, "u": signataire,
+           "den": _texte(body.description_en), "dfr": _texte(body.description_fr)})).first()
 
     await db.execute(text(
         "UPDATE fdi_lots_import SET nb_lignes = (SELECT count(*) FROM fdi_projets WHERE lot_id = :i), "

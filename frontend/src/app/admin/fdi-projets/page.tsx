@@ -26,7 +26,7 @@
 //                 projet à la fois, sans jamais quitter le clavier.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Pencil, Search, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Pencil, X } from "lucide-react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
@@ -124,6 +124,14 @@ type Referentiels = {
   activites: Poste[]; pays: Poste[];
 };
 type ClefListe = "type" | "source" | "dest" | "secteur" | "sous_secteur" | "activite";
+
+/** Ce que la fiche envoie : les cases du relevé, et les descriptions.
+ *
+ *  Les secondes ne sont pas des cases : la source ne les donne pas dans son
+ *  tableau, elles s'écrivent à la main. Elles voyagent avec la ligne pour qu'un
+ *  seul enregistrement suffise — décrire un projet et corriger son montant sont
+ *  deux gestes sur le même objet. */
+type Saisie = LigneBrute & { description_en: string; description_fr: string };
 
 /** Une fiche vierge : rien n'est prérempli, tout se choisit ou se saisit. */
 const LIGNE_VIDE: LigneBrute = {
@@ -371,7 +379,8 @@ function lireEntier(v: string): { valeur: string; estime: boolean } {
   return { valeur: (m[2] || "").replace(/[\s,]/g, ""), estime: Boolean(m[1]) };
 }
 
-function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous, notes, onFermer, onEnvoyer }: {
+function FormulaireLigne({ valeurs, ids, nomenclature, titre, verrous, notes,
+                          descriptions, onFermer, onEnvoyer }: {
   valeurs: LigneBrute;
   /** Les postes auxquels la ligne est DÉJÀ rattachée : c'est eux qu'on
       présélectionne, et non le libellé brut, souvent tronqué. */
@@ -381,9 +390,13 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous
   verrous?: string[];
   notes?: Partial<Record<keyof LigneBrute, React.ReactNode>>;
   onFermer: () => void;
-  onEnvoyer: (v: LigneBrute) => Promise<string[] | null>;
+  /** Les descriptions déjà saisies, à reprendre telles quelles. */
+  descriptions?: { en: string; fr: string };
+  onEnvoyer: (v: Saisie) => Promise<string[] | null>;
 }) {
   const [envoi, setEnvoi] = useState(false);
+  const [descEn, setDescEn] = useState(descriptions?.en ?? "");
+  const [descFr, setDescFr] = useState(descriptions?.fr ?? "");
   const [erreur, setErreur] = useState<string | null>(null);
   const [alertes, setAlertes] = useState<string[]>([]);
 
@@ -425,7 +438,7 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous
   // BRUT d'origine : le relevé est verbatim, et remplacer « Central African R… »
   // par le nom entier au seul motif qu'on a ouvert la fiche effacerait ce que la
   // source a réellement écrit — et poserait un verrou que personne n'a demandé.
-  const aEnvoyer = (): LigneBrute => {
+  const aEnvoyer = (): Saisie => {
     const liste = (k: ClefListe, brut: string | null) =>
       f[k] ? (f[k]!.id === depart[k]?.id ? (brut ?? "") : f[k]!.en) : (depart[k] ? "" : (brut ?? ""));
     const nombre = (v: string) => v.trim().replace(/\s/g, "").replace(",", ".");
@@ -441,6 +454,7 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous
       type: liste("type", valeurs.type),
       capex: nombre(f.capex) ? `${f.capexEstime ? "* " : ""}$${nombre(f.capex)}${f.capexUnite}` : "",
       emplois: nombre(f.emplois) ? `${f.emploisEstime ? "* " : ""}${nombre(f.emplois)}` : "",
+      description_en: descEn.trim(), description_fr: descFr.trim(),
     };
   };
 
@@ -480,11 +494,6 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous
           <div style={{ minWidth: 0 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: "var(--encre)", margin: 0,
               letterSpacing: "-0.01em" }}>{titre}</h2>
-            {sousTitre && (
-              <p style={{ fontSize: 12.5, color: "var(--gris)", lineHeight: 1.6, margin: "6px 0 0" }}>
-                {sousTitre}
-              </p>
-            )}
           </div>
           <button type="button" onClick={onFermer} aria-label="Fermer"
             style={{ ...btnSecondaire, padding: "4px 8px", flexShrink: 0, lineHeight: 0 }}>
@@ -636,6 +645,21 @@ function FormulaireLigne({ valeurs, ids, nomenclature, titre, sousTitre, verrous
               </label>
             </Bloc>
 
+            <Bloc titre="Description" colonnes={2}>
+              <label style={{ display: "block" }}>
+                <Etiquette>Description (anglais)</Etiquette>
+                <textarea value={descEn} onChange={e => setDescEn(e.target.value)}
+                  rows={5} placeholder="Ce que la source ne donne qu'au dépliage."
+                  style={{ ...IS, resize: "vertical", lineHeight: 1.5, minHeight: 96 }} />
+              </label>
+              <label style={{ display: "block" }}>
+                <Etiquette>Description (français, facultatif)</Etiquette>
+                <textarea value={descFr} onChange={e => setDescFr(e.target.value)}
+                  rows={5} placeholder="Traduction ou reformulation, si utile."
+                  style={{ ...IS, resize: "vertical", lineHeight: 1.5, minHeight: 96 }} />
+              </label>
+            </Bloc>
+
             <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end",
               gap: 10, marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--bordure)" }}>
               <button type="button" onClick={onFermer} style={btnSecondaire}>Annuler</button>
@@ -659,7 +683,11 @@ export default function AdminFdiProjets() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [base, setBase] = useState<"projets" | "signaux" | "entreprises">("projets");
-  const [vue, setVue] = useState<"projets" | "entreprises" | "descriptions">("projets");
+  // La saisie des descriptions avait sa propre vue, en série. Elle a disparu :
+  // les deux champs sont maintenant dans la fiche de correction, avec le reste
+  // de la ligne. Décrire un projet et corriger un montant sont deux gestes sur
+  // le MÊME objet ; les séparer obligeait à ouvrir deux écrans pour une ligne.
+  const [vue, setVue] = useState<"projets" | "entreprises">("projets");
   const [recherche, setRecherche] = useState("");
   // Les nomenclatures ne bougent pas d'une session à l'autre : on les charge une
   // fois, pas à chaque ouverture du formulaire.
@@ -748,7 +776,6 @@ export default function AdminFdiProjets() {
           options={[
             { v: "projets" as const,      l: "Projets",       n: totaux.total },
             { v: "entreprises" as const,  l: "Entreprises",   n: groupes.length },
-            { v: "descriptions" as const, l: "Descriptions",  n: totaux.sans_description },
           ]}
           value={vue} onChange={setVue}
         />
@@ -768,10 +795,8 @@ export default function AdminFdiProjets() {
       ) : vue === "projets" ? (
         <VueProjets projets={projetsFiltres} recherche={recherche} nomenclature={nomenclature}
           onFait={async (t) => { annoncer(t); await charger(); }} />
-      ) : vue === "entreprises" ? (
-        <VueEntreprises groupes={groupes} onFait={async (t) => { annoncer(t); await charger(); }} />
       ) : (
-        <VueDescriptions projets={projets} onFait={async (t) => { annoncer(t); await charger(); }} />
+        <VueEntreprises groupes={groupes} onFait={async (t) => { annoncer(t); await charger(); }} />
       )}
       </>
       )}
@@ -973,12 +998,6 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
         <FormulaireLigne
           titre={edite === "nouveau" ? "Ajouter un projet" : "Corriger la ligne"}
           nomenclature={nomenclature}
-          sousTitre={edite === "nouveau" ? undefined
-            : <>Les cases modifiées seront <strong>protégées</strong>{" "}: un réimport du relevé
-                réécrira les autres depuis le fichier, mais laissera celles-là.{" "}
-                {edite.origine === "saisie"
-                  ? "Ce projet a été saisi à la main ; il ne vient d'aucun fichier."
-                  : `Ligne ${edite.ligne} du lot « ${edite.lot} ».`}</>}
           valeurs={edite === "nouveau" ? LIGNE_VIDE : {
             date: edite.brut.date, parent: edite.brut.parent ?? "",
             entreprise: edite.brut.entreprise ?? "", source: edite.brut.source ?? "",
@@ -996,6 +1015,8 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
             entreprise: <>Rattachée à <strong style={{ color: "var(--gris-fort)" }}>{edite.entreprise}</strong>,
               le nom que le tableau affiche. Ce champ-ci porte le libellé du relevé.</>,
           }}
+          descriptions={edite === "nouveau" ? undefined
+            : { en: edite.description_en ?? "", fr: edite.description_fr ?? "" }}
           onFermer={() => setEdite(null)}
           onEnvoyer={async (v) => {
             const nouveau = edite === "nouveau";
@@ -1212,127 +1233,6 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
             </div>
           </div>
         ))}
-      </div>
-    </Carte>
-  );
-}
-
-// ── Vue 3 : la saisie des descriptions, en série ──────────────────────────────
-function VueDescriptions({ projets, onFait }: { projets: Projet[]; onFait: (t: string) => void }) {
-  // On travaille sur la liste complète, mais en démarrant sur le premier projet
-  // sans description : on peut ainsi revenir corriger une saisie passée sans
-  // sortir de la vue.
-  const [i, setI] = useState(() => Math.max(0, projets.findIndex(p => !p.description_en)));
-  const [en, setEn] = useState("");
-  const [fr, setFr] = useState("");
-  const [envoi, setEnvoi] = useState(false);
-  const [erreur, setErreur] = useState<string | null>(null);
-
-  const p = projets[i];
-  useEffect(() => {
-    setEn(p?.description_en ?? ""); setFr(p?.description_fr ?? ""); setErreur(null);
-  }, [p?.id]);  // eslint-disable-line react-hooks/exhaustive-deps
-
-  const restants = projets.filter(x => !x.description_en).length;
-
-  const enregistrer = async (avancer: boolean) => {
-    if (!p) return;
-    setEnvoi(true); setErreur(null);
-    try {
-      const r = await fetch(`${API_BASE}/fdi/projets/${p.id}/description`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-        body: JSON.stringify({ description_en: en, description_fr: fr }),
-      });
-      if (!r.ok) throw new Error(`Refusé (HTTP ${r.status}).`);
-      // La liste locale suit sans rechargement : enchaîner vingt saisies ne doit
-      // pas déclencher vingt allers-retours de liste complète.
-      p.description_en = en.trim() || null;
-      p.description_fr = fr.trim() || null;
-      if (avancer) {
-        const suivant = projets.findIndex((x, k) => k > i && !x.description_en);
-        setI(suivant >= 0 ? suivant : Math.min(i + 1, projets.length - 1));
-      } else {
-        onFait("Description enregistrée.");
-      }
-    } catch (e: unknown) {
-      setErreur(e instanceof Error ? e.message : "Enregistrement impossible.");
-    } finally { setEnvoi(false); }
-  };
-
-  if (!p) {
-    return (
-      <Carte titre="Descriptions">
-        <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
-          Aucun projet importé.
-        </p>
-      </Carte>
-    );
-  }
-
-  return (
-    <Carte
-      titre="Saisie des descriptions"
-      extra={
-        <span style={{ fontSize: 11.5, color: "var(--gris)", fontVariantNumeric: "tabular-nums" }}>
-          {i + 1} / {projets.length} · {restants} sans description
-        </span>
-      }
-    >
-      {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
-
-      {/* Le contexte du projet : on n'écrit pas une description à l'aveugle. */}
-      <div style={{ border: "1px solid var(--bordure)", borderRadius: 12, padding: "12px 15px",
-        background: "var(--carte-douce)", marginBottom: 14, display: "flex", flexWrap: "wrap",
-        alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>{p.entreprise ?? "—"}</span>
-        <span style={{ fontSize: 12, color: "var(--gris-fort)" }}>{p.periode}</span>
-        <span style={{ fontSize: 12, color: "var(--gris-fort)" }}>{p.source} → {p.destination}</span>
-        <span style={{ fontSize: 12, color: "var(--gris-fort)" }}>{p.sous_secteur ?? p.secteur}</span>
-        {p.type_projet && <Pastille couleur="var(--bleu)">{p.type_projet}</Pastille>}
-        <span style={{ marginLeft: "auto", display: "flex", gap: 14, fontSize: 12 }}>
-          <span><Valeur v={p.capex_musd} estime={p.capex_estime} unite="M$" /></span>
-          <span><Valeur v={p.emplois} estime={p.emplois_estime} unite="emplois" /></span>
-        </span>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em",
-            textTransform: "uppercase", color: "var(--gris)" }}>Description (anglais)</span>
-          <textarea value={en} onChange={e => setEn(e.target.value)} rows={7} autoFocus
-            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) enregistrer(true); }}
-            style={{ ...IS, resize: "vertical", lineHeight: 1.6 }} />
-        </label>
-        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.12em",
-            textTransform: "uppercase", color: "var(--gris)" }}>Description (français, facultatif)</span>
-          <textarea value={fr} onChange={e => setFr(e.target.value)} rows={7}
-            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) enregistrer(true); }}
-            style={{ ...IS, resize: "vertical", lineHeight: 1.6 }} />
-        </label>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-        <button onClick={() => setI(k => Math.max(0, k - 1))} disabled={i === 0}
-          style={{ ...btnSecondaire, display: "inline-flex", alignItems: "center", gap: 6, opacity: i === 0 ? 0.5 : 1 }}>
-          <ChevronLeft size={13} /> Précédent
-        </button>
-        <button onClick={() => setI(k => Math.min(projets.length - 1, k + 1))} disabled={i >= projets.length - 1}
-          style={{ ...btnSecondaire, display: "inline-flex", alignItems: "center", gap: 6,
-            opacity: i >= projets.length - 1 ? 0.5 : 1 }}>
-          Suivant <ChevronRight size={13} />
-        </button>
-        <span style={{ flex: 1 }} />
-        <span style={{ fontSize: 11, color: "var(--gris)" }}>⌘/Ctrl + Entrée</span>
-        <button onClick={() => enregistrer(false)} disabled={envoi} style={btnSecondaire}>
-          Enregistrer
-        </button>
-        <button onClick={() => enregistrer(true)} disabled={envoi}
-          style={{ ...btnPrincipal(true), display: "inline-flex", alignItems: "center", gap: 7, opacity: envoi ? 0.6 : 1 }}>
-          {envoi ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : <Check size={13} />}
-          Enregistrer et suivant
-        </button>
       </div>
     </Carte>
   );
