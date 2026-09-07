@@ -139,6 +139,16 @@ const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet
 const pliage = (v: string) =>
   v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+/** La clé de tri des destinations, dans l'ordre de fDi.
+ *
+ *  Tout ce qui n'est pas ASCII est retiré, accents compris : c'est ce qui range
+ *  « São Tomé » avant « Senegal », comme la source le fait. Les points de
+ *  suspension d'un libellé tronqué disparaissent du même geste — ils ne
+ *  décrivent pas le pays, ils disent seulement que la colonne était trop
+ *  étroite, et les laisser ferait dépendre l'ordre de la largeur d'affichage. */
+const ordreFdi = (v: string | null) =>
+  (v ?? "").normalize("NFKD").replace(/[^\x20-\x7E]/g, "").toLowerCase();
+
 // ── Une liste déroulante avec recherche ──────────────────────────────────────
 // 273 sous-secteurs ne se parcourent pas à la molette. On tape trois lettres du
 // libellé anglais — ou du français, la recherche porte sur les deux — et la
@@ -680,17 +690,32 @@ export default function AdminFdiProjets() {
   const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
   // Le tableau se lit par pays : à vingt lignes par écran, l'ordre du relevé
   // ferait sauter d'un pays à l'autre sans qu'aucun soit jamais complet.
-  // Comparaison française pour que les accents se rangent où on les cherche
-  // (Égypte entre l'Eswatini et l'Érythrée, pas rejetée en fin de liste), et
-  // tri stable : à destination égale, l'ordre du relevé est conservé.
-  const collateur = useMemo(() => new Intl.Collator("fr", { sensitivity: "base" }), []);
+  // L'ORDRE EST CELUI DE fDi, PAS LE NÔTRE. La source range ses destinations
+  // alphabétiquement sur SES propres libellés, et ceux-ci ne sont pas d'une
+  // seule langue : « Algeria » et « South Africa » en anglais, « Côte d Ivoire »
+  // en français. Trier sur nos noms français donnerait donc un autre ordre —
+  // « Afrique du Sud » en tête au lieu de l'Algérie — et rendrait pénible tout
+  // rapprochement page à page avec la source, qui est le geste quotidien ici.
+  //
+  // On trie donc sur le libellé BRUT et l'on AFFICHE le nom français : l'ordre
+  // vient de fDi, l'écriture reste la nôtre.
+  //
+  // La règle exacte a été vérifiée contre le relevé lui-même, dont les pages
+  // sont dans l'ordre de la source : sur les 54 destinations, seul le libellé
+  // brut réduit — sans accent, sans casse, sans les points de suspension de la
+  // troncature — reproduit cet ordre. Le libellé brut tel quel échoue dès
+  // « São Tomé », que la source range avant « Senegal ».
   const projetsFiltres = useMemo(() => {
     const q = norm(recherche.trim());
     const retenus = !q ? projets : projets.filter(p => [p.entreprise, p.parent, p.secteur,
       p.sous_secteur, p.source, p.destination, p.type_projet].some(v => v && norm(v).includes(q)));
-    return [...retenus].sort((a, b) =>
-      collateur.compare(a.destination ?? "", b.destination ?? ""));
-  }, [projets, recherche, collateur]);
+    // Le tri de JavaScript est stable : à destination égale, l'ordre du relevé
+    // — donc celui de fDi à l'intérieur d'un pays — est conservé tel quel.
+    return [...retenus].sort((a, b) => {
+      const x = ordreFdi(a.brut.dest), y = ordreFdi(b.brut.dest);
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
+  }, [projets, recherche]);
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1280, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
