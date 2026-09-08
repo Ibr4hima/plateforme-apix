@@ -30,7 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, fmtNombre, groupByContinent, sortContinents } from "./partage";
+import { API, BadgePeriode, fmtNombre, groupByContinent } from "./partage";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
@@ -96,6 +96,20 @@ const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
     est celle du Sénégal. Il reste présent dans sa région, où l'œil ira le
     chercher s'il y descend. */
 const PAYS_REFERENCE = "Sénégal";
+
+/** L'ordre des continents, qui sert ici à ORDONNER LES RÉGIONS sans les
+    coiffer : les régions d'un même continent restent voisines, mais on n'a pas
+    à ouvrir « Afrique » pour les atteindre. Le relevé ne couvre aujourd'hui
+    qu'un continent, et ce niveau ne coûtait qu'un clic.
+
+    Un continent inconnu passe en queue plutôt que d'être écarté : un pays que
+    le référentiel n'a pas classé doit rester atteignable dans le filtre, pas
+    disparaître de la liste. */
+const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie"];
+const rangContinent = (c: string) => {
+  const i = ORDRE_CONTINENTS.indexOf(c);
+  return i === -1 ? ORDRE_CONTINENTS.length : i;
+};
 
 /** Le filet qui sépare deux sections de la colonne de filtres. Sans lui, les
     facettes se lisent comme une seule liste et l'on cherche où finit l'une,
@@ -481,28 +495,34 @@ export default function OngletFdi() {
   // Continents et régions se replient de la même façon et partagent donc un
   // seul état. La clef d'une région porte son continent : deux continents
   // pourraient nommer une région pareil sans qu'elles se confondent.
-  const cleZone = (continent: string, zone: string) => `${continent} · ${zone}`;
+  // LES RÉGIONS DIRECTEMENT, SANS LE CONTINENT AU-DESSUS. Le relevé ne couvre
+  // qu'un continent : « Afrique » ne distinguait rien et coûtait un clic avant
+  // d'atteindre quoi que ce soit. Les régions restent rangées par continent —
+  // celles d'un même continent se suivent — mais se lisent d'emblée.
+  //
+  // La clef garde le continent : deux continents peuvent nommer une région
+  // pareil, et un jour où le relevé en couvrira deux, rien ne se confondra.
+  const regions = Object.entries(paysGroupes)
+    .flatMap(([continent, zones]) => Object.entries(zones).map(([zone, dedans]) => ({
+      cle: `${continent} · ${zone}`, continent, zone, dedans: dedans as ComptePays[],
+    })))
+    .sort((a, b) => rangContinent(a.continent) - rangContinent(b.continent)
+                 || a.zone.localeCompare(b.zone, "fr"));
+
   const retenu = (per?.pays ?? []).find(p => p.nom === pays) ?? null;
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
   const [suivi, setSuivi] = useState<string | null>(null);
-  // Le chemin du pays retenu s'ouvre — son continent ET sa région : ouvrir le
-  // continent en laissant la région repliée ne montrerait toujours pas où
-  // l'on se trouve.
-  const chemin = retenu?.continent
-    ? [retenu.continent, cleZone(retenu.continent, retenu.region_geo ?? "Autre")]
-    : [];
-  if (chemin.length && chemin.join("|") !== suivi) {
-    setSuivi(chemin.join("|"));
-    setOuverts(prev => new Set([...prev, ...chemin]));
+  // La région du pays retenu s'ouvre : sans cela, l'écran affiche un pays que
+  // sa propre liste ne montre pas.
+  const cleRetenue = retenu?.continent
+    ? `${retenu.continent} · ${retenu.region_geo ?? "Autre"}` : null;
+  if (cleRetenue && cleRetenue !== suivi) {
+    setSuivi(cleRetenue);
+    setOuverts(prev => new Set(prev).add(cleRetenue));
   }
   // Une recherche déplie tout : chercher « Kenya » pour tomber sur des en-têtes
   // repliés serait une réponse sans réponse.
-  const tout = new Set<string>();
-  for (const [c, zones] of Object.entries(paysGroupes)) {
-    tout.add(c);
-    for (const z of Object.keys(zones)) tout.add(cleZone(c, z));
-  }
-  const deplies = chercherPays ? tout : ouverts;
+  const deplies = chercherPays ? new Set(regions.map(r => r.cle)) : ouverts;
   const basculer = (cle: string) => setOuverts(prev => {
     const n = new Set(prev);
     if (n.has(cle)) n.delete(cle); else n.add(cle);
@@ -658,48 +678,33 @@ export default function OngletFdi() {
                     </>
                   )}
                   <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
-                    {sortContinents(Object.keys(paysGroupes)).map(continent => {
-                      const ouvert = deplies.has(continent);
-                      const zones = paysGroupes[continent];
+                    {regions.map(r => {
+                      const ouvert = deplies.has(r.cle);
                       return (
-                        <div key={continent} style={{ marginBottom: 6 }}>
-                          <BarreRepli titre={continent} ouvert={ouvert}
-                            onBasculer={() => basculer(continent)} />
-                          {ouvert && Object.entries(zones)
-                            .sort(([a], [b]) => a.localeCompare(b, "fr"))
-                            .map(([zone, dansLaZone]) => {
-                              const cle = cleZone(continent, zone);
-                              const zoneOuverte = deplies.has(cle);
-                              return (
-                              <div key={zone} style={{ marginLeft: 10, marginBottom: 4 }}>
-                                {/* La région porte la même barre que le continent :
-                                    seul le retrait dit lequel contient l'autre. */}
-                                <BarreRepli titre={zone} ouvert={zoneOuverte}
-                                  onBasculer={() => basculer(cle)} />
-                                {zoneOuverte && (dansLaZone as ComptePays[]).map(p => {
-                                  const sel = pays === p.nom;
-                                  // Le pays de référence est déjà épinglé plus haut :
-                                  // ici il se montre, mais ne se clique pas.
-                                  const epingle = p.nom === PAYS_REFERENCE;
-                                  return (
-                                    <button key={p.nom} onClick={() => setPays(p.nom)} disabled={epingle}
-                                      title={epingle ? "Déjà épinglé en haut de la liste" : undefined}
-                                      style={{ ...LIGNE_FACETTE,
-                                        cursor: epingle ? "default" : "pointer",
-                                        opacity: epingle ? 0.45 : 1 }}
-                                      onMouseEnter={e => { if (!sel && !epingle) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                                      <Pastille coche={sel} />
-                                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
-                                      <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                                        fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : p.nb}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              );
-                            })}
+                        <div key={r.cle} style={{ marginBottom: 4 }}>
+                          <BarreRepli titre={r.zone} ouvert={ouvert}
+                            onBasculer={() => basculer(r.cle)} />
+                          {ouvert && r.dedans.map(p => {
+                            const sel = pays === p.nom;
+                            // Le pays de référence est déjà épinglé plus haut :
+                            // ici il se montre, mais ne se clique pas.
+                            const epingle = p.nom === PAYS_REFERENCE;
+                            return (
+                              <button key={p.nom} onClick={() => setPays(p.nom)} disabled={epingle}
+                                title={epingle ? "Déjà épinglé en haut de la liste" : undefined}
+                                style={{ ...LIGNE_FACETTE, marginLeft: 6, width: "calc(100% - 6px)",
+                                  cursor: epingle ? "default" : "pointer",
+                                  opacity: epingle ? 0.45 : 1 }}
+                                onMouseEnter={e => { if (!sel && !epingle) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                <Pastille coche={sel} />
+                                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
+                                <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                  fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : p.nb}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       );
                     })}
