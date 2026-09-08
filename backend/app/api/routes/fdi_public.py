@@ -148,9 +148,16 @@ async def perimetre(
     releves = [r.perimetre for r in (await db.execute(text(
         "SELECT DISTINCT perimetre FROM fdi_lots_import WHERE sens = :s AND perimetre IS NOT NULL"),
         {"s": sens if sens in COTE else "destination"})).fetchall()]
-    complets = {r.nom_fr for r in (await db.execute(text(
-        "SELECT nom_fr FROM ref_pays WHERE nom_fr = ANY(:p) OR continent = ANY(:p)"),
-        {"p": releves})).fetchall()} if releves else set()
+    # La même requête rend le continent et la région : l'écran range les pays
+    # par zone plutôt qu'en une liste de cinquante-cinq lignes, et le
+    # groupement est celui de ref_pays — le seul du produit, pour qu'un même
+    # pays ne change pas de région d'un écran à l'autre.
+    rangs = (await db.execute(text(
+        "SELECT nom_fr, continent, region_geo FROM ref_pays "
+        " WHERE nom_fr = ANY(:p) OR continent = ANY(:p)"),
+        {"p": releves})).fetchall() if releves else []
+    complets = {r.nom_fr for r in rangs}
+    geo = {r.nom_fr: r for r in rangs}
 
     lignes_pays = [r for r in await compter(f"COALESCE(ro.nom_fr, p.{observe}_brut)", "pays")
                    if r.nom in complets]
@@ -187,7 +194,13 @@ async def perimetre(
         # Ce que la plateforme peut affirmer sans réserve, dans ce sens.
         "perimetres_complets": sorted(complets),
         "sens_disponibles": dispo,
-        "pays": [{"nom": r.nom, "nb": r.nb} for r in lignes_pays],
+        "pays": [{"nom": r.nom, "nb": r.nb,
+                  # Peuvent être nuls : un pays non rapproché du référentiel
+                  # n'a ni continent ni région, et l'écran le range alors sous
+                  # « Autre » plutôt que de le laisser tomber.
+                  "continent": geo[r.nom].continent if r.nom in geo else None,
+                  "region_geo": geo[r.nom].region_geo if r.nom in geo else None}
+                 for r in lignes_pays],
         "secteurs": [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
         "sous_secteurs": [{"nom": r.nom, "secteur": r.secteur, "nb": r.nb} for r in lignes_ss],
         "activites": [{"nom": r.nom, "nb": r.nb} for r in lignes_act],

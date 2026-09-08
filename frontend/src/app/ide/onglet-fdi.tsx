@@ -19,7 +19,7 @@
 // liste en dessous est un chiffre qu'on ne peut pas défendre en réunion.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { badge_bleu, badge_vert, badge_violet } from "@/lib/couleurs";
@@ -30,10 +30,15 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, fmtNombre } from "./partage";
+import { API, BadgePeriode, fmtNombre, groupByContinent, sortContinents } from "./partage";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
+/** Un pays du périmètre, avec son rattachement géographique. Le groupement
+    vient de ref_pays et de nulle part ailleurs : c'est le seul du produit, et
+    un pays ne doit pas changer de région d'un écran à l'autre. L'un comme
+    l'autre peuvent manquer — l'écran range alors le pays sous « Autre ». */
+type ComptePays = Compte & { continent: string | null; region_geo: string | null };
 /** Un sous-secteur retenu, avec le secteur d'où il vient. Le couple est porté
     par l'état plutôt que retrouvé dans le périmètre : la liste des filtres
     sert à CONSTRUIRE la requête du périmètre, elle ne peut pas en dépendre. */
@@ -41,7 +46,7 @@ type ChoixSous = { secteur: string; nom: string };
 type Perimetre = {
   sens: string; annees: [number | null, number | null]; total_projets: number;
   perimetres_complets: string[]; sens_disponibles: string[];
-  pays: Compte[]; secteurs: Compte[]; sous_secteurs: SousCompte[];
+  pays: ComptePays[]; secteurs: Compte[]; sous_secteurs: SousCompte[];
   activites: Compte[]; types: Compte[];
 };
 type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
@@ -85,6 +90,12 @@ function moisEnClair(periode: string): string {
 
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
+
+/** Le pays de référence de la plateforme. Épinglé en tête du filtre et retenu
+    par défaut : elle est lue à l'APIX, et la première question qu'on lui pose
+    est celle du Sénégal. Il reste présent dans sa région, où l'œil ira le
+    chercher s'il y descend. */
+const PAYS_REFERENCE = "Sénégal";
 
 /** Le filet qui sépare deux sections de la colonne de filtres. Sans lui, les
     facettes se lisent comme une seule liste et l'on cherche où finit l'une,
@@ -356,14 +367,20 @@ export default function OngletFdi() {
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
-  // Premier pays du sens (le mieux fourni) tant que rien n'est choisi, et
-  // retour à ce défaut si le pays courant sort du périmètre.
-  // Le pays le mieux fourni au premier chargement, et lui seul : depuis que
-  // les facettes cascadent, un pays peut sortir de la liste parce qu'un autre
-  // filtre l'a vidé — basculer alors sur un voisin déplacerait le lecteur sans
-  // qu'il l'ait demandé.
+  // LE SÉNÉGAL D'ABORD. C'est le pays de référence de la plateforme : elle est
+  // lue à l'APIX, et la première question qu'on lui pose est celle du Sénégal.
+  // Ouvrir sur l'Afrique du Sud parce qu'elle compte le plus de projets
+  // obligeait à changer de pays avant de commencer à lire.
+  //
+  // À défaut — un sens de lecture où le Sénégal n'est pas relevé — le mieux
+  // fourni reprend la place, plutôt que de laisser l'écran vide.
+  //
+  // Une seule fois, au premier chargement : depuis que les facettes cascadent,
+  // un pays peut sortir de la liste parce qu'un autre filtre l'a vidé —
+  // basculer alors sur un voisin déplacerait le lecteur sans qu'il l'ait demandé.
   useEffect(() => {
-    if (!pays && per?.pays?.length) setPays(per.pays[0].nom);
+    if (pays || !per?.pays?.length) return;
+    setPays(per.pays.some(p => p.nom === PAYS_REFERENCE) ? PAYS_REFERENCE : per.pays[0].nom);
   }, [per, pays]);
 
   // Changer de sens change de périmètre : le pays retenu n'y existe pas
@@ -428,8 +445,32 @@ export default function OngletFdi() {
     setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
   };
 
+  // Le pays de référence est épinglé au-dessus ; il n'est pas retiré des
+  // groupes pour autant — il garde sa place dans sa région, où l'œil ira le
+  // chercher s'il y descend, mais s'y montre inerte pour ne pas laisser croire
+  // à deux entrées différentes.
   const paysFiltres = (per?.pays ?? []).filter(p =>
     !chercherPays || p.nom.toLowerCase().includes(chercherPays.toLowerCase()));
+  const paysReference = (per?.pays ?? []).find(p => p.nom === PAYS_REFERENCE) ?? null;
+  const paysGroupes = groupByContinent(paysFiltres);
+  // Une recherche ouvre les continents : chercher « Kenya » pour tomber sur des
+  // en-têtes repliés serait une réponse sans réponse. Hors recherche, seul le
+  // continent du pays retenu s'ouvre — celui qu'on est en train de lire.
+  const continentRetenu = (per?.pays ?? []).find(p => p.nom === pays)?.continent ?? null;
+  const [ouverts, setOuverts] = useState<Set<string>>(new Set());
+  const [continentVu, setContinentVu] = useState<string | null>(null);
+  if (continentRetenu && continentRetenu !== continentVu) {
+    setContinentVu(continentRetenu);
+    setOuverts(prev => new Set(prev).add(continentRetenu));
+  }
+  const continentsOuverts = chercherPays
+    ? new Set(Object.keys(paysGroupes))
+    : ouverts;
+  const basculerContinent = (c: string) => setOuverts(prev => {
+    const n = new Set(prev);
+    if (n.has(c)) n.delete(c); else n.add(c);
+    return n;
+  });
 
   const ficheOuverte = (d?.projets ?? []).find(p => p.id === ouvert) ?? null;
 
@@ -557,22 +598,78 @@ export default function OngletFdi() {
                           fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
                     </div>
                   )}
-                  <div style={{ maxHeight: 220, overflowY: "auto" as const }}>
-                    {paysFiltres.map(p => {
-                      const sel = pays === p.nom;
+                  {/* Le pays de référence, épinglé. Il échappe à la recherche
+                      et au repli des continents : c'est le point de départ de
+                      la lecture, il doit rester à portée sans manœuvre. */}
+                  {paysReference && (
+                    <>
+                      <button onClick={() => setPays(paysReference.nom)}
+                        style={LIGNE_FACETTE}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                        <Pastille coche={pays === paysReference.nom} />
+                        <span style={{ fontSize: 12, color: "var(--texte)",
+                          fontWeight: pays === paysReference.nom ? 700 : 400 }}>{paysReference.nom}</span>
+                        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 10, color: "var(--gris)",
+                            fontVariantNumeric: "tabular-nums" }}>{paysReference.nb}</span>
+                          <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
+                            background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
+                        </span>
+                      </button>
+                      <div style={{ height: 1, background: "var(--fond)", margin: "8px 0" }} />
+                    </>
+                  )}
+                  <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
+                    {sortContinents(Object.keys(paysGroupes)).map(continent => {
+                      const ouvert = continentsOuverts.has(continent);
+                      const zones = paysGroupes[continent];
                       return (
-                        <button key={p.nom} onClick={() => setPays(p.nom)}
-                          style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px",
-                            borderRadius: 7, border: "none", cursor: "pointer", background: "transparent",
-                            textAlign: "left" as const, width: "100%" }}
-                          onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                          <Pastille coche={sel} />
-                          <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
-                          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                            fontVariantNumeric: "tabular-nums" }}>{p.nb}</span>
-                        </button>
+                        <div key={continent} style={{ marginBottom: 6 }}>
+                          <button onClick={() => basculerContinent(continent)}
+                            style={{ width: "100%", display: "flex", alignItems: "center",
+                              justifyContent: "space-between", padding: "5px 8px", borderRadius: 7,
+                              background: "rgb(var(--bleu-rgb) / 0.04)", border: "none",
+                              cursor: "pointer", marginBottom: 3 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+                              letterSpacing: "0.1em", textTransform: "uppercase" as const }}>{continent}</span>
+                            <ChevronDown size={11} style={{ color: "var(--bleu)",
+                              transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)",
+                              transition: "transform 0.15s" }} />
+                          </button>
+                          {ouvert && Object.entries(zones)
+                            .sort(([a], [b]) => a.localeCompare(b, "fr"))
+                            .map(([zone, dansLaZone]) => (
+                              <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
+                                {/* La zone n'est pas un bouton : on ne filtre pas
+                                    par région, on s'y repère. */}
+                                <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
+                                  textTransform: "uppercase" as const, letterSpacing: "0.1em",
+                                  padding: "2px 8px", margin: "0 0 2px" }}>{zone}</p>
+                                {(dansLaZone as ComptePays[]).map(p => {
+                                  const sel = pays === p.nom;
+                                  // Le pays de référence est déjà épinglé plus haut :
+                                  // ici il se montre, mais ne se clique pas.
+                                  const epingle = p.nom === PAYS_REFERENCE;
+                                  return (
+                                    <button key={p.nom} onClick={() => setPays(p.nom)} disabled={epingle}
+                                      title={epingle ? "Déjà épinglé en haut de la liste" : undefined}
+                                      style={{ ...LIGNE_FACETTE,
+                                        cursor: epingle ? "default" : "pointer",
+                                        opacity: epingle ? 0.45 : 1 }}
+                                      onMouseEnter={e => { if (!sel && !epingle) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                      <Pastille coche={sel} />
+                                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
+                                      <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                        fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : p.nb}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ))}
+                        </div>
                       );
                     })}
                     {paysFiltres.length === 0 && (
