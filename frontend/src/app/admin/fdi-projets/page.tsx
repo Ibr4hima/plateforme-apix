@@ -62,7 +62,12 @@ type Groupe = {
   entreprise_id: number | null; entreprise_nom: string | null;
   candidats: Candidat[];
   projets: { id: number; ligne: number; periode: string; lot: string;
-             secteur: string | null; type: string | null; capex_musd: number | null }[];
+             secteur: string | null; type: string | null; capex_musd: number | null;
+             // LE PAYS EST LE DISCRIMINANT. C'est en le lisant qu'on voit qu'un
+             // même texte tronqué recouvre deux entreprises : « Standard
+             // Chartere… » vaut « Standard Chartered Kenya Bank » sur les six
+             // lignes kényanes et « Standard Chartered Bank » sur les autres.
+             destination: string | null; origine: string | null }[];
 };
 
 const nf = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
@@ -1139,29 +1144,92 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
   const [saisies, setSaisies] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  // Les projets ÉCARTÉS de la décision en cours, par libellé. On mémorise les
+  // exclus plutôt que les retenus : sans rien cocher, la décision vaut pour
+  // tout le libellé — c'est le cas courant, et il doit rester le plus simple.
+  const [exclus, setExclus] = useState<Record<string, number[]>>({});
+  const [remise, setRemise] = useState<"repos" | "demande" | "encours">("repos");
 
-  const trancher = async (brut: string, corps: Record<string, unknown>) => {
-    setEnvoi(brut); setErreur(null);
+  const retenus = (g: Groupe) => {
+    const hors = exclus[g.brut] ?? [];
+    return g.projets.filter(p => !hors.includes(p.id)).map(p => p.id);
+  };
+
+  const trancher = async (g: Groupe, corps: Record<string, unknown>) => {
+    const ids = retenus(g);
+    if (ids.length === 0) { setErreur("Aucun projet retenu : cocher au moins une ligne."); return; }
+    setEnvoi(g.brut); setErreur(null);
     try {
       const r = await fetch(`${API_BASE}/fdi/arbitrage`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-        body: JSON.stringify({ brut, ...corps }),
+        // Décision entière : on n'envoie pas de liste, et le serveur pose
+        // l'alias. Décision partielle : la liste dit lesquels, et le serveur
+        // s'abstient d'écrire une mémoire qui vaudrait pour les autres.
+        body: JSON.stringify({ brut: g.brut, ...corps,
+          ...(ids.length < g.projets.length ? { projets: ids } : {}) }),
       });
       if (!r.ok) {
         const d = await r.json().catch(() => ({}));
         throw new Error(d.detail || `Refusé (HTTP ${r.status}).`);
       }
       const d = await r.json();
-      onFait(`${d.projets_rattaches} projet${d.projets_rattaches > 1 ? "s" : ""} rattaché${d.projets_rattaches > 1 ? "s" : ""}.`);
+      setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; });
+      onFait(`${d.projets_rattaches} projet${d.projets_rattaches > 1 ? "s" : ""} rattaché${d.projets_rattaches > 1 ? "s" : ""}.`
+        + (d.restants > 0 ? ` ${d.restants} restent à trancher sous ce libellé.` : ""));
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : "Enregistrement impossible.");
     } finally { setEnvoi(null); }
   };
 
+  const reinitialiser = async () => {
+    setRemise("encours"); setErreur(null);
+    try {
+      const r = await fetch(`${API_BASE}/fdi/arbitrage/reinitialiser`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({}),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d.detail || `Refusé (HTTP ${r.status}).`);
+      }
+      const d = await r.json();
+      setExclus({}); setSaisies({});
+      onFait(`${d.libelles_repris} libellé${d.libelles_repris > 1 ? "s" : ""} remis en arbitrage — ${d.a_arbitrer.toLocaleString("fr-FR")} projets à trancher.`);
+    } catch (e: unknown) {
+      setErreur(e instanceof Error ? e.message : "Remise à zéro impossible.");
+    } finally { setRemise("repos"); }
+  };
+
+  // La remise à zéro doit rester atteignable QUAND IL N'Y A PLUS RIEN À
+  // ARBITRER : c'est précisément à ce moment-là qu'on s'aperçoit d'une erreur
+  // de méthode et qu'on veut tout reprendre.
+  const boutonRemise = (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+      {remise === "demande" && (
+        <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
+          Tous les arbitrages seront à refaire. Les descriptions et les corrections de ligne ne bougent pas.
+        </span>
+      )}
+      <button
+        disabled={remise === "encours"}
+        onClick={() => (remise === "demande" ? reinitialiser() : setRemise("demande"))}
+        onBlur={() => remise === "demande" && setRemise("repos")}
+        title="Renvoyer tous les libellés tronqués en arbitrage"
+        style={{ ...btnSecondaire, padding: "6px 13px", fontSize: 12,
+          color: remise === "demande" ? "var(--orange)" : undefined,
+          borderColor: remise === "demande" ? "var(--orange)" : undefined,
+          fontWeight: remise === "demande" ? 700 : undefined }}>
+        {remise === "encours" ? "Remise à zéro…" : remise === "demande" ? "Confirmer" : "Tout reprendre"}
+      </button>
+    </span>
+  );
+
   if (groupes.length === 0) {
     return (
-      <Carte titre="Entreprises">
+      <Carte titre="Entreprises" extra={boutonRemise}>
+        {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
         <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "34px 0" }}>
           Rien à arbitrer : toutes les entreprises des projets importés portent un nom complet.
         </p>
@@ -1172,6 +1240,7 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
   return (
     <Carte
       titre="Entreprises à arbitrer"
+      extra={boutonRemise}
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1183,15 +1252,46 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
               <Compteur n={g.nb_projets} mot="projet" couleur="var(--violet)" />
             </div>
 
-            {/* Le contexte : sans lui, impossible de deviner de quelle entreprise il s'agit. */}
+            {/* Le contexte : sans lui, impossible de deviner de quelle
+                entreprise il s'agit. Et chaque ligne se décoche : la décision
+                ne portera alors que sur celles qui restent allumées. */}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginBottom: 7 }}>
+              <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
+                {(() => {
+                  const n = retenus(g).length;
+                  return n === g.projets.length
+                    ? "Ces lignes portent le même texte — décocher celles qui désignent une autre entreprise :"
+                    : `Décision sur ${n} ligne${n > 1 ? "s" : ""} ; les ${g.projets.length - n} autres resteront à trancher.`;
+                })()}
+              </span>
+              {(exclus[g.brut]?.length ?? 0) > 0 && (
+                <button onClick={() => setExclus(x => { const s = { ...x }; delete s[g.brut]; return s; })}
+                  style={{ ...btnSecondaire, padding: "2px 9px", fontSize: 11 }}>Tout recocher</button>
+              )}
+            </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {g.projets.map(p => (
-                <span key={p.id} style={{ fontSize: 11, color: "var(--gris-fort)", background: "var(--carte-douce)",
-                  border: "1px solid var(--filet)", borderRadius: 8, padding: "3px 9px", whiteSpace: "nowrap" }}>
-                  {p.periode} · {p.secteur ?? "?"}{p.capex_musd != null ? ` · ${nf.format(p.capex_musd)} M$` : ""}
-                  {p.type ? ` · ${p.type}` : ""}
-                </span>
-              ))}
+              {g.projets.map(p => {
+                const pris = !(exclus[g.brut] ?? []).includes(p.id);
+                return (
+                  <button key={p.id} type="button" aria-pressed={pris}
+                    onClick={() => setExclus(x => {
+                      const hors = x[g.brut] ?? [];
+                      return { ...x, [g.brut]: pris ? [...hors, p.id] : hors.filter(i => i !== p.id) };
+                    })}
+                    title={pris ? "Retirer cette ligne de la décision" : "Remettre cette ligne dans la décision"}
+                    style={{ fontFamily: "inherit", cursor: "pointer", textAlign: "left",
+                      fontSize: 11, color: pris ? "var(--gris-fort)" : "var(--gris)",
+                      background: pris ? "var(--carte-douce)" : "transparent",
+                      border: `1px solid ${pris ? "var(--filet)" : "var(--bordure)"}`,
+                      borderRadius: 8, padding: "3px 9px", whiteSpace: "nowrap",
+                      opacity: pris ? 1 : 0.5, textDecoration: pris ? "none" : "line-through" }}>
+                    <b style={{ fontWeight: 700, color: pris ? "var(--encre)" : "inherit" }}>{p.destination ?? "?"}</b>
+                    {" · "}{p.periode} · {p.secteur ?? "?"}
+                    {p.capex_musd != null ? ` · ${nf.format(p.capex_musd)} M$` : ""}
+                    {p.type ? ` · ${p.type}` : ""}
+                  </button>
+                );
+              })}
             </div>
 
             {g.candidats.length > 0 && (
@@ -1199,7 +1299,7 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
                 <span style={{ fontSize: 11.5, color: "var(--gris)" }}>Déjà connu :</span>
                 {g.candidats.map(c => (
                   <button key={c.id} disabled={envoi === g.brut}
-                    onClick={() => trancher(g.brut, { mode: "rattacher", entreprise_id: c.id })}
+                    onClick={() => trancher(g, { mode: "rattacher", entreprise_id: c.id })}
                     title={c.origine === "memoire" ? "Ce texte a déjà été tranché ainsi" : "Le nom commence par ce texte"}
                     style={{ ...btnSecondaire, padding: "6px 12px", fontSize: 12,
                       borderColor: c.origine === "memoire" ? "rgb(var(--bleu-rgb) / 0.35)" : "var(--bordure-forte)" }}>
@@ -1215,7 +1315,7 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
                 onChange={e => setSaisies(s => ({ ...s, [g.brut]: e.target.value }))}
                 onKeyDown={e => {
                   if (e.key === "Enter" && (saisies[g.brut] ?? "").trim()) {
-                    trancher(g.brut, { mode: "nommer", nom: saisies[g.brut] });
+                    trancher(g, { mode: "nommer", nom: saisies[g.brut] });
                   }
                 }}
                 placeholder="Nom complet de l'entreprise…"
@@ -1223,7 +1323,7 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
               />
               <button
                 disabled={envoi === g.brut || !(saisies[g.brut] ?? "").trim()}
-                onClick={() => trancher(g.brut, { mode: "nommer", nom: saisies[g.brut] })}
+                onClick={() => trancher(g, { mode: "nommer", nom: saisies[g.brut] })}
                 style={{ ...btnPrincipal(true), display: "inline-flex", alignItems: "center", gap: 7,
                   opacity: envoi === g.brut || !(saisies[g.brut] ?? "").trim() ? 0.5 : 1 }}>
                 {envoi === g.brut ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} />

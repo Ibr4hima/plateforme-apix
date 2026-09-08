@@ -21,9 +21,17 @@ from app.services.fdi_projets import (date_brute, entier_brut, est_tronque,
 #     objet, et les séparer obligeait à ouvrir deux écrans pour une ligne.
 #
 #   * ARBITRER une entreprise, c'est trancher une ambiguïté que la source a
-#     créée en tronquant ses libellés. La décision porte sur TOUS les projets
-#     qui portent le même texte brut — sinon il faudrait la répéter quatre fois
-#     pour la Banque de développement.
+#     créée en tronquant ses libellés. Par défaut la décision porte sur TOUS les
+#     projets qui affichent le même texte — sinon il faudrait la répéter quatre
+#     fois pour la Banque de développement.
+#
+#     MAIS UN TEXTE TRONQUÉ EST UN PRÉFIXE, et un préfixe peut recouvrir
+#     plusieurs entreprises réellement distinctes : « Standard Chartere… »
+#     désigne aussi bien « Standard Chartered Bank » que « Standard Chartered
+#     Kenya Bank ». Trancher en bloc les confondrait, et le regroupement par
+#     investisseur serait faux sans que rien ne le dise. L'arbitrage accepte
+#     donc une SÉLECTION de projets, et l'écran donne le pays de destination,
+#     qui est ce qui permet de les séparer.
 router = APIRouter(prefix="/fdi", tags=["fdi"])
 
 
@@ -199,9 +207,13 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
 
         projets = (await db.execute(text("""
             SELECT p.id, p.ligne, p.annee, p.mois, p.capex_musd, p.type_brut,
-                   s.libelle_fr AS secteur, l.libelle AS lot
+                   s.libelle_fr AS secteur, l.libelle AS lot,
+                   coalesce(d.nom_fr, p.pays_dest_brut)   AS destination,
+                   coalesce(o.nom_fr, p.pays_source_brut) AS origine
             FROM fdi_projets p
             LEFT JOIN fdi_secteurs s ON s.id = p.secteur_id
+            LEFT JOIN ref_pays d ON d.id = p.pays_dest_id
+            LEFT JOIN ref_pays o ON o.id = p.pays_source_id
             JOIN fdi_lots_import l ON l.id = p.lot_id
             WHERE p.entreprise_brut = :b AND p.statut_entreprise <> 'resolu'
             ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.ligne
@@ -217,6 +229,11 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
             "projets": [
                 {"id": p.id, "ligne": p.ligne, "periode": _mois(p), "lot": p.lot,
                  "secteur": p.secteur, "type": p.type_brut,
+                 # LE PAYS EST LE DISCRIMINANT. « Standard Chartere… » recouvre
+                 # « Standard Chartered Bank » et « Standard Chartered Kenya
+                 # Bank » : sans la destination sous les yeux, on ne peut pas
+                 # les séparer, et l'écran pousse alors à tout confondre.
+                 "destination": p.destination, "origine": p.origine,
                  "capex_musd": float(p.capex_musd) if p.capex_musd is not None else None}
                 for p in projets
             ],
@@ -231,6 +248,11 @@ class ArbitrageIn(BaseModel):
     mode: str
     nom: str | None = None
     entreprise_id: int | None = None
+    # Les projets visés. Vide = tous ceux qui portent ce texte, ce qui reste le
+    # cas courant : une même banque revient vingt fois sous le même libellé.
+    # Renseigné = une PARTIE seulement, parce que le texte tronqué recouvre
+    # plusieurs entreprises distinctes.
+    projets: list[int] | None = None
 
 
 @router.post("/arbitrage")
@@ -245,6 +267,18 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
     signataire = str(user.get("email") or "admin")
     brut = " ".join(body.brut.split())
     cle = normaliser(brut)
+
+    # Combien de projets porteront ENCORE ce texte sans être tranchés, une fois
+    # cette décision passée. Zéro veut dire « ce libellé ne désigne qu'elle ».
+    # Ce compte se fait AVANT tout le reste, parce qu'il décide de la nature
+    # même de la décision : une décision partielle ne peut pas renommer.
+    if body.projets:
+        restants = (await db.execute(text(
+            "SELECT count(*) FROM fdi_projets "
+            " WHERE entreprise_brut = :b AND statut_entreprise <> 'resolu' "
+            "   AND NOT (id = ANY(:ids))"), {"b": brut, "ids": body.projets})).scalar_one()
+    else:
+        restants = 0
 
     if body.mode == "nommer":
         nom = " ".join((body.nom or "").split())
@@ -281,7 +315,15 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
                 " LIMIT 1"),
                 {"i": actuelle.entreprise_id, "b": brut, "c": cle})).first()
 
-            if not partagee:
+            # Une décision PARTIELLE ne renomme jamais, même quand ce libellé
+            # est le seul à porter l'entreprise : les projets laissés de côté
+            # la portent encore, et les renommer emporterait précisément ceux
+            # que l'on cherche à distinguer. « Standard Chartere… » recouvre
+            # « Standard Chartered Bank » et « Standard Chartered Kenya Bank » :
+            # nommer d'abord les six lignes kényanes, puis les trente et une
+            # autres, ne doit pas aboutir à une seule entreprise renommée deux
+            # fois — mais à deux entreprises distinctes.
+            if not partagee and restants == 0:
                 entreprise_id = actuelle.entreprise_id
                 await db.execute(text(
                     "UPDATE fdi_entreprises SET nom = :n, nom_normalise = :c, statut_nom = 'complet', "
@@ -289,8 +331,8 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
                     {"n": nom, "c": normaliser(nom), "d": datetime.now(timezone.utc),
                      "u": signataire, "i": entreprise_id})
             else:
-                # L'entreprise est partagée : on en ouvre une seconde, et seuls
-                # les projets de CE libellé la rejoindront, plus bas.
+                # Entreprise partagée, ou décision partielle : on en ouvre une
+                # seconde, et seuls les projets VISÉS la rejoindront, plus bas.
                 entreprise_id = (await db.execute(text(
                     "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
                     "VALUES (:n, :c, 'complet', :d, :u) RETURNING id"),
@@ -303,26 +345,140 @@ async def trancher(body: ArbitrageIn, db: AsyncSession = Depends(get_db),
     else:
         raise HTTPException(400, "Mode inconnu.")
 
-    # La mémoire de l'arbitrage : le compteur ne bouge que sur décision humaine.
-    await db.execute(text(
-        "INSERT INTO fdi_entreprise_alias (alias_brut, alias_normalise, tronque, entreprise_id, decide_par) "
-        "VALUES (:b, :c, :t, :e, :u) ON CONFLICT (alias_normalise, entreprise_id) DO UPDATE "
-        "SET occurrences = fdi_entreprise_alias.occurrences + 1, decide_par = EXCLUDED.decide_par"),
-        {"b": brut, "c": cle, "t": est_tronque(brut), "e": entreprise_id, "u": signataire})
+    # Les projets visés. Sans sélection, tous ceux qui portent ce texte.
+    vises = "AND p.id = ANY(:ids)" if body.projets else ""
+    params = {"e": entreprise_id, "d": datetime.now(timezone.utc), "u": signataire, "b": brut}
+    if body.projets:
+        params["ids"] = body.projets
 
     touches = (await db.execute(text(
-        "UPDATE fdi_projets SET entreprise_id = :e, statut_entreprise = 'resolu', "
+        "UPDATE fdi_projets p SET entreprise_id = :e, statut_entreprise = 'resolu', "
         "  modifie_le = :d, modifie_par = :u "
-        "WHERE entreprise_brut = :b AND statut_entreprise <> 'resolu' RETURNING id"),
-        {"e": entreprise_id, "d": datetime.now(timezone.utc), "u": signataire, "b": brut})).fetchall()
-    # La société mère porte le même nom dans la plupart des lignes : on la
-    # rattache aussi, sans quoi l'arbitrage serait à refaire côté parent.
-    await db.execute(text(
-        "UPDATE fdi_projets SET parent_id = :e WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e"),
-        {"e": entreprise_id, "b": brut})
+        f"WHERE p.entreprise_brut = :b AND p.statut_entreprise <> 'resolu' {vises} "
+        "RETURNING p.id"), params)).fetchall()
+
+    # Le libellé a-t-il fini par désigner plusieurs entreprises ? La question ne
+    # se règle qu'APRÈS l'écriture : la dernière décision d'un partage a beau
+    # ne rien laisser derrière elle (restants = 0), le texte reste partagé par
+    # les lignes tranchées avant elle. Sans ce second garde-fou, c'est la
+    # dernière décision qui poserait l'alias — et rattacherait au prochain
+    # import les lignes que l'on vient justement de séparer.
+    eclate = (await db.execute(text(
+        "SELECT count(DISTINCT entreprise_id) FROM fdi_projets "
+        " WHERE entreprise_brut = :b AND entreprise_id IS NOT NULL"), {"b": brut})).scalar_one() > 1
+
+    # LA MÉMOIRE N'EST POSÉE QUE SI LA DÉCISION COUVRE TOUT LE TEXTE. Un alias
+    # dit « ce libellé désigne cette entreprise » : l'écrire alors qu'il en
+    # désigne deux ferait rattacher d'office, au prochain import, des lignes que
+    # l'on vient justement de distinguer à la main. Quand le texte est partagé,
+    # on préfère que la question soit reposée.
+    if restants == 0 and not eclate:
+        await db.execute(text(
+            "INSERT INTO fdi_entreprise_alias (alias_brut, alias_normalise, tronque, entreprise_id, decide_par) "
+            "VALUES (:b, :c, :t, :e, :u) ON CONFLICT (alias_normalise, entreprise_id) DO UPDATE "
+            "SET occurrences = fdi_entreprise_alias.occurrences + 1, decide_par = EXCLUDED.decide_par"),
+            {"b": brut, "c": cle, "t": est_tronque(brut), "e": entreprise_id, "u": signataire})
+
+        # La société mère porte le même nom dans la plupart des lignes : on la
+        # rattache aussi, sans quoi l'arbitrage serait à refaire côté parent.
+        # Réservé au cas non partagé, pour la même raison que l'alias.
+        await db.execute(text(
+            "UPDATE fdi_projets SET parent_id = :e WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e"),
+            {"e": entreprise_id, "b": brut})
+    elif touches:
+        # Texte partagé : la mère n'est reprise que sur les LIGNES TRANCHÉES,
+        # et seulement là où elle porte ce même texte. Ailleurs, ce libellé
+        # désigne peut-être l'autre entreprise : on n'en décide pas ici.
+        await db.execute(text(
+            "UPDATE fdi_projets SET parent_id = :e "
+            " WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e AND id = ANY(:ids)"),
+            {"e": entreprise_id, "b": brut, "ids": [r.id for r in touches]})
 
     await db.commit()
-    return {"entreprise_id": entreprise_id, "projets_rattaches": len(touches)}
+    return {"entreprise_id": entreprise_id, "projets_rattaches": len(touches),
+            "restants": restants}
+
+
+class ReinitialiserIn(BaseModel):
+    """Quel arbitrage défaire. Sans libellé, tous."""
+    brut: str | None = None
+
+
+@router.post("/arbitrage/reinitialiser")
+async def reinitialiser_arbitrage(body: ReinitialiserIn, db: AsyncSession = Depends(get_db),
+                                  user: dict = Depends(require_admin)):
+    """Défait des arbitrages d'entreprise pour les reprendre.
+
+    POURQUOI CELA DOIT EXISTER. La première version de cet écran tranchait par
+    TEXTE : une décision valait pour tous les projets qui l'affichaient. Sur un
+    libellé tronqué qui recouvre deux entreprises — « Standard Chartere… » pour
+    « Standard Chartered Bank » et « Standard Chartered Kenya Bank » — elle les
+    confondait, sans que rien ne le signale ensuite. Des décisions ont donc été
+    prises de bonne foi sur une méthode fautive ; il faut pouvoir les reprendre.
+
+    CE QUE LA REMISE À ZÉRO DÉFAIT, et rien de plus :
+
+      · les projets repassent « à arbitrer », rattachés à l'entreprise portant
+        leur texte brut — l'état exact où l'import les avait laissés ;
+      · les alias décidés PAR UN HUMAIN sont effacés, sans quoi le prochain
+        import rattacherait d'office ce qu'on vient de détacher. Ceux posés par
+        l'import restent : ils enregistrent un rapprochement automatique, qui
+        n'est pas une décision.
+
+    CE QU'ELLE NE TOUCHE PAS : les entreprises créées au passage. Elles
+    demeurent, et c'est voulu — leurs noms restent proposés comme candidats, ce
+    qui est précisément ce dont on a besoin pour refaire le travail plus vite.
+    Les descriptions, les corrections de ligne et leurs verrous ne bougent pas
+    davantage : ils ne relèvent pas de l'arbitrage.
+    """
+    signataire = str(user.get("email") or "admin")
+    ou, params = "", {"u": signataire, "d": datetime.now(timezone.utc)}
+    if body.brut:
+        ou = "AND p.entreprise_brut = :b"
+        params["b"] = " ".join(body.brut.split())
+
+    # Chaque projet retrouve l'entreprise qui porte SON texte brut. Elle existe
+    # déjà dans la quasi-totalité des cas — l'import la crée — mais un arbitrage
+    # « nommer » a pu la renommer ; on la recrée alors.
+    # SEULS LES LIBELLÉS TRONQUÉS sont concernés. Un nom complet n'est jamais
+    # passé par l'arbitrage : l'import le tient pour résolu d'emblée, puisqu'il
+    # n'y a rien à trancher. Le renvoyer ici jetterait des milliers de lignes
+    # justes dans une file d'attente qui ne les concerne pas.
+    bruts = [r.b for r in (await db.execute(text(
+        f"SELECT DISTINCT p.entreprise_brut AS b FROM fdi_projets p "
+        f" WHERE p.entreprise_brut IS NOT NULL AND p.statut_entreprise = 'resolu' {ou}"),
+        params)).fetchall() if est_tronque(r.b)]
+
+    for brut in bruts:
+        cle = normaliser(brut)
+        r = (await db.execute(text(
+            "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
+        if not r:
+            r = (await db.execute(text(
+                "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_par) "
+                "VALUES (:n, :c, :s, :u) RETURNING id"),
+                {"n": brut, "c": cle, "s": "tronque", "u": signataire})).first()
+        await db.execute(text(
+            "UPDATE fdi_projets SET entreprise_id = :e, "
+            "  statut_entreprise = :s, modifie_le = :d, modifie_par = :u "
+            " WHERE entreprise_brut = :b AND statut_entreprise = 'resolu'"),
+            {"e": r.id, "s": "propose", "b": brut, "d": params["d"], "u": signataire})
+        # La mère aussi. Trancher rattachait la société mère portant le même
+        # texte ; laisser ce rattachement en place, c'est laisser debout la
+        # moitié de la décision que l'on vient de défaire — et le nom fautif
+        # continuerait de s'afficher en colonne « Société mère ».
+        await db.execute(text(
+            "UPDATE fdi_projets SET parent_id = :e "
+            " WHERE parent_brut = :b AND parent_id IS DISTINCT FROM :e"),
+            {"e": r.id, "b": brut})
+        await db.execute(text(
+            "DELETE FROM fdi_entreprise_alias "
+            " WHERE alias_normalise = :c AND decide_par IS DISTINCT FROM 'import'"), {"c": cle})
+
+    n = (await db.execute(text(
+        "SELECT count(*) FROM fdi_projets WHERE statut_entreprise <> 'resolu'"))).scalar_one()
+    await db.commit()
+    return {"libelles_repris": len(bruts), "a_arbitrer": n}
 
 
 @router.get("/entreprises")
