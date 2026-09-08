@@ -118,6 +118,28 @@ const Pastille = ({ coche, teinte = "var(--bleu)" }: { coche: boolean; teinte?: 
     background: coche ? teinte : "transparent" }} />
 );
 
+/** L'en-tête repliable d'un groupe de pays — continent ou région.
+
+    Les deux niveaux portent LA MÊME BARRE : la hiérarchie se lit au retrait,
+    pas à un changement de traitement. Donner à la région un libellé discret et
+    au continent une barre obligeait à apprendre lequel se déplie et lequel ne
+    se déplie pas, alors qu'ils font exactement la même chose. */
+const BarreRepli = ({ titre, ouvert, onBasculer }: {
+  titre: string; ouvert: boolean; onBasculer: () => void;
+}) => (
+  <button onClick={onBasculer} aria-expanded={ouvert}
+    style={{ width: "100%", display: "flex", alignItems: "center",
+      justifyContent: "space-between", gap: 8, padding: "7px 10px", borderRadius: 8,
+      background: "rgb(var(--bleu-rgb) / 0.05)", border: "none", cursor: "pointer",
+      marginBottom: 4, fontFamily: "inherit" }}>
+    <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+      letterSpacing: "0.1em", textTransform: "uppercase" as const,
+      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</span>
+    <ChevronDown size={12} style={{ color: "var(--bleu)", flexShrink: 0,
+      transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
+  </button>
+);
+
 /** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
 
     Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
@@ -456,19 +478,34 @@ export default function OngletFdi() {
   // Une recherche ouvre les continents : chercher « Kenya » pour tomber sur des
   // en-têtes repliés serait une réponse sans réponse. Hors recherche, seul le
   // continent du pays retenu s'ouvre — celui qu'on est en train de lire.
-  const continentRetenu = (per?.pays ?? []).find(p => p.nom === pays)?.continent ?? null;
+  // Continents et régions se replient de la même façon et partagent donc un
+  // seul état. La clef d'une région porte son continent : deux continents
+  // pourraient nommer une région pareil sans qu'elles se confondent.
+  const cleZone = (continent: string, zone: string) => `${continent} · ${zone}`;
+  const retenu = (per?.pays ?? []).find(p => p.nom === pays) ?? null;
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
-  const [continentVu, setContinentVu] = useState<string | null>(null);
-  if (continentRetenu && continentRetenu !== continentVu) {
-    setContinentVu(continentRetenu);
-    setOuverts(prev => new Set(prev).add(continentRetenu));
+  const [suivi, setSuivi] = useState<string | null>(null);
+  // Le chemin du pays retenu s'ouvre — son continent ET sa région : ouvrir le
+  // continent en laissant la région repliée ne montrerait toujours pas où
+  // l'on se trouve.
+  const chemin = retenu?.continent
+    ? [retenu.continent, cleZone(retenu.continent, retenu.region_geo ?? "Autre")]
+    : [];
+  if (chemin.length && chemin.join("|") !== suivi) {
+    setSuivi(chemin.join("|"));
+    setOuverts(prev => new Set([...prev, ...chemin]));
   }
-  const continentsOuverts = chercherPays
-    ? new Set(Object.keys(paysGroupes))
-    : ouverts;
-  const basculerContinent = (c: string) => setOuverts(prev => {
+  // Une recherche déplie tout : chercher « Kenya » pour tomber sur des en-têtes
+  // repliés serait une réponse sans réponse.
+  const tout = new Set<string>();
+  for (const [c, zones] of Object.entries(paysGroupes)) {
+    tout.add(c);
+    for (const z of Object.keys(zones)) tout.add(cleZone(c, z));
+  }
+  const deplies = chercherPays ? tout : ouverts;
+  const basculer = (cle: string) => setOuverts(prev => {
     const n = new Set(prev);
-    if (n.has(c)) n.delete(c); else n.add(c);
+    if (n.has(cle)) n.delete(cle); else n.add(cle);
     return n;
   });
 
@@ -622,31 +659,24 @@ export default function OngletFdi() {
                   )}
                   <div style={{ maxHeight: 260, overflowY: "auto" as const }}>
                     {sortContinents(Object.keys(paysGroupes)).map(continent => {
-                      const ouvert = continentsOuverts.has(continent);
+                      const ouvert = deplies.has(continent);
                       const zones = paysGroupes[continent];
                       return (
                         <div key={continent} style={{ marginBottom: 6 }}>
-                          <button onClick={() => basculerContinent(continent)}
-                            style={{ width: "100%", display: "flex", alignItems: "center",
-                              justifyContent: "space-between", padding: "5px 8px", borderRadius: 7,
-                              background: "rgb(var(--bleu-rgb) / 0.04)", border: "none",
-                              cursor: "pointer", marginBottom: 3 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
-                              letterSpacing: "0.1em", textTransform: "uppercase" as const }}>{continent}</span>
-                            <ChevronDown size={11} style={{ color: "var(--bleu)",
-                              transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)",
-                              transition: "transform 0.15s" }} />
-                          </button>
+                          <BarreRepli titre={continent} ouvert={ouvert}
+                            onBasculer={() => basculer(continent)} />
                           {ouvert && Object.entries(zones)
                             .sort(([a], [b]) => a.localeCompare(b, "fr"))
-                            .map(([zone, dansLaZone]) => (
-                              <div key={zone} style={{ marginLeft: 6, marginBottom: 4 }}>
-                                {/* La zone n'est pas un bouton : on ne filtre pas
-                                    par région, on s'y repère. */}
-                                <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
-                                  textTransform: "uppercase" as const, letterSpacing: "0.1em",
-                                  padding: "2px 8px", margin: "0 0 2px" }}>{zone}</p>
-                                {(dansLaZone as ComptePays[]).map(p => {
+                            .map(([zone, dansLaZone]) => {
+                              const cle = cleZone(continent, zone);
+                              const zoneOuverte = deplies.has(cle);
+                              return (
+                              <div key={zone} style={{ marginLeft: 10, marginBottom: 4 }}>
+                                {/* La région porte la même barre que le continent :
+                                    seul le retrait dit lequel contient l'autre. */}
+                                <BarreRepli titre={zone} ouvert={zoneOuverte}
+                                  onBasculer={() => basculer(cle)} />
+                                {zoneOuverte && (dansLaZone as ComptePays[]).map(p => {
                                   const sel = pays === p.nom;
                                   // Le pays de référence est déjà épinglé plus haut :
                                   // ici il se montre, mais ne se clique pas.
@@ -668,7 +698,8 @@ export default function OngletFdi() {
                                   );
                                 })}
                               </div>
-                            ))}
+                              );
+                            })}
                         </div>
                       );
                     })}
