@@ -127,29 +127,29 @@ const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: 
     autre nature de choix. La teinte distingue les niveaux : le bleu pour un
     poste de premier rang, l'orange pour ce qui vit dessous. */
 const Pastille = ({ coche, teinte = "var(--bleu)" }: { coche: boolean; teinte?: string }) => (
-  <span style={{ width: 11, height: 11, borderRadius: "50%", flexShrink: 0,
+  <span style={{ width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
     border: `2px solid ${coche ? teinte : "var(--bordure-forte)"}`,
     background: coche ? teinte : "transparent" }} />
 );
 
-/** L'en-tête repliable d'un groupe de pays — continent ou région.
+/** L'en-tête repliable d'une région.
 
-    Les deux niveaux portent LA MÊME BARRE : la hiérarchie se lit au retrait,
-    pas à un changement de traitement. Donner à la région un libellé discret et
-    au continent une barre obligeait à apprendre lequel se déplie et lequel ne
-    se déplie pas, alors qu'ils font exactement la même chose. */
+    Mêmes mesures que la colonne de filtres des Investissements réalisés —
+    même hauteur de barre, même chevron, même pastille de sélection. Les deux
+    onglets se lisent côte à côte, et deux échelles pour la même liste donnent
+    l'impression de deux produits. */
 const BarreRepli = ({ titre, ouvert, onBasculer }: {
   titre: string; ouvert: boolean; onBasculer: () => void;
 }) => (
   <button onClick={onBasculer} aria-expanded={ouvert}
     style={{ width: "100%", display: "flex", alignItems: "center",
-      justifyContent: "space-between", gap: 8, padding: "7px 10px", borderRadius: 8,
-      background: "rgb(var(--bleu-rgb) / 0.05)", border: "none", cursor: "pointer",
-      marginBottom: 4, fontFamily: "inherit" }}>
+      justifyContent: "space-between", gap: 8, padding: "5px 8px", borderRadius: 7,
+      background: "rgb(var(--bleu-rgb) / 0.04)", border: "none", cursor: "pointer",
+      marginBottom: 3, fontFamily: "inherit" }}>
     <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
       letterSpacing: "0.1em", textTransform: "uppercase" as const,
       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{titre}</span>
-    <ChevronDown size={12} style={{ color: "var(--bleu)", flexShrink: 0,
+    <ChevronDown size={11} style={{ color: "var(--bleu)", flexShrink: 0,
       transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
   </button>
 );
@@ -509,17 +509,12 @@ export default function OngletFdi() {
     .sort((a, b) => rangContinent(a.continent) - rangContinent(b.continent)
                  || a.zone.localeCompare(b.zone, "fr"));
 
-  const retenu = (per?.pays ?? []).find(p => p.nom === pays) ?? null;
+  // TOUT EST REPLIÉ AU DÉPART. Cinq barres tiennent sous les yeux d'un coup ;
+  // en ouvrir une d'office rejetterait les autres hors de l'écran et rendrait
+  // la liste plus longue à parcourir qu'à parcourir repliée. Le pays retenu par
+  // défaut est le Sénégal, épinglé au-dessus : il n'y a rien à aller montrer
+  // dans les régions tant que le lecteur n'en ouvre pas une.
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
-  const [suivi, setSuivi] = useState<string | null>(null);
-  // La région du pays retenu s'ouvre : sans cela, l'écran affiche un pays que
-  // sa propre liste ne montre pas.
-  const cleRetenue = retenu?.continent
-    ? `${retenu.continent} · ${retenu.region_geo ?? "Autre"}` : null;
-  if (cleRetenue && cleRetenue !== suivi) {
-    setSuivi(cleRetenue);
-    setOuverts(prev => new Set(prev).add(cleRetenue));
-  }
   // Une recherche déplie tout : chercher « Kenya » pour tomber sur des en-têtes
   // repliés serait une réponse sans réponse.
   const deplies = chercherPays ? new Set(regions.map(r => r.cle)) : ouverts;
