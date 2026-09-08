@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -39,6 +40,29 @@ def _mois(r) -> str:
     return f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee)
 
 
+# L'ORDRE DE fDi, EN SQL. Le tableau se lit par pays de destination, et l'ordre
+# est celui de la source — qui range ses libellés sur SA propre écriture,
+# tantôt anglaise (« South Africa »), tantôt française (« Côte d Ivoire »).
+# Trier sur nos noms français donnerait un autre ordre et rendrait pénible tout
+# rapprochement page à page avec fDi, qui est le geste quotidien ici.
+#
+# La règle : libellé BRUT réduit — décomposé, dépouillé de tout ce qui n'est pas
+# ASCII imprimable (accents et points de suspension compris), puis minuscule.
+# Elle était calculée dans le navigateur ; elle l'est maintenant en base, parce
+# que trier suppose d'avoir tout sous la main, et que justement on ne veut plus
+# tout envoyer. Les deux écritures ont été comparées rang par rang sur les
+# 55 destinations du relevé : ordre identique, « São Tomé » avant « Senegal »
+# compris — le cas qui départage les règles approchantes.
+CLE_DEST = "lower(regexp_replace(normalize(coalesce({c}, ''), NFKD), '[^ -~]', '', 'g'))"
+
+
+def _reduire(v: str) -> str:
+    """La même réduction, côté Python : la recherche compare des textes réduits
+    des deux côtés, sinon « cote d ivoire » ne trouverait jamais la Côte
+    d'Ivoire."""
+    return "".join(c for c in unicodedata.normalize("NFKD", v) if " " <= c <= "~").lower()
+
+
 # La même lecture sert le tableau et la fiche : une seule requête à maintenir,
 # donc une seule à corriger le jour où une jointure change.
 REQUETE_LIGNES = """
@@ -56,8 +80,10 @@ REQUETE_LIGNES = """
            s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
            a.libelle_fr AS activite, t.libelle_fr AS type_projet,
            psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
-           l.libelle AS lot
+           l.libelle AS lot,
+           CLE_DEST_ICI AS cle_dest
     FROM fdi_projets p
+    {pilote}
     LEFT JOIN ref_pays psrc ON psrc.id = p.pays_source_id
     LEFT JOIN ref_pays pdst ON pdst.id = p.pays_dest_id
     LEFT JOIN fdi_entreprises  e  ON e.id  = p.entreprise_id
@@ -68,28 +94,53 @@ REQUETE_LIGNES = """
     LEFT JOIN fdi_types_projet t  ON t.id  = p.type_projet_id
     JOIN fdi_lots_import       l  ON l.id  = p.lot_id
     WHERE {where}
-"""
+    {ordre}
+""".replace("CLE_DEST_ICI", CLE_DEST.format(c="p.pays_dest_brut"))
+
+# CE SUR QUOI PORTE LA RECHERCHE : les huit colonnes que le tableau affiche.
+# Chacune montre le libellé du référentiel, ou celui de la source quand le
+# rattachement a échoué — on cherche donc exactement ce qu'on voit.
+#
+# Écrit ainsi, et non par jointures, pour une raison de vitesse : le filtre
+# doit pouvoir s'appliquer à la SEULE table des projets, sans rien joindre, de
+# façon que la coupe en pages ait lieu AVANT les jointures. Chaque référentiel
+# est donc interrogé à part — ils sont petits, quelques milliers de lignes au
+# plus — et l'on ne compare le libellé de la source que là où le rattachement
+# manque, ce que le « IS NULL » place en tête pour couper court.
+FOUILLES = (
+    ("entreprise_id",   "fdi_entreprises",   "nom",         "entreprise_brut"),
+    ("parent_id",       "fdi_entreprises",   "nom",         "parent_brut"),
+    ("secteur_id",      "fdi_secteurs",      "libelle_fr",  "secteur_brut"),
+    ("sous_secteur_id", "fdi_sous_secteurs", "libelle_fr",  "sous_secteur_brut"),
+    ("activite_id",     "fdi_activites",     "libelle_fr",  "activite_brut"),
+    ("pays_source_id",  "ref_pays",          "nom_fr",      "pays_source_brut"),
+    ("pays_dest_id",    "ref_pays",          "nom_fr",      "pays_dest_brut"),
+    ("type_projet_id",  "fdi_types_projet",  "libelle_fr",  "type_brut"),
+)
+FOUILLE = " OR ".join(
+    f"p.{cle} IN (SELECT id FROM {table} WHERE position(:q in {CLE_DEST.format(c=col)}) > 0)"
+    f" OR (p.{cle} IS NULL AND position(:q in {CLE_DEST.format(c='p.' + brut)}) > 0)"
+    for cle, table, col, brut in FOUILLES
+)
 
 
 def _ligne_table(r) -> dict:
     """CE QUE LE TABLEAU AFFICHE, ET RIEN DE PLUS.
 
-    La liste est envoyée en entier — seize mille huit cents lignes — et elle
-    l'était avec tout ce que la fiche de correction consomme : les onze cases
-    brutes, les identifiants de rattachement, les verrous, les deux
-    descriptions. Dix-huit méga-octets, plus d'une seconde, à chaque
-    chargement — et le pire était devant nous : les descriptions sont encore
-    vides, et devaient à terme ajouter plusieurs méga-octets de texte que le
-    tableau n'affiche jamais.
-
-    Ces champs-là ne partent plus qu'à l'unité, quand on ouvre une ligne.
+    La liste partait entière — seize mille huit cents lignes — et elle partait
+    avec tout ce que la fiche de correction consomme : les onze cases brutes,
+    les identifiants de rattachement, les verrous, les deux descriptions.
+    Dix-huit méga-octets par chargement, pour un écran qui en montre quinze
+    lignes. Elle ne part plus que par pages, et ne porte plus que les neuf
+    colonnes affichées.
     """
     return {
-        "id": r.id, "lot": r.lot, "lot_id": r.lot_id, "ligne": r.ligne,
+        "id": r.id,
         "periode": _mois(r),
         "entreprise": r.entreprise_nom or r.entreprise_brut,
+        # Le libellé de la source est nécessaire au tableau : il montre l'écart
+        # entre le nom arbitré et ce que fDi a écrit.
         "entreprise_brut": r.entreprise_brut,
-        "entreprise_tronquee": r.entreprise_statut == "tronque",
         "parent": r.parent_nom or r.parent_brut,
         "statut_entreprise": r.statut_entreprise,
         # Le nom français du référentiel, avec le libellé anglais de la
@@ -99,10 +150,6 @@ def _ligne_table(r) -> dict:
         "destination": r.pays_dest or r.pays_dest_brut,
         "source_resolue": r.pays_source is not None,
         "destination_resolue": r.pays_dest is not None,
-        # Le libellé BRUT de la destination reste dans la liste, seul de tous
-        # les bruts : c'est lui qui donne l'ordre du tableau — celui de fDi,
-        # pas le nôtre — et le tri se fait sur le poste client.
-        "dest_brut": r.pays_dest_brut,
         # Le libellé brut reste disponible quand la résolution a échoué :
         # l'écran affiche alors ce que la source disait, jamais un vide.
         "secteur": r.secteur or r.secteur_brut,
@@ -113,9 +160,8 @@ def _ligne_table(r) -> dict:
         "capex_estime": r.capex_estime,
         "emplois": r.emplois, "emplois_estime": r.emplois_estime,
         # Le texte de la description ne monte pas ; savoir qu'elle existe suffit
-        # au tableau, et c'est un booléen au lieu d'un paragraphe.
+        # à tenir le compteur à jour après un enregistrement.
         "a_description": bool((r.description_en or "").strip()),
-        "origine": r.origine,
     }
 
 
@@ -147,7 +193,7 @@ def _ligne_fiche(r) -> dict:
 
 async def _lire_ligne(db: AsyncSession, projet_id: int) -> dict:
     """Une ligne, entière. Sert la fiche à l'ouverture et le retour du PATCH."""
-    r = (await db.execute(text(REQUETE_LIGNES.format(where="p.id = :i")),
+    r = (await db.execute(text(REQUETE_LIGNES.format(where="p.id = :i", pilote="", ordre="")),
                           {"i": projet_id})).first()
     if not r:
         raise HTTPException(404, "Projet introuvable.")
@@ -160,12 +206,20 @@ async def lister_projets(
     lot_id: int | None = None,
     sans_description: bool = False,
     a_arbitrer: bool = False,
+    q: str = "",
+    page: int = 1,
+    par_page: int = 15,
     db: AsyncSession = Depends(get_db),
 ):
-    """La liste des projets, filtrable sur ce qui reste à faire.
+    """UNE PAGE de projets — tri, recherche et découpage faits en base.
 
-    Les deux filtres servent les deux écrans de travail : « sans description »
-    alimente la saisie en série, « à arbitrer » l'écran des entreprises.
+    Les trois étaient faits dans le navigateur, ce qui obligeait à lui envoyer
+    les seize mille huit cents lignes pour en afficher quinze. C'était le
+    dernier gros temps d'attente de cet écran, et le seul qui grandissait avec
+    le relevé.
+
+    Les filtres servent les écrans de travail : « sans description » alimente
+    la saisie, « à arbitrer » l'écran des entreprises.
     """
     where = ["1 = 1"]
     params: dict = {}
@@ -176,11 +230,51 @@ async def lister_projets(
         where.append("(p.description_en IS NULL OR p.description_en = '')")
     if a_arbitrer:
         where.append("p.statut_entreprise <> 'resolu'")
+    reduit = _reduire(q.strip())
+    if reduit:
+        # « position » plutôt que LIKE : pas de caractère à échapper, donc pas
+        # de « % » tapé par l'utilisateur qui se mettrait à tout ramener.
+        where.append(f"({FOUILLE})")
+        params["q"] = reduit
 
-    lignes = (await db.execute(text(
-        REQUETE_LIGNES.format(where=" AND ".join(where))
-        + " ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.lot_id, p.ligne"
-    ), params)).fetchall()
+    par_page = max(1, min(par_page, 200))
+    page = max(1, page)
+    params["n"] = par_page
+    params["o"] = (page - 1) * par_page
+
+    # SURTOUT PAS de « count(*) OVER () » ici. La fenêtre paraît économique —
+    # le décompte voyage avec la page, une requête au lieu de deux — mais elle
+    # est calculée AVANT le LIMIT : Postgres doit alors lire et joindre les
+    # seize mille huit cents lignes pour n'en rendre que quinze, ce qui annule
+    # exactement le bénéfice de la pagination. Sans elle, le plan devient un
+    # parcours de l'index d'ordre arrêté à la quinzième ligne.
+    #
+    # ON COUPE AVANT DE JOINDRE. La sélection, le tri et le découpage se font
+    # sur la seule table des projets — l'index d'ordre les rend en s'arrêtant à
+    # la quinzième ligne — et les huit jointures ne sont ensuite faites que sur
+    # ces quinze-là. Joindre d'abord et couper ensuite obligeait Postgres à
+    # construire les seize mille huit cents lignes complètes pour en jeter
+    # 16 857 : cent cinquante millisecondes de travail perdu par page tournée.
+    ordre = (f"{CLE_DEST.format(c='p.pays_dest_brut')}, p.annee DESC, "
+             "p.mois DESC NULLS LAST, p.lot_id, p.ligne")
+    # « MATERIALIZED » et une jointure, PAS un « IN ». Écrit
+    # « WHERE p.id IN (SELECT id FROM choisis) », Postgres ne pousse pas le
+    # filtre : il construit les seize mille huit cents lignes jointes puis n'en
+    # garde que quinze par demi-jointure de hachage. En faisant de « choisis »
+    # la table PILOTE, les quinze identifiants mènent la danse et chaque
+    # jointure se fait sur une clef primaire, quinze fois.
+    lignes = (await db.execute(text(f"""
+        WITH choisis AS MATERIALIZED (
+            SELECT p.id FROM fdi_projets p
+             WHERE {" AND ".join(where)}
+             ORDER BY {ordre}
+             LIMIT :n OFFSET :o
+        )
+        {REQUETE_LIGNES.format(
+            pilote="JOIN choisis c ON c.id = p.id",
+            where="1 = 1",
+            ordre=f"ORDER BY {ordre}")}
+    """), params)).fetchall()
 
     totaux = (await db.execute(text("""
         SELECT count(*) AS total,
@@ -189,8 +283,19 @@ async def lister_projets(
         FROM fdi_projets
     """))).first()
 
+    # Sans filtre, le nombre de lignes retenues EST le total : on ne compte pas
+    # deux fois la même chose. C'est le cas ordinaire — l'écran s'ouvre ainsi.
+    if len(where) == 1:
+        retenues = totaux.total
+    else:
+        retenues = (await db.execute(text(
+            f"SELECT count(*) FROM fdi_projets p WHERE {' AND '.join(where)}"
+        ), params)).scalar_one()
     return {
         "projets": [_ligne_table(r) for r in lignes],
+        "page": page,
+        "pages": max(1, -(-retenues // par_page)),
+        "retenues": retenues,
         "totaux": {"total": totaux.total, "sans_description": totaux.sans_desc,
                    "a_arbitrer": totaux.a_arbitrer},
     }
@@ -204,8 +309,9 @@ async def lire_projet(projet_id: int, db: AsyncSession = Depends(get_db)):
 
 # ── L'arbitrage des entreprises ───────────────────────────────────────────────
 @router.get("/arbitrage")
-async def arbitrage(db: AsyncSession = Depends(get_db)):
-    """Les noms d'entreprises en attente, groupés par texte brut.
+async def arbitrage(page: int = 1, par_page: int = 20,
+                    db: AsyncSession = Depends(get_db)):
+    """UNE PAGE de noms d'entreprises en attente, groupés par texte brut.
 
     Le groupement est essentiel : « Banque de dévelo… » apparaît sur quatre
     projets, et c'est une seule décision à prendre, pas quatre. L'écran en fait
@@ -216,21 +322,38 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
     arbitrages — puis celles dont le nom commence par le préfixe. Aucune n'est
     appliquée d'office : un préfixe n'est pas une identité, et deux banques de
     développement peuvent parfaitement le partager.
+
+    LA PAGINATION N'EST PAS UN CONFORT ICI. Deux mille huit cents libellés
+    restent à trancher, portant six mille projets : les envoyer tous faisait un
+    méga-octet et trois dixièmes de seconde pour un écran qui en montre vingt —
+    et l'on ne tranche jamais que celui qu'on lit.
     """
+    par_page = max(1, min(par_page, 100))
+    page = max(1, page)
     groupes = (await db.execute(text("""
-        SELECT p.entreprise_brut AS brut,
-               count(*)          AS nb_projets,
+        WITH g AS (
+            SELECT p.entreprise_brut AS brut, count(*) AS nb_projets
+            FROM fdi_projets p
+            WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut IS NOT NULL
+            GROUP BY p.entreprise_brut
+        )
+        SELECT g.brut, g.nb_projets,
+               count(*) OVER () AS libelles,
+               sum(g.nb_projets) OVER () AS projets,
                min(e.id)         AS entreprise_id,
                min(e.nom)        AS entreprise_nom,
                min(e.statut_nom) AS entreprise_statut
-        FROM fdi_projets p
-        LEFT JOIN fdi_entreprises e ON e.id = p.entreprise_id
-        WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut IS NOT NULL
-        GROUP BY p.entreprise_brut
-        ORDER BY count(*) DESC, p.entreprise_brut
-    """))).fetchall()
+        FROM g
+        LEFT JOIN fdi_projets p2 ON p2.entreprise_brut = g.brut
+                                AND p2.statut_entreprise <> 'resolu'
+        LEFT JOIN fdi_entreprises e ON e.id = p2.entreprise_id
+        GROUP BY g.brut, g.nb_projets
+        ORDER BY g.nb_projets DESC, g.brut
+        LIMIT :n OFFSET :o
+    """), {"n": par_page, "o": (page - 1) * par_page})).fetchall()
     if not groupes:
-        return {"groupes": [], "total": 0}
+        return {"groupes": [], "total": 0, "page": page, "pages": 1, "libelles": 0}
+    libelles, total = groupes[0].libelles, int(groupes[0].projets or 0)
 
     # TROIS REQUÊTES AU TOTAL, PAS TROIS PAR GROUPE. La première version en
     # lançait trois par libellé : sur les six mille lignes restant à arbitrer,
@@ -238,8 +361,12 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
     # — après CHAQUE décision, puisque l'écran se rechargeait. Le travail
     # d'arbitrage en devenait décourageant, ce qui est le pire défaut d'un
     # outil qu'il faut employer six mille fois.
+    #
+    # Et elles ne portent que sur les libellés DE LA PAGE : candidats et
+    # projets ne sont cherchés que pour ce qui est à l'écran.
     cles = {g.brut: normaliser(g.brut) for g in groupes}
     liste_cles = sorted(set(cles.values()))
+    liste_bruts = [g.brut for g in groupes]
 
     # La mémoire : ce texte a-t-il déjà été tranché ?
     memoire: dict[str, list] = {}
@@ -270,7 +397,7 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
     """), {"cles": liste_cles})).fetchall():
         prefixes.setdefault(r.cle, []).append(r)
 
-    # Les projets de tous les libellés d'un coup, regroupés ici plutôt que là-bas.
+    # Les projets des libellés de la page, d'un coup, regroupés ici.
     par_brut: dict[str, list] = {}
     for r in (await db.execute(text("""
         SELECT p.entreprise_brut AS brut, p.id, p.ligne, p.annee, p.mois,
@@ -283,9 +410,9 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
         LEFT JOIN ref_pays d ON d.id = p.pays_dest_id
         LEFT JOIN ref_pays o ON o.id = p.pays_source_id
         JOIN fdi_lots_import l ON l.id = p.lot_id
-        WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut IS NOT NULL
+        WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut = ANY(:bruts)
         ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.ligne
-    """))).fetchall():
+    """), {"bruts": liste_bruts})).fetchall():
         par_brut.setdefault(r.brut, []).append(r)
 
     sortie = []
@@ -318,7 +445,11 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
                 for p in par_brut.get(g.brut, [])
             ],
         })
-    return {"groupes": sortie, "total": sum(g["nb_projets"] for g in sortie)}
+    # « total » reste le nombre de PROJETS à arbitrer, tous libellés confondus :
+    # c'est ce que l'écran annonce, et il ne doit pas rétrécir parce qu'on
+    # tourne une page.
+    return {"groupes": sortie, "total": total, "libelles": libelles,
+            "page": page, "pages": max(1, -(-libelles // par_page))}
 
 
 class ArbitrageIn(BaseModel):

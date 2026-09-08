@@ -714,6 +714,31 @@ export default function AdminFdiProjets() {
   // fois, pas à chaque ouverture du formulaire.
   const [nomenclature, setNomenclature] = useState<Referentiels | null>(null);
 
+  // La page affichée, et ce que le serveur en dit. Le tri, le filtrage et le
+  // découpage se faisaient ici, sur les seize mille huit cents lignes qu'il
+  // fallait donc avoir reçues. Ils se font en base ; l'écran n'en demande plus
+  // que quinze à la fois.
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [retenues, setRetenues] = useState(0);
+  const [pageArb, setPageArb] = useState(1);
+  const [pagesArb, setPagesArb] = useState(1);
+  const [libelles, setLibelles] = useState(0);
+
+  // La recherche frappée, et celle qui part vraiment. Sans ce délai, taper
+  // « Chery » lancerait cinq requêtes dont quatre pour rien.
+  const [rechercheEnvoyee, setRechercheEnvoyee] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setRechercheEnvoyee(recherche.trim()), 250);
+    return () => clearTimeout(t);
+  }, [recherche]);
+  // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
+  // résultat qui n'en compte plus que deux n'aurait aucun sens. L'ajustement se
+  // fait pendant le rendu, non dans un effet, qui provoquerait un second rendu
+  // et une requête pour la mauvaise page.
+  const [rechercheVue, setRechercheVue] = useState(rechercheEnvoyee);
+  if (rechercheEnvoyee !== rechercheVue) { setRechercheVue(rechercheEnvoyee); setPage(1); }
+
   // Le tableau reflète-t-il encore la base ? Un arbitrage change des noms
   // d'entreprise dans les projets, mais l'écran des projets n'est pas à
   // l'écran : on note la dette et on la solde en y revenant, plutôt que de
@@ -721,27 +746,40 @@ export default function AdminFdiProjets() {
   const [projetsAJour, setProjetsAJour] = useState(true);
 
   const chargerProjets = useCallback(async () => {
-    const r = await fetch(`${API_BASE}/fdi/projets`);
+    const u = new URL(`${API_BASE}/fdi/projets`, window.location.origin);
+    u.searchParams.set("page", String(page));
+    u.searchParams.set("par_page", String(PAR_PAGE));
+    if (rechercheEnvoyee) u.searchParams.set("q", rechercheEnvoyee);
+    const r = await fetch(u.toString());
     if (!r.ok) throw new Error();
     const p = await r.json();
-    setProjets(p.projets); setTotaux(p.totaux); setProjetsAJour(true);
-  }, []);
+    setProjets(p.projets); setTotaux(p.totaux);
+    setPages(p.pages); setRetenues(p.retenues); setProjetsAJour(true);
+  }, [page, rechercheEnvoyee]);
 
   const chargerArbitrage = useCallback(async () => {
-    const r = await fetch(`${API_BASE}/fdi/arbitrage`);
+    const r = await fetch(`${API_BASE}/fdi/arbitrage?page=${pageArb}&par_page=${PAR_PAGE_ARB}`);
     if (!r.ok) throw new Error();
-    setGroupes((await r.json()).groupes);
-  }, []);
+    const a = await r.json();
+    setGroupes(a.groupes); setPagesArb(a.pages); setLibelles(a.libelles ?? 0);
+  }, [pageArb]);
 
-  const charger = useCallback(async () => {
-    setChargement(true); setErreur(null);
-    try {
-      await Promise.all([chargerProjets(), chargerArbitrage()]);
-    } catch {
-      setErreur("Projets indisponibles. Vérifier que la migration 134 est appliquée et qu'un lot a été importé.");
-    } finally { setChargement(false); }
-  }, [chargerProjets, chargerArbitrage]);
-  useEffect(() => { charger(); }, [charger]);
+  // Chacune des deux vues rappelle SA page quand elle change. Le premier rendu
+  // les déclenche toutes les deux : les compteurs du bandeau viennent des
+  // projets, la file d'arbitrage de l'autre, et l'on veut les deux d'emblée.
+  const [erreurVue, setErreurVue] = useState(false);
+  useEffect(() => {
+    let vivant = true;
+    chargerProjets().catch(() => { if (vivant) setErreurVue(true); })
+      .finally(() => { if (vivant) setChargement(false); });
+    return () => { vivant = false; };
+  }, [chargerProjets]);
+  useEffect(() => { chargerArbitrage().catch(() => setErreurVue(true)); }, [chargerArbitrage]);
+  useEffect(() => {
+    setErreur(erreurVue
+      ? "Projets indisponibles. Vérifier que la migration 134 est appliquée et qu'un lot a été importé."
+      : null);
+  }, [erreurVue]);
 
   // Retour sur le tableau après un arbitrage : on solde la dette, en silence.
   useEffect(() => {
@@ -755,36 +793,6 @@ export default function AdminFdiProjets() {
   }, []);
 
   const annoncer = (t: string) => { setMessage(t); setTimeout(() => setMessage(null), 4000); };
-
-  const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  // Le tableau se lit par pays : à vingt lignes par écran, l'ordre du relevé
-  // ferait sauter d'un pays à l'autre sans qu'aucun soit jamais complet.
-  // L'ORDRE EST CELUI DE fDi, PAS LE NÔTRE. La source range ses destinations
-  // alphabétiquement sur SES propres libellés, et ceux-ci ne sont pas d'une
-  // seule langue : « Algeria » et « South Africa » en anglais, « Côte d Ivoire »
-  // en français. Trier sur nos noms français donnerait donc un autre ordre —
-  // « Afrique du Sud » en tête au lieu de l'Algérie — et rendrait pénible tout
-  // rapprochement page à page avec la source, qui est le geste quotidien ici.
-  //
-  // On trie donc sur le libellé BRUT et l'on AFFICHE le nom français : l'ordre
-  // vient de fDi, l'écriture reste la nôtre.
-  //
-  // La règle exacte a été vérifiée contre le relevé lui-même, dont les pages
-  // sont dans l'ordre de la source : sur les 54 destinations, seul le libellé
-  // brut réduit — sans accent, sans casse, sans les points de suspension de la
-  // troncature — reproduit cet ordre. Le libellé brut tel quel échoue dès
-  // « São Tomé », que la source range avant « Senegal ».
-  const projetsFiltres = useMemo(() => {
-    const q = norm(recherche.trim());
-    const retenus = !q ? projets : projets.filter(p => [p.entreprise, p.parent, p.secteur,
-      p.sous_secteur, p.source, p.destination, p.type_projet].some(v => v && norm(v).includes(q)));
-    // Le tri de JavaScript est stable : à destination égale, l'ordre du relevé
-    // — donc celui de fDi à l'intérieur d'un pays — est conservé tel quel.
-    return [...retenus].sort((a, b) => {
-      const x = ordreFdi(a.dest_brut), y = ordreFdi(b.dest_brut);
-      return x < y ? -1 : x > y ? 1 : 0;
-    });
-  }, [projets, recherche]);
 
   return (
     <div style={{ padding: "32px 40px", maxWidth: 1280, margin: "0 auto", fontFamily: "var(--font-google-sans)" }}>
@@ -834,7 +842,8 @@ export default function AdminFdiProjets() {
           <span style={{ fontSize: 13 }}>Chargement…</span>
         </div>
       ) : vue === "projets" ? (
-        <VueProjets projets={projetsFiltres} recherche={recherche} nomenclature={nomenclature}
+        <VueProjets projets={projets} nomenclature={nomenclature} recherche={recherche}
+          page={page} pages={pages} retenues={retenues} onPage={setPage}
           onErreur={annoncer}
           onEnregistre={(ligne, nouveau) => {
             // L'état de la ligne AVANT, pour ne bouger les compteurs que de ce
@@ -843,10 +852,11 @@ export default function AdminFdiProjets() {
             // unité — un compteur faux se remarque, et ruine la confiance dans
             // tout l'écran.
             const avant = nouveau ? null : projets.find(p => p.id === ligne.id) ?? null;
-            // Remplacement sur place, ou insertion en tête pour un ajout. Le
-            // tri du tableau est recalculé par « projetsFiltres » ; la ligne
-            // ira donc d'elle-même à son rang.
-            setProjets(l => nouveau ? [ligne, ...l] : l.map(p => (p.id === ligne.id ? ligne : p)));
+            // Remplacement sur place. Un ajout, lui, appartient à une autre
+            // page que celle qu'on regarde — le tri est en base — donc on
+            // redemande la page plutôt que de l'insérer où il n'irait pas.
+            if (nouveau) chargerProjets().catch(() => {});
+            else setProjets(l => l.map(p => (p.id === ligne.id ? ligne : p)));
             // Un ajout n'a pas d'avant : il ne compte que pour son après.
             const delta = (apres: boolean, etait: boolean) =>
               (apres ? 1 : 0) - (nouveau || !avant ? 0 : etait ? 1 : 0);
@@ -864,7 +874,8 @@ export default function AdminFdiProjets() {
         // L'arbitrage ne rappelle QUE l'arbitrage : une décision d'entreprise
         // ne change rien au tableau des projets tant qu'on ne l'ouvre pas, et
         // celui-ci se rafraîchira à ce moment-là.
-        <VueEntreprises groupes={groupes}
+        <VueEntreprises groupes={groupes} libelles={libelles}
+          page={pageArb} pages={pagesArb} onPage={setPageArb}
           onFait={async (t) => { annoncer(t); setProjetsAJour(false); await chargerArbitrage(); }} />
       )}
       </>
@@ -903,6 +914,10 @@ function ABientot({ base }: { base: "signaux" | "entreprises" }) {
 // au même rythme, et vérifier une page revient à comparer deux fois quinze
 // lignes plutôt qu'à chercher où la seconde commence.
 const PAR_PAGE = 15;
+// Vingt libellés d'arbitrage par écran. Le groupe le plus fourni porte cent
+// vingt et un projets, tous détaillés pour qu'on puisse les distinguer : au
+// delà, la page redeviendrait lourde à charger comme à lire.
+const PAR_PAGE_ARB = 20;
 
 /** Les numéros à afficher autour de la page courante, sans jamais dérouler les
     centaines de pages que compte le relevé : premières, dernières, et une
@@ -920,8 +935,17 @@ function fenetre(page: number, total: number): (number | "…")[] {
   return sortie;
 }
 
-function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }: {
-  projets: Projet[]; recherche: string; nomenclature: Referentiels | null;
+function VueProjets({ projets, nomenclature, page, pages, retenues, onPage, recherche,
+                      onEnregistre, onErreur }: {
+  // « projets » n'est plus le relevé entier mais LA PAGE, déjà triée et filtrée
+  // par la base. Le nombre de pages et celui des lignes retenues viennent de
+  // là aussi : l'écran ne les déduit plus de ce qu'il a sous la main, puisqu'il
+  // n'a justement plus tout sous la main.
+  projets: Projet[]; nomenclature: Referentiels | null;
+  page: number; pages: number; retenues: number; onPage: (n: number) => void;
+  // Le texte cherché ne sert plus qu'à l'écrire dans le message « rien trouvé » :
+  // le filtrage, lui, est fait en base.
+  recherche: string;
   // ON NE RECHARGE PLUS RIEN APRÈS UN ENREGISTREMENT. L'écran rappelait les
   // seize mille huit cents lignes et les six mille libellés à arbitrer à
   // chaque description saisie : vingt secondes d'attente pour une phrase
@@ -930,7 +954,6 @@ function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }
   onEnregistre: (ligne: ProjetFiche, nouveau: boolean) => void;
   onErreur: (t: string) => void;
 }) {
-  const [page, setPage] = useState(1);
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
   const [edite, setEdite] = useState<ProjetFiche | "nouveau" | null>(null);
   // La ligne dont on attend le détail. Le crayon montre son attente à la place
@@ -948,26 +971,22 @@ function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }
   };
   const [survol, setSurvol] = useState<number | null>(null);
 
-  // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
-  // résultat qui n'en compte plus que deux n'aurait aucun sens. L'ajustement se
-  // fait pendant le rendu et non dans un effet — React le prévoit, et un effet
-  // provoquerait ici un second rendu pour rien.
-  const [rechercheVue, setRechercheVue] = useState(recherche);
-  if (recherche !== rechercheVue) { setRechercheVue(recherche); setPage(1); }
-
-  const pages = Math.max(1, Math.ceil(projets.length / PAR_PAGE));
-  // Le nombre de pages peut avoir fondu sans que la recherche change (un import
-  // qui retire des lignes) : on borne l'affichage sans toucher à l'état.
+  // La page reçue EST la page à montrer : plus de découpage ici.
   const courante = Math.min(page, pages);
-  const visibles = projets.slice((courante - 1) * PAR_PAGE, courante * PAR_PAGE);
+  const visibles = projets;
 
   return (
     <Carte
       titre="Projets annoncés"
       extra={
-        <button type="button" onClick={() => setEdite("nouveau")} style={btnSecondaire}>
-          + Ajouter un projet
-        </button>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+          {/* Le décompte vient du serveur : l'écran n'a que quinze lignes en
+              main et ne peut plus le déduire de ce qu'il tient. */}
+          <Compteur n={retenues} mot="ligne" couleur="var(--bleu)" />
+          <button type="button" onClick={() => setEdite("nouveau")} style={btnSecondaire}>
+            + Ajouter un projet
+          </button>
+        </span>
       }
     >
       {projets.length === 0 ? (
@@ -978,7 +997,7 @@ function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }
         <>
         {/* La même navigation en haut. Les deux barres lisent et écrivent le
             MÊME état : il n'y a rien à synchroniser, il n'y a qu'une vérité. */}
-        <Navigation courante={courante} pages={pages} onPage={setPage} marge={0} bas={14} />
+        <Navigation courante={courante} pages={pages} onPage={onPage} marge={0} bas={14} />
         <div style={{ border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, overflow: "hidden" }}>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -1129,7 +1148,7 @@ function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }
         />
       )}
 
-      <Navigation courante={courante} pages={pages} onPage={setPage} marge={16} />
+      <Navigation courante={courante} pages={pages} onPage={onPage} marge={16} />
     </Carte>
   );
 }
@@ -1227,7 +1246,14 @@ function BoutonPage({ children, onClick, actif, inactif, titre }: {
 }
 
 // ── Vue 2 : l'arbitrage des entreprises ───────────────────────────────────────
-function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: string) => void }) {
+function VueEntreprises({ groupes, libelles, page, pages, onPage, onFait }: {
+  // « groupes » est LA PAGE des libellés à trancher, pas la file entière.
+  // Deux mille huit cents libellés portant six mille projets faisaient un
+  // méga-octet à chaque ouverture, pour vingt lignes lues.
+  groupes: Groupe[]; libelles: number;
+  page: number; pages: number; onPage: (n: number) => void;
+  onFait: (t: string) => void;
+}) {
   const [saisies, setSaisies] = useState<Record<string, string>>({});
   const [envoi, setEnvoi] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -1330,6 +1356,13 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
       extra={boutonRemise}
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+      {/* Le nombre annoncé est celui de TOUTE la file, pas de la page : tourner
+          une page ne doit pas donner l'illusion que le travail a fondu. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+        <Compteur n={libelles} mot="libellé" couleur="var(--orange)" />
+        <span style={{ fontSize: 12, color: "var(--gris)" }}>restent à trancher.</span>
+      </div>
+      <Navigation courante={page} pages={pages} onPage={onPage} marge={10} bas={14} />
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {groupes.map(g => (
           <div key={g.brut} style={{ border: "1px solid var(--bordure)", borderRadius: 14, padding: "14px 16px" }}>
@@ -1421,6 +1454,7 @@ function VueEntreprises({ groupes, onFait }: { groupes: Groupe[]; onFait: (t: st
           </div>
         ))}
       </div>
+      <Navigation courante={page} pages={pages} onPage={onPage} marge={16} />
     </Carte>
   );
 }
