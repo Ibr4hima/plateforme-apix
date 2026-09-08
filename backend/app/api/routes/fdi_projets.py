@@ -117,11 +117,64 @@ FOUILLES = (
     ("pays_dest_id",    "ref_pays",          "nom_fr",      "pays_dest_brut"),
     ("type_projet_id",  "fdi_types_projet",  "libelle_fr",  "type_brut"),
 )
-FOUILLE = " OR ".join(
-    f"p.{cle} IN (SELECT id FROM {table} WHERE position(:q in {CLE_DEST.format(c=col)}) > 0)"
-    f" OR (p.{cle} IS NULL AND position(:q in {CLE_DEST.format(c='p.' + brut)}) > 0)"
+# LES RÉFÉRENTIELS SONT INTERROGÉS D'ABORD, À PART, et leurs identifiants sont
+# passés en tableaux. Écrite « p.entreprise_id IN (SELECT ...) », la condition
+# paraît équivalente — mais Postgres n'en fait une semi-jointure, donc un accès
+# par index, que si elle est au premier niveau d'un ET. Sous un OU, il la
+# ramène à un « sous-plan haché » évalué en filtre, ce qui condamne la requête
+# au parcours complet de la table. Avec un tableau constant, « = ANY(...) »
+# reste une condition d'index, et les huit branches se réunissent en une
+# combinaison de parcours d'index.
+TABLES_FOUILLE = (
+    ("fdi_entreprises",   "nom"),
+    ("fdi_secteurs",      "libelle_fr"),
+    ("fdi_sous_secteurs", "libelle_fr"),
+    ("fdi_activites",     "libelle_fr"),
+    ("ref_pays",          "nom_fr"),
+    ("fdi_types_projet",  "libelle_fr"),
+)
+# « LIKE '%…%' » plutôt que « position(...) > 0 » : les deux disent la même
+# chose, mais seul LIKE peut s'appuyer sur un index trigramme (migration 145).
+# Sur les neuf mille sept cents entreprises, cela fait la différence entre lire
+# chaque nom et n'en toucher que quelques-uns.
+REQUETE_CIBLES = " UNION ALL ".join(
+    f"SELECT '{table}' AS tbl, id FROM {table} "
+    f" WHERE {CLE_DEST.format(c=col)} LIKE '%' || :qlike || '%'"
+    for table, col in TABLES_FOUILLE
+)
+
+
+def _pour_like(v: str) -> str:
+    """Le texte réduit, échappé pour LIKE. Sans quoi un « % » tapé par
+    l'utilisateur ramènerait tout, et un « _ » vaudrait n'importe quelle
+    lettre — une recherche qui ment est pire qu'une recherche lente."""
+    return v.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+# Rattaché : le libellé du référentiel correspond. Chaque branche se ramène à
+# « cette colonne vaut l'un de ces identifiants », ce qu'un index sait faire.
+_RATTACHES = " OR ".join(
+    f"p.{cle} = ANY(:ids_{table})" for cle, table, col, brut in FOUILLES
+)
+# Non rattaché : c'est alors le libellé de la SOURCE qui s'affiche, donc lui
+# qu'il faut fouiller. Aucune de ces comparaisons n'est indexable — il faut
+# lire le texte de chaque ligne pour le savoir.
+_BRUTS = " OR ".join(
+    f"(p.{cle} IS NULL AND position(:q in {CLE_DEST.format(c='p.' + brut)}) > 0)"
     for cle, table, col, brut in FOUILLES
 )
+# LA GARDE QUI CHANGE TOUT. Les huit comparaisons de texte sont enfermées
+# derrière un « au moins un rattachement manque », qui reproduit mot pour mot
+# le prédicat d'un index partiel (migration 145). Postgres n'a donc plus besoin
+# de parcourir la table pour les évaluer : il va chercher dans cet index les
+# rares lignes concernées — aujourd'hui aucune, le relevé étant entièrement
+# rattaché — et peut réunir le tout en une combinaison de parcours d'index.
+#
+# Sans cette garde, une seule branche non indexable suffisait à condamner toute
+# la recherche au parcours complet de la table : seize mille huit cent
+# soixante-cinq lignes lues et jetées pour en trouver sept.
+GARDE = " OR ".join(f"p.{cle} IS NULL" for cle, *_ in FOUILLES)
+FOUILLE = f"({_RATTACHES}) OR (({GARDE}) AND ({_BRUTS}))"
 
 
 def _ligne_table(r) -> dict:
@@ -232,6 +285,11 @@ async def lister_projets(
         where.append("p.statut_entreprise <> 'resolu'")
     reduit = _reduire(q.strip())
     if reduit:
+        cibles: dict[str, list[int]] = {table: [] for table, _ in TABLES_FOUILLE}
+        for r in (await db.execute(text(REQUETE_CIBLES),
+                                   {"qlike": _pour_like(reduit)})).fetchall():
+            cibles[r.tbl].append(r.id)
+        params.update({f"ids_{table}": ids for table, ids in cibles.items()})
         # « position » plutôt que LIKE : pas de caractère à échapper, donc pas
         # de « % » tapé par l'utilisateur qui se mettrait à tout ramener.
         where.append(f"({FOUILLE})")
