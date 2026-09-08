@@ -41,8 +41,24 @@ type Projet = {
   secteur: string | null; sous_secteur: string | null; activite: string | null; type_projet: string | null;
   capex_musd: number | null; capex_estime: boolean | null;
   emplois: number | null; emplois_estime: boolean | null;
+  // Savoir qu'une description existe suffit au tableau ; le texte, lui, ne
+  // monte plus dans la liste — cf. ProjetFiche.
+  a_description: boolean;
+  origine: "import" | "saisie";
+  // Le seul libellé brut que la liste transporte : il donne l'ordre du
+  // tableau, qui est celui de fDi et non le nôtre.
+  dest_brut: string | null;
+};
+
+/** LA LIGNE ENTIÈRE, DEMANDÉE À L'UNITÉ.
+ *
+ *  Ces champs-là ne servent qu'au formulaire de correction, c'est-à-dire à UNE
+ *  ligne à la fois. Les faire voyager dans la liste, c'était dix-huit
+ *  méga-octets à chaque chargement — et plusieurs de plus une fois les seize
+ *  mille descriptions écrites. On va les chercher à l'ouverture de la fiche. */
+type ProjetFiche = Projet & {
   description_en: string | null; description_fr: string | null;
-  origine: "import" | "saisie"; champs_verrouilles: string[];
+  champs_verrouilles: string[];
   // Les cases telles que fDi les écrit — « Mar 2014 », « * $9.60m ». C'est
   // ce que le formulaire modifie, et ce que le serveur sait relire.
   brut: LigneBrute;
@@ -698,19 +714,39 @@ export default function AdminFdiProjets() {
   // fois, pas à chaque ouverture du formulaire.
   const [nomenclature, setNomenclature] = useState<Referentiels | null>(null);
 
+  // Le tableau reflète-t-il encore la base ? Un arbitrage change des noms
+  // d'entreprise dans les projets, mais l'écran des projets n'est pas à
+  // l'écran : on note la dette et on la solde en y revenant, plutôt que de
+  // faire attendre l'arbitrage pour un tableau que personne ne regarde.
+  const [projetsAJour, setProjetsAJour] = useState(true);
+
+  const chargerProjets = useCallback(async () => {
+    const r = await fetch(`${API_BASE}/fdi/projets`);
+    if (!r.ok) throw new Error();
+    const p = await r.json();
+    setProjets(p.projets); setTotaux(p.totaux); setProjetsAJour(true);
+  }, []);
+
+  const chargerArbitrage = useCallback(async () => {
+    const r = await fetch(`${API_BASE}/fdi/arbitrage`);
+    if (!r.ok) throw new Error();
+    setGroupes((await r.json()).groupes);
+  }, []);
+
   const charger = useCallback(async () => {
     setChargement(true); setErreur(null);
     try {
-      const [p, a] = await Promise.all([
-        fetch(`${API_BASE}/fdi/projets`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-        fetch(`${API_BASE}/fdi/arbitrage`).then(r => { if (!r.ok) throw new Error(); return r.json(); }),
-      ]);
-      setProjets(p.projets); setTotaux(p.totaux); setGroupes(a.groupes);
+      await Promise.all([chargerProjets(), chargerArbitrage()]);
     } catch {
       setErreur("Projets indisponibles. Vérifier que la migration 134 est appliquée et qu'un lot a été importé.");
     } finally { setChargement(false); }
-  }, []);
+  }, [chargerProjets, chargerArbitrage]);
   useEffect(() => { charger(); }, [charger]);
+
+  // Retour sur le tableau après un arbitrage : on solde la dette, en silence.
+  useEffect(() => {
+    if (vue === "projets" && !projetsAJour) chargerProjets().catch(() => {});
+  }, [vue, projetsAJour, chargerProjets]);
   useEffect(() => {
     fetch(`${API_BASE}/fdi/referentiels`)
       .then(r => (r.ok ? r.json() : null))
@@ -745,7 +781,7 @@ export default function AdminFdiProjets() {
     // Le tri de JavaScript est stable : à destination égale, l'ordre du relevé
     // — donc celui de fDi à l'intérieur d'un pays — est conservé tel quel.
     return [...retenus].sort((a, b) => {
-      const x = ordreFdi(a.brut.dest), y = ordreFdi(b.brut.dest);
+      const x = ordreFdi(a.dest_brut), y = ordreFdi(b.dest_brut);
       return x < y ? -1 : x > y ? 1 : 0;
     });
   }, [projets, recherche]);
@@ -799,9 +835,37 @@ export default function AdminFdiProjets() {
         </div>
       ) : vue === "projets" ? (
         <VueProjets projets={projetsFiltres} recherche={recherche} nomenclature={nomenclature}
-          onFait={async (t) => { annoncer(t); await charger(); }} />
+          onErreur={annoncer}
+          onEnregistre={(ligne, nouveau) => {
+            // L'état de la ligne AVANT, pour ne bouger les compteurs que de ce
+            // qui a réellement changé. Corriger un montant sur une ligne déjà
+            // décrite ne doit pas faire fondre « sans description » d'une
+            // unité — un compteur faux se remarque, et ruine la confiance dans
+            // tout l'écran.
+            const avant = nouveau ? null : projets.find(p => p.id === ligne.id) ?? null;
+            // Remplacement sur place, ou insertion en tête pour un ajout. Le
+            // tri du tableau est recalculé par « projetsFiltres » ; la ligne
+            // ira donc d'elle-même à son rang.
+            setProjets(l => nouveau ? [ligne, ...l] : l.map(p => (p.id === ligne.id ? ligne : p)));
+            // Un ajout n'a pas d'avant : il ne compte que pour son après.
+            const delta = (apres: boolean, etait: boolean) =>
+              (apres ? 1 : 0) - (nouveau || !avant ? 0 : etait ? 1 : 0);
+            setTotaux(t => t && {
+              total: t.total + (nouveau ? 1 : 0),
+              sans_description: t.sans_description
+                + delta(!ligne.a_description, !avant?.a_description),
+              a_arbitrer: t.a_arbitrer
+                + delta(ligne.statut_entreprise !== "resolu",
+                        avant?.statut_entreprise !== "resolu"),
+            });
+            annoncer(nouveau ? "Projet ajouté." : "Ligne corrigée.");
+          }} />
       ) : (
-        <VueEntreprises groupes={groupes} onFait={async (t) => { annoncer(t); await charger(); }} />
+        // L'arbitrage ne rappelle QUE l'arbitrage : une décision d'entreprise
+        // ne change rien au tableau des projets tant qu'on ne l'ouvre pas, et
+        // celui-ci se rafraîchira à ce moment-là.
+        <VueEntreprises groupes={groupes}
+          onFait={async (t) => { annoncer(t); setProjetsAJour(false); await chargerArbitrage(); }} />
       )}
       </>
       )}
@@ -856,15 +920,32 @@ function fenetre(page: number, total: number): (number | "…")[] {
   return sortie;
 }
 
-function VueProjets({ projets, recherche, nomenclature, onFait }: {
-  // onFait recharge la liste : le formulaire l'attend avant de se fermer, pour
-  // que la ligne corrigée soit déjà à l'écran quand le voile se lève.
+function VueProjets({ projets, recherche, nomenclature, onEnregistre, onErreur }: {
   projets: Projet[]; recherche: string; nomenclature: Referentiels | null;
-  onFait: (t: string) => void | Promise<void>;
+  // ON NE RECHARGE PLUS RIEN APRÈS UN ENREGISTREMENT. L'écran rappelait les
+  // seize mille huit cents lignes et les six mille libellés à arbitrer à
+  // chaque description saisie : vingt secondes d'attente pour une phrase
+  // tapée, et le travail en devenait décourageant. Le serveur renvoie
+  // maintenant la ligne écrite, et l'écran la remplace sur place.
+  onEnregistre: (ligne: ProjetFiche, nouveau: boolean) => void;
+  onErreur: (t: string) => void;
 }) {
   const [page, setPage] = useState(1);
   // « null » = fermé, « "nouveau" » = ajout, un projet = correction.
-  const [edite, setEdite] = useState<Projet | "nouveau" | null>(null);
+  const [edite, setEdite] = useState<ProjetFiche | "nouveau" | null>(null);
+  // La ligne dont on attend le détail. Le crayon montre son attente à la place
+  // du reste : la fiche ne s'ouvre pas à moitié remplie.
+  const [ouverture, setOuverture] = useState<number | null>(null);
+
+  const ouvrir = async (id: number) => {
+    setOuverture(id);
+    try {
+      const r = await fetch(`${API_BASE}/fdi/projets/${id}`, { headers: await authHeaders() });
+      if (!r.ok) throw new Error();
+      setEdite(await r.json());
+    } catch { onErreur("Ligne illisible : le serveur n'a pas répondu."); }
+    finally { setOuverture(null); }
+  };
   const [survol, setSurvol] = useState<number | null>(null);
 
   // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
@@ -980,14 +1061,17 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
                           survol : le faire apparaître et disparaître du DOM
                           ferait sauter la largeur de la colonne à chaque ligne
                           parcourue, et le tableau tremblerait sous la souris. */}
-                      <button type="button" onClick={() => setEdite(p)}
+                      <button type="button" onClick={() => ouvrir(p.id)}
+                        disabled={ouverture !== null}
                         title="Corriger cette ligne" aria-label="Corriger cette ligne"
                         style={{
                           ...btnSecondaire, padding: 6, lineHeight: 0, gap: 0,
-                          opacity: survol === p.id ? 1 : 0,
+                          opacity: survol === p.id || ouverture === p.id ? 1 : 0,
                           transition: "opacity 0.12s",
                         }}>
-                        <Pencil size={14} />
+                        {ouverture === p.id
+                          ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+                          : <Pencil size={14} />}
                       </button>
                     </td>
                   </tr>
@@ -1036,7 +1120,10 @@ function VueProjets({ projets, recherche, nomenclature, onFait }: {
             // écrite, mais l'utilisateur doit voir ce qui n'a pas été rattaché
             // pendant qu'il a encore le texte fautif sous les yeux.
             const alertes: string[] = corps.avertissements ?? [];
-            await onFait(nouveau ? "Projet ajouté." : "Ligne corrigée.");
+            // La ligne écrite revient avec la réponse : on la pose à sa place
+            // dans le tableau, sans rappeler les seize mille autres.
+            onEnregistre(corps.ligne as ProjetFiche, nouveau);
+            if (!nouveau) setEdite(corps.ligne as ProjetFiche);
             return alertes.length ? alertes : null;
           }}
         />

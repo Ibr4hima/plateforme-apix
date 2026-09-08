@@ -39,6 +39,121 @@ def _mois(r) -> str:
     return f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee)
 
 
+# La même lecture sert le tableau et la fiche : une seule requête à maintenir,
+# donc une seule à corriger le jour où une jointure change.
+REQUETE_LIGNES = """
+    SELECT p.id, p.lot_id, p.ligne, p.annee, p.mois,
+           p.parent_brut, p.entreprise_brut, p.statut_entreprise,
+           p.pays_source_brut, p.pays_dest_brut,
+           p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime,
+           p.description_en, p.description_fr,
+           p.secteur_brut, p.sous_secteur_brut, p.activite_brut, p.type_brut,
+           p.origine, p.champs_verrouilles,
+           p.pays_source_id, p.pays_dest_id, p.secteur_id, p.sous_secteur_id,
+           p.activite_id, p.type_projet_id,
+           e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
+           pa.nom AS parent_nom,
+           s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
+           a.libelle_fr AS activite, t.libelle_fr AS type_projet,
+           psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
+           l.libelle AS lot
+    FROM fdi_projets p
+    LEFT JOIN ref_pays psrc ON psrc.id = p.pays_source_id
+    LEFT JOIN ref_pays pdst ON pdst.id = p.pays_dest_id
+    LEFT JOIN fdi_entreprises  e  ON e.id  = p.entreprise_id
+    LEFT JOIN fdi_entreprises  pa ON pa.id = p.parent_id
+    LEFT JOIN fdi_secteurs     s  ON s.id  = p.secteur_id
+    LEFT JOIN fdi_sous_secteurs ss ON ss.id = p.sous_secteur_id
+    LEFT JOIN fdi_activites    a  ON a.id  = p.activite_id
+    LEFT JOIN fdi_types_projet t  ON t.id  = p.type_projet_id
+    JOIN fdi_lots_import       l  ON l.id  = p.lot_id
+    WHERE {where}
+"""
+
+
+def _ligne_table(r) -> dict:
+    """CE QUE LE TABLEAU AFFICHE, ET RIEN DE PLUS.
+
+    La liste est envoyée en entier — seize mille huit cents lignes — et elle
+    l'était avec tout ce que la fiche de correction consomme : les onze cases
+    brutes, les identifiants de rattachement, les verrous, les deux
+    descriptions. Dix-huit méga-octets, plus d'une seconde, à chaque
+    chargement — et le pire était devant nous : les descriptions sont encore
+    vides, et devaient à terme ajouter plusieurs méga-octets de texte que le
+    tableau n'affiche jamais.
+
+    Ces champs-là ne partent plus qu'à l'unité, quand on ouvre une ligne.
+    """
+    return {
+        "id": r.id, "lot": r.lot, "lot_id": r.lot_id, "ligne": r.ligne,
+        "periode": _mois(r),
+        "entreprise": r.entreprise_nom or r.entreprise_brut,
+        "entreprise_brut": r.entreprise_brut,
+        "entreprise_tronquee": r.entreprise_statut == "tronque",
+        "parent": r.parent_nom or r.parent_brut,
+        "statut_entreprise": r.statut_entreprise,
+        # Le nom français du référentiel, avec le libellé anglais de la
+        # source en secours : un pays non rapproché s'affiche tel que
+        # fDi l'écrit, ce qui rend la lacune visible plutôt que muette.
+        "source": r.pays_source or r.pays_source_brut,
+        "destination": r.pays_dest or r.pays_dest_brut,
+        "source_resolue": r.pays_source is not None,
+        "destination_resolue": r.pays_dest is not None,
+        # Le libellé BRUT de la destination reste dans la liste, seul de tous
+        # les bruts : c'est lui qui donne l'ordre du tableau — celui de fDi,
+        # pas le nôtre — et le tri se fait sur le poste client.
+        "dest_brut": r.pays_dest_brut,
+        # Le libellé brut reste disponible quand la résolution a échoué :
+        # l'écran affiche alors ce que la source disait, jamais un vide.
+        "secteur": r.secteur or r.secteur_brut,
+        "sous_secteur": r.sous_secteur or r.sous_secteur_brut,
+        "activite": r.activite or r.activite_brut,
+        "type_projet": r.type_projet or r.type_brut,
+        "capex_musd": float(r.capex_musd) if r.capex_musd is not None else None,
+        "capex_estime": r.capex_estime,
+        "emplois": r.emplois, "emplois_estime": r.emplois_estime,
+        # Le texte de la description ne monte pas ; savoir qu'elle existe suffit
+        # au tableau, et c'est un booléen au lieu d'un paragraphe.
+        "a_description": bool((r.description_en or "").strip()),
+        "origine": r.origine,
+    }
+
+
+def _ligne_fiche(r) -> dict:
+    """Le tableau, plus ce que la FICHE DE CORRECTION est seule à consommer."""
+    return {
+        **_ligne_table(r),
+        "description_en": r.description_en, "description_fr": r.description_fr,
+        "champs_verrouilles": list(r.champs_verrouilles or []),
+        # Les postes auxquels la ligne est rattachée. Le formulaire s'en sert
+        # pour PRÉSÉLECTIONNER, au lieu de rendre à l'utilisateur un libellé
+        # tronqué qu'aucune liste ne contient.
+        "ids": {
+            "source": r.pays_source_id, "dest": r.pays_dest_id,
+            "secteur": r.secteur_id, "sous_secteur": r.sous_secteur_id,
+            "activite": r.activite_id, "type": r.type_projet_id,
+        },
+        "brut": {
+            "date": date_brute(r.annee, r.mois), "parent": r.parent_brut,
+            "entreprise": r.entreprise_brut, "source": r.pays_source_brut,
+            "dest": r.pays_dest_brut, "secteur": r.secteur_brut,
+            "sous_secteur": r.sous_secteur_brut, "activite": r.activite_brut,
+            "type": r.type_brut,
+            "capex": montant_brut(r.capex_musd, r.capex_estime),
+            "emplois": entier_brut(r.emplois, r.emplois_estime),
+        },
+    }
+
+
+async def _lire_ligne(db: AsyncSession, projet_id: int) -> dict:
+    """Une ligne, entière. Sert la fiche à l'ouverture et le retour du PATCH."""
+    r = (await db.execute(text(REQUETE_LIGNES.format(where="p.id = :i")),
+                          {"i": projet_id})).first()
+    if not r:
+        raise HTTPException(404, "Projet introuvable.")
+    return _ligne_fiche(r)
+
+
 # ── Les projets ───────────────────────────────────────────────────────────────
 @router.get("/projets")
 async def lister_projets(
@@ -62,35 +177,10 @@ async def lister_projets(
     if a_arbitrer:
         where.append("p.statut_entreprise <> 'resolu'")
 
-    lignes = (await db.execute(text(f"""
-        SELECT p.id, p.lot_id, p.ligne, p.annee, p.mois,
-               p.parent_brut, p.entreprise_brut, p.statut_entreprise,
-               p.pays_source_brut, p.pays_dest_brut,
-               p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime,
-               p.description_en, p.description_fr,
-               p.secteur_brut, p.sous_secteur_brut, p.activite_brut, p.type_brut,
-               p.origine, p.champs_verrouilles,
-               p.pays_source_id, p.pays_dest_id, p.secteur_id, p.sous_secteur_id,
-               p.activite_id, p.type_projet_id,
-               e.nom  AS entreprise_nom,  e.statut_nom AS entreprise_statut,
-               pa.nom AS parent_nom,
-               s.libelle_fr AS secteur, ss.libelle_fr AS sous_secteur,
-               a.libelle_fr AS activite, t.libelle_fr AS type_projet,
-               psrc.nom_fr AS pays_source, pdst.nom_fr AS pays_dest,
-               l.libelle AS lot
-        FROM fdi_projets p
-        LEFT JOIN ref_pays psrc ON psrc.id = p.pays_source_id
-        LEFT JOIN ref_pays pdst ON pdst.id = p.pays_dest_id
-        LEFT JOIN fdi_entreprises  e  ON e.id  = p.entreprise_id
-        LEFT JOIN fdi_entreprises  pa ON pa.id = p.parent_id
-        LEFT JOIN fdi_secteurs     s  ON s.id  = p.secteur_id
-        LEFT JOIN fdi_sous_secteurs ss ON ss.id = p.sous_secteur_id
-        LEFT JOIN fdi_activites    a  ON a.id  = p.activite_id
-        LEFT JOIN fdi_types_projet t  ON t.id  = p.type_projet_id
-        JOIN fdi_lots_import       l  ON l.id  = p.lot_id
-        WHERE {' AND '.join(where)}
-        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.lot_id, p.ligne
-    """), params)).fetchall()
+    lignes = (await db.execute(text(
+        REQUETE_LIGNES.format(where=" AND ".join(where))
+        + " ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.lot_id, p.ligne"
+    ), params)).fetchall()
 
     totaux = (await db.execute(text("""
         SELECT count(*) AS total,
@@ -100,56 +190,16 @@ async def lister_projets(
     """))).first()
 
     return {
-        "projets": [
-            {
-                "id": r.id, "lot": r.lot, "lot_id": r.lot_id, "ligne": r.ligne,
-                "periode": _mois(r),
-                "entreprise": r.entreprise_nom or r.entreprise_brut,
-                "entreprise_brut": r.entreprise_brut,
-                "entreprise_tronquee": r.entreprise_statut == "tronque",
-                "parent": r.parent_nom or r.parent_brut,
-                "statut_entreprise": r.statut_entreprise,
-                # Le nom français du référentiel, avec le libellé anglais de la
-                # source en secours : un pays non rapproché s'affiche tel que
-                # fDi l'écrit, ce qui rend la lacune visible plutôt que muette.
-                "source": r.pays_source or r.pays_source_brut,
-                "destination": r.pays_dest or r.pays_dest_brut,
-                "source_resolue": r.pays_source is not None,
-                "destination_resolue": r.pays_dest is not None,
-                # Le libellé brut reste disponible quand la résolution a échoué :
-                # l'écran affiche alors ce que la source disait, jamais un vide.
-                "secteur": r.secteur or r.secteur_brut,
-                "sous_secteur": r.sous_secteur or r.sous_secteur_brut,
-                "activite": r.activite or r.activite_brut,
-                "type_projet": r.type_projet or r.type_brut,
-                "capex_musd": float(r.capex_musd) if r.capex_musd is not None else None,
-                "capex_estime": r.capex_estime,
-                "emplois": r.emplois, "emplois_estime": r.emplois_estime,
-                "description_en": r.description_en, "description_fr": r.description_fr,
-                "origine": r.origine, "champs_verrouilles": list(r.champs_verrouilles or []),
-                # Les postes auxquels la ligne est rattachée. Le formulaire de
-                # correction s'en sert pour PRÉSÉLECTIONNER, au lieu de rendre à
-                # l'utilisateur un libellé tronqué qu'aucune liste ne contient.
-                "ids": {
-                    "source": r.pays_source_id, "dest": r.pays_dest_id,
-                    "secteur": r.secteur_id, "sous_secteur": r.sous_secteur_id,
-                    "activite": r.activite_id, "type": r.type_projet_id,
-                },
-                "brut": {
-                    "date": date_brute(r.annee, r.mois), "parent": r.parent_brut,
-                    "entreprise": r.entreprise_brut, "source": r.pays_source_brut,
-                    "dest": r.pays_dest_brut, "secteur": r.secteur_brut,
-                    "sous_secteur": r.sous_secteur_brut, "activite": r.activite_brut,
-                    "type": r.type_brut,
-                    "capex": montant_brut(r.capex_musd, r.capex_estime),
-                    "emplois": entier_brut(r.emplois, r.emplois_estime),
-                },
-            }
-            for r in lignes
-        ],
+        "projets": [_ligne_table(r) for r in lignes],
         "totaux": {"total": totaux.total, "sans_description": totaux.sans_desc,
                    "a_arbitrer": totaux.a_arbitrer},
     }
+
+
+@router.get("/projets/{projet_id}")
+async def lire_projet(projet_id: int, db: AsyncSession = Depends(get_db)):
+    """Une ligne entière, demandée à l'ouverture de la fiche de correction."""
+    return await _lire_ligne(db, projet_id)
 
 
 # ── L'arbitrage des entreprises ───────────────────────────────────────────────
@@ -179,45 +229,75 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
         GROUP BY p.entreprise_brut
         ORDER BY count(*) DESC, p.entreprise_brut
     """))).fetchall()
+    if not groupes:
+        return {"groupes": [], "total": 0}
+
+    # TROIS REQUÊTES AU TOTAL, PAS TROIS PAR GROUPE. La première version en
+    # lançait trois par libellé : sur les six mille lignes restant à arbitrer,
+    # cela faisait près de six mille allers-retours et seize secondes d'attente
+    # — après CHAQUE décision, puisque l'écran se rechargeait. Le travail
+    # d'arbitrage en devenait décourageant, ce qui est le pire défaut d'un
+    # outil qu'il faut employer six mille fois.
+    cles = {g.brut: normaliser(g.brut) for g in groupes}
+    liste_cles = sorted(set(cles.values()))
+
+    # La mémoire : ce texte a-t-il déjà été tranché ?
+    memoire: dict[str, list] = {}
+    for r in (await db.execute(text("""
+        SELECT a.alias_normalise AS cle, e.id, e.nom
+        FROM fdi_entreprise_alias a JOIN fdi_entreprises e ON e.id = a.entreprise_id
+        WHERE a.alias_normalise = ANY(:cles) AND e.statut_nom = 'complet'
+        ORDER BY a.occurrences DESC, e.nom
+    """), {"cles": liste_cles})).fetchall():
+        memoire.setdefault(r.cle, []).append(r)
+
+    # Le préfixe : quelles entreprises connues commencent ainsi ? La borne
+    # « >= clé ET < clé‖caractère maximal » n'est là que pour laisser l'index
+    # sur nom_normalise travailler ; c'est « starts_with » qui décide, car un
+    # classement alphabétique n'est pas exactement un test de préfixe.
+    prefixes: dict[str, list] = {}
+    for r in (await db.execute(text("""
+        SELECT c.cle, e.id, e.nom
+        FROM unnest(CAST(:cles AS text[])) AS c(cle)
+        JOIN LATERAL (
+            SELECT id, nom FROM fdi_entreprises
+             WHERE statut_nom = 'complet'
+               AND nom_normalise >= c.cle
+               AND nom_normalise <  c.cle || chr(1114111)
+               AND starts_with(nom_normalise, c.cle)
+             ORDER BY nom LIMIT 8
+        ) e ON true
+    """), {"cles": liste_cles})).fetchall():
+        prefixes.setdefault(r.cle, []).append(r)
+
+    # Les projets de tous les libellés d'un coup, regroupés ici plutôt que là-bas.
+    par_brut: dict[str, list] = {}
+    for r in (await db.execute(text("""
+        SELECT p.entreprise_brut AS brut, p.id, p.ligne, p.annee, p.mois,
+               p.capex_musd, p.type_brut,
+               s.libelle_fr AS secteur, l.libelle AS lot,
+               coalesce(d.nom_fr, p.pays_dest_brut)   AS destination,
+               coalesce(o.nom_fr, p.pays_source_brut) AS origine
+        FROM fdi_projets p
+        LEFT JOIN fdi_secteurs s ON s.id = p.secteur_id
+        LEFT JOIN ref_pays d ON d.id = p.pays_dest_id
+        LEFT JOIN ref_pays o ON o.id = p.pays_source_id
+        JOIN fdi_lots_import l ON l.id = p.lot_id
+        WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut IS NOT NULL
+        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.ligne
+    """))).fetchall():
+        par_brut.setdefault(r.brut, []).append(r)
 
     sortie = []
     for g in groupes:
-        cle = normaliser(g.brut)
-        # La mémoire : ce texte a-t-il déjà été tranché ?
-        memoire = (await db.execute(text("""
-            SELECT e.id, e.nom, a.occurrences
-            FROM fdi_entreprise_alias a JOIN fdi_entreprises e ON e.id = a.entreprise_id
-            WHERE a.alias_normalise = :c AND e.statut_nom = 'complet'
-            ORDER BY a.occurrences DESC, e.nom
-        """), {"c": cle})).fetchall()
-        # Le préfixe : quelles entreprises connues commencent ainsi ?
-        prefixe = (await db.execute(text("""
-            SELECT id, nom FROM fdi_entreprises
-            WHERE statut_nom = 'complet' AND nom_normalise LIKE :p
-            ORDER BY nom LIMIT 8
-        """), {"p": f"{cle}%"})).fetchall()
-
+        cle = cles[g.brut]
         vus, candidats = set(), []
-        for r in memoire:
+        for r in memoire.get(cle, []):
             vus.add(r.id)
             candidats.append({"id": r.id, "nom": r.nom, "origine": "memoire"})
-        for r in prefixe:
+        for r in prefixes.get(cle, []):
             if r.id not in vus:
                 candidats.append({"id": r.id, "nom": r.nom, "origine": "prefixe"})
-
-        projets = (await db.execute(text("""
-            SELECT p.id, p.ligne, p.annee, p.mois, p.capex_musd, p.type_brut,
-                   s.libelle_fr AS secteur, l.libelle AS lot,
-                   coalesce(d.nom_fr, p.pays_dest_brut)   AS destination,
-                   coalesce(o.nom_fr, p.pays_source_brut) AS origine
-            FROM fdi_projets p
-            LEFT JOIN fdi_secteurs s ON s.id = p.secteur_id
-            LEFT JOIN ref_pays d ON d.id = p.pays_dest_id
-            LEFT JOIN ref_pays o ON o.id = p.pays_source_id
-            JOIN fdi_lots_import l ON l.id = p.lot_id
-            WHERE p.entreprise_brut = :b AND p.statut_entreprise <> 'resolu'
-            ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.ligne
-        """), {"b": g.brut})).fetchall()
 
         sortie.append({
             "brut": g.brut,
@@ -235,7 +315,7 @@ async def arbitrage(db: AsyncSession = Depends(get_db)):
                  # les séparer, et l'écran pousse alors à tout confondre.
                  "destination": p.destination, "origine": p.origine,
                  "capex_musd": float(p.capex_musd) if p.capex_musd is not None else None}
-                for p in projets
+                for p in par_brut.get(g.brut, [])
             ],
         })
     return {"groupes": sortie, "total": sum(g["nb_projets"] for g in sortie)}
@@ -683,7 +763,12 @@ async def corriger_projet(projet_id: int, body: LigneIn,
            "den": _texte(body.description_en), "dfr": _texte(body.description_fr),
            "d": datetime.now(timezone.utc), "u": signataire, "i": projet_id})
     await db.commit()
-    return {"id": projet_id, "champs_verrouilles": sorted(verrous),
+    # LA LIGNE CORRIGÉE REPART AVEC LA RÉPONSE. L'écran la remplace sur place
+    # au lieu de recharger les seize mille huit cents autres : c'est ce
+    # rechargement, et lui seul, qui rendait la saisie d'une description
+    # interminable.
+    return {"ligne": await _lire_ligne(db, projet_id),
+            "champs_verrouilles": sorted(verrous),
             "avertissements": _avertissements(manques)}
 
 
@@ -745,7 +830,9 @@ async def ajouter_projet(body: LigneIn, db: AsyncSession = Depends(get_db),
         "UPDATE fdi_lots_import SET nb_lignes = (SELECT count(*) FROM fdi_projets WHERE lot_id = :i), "
         "  importe_le = now(), importe_par = :u WHERE id = :i"), {"i": lot_id, "u": signataire})
     await db.commit()
-    return {"id": r.id, "lot_id": lot_id, "ligne": rang,
+    # Comme pour la correction : la ligne repart avec la réponse, et l'écran
+    # l'insère sans recharger la base entière.
+    return {"ligne": await _lire_ligne(db, r.id), "lot_id": lot_id, "ligne_rang": rang,
             "avertissements": _avertissements(manques)}
 
 
