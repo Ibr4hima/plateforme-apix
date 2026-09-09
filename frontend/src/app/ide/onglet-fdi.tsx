@@ -31,6 +31,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
 import { API, BadgePeriode, fmtNombre, groupByContinent } from "./partage";
+import VueSignauxPublics from "./vue-signaux-publics";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
@@ -744,7 +745,8 @@ export default function OngletFdi() {
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto" as const,
         overscrollBehavior: "contain" as const, padding: "22px 30px 60px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-          {vue !== "projets" ? <ABientot vue={vue} /> : (
+          {vue === "signaux" ? <VueSignauxPublics />
+           : vue !== "projets" ? <ABientot vue={vue} /> : (
             <>
               {/* En-tête : le pays, sa qualification, la période couverte — et
                   la recherche sur la même ligne, alignée à droite. Les deux
