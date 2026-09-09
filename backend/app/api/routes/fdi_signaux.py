@@ -110,6 +110,7 @@ def _ligne(r) -> dict:
         # veut pas dire qu'il ne la vise pas — seulement que le tableau ne le
         # montrait pas et que personne ne l'a encore complété.
         "vise_afrique": r.vise_afrique,
+        "description_en": r.description_en, "description_fr": r.description_fr,
         "lot": r.lot,
     }
 
@@ -122,17 +123,27 @@ async def referentiels_signaux(db: AsyncSession = Depends(get_db)):
     destinations, distingués par leur nature : ce sont deux référentiels, mais
     un seul geste pour qui complète.
     """
+    from app.services.fdi_projets import libelles_pays_en
+
     async def q(sql):
         return [dict(r._mapping) for r in (await db.execute(text(sql))).fetchall()]
 
-    pays = await q("SELECT id, nom_fr AS libelle FROM ref_pays WHERE actif ORDER BY nom_fr")
-    regions = await q("SELECT id, libelle_fr AS libelle FROM fdi_regions_monde ORDER BY ordre")
+    # ON PROPOSE EN ANGLAIS, ON AFFICHE EN FRANÇAIS. C'est l'écran de fDi qu'on
+    # a sous les yeux en complétant : chercher « Middle East » dans une liste
+    # française obligerait à traduire de tête à chaque ligne. Une fois choisie,
+    # la valeur se lit en français partout ailleurs, par la correspondance.
+    en = libelles_pays_en()
+    pays = [{**p, "libelle_en": en.get(p.pop("code_iso3") or "") or p["libelle"]}
+            for p in await q("SELECT id, nom_fr AS libelle, code_iso3 FROM ref_pays "
+                             " WHERE actif ORDER BY nom_fr")]
+    regions = await q("SELECT id, libelle_fr AS libelle, libelle_en "
+                      "  FROM fdi_regions_monde ORDER BY ordre")
     return {
         "destinations": ([{**r, "nature": "region"} for r in regions]
                          + [{**p, "nature": "pays"} for p in pays]),
-        "secteurs":  await q("SELECT id, libelle_fr AS libelle FROM fdi_secteurs ORDER BY ordre"),
-        "activites": await q("SELECT id, libelle_fr AS libelle FROM fdi_activites ORDER BY ordre"),
-        "natures":   await q("SELECT id, libelle_fr AS libelle FROM fdi_signaux ORDER BY ordre"),
+        "secteurs":  await q("SELECT id, libelle_fr AS libelle, libelle_en FROM fdi_secteurs ORDER BY ordre"),
+        "activites": await q("SELECT id, libelle_fr AS libelle, libelle_en FROM fdi_activites ORDER BY ordre"),
+        "natures":   await q("SELECT id, libelle_fr AS libelle, libelle_en FROM fdi_signaux ORDER BY ordre"),
     }
 
 
@@ -143,6 +154,7 @@ async def lister_signaux(
     par_page: int = 15,
     a_completer: bool = False,
     a_arbitrer: bool = False,
+    sans_description: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
     """Une page de signaux, avec leurs quatre listes.
@@ -157,6 +169,8 @@ async def lister_signaux(
         where.append(f"NOT {VISE_AFRIQUE}")
     if a_arbitrer:
         where.append("s.statut_entreprise <> 'resolu'")
+    if sans_description:
+        where.append("coalesce(s.description_fr, '') = ''")
     if q.strip():
         # Recherche sur ce que le tableau montre en propre. Les valeurs
         # multiples ne sont pas fouillées ici : elles le seront le jour où le
@@ -184,6 +198,7 @@ async def lister_signaux(
         SELECT s.id, s.annee, s.mois, s.entreprise_brut, s.parent_brut,
                s.statut_entreprise, s.pays_source_brut,
                s.capex_musd, s.capex_estime, s.funding_musd, s.funding_estime,
+               s.description_en, s.description_fr,
                e.nom AS entreprise_nom, pa.nom AS parent_nom,
                ps.nom_fr AS pays_source, l.libelle AS lot,
                {VISE_AFRIQUE} AS vise_afrique,
@@ -203,7 +218,8 @@ async def lister_signaux(
     totaux = (await db.execute(text(f"""
         SELECT count(*) AS total,
                count(*) FILTER (WHERE NOT {VISE_AFRIQUE}) AS a_completer,
-               count(*) FILTER (WHERE s.statut_entreprise <> 'resolu') AS a_arbitrer
+               count(*) FILTER (WHERE s.statut_entreprise <> 'resolu') AS a_arbitrer,
+               count(*) FILTER (WHERE coalesce(s.description_fr, '') = '') AS sans_description
         FROM fdi_signaux_investisseurs s"""))).first()
 
     return {
@@ -212,68 +228,89 @@ async def lister_signaux(
         "pages": max(1, -(-retenues // par_page)),
         "retenues": retenues,
         "totaux": {"total": totaux.total, "a_completer": totaux.a_completer,
-                   "a_arbitrer": totaux.a_arbitrer},
+                   "a_arbitrer": totaux.a_arbitrer,
+                   "sans_description": totaux.sans_description},
     }
 
 
-class ValeurIn(BaseModel):
-    """Une valeur à ajouter. Pour une destination, l'un des deux identifiants —
+class Choix(BaseModel):
+    """Une valeur choisie. Pour une destination, l'un des deux identifiants —
     un pays OU une région du monde, jamais les deux."""
-    famille: str
     pays_id: int | None = None
     region_id: int | None = None
     poste_id: int | None = None
 
 
-@router.post("/signaux-investisseurs/{signal_id}/valeurs", status_code=201)
-async def ajouter_valeur(signal_id: int, body: ValeurIn,
-                         db: AsyncSession = Depends(get_db),
-                         user: dict = Depends(require_admin)):
-    """Ajoute une valeur que le tableau de fDi ne montrait pas.
+class ValeurIn(BaseModel):
+    """UN ENVOI, PLUSIEURS VALEURS. Compléter un signal, c'est presque toujours
+    en ajouter plusieurs d'un coup — quatre destinations, deux secteurs. Une
+    requête par valeur obligeait à rouvrir la liste à chaque fois, et sur des
+    milliers de lignes cela seul décide qu'un outil est tenable ou non."""
+    famille: str
+    valeurs: list[Choix]
 
-    Elle prend le rang suivant et porte l'origine « saisie » : le réimport du
-    relevé la laissera en place.
+
+@router.post("/signaux-investisseurs/{signal_id}/valeurs", status_code=201)
+async def ajouter_valeurs(signal_id: int, body: ValeurIn,
+                          db: AsyncSession = Depends(get_db),
+                          user: dict = Depends(require_admin)):
+    """Ajoute une ou plusieurs valeurs que le tableau de fDi ne montrait pas.
+
+    Elles prennent les rangs suivants et portent l'origine « saisie » : le
+    réimport du relevé les laissera en place.
+
+    UN DOUBLON EST IGNORÉ, NON REFUSÉ. Sur un ajout groupé, rejeter tout
+    l'envoi parce qu'une valeur sur cinq était déjà là ferait perdre les quatre
+    autres. Le rapport dit combien ont été écartées, et pourquoi.
     """
     famille = FAMILLES.get(body.famille)
     if not famille:
         raise HTTPException(400, "Famille inconnue.")
+    if not body.valeurs:
+        raise HTTPException(400, "Aucune valeur choisie.")
     if not (await db.execute(text(
         "SELECT 1 FROM fdi_signaux_investisseurs WHERE id = :i"), {"i": signal_id})).first():
         raise HTTPException(404, "Signal introuvable.")
 
-    if body.famille == "destination":
-        if (body.pays_id is None) == (body.region_id is None):
-            raise HTTPException(400, "Une destination est un pays OU une région du monde.")
-        colonnes, valeurs = ("pays_id", "region_id"), {"pays_id": body.pays_id,
-                                                       "region_id": body.region_id}
-    else:
-        if body.poste_id is None:
-            raise HTTPException(400, "Aucun poste choisi.")
-        colonnes, valeurs = famille["colonnes"], {famille["colonnes"][0]: body.poste_id}
-
     table = famille["table"]
-    # Deux fois la même valeur ne veut rien dire de plus qu'une fois, et la
-    # laisser entrer fausserait tout décompte fondé sur ces listes.
-    conditions = " AND ".join(f"{c} IS NOT DISTINCT FROM :{c}" for c in colonnes)
-    if (await db.execute(text(
-        f"SELECT 1 FROM {table} WHERE signal_id = :s AND {conditions}"),
-        {"s": signal_id, **valeurs})).first():
-        raise HTTPException(409, "Cette valeur est déjà portée par ce signal.")
-
+    colonnes = ("pays_id", "region_id") if body.famille == "destination" else famille["colonnes"]
     rang = (await db.execute(text(
-        f"SELECT coalesce(max(rang), 0) + 1 FROM {table} WHERE signal_id = :s"),
+        f"SELECT coalesce(max(rang), 0) FROM {table} WHERE signal_id = :s"),
         {"s": signal_id})).scalar_one()
-    champs = ", ".join(colonnes)
-    marques = ", ".join(f":{c}" for c in colonnes)
-    valeur_id = (await db.execute(text(
-        f"INSERT INTO {table} (signal_id, rang, brut, {champs}, origine) "
-        f"VALUES (:s, :rang, NULL, {marques}, 'saisie') RETURNING id"),
-        {"s": signal_id, "rang": rang, **valeurs})).scalar_one()
+
+    ajoutes, deja = [], 0
+    for choix in body.valeurs:
+        if body.famille == "destination":
+            if (choix.pays_id is None) == (choix.region_id is None):
+                raise HTTPException(400, "Une destination est un pays OU une région du monde.")
+            valeurs = {"pays_id": choix.pays_id, "region_id": choix.region_id}
+        else:
+            if choix.poste_id is None:
+                raise HTTPException(400, "Aucun poste choisi.")
+            valeurs = {colonnes[0]: choix.poste_id}
+
+        # Deux fois la même valeur ne dit rien de plus qu'une fois, et la
+        # laisser entrer fausserait tout décompte fondé sur ces listes.
+        conditions = " AND ".join(f"{c} IS NOT DISTINCT FROM :{c}" for c in colonnes)
+        if (await db.execute(text(
+            f"SELECT 1 FROM {table} WHERE signal_id = :s AND {conditions}"),
+            {"s": signal_id, **valeurs})).first():
+            deja += 1
+            continue
+
+        rang += 1
+        champs = ", ".join(colonnes)
+        marques = ", ".join(f":{c}" for c in colonnes)
+        ajoutes.append((await db.execute(text(
+            f"INSERT INTO {table} (signal_id, rang, brut, {champs}, origine) "
+            f"VALUES (:s, :rang, NULL, {marques}, 'saisie') RETURNING id"),
+            {"s": signal_id, "rang": rang, **valeurs})).scalar_one())
+
     await db.execute(text(
         "UPDATE fdi_signaux_investisseurs SET modifie_le = :d, modifie_par = :u WHERE id = :i"),
         {"d": datetime.now(timezone.utc), "u": str(user.get("email") or "admin"), "i": signal_id})
     await db.commit()
-    return {"id": valeur_id, "rang": rang}
+    return {"ajoutes": ajoutes, "deja_presentes": deja}
 
 
 @router.delete("/signaux-investisseurs/{signal_id}/valeurs/{famille}/{valeur_id}")
@@ -300,3 +337,39 @@ async def retirer_valeur(signal_id: int, famille: str, valeur_id: int,
         {"d": datetime.now(timezone.utc), "u": str(user.get("email") or "admin"), "i": signal_id})
     await db.commit()
     return {"retire": valeur_id}
+
+
+class DescriptionIn(BaseModel):
+    description_en: str | None = None
+    description_fr: str | None = None
+
+
+@router.patch("/signaux-investisseurs/{signal_id}/description")
+async def decrire_signal(signal_id: int, body: DescriptionIn,
+                         db: AsyncSession = Depends(get_db),
+                         user: dict = Depends(require_admin)):
+    """Écrit les deux descriptions d'un signal.
+
+    AUCUN VERROU N'EST POSÉ, et ce n'est pas un oubli : la source ne fournit
+    pas de description, donc rien dans le relevé ne peut l'écraser. Le réimport
+    les préserve déjà tant que la ligne décrit le même signal.
+
+    Une chaîne vide vaut « pas de description » et non « chaîne vide » : sans
+    cela le compteur des signaux à décrire tiendrait pour faits ceux qu'on a
+    seulement ouverts.
+    """
+    def _texte(v: str | None) -> str | None:
+        return (v or "").strip() or None
+
+    r = (await db.execute(text(
+        "UPDATE fdi_signaux_investisseurs "
+        "   SET description_en = :en, description_fr = :fr, "
+        "       modifie_le = :d, modifie_par = :u "
+        " WHERE id = :i RETURNING id"),
+        {"en": _texte(body.description_en), "fr": _texte(body.description_fr),
+         "d": datetime.now(timezone.utc), "u": str(user.get("email") or "admin"),
+         "i": signal_id})).first()
+    if not r:
+        raise HTTPException(404, "Signal introuvable.")
+    await db.commit()
+    return {"id": signal_id}

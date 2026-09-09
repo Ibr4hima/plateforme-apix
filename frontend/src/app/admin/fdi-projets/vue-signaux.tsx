@@ -17,8 +17,8 @@
 // ce que la source affichait ; l'effacer ferait mentir le relevé. Seul ce qui a
 // été ajouté à la main se retire.
 
-import { useCallback, useEffect, useState } from "react";
-import { Check, Loader2, Plus, X } from "lucide-react";
+import { Fragment, useCallback, useEffect, useState } from "react";
+import { Check, FileText, Loader2, Plus, X } from "lucide-react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
@@ -39,8 +39,13 @@ type Signal = {
   funding_musd: number | null; funding_estime: boolean | null;
   destinations: Valeur[]; secteurs: Valeur[]; activites: Valeur[]; natures: Valeur[];
   vise_afrique: boolean;
+  description_en: string | null; description_fr: string | null;
 };
-type Poste = { id: number; libelle: string; nature?: "pays" | "region" };
+/** Un poste du référentiel. « libelle » est le français — celui qu'on lira
+    partout ensuite — et « libelle_en » l'anglais, celui qu'on cherche pendant
+    la complétion parce que c'est l'écran de fDi qu'on a sous les yeux. */
+type Poste = { id: number; libelle: string; libelle_en?: string;
+               nature?: "pays" | "region" };
 type Referentiels = { destinations: Poste[]; secteurs: Poste[];
                       activites: Poste[]; natures: Poste[] };
 
@@ -98,18 +103,40 @@ function Puce({ v, onRetirer }: { v: Valeur; onRetirer?: () => void }) {
   );
 }
 
-/** Une case multiple : ses valeurs, et de quoi en ajouter une.
+/** Une case multiple : ses valeurs, et de quoi en ajouter PLUSIEURS.
 
-    La liste du référentiel s'ouvre SOUS la case, pas dans une fenêtre : on
-    complète en restant sur la ligne qu'on lit, parce qu'il faut la relire pour
-    savoir quoi ajouter. */
+    DEUX CHOIX QUI DÉCIDENT DE LA TENABILITÉ DE L'OUTIL, sur des milliers de
+    lignes à compléter :
+
+    · ON PROPOSE EN ANGLAIS. C'est l'écran de fDi qu'on a sous les yeux en
+      complétant ; chercher « Middle East » dans une liste française obligerait
+      à traduire de tête à chaque ligne. Une fois choisie, la valeur se lit en
+      français partout ailleurs — la correspondance est en base.
+
+    · ON EN COCHE PLUSIEURS D'UN COUP. Compléter un signal, c'est presque
+      toujours ajouter quatre destinations ou deux secteurs. Rouvrir la liste
+      entre chaque aurait fait de la complétion une corvée.
+
+    La liste s'ouvre SOUS la case, jamais dans une fenêtre : il faut relire la
+    ligne pour savoir quoi ajouter. */
 function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
   valeurs: Valeur[]; options: Poste[]; occupe: boolean;
-  onAjouter: (choix: Poste) => void; onRetirer: (v: Valeur) => void;
+  onAjouter: (choix: Poste[]) => void; onRetirer: (v: Valeur) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
-  const [choix, setChoix] = useState("");
-  const dejaLa = new Set(valeurs.map(v => `${v.nature ?? ""}${v.libelle}`));
+  const [cherche, setCherche] = useState("");
+  const [coches, setCoches] = useState<Poste[]>([]);
+
+  const dejaLa = new Set(valeurs.map(v => `${v.nature ?? ""}|${v.libelle}`));
+  const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const q = norm(cherche.trim());
+  // La recherche porte sur les DEUX langues : on tape ce qu'on lit chez fDi,
+  // mais on doit aussi pouvoir retrouver un poste dont on ne sait que le
+  // français.
+  const visibles = !q ? options : options.filter(o =>
+    norm(o.libelle_en ?? "").includes(q) || norm(o.libelle).includes(q));
+
+  const fermer = () => { setOuvert(false); setCherche(""); setCoches([]); };
 
   return (
     <div>
@@ -119,47 +146,113 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
       ))}
       {!ouvert ? (
         <button onClick={() => setOuvert(true)} disabled={occupe}
-          title="Ajouter une valeur que le tableau de fDi ne montrait pas"
+          title="Ajouter des valeurs que le tableau de fDi ne montrait pas"
           style={{ ...btnSecondaire, padding: "1px 6px", fontSize: 11, lineHeight: 1.4,
             gap: 3, opacity: occupe ? 0.4 : 1 }}>
           <Plus size={10} />
         </button>
       ) : (
-        <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
-          <select value={choix} onChange={e => setChoix(e.target.value)} autoFocus
-            style={{ ...IS, padding: "4px 6px", fontSize: 11, minWidth: 150 }}>
-            <option value="">Choisir…</option>
-            {/* Les régions du monde d'abord : elles sont sept, les pays deux
-                cents, et c'est la région qu'on cherche le plus souvent ici. */}
-            {["region", "pays", undefined].map(nat => {
-              const groupe = options.filter(o => o.nature === nat);
-              if (!groupe.length) return null;
-              const etiquette = nat === "region" ? "Régions du monde"
-                              : nat === "pays" ? "Pays" : null;
-              const items = groupe.map(o => (
-                <option key={`${nat}-${o.id}`} value={`${o.nature ?? ""}|${o.id}`}
-                  disabled={dejaLa.has(`${o.nature ?? ""}${o.libelle}`)}>{o.libelle}</option>
-              ));
-              return etiquette
-                ? <optgroup key={String(nat)} label={etiquette}>{items}</optgroup>
-                : <optgroup key="autres" label="">{items}</optgroup>;
+        <div style={{ marginTop: 4, border: "1px solid var(--bordure-forte)",
+          borderRadius: 9, background: "var(--carte)", width: 240 }}>
+          <input value={cherche} onChange={e => setCherche(e.target.value)} autoFocus
+            placeholder="Rechercher…"
+            style={{ ...IS, border: "none", borderBottom: "1px solid var(--filet)",
+              borderRadius: 0, padding: "6px 9px", fontSize: 11.5 }} />
+          <div style={{ maxHeight: 190, overflowY: "auto" }}>
+            {visibles.length === 0 && (
+              <p style={{ fontSize: 11, color: "var(--gris)", textAlign: "center",
+                padding: "10px 0", margin: 0 }}>Aucun résultat</p>
+            )}
+            {visibles.map(o => {
+              const clef = `${o.nature ?? ""}|${o.libelle}`;
+              const porte = dejaLa.has(clef);
+              const coche = coches.some(x => x.id === o.id && x.nature === o.nature);
+              return (
+                <button key={`${o.nature ?? ""}-${o.id}`} disabled={porte}
+                  onClick={() => setCoches(l => coche
+                    ? l.filter(x => !(x.id === o.id && x.nature === o.nature))
+                    : [...l, o])}
+                  style={{ display: "flex", alignItems: "center", gap: 7, width: "100%",
+                    padding: "4px 9px", border: "none", cursor: porte ? "default" : "pointer",
+                    background: coche ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent",
+                    textAlign: "left", fontFamily: "inherit", fontSize: 11.5,
+                    color: porte ? "var(--gris)" : "var(--encre)", opacity: porte ? 0.5 : 1 }}>
+                  <span style={{ width: 11, height: 11, borderRadius: 3, flexShrink: 0,
+                    border: `1.5px solid ${coche ? "var(--bleu)" : "var(--bordure-forte)"}`,
+                    background: coche ? "var(--bleu)" : "transparent" }} />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis",
+                    whiteSpace: "nowrap" }}>{o.libelle_en ?? o.libelle}</span>
+                  {o.nature === "region" && (
+                    <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800,
+                      letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "var(--gris)" }}>région</span>
+                  )}
+                  {porte && <span style={{ marginLeft: "auto", fontSize: 9,
+                    color: "var(--gris)" }}>déjà là</span>}
+                </button>
+              );
             })}
-          </select>
-          <button disabled={!choix} onClick={() => {
-              const [nature, id] = choix.split("|");
-              const poste = options.find(o => o.id === Number(id) && (o.nature ?? "") === nature);
-              if (poste) onAjouter(poste);
-              setChoix(""); setOuvert(false);
-            }}
-            style={{ ...btnSecondaire, padding: "3px 7px", fontSize: 11, gap: 3 }}>
-            <Check size={11} />
-          </button>
-          <button onClick={() => { setChoix(""); setOuvert(false); }}
-            style={{ ...btnSecondaire, padding: "3px 7px", fontSize: 11, gap: 3 }}>
-            <X size={11} />
-          </button>
+          </div>
+          <div style={{ display: "flex", gap: 5, padding: "6px 8px",
+            borderTop: "1px solid var(--filet)" }}>
+            <button disabled={coches.length === 0}
+              onClick={() => { onAjouter(coches); fermer(); }}
+              style={{ ...btnSecondaire, padding: "3px 9px", fontSize: 11, gap: 4,
+                opacity: coches.length === 0 ? 0.4 : 1 }}>
+              <Check size={11} /> Ajouter{coches.length > 0 ? ` (${coches.length})` : ""}
+            </button>
+            <button onClick={fermer}
+              style={{ ...btnSecondaire, padding: "3px 9px", fontSize: 11, gap: 4 }}>
+              <X size={11} />
+            </button>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Les deux descriptions d'un signal.
+
+    POURQUOI DEUX LANGUES. L'anglais est celui de la source, le français celui
+    de la restitution : garder les deux permet de retrouver la phrase d'origine
+    le jour où la traduction fait douter.
+
+    L'éditeur s'ouvre SOUS la ligne, sur toute la largeur : une description est
+    une phrase, pas une case de tableau, et l'écrire dans une colonne étroite
+    obligerait à la relire dans un couloir. */
+function EditeurDescription({ signal, occupe, onEnregistrer, onFermer }: {
+  signal: Signal; occupe: boolean;
+  onEnregistrer: (en: string, fr: string) => void; onFermer: () => void;
+}) {
+  const [en, setEn] = useState(signal.description_en ?? "");
+  const [fr, setFr] = useState(signal.description_fr ?? "");
+  const zone = { ...IS, minHeight: 74, resize: "vertical" as const, lineHeight: 1.55 };
+  return (
+    <div style={{ padding: "12px 14px", background: "var(--carte-douce)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <label style={{ display: "block" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
+            letterSpacing: "0.1em", textTransform: "uppercase" }}>Description (anglais)</span>
+          <textarea value={en} onChange={e => setEn(e.target.value)}
+            style={{ ...zone, marginTop: 5 }} />
+        </label>
+        <label style={{ display: "block" }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--gris)",
+            letterSpacing: "0.1em", textTransform: "uppercase" }}>Description (français)</span>
+          <textarea value={fr} onChange={e => setFr(e.target.value)}
+            style={{ ...zone, marginTop: 5 }} />
+        </label>
+      </div>
+      <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
+        <button disabled={occupe} onClick={() => onEnregistrer(en, fr)}
+          style={{ ...btnSecondaire, padding: "5px 12px", fontSize: 12, gap: 6,
+            opacity: occupe ? 0.5 : 1 }}>
+          <Check size={12} /> Enregistrer
+        </button>
+        <button onClick={onFermer}
+          style={{ ...btnSecondaire, padding: "5px 12px", fontSize: 12 }}>Annuler</button>
+      </div>
     </div>
   );
 }
@@ -167,7 +260,8 @@ function Case({ valeurs, options, onAjouter, onRetirer, occupe }: {
 export default function VueSignaux() {
   const [signaux, setSignaux] = useState<Signal[]>([]);
   const [ref, setRef] = useState<Referentiels | null>(null);
-  const [totaux, setTotaux] = useState({ total: 0, a_completer: 0, a_arbitrer: 0 });
+  const [totaux, setTotaux] = useState(
+    { total: 0, a_completer: 0, a_arbitrer: 0, sans_description: 0 });
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [retenues, setRetenues] = useState(0);
@@ -175,6 +269,10 @@ export default function VueSignaux() {
   const [envoyee, setEnvoyee] = useState("");
   const [aCompleter, setACompleter] = useState(false);
   const [aArbitrer, setAArbitrer] = useState(false);
+  const [sansDesc, setSansDesc] = useState(false);
+  // Le signal dont on écrit la description. Une seule fiche ouverte à la fois :
+  // deux éditeurs ouverts inviteraient à en abandonner un sans l'enregistrer.
+  const [decrit, setDecrit] = useState<number | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
@@ -185,7 +283,7 @@ export default function VueSignaux() {
     return () => clearTimeout(t);
   }, [recherche]);
   const [vue, setVue] = useState("");
-  const clef = `${envoyee}|${aCompleter}|${aArbitrer}`;
+  const clef = `${envoyee}|${aCompleter}|${aArbitrer}|${sansDesc}`;
   if (clef !== vue) { setVue(clef); setPage(1); }
 
   const charger = useCallback(async () => {
@@ -195,12 +293,13 @@ export default function VueSignaux() {
     if (envoyee) u.searchParams.set("q", envoyee);
     if (aCompleter) u.searchParams.set("a_completer", "true");
     if (aArbitrer) u.searchParams.set("a_arbitrer", "true");
+    if (sansDesc) u.searchParams.set("sans_description", "true");
     const r = await fetch(u.toString());
     if (!r.ok) throw new Error();
     const d = await r.json();
     setSignaux(d.signaux); setTotaux(d.totaux);
     setPages(d.pages); setRetenues(d.retenues);
-  }, [page, envoyee, aCompleter, aArbitrer]);
+  }, [page, envoyee, aCompleter, aArbitrer, sansDesc]);
 
   useEffect(() => {
     let vivant = true;
@@ -231,14 +330,27 @@ export default function VueSignaux() {
     } finally { setOccupe(false); }
   };
 
-  const ajouter = (s: Signal, famille: string, poste: Poste) => agir(async () =>
+  const ajouter = (s: Signal, famille: string, postes: Poste[]) => agir(async () =>
     fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify(famille === "destination"
-        ? { famille, ...(poste.nature === "region" ? { region_id: poste.id } : { pays_id: poste.id }) }
-        : { famille, poste_id: poste.id }),
+      body: JSON.stringify({
+        famille,
+        valeurs: postes.map(p => famille === "destination"
+          ? (p.nature === "region" ? { region_id: p.id } : { pays_id: p.id })
+          : { poste_id: p.id }),
+      }),
     }));
+
+  const enregistrerDescription = (s: Signal, en: string, fr: string) => agir(async () => {
+    const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/description`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ description_en: en, description_fr: fr }),
+    });
+    if (r.ok) setDecrit(null);
+    return r;
+  });
 
   const retirer = (s: Signal, famille: string, v: Valeur) => agir(async () =>
     fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs/${famille}/${v.id}`, {
@@ -266,18 +378,6 @@ export default function VueSignaux() {
           <Compteur n={retenues} mot="signal" couleur="var(--bleu)" />
         </span>
       }
-      aide={
-        <>
-          Les intentions déclarées par les investisseurs, en amont de tout projet annoncé.
-          {" "}
-          <strong style={{ color: "var(--gris-fort)" }}>
-            Le tableau de fDi ne montre qu’une valeur par case et cache les autres.
-          </strong>{" "}
-          Le relevé porte ce qui était visible ; les valeurs manquantes s’ajoutent ici, et
-          survivent aux réimports. Tant que la complétion n’est pas faite, un décompte par
-          pays est un plancher, pas un total.
-        </>
-      }
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
 
@@ -291,6 +391,8 @@ export default function VueSignaux() {
           couleur="var(--orange)" n={totaux.a_completer}>sans destination africaine</Filtre>
         <Filtre actif={aArbitrer} onBascule={() => setAArbitrer(v => !v)}
           couleur="var(--violet)" n={totaux.a_arbitrer}>entreprise à arbitrer</Filtre>
+        <Filtre actif={sansDesc} onBascule={() => setSansDesc(v => !v)}
+          couleur="var(--gris-fort)" n={totaux.sans_description}>sans description</Filtre>
       </div>
 
       <Navigation courante={page} pages={pages} onPage={setPage} />
@@ -307,17 +409,19 @@ export default function VueSignaux() {
                 {FAMILLES.map(f => <th key={f.cle} style={TH}>{f.titre}</th>)}
                 <th style={{ ...TH, textAlign: "right" }}>Fonds levés</th>
                 <th style={{ ...TH, textAlign: "right" }}>Capex</th>
+                <th style={{ ...TH, width: 1 }}></th>
               </tr>
             </thead>
             <tbody>
               {signaux.length === 0 && (
-                <LigneVide colSpan={9} texte={
-                  envoyee || aCompleter || aArbitrer
+                <LigneVide colSpan={10} texte={
+                  envoyee || aCompleter || aArbitrer || sansDesc
                     ? "Aucun signal ne correspond à ce filtre."
                     : "Aucun signal importé."} />
               )}
               {signaux.map(s => (
-                <tr key={s.id} style={{ background: s.vise_afrique ? undefined
+                <Fragment key={s.id}>
+                <tr style={{ background: s.vise_afrique ? undefined
                   : "rgb(var(--orange-rgb) / 0.03)" }}>
                   <td style={{ ...TD, whiteSpace: "nowrap" }}>{s.periode}</td>
                   <td style={TD}>
@@ -331,7 +435,7 @@ export default function VueSignaux() {
                   {FAMILLES.map(f => (
                     <td key={f.cle} style={{ ...TD, minWidth: 170 }}>
                       <Case valeurs={s[f.champ]} options={ref?.[f.ref] ?? []} occupe={occupe}
-                        onAjouter={p => ajouter(s, f.cle, p)}
+                        onAjouter={ps => ajouter(s, f.cle, ps)}
                         onRetirer={v => retirer(s, f.cle, v)} />
                     </td>
                   ))}
@@ -341,7 +445,29 @@ export default function VueSignaux() {
                   <td style={{ ...TD, textAlign: "right" }}>
                     <Montant v={s.capex_musd} estime={s.capex_estime} />
                   </td>
+                  <td style={{ ...TD, textAlign: "right", whiteSpace: "nowrap" }}>
+                    {/* Le bouton dit d'un coup d'œil si la ligne est décrite :
+                        sur quatre mille cinq cents signaux, c'est ce qui permet
+                        de repérer le travail restant sans ouvrir chaque fiche. */}
+                    <button onClick={() => setDecrit(v => v === s.id ? null : s.id)}
+                      title={s.description_fr ? "Modifier la description" : "Décrire ce signal"}
+                      style={{ ...btnSecondaire, padding: "4px 9px", fontSize: 11, gap: 5,
+                        color: s.description_fr ? undefined : "var(--gris)" }}>
+                      <FileText size={12} />
+                      {s.description_fr ? "Décrit" : "Décrire"}
+                    </button>
+                  </td>
                 </tr>
+                {decrit === s.id && (
+                  <tr>
+                    <td colSpan={10} style={{ padding: 0, borderTop: "1px solid var(--bordure)" }}>
+                      <EditeurDescription signal={s} occupe={occupe}
+                        onEnregistrer={(en, fr) => enregistrerDescription(s, en, fr)}
+                        onFermer={() => setDecrit(null)} />
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               ))}
             </tbody>
           </table>
