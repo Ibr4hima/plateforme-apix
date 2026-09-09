@@ -84,6 +84,9 @@ class FdiSignal(Base):
     code            = Column(Text, nullable=False, unique=True)
     libelle_en      = Column(Text, nullable=False, unique=True)
     libelle_fr      = Column(Text, nullable=False)
+    # L'étiquette des cartes. Le libellé long dit le sens exact ; celui-ci le
+    # dit en trois mots, là où la place manque.
+    libelle_court_fr = Column(Text, nullable=False, server_default="")
     definition_en   = Column(Text, nullable=False, server_default="")
     definition_fr   = Column(Text, nullable=False, server_default="")
     cle_appariement = Column(Text, nullable=False, unique=True)

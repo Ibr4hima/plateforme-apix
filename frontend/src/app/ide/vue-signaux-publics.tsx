@@ -2,40 +2,49 @@
 
 // Signaux d'investissement — la lecture publique.
 //
-// CE QUE CETTE VUE SERT, ET POURQUOI ELLE NE RESSEMBLE PAS À CELLE DES PROJETS.
-// Un projet annoncé est un fait qu'on mesure : montants, emplois, séries
-// annuelles. Un signal est une INTENTION qu'on repère — l'entreprise étudie un
-// site, lève des fonds, nomme un responsable régional. On ne vient pas ici
-// mesurer un flux, on vient trouver qui approcher et à quel stade.
+// CE QUE CETTE VUE SERT. Un projet annoncé est un fait ; un signal est une
+// INTENTION — une entreprise qui étudie un site, lève des fonds, nomme un
+// responsable régional. On ne vient pas ici mesurer un flux, on vient trouver
+// qui approcher et à quel stade.
 //
-// D'où la forme : une LISTE DE CARTES, pas un tableau de bord. Chaque carte
-// répond à quatre questions dans l'ordre où on se les pose — à quel stade en
-// est l'entreprise, qui est-elle, d'où vient-elle, et où veut-elle aller.
+// ELLE SE LIT COMME CELLE DES PROJETS, et ce n'est pas une paresse : les deux
+// vues sont voisines dans le même écran, et l'on passe de l'une à l'autre. Même
+// colonne de filtres, même en-tête, même carte — période en haut à gauche,
+// étiquette en haut à droite, nom en grand, pied en deux colonnes. Ce qui
+// change, ce sont les champs, pas la grammaire.
 //
-// CE QUE L'ÉCRAN DOIT DIRE ET NE PEUT PAS TAIRE : le décompte est un PLANCHER.
-// Le tableau de fDi n'affiche qu'une destination par signal et cache les
-// autres ; tant que la complétion n'est pas faite, « signaux visant le
-// Sénégal » est un minimum. Le dire coûte une phrase ; ne pas le dire
-// exposerait à défendre en réunion un total qui n'en est pas un.
+// LE DÉCOMPTE EST UN PLANCHER. Le tableau de fDi n'affiche qu'une destination
+// par signal et masque les autres ; tant que la complétion n'est pas faite,
+// « signaux visant le Sénégal » est un minimum. La page le dit en une ligne, et
+// cette ligne disparaît d'elle-même quand il n'y a plus rien à compléter.
 
-import { useEffect, useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, fmtNombre } from "./partage";
+import { API, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
+         TITRE_FACETTE } from "./partage";
 
-type Valeur = { id: number; libelle: string | null; nature?: "pays" | "region" | null };
+export type FiltresSignaux = {
+  destination: string; nature: string; secteur: string; recherche: string;
+};
+export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
+  destination: "", nature: "", secteur: "", recherche: "",
+};
+
+type Valeur = { id: number; libelle: string | null; court?: string | null;
+                nature?: "pays" | "region" | null };
 type Signal = {
   id: number; periode: string;
   entreprise: string | null; parent: string | null;
   origine: string | null; origine_iso: string | null;
   capex_musd: number | null; capex_estime: boolean | null;
   funding_musd: number | null; funding_estime: boolean | null;
-  description_fr: string | null; description_en: string | null;
+  description_fr: string | null;
   destinations: Valeur[]; secteurs: Valeur[]; activites: Valeur[]; natures: Valeur[];
 };
 type Compte = { nom: string; nb: number; nature?: "pays" | "region" };
@@ -44,216 +53,185 @@ type Perimetre = {
   destinations: Compte[]; secteurs: Compte[]; activites: Compte[]; natures: Compte[];
 };
 type Reponse = {
-  kpis: { signaux: number; funding_musd: number | null; capex_musd: number | null;
-          entreprises: number; origines: number; annees: [number | null, number | null];
+  kpis: { signaux: number; annees: [number | null, number | null];
           a_completer: number; plancher: boolean };
-  page: number; pages: number;
-  signaux: Signal[];
+  page: number; pages: number; signaux: Signal[];
 };
 
 const PAR_PAGE = 24;
 
-const TITRE_SS = { fontSize: 10.5, fontWeight: 800, color: "var(--gris)",
-  textTransform: "uppercase" as const, letterSpacing: "0.12em" };
+/** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
+    composants — la colonne de filtres et la liste : la clé de cache étant
+    l'URL, ils partagent le même téléchargement sans se connaître. */
+function urlPerimetre(f: FiltresSignaux, recherche: string): string {
+  const p = new URLSearchParams();
+  if (f.destination) p.set("destination", f.destination);
+  if (f.nature) p.set("natures", f.nature);
+  if (f.secteur) p.set("secteurs", f.secteur);
+  if (recherche.trim()) p.set("recherche", recherche.trim());
+  return `${API}/fdi/public/signaux/perimetre?${p}`;
+}
 
-/** La teinte d'un stade d'intention. Ce n'est pas de l'ornement : le stade est
-    la première chose qu'on lit sur une carte, parce qu'il décide si l'on
-    décroche le téléphone aujourd'hui ou dans six mois. */
-const TEINTE_NATURE: Record<string, string> = {
-  "Projet à l'étude (nouveau ou extension)": "var(--vert)",
-  "Nouvelle stratégie d'investissement": "var(--bleu)",
-  "Nouvelles nominations": "var(--violet)",
-};
-const teinte = (n: string | null) =>
-  (n && TEINTE_NATURE[n]) || "var(--orange)";
+/** Une facette à choix unique, dans la colonne de filtres.
 
-/** Une valeur d'une liste — destination, secteur, activité. Une région du monde
-    se distingue d'un pays : « Afrique » et « Sénégal » ne se lisent pas de la
-    même façon, et les confondre ferait croire à une cible précise là où
-    l'entreprise n'a encore désigné qu'un continent. */
-const Puce = ({ v }: { v: Valeur }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", gap: 5,
-    fontSize: 11.5, padding: "3px 9px", borderRadius: 8, whiteSpace: "nowrap",
-    background: "var(--carte-douce)", border: "1px solid var(--filet)",
-    color: "var(--gris-fort)" }}>
-    {v.libelle}
-    {v.nature === "region" && (
-      <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
-        textTransform: "uppercase", color: "var(--gris)" }}>région</span>
-    )}
-  </span>
-);
-
-const Montant = ({ v, estime, mot }: { v: number | null; estime: boolean | null; mot: string }) => {
-  if (v == null) return null;
-  return (
-    <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
-                        : "Valeur déclarée"}
-      style={{ fontSize: 12, color: "var(--gris-fort)" }}>
-      <span style={{ ...TITRE_SS, fontSize: 9.5, marginRight: 5 }}>{mot}</span>
-      <strong style={{ color: "var(--encre)", fontVariantNumeric: "tabular-nums" }}>
-        {estime ? "≈ " : ""}{fmtNombre(v)}
-      </strong>
-      <span style={{ fontSize: 10, color: "var(--gris)" }}> M$</span>
-    </span>
-  );
-};
-
-/** Un filtre à choix unique, replié dans une liste déroulante.
-
-    Les facettes des signaux sont courtes — sept régions, trois stades, une
-    quarantaine de secteurs — et l'écran est une liste de cartes, non un
-    tableau de bord : une colonne de filtres permanente prendrait la place de
-    ce qu'on vient lire. */
-function Choix({ titre, options, valeur, onChange, vide }: {
-  titre: string; options: Compte[]; valeur: string; onChange: (v: string) => void; vide: string;
+    Même forme que celles des projets : titre en petites capitales, pastille,
+    libellé, compte à droite. La ligne « Toutes » n'est pas une option de plus
+    mais le retour à l'absence de filtre, d'où sa place en tête. */
+function Facette({ titre, options, valeur, onChange, vide, grouper = false }: {
+  titre: string; options: Compte[]; valeur: string; vide: string;
+  onChange: (v: string) => void; grouper?: boolean;
 }) {
   if (options.length === 0) return null;
+  const groupes: [string | null, Compte[]][] = grouper
+    ? [["Régions du monde", options.filter(o => o.nature === "region")],
+       ["Pays", options.filter(o => o.nature !== "region")]]
+    : [[null, options]];
+
+  const ligne = (o: Compte | null) => {
+    const nom = o?.nom ?? "";
+    const sel = valeur === nom;
+    return (
+      <button key={nom || "__tous"} onClick={() => onChange(nom)} style={LIGNE_FACETTE}
+        onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+        <Pastille coche={sel} />
+        <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {o ? o.nom : vide}
+        </span>
+        {o && (
+          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+            fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+        )}
+      </button>
+    );
+  };
+
   return (
-    <label style={{ display: "inline-flex", flexDirection: "column", gap: 4 }}>
-      <span style={TITRE_SS}>{titre}</span>
-      <select value={valeur} onChange={e => onChange(e.target.value)}
-        style={{ background: "var(--carte)", border: "1px solid var(--bordure-forte)",
-          borderRadius: 9, padding: "7px 10px", fontSize: 12.5, color: "var(--encre)",
-          outline: "none", fontFamily: "var(--font-google-sans)", minWidth: 170 }}>
-        <option value="">{vide}</option>
-        {["region", "pays", undefined].map(nat => {
-          const groupe = options.filter(o => o.nature === nat);
-          if (!groupe.length) return null;
-          const items = groupe.map(o => (
-            <option key={`${nat}-${o.nom}`} value={o.nom}>{o.nom} ({o.nb})</option>
-          ));
-          const label = nat === "region" ? "Régions du monde" : nat === "pays" ? "Pays" : null;
-          return label
-            ? <optgroup key={String(nat)} label={label}>{items}</optgroup>
-            : <optgroup key="autres" label="">{items}</optgroup>;
-        })}
-      </select>
-    </label>
+    <div style={{ marginBottom: 18 }}>
+      <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
+      <div style={{ maxHeight: 220, overflowY: "auto" }}>
+        {ligne(null)}
+        {groupes.map(([etiquette, liste]) => liste.length === 0 ? null : (
+          <div key={etiquette ?? "tout"}>
+            {etiquette && (
+              <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
+                textTransform: "uppercase", letterSpacing: "0.1em",
+                padding: "6px 8px 2px", margin: 0 }}>{etiquette}</p>
+            )}
+            {liste.map(o => ligne(o))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-export default function VueSignauxPublics() {
-  const [destination, setDestination] = useState("");
-  const [nature, setNature] = useState("");
-  const [secteur, setSecteur] = useState("");
-  const [recherche, setRecherche] = useState("");
+/** La colonne de filtres, montée dans la barre latérale de la page — celle des
+    projets, la même. Mettre ces filtres dans le contenu aurait laissé une
+    colonne vide à gauche et poussé les cartes vers le bas. */
+export function FiltresSignauxPanneau({ filtres, onChange }: {
+  filtres: FiltresSignaux; onChange: (f: FiltresSignaux) => void;
+}) {
+  const recherche = useDebounced(filtres.recherche, 300);
+  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche), { garder: true }).data;
+  if (!per) return null;
+  const set = (k: keyof FiltresSignaux) => (v: string) => onChange({ ...filtres, [k]: v });
+  return (
+    <>
+      <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+      <Facette titre="Destination" options={per.destinations} valeur={filtres.destination}
+        onChange={set("destination")} vide="Toutes destinations" grouper />
+      <Facette titre="Stade de l'intention" options={per.natures} valeur={filtres.nature}
+        onChange={set("nature")} vide="Tous les stades" />
+      <Facette titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
+        onChange={set("secteur")} vide="Tous les secteurs" />
+    </>
+  );
+}
+
+export default function VueSignauxPublics({ filtres, onChange }: {
+  filtres: FiltresSignaux; onChange: (f: FiltresSignaux) => void;
+}) {
   const [page, setPage] = useState(1);
-  const rechercheD = useDebounced(recherche, 300);
+  const recherche = useDebounced(filtres.recherche, 300);
 
   // Un changement de filtre ramène au premier écran : rester en page 6 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const clef = `${destination}|${nature}|${secteur}|${rechercheD}`;
+  const clef = `${filtres.destination}|${filtres.nature}|${filtres.secteur}|${recherche}`;
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 
-  const params = useMemo(() => {
-    const p = new URLSearchParams();
-    if (destination) p.set("destination", destination);
-    if (nature) p.set("natures", nature);
-    if (secteur) p.set("secteurs", secteur);
-    if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
-    return p;
-  }, [destination, nature, secteur, rechercheD]);
+  const url = useMemo(() => {
+    const p = new URLSearchParams(urlPerimetre(filtres, recherche).split("?")[1]);
+    p.set("page", String(page));
+    p.set("par_page", String(PAR_PAGE));
+    return `${API}/fdi/public/signaux?${p}`;
+  }, [filtres, recherche, page]);
 
-  const qPer = useDonnees<Perimetre>(`${API}/fdi/public/signaux/perimetre?${params}`, { garder: true });
-  const liste = new URLSearchParams(params);
-  liste.set("page", String(page));
-  liste.set("par_page", String(PAR_PAGE));
-  const qSig = useDonnees<Reponse>(`${API}/fdi/public/signaux?${liste}`, { garder: true });
+  const q = useDonnees<Reponse>(url, { garder: true });
+  if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;
+  if (!q.data) return <SkeletonChartGrid />;
 
-  const per = qPer.data;
-  const d = qSig.data;
-
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [page]);
-
-  if (qSig.isError) return <ErreurChargement onRetry={() => qSig.refetch()} />;
-  if (!d || !per) return <SkeletonChartGrid />;
-
+  const d = q.data;
   const k = d.kpis;
-  const filtre = Boolean(destination || nature || secteur || rechercheD.trim());
+  const periode = k.annees[0] == null ? null
+    : k.annees[0] === k.annees[1] ? `${k.annees[0]}` : `${k.annees[0]} — ${k.annees[1]}`;
 
   return (
     <div>
-      {/* ── Ce qu'on regarde, et ce que ce nombre vaut ─────────────────── */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap",
-        marginBottom: 6 }}>
-        <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--encre)", margin: 0 }}>
-          {fmtNombre(k.signaux)} signal{k.signaux > 1 ? "aux" : ""} d&apos;investissement
-        </h2>
-        {k.annees[0] != null && (
-          <span style={{ fontSize: 12, color: "var(--gris)" }}>
-            {k.annees[0] === k.annees[1] ? k.annees[0] : `${k.annees[0]} — ${k.annees[1]}`}
-          </span>
-        )}
+      {/* ── L'en-tête, dans la forme de celui des projets ────────────────── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, flexWrap: "wrap", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu)" }} />
+          <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: "var(--encre)", margin: 0,
+            letterSpacing: "-0.01em" }}>
+            {filtres.destination || "Toutes destinations"}
+          </h2>
+          <Etiquette>{fmtNombre(k.signaux)} signaux</Etiquette>
+          {periode && <Etiquette>{periode}</Etiquette>}
+        </div>
+        <span style={{ position: "relative", minWidth: 240, flex: "0 1 320px" }}>
+          <Search size={14} style={{ position: "absolute", left: 14, top: "50%",
+            transform: "translateY(-50%)", color: "var(--gris)" }} />
+          <input value={filtres.recherche}
+            onChange={e => onChange({ ...filtres, recherche: e.target.value })}
+            placeholder="Rechercher"
+            style={{ width: "100%", boxSizing: "border-box", background: "var(--carte)",
+              border: "1px solid var(--bordure-forte)", borderRadius: 999,
+              padding: "10px 16px 10px 36px", fontSize: 13, color: "var(--encre)",
+              outline: "none", fontFamily: "var(--font-google-sans)" }} />
+        </span>
       </div>
-      <p style={{ fontSize: 13, color: "var(--gris-fort)", lineHeight: 1.7, margin: "0 0 4px",
-        maxWidth: 720 }}>
-        Des intentions déclarées, en amont de tout projet annoncé : une entreprise qui étudie un
-        site, lève des fonds ou nomme un responsable régional. C&apos;est le stade où la
-        prospection a encore prise.
-      </p>
-      {/* LA MISE EN GARDE N'EST PAS FACULTATIVE. Sans elle, le nombre ci-dessus
-          se lirait comme un total, et il ne l'est pas. */}
+
+      {/* LA MISE EN GARDE N'EST PAS FACULTATIVE tant qu'il reste à compléter :
+          sans elle, le nombre ci-dessus se lirait comme un total. Elle
+          disparaît d'elle-même le jour où il n'y a plus rien à compléter. */}
       {k.plancher && (
-        <p style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.6, margin: "0 0 18px",
-          maxWidth: 720 }}>
+        <p style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.6, margin: "0 0 20px",
+          maxWidth: 760 }}>
           La source n&apos;affiche qu&apos;une destination par signal et masque les autres :
           ce décompte est un <strong style={{ color: "var(--gris-fort)" }}>minimum</strong>.
-          {" "}{fmtNombre(k.a_completer)} signal{k.a_completer > 1 ? "aux" : ""} de cette
-          sélection {k.a_completer > 1 ? "attendent" : "attend"} encore d&apos;être complété
-          {k.a_completer > 1 ? "s" : ""}.
+          {" "}{fmtNombre(k.a_completer)} {k.a_completer > 1 ? "signaux restent" : "signal reste"}
+          {" "}à compléter dans cette sélection.
         </p>
       )}
 
-      {/* ── Les filtres ────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 12, flexWrap: "wrap",
-        marginBottom: 20 }}>
-        <Choix titre="Destination" options={per.destinations} valeur={destination}
-          onChange={setDestination} vide="Toutes" />
-        <Choix titre="Stade" options={per.natures} valeur={nature}
-          onChange={setNature} vide="Tous" />
-        <Choix titre="Secteur" options={per.secteurs} valeur={secteur}
-          onChange={setSecteur} vide="Tous" />
-        <label style={{ display: "inline-flex", flexDirection: "column", gap: 4, flex: 1,
-          minWidth: 200 }}>
-          <span style={TITRE_SS}>Recherche</span>
-          <span style={{ position: "relative" }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%",
-              transform: "translateY(-50%)", color: "var(--gris)" }} />
-            <input value={recherche} onChange={e => setRecherche(e.target.value)}
-              placeholder="Entreprise, description…"
-              style={{ width: "100%", background: "var(--carte)", boxSizing: "border-box",
-                border: "1px solid var(--bordure-forte)", borderRadius: 9,
-                padding: "7px 10px 7px 30px", fontSize: 12.5, color: "var(--encre)",
-                outline: "none", fontFamily: "var(--font-google-sans)" }} />
-          </span>
-        </label>
-        {filtre && (
-          <button onClick={() => { setDestination(""); setNature(""); setSecteur(""); setRecherche(""); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, border: "none",
-              background: "none", cursor: "pointer", fontSize: 12, color: "var(--gris)",
-              fontFamily: "inherit", padding: "8px 0" }}>
-            <X size={12} /> Tout effacer
-          </button>
-        )}
-      </div>
-
-      {/* ── Les cartes ─────────────────────────────────────────────────── */}
       {d.signaux.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "60px 0" }}>
+        <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "70px 0" }}>
           Aucun signal ne correspond à cette recherche.
         </p>
       ) : (
         <div style={{ display: "grid", gap: 14,
-          gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))" }}>
+          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
           {d.signaux.map(s => <CarteSignal key={s.id} s={s} />)}
         </div>
       )}
 
       {d.pages > 1 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 10, marginTop: 26 }}>
+          gap: 12, marginTop: 28 }}>
           <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
             style={boutonPage(page > 1)}>Précédents</button>
           <span style={{ fontSize: 12.5, color: "var(--gris)" }}>
@@ -267,85 +245,137 @@ export default function VueSignauxPublics() {
   );
 }
 
+const Etiquette = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em",
+    textTransform: "uppercase", color: "var(--gris)", background: "var(--carte-douce)",
+    border: "1px solid var(--filet)", borderRadius: 999, padding: "4px 11px",
+    whiteSpace: "nowrap" }}>{children}</span>
+);
+
 const boutonPage = (actif: boolean): React.CSSProperties => ({
   border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-  borderRadius: 9, padding: "7px 14px", fontSize: 12.5, color: "var(--encre)",
+  borderRadius: 999, padding: "8px 16px", fontSize: 12.5, color: "var(--encre)",
   cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.4,
   fontFamily: "var(--font-google-sans)",
 });
 
-/** Une carte répond à quatre questions dans l'ordre où on se les pose : à quel
-    STADE en est l'entreprise, QUI est-elle, D'OÙ vient-elle, et OÙ veut-elle
-    aller. Les montants viennent après — ils sont rarement renseignés à ce
-    stade, et ce n'est pas ce qu'on vient chercher ici. */
+/** La teinte d'un stade. Elle n'est pas décorative : le stade décide si l'on
+    décroche le téléphone aujourd'hui ou dans six mois, et c'est la première
+    chose que l'œil doit trouver sur la carte. */
+const TEINTES: Record<string, string> = {
+  "Projet à l'étude": "var(--vert)",
+  "Stratégie d'investissement": "var(--bleu)",
+  "Financement levé": "var(--violet)",
+  "Nomination régionale": "var(--orange)",
+};
+const teinte = (court?: string | null) => (court && TEINTES[court]) || "var(--gris-fort)";
+
+/** Une carte : le MÊME gabarit que celle des projets annoncés — période en haut
+    à gauche, étiquette en haut à droite, nom en grand, pied en deux colonnes.
+    Seuls les champs changent : d'où vient l'intention, où elle va. */
 function CarteSignal({ s }: { s: Signal }) {
-  const stade = s.natures[0]?.libelle ?? null;
-  const c = teinte(stade);
+  const stade = s.natures[0];
+  const c = teinte(stade?.court);
   return (
-    <article style={{ background: "var(--carte)", borderRadius: 14,
-      border: "1px solid rgb(var(--encre-rgb) / 0.10)", padding: "14px 16px",
-      display: "flex", flexDirection: "column", gap: 9 }}>
+    <article style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
+      border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
+      padding: "15px 17px 13px" }}>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        {s.natures.map(n => (
-          <span key={n.id} style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
-            textTransform: "uppercase", padding: "3px 8px", borderRadius: 999,
-            color: teinte(n.libelle),
-            background: `color-mix(in srgb, ${teinte(n.libelle)} 10%, transparent)` }}>
-            {n.libelle}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)" }}>
+          {moisEnClair(s.periode)}
+        </span>
+        {stade && (
+          <span title={stade.libelle ?? undefined}
+            style={{ fontSize: 11, fontWeight: 700, color: c, whiteSpace: "nowrap",
+              border: `1px solid ${c}`, borderRadius: 999, padding: "3px 11px" }}>
+            {stade.court ?? stade.libelle}
           </span>
-        ))}
-        <span style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--gris)" }}>{s.periode}</span>
-      </div>
-
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--encre)", lineHeight: 1.3 }}>
-          {s.entreprise ?? "—"}
-        </div>
-        {s.parent && s.parent !== s.entreprise && (
-          <div style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 1 }}>
-            groupe {s.parent}
-          </div>
         )}
       </div>
 
-      {/* D'OÙ, puis VERS OÙ. Une intention se lit comme un trajet. */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap",
-        fontSize: 12 }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 6,
-          color: "var(--gris-fort)" }}>
-          <DrapeauPays iso={s.origine_iso} nom={s.origine ?? ""} taille={14} sansIso="rien" />
-          {s.origine ?? "—"}
+      <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
+        letterSpacing: "-0.01em", margin: 0 }}>{s.entreprise ?? "—"}</h3>
+      {s.parent && s.parent !== s.entreprise && (
+        <span style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 2 }}>
+          groupe {s.parent}
         </span>
-        <span style={{ color: "var(--gris)" }}>→</span>
-        <span style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {s.destinations.length === 0
-            ? <span style={{ color: "var(--gris)", fontSize: 11.5 }}>destination non précisée</span>
-            : s.destinations.map(v => <Puce key={v.id} v={v} />)}
-        </span>
+      )}
+
+      {/* Le pied, en deux colonnes séparées d'un filet — la forme des cartes de
+          la plateforme. D'OÙ part l'intention, OÙ elle va. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14,
+        paddingTop: 13, borderTop: "1px solid var(--bordure)" }}>
+        <div style={{ minWidth: 0 }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Origine</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5,
+            fontWeight: 700, color: "var(--encre)", overflow: "hidden" }}>
+            <DrapeauPays iso={s.origine_iso} nom={s.origine ?? ""} taille={14} sansIso="rien" />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {s.origine ?? "—"}
+            </span>
+          </span>
+        </div>
+        <div style={{ minWidth: 0, paddingLeft: 14, borderLeft: "1px solid var(--bordure)" }}>
+          <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>Destination</span>
+          {s.destinations.length === 0 ? (
+            <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>
+          ) : (
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
+              display: "block", overflow: "hidden", textOverflow: "ellipsis",
+              whiteSpace: "nowrap" }}
+              title={s.destinations.map(v => v.libelle).join(" · ")}>
+              {s.destinations[0].libelle}
+              {/* Une RÉGION n'est pas un pays : « Afrique » et « Sénégal » ne se
+                  lisent pas de la même façon, et les confondre ferait croire à
+                  une cible précise là où l'entreprise a désigné un continent. */}
+              {s.destinations[0].nature === "region" && (
+                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
+                  textTransform: "uppercase", color: "var(--gris)", marginLeft: 5 }}>région</span>
+              )}
+              {s.destinations.length > 1 && (
+                <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 400 }}>
+                  {" "}+{s.destinations.length - 1}
+                </span>
+              )}
+            </span>
+          )}
+        </div>
       </div>
 
-      {(s.secteurs.length > 0 || s.activites.length > 0) && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {s.secteurs.map(v => <Puce key={`s${v.id}`} v={v} />)}
-          {s.activites.map(v => <Puce key={`a${v.id}`} v={v} />)}
-        </div>
-      )}
-
-      {s.description_fr && (
-        <p style={{ fontSize: 12.5, color: "var(--gris-fort)", lineHeight: 1.6, margin: 0 }}>
-          {s.description_fr}
-        </p>
-      )}
-
       {(s.funding_musd != null || s.capex_musd != null) && (
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", paddingTop: 8,
-          borderTop: "1px solid var(--filet)" }}>
-          <Montant v={s.funding_musd} estime={s.funding_estime} mot="Fonds levés" />
-          <Montant v={s.capex_musd} estime={s.capex_estime} mot="Investissement prévu" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 12,
+          paddingTop: 12, borderTop: "1px solid var(--bordure)" }}>
+          <Argent v={s.funding_musd} estime={s.funding_estime} mot="Fonds levés" />
+          <Argent v={s.capex_musd} estime={s.capex_estime} mot="Investissement prévu"
+            filet />
         </div>
       )}
-      <div style={{ height: 0, borderBottom: `2px solid ${c}`, opacity: 0.18 }} />
     </article>
+  );
+}
+
+/** Un montant, écrit comme sur les cartes de projet : la valeur grande, son
+    unité petite, l'estimation signalée sans occuper la ligne. */
+function Argent({ v, estime, mot, filet }: {
+  v: number | null; estime: boolean | null; mot: string; filet?: boolean;
+}) {
+  return (
+    <div style={{ minWidth: 0, ...(filet
+      ? { paddingLeft: 14, borderLeft: "1px solid var(--bordure)" } : {}) }}>
+      <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>{mot}</span>
+      {v == null ? (
+        <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>
+      ) : (
+        <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
+                            : "Valeur déclarée"}
+          style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
+            fontVariantNumeric: "tabular-nums" }}>
+          {estime ? "≈ " : ""}{fmtNombre(v)}
+          <span style={{ fontSize: 10.5, color: "var(--gris)", fontWeight: 400 }}> M$</span>
+        </span>
+      )}
+    </div>
   );
 }

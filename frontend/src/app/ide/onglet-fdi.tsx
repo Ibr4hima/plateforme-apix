@@ -30,8 +30,10 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, fmtNombre, groupByContinent } from "./partage";
-import VueSignauxPublics from "./vue-signaux-publics";
+import { API, BadgePeriode, ETIQ, fmtNombre, groupByContinent, LIGNE_FACETTE,
+         moisEnClair, Pastille } from "./partage";
+import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
+         type FiltresSignaux } from "./vue-signaux-publics";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
@@ -77,18 +79,6 @@ const VUES = [
   { v: "entreprises" as const, l: "Entreprises", src: "Company database" },
 ];
 
-const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
-  "août", "septembre", "octobre", "novembre", "décembre"];
-
-/** « 2026-06 » → « Juin 2026 ». La source ne donne jamais le jour ; écrire le
-    mois en toutes lettres évite de faire lire une date comme un code. */
-function moisEnClair(periode: string): string {
-  const m = /^(\d{4})-(\d{2})$/.exec(periode);
-  if (!m) return periode;
-  const nom = MOIS_FR[Number(m[2]) - 1];
-  return nom ? `${nom[0].toUpperCase()}${nom.slice(1)} ${m[1]}` : periode;
-}
-
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
 
@@ -117,9 +107,6 @@ const rangContinent = (c: string) => {
     où commence l'autre. */
 const Filet = () => <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
 
-const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: "5px 8px",
-  borderRadius: 7, border: "none", cursor: "pointer", background: "transparent",
-  textAlign: "left" as const, width: "100%" } as const;
 
 /** La marque de sélection de toute la colonne : un rond plein quand c'est
     retenu, un anneau vide sinon. Une seule forme partout — pays, secteurs,
@@ -127,11 +114,6 @@ const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: 
     coup d'œil et qu'une case carrée au milieu de ronds ferait croire à une
     autre nature de choix. La teinte distingue les niveaux : le bleu pour un
     poste de premier rang, l'orange pour ce qui vit dessous. */
-const Pastille = ({ coche, teinte = "var(--bleu)" }: { coche: boolean; teinte?: string }) => (
-  <span style={{ width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
-    border: `2px solid ${coche ? teinte : "var(--bordure-forte)"}`,
-    background: coche ? teinte : "transparent" }} />
-);
 
 /** L'en-tête repliable d'une région.
 
@@ -324,6 +306,10 @@ function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
 
 export default function OngletFdi() {
   const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">("projets");
+  // Les filtres des signaux vivent ICI, non dans leur vue : la colonne de
+  // filtres est celle de la page, partagée par toutes les vues, et elle doit
+  // pouvoir les lire comme la liste qui les applique.
+  const [filtresSignaux, setFiltresSignaux] = useState<FiltresSignaux>(FILTRES_SIGNAUX_VIDES);
   // Le côté par lequel on lit le pays. La bascule ne s'affiche que si un
   // périmètre a été relevé dans les deux sens : un lot « Dest = Sénégal » ne
   // dit rien de ce que le Sénégal implante ailleurs, et proposer « Source »
@@ -598,6 +584,10 @@ export default function OngletFdi() {
               })}
             </div>
 
+            {vue === "signaux" && (
+              <FiltresSignauxPanneau filtres={filtresSignaux} onChange={setFiltresSignaux} />
+            )}
+
             {vue === "projets" && (
               <>
                 <Filet />
@@ -745,7 +735,8 @@ export default function OngletFdi() {
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto" as const,
         overscrollBehavior: "contain" as const, padding: "22px 30px 60px" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-          {vue === "signaux" ? <VueSignauxPublics />
+          {vue === "signaux"
+           ? <VueSignauxPublics filtres={filtresSignaux} onChange={setFiltresSignaux} />
            : vue !== "projets" ? <ABientot vue={vue} /> : (
             <>
               {/* En-tête : le pays, sa qualification, la période couverte — et
@@ -1010,5 +1001,3 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
 const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
   borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
 
-const ETIQ = { fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
-  textTransform: "uppercase" as const, color: "var(--gris)", lineHeight: 1.6 } as const;

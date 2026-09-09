@@ -1040,3 +1040,45 @@ export function BdefRow({ label, niveau, selected, onSelect, expandable, expande
   );
 }
 
+
+// ── Écriture partagée par les vues fDi ───────────────────────────────────────
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+  "août", "septembre", "octobre", "novembre", "décembre"];
+
+/** « 2026-06 » → « Juin 2026 ». La source ne donne jamais le jour ; écrire le
+    mois en toutes lettres évite de faire lire une date comme un code.
+
+    Ici plutôt que dans une vue : les projets et les signaux se lisent l'un
+    après l'autre, et deux écritures de date donneraient l'impression de deux
+    produits. */
+export function moisEnClair(periode: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(periode);
+  if (!m) return periode;
+  const nom = MOIS_FR[Number(m[2]) - 1];
+  return nom ? `${nom[0].toUpperCase()}${nom.slice(1)} ${m[1]}` : periode;
+}
+
+/** L'étiquette d'un champ dans une carte : petite, espacée, en capitales.
+    Partagée pour la même raison que la date. */
+export const ETIQ = { fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
+  textTransform: "uppercase" as const, color: "var(--gris)", lineHeight: 1.6 } as const;
+
+/** La marque de sélection des colonnes de filtres : un rond plein quand c'est
+    retenu, un anneau vide sinon. Une seule forme pour toutes les vues — deux
+    marques différentes pour un même geste donneraient l'impression de deux
+    produits. */
+export const Pastille = ({ coche, teinte = "var(--bleu)" }: { coche: boolean; teinte?: string }) => (
+  <span style={{ width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
+    border: `2px solid ${coche ? teinte : "var(--bordure-forte)"}`,
+    background: coche ? teinte : "transparent" }} />
+);
+
+/** Une ligne de facette : la pastille, le libellé, le compte à droite.
+    Partagée pour la même raison. */
+export const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, padding: "5px 8px",
+  borderRadius: 7, border: "none", cursor: "pointer", background: "transparent",
+  textAlign: "left" as const, width: "100%" } as const;
+
+/** Le titre d'une section de filtres. */
+export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
+  textTransform: "uppercase" as const, letterSpacing: "0.1em" } as const;

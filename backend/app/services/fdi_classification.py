@@ -120,6 +120,10 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
     # Les signaux sont la seule nomenclature à porter une définition, et elle
     # fait partie de la donnée : « New Personnel » sans sa définition se lirait
     # comme un simple recrutement, non comme le présage d'une implantation.
+    sans_court = [g["code"] for g in signaux if not g.get("libelle_court_fr", "").strip()]
+    if sans_court:
+        raise ClassificationInvalide(f"signaux sans étiquette courte : {sans_court}")
+
     sans_def = [g["code"] for g in signaux
                 if not g.get("definition_en", "").strip() or not g.get("definition_fr", "").strip()]
     if sans_def:
@@ -220,13 +224,14 @@ async def importer(db: "AsyncSession", dossier: Path | None = None) -> dict:
     ))
 
     stmt = pg_insert(FdiSignal).values([
-        {k: s[k] for k in ("code", "libelle_en", "libelle_fr", "definition_en",
-                           "definition_fr", "cle_appariement", "ordre")}
+        {k: s[k] for k in ("code", "libelle_en", "libelle_fr", "libelle_court_fr",
+                           "definition_en", "definition_fr", "cle_appariement", "ordre")}
         for s in tables["signaux"]
     ])
     await db.execute(stmt.on_conflict_do_update(
         index_elements=["code"],
         set_={"libelle_en": stmt.excluded.libelle_en, "libelle_fr": stmt.excluded.libelle_fr,
+              "libelle_court_fr": stmt.excluded.libelle_court_fr,
               "definition_en": stmt.excluded.definition_en,
               "definition_fr": stmt.excluded.definition_fr,
               "cle_appariement": stmt.excluded.cle_appariement, "ordre": stmt.excluded.ordre},

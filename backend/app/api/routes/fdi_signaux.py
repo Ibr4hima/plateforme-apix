@@ -85,6 +85,10 @@ LISTES = """
     (SELECT coalesce(json_agg(json_build_object(
                 'id', v.id, 'rang', v.rang, 'brut', v.brut, 'origine', v.origine,
                 'libelle', coalesce(n.libelle_fr, v.brut),
+                -- L'étiquette courte, pour les cartes publiques où le libellé
+                -- long tiendrait trois lignes. L'administration, elle, affiche
+                -- le long : la place ne lui manque pas et le sens exact compte.
+                'court', coalesce(nullif(n.libelle_court_fr, ''), n.libelle_fr, v.brut),
                 'resolu', v.nature_id IS NOT NULL) ORDER BY v.rang), '[]'::json)
        FROM fdi_signal_natures v LEFT JOIN fdi_signaux n ON n.id = v.nature_id
       WHERE v.signal_id = s.id) AS natures
