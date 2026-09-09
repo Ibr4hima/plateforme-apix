@@ -104,6 +104,12 @@ echo "▸ Nomenclature fDi"
 ( cd backend && python scripts/fdi/importer.py )
 echo "▸ Projets fDi"
 ( cd backend && python scripts/fdi/importer_projets.py )
+# Les signaux d'investisseur, même principe et même ordre : ils s'appuient sur
+# la nomenclature, et les valeurs ajoutées à la main dans l'administration —
+# destinations, secteurs, activités, natures que le tableau de fDi cachait —
+# survivent au rejeu, protégées par leur origine « saisie ».
+echo "▸ Signaux fDi"
+( cd backend && python scripts/fdi/importer_signaux.py )
 
 # ── 3. Ce que l'écran proposera ──────────────────────────────────────────────
 # Le même calcul que la route publique : un pays n'est offert au filtre que si

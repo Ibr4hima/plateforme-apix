@@ -910,7 +910,14 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str,
     if lot and empreinte_page and lot.empreinte == empreinte_page:
         n = (await db.execute(text(
             "SELECT count(*) FROM fdi_projets WHERE lot_id = :i"), {"i": lot.id})).scalar_one()
-        return {"lignes": n, "non_resolus": [], "preserves": n,
+        # « preserves » vaut ZÉRO, non le nombre de lignes : préserver, c'est
+        # réécrire une page SANS écraser ce qu'un humain y avait corrigé. Une
+        # page qu'on ne réécrit pas ne préserve rien — elle n'est pas touchée.
+        # Y mettre le compte du lot faisait annoncer « 16 872 saisies humaines
+        # conservées » à chaque déploiement, alors qu'il n'y en avait aucune.
+        # Un journal qui exagère est un journal qu'on cesse de lire, et c'est
+        # ainsi que quatre sous-secteurs non rattachés étaient passés inaperçus.
+        return {"lignes": n, "non_resolus": [], "preserves": 0,
                 "entreprises_a_arbitrer": 0, "supprimes": 0,
                 "lot_id": lot.id, "inchange": True}
 

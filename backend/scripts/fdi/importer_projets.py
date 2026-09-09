@@ -175,7 +175,15 @@ async def main() -> int:
     if inchanges:
         print(f"  {inchanges} page(s) inchangée(s), non réécrite(s) "
               f"— « --tout » pour les rejouer quand même")
-    print(f"  → {total} projets, {preserves} saisies humaines conservées")
+    # « reconnues » et non « saisies conservées » : ce compte est celui des
+    # lignes dont la signature n'a pas bougé, donc que le rejeu a identifiées
+    # comme le MÊME projet et dont il a reporté descriptions et arbitrages. Il
+    # vaut 16 872 sur un rejeu complet — et l'annoncer comme autant de saisies
+    # humaines faisait dire au journal ce qui n'est pas : il n'y en a presque
+    # aucune. Un journal qui exagère est un journal qu'on cesse de lire.
+    print(f"  → {total} projets en base"
+          + (f", {preserves} ligne(s) reconnue(s) comme le même projet "
+             f"(descriptions et arbitrages reportés)" if preserves else ""))
     if ecartes:
         # Ni une perte ni une erreur : ces lignes sont en base, sous le relevé
         # du pays lui-même, qui est le seul à le rendre exhaustif.

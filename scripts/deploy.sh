@@ -95,6 +95,13 @@ echo "▸ Import des projets fDi Markets…"
 $COMPOSE exec -T backend python scripts/fdi/importer_projets.py \
   || echo "  ⚠ import des projets fDi en échec — la table des projets n'a pas été mise à jour."
 
+# Les signaux d'investisseur. Ce que l'administration y ajoute à la main — les
+# destinations, secteurs, activités et natures que le tableau de fDi cachait —
+# porte l'origine « saisie » et n'est pas réécrit par ce rejeu.
+echo "▸ Import des signaux fDi Markets…"
+$COMPOSE exec -T backend python scripts/fdi/importer_signaux.py \
+  || echo "  ⚠ import des signaux fDi en échec — la table des signaux n'a pas été mise à jour."
+
 echo "▸ Nettoyage des images inutilisées…"
 docker image prune -f >/dev/null 2>&1 || true
 
