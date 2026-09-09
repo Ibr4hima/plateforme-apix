@@ -7,7 +7,7 @@ from app.api.routes import (
     projets, code_investissement, modalites_application, suivi_projets, classifications,
     ide, ref_pays, opportunites, ref_potentialites, ref_avantages,
     citi, dashboard, dashboard_tables, bdef, auth_users, statistiques, bmce,
-    assistant, lexique, nace, fdi, fdi_projets, fdi_public,
+    assistant, lexique, nace, fdi, fdi_projets, fdi_public, fdi_signaux,
 )
 from contextlib import asynccontextmanager
 import logging
@@ -130,6 +130,7 @@ app.include_router(assistant.router,           prefix=settings.API_PREFIX)
 app.include_router(fdi.router,                  prefix=settings.API_PREFIX)
 app.include_router(fdi_projets.router,          prefix=settings.API_PREFIX)
 app.include_router(fdi_public.router,           prefix=settings.API_PREFIX)
+app.include_router(fdi_signaux.router,          prefix=settings.API_PREFIX)
 
 @app.get("/")
 async def root():
