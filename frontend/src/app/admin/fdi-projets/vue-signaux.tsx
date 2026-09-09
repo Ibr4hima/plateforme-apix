@@ -271,11 +271,11 @@ function EditeurDescription({ signal, occupe, onEnregistrer, onFermer }: {
     coupé, sans les avoir regardées, est l'erreur qui a fait confondre
     « Standard Chartered Bank » et « Standard Chartered Kenya Bank » côté
     projets. */
-function ChampNom({ brut, occupe, onValider, onFermer }: {
-  brut: string; occupe: boolean;
+function ChampNom({ depart, occupe, onValider, onFermer }: {
+  depart: string; occupe: boolean;
   onValider: (nom: string) => void; onFermer: () => void;
 }) {
-  const [nom, setNom] = useState(brut.replace(/\s*(?:…|\.{2,})\s*$/, ""));
+  const [nom, setNom] = useState(depart);
   return (
     <input value={nom} autoFocus disabled={occupe}
       onChange={e => setNom(e.target.value)}
@@ -470,22 +470,39 @@ export default function VueSignaux() {
                   <td style={{ ...TD, whiteSpace: "nowrap" }}>{s.periode}</td>
                   <td style={TD}>
                     {nomme === s.id ? (
-                      <ChampNom brut={s.entreprise_brut ?? s.entreprise ?? ""} occupe={occupe}
+                      // Le texte de départ n'est pas le même selon le cas. Un nom
+                      // COUPÉ part du relevé sans ses points de suspension — il ne
+                      // reste qu'à finir le mot. Un nom DÉJÀ TRANCHÉ part de sa
+                      // valeur actuelle, puisqu'on vient le corriger, pas le
+                      // ressaisir.
+                      <ChampNom occupe={occupe}
+                        depart={s.statut_entreprise === "resolu"
+                          ? (s.entreprise ?? "")
+                          : (s.entreprise_brut ?? s.entreprise ?? "")
+                              .replace(/\s*(?:…|\.{2,})\s*$/, "")}
                         onValider={nom => nommer(s, nom)} onFermer={() => setNomme(null)} />
-                    ) : s.statut_entreprise !== "resolu" ? (
-                      // Un nom coupé se clique : c'est là qu'on le complète, sans
-                      // quitter la ligne qui dit de quelle entreprise il s'agit.
+                    ) : (
+                      // TOUJOURS MODIFIABLE, y compris une fois tranché : on se
+                      // trompe, et une décision qu'on ne peut plus reprendre est
+                      // une décision qu'on hésite à prendre. Un nom coupé s'annonce
+                      // en orange — il reste à faire ; un nom tranché se lit
+                      // normalement et ne se souligne qu'au survol.
                       <button onClick={() => setNomme(s.id)} disabled={occupe}
-                        title="Compléter ce nom tronqué"
+                        title={s.statut_entreprise === "resolu"
+                          ? "Modifier ce nom" : "Compléter ce nom tronqué"}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = "underline"; }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLElement).style.textDecoration =
+                            s.statut_entreprise === "resolu" ? "none" : "underline"; }}
                         style={{ border: "none", background: "none", padding: 0,
                           cursor: "pointer", fontFamily: "inherit", fontSize: 12.5,
-                          fontWeight: 600, textAlign: "left", color: "var(--orange)",
-                          textDecoration: "underline", textUnderlineOffset: 3,
-                          textDecorationStyle: "dotted" }}>
+                          fontWeight: 600, textAlign: "left",
+                          color: s.statut_entreprise === "resolu"
+                            ? "var(--encre)" : "var(--orange)",
+                          textDecoration: s.statut_entreprise === "resolu" ? "none" : "underline",
+                          textUnderlineOffset: 3, textDecorationStyle: "dotted" }}>
                         {s.entreprise ?? "—"}
                       </button>
-                    ) : (
-                      <div style={{ fontWeight: 600 }}>{s.entreprise ?? "—"}</div>
                     )}
                     {s.parent && s.parent !== s.entreprise && (
                       <div style={{ fontSize: 11, color: "var(--gris)" }}>{s.parent}</div>

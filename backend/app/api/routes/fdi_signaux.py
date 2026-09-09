@@ -414,7 +414,8 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
         raise HTTPException(400, "Ce nom est lui-même tronqué : saisir le nom complet.")
 
     ligne = (await db.execute(text(
-        "SELECT entreprise_brut, parent_brut FROM fdi_signaux_investisseurs WHERE id = :i"),
+        "SELECT entreprise_brut, parent_brut, entreprise_id "
+        "  FROM fdi_signaux_investisseurs WHERE id = :i"),
         {"i": signal_id})).first()
     if not ligne:
         raise HTTPException(404, "Signal introuvable.")
@@ -441,5 +442,28 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
         "       modifie_le = :d, modifie_par = :u "
         " WHERE id = :i"),
         {"e": r.id, "d": datetime.now(timezone.utc), "u": signataire, "i": signal_id})
+
+    # ON SE TROMPE, ET UNE COQUILLE NE DOIT PAS SURVIVRE À SA CORRECTION.
+    # Corriger « Indonesie » en « Indonesia » laissait la faute en base comme
+    # entreprise sans aucune ligne — et l'appariement par préfixe l'aurait
+    # ensuite PROPOSÉE, rejouant l'erreur qu'on venait de réparer.
+    #
+    # La suppression est étroitement bornée : on ne retire que l'entreprise
+    # qu'on vient de quitter, et seulement si PLUS RIEN ne la désigne — aucune
+    # ligne des deux relevés, ni comme entreprise ni comme maison mère, et
+    # aucun alias. Une entreprise que quelque chose référence reste, même vide
+    # de lignes : elle a peut-être été créée à dessein.
+    abandonnee = ligne.entreprise_id
+    if abandonnee and abandonnee != r.id:
+        await db.execute(text("""
+            DELETE FROM fdi_entreprises e
+             WHERE e.id = :a
+               AND NOT EXISTS (SELECT 1 FROM fdi_signaux_investisseurs x
+                                WHERE x.entreprise_id = :a OR x.parent_id = :a)
+               AND NOT EXISTS (SELECT 1 FROM fdi_projets x
+                                WHERE x.entreprise_id = :a OR x.parent_id = :a)
+               AND NOT EXISTS (SELECT 1 FROM fdi_entreprise_alias x
+                                WHERE x.entreprise_id = :a)"""), {"a": abandonnee})
+
     await db.commit()
     return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent}
