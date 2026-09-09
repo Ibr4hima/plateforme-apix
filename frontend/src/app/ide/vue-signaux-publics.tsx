@@ -13,10 +13,14 @@
 // étiquette en haut à droite, nom en grand, pied en deux colonnes. Ce qui
 // change, ce sont les champs, pas la grammaire.
 //
-// LE DÉCOMPTE EST UN PLANCHER. Le tableau de fDi n'affiche qu'une destination
-// par signal et masque les autres ; tant que la complétion n'est pas faite,
-// « signaux visant le Sénégal » est un minimum. La page le dit en une ligne, et
-// cette ligne disparaît d'elle-même quand il n'y a plus rien à compléter.
+// CE QUE LA CARTE MONTRE, ET CE QU'ELLE LAISSE À LA FICHE. Quatre champs et
+// rien de plus : le stade, l'entreprise, d'où part l'intention, où elle va.
+// Les montants n'y figurent pas — ils sont rarement renseignés à ce stade, et
+// une carte qui dit tout ne se parcourt plus, elle se lit.
+//
+// LES AUTRES DESTINATIONS NE DISPARAISSENT PAS POUR AUTANT : la carte n'a la
+// place que d'une, mais taire les suivantes ferait croire à une cible unique.
+// Le compte est donc lisible à côté, et l'infobulle les donne toutes.
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
@@ -26,6 +30,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
+import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
 import { API, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
          TITRE_FACETTE } from "./partage";
 
@@ -205,19 +210,6 @@ export default function VueSignauxPublics({ filtres, onChange }: {
         </span>
       </div>
 
-      {/* LA MISE EN GARDE N'EST PAS FACULTATIVE tant qu'il reste à compléter :
-          sans elle, le nombre ci-dessus se lirait comme un total. Elle
-          disparaît d'elle-même le jour où il n'y a plus rien à compléter. */}
-      {k.plancher && (
-        <p style={{ fontSize: 12, color: "var(--gris)", lineHeight: 1.6, margin: "0 0 20px",
-          maxWidth: 760 }}>
-          La source n&apos;affiche qu&apos;une destination par signal et masque les autres :
-          ce décompte est un <strong style={{ color: "var(--gris-fort)" }}>minimum</strong>.
-          {" "}{fmtNombre(k.a_completer)} {k.a_completer > 1 ? "signaux restent" : "signal reste"}
-          {" "}à compléter dans cette sélection.
-        </p>
-      )}
-
       {d.signaux.length === 0 ? (
         <p style={{ fontSize: 13, color: "var(--gris)", textAlign: "center", padding: "70px 0" }}>
           Aucun signal ne correspond à cette recherche.
@@ -259,23 +251,36 @@ const boutonPage = (actif: boolean): React.CSSProperties => ({
   fontFamily: "var(--font-google-sans)",
 });
 
-/** La teinte d'un stade. Elle n'est pas décorative : le stade décide si l'on
+/** L'étiquette du stade, dans les badges de la plateforme — les mêmes que
+    ceux des cartes de projet. Le stade n'est pas décoratif : il décide si l'on
     décroche le téléphone aujourd'hui ou dans six mois, et c'est la première
-    chose que l'œil doit trouver sur la carte. */
-const TEINTES: Record<string, string> = {
-  "Projet à l'étude": "var(--vert)",
-  "Stratégie d'investissement": "var(--bleu)",
-  "Financement levé": "var(--violet)",
-  "Nomination régionale": "var(--orange)",
+    chose que l'œil doit trouver sur la carte.
+
+    La correspondance porte sur le libellé COURT, qui est celui de la
+    nomenclature : un stade ajouté un jour sans teinte déclarée prendra le gris,
+    ce qui se voit et se corrige, plutôt que de casser l'affichage. */
+const BADGES: Record<string, React.CSSProperties> = {
+  "Projet à l'étude": badge_vert,
+  "Stratégie d'investissement": badge_bleu,
+  "Financement levé": badge_violet,
+  "Nomination régionale": badge_orange,
 };
-const teinte = (court?: string | null) => (court && TEINTES[court]) || "var(--gris-fort)";
+
+function PastilleStade({ v }: { v: Valeur }) {
+  const court = v.court ?? v.libelle ?? "";
+  return (
+    <span title={v.libelle ?? undefined}
+      style={{ ...(BADGES[court] ?? badge_gris), whiteSpace: "nowrap", flexShrink: 0 }}>
+      {court}
+    </span>
+  );
+}
 
 /** Une carte : le MÊME gabarit que celle des projets annoncés — période en haut
     à gauche, étiquette en haut à droite, nom en grand, pied en deux colonnes.
     Seuls les champs changent : d'où vient l'intention, où elle va. */
 function CarteSignal({ s }: { s: Signal }) {
   const stade = s.natures[0];
-  const c = teinte(stade?.court);
   return (
     <article style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
       border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
@@ -286,13 +291,7 @@ function CarteSignal({ s }: { s: Signal }) {
         <span style={{ fontSize: 11, fontWeight: 700, color: "var(--gris)" }}>
           {moisEnClair(s.periode)}
         </span>
-        {stade && (
-          <span title={stade.libelle ?? undefined}
-            style={{ fontSize: 11, fontWeight: 700, color: c, whiteSpace: "nowrap",
-              border: `1px solid ${c}`, borderRadius: 999, padding: "3px 11px" }}>
-            {stade.court ?? stade.libelle}
-          </span>
-        )}
+        {stade && <PastilleStade v={stade} />}
       </div>
 
       <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
@@ -322,21 +321,21 @@ function CarteSignal({ s }: { s: Signal }) {
           {s.destinations.length === 0 ? (
             <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>
           ) : (
-            <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
-              display: "block", overflow: "hidden", textOverflow: "ellipsis",
-              whiteSpace: "nowrap" }}
+            <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}
               title={s.destinations.map(v => v.libelle).join(" · ")}>
-              {s.destinations[0].libelle}
-              {/* Une RÉGION n'est pas un pays : « Afrique » et « Sénégal » ne se
-                  lisent pas de la même façon, et les confondre ferait croire à
-                  une cible précise là où l'entreprise a désigné un continent. */}
-              {s.destinations[0].nature === "region" && (
-                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
-                  textTransform: "uppercase", color: "var(--gris)", marginLeft: 5 }}>région</span>
-              )}
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {s.destinations[0].libelle}
+              </span>
+              {/* LES AUTRES DESTINATIONS NE DISPARAISSENT PAS. Une carte n'a la
+                  place que d'une, mais taire les suivantes ferait croire à une
+                  cible unique. Le compte est donc lisible, et l'infobulle les
+                  donne toutes. */}
               {s.destinations.length > 1 && (
-                <span style={{ fontSize: 11, color: "var(--gris)", fontWeight: 400 }}>
-                  {" "}+{s.destinations.length - 1}
+                <span style={{ fontSize: 11, fontWeight: 800, color: "var(--bleu)",
+                  background: "rgb(var(--bleu-rgb) / 0.10)", borderRadius: 999,
+                  padding: "2px 8px", flexShrink: 0, whiteSpace: "nowrap" }}>
+                  +{s.destinations.length - 1}
                 </span>
               )}
             </span>
@@ -344,38 +343,6 @@ function CarteSignal({ s }: { s: Signal }) {
         </div>
       </div>
 
-      {(s.funding_musd != null || s.capex_musd != null) && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 12,
-          paddingTop: 12, borderTop: "1px solid var(--bordure)" }}>
-          <Argent v={s.funding_musd} estime={s.funding_estime} mot="Fonds levés" />
-          <Argent v={s.capex_musd} estime={s.capex_estime} mot="Investissement prévu"
-            filet />
-        </div>
-      )}
     </article>
-  );
-}
-
-/** Un montant, écrit comme sur les cartes de projet : la valeur grande, son
-    unité petite, l'estimation signalée sans occuper la ligne. */
-function Argent({ v, estime, mot, filet }: {
-  v: number | null; estime: boolean | null; mot: string; filet?: boolean;
-}) {
-  return (
-    <div style={{ minWidth: 0, ...(filet
-      ? { paddingLeft: 14, borderLeft: "1px solid var(--bordure)" } : {}) }}>
-      <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>{mot}</span>
-      {v == null ? (
-        <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>
-      ) : (
-        <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
-                            : "Valeur déclarée"}
-          style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)",
-            fontVariantNumeric: "tabular-nums" }}>
-          {estime ? "≈ " : ""}{fmtNombre(v)}
-          <span style={{ fontSize: 10.5, color: "var(--gris)", fontWeight: 400 }}> M$</span>
-        </span>
-      )}
-    </div>
   );
 }
