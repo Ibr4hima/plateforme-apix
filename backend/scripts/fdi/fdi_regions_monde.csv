@@ -1,0 +1,8 @@
+code,libelle_en,libelle_fr,cle_appariement,ordre
+africa,Africa,Afrique,africa,1
+asia_pacific,Asia-Pacific,Asie-Pacifique,asia pacific,2
+emerging_europe,Emerging Europe,Europe émergente,emerging europe,3
+latin_america_and_caribbean,Latin America & Caribbean,Amérique latine et Caraïbes,latin america and caribbean,4
+middle_east,Middle East,Moyen-Orient,middle east,5
+north_america,North America,Amérique du Nord,north america,6
+western_europe,Western Europe,Europe occidentale,western europe,7

@@ -146,7 +146,11 @@ async def perimetre(
     # ligne « Afrique » qui n'existe dans aucun référentiel. Les deux se
     # résolvent d'une seule requête, sur le nom ou sur le continent.
     releves = [r.perimetre for r in (await db.execute(text(
-        "SELECT DISTINCT perimetre FROM fdi_lots_import WHERE sens = :s AND perimetre IS NOT NULL"),
+        # « base = projets » n'est pas décoratif : les signaux d'investisseur
+        # vivent dans les mêmes lots, et un lot de signaux lu ici ferait
+        # déclarer complet un périmètre de projets qui ne l'est pas.
+        "SELECT DISTINCT perimetre FROM fdi_lots_import "
+        " WHERE base = 'projets' AND sens = :s AND perimetre IS NOT NULL"),
         {"s": sens if sens in COTE else "destination"})).fetchall()]
     # La même requête rend le continent et la région : l'écran range les pays
     # par zone plutôt qu'en une liste de cinquante-cinq lignes, et le
@@ -180,7 +184,7 @@ async def perimetre(
     # n'offrir la bascule que le jour où elle a un sens : proposer « Source »
     # sans lot source afficherait une liste de pays vide.
     dispo = [r.sens for r in (await db.execute(text(
-        "SELECT DISTINCT sens FROM fdi_lots_import ORDER BY sens"))).fetchall()]
+        "SELECT DISTINCT sens FROM fdi_lots_import WHERE base = 'projets' ORDER BY sens"))).fetchall()]
 
     # Les bornes de la période restent celles du jeu complet : un curseur dont
     # les extrémités bougent à chaque clic devient impossible à manœuvrer.

@@ -110,3 +110,25 @@ class FdiTypeProjet(Base):
     origine         = Column(Text, nullable=False, server_default="depot")
     modifie_le      = Column(TIMESTAMP(timezone=True))
     modifie_par     = Column(Text)
+
+
+class FdiRegionMonde(Base):
+    """Les régions du monde telles que fDi les découpe — sept postes.
+
+    Un signal d'investisseur peut viser une région plutôt qu'un pays : « Africa »,
+    « Middle East ». Ce découpage est PROPRE À LA SOURCE et ne recoupe pas le
+    nôtre — « Asia-Pacific » enjambe deux de nos continents, « Middle East »
+    chevauche l'Asie et l'Afrique, et leur « North America » n'est pas
+    l'Amérique du Nord géographique. Le ranger dans ref_groupements fausserait
+    tous nos agrégats ; c'est donc une nomenclature fDi, comme les quatre autres.
+    """
+    __tablename__ = "fdi_regions_monde"
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    code            = Column(Text, nullable=False, unique=True)
+    libelle_en      = Column(Text, nullable=False, unique=True)
+    libelle_fr      = Column(Text, nullable=False)
+    cle_appariement = Column(Text, nullable=False, unique=True)
+    ordre           = Column(SmallInteger, nullable=False)
+    origine         = Column(Text, nullable=False, server_default="depot")
+    modifie_le      = Column(TIMESTAMP(timezone=True))
+    modifie_par     = Column(Text)
