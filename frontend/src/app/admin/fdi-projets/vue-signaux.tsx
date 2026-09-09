@@ -257,6 +257,38 @@ function EditeurDescription({ signal, occupe, onEnregistrer, onFermer }: {
   );
 }
 
+/** Le nom complet d'une entreprise que la source a coupée.
+
+    UN GESTE, PAS UNE FICHE. On clique sur le nom tronqué, on complète, Entrée.
+    Le champ est PRÉREMPLI du texte de la source sans ses points de suspension :
+    « PT Telekomunika… » devient « PT Telekomunika », et il ne reste qu'à finir
+    le mot. Sur des milliers de noms coupés, c'est ce qui sépare un outil d'une
+    corvée.
+
+    LA DÉCISION NE VAUT QUE POUR CETTE LIGNE. On a le signal sous les yeux — sa
+    date, son pays, son secteur — et c'est ce contexte qui dit de quelle
+    entreprise il s'agit. L'étendre aux autres lignes portant le même texte
+    coupé, sans les avoir regardées, est l'erreur qui a fait confondre
+    « Standard Chartered Bank » et « Standard Chartered Kenya Bank » côté
+    projets. */
+function ChampNom({ brut, occupe, onValider, onFermer }: {
+  brut: string; occupe: boolean;
+  onValider: (nom: string) => void; onFermer: () => void;
+}) {
+  const [nom, setNom] = useState(brut.replace(/\s*(?:…|\.{2,})\s*$/, ""));
+  return (
+    <input value={nom} autoFocus disabled={occupe}
+      onChange={e => setNom(e.target.value)}
+      onKeyDown={e => {
+        if (e.key === "Enter" && nom.trim()) onValider(nom.trim());
+        if (e.key === "Escape") onFermer();
+      }}
+      onBlur={onFermer}
+      placeholder="Nom complet, puis Entrée"
+      style={{ ...IS, padding: "4px 8px", fontSize: 12, minWidth: 210 }} />
+  );
+}
+
 export default function VueSignaux() {
   const [signaux, setSignaux] = useState<Signal[]>([]);
   const [ref, setRef] = useState<Referentiels | null>(null);
@@ -273,6 +305,8 @@ export default function VueSignaux() {
   // Le signal dont on écrit la description. Une seule fiche ouverte à la fois :
   // deux éditeurs ouverts inviteraient à en abandonner un sans l'enregistrer.
   const [decrit, setDecrit] = useState<number | null>(null);
+  // Le signal dont on complète le nom d'entreprise.
+  const [nomme, setNomme] = useState<number | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
@@ -352,6 +386,16 @@ export default function VueSignaux() {
     return r;
   });
 
+  const nommer = (s: Signal, nom: string) => agir(async () => {
+    const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/entreprise`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ nom }),
+    });
+    if (r.ok) setNomme(null);
+    return r;
+  });
+
   const retirer = (s: Signal, famille: string, v: Valeur) => agir(async () =>
     fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs/${famille}/${v.id}`, {
       method: "DELETE", headers: await authHeaders(),
@@ -425,7 +469,24 @@ export default function VueSignaux() {
                   : "rgb(var(--orange-rgb) / 0.03)" }}>
                   <td style={{ ...TD, whiteSpace: "nowrap" }}>{s.periode}</td>
                   <td style={TD}>
-                    <div style={{ fontWeight: 600 }}>{s.entreprise ?? "—"}</div>
+                    {nomme === s.id ? (
+                      <ChampNom brut={s.entreprise_brut ?? s.entreprise ?? ""} occupe={occupe}
+                        onValider={nom => nommer(s, nom)} onFermer={() => setNomme(null)} />
+                    ) : s.statut_entreprise !== "resolu" ? (
+                      // Un nom coupé se clique : c'est là qu'on le complète, sans
+                      // quitter la ligne qui dit de quelle entreprise il s'agit.
+                      <button onClick={() => setNomme(s.id)} disabled={occupe}
+                        title="Compléter ce nom tronqué"
+                        style={{ border: "none", background: "none", padding: 0,
+                          cursor: "pointer", fontFamily: "inherit", fontSize: 12.5,
+                          fontWeight: 600, textAlign: "left", color: "var(--orange)",
+                          textDecoration: "underline", textUnderlineOffset: 3,
+                          textDecorationStyle: "dotted" }}>
+                        {s.entreprise ?? "—"}
+                      </button>
+                    ) : (
+                      <div style={{ fontWeight: 600 }}>{s.entreprise ?? "—"}</div>
+                    )}
                     {s.parent && s.parent !== s.entreprise && (
                       <div style={{ fontSize: 11, color: "var(--gris)" }}>{s.parent}</div>
                     )}

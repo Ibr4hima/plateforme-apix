@@ -300,10 +300,35 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
                     now(), :u)
             ON CONFLICT (lot_id, ligne) DO UPDATE SET
                 annee = EXCLUDED.annee, mois = EXCLUDED.mois,
-                parent_brut = EXCLUDED.parent_brut, parent_id = EXCLUDED.parent_id,
+                parent_brut = EXCLUDED.parent_brut,
                 entreprise_brut = EXCLUDED.entreprise_brut,
-                entreprise_id = EXCLUDED.entreprise_id,
-                statut_entreprise = EXCLUDED.statut_entreprise,
+                -- UNE DÉCISION HUMAINE SURVIT AU RÉIMPORT. Compléter un nom
+                -- tronqué depuis l'administration met la ligne à « resolu » ;
+                -- laisser le relevé réécrire entreprise_id effacerait ce
+                -- travail en silence, à la première mise à jour de la page.
+                --
+                -- La garde tient à ce que le TEXTE BRUT n'ait pas bougé : si
+                -- la source écrit désormais autre chose, ce n'est plus la même
+                -- entreprise qu'on avait tranchée, et la décision ne vaut plus.
+                -- Même règle que pour les valeurs ajoutées à la main, et pour
+                -- la même raison.
+                entreprise_id = CASE
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                     AND fdi_signaux_investisseurs.entreprise_brut
+                         IS NOT DISTINCT FROM EXCLUDED.entreprise_brut
+                    THEN fdi_signaux_investisseurs.entreprise_id
+                    ELSE EXCLUDED.entreprise_id END,
+                statut_entreprise = CASE
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                     AND fdi_signaux_investisseurs.entreprise_brut
+                         IS NOT DISTINCT FROM EXCLUDED.entreprise_brut
+                    THEN 'resolu' ELSE EXCLUDED.statut_entreprise END,
+                parent_id = CASE
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                     AND fdi_signaux_investisseurs.parent_brut
+                         IS NOT DISTINCT FROM EXCLUDED.parent_brut
+                    THEN fdi_signaux_investisseurs.parent_id
+                    ELSE EXCLUDED.parent_id END,
                 pays_source_brut = EXCLUDED.pays_source_brut,
                 pays_source_id = EXCLUDED.pays_source_id,
                 capex_musd = EXCLUDED.capex_musd, capex_estime = EXCLUDED.capex_estime,

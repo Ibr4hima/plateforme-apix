@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import require_admin
 from app.core.database import get_db
+from app.services.fdi_projets import est_tronque, normaliser
 
 # « signaux-investisseurs » et non « signaux » : /fdi/signaux appartient déjà à
 # la NOMENCLATURE des types de signal, qui se gère dans l'écran des
@@ -373,3 +374,72 @@ async def decrire_signal(signal_id: int, body: DescriptionIn,
         raise HTTPException(404, "Signal introuvable.")
     await db.commit()
     return {"id": signal_id}
+
+
+class EntrepriseIn(BaseModel):
+    nom: str
+
+
+@router.patch("/signaux-investisseurs/{signal_id}/entreprise")
+async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
+                            db: AsyncSession = Depends(get_db),
+                            user: dict = Depends(require_admin)):
+    """Complète le nom tronqué de l'entreprise d'UN signal.
+
+    UNE FILE D'ARBITRAGE SÉPARÉE DE CELLE DES PROJETS, et une décision qui ne
+    porte que sur cette ligne-ci. C'est un choix, pas une facilité :
+
+    · AUCUN ALIAS N'EST ÉCRIT. Un alias est une mémoire partagée — il dirait
+      « ce texte tronqué désigne cette entreprise » à tout ce qui lit la base,
+      projets compris. Les deux relevés partagent la table des entreprises ;
+      poser ici une mémoire ferait rattacher d'office, au prochain import des
+      projets, des lignes que personne n'a examinées. Une file séparée doit le
+      rester.
+
+    · LA DÉCISION NE VAUT QUE POUR CETTE LIGNE. On a le signal sous les yeux —
+      sa date, son pays, son secteur — et c'est ce contexte qui dit de quelle
+      entreprise il s'agit. Étendre la décision aux autres lignes portant le
+      même texte tronqué, sans les avoir regardées, est précisément l'erreur
+      qui a fait confondre « Standard Chartered Bank » et « Standard Chartered
+      Kenya Bank » côté projets.
+
+    L'ENTREPRISE, ELLE, EST PARTAGÉE : si le nom existe déjà, on s'y rattache
+    plutôt que d'en créer une jumelle. C'est ce qui permet aux deux relevés de
+    parler du même investisseur.
+    """
+    nom = " ".join((body.nom or "").split())
+    if not nom:
+        raise HTTPException(400, "Le nom complet est obligatoire.")
+    if est_tronque(nom):
+        raise HTTPException(400, "Ce nom est lui-même tronqué : saisir le nom complet.")
+
+    ligne = (await db.execute(text(
+        "SELECT entreprise_brut, parent_brut FROM fdi_signaux_investisseurs WHERE id = :i"),
+        {"i": signal_id})).first()
+    if not ligne:
+        raise HTTPException(404, "Signal introuvable.")
+
+    cle = normaliser(nom)
+    signataire = str(user.get("email") or "admin")
+    r = (await db.execute(text(
+        "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
+    if not r:
+        r = (await db.execute(text(
+            "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
+            "VALUES (:n, :c, 'complet', :d, :u) RETURNING id"),
+            {"n": nom, "c": cle, "d": datetime.now(timezone.utc), "u": signataire})).first()
+
+    # La maison mère suit SEULEMENT si elle porte exactement le même texte : ce
+    # sont alors deux affichages du même nom coupé, et les laisser diverger
+    # obligerait à trancher deux fois la même chose. Un texte différent, lui,
+    # désigne peut-être une autre société : on n'en décide pas ici.
+    meme_parent = (ligne.parent_brut or "") == (ligne.entreprise_brut or "")
+    await db.execute(text(
+        "UPDATE fdi_signaux_investisseurs "
+        "   SET entreprise_id = :e, statut_entreprise = 'resolu', "
+        f"      parent_id = {':e' if meme_parent else 'parent_id'}, "
+        "       modifie_le = :d, modifie_par = :u "
+        " WHERE id = :i"),
+        {"e": r.id, "d": datetime.now(timezone.utc), "u": signataire, "i": signal_id})
+    await db.commit()
+    return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent}
