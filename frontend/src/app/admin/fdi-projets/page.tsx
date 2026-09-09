@@ -31,6 +31,7 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight, Loader2, Pencil, X } fro
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import { Avis, Carte, ChampRecherche, Compteur, Segments, btnPrincipal, btnSecondaire, IS, TH, TD } from "@/components/admin/UIAdmin";
+import VueSignaux from "./vue-signaux";
 
 type Projet = {
   id: number; lot: string; ligne: number; periode: string;
@@ -813,7 +814,9 @@ export default function AdminFdiProjets() {
         />
       </div>
 
-      {base !== "projets" ? (
+      {base === "signaux" ? (
+        <VueSignaux />
+      ) : base !== "projets" ? (
         <ABientot base={base} />
       ) : (
       <>
