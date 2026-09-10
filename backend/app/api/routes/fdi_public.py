@@ -361,8 +361,12 @@ JOINTURES_ENTREPRISE = """
     LEFT JOIN fdi_secteurs      s  ON s.id  = p.secteur_id
     LEFT JOIN fdi_sous_secteurs ss ON ss.id = p.sous_secteur_id
     LEFT JOIN fdi_activites     a  ON a.id  = p.activite_id
-    LEFT JOIN fdi_types_projet  t  ON t.id  = p.type_projet_id
 """
+# Pas de jointure sur fdi_types_projet : plus rien ici ne lit la nature de
+# l'implantation depuis que la fiche ne l'affiche plus. La garder aurait coûté
+# une jointure à CHACUNE des requêtes de l'écran — les trois de la liste, les
+# trois du périmètre, les quatre de la fiche — pour une colonne que personne ne
+# demande.
 
 NOM_ENTREPRISE = "COALESCE(e.nom, p.entreprise_brut)"
 ORIGINE_ENTREPRISE = "COALESCE(rp.nom_fr, p.pays_source_brut)"
@@ -521,7 +525,13 @@ async def fiche_entreprise(
         "secteurs":      await liste(FACETTES["secteurs"]),
         "sous_secteurs": await liste(FACETTES["sous_secteurs"]),
         "activites":     await liste(FACETTES["activites"]),
-        "types":         await liste(FACETTES["types"]),
+        # La NATURE DE L'IMPLANTATION — nouvelle implantation, extension,
+        # co-implantation — ne figure plus ici. Elle qualifie un PROJET, et se
+        # lit sur sa carte ; au niveau de l'entreprise elle ne disait presque
+        # rien : la quasi-totalité des investisseurs n'annonce que des
+        # nouvelles implantations, et la ligne se répétait à l'identique d'une
+        # fiche à l'autre. La requête qui l'alimentait part avec elle : une
+        # fiche de moins à interroger, sur les cinq qu'elle demandait.
     }
 
 

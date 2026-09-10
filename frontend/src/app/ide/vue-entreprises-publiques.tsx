@@ -77,7 +77,7 @@ type Fiche = {
   nom: string; origine: string | null; origine_iso: string | null;
   projets: number; pays: number; annees: [number | null, number | null];
   destinations: Compte[]; secteurs: Compte[]; sous_secteurs: Compte[];
-  activites: Compte[]; types: Compte[];
+  activites: Compte[];
 };
 
 const PAR_PAGE = 24;
@@ -384,7 +384,6 @@ function FicheEntreprise({ e, onClose }: { e: Entreprise; onClose: () => void })
           {/* CE QU'ELLE VIENT FAIRE. C'est la liste la plus parlante des trois :
               la même entreprise fabrique ici, forme là, distribue ailleurs. */}
           <Groupe titre="Activités prévues" valeurs={f.activites} />
-          <Groupe titre="Natures d'implantation" valeurs={f.types} />
         </>
       )}
     </FicheModal>

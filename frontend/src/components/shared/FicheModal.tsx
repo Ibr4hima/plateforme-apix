@@ -64,8 +64,36 @@ export default function FicheModal({ titre, onClose, zIndex = 400, maxWidth = 64
           </button>
         </div>
 
-        {/* Corps */}
-        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 22 }}>
+        {/* Corps — LA SEULE ZONE QUI DÉFILE, et elle doit le faire sans une
+            image perdue : c'est le geste que le lecteur fait le plus souvent
+            dans une fiche.
+
+            `contain: paint` et `translateZ(0)` visent LE VOILE FLOUTÉ. Le
+            panneau flotte au-dessus d'un `backdrop-filter: blur(8px)` étendu à
+            tout l'écran, qui est de loin la couche la plus chère de la page —
+            sous une fiche de l'onglet Investissements, il floute des graphiques
+            d3. Les deux propriétés disent au navigateur que rien de ce qui
+            bouge dans cette zone n'en déborde : il peut la composer à part, sur
+            le processeur graphique, sans redescendre au voile ni repeindre à
+            chaque image les coins arrondis du panneau qui la découpent.
+
+            Honnêteté sur ce point : c'est la cause la plus probable des
+            saccades, et le remède est celui que Chrome documente — mais je n'ai
+            pas pu le CHIFFRER ici, un Chromium sans écran plafonnant de toute
+            façon à trente images par seconde.
+
+            `overscrollBehavior: contain` arrête l'enchaînement : arrivé en bas
+            de la liste, le geste s'arrête là. Le fond, lui, est déjà gelé par
+            `useDialogue` — html et body — ; ceci ne fait qu'éviter la traction
+            élastique en fin de course.
+
+            `scrollbarGutter: stable` réserve la gouttière : sans elle, une
+            fiche qui grandit en chargeant ses listes voit sa barre apparaître
+            et tout son texte se décaler d'un coup. */}
+        <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1,
+          display: "flex", flexDirection: "column", gap: 22,
+          overscrollBehavior: "contain", contain: "paint",
+          transform: "translateZ(0)", scrollbarGutter: "stable" }}>
           {children}
         </div>
 
