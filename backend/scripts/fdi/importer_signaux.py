@@ -67,7 +67,7 @@ async def main() -> int:
         print("  aucune page de signaux à importer.")
         return 0
 
-    total = inchanges = 0
+    total = inchanges = reinitialises = 0
     tout = "--tout" in sys.argv
     contexte = S.empreinte_contexte()
     manques: list[str] = []
@@ -97,7 +97,17 @@ async def main() -> int:
                     inchanges += 1
                     continue
                 total += rapport["lignes"]
-                print(f"  {libelle:<32} {rapport['lignes']:>3} lignes")
+                reinitialises += rapport.get("reinitialises", 0)
+                # UN RANG QUI A CHANGÉ DE SIGNAL SE DIT À VOIX HAUTE. La page de
+                # fDi est classée par date décroissante : un signal nouveau en
+                # tête, et tout descend d'un cran. Le travail humain accroché à
+                # ces rangs — description, destinations ajoutées à la main — est
+                # effacé, parce qu'il ne décrit plus la bonne entreprise. La
+                # perte est juste, mais taire qu'elle a lieu ferait croire à une
+                # saisie encore en place.
+                marque = (f"   ⟲ {rapport['reinitialises']} rang(s) ont changé de signal"
+                          if rapport.get("reinitialises") else "")
+                print(f"  {libelle:<32} {rapport['lignes']:>3} lignes{marque}")
 
             # LE RAPPORT DÉCRIT L'ÉTAT DE LA BASE, PAS LE TRAVAIL FAIT. Depuis
             # que les pages inchangées ne sont plus réécrites, compter sur les
@@ -158,6 +168,10 @@ async def main() -> int:
         print(f"  {inchanges} page(s) inchangée(s), non réécrite(s) "
               f"— « --tout » pour les rejouer quand même")
     print(f"  → {total} signaux écrits, {en_base} en base")
+    if reinitialises:
+        print(f"  ⟲ {reinitialises} rang(s) désignaient un autre signal qu'au précédent "
+              f"import : description et valeurs saisies à la main y ont été effacées, "
+              f"elles ne décrivaient plus la bonne entreprise.")
     if arbitrer:
         print(f"  ⚠ {arbitrer} ligne(s) dont l'entreprise reste à arbitrer "
               f"(administration → fDi Markets → Investor signals)")

@@ -253,6 +253,46 @@ LIAISONS = (
 )
 
 
+def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex) -> tuple:
+    """Ce qui identifie une ligne dans son lot, travail humain exclu.
+
+    LE RANG N'EST PAS UNE IDENTITÉ. Une page de fDi est un classement par date
+    décroissante : qu'un signal nouveau paraisse, et tout descend d'un cran. La
+    ligne 3 d'hier est la ligne 4 d'aujourd'hui, et la ligne 3 décrit désormais
+    une autre entreprise.
+
+    Sans cette comparaison, le réimport recollerait sur cette ligne 3 ce qu'un
+    humain avait écrit pour l'ancienne : sa description, et les destinations
+    qu'il avait ajoutées à la main parce que la source n'en montre qu'une. Rien
+    ne le signalerait — ni erreur, ni ligne rouge : une description simplement
+    attribuée à la mauvaise entreprise, dans un écran lu par la Présidence.
+    C'est le raisonnement déjà tenu pour les projets ; il valait pour les
+    signaux et il y manquait.
+
+    Mieux vaut donc perdre une description que la coller sur un signal qui n'est
+    plus le sien.
+
+    LES QUATRE COLONNES MULTIPLES N'ENTRENT PAS DANS L'EMPREINTE : elles vivent
+    en tables de liaison, et une valeur ajoutée à la main y changerait la
+    signature de la ligne à chaque réimport — la garde se retournerait contre le
+    travail qu'elle protège. Les colonnes scalaires suffisent : deux signaux qui
+    partagent date, maison mère, entreprise, pays source et les deux montants
+    sont indiscernables sur le relevé lui-même.
+
+    Les nombres sont comparés en NOMBRES, jamais en texte : la base rend un
+    Decimal(« 33.30 ») là où la source donne 33.3, et une comparaison de chaînes
+    déclarerait deux fois la même ligne différente — ce qui effacerait
+    justement la description qu'on cherche à préserver.
+    """
+    from app.services.fdi_projets import normaliser
+    arrondi = lambda v: None if v is None else round(float(v), 2)  # noqa: E731
+    return (
+        annee, mois,
+        normaliser(parent or ""), normaliser(entreprise or ""), normaliser(source or ""),
+        arrondi(funding), arrondi(capex),
+    )
+
+
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: str,
                        lignes: list[dict], ref: dict, correspondance: dict[str, str],
                        utilisateur: str | None = None,
@@ -278,13 +318,34 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             "VALUES (:l, :p, :s, 'signaux', 'saisie', :u) RETURNING id"),
             {"l": libelle, "p": perimetre, "s": sens, "u": utilisateur})).scalar_one()
 
+    # L'ÉTAT D'AVANT, POUR SAVOIR CE QUE CHAQUE RANG DÉSIGNAIT. C'est de cette
+    # comparaison que dépend le sort du travail humain : une ligne qui décrit
+    # toujours le même signal le garde, une ligne qui a glissé le perd.
+    avant = {a.ligne: a for a in (await db.execute(text(
+        "SELECT ligne, annee, mois, parent_brut, entreprise_brut, pays_source_brut,"
+        "       funding_musd, capex_musd"
+        "  FROM fdi_signaux_investisseurs WHERE lot_id = :i"),
+        {"i": lot_id})).fetchall()}
+
     manques: list[str] = []
     rangs: list[int] = []
+    reinitialises = 0
     for l in lignes:
         r = await resoudre_ligne(db, l, ref, correspondance, utilisateur)
         manques += [f"L{r['ligne']} · {m}" for m in r.pop("manques")]
         listes = {nom: r.pop(nom) for nom, _, _ in LIAISONS}
         rangs.append(r["ligne"])
+
+        a = avant.get(r["ligne"])
+        meme = a is not None and empreinte_signal(
+            a.annee, a.mois, a.parent_brut, a.entreprise_brut, a.pays_source_brut,
+            a.funding_musd, a.capex_musd,
+        ) == empreinte_signal(
+            r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
+            r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
+        )
+        if a is not None and not meme:
+            reinitialises += 1
 
         signal_id = (await db.execute(text("""
             INSERT INTO fdi_signaux_investisseurs
@@ -313,36 +374,48 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
                 -- Même règle que pour les valeurs ajoutées à la main, et pour
                 -- la même raison.
                 entreprise_id = CASE
-                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
-                     AND fdi_signaux_investisseurs.entreprise_brut
-                         IS NOT DISTINCT FROM EXCLUDED.entreprise_brut
+                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
                     THEN fdi_signaux_investisseurs.entreprise_id
                     ELSE EXCLUDED.entreprise_id END,
                 statut_entreprise = CASE
-                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
-                     AND fdi_signaux_investisseurs.entreprise_brut
-                         IS NOT DISTINCT FROM EXCLUDED.entreprise_brut
+                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
                     THEN 'resolu' ELSE EXCLUDED.statut_entreprise END,
                 parent_id = CASE
-                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
-                     AND fdi_signaux_investisseurs.parent_brut
-                         IS NOT DISTINCT FROM EXCLUDED.parent_brut
+                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
                     THEN fdi_signaux_investisseurs.parent_id
                     ELSE EXCLUDED.parent_id END,
+                -- LES DESCRIPTIONS SUIVENT LA MÊME RÈGLE, et c'est ce qui
+                -- manquait : elles n'étaient jamais touchées, donc elles
+                -- restaient sur le rang quand le rang changeait de signal. Une
+                -- description recollée sur la mauvaise entreprise ne se voit
+                -- pas — aucune erreur, aucune ligne rouge.
+                description_en = CASE WHEN :meme
+                    THEN fdi_signaux_investisseurs.description_en ELSE NULL END,
+                description_fr = CASE WHEN :meme
+                    THEN fdi_signaux_investisseurs.description_fr ELSE NULL END,
                 pays_source_brut = EXCLUDED.pays_source_brut,
                 pays_source_id = EXCLUDED.pays_source_id,
                 capex_musd = EXCLUDED.capex_musd, capex_estime = EXCLUDED.capex_estime,
                 funding_musd = EXCLUDED.funding_musd, funding_estime = EXCLUDED.funding_estime,
                 modifie_le = now(), modifie_par = EXCLUDED.modifie_par
-            RETURNING id"""), {**r, "lot": lot_id, "u": utilisateur})).scalar_one()
+            RETURNING id"""), {**r, "lot": lot_id, "u": utilisateur,
+                               "meme": meme})).scalar_one()
 
-        # SEULES LES VALEURS DU RELEVÉ SONT REMPLACÉES. Celles qu'un humain a
-        # ajoutées dans l'administration portent origine « saisie » et
-        # survivent : c'est toute la raison d'être de cette colonne, puisque le
-        # relevé ne peut pas être exhaustif sur ces quatre-là.
+        # SEULES LES VALEURS DU RELEVÉ SONT REMPLACÉES — tant que le rang décrit
+        # LE MÊME SIGNAL. Celles qu'un humain a ajoutées portent origine
+        # « saisie » et survivent : c'est toute la raison d'être de cette
+        # colonne, puisque le relevé ne peut pas être exhaustif sur ces quatre
+        # colonnes-là.
+        #
+        # Mais si le rang a glissé, ces valeurs-là n'appartiennent plus à cette
+        # ligne : une destination ajoutée pour Oracle qui resterait accrochée au
+        # rang deviendrait, après l'arrivée d'un signal en tête de page, une
+        # destination d'Arc Ride. Elles partent donc avec le reste.
+        origines = "" if meme else " OR origine = 'saisie'"
         for nom, table, colonnes in LIAISONS:
             await db.execute(text(
-                f"DELETE FROM {table} WHERE signal_id = :s AND origine = 'import'"),
+                f"DELETE FROM {table} WHERE signal_id = :s"
+                f"   AND (origine = 'import'{origines})"),
                 {"s": signal_id})
             for v in listes[nom]:
                 champs = ", ".join(colonnes)
@@ -367,4 +440,9 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             "UPDATE fdi_lots_import SET empreinte = :e WHERE id = :i"),
             {"e": empreinte_page, "i": lot_id})
 
-    return {"inchange": False, "lot_id": lot_id, "lignes": len(rangs), "manques": manques}
+    # « reinitialises » se rapporte à l'opérateur, pas au programme : il compte
+    # les rangs qui décrivaient un autre signal et dont le travail humain a donc
+    # été effacé. C'est une perte légitime, mais elle doit se dire — sans quoi
+    # personne ne saurait qu'il faut ressaisir.
+    return {"inchange": False, "lot_id": lot_id, "lignes": len(rangs),
+            "manques": manques, "reinitialises": reinitialises}
