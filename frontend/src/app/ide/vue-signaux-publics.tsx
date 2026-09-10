@@ -31,7 +31,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
+import { API, BadgePeriode, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
          TITRE_FACETTE } from "./partage";
 
 export type FiltresSignaux = {
@@ -185,29 +185,38 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
   return (
     <div>
-      {/* ── L'en-tête, dans la forme de celui des projets ────────────────── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 16, flexWrap: "wrap", marginBottom: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu)" }} />
-          <h2 style={{ fontSize: "1.55rem", fontWeight: 800, color: "var(--encre)", margin: 0,
-            letterSpacing: "-0.01em" }}>
-            {filtres.destination || "Toutes destinations"}
-          </h2>
-          <Etiquette>{fmtNombre(k.signaux)} signaux</Etiquette>
-          {periode && <Etiquette>{periode}</Etiquette>}
-        </div>
-        <span style={{ position: "relative", minWidth: 240, flex: "0 1 320px" }}>
-          <Search size={14} style={{ position: "absolute", left: 14, top: "50%",
+      {/* En-tête : la destination, sa qualification, la période couverte — et
+          la recherche sur la même ligne, alignée à droite. C'est EXACTEMENT
+          celui de la vue Projets, jetons compris : la petite étiquette
+          rectangulaire qualifie, la pastille de période date. Les deux vues
+          sont voisines dans le même écran ; deux en-têtes différents pour la
+          même page donneraient l'impression de deux produits. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const,
+        marginBottom: 20 }}>
+        <span style={{ width: 9, height: 9, borderRadius: "50%",
+          background: "var(--bleu-action)", flexShrink: 0 }} />
+        <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
+          {filtres.destination || "Toutes destinations"}
+        </h2>
+        <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px",
+          borderRadius: 5, background: "var(--fond)", border: "1px solid var(--bordure-forte)",
+          fontSize: 9, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const,
+          letterSpacing: "0.05em", flexShrink: 0 }}>
+          {fmtNombre(k.signaux)} {k.signaux > 1 ? "signaux" : "signal"}
+        </span>
+        {periode && <BadgePeriode>{periode}</BadgePeriode>}
+        <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200,
+          flex: "0 1 300px" }}>
+          <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
             transform: "translateY(-50%)", color: "var(--gris)" }} />
           <input value={filtres.recherche}
             onChange={e => onChange({ ...filtres, recherche: e.target.value })}
             placeholder="Rechercher"
-            style={{ width: "100%", boxSizing: "border-box", background: "var(--carte)",
-              border: "1px solid var(--bordure-forte)", borderRadius: 999,
-              padding: "10px 16px 10px 36px", fontSize: 13, color: "var(--encre)",
-              outline: "none", fontFamily: "var(--font-google-sans)" }} />
-        </span>
+            style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
+              border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+              fontSize: 12.5, color: "var(--encre)", outline: "none",
+              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
+        </div>
       </div>
 
       {d.signaux.length === 0 ? (
@@ -236,13 +245,6 @@ export default function VueSignauxPublics({ filtres, onChange }: {
     </div>
   );
 }
-
-const Etiquette = ({ children }: { children: React.ReactNode }) => (
-  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em",
-    textTransform: "uppercase", color: "var(--gris)", background: "var(--carte-douce)",
-    border: "1px solid var(--filet)", borderRadius: 999, padding: "4px 11px",
-    whiteSpace: "nowrap" }}>{children}</span>
-);
 
 const boutonPage = (actif: boolean): React.CSSProperties => ({
   border: "1px solid var(--bordure-forte)", background: "var(--carte)",
