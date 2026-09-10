@@ -1348,6 +1348,34 @@ export function TitreFiche({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Une valeur de nomenclature, en jeton, dans une fiche.
+
+    POUR LES LISTES QU'ON NE COMPTE PAS. Quand une fiche énumère des secteurs ou
+    des activités, le nombre de projets derrière chacun n'apprend rien : le
+    total est déjà en tête de fiche, et le répéter à chaque ligne fait lire un
+    tableau là où il n'y a qu'une liste. Le jeton pose la valeur, rien de plus.
+
+    Partagé entre la fiche d'un signal — où il porte les destinations — et celle
+    d'une entreprise : deux dessins pour la même chose, dans deux fiches
+    voisines, donneraient l'impression de deux produits. */
+export const JETON_VALEUR: React.CSSProperties = {
+  fontSize: 12.5, fontWeight: 600, color: "var(--encre)",
+  background: "var(--carte-douce)", border: "1px solid var(--filet)",
+  borderRadius: 8, padding: "3px 10px",
+};
+
+/** Une liste de valeurs en jetons, qui passe à la ligne. Les jetons ne sont pas
+    tronqués : « Services professionnels, scientifiques et techniques » doit se
+    lire en entier, quitte à tenir sur deux lignes. */
+export function ListeJetons({ valeurs }: { valeurs: string[] }) {
+  if (valeurs.length === 0) return <span style={{ fontSize: 13.5, color: "var(--gris)" }}>—</span>;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+      {valeurs.map(v => <span key={v} style={JETON_VALEUR}>{v}</span>)}
+    </div>
+  );
+}
+
 /** Le texte d'une description : posé contre un filet vertical, jamais dans un
     bloc gris — le texte reste du texte. */
 export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,

@@ -23,9 +23,13 @@
 // CE QUE LA CARTE LAISSE À LA FICHE. Une entreprise n'investit pas partout dans
 // la même chose : Huawei fait de la fabrication dans un pays, de la formation
 // dans un autre, du commerce de détail dans un troisième. La carte ne peut pas
-// porter ces listes sans cesser d'être parcourable ; la fiche les donne toutes,
-// AVEC LEUR COMPTE — « Fabrication » sans dire combien de fois laisserait croire
-// à une activité principale là où il s'agit peut-être d'un projet isolé.
+// porter ces listes sans cesser d'être parcourable ; la fiche les donne toutes.
+//
+// ELLE LES ÉNUMÈRE SANS LES COMPTER. Le nombre de projets par secteur ou par
+// activité ferait doublon : le total est déjà en tête de fiche, et le répéter à
+// chaque ligne fait lire un tableau là où il n'y a qu'une liste. Seuls les PAYS
+// gardent leur compte — trente-neuf projets dans l'un contre un dans l'autre,
+// ce n'est pas la même présence, et rien d'autre ne le dit.
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
@@ -37,7 +41,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { API, boutonPage, type ChoixSous, ETIQ, Facette, FacetteSecteurs, Filet,
-         fmtNombre, LigneFiche, TitreFiche } from "./partage";
+         fmtNombre, LigneFiche, ListeJetons, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
     et de la même façon : sélection multiple, secteurs et sous-secteurs
@@ -138,8 +142,13 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :
           un équipementier télécom qui ouvre un centre de R&D n'est pas le même
-          prospect que le même équipementier qui ouvre un entrepôt. */}
-      <Facette titre="Activité prévue" options={per.activites}
+          prospect que le même équipementier qui ouvre un entrepôt.
+
+          « MENÉE », non « prévue » comme dans la vue Projets : là-bas on lit un
+          projet, qui est une annonce ; ici on lit une entreprise à travers ce
+          qu'elle a déjà annoncé, et la fiche emploie le même mot. Deux mots
+          pour la même chose dans un seul écran se remarquent. */}
+      <Facette titre="Activité menée" options={per.activites}
         choix={filtres.activites}
         setChoix={v => onChange({ ...filtres, activites: v })} />
     </>
@@ -372,18 +381,30 @@ function FicheEntreprise({ e, onClose }: { e: Entreprise; onClose: () => void })
         <p style={{ fontSize: 13, color: "var(--gris)", padding: "24px 0" }}>Chargement…</p>
       ) : (
         <>
-          {/* OÙ. Les pays d'arrivée, du plus fourni au moins fourni. */}
+          {/* OÙ, ET COMBIEN DE FOIS. Le compte garde ici tout son sens : il dit
+              où l'entreprise est réellement installée et où elle n'a fait qu'un
+              passage — trente-neuf projets en Afrique du Sud contre un en
+              Zambie, ce n'est pas la même présence. */}
           <Groupe titre="Pays d'implantation" valeurs={f.destinations} />
 
-          {/* DANS QUOI. Une entreprise peut investir dans plusieurs secteurs :
-              les donner tous, avec leur compte, évite de faire passer un projet
-              isolé pour une orientation. */}
-          <Groupe titre="Secteurs d'investissement" valeurs={f.secteurs} />
-          <Groupe titre="Sous-secteurs" valeurs={f.sous_secteurs} />
+          {/* DANS QUOI, ET POUR Y FAIRE QUOI. Ici le compte de projets ne dit
+              plus rien : le total est déjà en tête de fiche, et le répéter à
+              chaque ligne ferait lire un tableau là où il n'y a qu'une liste.
+              Ce que le lecteur vient chercher, c'est de quelles natures sont
+              les investissements de cette entreprise — pas leur arithmétique.
 
-          {/* CE QU'ELLE VIENT FAIRE. C'est la liste la plus parlante des trois :
-              la même entreprise fabrique ici, forme là, distribue ailleurs. */}
-          <Groupe titre="Activités prévues" valeurs={f.activites} />
+              Le titre s'accorde sur ce qu'il annonce : une entreprise d'un seul
+              secteur ne doit pas lire « Secteurs ». */}
+          <Jetons titre={accord(f.secteurs.length, "Secteur d'investissement",
+                                                   "Secteurs d'investissement")}
+            valeurs={f.secteurs} />
+          <Jetons titre={accord(f.sous_secteurs.length, "Sous-secteur", "Sous-secteurs")}
+            valeurs={f.sous_secteurs} />
+          {/* « MENÉES », non « prévues » : ces activités sont celles des projets
+              déjà annoncés, pas d'une intention. Le mot « prévue » appartient à
+              la vue des signaux, où l'on parle bien de ce qui n'est pas fait. */}
+          <Jetons titre={accord(f.activites.length, "Activité menée", "Activités menées")}
+            valeurs={f.activites} />
         </>
       )}
     </FicheModal>
@@ -396,6 +417,25 @@ const GrandNombre = ({ n }: { n: number }) => (
   <span style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)",
     letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(n)}</span>
 );
+
+/** Le titre d'une section, accordé sur ce qu'elle contient. Une entreprise d'un
+    seul secteur qui lirait « Secteurs » ferait douter de la donnée elle-même. */
+const accord = (n: number, singulier: string, pluriel: string) => n > 1 ? pluriel : singulier;
+
+/** Une section qui ÉNUMÈRE sans compter : les valeurs en jetons, rien d'autre.
+    Une liste vide ne s'affiche pas — un intertitre suivi d'un tiret occupe
+    autant de place qu'une vraie section et n'apprend rien. */
+function Jetons({ titre, valeurs }: { titre: string; valeurs: Compte[] }) {
+  if (valeurs.length === 0) return null;
+  return (
+    <div>
+      <TitreFiche>{titre}</TitreFiche>
+      <div style={{ marginTop: 9 }}>
+        <ListeJetons valeurs={valeurs.map(v => v.nom)} />
+      </div>
+    </div>
+  );
+}
 
 /** Une liste de valeurs comptées, en lignes de fiche.
 

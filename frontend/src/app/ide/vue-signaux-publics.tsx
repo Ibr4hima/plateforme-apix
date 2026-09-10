@@ -33,7 +33,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
 import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche,
-         moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
+         ListeJetons, moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
     destination et par stade — la colonne ne les propose plus, mais les routes
@@ -365,15 +365,7 @@ function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
         </span>
         <ArrowRight size={15} style={{ color: "var(--gris)", flexShrink: 0, marginTop: 3 }} />
         <span style={{ display: "flex", flexWrap: "wrap", gap: 5, flex: 1, minWidth: 0 }}>
-          {s.destinations.length === 0
-            ? <span style={{ fontSize: 14, color: "var(--gris)" }}>—</span>
-            : s.destinations.map(v => (
-                <span key={v.id} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)",
-                  background: "var(--carte-douce)", border: "1px solid var(--filet)",
-                  borderRadius: 8, padding: "3px 10px", whiteSpace: "nowrap" }}>
-                  {v.libelle}
-                </span>
-              ))}
+          <ListeJetons valeurs={s.destinations.map(v => v.libelle ?? "—")} />
         </span>
       </div>
 
