@@ -30,9 +30,9 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, btnVue, type ChoixSous, ETIQ, FacetteSecteurs, Filet,
-         fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE, moisEnClair, Pastille,
-         TEXTE_DESC, TitreFiche } from "./partage";
+import { API, BadgePeriode, btnVue, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
+         Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE, moisEnClair,
+         Pastille, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
@@ -122,59 +122,6 @@ const BarreRepli = ({ titre, ouvert, onBasculer }: {
       transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
   </button>
 );
-
-/** Un groupe de cases à cocher, avec le nombre de projets de chaque valeur.
-
-    Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
-    quelque chose, et évite de cliquer pour découvrir un écran vide. Il suit
-    les AUTRES filtres actifs — cocher un secteur restreint les activités
-    proposées — de sorte qu'une option affichée mène toujours à des projets.
-
-    La liste défile plutôt que de se déplier : un « Voir les 30 » demandait un
-    clic pour révéler une hauteur qu'on ne maîtrisait plus, et la colonne
-    sautait sous le curseur. */
-function Facette({ titre, options, choix, setChoix }: {
-  titre: string; options: Compte[]; choix: string[]; setChoix: (v: string[]) => void;
-}) {
-  // Une option cochée reste affichée même si les autres filtres la font
-  // tomber à zéro : la retirer de la liste ôterait au lecteur le moyen de la
-  // décocher.
-  const visibles = [...options];
-  for (const c of choix) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
-  if (visibles.length === 0) return null;
-  const bascule = (n: string) => setChoix(choix.includes(n) ? choix.filter(x => x !== n) : [...choix, n]);
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-        <span style={TITRE_SS}>{titre}</span>
-        {choix.length > 0 && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
-            background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{choix.length}</span>
-        )}
-      </div>
-      <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
-        paddingRight: 2, marginBottom: 18 }}>
-        {visibles.map(o => {
-          const sel = choix.includes(o.nom);
-          return (
-            <button key={o.nom} onClick={() => bascule(o.nom)} title={o.nom}
-              style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7,
-                border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-              <Pastille coche={sel} />
-              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
-              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
-            </button>
-          );
-        })}
-      </div>
-      <Filet />
-    </div>
-  );
-}
 
 export default function OngletFdi({ onVue }: {
   /** La page a besoin de savoir quelle vue est ouverte — le bouton « Rapport »
@@ -610,8 +557,8 @@ export default function OngletFdi({ onVue }: {
                 )}
 
                 <FacetteSecteurs secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
-                  choixSec={secteurs} setChoixSec={setSecteurs}
-                  choixSous={sousSecteurs} setChoixSous={setSousSecteurs} />
+                  choixSec={secteurs} choixSous={sousSecteurs}
+                  onChange={(sec, sous) => { setSecteurs(sec); setSousSecteurs(sous); }} />
                 <Facette titre="Activité prévue" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
                 <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
               </>

@@ -36,27 +36,29 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, boutonPage, ETIQ, FacetteSecteurs, FacetteUnique, Filet, fmtNombre,
-         LigneFiche, TitreFiche } from "./partage";
+import { API, boutonPage, type ChoixSous, ETIQ, Facette, FacetteSecteurs, Filet,
+         fmtNombre, LigneFiche, TitreFiche } from "./partage";
 
-/** Ce que le lecteur peut restreindre.
-
-    CHAQUE FACETTE N'ADMET QU'UN CHOIX, et les trois se combinent par un ET —
-    « Communications » puis « Équipements de communication » se lit comme un
-    affinement. La vue Projets, elle, offre une sélection multiple et emboîtée
-    et les combine par un OU : ce n'est pas une incohérence, c'est le geste qui
-    diffère.
+/** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
+    et de la même façon : sélection multiple, secteurs et sous-secteurs
+    emboîtés, activités à côté.
 
     LE FILTRE PORTE SUR LES PROJETS, PUIS L'ON GROUPE. Une entreprise apparaît
     donc si l'un de ses projets répond, et ses comptes ne portent que sur ces
     projets-là : sous « Communications », « 12 projets » se lit « 12 projets de
     communications ». C'est la seule lecture qui se vérifie ligne à ligne dans
-    la vue Projets. */
+    la vue Projets.
+
+    CE QUE COCHER DEUX SECTEURS VEUT DIRE, puisque le geste est maintenant
+    possible : non pas les entreprises présentes dans LES DEUX, mais celles
+    présentes dans L'UN OU L'AUTRE. Le OU porte sur les projets, et un projet
+    n'a qu'un secteur — c'est le comportement de la vue Projets, où l'on coche
+    deux secteurs pour en voir l'union. */
 export type FiltresEntreprises = {
-  secteur: string; sousSecteur: string; activite: string; recherche: string;
+  secteurs: string[]; sousSecteurs: ChoixSous[]; activites: string[]; recherche: string;
 };
 export const FILTRES_ENTREPRISES_VIDES: FiltresEntreprises = {
-  secteur: "", sousSecteur: "", activite: "", recherche: "",
+  secteurs: [], sousSecteurs: [], activites: [], recherche: "",
 };
 
 type Entreprise = {
@@ -86,12 +88,20 @@ const PERIMETRE = "Afrique";
 
 /** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
     composants — la colonne de filtres et la liste : la clé de cache étant
-    l'URL, ils partagent le même téléchargement sans se connaître. */
+    l'URL, ils partagent le même téléchargement sans se connaître.
+
+    CE QUE LA HIÉRARCHIE SECTORIELLE TRANSMET, et qui vaut d'être dit : les
+    secteurs retenus EN ENTIER d'un côté, les sous-secteurs retenus de l'autre.
+    Un secteur où l'on est descendu sort de la première liste — sinon le OU de
+    la requête le ramènerait tout entier, et la précision serait sans effet.
+    C'est la règle de la vue Projets, mot pour mot. */
 function urlPerimetre(f: FiltresEntreprises, recherche: string): string {
   const p = new URLSearchParams();
-  if (f.secteur) p.set("secteurs", f.secteur);
-  if (f.sousSecteur) p.set("sous_secteurs", f.sousSecteur);
-  if (f.activite) p.set("activites", f.activite);
+  const precises = new Set(f.sousSecteurs.map(s => s.secteur));
+  const entiers = f.secteurs.filter(s => !precises.has(s));
+  if (entiers.length) p.set("secteurs", entiers.join("|"));
+  if (f.sousSecteurs.length) p.set("sous_secteurs", f.sousSecteurs.map(s => s.nom).join("|"));
+  if (f.activites.length) p.set("activites", f.activites.join("|"));
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/entreprises/perimetre?${p}`;
 }
@@ -113,34 +123,25 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
   return (
     <>
       <Filet />
-      {/* LE MÊME EMBOÎTEMENT QUE LA VUE PROJETS, et pas deux listes à plat :
-          cocher un secteur ouvre ses sous-secteurs en dessous, et en cocher un
-          précise la sélection À L'INTÉRIEUR de ce secteur. Les deux vues sont
-          voisines dans le même écran ; deux façons de poser le même couple
-          donneraient l'impression de deux produits.
+      {/* EXACTEMENT LES FILTRES DE LA VUE PROJETS — mêmes composants, même
+          emboîtement, même sélection multiple. Les deux vues sont voisines dans
+          le même écran ; deux façons de poser les mêmes facettes donneraient
+          l'impression de deux produits.
 
-          Un seul choix à la fois de chaque côté, parce que la requête des
-          entreprises combine ses facettes par un ET là où celle des projets les
-          combine par un OU.
-
-          CHANGER DE SECTEUR EMPORTE LE SOUS-SECTEUR qu'on y avait précisé : le
-          laisser filtrer depuis un secteur qu'on vient de quitter serait un
-          filtre actif que plus rien n'explique à l'écran. Le composant partagé
-          ne peut pas le faire lui-même ici — les deux valeurs tiennent dans un
-          seul état, et deux écritures dans la même closure s'écraseraient. */}
-      <FacetteSecteurs unique secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
-        choixSec={filtres.secteur ? [filtres.secteur] : []}
-        setChoixSec={v => onChange({ ...filtres, secteur: v[0] ?? "", sousSecteur: "" })}
-        choixSous={filtres.sousSecteur
-          ? [{ secteur: filtres.secteur, nom: filtres.sousSecteur }] : []}
-        setChoixSous={v => onChange({ ...filtres, sousSecteur: v[0]?.nom ?? "" })} />
+          Décocher un secteur emporte les sous-secteurs qu'on y avait précisés,
+          et le composant s'en charge en une seule écriture : nos deux listes
+          tiennent dans le même objet de filtres, et deux appels successifs
+          calculés sur la même valeur d'avant se seraient écrasés. */}
+      <FacetteSecteurs secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
+        choixSec={filtres.secteurs} choixSous={filtres.sousSecteurs}
+        onChange={(secteurs, sousSecteurs) => onChange({ ...filtres, secteurs, sousSecteurs })} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :
           un équipementier télécom qui ouvre un centre de R&D n'est pas le même
           prospect que le même équipementier qui ouvre un entrepôt. */}
-      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
-        onChange={v => onChange({ ...filtres, activite: v })}
-        vide="Toutes les activités" />
+      <Facette titre="Activité prévue" options={per.activites}
+        choix={filtres.activites}
+        setChoix={v => onChange({ ...filtres, activites: v })} />
     </>
   );
 }
@@ -157,7 +158,10 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
 
   // Un changement de filtre ramène au premier écran : rester en page 12 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const clef = `${filtres.secteur}|${filtres.sousSecteur}|${filtres.activite}|${recherche}`;
+  // L'URL du périmètre porte déjà toute la sélection, réduite à sa forme
+  // envoyée : elle fait donc une clef exacte, et une facette cochée puis
+  // décochée n'y laisse aucune trace qui remettrait la page à un.
+  const clef = urlPerimetre(filtres, recherche);
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 

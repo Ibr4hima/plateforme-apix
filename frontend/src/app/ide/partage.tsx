@@ -1085,6 +1085,60 @@ export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris
 export const Filet = () =>
   <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
 
+/** Un groupe de cases à cocher, avec le nombre que chaque valeur laisse.
+
+    Le compte n'est pas décoratif : il dit d'avance si le filtre laissera
+    quelque chose, et évite de cliquer pour découvrir un écran vide. Il suit
+    les AUTRES filtres actifs — cocher un secteur restreint les activités
+    proposées — de sorte qu'une option affichée mène toujours à des projets.
+
+    La liste défile plutôt que de se déplier : un « Voir les 30 » demandait un
+    clic pour révéler une hauteur qu'on ne maîtrisait plus, et la colonne
+    sautait sous le curseur. */
+export function Facette({ titre, options, choix, setChoix }: {
+  titre: string; options: { nom: string; nb: number }[]; choix: string[]; setChoix: (v: string[]) => void;
+}) {
+  // Une option cochée reste affichée même si les autres filtres la font
+  // tomber à zéro : la retirer de la liste ôterait au lecteur le moyen de la
+  // décocher.
+  const visibles = [...options];
+  for (const c of choix) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
+  if (visibles.length === 0) return null;
+  const bascule = (n: string) => setChoix(choix.includes(n) ? choix.filter(x => x !== n) : [...choix, n]);
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={TITRE_FACETTE}>{titre}</span>
+        {choix.length > 0 && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+            background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{choix.length}</span>
+        )}
+      </div>
+      <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
+        paddingRight: 2, marginBottom: 18 }}>
+        {visibles.map(o => {
+          const sel = choix.includes(o.nom);
+          return (
+            <button key={o.nom} onClick={() => bascule(o.nom)} title={o.nom}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7,
+                border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+              <Pastille coche={sel} />
+              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
+              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+            </button>
+          );
+        })}
+      </div>
+      <Filet />
+    </div>
+  );
+}
+
+
 /** Un secteur retenu, et le sous-secteur d'où il vient. Le couple est porté par
     l'état plutôt que retrouvé dans le périmètre : la liste des filtres sert à
     CONSTRUIRE la requête du périmètre, elle ne peut pas en dépendre. */
@@ -1107,20 +1161,19 @@ export type ChoixSous = { secteur: string; nom: string };
     diverger, comme l'avaient déjà fait le sélecteur de vue et le bouton de
     pagination avant d'être remontés ici.
 
-    LE MODE `unique` NE CHANGE QUE LE BASCULEMENT, jamais la forme : un seul
-    secteur et un seul sous-secteur à la fois, parce que la requête des
-    entreprises combine ses facettes par un ET là où celle des projets les
-    combine par un OU. Dans ce mode, retirer un secteur n'emporte PAS le
-    sous-secteur ici : l'appelant ne tient qu'un état, et deux écritures
-    successives dans la même closure se seraient écrasées. C'est donc à lui de
-    le faire, et le commentaire est là pour qu'on ne l'oublie pas. */
-export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec,
-                                 choixSous, setChoixSous, unique = false }: {
+    ELLE N'ÉMET QU'UN SEUL APPEL, portant LES DEUX listes — et non un appel par
+    liste, comme elle le faisait quand elle vivait dans la vue Projets. Là-bas
+    les deux listes étaient deux `useState` indépendants et deux écritures
+    successives passaient sans dommage ; ici la vue Entreprises tient ses
+    filtres dans un seul objet, et la seconde écriture, calculée sur la valeur
+    d'avant la première, aurait ressuscité le secteur qu'on venait de décocher.
+    Un appel unique retire le piège au lieu de le documenter. */
+export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange }: {
   secteurs: { nom: string; nb: number }[];
   sousSecteurs: { nom: string; nb: number; secteur: string }[];
-  choixSec: string[]; setChoixSec: (v: string[]) => void;
-  choixSous: ChoixSous[]; setChoixSous: (v: ChoixSous[]) => void;
-  unique?: boolean;
+  choixSec: string[];
+  choixSous: ChoixSous[];
+  onChange: (secteurs: string[], sousSecteurs: ChoixSous[]) => void;
 }) {
   // Une option cochée reste affichée même si les autres filtres la font tomber
   // à zéro : la retirer de la liste ôterait au lecteur le moyen de la décocher.
@@ -1129,18 +1182,14 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec,
   if (visibles.length === 0) return null;
 
   const basculerSecteur = (nom: string) => {
-    if (unique) { setChoixSec(choixSec.includes(nom) ? [] : [nom]); return; }
-    if (choixSec.includes(nom)) {
-      setChoixSec(choixSec.filter(x => x !== nom));
-      // Refermer un secteur emporte les sous-secteurs qu'on y avait retenus :
-      // les laisser filtrer depuis une section repliée serait invisible.
-      setChoixSous(choixSous.filter(x => x.secteur !== nom));
-    } else setChoixSec([...choixSec, nom]);
+    if (!choixSec.includes(nom)) { onChange([...choixSec, nom], choixSous); return; }
+    // Décocher un secteur emporte les sous-secteurs qu'on y avait retenus : les
+    // laisser filtrer depuis une section refermée serait invisible.
+    onChange(choixSec.filter(x => x !== nom), choixSous.filter(x => x.secteur !== nom));
   };
   const basculerSous = (secteur: string, nom: string) => {
     const deja = choixSous.some(x => x.nom === nom && x.secteur === secteur);
-    if (unique) { setChoixSous(deja ? [] : [{ secteur, nom }]); return; }
-    setChoixSous(deja
+    onChange(choixSec, deja
       ? choixSous.filter(x => !(x.nom === nom && x.secteur === secteur))
       : [...choixSous, { secteur, nom }]);
   };

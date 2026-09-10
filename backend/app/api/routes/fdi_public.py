@@ -377,6 +377,16 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
     projets-là : sous « Communications », « 12 projets » se lit « 12 projets de
     communications », non « 12 projets dont certains de communications ». C'est
     la seule lecture qui se vérifie ligne à ligne dans la vue Projets.
+
+    ATTENTION À CE QUE CELA VEUT DIRE D'UNE SÉLECTION MULTIPLE. Cocher deux
+    secteurs ne retient pas les entreprises présentes dans LES DEUX, mais celles
+    présentes dans L'UN OU L'AUTRE — le OU porte sur les projets, et un projet
+    n'a qu'un secteur. C'est le même comportement que la vue Projets, où l'on
+    coche deux secteurs pour en voir l'union ; l'entreprise qui n'en fait qu'un
+    des deux reste donc dans la liste, avec ses seuls projets de ce secteur.
+
+    `sauf` sert au filtrage EN CASCADE : pour compter les options d'une facette,
+    on applique tous les filtres sauf le sien.
     """
     from app.api.routes.fdi_projets import CLE_DEST, _reduire
 
@@ -387,21 +397,34 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
             where.append(f"position(:q in {CLE_DEST.format(c=NOM_ENTREPRISE)}) > 0")
             params["q"] = reduit
 
-    # ICI SECTEUR ET SOUS-SECTEUR SE COMBINENT PAR UN ET, à la différence de la
-    # vue Projets qui les combine par un OU. Ce n'est pas une incohérence : là
-    # -bas l'écran offre une sélection MULTIPLE et emboîtée — des secteurs
-    # entiers d'un côté, des sous-secteurs précis de l'autre — et un ET viderait
-    # la sélection dès qu'on précise un secteur tout en en gardant un second
-    # entier. Ici chaque facette n'admet qu'un choix : « Communications » puis
-    # « Équipements de communication » se lit comme un affinement, et un OU
-    # élargirait au lieu de restreindre — exactement le contraire de ce que le
-    # geste annonce.
-    for cle, brut in (("secteurs", secteurs), ("sous_secteurs", sous_secteurs),
-                      ("activites", activites)):
-        valeurs = _liste(brut)
-        if valeurs and sauf != cle:
-            where.append(f"{FACETTES[cle]} = ANY(:{cle})")
-            params[cle] = valeurs
+    # SECTEUR ET SOUS-SECTEUR FORMENT UNE HIÉRARCHIE, PAS DEUX FACETTES : ils se
+    # combinent par un OU, jamais par un ET — exactement comme dans la vue
+    # Projets, dont l'écran reprend le filtre emboîté. L'écran envoie d'un côté
+    # les secteurs retenus EN ENTIER, de l'autre les sous-secteurs retenus dans
+    # les secteurs où l'on est descendu ; les additionner par un ET viderait la
+    # sélection dès qu'on précise un secteur tout en en gardant un autre entier.
+    #
+    # D'où le `sauf` unique pour les deux : compter les sous-secteurs sous le
+    # filtre sectoriel les réduirait à ceux déjà retenus, et l'on ne pourrait
+    # plus en cocher un second.
+    if sauf != "secteurs":
+        branches = []
+        for cle, brut in (("secteurs", secteurs), ("sous_secteurs", sous_secteurs)):
+            valeurs = _liste(brut)
+            if valeurs:
+                branches.append(f"{FACETTES[cle]} = ANY(:{cle})")
+                params[cle] = valeurs
+        if branches:
+            where.append(f"({' OR '.join(branches)})")
+
+    # L'activité est un groupe À PART, joint aux précédents par un ET : elle dit
+    # ce que l'entreprise vient FAIRE, indépendamment de son secteur. Ses
+    # valeurs, elles, s'ajoutent entre elles par un OU — cocher deux activités
+    # élargit, comme partout ailleurs sur la plateforme.
+    valeurs = _liste(activites)
+    if valeurs and sauf != "activites":
+        where.append(f"{FACETTES['activites']} = ANY(:activites)")
+        params["activites"] = valeurs
     return where, params
 
 
@@ -435,9 +458,14 @@ async def perimetre_entreprises(
             params)).fetchall()
 
     lignes_sec = await compter(FACETTES["secteurs"], "secteurs")
-    # Les sous-secteurs portent le nom de leur secteur : « Other » revient sous
-    # vingt-quatre secteurs chez fDi et ne s'identifie pas seul.
-    lignes_ss = await compter(FACETTES["sous_secteurs"], "sous_secteurs", avec_secteur=True)
+    # Les sous-secteurs portent le nom de leur secteur : l'écran les emboîte
+    # sous lui, et un même libellé — « Other » vit sous vingt-quatre secteurs
+    # chez fDi — ne se confond pas avec son homonyme.
+    #
+    # Ils sont comptés hors du filtre SECTORIEL TOUT ENTIER, secteurs compris :
+    # c'est une seule hiérarchie, et les compter sous les secteurs déjà retenus
+    # ferait disparaître de la liste ceux qu'on n'a pas encore cochés.
+    lignes_ss = await compter(FACETTES["sous_secteurs"], "secteurs", avec_secteur=True)
     lignes_act = await compter(FACETTES["activites"], "activites")
 
     return {
