@@ -30,8 +30,8 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LIGNE_FACETTE,
-         moisEnClair, Pastille } from "./partage";
+import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LigneFiche,
+         LIGNE_FACETTE, moisEnClair, Pastille, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 
@@ -901,28 +901,12 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
     d'accessoires vestimentaires » de l'autre — et une grille les aurait tous
     étirés à la taille du plus long. Le libellé reste en casse normale : c'est
     un nom de champ, pas un titre. */
-function LigneFiche({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: 20, padding: "11px 0",
-      borderTop: "1px solid var(--bordure)" }}>
-      <span style={{ flex: "0 0 38%", fontSize: 12.5, color: "var(--gris)", lineHeight: 1.5 }}>{label}</span>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600,
-        color: "var(--encre)", lineHeight: 1.5 }}>{children}</span>
-    </div>
-  );
-}
 
 /** Un intertitre de fiche : discret, en casse normale.
 
     Les petites capitales bleues conviennent aux tableaux de bord, où elles
     séparent des cartes ; empilées dans une fiche, elles crient plus fort que
     les valeurs qu'elles annoncent. */
-function TitreFiche({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gris-fort)", letterSpacing: "0.01em",
-      marginBottom: 2 }}>{children}</p>
-  );
-}
 
 /** La fiche du projet.
 
@@ -998,6 +982,4 @@ function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
 
 /** Le texte d'une description : posé contre un filet vertical, jamais dans un
     bloc gris — le texte reste du texte. */
-const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
-  borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
 

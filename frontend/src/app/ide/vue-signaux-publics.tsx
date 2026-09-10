@@ -23,16 +23,17 @@
 // Le compte est donc lisible à côté, et l'infobulle les donne toutes.
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import FicheModal from "@/components/shared/FicheModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
-         TITRE_FACETTE } from "./partage";
+import { API, BadgePeriode, ETIQ, fmtNombre, LigneFiche, LIGNE_FACETTE, moisEnClair,
+         Pastille, TEXTE_DESC, TITRE_FACETTE, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
     destination et par stade — la colonne ne les propose plus, mais les routes
@@ -160,6 +161,9 @@ export default function VueSignauxPublics({ filtres, onChange }: {
   filtres: FiltresSignaux; onChange: (f: FiltresSignaux) => void;
 }) {
   const [page, setPage] = useState(1);
+  // Le signal dont la fiche est ouverte. Elle est montée hors de la grille :
+  // une modale enfant d'une carte hériterait de son curseur et de son clic.
+  const [ouvert, setOuvert] = useState<number | null>(null);
   const recherche = useDebounced(filtres.recherche, 300);
 
   // Un changement de filtre ramène au premier écran : rester en page 6 d'un
@@ -227,9 +231,16 @@ export default function VueSignauxPublics({ filtres, onChange }: {
       ) : (
         <div style={{ display: "grid", gap: 14,
           gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
-          {d.signaux.map(s => <CarteSignal key={s.id} s={s} />)}
+          {d.signaux.map(s => (
+            <CarteSignal key={s.id} s={s} onOuvrir={() => setOuvert(s.id)} />
+          ))}
         </div>
       )}
+
+      {ouvert != null && (() => {
+        const s = d.signaux.find(x => x.id === ouvert);
+        return s ? <FicheSignal s={s} onClose={() => setOuvert(null)} /> : null;
+      })()}
 
       {d.pages > 1 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
@@ -282,12 +293,20 @@ function PastilleStade({ v }: { v: Valeur }) {
 /** Une carte : le MÊME gabarit que celle des projets annoncés — période en haut
     à gauche, étiquette en haut à droite, nom en grand, pied en deux colonnes.
     Seuls les champs changent : d'où vient l'intention, où elle va. */
-function CarteSignal({ s }: { s: Signal }) {
+function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
   const stade = s.natures[0];
   return (
-    <article style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
-      padding: "15px 17px 13px" }}>
+    <article onClick={onOuvrir} role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
+      style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
+        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
+        padding: "15px 17px 13px", cursor: "pointer",
+        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
+        e.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
+        e.currentTarget.style.transform = "translateY(-1px)"; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
+        e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 8, marginBottom: 10 }}>
@@ -342,5 +361,103 @@ function CarteSignal({ s }: { s: Signal }) {
       </div>
 
     </article>
+  );
+}
+
+
+/** La fiche d'un signal : TOUT ce que la base en sait.
+
+    La carte répond à quatre questions et s'arrête là ; la fiche répond aux
+    autres. Elle est construite comme une page, pas comme un formulaire : les
+    deux montants ouvrent, le trajet suit sur une ligne, le détail vient en
+    liste séparée de filets, la description ferme. Aucun encadré gris — les
+    fonds empilés font une fiche lourde.
+
+    Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs. Ouvrir une
+    fiche ne doit pas faire attendre. */
+function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
+  const liste = (v: Valeur[]) => v.length === 0 ? "—" : v.map(x => x.libelle).join(" · ");
+  return (
+    <FicheModal maxWidth={620} onClose={onClose}
+      titre={
+        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
+          <span>{s.entreprise ?? "Signal"}</span>
+          {s.natures.map(n => <PastilleStade key={n.id} v={n} />)}
+        </span>
+      }>
+
+      {/* Les deux montants, sans cadre. Ils sont souvent absents à ce stade —
+          un tiret le dit, plutôt que de faire disparaître la ligne et laisser
+          croire qu'on ne les suit pas. */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Fonds levés</p>
+          <GrandMontant v={s.funding_musd} estime={s.funding_estime} />
+        </div>
+        <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Investissement prévu</p>
+          <GrandMontant v={s.capex_musd} estime={s.capex_estime} />
+        </div>
+      </div>
+
+      {/* Le trajet. À la différence d'un projet, l'arrivée peut être MULTIPLE
+          et mêler pays et régions : toutes sont montrées, aucune n'est
+          résumée. */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flexWrap: "wrap" as const,
+        paddingTop: 18, borderTop: "1px solid var(--bordure)" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+          <DrapeauPays iso={s.origine_iso} nom={s.origine ?? ""} taille={17} sansIso="rien" />
+          <span style={{ fontSize: 14, fontWeight: 700, color: "var(--encre)" }}>
+            {s.origine ?? "—"}
+          </span>
+        </span>
+        <ArrowRight size={15} style={{ color: "var(--gris)", flexShrink: 0, marginTop: 3 }} />
+        <span style={{ display: "flex", flexWrap: "wrap", gap: 5, flex: 1, minWidth: 0 }}>
+          {s.destinations.length === 0
+            ? <span style={{ fontSize: 14, color: "var(--gris)" }}>—</span>
+            : s.destinations.map(v => (
+                <span key={v.id} style={{ fontSize: 12.5, fontWeight: 600, color: "var(--encre)",
+                  background: "var(--carte-douce)", border: "1px solid var(--filet)",
+                  borderRadius: 8, padding: "3px 10px", whiteSpace: "nowrap" }}>
+                  {v.libelle}
+                </span>
+              ))}
+        </span>
+      </div>
+
+      <div>
+        <TitreFiche>Détails du signal</TitreFiche>
+        <LigneFiche label="Repéré en">{moisEnClair(s.periode)}</LigneFiche>
+        <LigneFiche label="Maison mère">{s.parent ?? "—"}</LigneFiche>
+        <LigneFiche label={"Stade de l'intention"}>{liste(s.natures)}</LigneFiche>
+        <LigneFiche label="Secteur">{liste(s.secteurs)}</LigneFiche>
+        <LigneFiche label="Activité prévue">{liste(s.activites)}</LigneFiche>
+      </div>
+
+      {/* La page publique est en français : seule la description française est
+          affichée. L'anglais de la source reste en base et sert la recherche. */}
+      <div>
+        <TitreFiche>Description</TitreFiche>
+        <p style={s.description_fr ? TEXTE_DESC : { ...TEXTE_DESC, color: "var(--gris)" }}>
+          {s.description_fr ?? "—"}
+        </p>
+      </div>
+    </FicheModal>
+  );
+}
+
+/** Un montant en tête de fiche : la valeur grande, l'unité petite, et
+    l'estimation signalée sans occuper la ligne. */
+function GrandMontant({ v, estime }: { v: number | null; estime: boolean | null }) {
+  if (v == null) return <span style={{ fontSize: 30, fontWeight: 800, color: "var(--gris)" }}>—</span>;
+  return (
+    <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
+                        : "Valeur déclarée"}
+      style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.02em",
+        fontVariantNumeric: "tabular-nums" }}>
+      {estime ? "≈ " : ""}{fmtNombre(v)}
+      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gris)" }}> M$</span>
+    </span>
   );
 }

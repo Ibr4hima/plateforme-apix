@@ -1094,3 +1094,33 @@ export const btnVue = (actif: boolean): React.CSSProperties => ({
   background: actif ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent",
   color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
 });
+
+// ── La fiche d'une ligne, projet ou signal ───────────────────────────────────
+// Trois primitives partagées : les deux fiches se lisent l'une après l'autre
+// dans le même écran, et doivent se ressembler jusque dans leurs filets.
+
+/** Une ligne de détail : le label à gauche, la valeur à droite, un filet entre
+    chaque. Aucun encadré gris — les fonds empilés font une fiche lourde. */
+export function LigneFiche({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: 20, padding: "11px 0",
+      borderTop: "1px solid var(--bordure)" }}>
+      <span style={{ flex: "0 0 38%", fontSize: 12.5, color: "var(--gris)", lineHeight: 1.5 }}>{label}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 600,
+        color: "var(--encre)", lineHeight: 1.5 }}>{children}</span>
+    </div>
+  );
+}
+
+/** Un intertitre de fiche : discret, en casse normale. */
+export function TitreFiche({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 12, fontWeight: 700, color: "var(--gris-fort)", letterSpacing: "0.01em",
+      marginBottom: 2 }}>{children}</p>
+  );
+}
+
+/** Le texte d'une description : posé contre un filet vertical, jamais dans un
+    bloc gris — le texte reste du texte. */
+export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
+  borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
