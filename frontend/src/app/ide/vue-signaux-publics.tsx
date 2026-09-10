@@ -32,8 +32,8 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, boutonPage, ETIQ, fmtNombre, LigneFiche, LIGNE_FACETTE,
-         moisEnClair, Pastille, TEXTE_DESC, TITRE_FACETTE, TitreFiche } from "./partage";
+import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche,
+         moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
     destination et par stade — la colonne ne les propose plus, mais les routes
@@ -90,48 +90,6 @@ function urlPerimetre(f: FiltresSignaux, recherche: string): string {
   return `${API}/fdi/public/signaux/perimetre?${p}`;
 }
 
-/** Une facette à choix unique, dans la colonne de filtres.
-
-    Même forme que celles des projets : titre en petites capitales, pastille,
-    libellé, compte à droite. La ligne « Toutes » n'est pas une option de plus
-    mais le retour à l'absence de filtre, d'où sa place en tête. */
-function Facette({ titre, options, valeur, onChange, vide }: {
-  titre: string; options: Compte[]; valeur: string; vide: string;
-  onChange: (v: string) => void;
-}) {
-  if (options.length === 0) return null;
-
-  const ligne = (o: Compte | null) => {
-    const nom = o?.nom ?? "";
-    const sel = valeur === nom;
-    return (
-      <button key={nom || "__tous"} onClick={() => onChange(nom)} style={LIGNE_FACETTE}
-        onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-        <Pastille coche={sel} />
-        <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {o ? o.nom : vide}
-        </span>
-        {o && (
-          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-            fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
-        )}
-      </button>
-    );
-  };
-
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
-      <div style={{ maxHeight: 220, overflowY: "auto" }}>
-        {ligne(null)}
-        {options.map(o => ligne(o))}
-      </div>
-    </div>
-  );
-}
-
 /** La colonne de filtres, montée dans la barre latérale de la page — celle des
     projets, la même. Mettre ces filtres dans le contenu aurait laissé une
     colonne vide à gauche et poussé les cartes vers le bas. */
@@ -145,13 +103,13 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
   return (
     <>
       <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
-      <Facette titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
+      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} vide="Tous les secteurs" />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :
           « Software & IT services » en R&D n'est pas le même prospect qu'en
           centre d'appels. */}
-      <Facette titre="Activité prévue" options={per.activites} valeur={filtres.activite}
+      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
         onChange={set("activite")} vide="Toutes les activités" />
     </>
   );

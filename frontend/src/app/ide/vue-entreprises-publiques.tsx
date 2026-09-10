@@ -19,16 +19,45 @@
 // vérifient ligne à ligne dans la vue Projets. Pas de montant total — il
 // mêlerait des projets déclarés et des projets estimés par l'algorithme du
 // Financial Times, et l'écran ne pourrait plus dire lequel il montre.
+//
+// CE QUE LA CARTE LAISSE À LA FICHE. Une entreprise n'investit pas partout dans
+// la même chose : Huawei fait de la fabrication dans un pays, de la formation
+// dans un autre, du commerce de détail dans un troisième. La carte ne peut pas
+// porter ces listes sans cesser d'être parcourable ; la fiche les donne toutes,
+// AVEC LEUR COMPTE — « Fabrication » sans dire combien de fois laisserait croire
+// à une activité principale là où il s'agit peut-être d'un projet isolé.
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
+import FicheModal from "@/components/shared/FicheModal";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, boutonPage, ETIQ, fmtNombre } from "./partage";
+import { API, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche, TitreFiche,
+         type OptionFacette } from "./partage";
+
+/** Ce que le lecteur peut restreindre.
+
+    CHAQUE FACETTE N'ADMET QU'UN CHOIX, et les trois se combinent par un ET —
+    « Communications » puis « Équipements de communication » se lit comme un
+    affinement. La vue Projets, elle, offre une sélection multiple et emboîtée
+    et les combine par un OU : ce n'est pas une incohérence, c'est le geste qui
+    diffère.
+
+    LE FILTRE PORTE SUR LES PROJETS, PUIS L'ON GROUPE. Une entreprise apparaît
+    donc si l'un de ses projets répond, et ses comptes ne portent que sur ces
+    projets-là : sous « Communications », « 12 projets » se lit « 12 projets de
+    communications ». C'est la seule lecture qui se vérifie ligne à ligne dans
+    la vue Projets. */
+export type FiltresEntreprises = {
+  secteur: string; sousSecteur: string; activite: string; recherche: string;
+};
+export const FILTRES_ENTREPRISES_VIDES: FiltresEntreprises = {
+  secteur: "", sousSecteur: "", activite: "", recherche: "",
+};
 
 type Entreprise = {
   nom: string; origine: string | null; origine_iso: string | null;
@@ -37,6 +66,17 @@ type Entreprise = {
 type Reponse = {
   entreprises: Entreprise[]; page: number; pages: number; total: number;
 };
+type Compte = { nom: string; nb: number };
+type SousCompte = Compte & { secteur: string };
+type Perimetre = {
+  secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[];
+};
+type Fiche = {
+  nom: string; origine: string | null; origine_iso: string | null;
+  projets: number; pays: number; annees: [number | null, number | null];
+  destinations: Compte[]; secteurs: Compte[]; sous_secteurs: Compte[];
+  activites: Compte[]; types: Compte[];
+};
 
 const PAR_PAGE = 24;
 
@@ -44,23 +84,90 @@ const PAR_PAGE = 24;
     comme « Projets reçus » qualifie celle des projets. */
 const PERIMETRE = "Afrique";
 
-export default function VueEntreprisesPubliques() {
-  const [recherche, setRecherche] = useState("");
-  const [page, setPage] = useState(1);
-  const cherche = useDebounced(recherche, 300);
+/** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
+    composants — la colonne de filtres et la liste : la clé de cache étant
+    l'URL, ils partagent le même téléchargement sans se connaître. */
+function urlPerimetre(f: FiltresEntreprises, recherche: string): string {
+  const p = new URLSearchParams();
+  if (f.secteur) p.set("secteurs", f.secteur);
+  if (f.sousSecteur) p.set("sous_secteurs", f.sousSecteur);
+  if (f.activite) p.set("activites", f.activite);
+  if (recherche.trim()) p.set("recherche", recherche.trim());
+  return `${API}/fdi/public/entreprises/perimetre?${p}`;
+}
 
-  // Une nouvelle recherche ramène au premier écran : rester en page 12 d'un
+/** La colonne de filtres, montée dans la barre latérale de la page — celle des
+    projets et des signaux, la même. Mettre ces filtres dans le contenu aurait
+    laissé une colonne vide à gauche et poussé les cartes vers le bas.
+
+    LE COMPTE EST UN NOMBRE D'ENTREPRISES, pas de projets : la question posée
+    ici est « combien d'investisseurs dans ce secteur », et un nombre de projets
+    à côté d'une liste d'entreprises se lirait pour l'autre. */
+export function FiltresEntreprisesPanneau({ filtres, onChange }: {
+  filtres: FiltresEntreprises; onChange: (f: FiltresEntreprises) => void;
+}) {
+  const recherche = useDebounced(filtres.recherche, 300);
+  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche), { garder: true }).data;
+
+  // Les sous-secteurs portent le nom de leur secteur : « Other » revient sous
+  // vingt-quatre secteurs chez fDi et ne s'identifie pas seul.
+  const sousSecteurs: OptionFacette[] = useMemo(
+    () => (per?.sous_secteurs ?? []).map(s => ({ nom: s.nom, nb: s.nb, contexte: s.secteur })),
+    [per]);
+
+  if (!per) return null;
+  return (
+    <>
+      <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+      {/* Quitter un secteur emporte le sous-secteur qu'on y avait précisé :
+          le laisser filtrer depuis un secteur qu'on vient d'abandonner serait
+          un filtre actif que plus rien n'explique à l'écran. */}
+      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
+        onChange={v => onChange({ ...filtres, secteur: v,
+          sousSecteur: v === filtres.secteur ? filtres.sousSecteur : "" })}
+        vide="Tous les secteurs" />
+      {/* RETENIR UN SOUS-SECTEUR RETIENT SON SECTEUR AVEC LUI. Chez fDi le
+          libellé ne suffit pas à désigner un sous-secteur : « Other » revient
+          sous vingt-quatre secteurs, et le seul envoyer filtrerait les
+          vingt-quatre — le compte annoncé sur la ligne cliquée ne serait alors
+          pas celui obtenu. */}
+      <FacetteUnique titre="Sous-secteur" options={sousSecteurs} valeur={filtres.sousSecteur}
+        onChange={(v, secteur) => onChange({ ...filtres, sousSecteur: v,
+          secteur: v ? (secteur ?? filtres.secteur) : filtres.secteur })}
+        vide="Tous les sous-secteurs" />
+      {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
+          logistique — indépendamment de son secteur. Les deux se croisent :
+          un équipementier télécom qui ouvre un centre de R&D n'est pas le même
+          prospect que le même équipementier qui ouvre un entrepôt. */}
+      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
+        onChange={v => onChange({ ...filtres, activite: v })}
+        vide="Toutes les activités" />
+    </>
+  );
+}
+
+export default function VueEntreprisesPubliques({ filtres, onChange }: {
+  filtres: FiltresEntreprises; onChange: (f: FiltresEntreprises) => void;
+}) {
+  const [page, setPage] = useState(1);
+  // L'entreprise dont la fiche est ouverte, par sa clef de groupement. Elle est
+  // montée hors de la grille : une modale enfant d'une carte hériterait de son
+  // curseur et de son clic.
+  const [ouverte, setOuverte] = useState<Entreprise | null>(null);
+  const recherche = useDebounced(filtres.recherche, 300);
+
+  // Un changement de filtre ramène au premier écran : rester en page 12 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const [vue, setVue] = useState(cherche);
-  if (cherche !== vue) { setVue(cherche); setPage(1); }
+  const clef = `${filtres.secteur}|${filtres.sousSecteur}|${filtres.activite}|${recherche}`;
+  const [vue, setVue] = useState(clef);
+  if (clef !== vue) { setVue(clef); setPage(1); }
 
   const url = useMemo(() => {
-    const p = new URLSearchParams();
-    if (cherche.trim()) p.set("recherche", cherche.trim());
+    const p = new URLSearchParams(urlPerimetre(filtres, recherche).split("?")[1]);
     p.set("page", String(page));
     p.set("par_page", String(PAR_PAGE));
     return `${API}/fdi/public/entreprises?${p}`;
-  }, [cherche, page]);
+  }, [filtres, recherche, page]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;
@@ -83,7 +190,8 @@ export default function VueEntreprisesPubliques() {
           flex: "0 1 300px" }}>
           <Search size={13} style={{ position: "absolute" as const, left: 12, top: "50%",
             transform: "translateY(-50%)", color: "var(--gris)" }} />
-          <input value={recherche} onChange={e => setRecherche(e.target.value)}
+          <input value={filtres.recherche}
+            onChange={e => onChange({ ...filtres, recherche: e.target.value })}
             placeholder="Rechercher"
             style={{ width: "100%", padding: "8px 10px 8px 34px", borderRadius: 999,
               border: "1px solid var(--bordure-forte)", background: "var(--carte)",
@@ -100,10 +208,13 @@ export default function VueEntreprisesPubliques() {
         <div style={{ display: "grid", gap: 14,
           gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
           {d.entreprises.map(e => (
-            <CarteEntreprise key={`${e.nom}|${e.origine ?? ""}`} e={e} />
+            <CarteEntreprise key={`${e.nom}|${e.origine ?? ""}`} e={e}
+              onOuvrir={() => setOuverte(e)} />
           ))}
         </div>
       )}
+
+      {ouverte && <FicheEntreprise e={ouverte} onClose={() => setOuverte(null)} />}
 
       {d.pages > 1 && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
@@ -135,11 +246,19 @@ const Jeton = ({ children }: { children: React.ReactNode }) => (
 
     Ici le pays d'origine tient la ligne du haut : il fait partie de l'identité
     de la fiche, puisque c'est lui qui, avec le nom, la distingue d'une autre. */
-function CarteEntreprise({ e }: { e: Entreprise }) {
+function CarteEntreprise({ e, onOuvrir }: { e: Entreprise; onOuvrir: () => void }) {
   return (
-    <article style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
-      border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
-      padding: "15px 17px 13px" }}>
+    <article onClick={onOuvrir} role="button" tabIndex={0}
+      onKeyDown={ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOuvrir(); } }}
+      style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
+        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
+        padding: "15px 17px 13px", cursor: "pointer",
+        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
+      onMouseEnter={ev => { ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
+        ev.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
+        ev.currentTarget.style.transform = "translateY(-1px)"; }}
+      onMouseLeave={ev => { ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
+        ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; }}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
         <DrapeauPays iso={e.origine_iso} nom={e.origine ?? ""} taille={14} sansIso="rien" />
@@ -177,6 +296,126 @@ function Compte({ n, mot, etiquette, filet }: {
           {" "}{mot}{n > 1 && !mot.endsWith("s") ? "s" : ""}
         </span>
       </span>
+    </div>
+  );
+}
+
+/** La fiche d'un investisseur : tout ce que les projets annoncés en disent.
+
+    ELLE SE DEMANDE, elle ne se déduit pas de la carte. La carte ne porte que
+    deux nombres ; les listes qui font l'intérêt de la fiche — où l'entreprise
+    est allée, dans quoi elle a investi, ce qu'elle y est venue faire — supposent
+    de regrouper TOUS ses projets, ce que la liste paginée n'a jamais eu en
+    main. Un aller-retour à l'ouverture, donc, et pas un octet de plus dans la
+    grille.
+
+    LA CLEF EST LE COUPLE (NOM, PAYS D'ORIGINE) — celui du groupement. C'est ce
+    couple que la carte porte, et c'est lui qui part dans la requête : sans le
+    pays, deux entités homonymes venues de deux pays seraient fondues en une.
+
+    ELLE N'EST PAS FILTRÉE. La colonne de gauche restreint la LISTE des
+    entreprises ; une fois la fiche ouverte, elle dit l'entreprise ENTIÈRE. Y
+    appliquer le filtre ferait varier « 54 projets » selon ce qui est coché à
+    gauche, et deux lecteurs verraient deux fiches sous le même titre. */
+function FicheEntreprise({ e, onClose }: { e: Entreprise; onClose: () => void }) {
+  const url = useMemo(() => {
+    const p = new URLSearchParams({ nom: e.nom });
+    if (e.origine) p.set("origine", e.origine);
+    return `${API}/fdi/public/entreprises/fiche?${p}`;
+  }, [e.nom, e.origine]);
+  const f = useDonnees<Fiche>(url, { garder: true }).data;
+
+  const periode = !f || f.annees[0] == null ? null
+    : f.annees[0] === f.annees[1] ? `${f.annees[0]}` : `${f.annees[0]} — ${f.annees[1]}`;
+
+  return (
+    <FicheModal maxWidth={620} onClose={onClose}
+      titre={
+        <span style={{ display: "flex", alignItems: "center", gap: 11, flexWrap: "wrap" as const }}>
+          <span>{e.nom}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5,
+            fontWeight: 600, color: "var(--gris)" }}>
+            <DrapeauPays iso={e.origine_iso} nom={e.origine ?? ""} taille={15} sansIso="rien" />
+            {e.origine ?? "Origine inconnue"}
+          </span>
+        </span>
+      }>
+
+      {/* Les deux nombres de la carte, en tête : la fiche s'ouvre sur ce que le
+          lecteur venait de lire, pour qu'il reconnaisse où il a cliqué. */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 34, flexWrap: "wrap" as const }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Projets annoncés</p>
+          <GrandNombre n={f ? f.projets : e.projets} />
+        </div>
+        <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Pays d&apos;implantation</p>
+          <GrandNombre n={f ? f.pays : e.pays} />
+        </div>
+        {periode && (
+          <>
+            <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)" }} />
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 12.5, color: "var(--gris)", marginBottom: 6 }}>Période</p>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "var(--encre)",
+                letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>{periode}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {!f ? (
+        <p style={{ fontSize: 13, color: "var(--gris)", padding: "24px 0" }}>Chargement…</p>
+      ) : (
+        <>
+          {/* OÙ. Les pays d'arrivée, du plus fourni au moins fourni. */}
+          <Groupe titre="Pays d'implantation" valeurs={f.destinations} />
+
+          {/* DANS QUOI. Une entreprise peut investir dans plusieurs secteurs :
+              les donner tous, avec leur compte, évite de faire passer un projet
+              isolé pour une orientation. */}
+          <Groupe titre="Secteurs d'investissement" valeurs={f.secteurs} />
+          <Groupe titre="Sous-secteurs" valeurs={f.sous_secteurs} />
+
+          {/* CE QU'ELLE VIENT FAIRE. C'est la liste la plus parlante des trois :
+              la même entreprise fabrique ici, forme là, distribue ailleurs. */}
+          <Groupe titre="Activités prévues" valeurs={f.activites} />
+          <Groupe titre="Natures d'implantation" valeurs={f.types} />
+        </>
+      )}
+    </FicheModal>
+  );
+}
+
+/** Un nombre en tête de fiche : la valeur grande, sans unité — l'étiquette
+    au-dessus la nomme déjà. */
+const GrandNombre = ({ n }: { n: number }) => (
+  <span style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)",
+    letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(n)}</span>
+);
+
+/** Une liste de valeurs comptées, en lignes de fiche.
+
+    LE COMPTE EST À DROITE, dans la colonne des valeurs, et il est écrit en
+    toutes lettres : « 41 projets », non « 41 ». Un nombre nu à côté d'un nom de
+    secteur se lit aussi bien comme un rang que comme un compte, et le lecteur
+    n'a pas à deviner lequel.
+
+    Une liste vide ne s'affiche pas du tout : un intertitre suivi d'un tiret
+    occupe autant de place qu'une vraie section et n'apprend rien. */
+function Groupe({ titre, valeurs }: { titre: string; valeurs: Compte[] }) {
+  if (valeurs.length === 0) return null;
+  return (
+    <div>
+      <TitreFiche>{titre}</TitreFiche>
+      {valeurs.map(v => (
+        <LigneFiche key={v.nom} label={v.nom}>
+          <span style={{ color: "var(--gris)", fontWeight: 600 }}>
+            {fmtNombre(v.nb)} projet{v.nb > 1 ? "s" : ""}
+          </span>
+        </LigneFiche>
+      ))}
     </div>
   );
 }

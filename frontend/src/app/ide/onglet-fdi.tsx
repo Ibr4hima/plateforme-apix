@@ -34,7 +34,8 @@ import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LigneFich
          LIGNE_FACETTE, moisEnClair, Pastille, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
-import VueEntreprisesPubliques from "./vue-entreprises-publiques";
+import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
+         FILTRES_ENTREPRISES_VIDES, type FiltresEntreprises } from "./vue-entreprises-publiques";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
@@ -292,6 +293,11 @@ export default function OngletFdi({ onVue }: {
   // filtres est celle de la page, partagée par toutes les vues, et elle doit
   // pouvoir les lire comme la liste qui les applique.
   const [filtresSignaux, setFiltresSignaux] = useState<FiltresSignaux>(FILTRES_SIGNAUX_VIDES);
+  // Ceux des entreprises, pour la même raison. Ils vivent à part de ceux des
+  // signaux : les deux vues ne filtrent pas les mêmes objets, et un secteur
+  // retenu sur l'une n'a aucune raison de se reporter sur l'autre.
+  const [filtresEntreprises, setFiltresEntreprises] =
+    useState<FiltresEntreprises>(FILTRES_ENTREPRISES_VIDES);
   // Le côté par lequel on lit le pays. La bascule ne s'affiche que si un
   // périmètre a été relevé dans les deux sens : un lot « Dest = Sénégal » ne
   // dit rien de ce que le Sénégal implante ailleurs, et proposer « Source »
@@ -569,6 +575,11 @@ export default function OngletFdi({ onVue }: {
               <FiltresSignauxPanneau filtres={filtresSignaux} onChange={setFiltresSignaux} />
             )}
 
+            {vue === "entreprises" && (
+              <FiltresEntreprisesPanneau filtres={filtresEntreprises}
+                onChange={setFiltresEntreprises} />
+            )}
+
             {vue === "projets" && (
               <>
                 <Filet />
@@ -718,7 +729,9 @@ export default function OngletFdi({ onVue }: {
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           {vue === "signaux"
            ? <VueSignauxPublics filtres={filtresSignaux} onChange={setFiltresSignaux} />
-           : vue === "entreprises" ? <VueEntreprisesPubliques /> : (
+           : vue === "entreprises"
+           ? <VueEntreprisesPubliques filtres={filtresEntreprises}
+               onChange={setFiltresEntreprises} /> : (
             <>
               {/* En-tête : le pays, sa qualification, la période couverte — et
                   la recherche sur la même ligne, alignée à droite. Les deux
