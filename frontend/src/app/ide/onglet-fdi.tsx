@@ -30,7 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, ETIQ, fmtNombre, groupByContinent, LIGNE_FACETTE,
+import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LIGNE_FACETTE,
          moisEnClair, Pastille } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
@@ -569,20 +569,19 @@ export default function OngletFdi({ onVue }: {
             {/* Vue : les trois bases de fDi Markets */}
             <div style={{ marginBottom: 18 }}>
               <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>Vue</span>
-              {VUES.map(o => {
-                const sel = vue === o.v;
-                return (
-                  <button key={o.v} onClick={() => setVue(o.v)}
-                    title={`fDi Markets · ${o.src}`}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 7,
-                      border: "none", cursor: "pointer", width: "100%", textAlign: "left" as const,
-                      background: sel ? "rgb(var(--bleu-rgb) / 0.10)" : "transparent" }}
-                    onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                    onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                    <span style={{ fontSize: 12.5, color: sel ? "var(--bleu)" : "var(--texte)", fontWeight: sel ? 700 : 400 }}>{o.l}</span>
-                  </button>
-                );
-              })}
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+                {VUES.map(o => {
+                  const sel = vue === o.v;
+                  return (
+                    <button key={o.v} onClick={() => setVue(o.v)}
+                      title={`fDi Markets · ${o.src}`} style={btnVue(sel)}
+                      onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                      onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                      {o.l}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {vue === "signaux" && (

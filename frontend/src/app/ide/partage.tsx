@@ -104,11 +104,7 @@ export function SelecteurVueAnalyse({ vueP, setVueP, typeAnalyse, setTypeAnalyse
     if (vueP === "secteurs") allerAnalyse?.(v);
     else setTypeAnalyse(v); // ici typeAnalyse EST le sousOnglet (pays/monde)
   };
-  const btn = (actif: boolean): React.CSSProperties => ({
-    textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12,
-    fontWeight: actif ? 700 : 500, background: actif ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent",
-    color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
-  });
+  const btn = btnVue;
   return (
     <>
       <div style={{ marginBottom:16, paddingBottom:14, borderBottom:"1px solid var(--bordure)" }}>
@@ -1082,3 +1078,19 @@ export const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, pa
 /** Le titre d'une section de filtres. */
 export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" } as const;
+
+/** Une entrée du sélecteur de vue, dans la colonne de filtres.
+
+    PARTAGÉE ENTRE LES DEUX ONGLETS. « Investissements réalisés » et
+    « Investissements projetés » posent la même question au même endroit — quelle
+    vue ouvrir — et l'onglet projetés avait fini par la poser plus légèrement :
+    poids 400 contre 500 au repos, corps 12,5 contre 12, fond de sélection plus
+    soutenu. Rien qui se nomme, tout qui se voit quand on passe de l'un à
+    l'autre. Une seule définition, donc, et plus de dérive possible. */
+export const btnVue = (actif: boolean): React.CSSProperties => ({
+  textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "none",
+  cursor: "pointer", fontSize: 12, width: "100%",
+  fontWeight: actif ? 700 : 500,
+  background: actif ? "rgb(var(--bleu-rgb) / 0.08)" : "transparent",
+  color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
+});
