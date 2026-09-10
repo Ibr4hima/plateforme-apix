@@ -429,7 +429,6 @@ function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
       <div>
         <TitreFiche>Détails du signal</TitreFiche>
         <LigneFiche label="Repéré en">{moisEnClair(s.periode)}</LigneFiche>
-        <LigneFiche label="Maison mère">{s.parent ?? "—"}</LigneFiche>
         <LigneFiche label={"Stade de l'intention"}>{liste(s.natures)}</LigneFiche>
         <LigneFiche label="Secteur">{liste(s.secteurs)}</LigneFiche>
         <LigneFiche label="Activité prévue">{liste(s.activites)}</LigneFiche>
