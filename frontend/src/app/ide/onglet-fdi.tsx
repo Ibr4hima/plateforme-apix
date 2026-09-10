@@ -30,8 +30,9 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LigneFiche,
-         LIGNE_FACETTE, moisEnClair, Pastille, TEXTE_DESC, TitreFiche } from "./partage";
+import { API, BadgePeriode, btnVue, type ChoixSous, ETIQ, FacetteSecteurs, Filet,
+         fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE, moisEnClair, Pastille,
+         TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
@@ -44,10 +45,6 @@ type SousCompte = Compte & { secteur: string };
     un pays ne doit pas changer de région d'un écran à l'autre. L'un comme
     l'autre peuvent manquer — l'écran range alors le pays sous « Autre ». */
 type ComptePays = Compte & { continent: string | null; region_geo: string | null };
-/** Un sous-secteur retenu, avec le secteur d'où il vient. Le couple est porté
-    par l'état plutôt que retrouvé dans le périmètre : la liste des filtres
-    sert à CONSTRUIRE la requête du périmètre, elle ne peut pas en dépendre. */
-type ChoixSous = { secteur: string; nom: string };
 type Perimetre = {
   sens: string; annees: [number | null, number | null]; total_projets: number;
   perimetres_complets: string[]; sens_disponibles: string[];
@@ -103,12 +100,6 @@ const rangContinent = (c: string) => {
   const i = ORDRE_CONTINENTS.indexOf(c);
   return i === -1 ? ORDRE_CONTINENTS.length : i;
 };
-
-/** Le filet qui sépare deux sections de la colonne de filtres. Sans lui, les
-    facettes se lisent comme une seule liste et l'on cherche où finit l'une,
-    où commence l'autre. */
-const Filet = () => <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
-
 
 /** L'en-tête repliable d'une région.
 
@@ -177,100 +168,6 @@ function Facette({ titre, options, choix, setChoix }: {
               <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
                 fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
             </button>
-          );
-        })}
-      </div>
-      <Filet />
-    </div>
-  );
-}
-
-/** Le secteur et ses sous-secteurs, emboîtés.
-
-    Cocher un secteur le retient en entier ; ses sous-secteurs s'ouvrent alors
-    en dessous, et en cocher un ou plusieurs précise la sélection À
-    L'INTÉRIEUR de ce secteur. Le secteur reste coché : il indique où l'on se
-    trouve, pas ce qui est retenu.
-
-    D'où la règle d'envoi, qui vaut d'être dite : un secteur où l'on est
-    descendu n'est PAS transmis en entier, seuls ses sous-secteurs le sont. La
-    requête additionne ensuite les deux listes par un OU — « tout Textiles, et
-    dans les Communications seulement la téléphonie filaire » — là où un ET
-    aurait vidé la sélection. */
-function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec, choixSous, setChoixSous }: {
-  secteurs: Compte[]; sousSecteurs: SousCompte[];
-  choixSec: string[]; setChoixSec: (v: string[]) => void;
-  choixSous: ChoixSous[]; setChoixSous: (v: ChoixSous[]) => void;
-}) {
-  const visibles = [...secteurs];
-  for (const c of choixSec) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
-  if (visibles.length === 0) return null;
-
-  const basculerSecteur = (nom: string) => {
-    if (choixSec.includes(nom)) {
-      setChoixSec(choixSec.filter(x => x !== nom));
-      // Refermer un secteur emporte les sous-secteurs qu'on y avait retenus :
-      // les laisser filtrer depuis une section repliée serait invisible.
-      setChoixSous(choixSous.filter(x => x.secteur !== nom));
-    } else setChoixSec([...choixSec, nom]);
-  };
-  const basculerSous = (secteur: string, nom: string) =>
-    setChoixSous(choixSous.some(x => x.nom === nom && x.secteur === secteur)
-      ? choixSous.filter(x => !(x.nom === nom && x.secteur === secteur))
-      : [...choixSous, { secteur, nom }]);
-
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-        <span style={TITRE_SS}>Secteur</span>
-        {(choixSec.length > 0 || choixSous.length > 0) && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
-            background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>
-            {choixSous.length || choixSec.length}
-          </span>
-        )}
-      </div>
-      <div style={{ maxHeight: 260, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
-        paddingRight: 2, marginBottom: 18 }}>
-        {visibles.map(o => {
-          const ouvert = choixSec.includes(o.nom);
-          const dedans = sousSecteurs.filter(s => s.secteur === o.nom);
-          return (
-            <div key={o.nom}>
-              <button onClick={() => basculerSecteur(o.nom)} title={o.nom} style={LIGNE_FACETTE}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                <Pastille coche={ouvert} />
-                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: ouvert ? 700 : 400,
-                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
-                <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                  fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
-              </button>
-
-              {ouvert && dedans.length > 0 && (
-                <div style={{ marginLeft: 10, paddingLeft: 10, marginBottom: 6,
-                  borderLeft: "2px solid rgb(var(--bleu-rgb) / 0.20)" }}>
-                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
-                    textTransform: "uppercase" as const, color: "var(--orange)",
-                    padding: "4px 8px 2px" }}>Sous-secteur</p>
-                  {dedans.map(ss => {
-                    const sel = choixSous.some(x => x.nom === ss.nom && x.secteur === o.nom);
-                    return (
-                      <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom} style={LIGNE_FACETTE}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                        <Pastille coche={sel} teinte="var(--orange)" />
-                        <span style={{ fontSize: 11.5, fontWeight: sel ? 700 : 400,
-                          color: sel ? "var(--orange)" : "var(--texte)",
-                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{ss.nom}</span>
-                        <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                          fontVariantNumeric: "tabular-nums" }}>{ss.nb}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
           );
         })}
       </div>

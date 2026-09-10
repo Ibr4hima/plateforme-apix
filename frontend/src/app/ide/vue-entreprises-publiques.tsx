@@ -36,8 +36,8 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche, TitreFiche,
-         type OptionFacette } from "./partage";
+import { API, boutonPage, ETIQ, FacetteSecteurs, FacetteUnique, Filet, fmtNombre,
+         LigneFiche, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -108,33 +108,32 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
 }) {
   const recherche = useDebounced(filtres.recherche, 300);
   const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche), { garder: true }).data;
-
-  // Les sous-secteurs portent le nom de leur secteur : « Other » revient sous
-  // vingt-quatre secteurs chez fDi et ne s'identifie pas seul.
-  const sousSecteurs: OptionFacette[] = useMemo(
-    () => (per?.sous_secteurs ?? []).map(s => ({ nom: s.nom, nb: s.nb, contexte: s.secteur })),
-    [per]);
-
   if (!per) return null;
+
   return (
     <>
-      <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
-      {/* Quitter un secteur emporte le sous-secteur qu'on y avait précisé :
-          le laisser filtrer depuis un secteur qu'on vient d'abandonner serait
-          un filtre actif que plus rien n'explique à l'écran. */}
-      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
-        onChange={v => onChange({ ...filtres, secteur: v,
-          sousSecteur: v === filtres.secteur ? filtres.sousSecteur : "" })}
-        vide="Tous les secteurs" />
-      {/* RETENIR UN SOUS-SECTEUR RETIENT SON SECTEUR AVEC LUI. Chez fDi le
-          libellé ne suffit pas à désigner un sous-secteur : « Other » revient
-          sous vingt-quatre secteurs, et le seul envoyer filtrerait les
-          vingt-quatre — le compte annoncé sur la ligne cliquée ne serait alors
-          pas celui obtenu. */}
-      <FacetteUnique titre="Sous-secteur" options={sousSecteurs} valeur={filtres.sousSecteur}
-        onChange={(v, secteur) => onChange({ ...filtres, sousSecteur: v,
-          secteur: v ? (secteur ?? filtres.secteur) : filtres.secteur })}
-        vide="Tous les sous-secteurs" />
+      <Filet />
+      {/* LE MÊME EMBOÎTEMENT QUE LA VUE PROJETS, et pas deux listes à plat :
+          cocher un secteur ouvre ses sous-secteurs en dessous, et en cocher un
+          précise la sélection À L'INTÉRIEUR de ce secteur. Les deux vues sont
+          voisines dans le même écran ; deux façons de poser le même couple
+          donneraient l'impression de deux produits.
+
+          Un seul choix à la fois de chaque côté, parce que la requête des
+          entreprises combine ses facettes par un ET là où celle des projets les
+          combine par un OU.
+
+          CHANGER DE SECTEUR EMPORTE LE SOUS-SECTEUR qu'on y avait précisé : le
+          laisser filtrer depuis un secteur qu'on vient de quitter serait un
+          filtre actif que plus rien n'explique à l'écran. Le composant partagé
+          ne peut pas le faire lui-même ici — les deux valeurs tiennent dans un
+          seul état, et deux écritures dans la même closure s'écraseraient. */}
+      <FacetteSecteurs unique secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
+        choixSec={filtres.secteur ? [filtres.secteur] : []}
+        setChoixSec={v => onChange({ ...filtres, secteur: v[0] ?? "", sousSecteur: "" })}
+        choixSous={filtres.sousSecteur
+          ? [{ secteur: filtres.secteur, nom: filtres.sousSecteur }] : []}
+        setChoixSous={v => onChange({ ...filtres, sousSecteur: v[0]?.nom ?? "" })} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :
           un équipementier télécom qui ouvre un centre de R&D n'est pas le même

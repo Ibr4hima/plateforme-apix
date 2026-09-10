@@ -1079,6 +1079,132 @@ export const LIGNE_FACETTE = { display: "flex", alignItems: "center", gap: 8, pa
 export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" } as const;
 
+/** Le filet qui sépare deux sections de la colonne de filtres. Sans lui, les
+    facettes se lisent comme une seule liste et l'on cherche où finit l'une, où
+    commence l'autre. */
+export const Filet = () =>
+  <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
+
+/** Un secteur retenu, et le sous-secteur d'où il vient. Le couple est porté par
+    l'état plutôt que retrouvé dans le périmètre : la liste des filtres sert à
+    CONSTRUIRE la requête du périmètre, elle ne peut pas en dépendre. */
+export type ChoixSous = { secteur: string; nom: string };
+
+/** Le secteur et ses sous-secteurs, EMBOÎTÉS.
+
+    Cocher un secteur le retient ; ses sous-secteurs s'ouvrent alors en dessous,
+    et en cocher un précise la sélection À L'INTÉRIEUR de ce secteur. Le secteur
+    reste coché : il indique où l'on se trouve, pas ce qui est retenu.
+
+    POURQUOI EMBOÎTÉS PLUTÔT QU'EN DEUX LISTES. Un sous-secteur ne se lit pas
+    seul : « Other » revient sous vingt-quatre secteurs chez fDi, et une liste à
+    plat obligerait à écrire le secteur à côté de chaque ligne pour dire
+    laquelle est laquelle. L'emboîtement le dit par la place — et il dit en plus
+    ce qu'une liste à plat tait : que le second choix se fait DANS le premier.
+
+    PARTAGÉE ENTRE LES VUES PROJETS ET ENTREPRISES. Elle a d'abord vécu dans la
+    seule vue Projets ; en réécrire une variante ailleurs les aurait laissées
+    diverger, comme l'avaient déjà fait le sélecteur de vue et le bouton de
+    pagination avant d'être remontés ici.
+
+    LE MODE `unique` NE CHANGE QUE LE BASCULEMENT, jamais la forme : un seul
+    secteur et un seul sous-secteur à la fois, parce que la requête des
+    entreprises combine ses facettes par un ET là où celle des projets les
+    combine par un OU. Dans ce mode, retirer un secteur n'emporte PAS le
+    sous-secteur ici : l'appelant ne tient qu'un état, et deux écritures
+    successives dans la même closure se seraient écrasées. C'est donc à lui de
+    le faire, et le commentaire est là pour qu'on ne l'oublie pas. */
+export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec,
+                                 choixSous, setChoixSous, unique = false }: {
+  secteurs: { nom: string; nb: number }[];
+  sousSecteurs: { nom: string; nb: number; secteur: string }[];
+  choixSec: string[]; setChoixSec: (v: string[]) => void;
+  choixSous: ChoixSous[]; setChoixSous: (v: ChoixSous[]) => void;
+  unique?: boolean;
+}) {
+  // Une option cochée reste affichée même si les autres filtres la font tomber
+  // à zéro : la retirer de la liste ôterait au lecteur le moyen de la décocher.
+  const visibles = [...secteurs];
+  for (const c of choixSec) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
+  if (visibles.length === 0) return null;
+
+  const basculerSecteur = (nom: string) => {
+    if (unique) { setChoixSec(choixSec.includes(nom) ? [] : [nom]); return; }
+    if (choixSec.includes(nom)) {
+      setChoixSec(choixSec.filter(x => x !== nom));
+      // Refermer un secteur emporte les sous-secteurs qu'on y avait retenus :
+      // les laisser filtrer depuis une section repliée serait invisible.
+      setChoixSous(choixSous.filter(x => x.secteur !== nom));
+    } else setChoixSec([...choixSec, nom]);
+  };
+  const basculerSous = (secteur: string, nom: string) => {
+    const deja = choixSous.some(x => x.nom === nom && x.secteur === secteur);
+    if (unique) { setChoixSous(deja ? [] : [{ secteur, nom }]); return; }
+    setChoixSous(deja
+      ? choixSous.filter(x => !(x.nom === nom && x.secteur === secteur))
+      : [...choixSous, { secteur, nom }]);
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <span style={TITRE_FACETTE}>Secteur</span>
+        {(choixSec.length > 0 || choixSous.length > 0) && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
+            background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>
+            {choixSous.length || choixSec.length}
+          </span>
+        )}
+      </div>
+      <div style={{ maxHeight: 260, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
+        paddingRight: 2, marginBottom: 18 }}>
+        {visibles.map(o => {
+          const ouvert = choixSec.includes(o.nom);
+          const dedans = sousSecteurs.filter(s => s.secteur === o.nom);
+          return (
+            <div key={o.nom}>
+              <button onClick={() => basculerSecteur(o.nom)} title={o.nom} style={LIGNE_FACETTE}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                <Pastille coche={ouvert} />
+                <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: ouvert ? 700 : 400,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{o.nom}</span>
+                <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                  fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+              </button>
+
+              {ouvert && dedans.length > 0 && (
+                <div style={{ marginLeft: 10, paddingLeft: 10, marginBottom: 6,
+                  borderLeft: "2px solid rgb(var(--bleu-rgb) / 0.20)" }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.11em",
+                    textTransform: "uppercase" as const, color: "var(--orange)",
+                    padding: "4px 8px 2px" }}>Sous-secteur</p>
+                  {dedans.map(ss => {
+                    const sel = choixSous.some(x => x.nom === ss.nom && x.secteur === o.nom);
+                    return (
+                      <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom} style={LIGNE_FACETTE}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                        <Pastille coche={sel} teinte="var(--orange)" />
+                        <span style={{ fontSize: 11.5, fontWeight: sel ? 700 : 400,
+                          color: sel ? "var(--orange)" : "var(--texte)",
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{ss.nom}</span>
+                        <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                          fontVariantNumeric: "tabular-nums" }}>{ss.nb}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <Filet />
+    </div>
+  );
+}
+
 /** Une facette à CHOIX UNIQUE, dans la colonne de filtres.
 
     PARTAGÉE ENTRE LES VUES SIGNAUX ET ENTREPRISES, qui posent le même geste au
@@ -1090,31 +1216,22 @@ export const TITRE_FACETTE = { fontSize: 11, fontWeight: 700, color: "var(--gris
     Le compte à droite n'est pas décoratif : il dit d'avance si le filtre
     laissera quelque chose, et évite de cliquer pour découvrir un écran vide.
 
-    LE CONTEXTE, quand il est fourni, tient à droite du libellé en petit et en
-    gris : un sous-secteur nommé « Other » revient sous vingt-quatre secteurs
-    chez fDi et ne s'identifie pas seul. Il ne change rien à la valeur envoyée —
-    il ne fait que la rendre reconnaissable. */
-export type OptionFacette = { nom: string; nb: number; contexte?: string | null };
+    ELLE NE SERT PAS AUX SECTEURS : un sous-secteur ne se lit pas seul, et le
+    couple secteur / sous-secteur se pose emboîté — voir `FacetteSecteurs`. */
+export type OptionFacette = { nom: string; nb: number };
 
 export function FacetteUnique({ titre, options, valeur, onChange, vide }: {
   titre: string; options: OptionFacette[]; valeur: string; vide: string;
-  /** Le contexte accompagne la valeur : l'appelant qui l'a fourni peut en avoir
-      besoin pour lever l'ambiguïté du libellé. Il vaut `null` sur la ligne de
-      retour à l'absence de filtre. */
-  onChange: (v: string, contexte: string | null) => void;
+  onChange: (v: string) => void;
 }) {
   if (options.length === 0) return null;
 
   const ligne = (o: OptionFacette | null) => {
     const nom = o?.nom ?? "";
     const sel = valeur === nom;
-    // La clef porte le contexte : « Other » revient sous vingt-quatre secteurs
-    // chez fDi, et vingt-quatre lignes de même clef feraient disparaître
-    // vingt-trois d'entre elles.
     return (
-      <button key={nom ? `${nom}|${o?.contexte ?? ""}` : "__tous"}
-        onClick={() => onChange(nom, o?.contexte ?? null)} style={LIGNE_FACETTE}
-        title={o?.contexte ? `${o.nom} — ${o.contexte}` : o?.nom}
+      <button key={nom || "__tous"} onClick={() => onChange(nom)} style={LIGNE_FACETTE}
+        title={o?.nom}
         onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
         <Pastille coche={sel} />
@@ -1122,11 +1239,6 @@ export function FacetteUnique({ titre, options, valeur, onChange, vide }: {
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {o ? o.nom : vide}
         </span>
-        {o?.contexte && (
-          <span style={{ fontSize: 10, color: "var(--gris)", flexShrink: 0,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            maxWidth: "38%" }}>{o.contexte}</span>
-        )}
         {o && (
           <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
             fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
