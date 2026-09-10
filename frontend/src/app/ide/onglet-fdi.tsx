@@ -108,13 +108,6 @@ const rangContinent = (c: string) => {
 const Filet = () => <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />;
 
 
-/** La marque de sélection de toute la colonne : un rond plein quand c'est
-    retenu, un anneau vide sinon. Une seule forme partout — pays, secteurs,
-    sous-secteurs, activités, types — parce que ces listes se lisent d'un même
-    coup d'œil et qu'une case carrée au milieu de ronds ferait croire à une
-    autre nature de choix. La teinte distingue les niveaux : le bleu pour un
-    poste de premier rang, l'orange pour ce qui vit dessous. */
-
 /** L'en-tête repliable d'une région.
 
     Mêmes mesures que la colonne de filtres des Investissements réalisés —
@@ -304,8 +297,16 @@ function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
   );
 }
 
-export default function OngletFdi() {
+export default function OngletFdi({ onVue }: {
+  /** La page a besoin de savoir quelle vue est ouverte — le bouton « Rapport »
+      ne vaut que pour les projets. Elle ne peut pas le lire dans l'URL : la vue
+      s'y écrit par « history.replaceState », qui ne déclenche aucun rendu chez
+      le parent. On le lui dit donc explicitement. */
+  onVue?: (v: "projets" | "signaux" | "entreprises") => void;
+} = {}) {
   const [vue, setVue] = useState<"projets" | "signaux" | "entreprises">("projets");
+  // Au montage aussi, pas seulement au clic : la vue peut venir de l'URL.
+  useEffect(() => { onVue?.(vue); }, [vue, onVue]);
   // Les filtres des signaux vivent ICI, non dans leur vue : la colonne de
   // filtres est celle de la page, partagée par toutes les vues, et elle doit
   // pouvoir les lire comme la liste qui les applique.

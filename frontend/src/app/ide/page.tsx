@@ -21,6 +21,9 @@ export default function IdePage() {
   // Navigation de la page dans l'URL : vues partageables par lien, F5 conserve l'état
   const [ongletPrincipal, setOngletPrincipal] = useEtatUrl<"ide"|"national">("onglet", "ide", ["ide","national"]);
   const [section,    setSection]    = useEtatUrl<"realises"|"projetes">("section", "realises", ["realises","projetes"]);
+  // La vue ouverte dans l'onglet fDi. Elle vit là-bas — c'est lui qui la pilote
+  // et l'écrit dans l'URL — mais la page en a besoin pour le bouton « Rapport ».
+  const [vueFdi, setVueFdi] = useState<"projets"|"signaux"|"entreprises">("projets");
   const [sousOnglet, setSousOnglet] = useEtatUrl<"pays"|"comparative"|"monde">("analyse", "pays", ["pays","comparative","monde"]);
   const [vueP, setVueP] = useEtatUrl<"pays"|"secteurs">("vue", "pays", ["pays","secteurs"]);
   const [typeSecteurs, setTypeSecteurs] = useEtatUrl<"secteur"|"comparative">("typesec", "secteur", ["secteur","comparative"]);
@@ -74,11 +77,16 @@ export default function IdePage() {
                 l'ouvre. Il lit ensuite les deux sources ensemble — la CNUCED
                 mesure ce qui est entré, fDi relève ce qui est annoncé — mais
                 proposer ce lien depuis « réalisés » laisserait croire à un
-                rapport de cette section-là. */}
+                rapport de cette section-là.
+
+                ET SEULEMENT DEPUIS LA VUE PROJETS : le rapport est bâti sur les
+                projets annoncés. L'offrir au-dessus des signaux ou des
+                entreprises promettrait un document que ces vues ne produisent
+                pas. */}
             {/* La forme du segment actif des vues : pastille pleine dans son
                 anneau clair. Le rapport est une destination, pas une option —
                 il mérite le poids qu'a l'onglet en cours. */}
-            {section === "projetes" && (
+            {section === "projetes" && vueFdi === "projets" && (
               <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
                 borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
                 {/* L'adresse est lue AU CLIC, pas au rendu : les filtres de
@@ -119,7 +127,7 @@ export default function IdePage() {
             <OngletSecteurs showTable={showTable} setShowTable={setShowTable} sousType={sousType} setSousType={setSousType} vueP={vueP} setVueP={setVueP} typeAnalyse={typeSecteurs} setTypeAnalyse={setTypeSecteurs} setSousOnglet={setSousOnglet}/>
           )}
           {/* Investissements projetés (fDi Markets) */}
-          {section === "projetes" && <OngletFdi />}
+          {section === "projetes" && <OngletFdi onVue={setVueFdi} />}
         </>
       )}
 
