@@ -32,8 +32,8 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, ETIQ, fmtNombre, LigneFiche, LIGNE_FACETTE, moisEnClair,
-         Pastille, TEXTE_DESC, TITRE_FACETTE, TitreFiche } from "./partage";
+import { API, BadgePeriode, boutonPage, ETIQ, fmtNombre, LigneFiche, LIGNE_FACETTE,
+         moisEnClair, Pastille, TEXTE_DESC, TITRE_FACETTE, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
     destination et par stade — la colonne ne les propose plus, mais les routes
@@ -257,13 +257,6 @@ export default function VueSignauxPublics({ filtres, onChange }: {
     </div>
   );
 }
-
-const boutonPage = (actif: boolean): React.CSSProperties => ({
-  border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-  borderRadius: 999, padding: "8px 16px", fontSize: 12.5, color: "var(--encre)",
-  cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.4,
-  fontFamily: "var(--font-google-sans)",
-});
 
 /** L'étiquette du stade, dans les badges de la plateforme — les mêmes que
     ceux des cartes de projet. Le stade n'est pas décoratif : il décide si l'on

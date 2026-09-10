@@ -34,6 +34,7 @@ import { API, BadgePeriode, btnVue, ETIQ, fmtNombre, groupByContinent, LigneFich
          LIGNE_FACETTE, moisEnClair, Pastille, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
+import VueEntreprisesPubliques from "./vue-entreprises-publiques";
 
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
@@ -273,26 +274,6 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, setChoixSec, choixS
         })}
       </div>
       <Filet />
-    </div>
-  );
-}
-
-/** Une base annoncée, pas encore chargée : dire ce qu'elle contiendra vaut
-    mieux qu'un onglet muet. */
-function ABientot({ vue }: { vue: "signaux" | "entreprises" }) {
-  const t = vue === "signaux"
-    ? { titre: "Signaux d'investissement",
-        quoi: "Les intentions déclarées par les entreprises — recrutement, recherche de site, levée de fonds — repérées en amont de tout projet annoncé. C'est le stade où la prospection a encore prise." }
-    : { titre: "Entreprises",
-        quoi: "Les investisseurs eux-mêmes : siège, secteur, et l'historique de leurs implantations dans le monde. C'est ce qui permet de savoir qui approcher, et avec quel argument." };
-  return (
-    <div style={{ maxWidth: 620, margin: "80px auto", textAlign: "center" as const }}>
-      <h2 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--encre)", marginBottom: 12 }}>{t.titre}</h2>
-      <p style={{ fontSize: 14, color: "var(--gris-fort)", lineHeight: 1.8, marginBottom: 14 }}>{t.quoi}</p>
-      <p style={{ fontSize: 13, color: "var(--gris)", lineHeight: 1.7 }}>
-        Cette base de fDi Markets n&apos;est pas encore chargée. Les projets annoncés, eux, le sont :
-        ils se consultent dans l&apos;onglet <strong>Projets</strong>.
-      </p>
     </div>
   );
 }
@@ -737,7 +718,7 @@ export default function OngletFdi({ onVue }: {
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
           {vue === "signaux"
            ? <VueSignauxPublics filtres={filtresSignaux} onChange={setFiltresSignaux} />
-           : vue !== "projets" ? <ABientot vue={vue} /> : (
+           : vue === "entreprises" ? <VueEntreprisesPubliques /> : (
             <>
               {/* En-tête : le pays, sa qualification, la période couverte — et
                   la recherche sur la même ligne, alignée à droite. Les deux

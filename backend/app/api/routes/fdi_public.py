@@ -335,3 +335,76 @@ async def projets(
             for r in lignes
         ],
     }
+
+
+# ── Les entreprises investisseuses ───────────────────────────────────────────
+# TIRÉES DES SEULS PROJETS ANNONCÉS. Les signaux d'investisseur parlent des
+# mêmes entreprises, mais ils décrivent des INTENTIONS : les mêler ici ferait
+# compter comme investissement ce qui n'est encore qu'une étude.
+#
+# LE GROUPEMENT SE FAIT SUR LE COUPLE (NOM, PAYS D'ORIGINE), et le second terme
+# n'est pas décoratif : une même raison sociale peut désigner deux entités
+# distinctes selon le pays d'où part l'investissement — les filiales nationales
+# des grands groupes portent souvent le nom du groupe. Grouper sur le seul nom
+# les confondrait, et l'écran annoncerait un investisseur unique là où il y en a
+# deux.
+
+
+@router.get("/entreprises")
+async def entreprises_publiques(
+    recherche: str | None = None,
+    page: int = 1,
+    par_page: int = 24,
+    db: AsyncSession = Depends(get_db),
+):
+    """Les investisseurs, un par couple (nom, pays d'origine).
+
+    Chaque fiche porte ce qui se compte sans ambiguïté : le nombre de projets
+    annoncés, et le nombre de PAYS DISTINCTS où l'entreprise a annoncé. Les
+    montants n'y figurent pas — un total par entreprise mêlerait des projets
+    déclarés et des projets estimés par l'algorithme du Financial Times, et
+    l'écran ne pourrait plus dire lequel il montre.
+    """
+    from app.api.routes.fdi_projets import CLE_DEST, _reduire
+
+    where, params = ["1 = 1"], {}
+    if recherche and recherche.strip():
+        reduit = _reduire(recherche.strip())
+        if reduit:
+            where.append(
+                f"position(:q in {CLE_DEST.format(c='coalesce(e.nom, p.entreprise_brut)')}) > 0")
+            params["q"] = reduit
+
+    par_page = max(1, min(par_page, 100))
+    page = max(1, page)
+    filtre = " AND ".join(where)
+
+    groupes = f"""
+        SELECT coalesce(e.nom, p.entreprise_brut)          AS nom,
+               coalesce(rp.nom_fr, p.pays_source_brut)     AS origine,
+               min(rp.code_iso2)                           AS origine_iso,
+               count(*)                                    AS projets,
+               count(DISTINCT coalesce(rd.nom_fr, p.pays_dest_brut)) AS pays
+        FROM fdi_projets p
+        LEFT JOIN fdi_entreprises e ON e.id = p.entreprise_id
+        LEFT JOIN ref_pays rp ON rp.id = p.pays_source_id
+        LEFT JOIN ref_pays rd ON rd.id = p.pays_dest_id
+        WHERE {filtre} AND coalesce(e.nom, p.entreprise_brut) IS NOT NULL
+        GROUP BY 1, 2"""
+
+    total = (await db.execute(text(
+        f"SELECT count(*) FROM ({groupes}) g"), params)).scalar_one()
+
+    lignes = (await db.execute(text(f"""
+        SELECT * FROM ({groupes}) g
+        ORDER BY g.projets DESC, g.nom
+        LIMIT :n OFFSET :o"""),
+        {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
+
+    return {
+        "entreprises": [{"nom": r.nom, "origine": r.origine, "origine_iso": r.origine_iso,
+                         "projets": r.projets, "pays": r.pays} for r in lignes],
+        "page": page,
+        "pages": max(1, -(-total // par_page)),
+        "total": total,
+    }

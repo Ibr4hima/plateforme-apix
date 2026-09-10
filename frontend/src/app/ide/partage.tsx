@@ -1124,3 +1124,13 @@ export function TitreFiche({ children }: { children: React.ReactNode }) {
     bloc gris — le texte reste du texte. */
 export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
   borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
+
+/** Le bouton d'une pagination de cartes. Partagé : les vues Signaux et
+    Entreprises paginent la même chose — des cartes — et devaient le faire de
+    la même façon. */
+export const boutonPage = (actif: boolean): React.CSSProperties => ({
+  border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+  borderRadius: 999, padding: "8px 16px", fontSize: 12.5, color: "var(--encre)",
+  cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.4,
+  fontFamily: "var(--font-google-sans)",
+});
