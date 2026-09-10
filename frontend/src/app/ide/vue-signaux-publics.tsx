@@ -34,11 +34,14 @@ import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "
 import { API, BadgePeriode, ETIQ, fmtNombre, LIGNE_FACETTE, moisEnClair, Pastille,
          TITRE_FACETTE } from "./partage";
 
-export type FiltresSignaux = {
-  destination: string; nature: string; secteur: string; recherche: string;
-};
+/** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
+    destination et par stade — la colonne ne les propose plus, mais les routes
+    les gardent : le jour où on les remettra, il n'y aura qu'un composant à
+    ajouter. Les porter dans cet état sans que rien ne les pilote aurait fait
+    croire à des filtres actifs. */
+export type FiltresSignaux = { secteur: string; activite: string; recherche: string };
 export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
-  destination: "", nature: "", secteur: "", recherche: "",
+  secteur: "", activite: "", recherche: "",
 };
 
 type Valeur = { id: number; libelle: string | null; court?: string | null;
@@ -65,14 +68,23 @@ type Reponse = {
 
 const PAR_PAGE = 24;
 
+/** Le périmètre du relevé, tel qu'il a été interrogé chez fDi : « Dest =
+    Africa ». Il qualifie la page comme « Projets reçus » qualifie celle des
+    projets — il ne se déduit pas des lignes affichées, il dit ce que la
+    plateforme a cherché à couvrir.
+
+    Écrit ici et nulle part ailleurs : le jour où un second périmètre sera
+    relevé, c'est de la base qu'il devra venir, et cette constante sera le seul
+    endroit à reprendre. */
+const PERIMETRE = "Afrique";
+
 /** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
     composants — la colonne de filtres et la liste : la clé de cache étant
     l'URL, ils partagent le même téléchargement sans se connaître. */
 function urlPerimetre(f: FiltresSignaux, recherche: string): string {
   const p = new URLSearchParams();
-  if (f.destination) p.set("destination", f.destination);
-  if (f.nature) p.set("natures", f.nature);
   if (f.secteur) p.set("secteurs", f.secteur);
+  if (f.activite) p.set("activites", f.activite);
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/signaux/perimetre?${p}`;
 }
@@ -82,15 +94,11 @@ function urlPerimetre(f: FiltresSignaux, recherche: string): string {
     Même forme que celles des projets : titre en petites capitales, pastille,
     libellé, compte à droite. La ligne « Toutes » n'est pas une option de plus
     mais le retour à l'absence de filtre, d'où sa place en tête. */
-function Facette({ titre, options, valeur, onChange, vide, grouper = false }: {
+function Facette({ titre, options, valeur, onChange, vide }: {
   titre: string; options: Compte[]; valeur: string; vide: string;
-  onChange: (v: string) => void; grouper?: boolean;
+  onChange: (v: string) => void;
 }) {
   if (options.length === 0) return null;
-  const groupes: [string | null, Compte[]][] = grouper
-    ? [["Régions du monde", options.filter(o => o.nature === "region")],
-       ["Pays", options.filter(o => o.nature !== "region")]]
-    : [[null, options]];
 
   const ligne = (o: Compte | null) => {
     const nom = o?.nom ?? "";
@@ -117,16 +125,7 @@ function Facette({ titre, options, valeur, onChange, vide, grouper = false }: {
       <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
       <div style={{ maxHeight: 220, overflowY: "auto" }}>
         {ligne(null)}
-        {groupes.map(([etiquette, liste]) => liste.length === 0 ? null : (
-          <div key={etiquette ?? "tout"}>
-            {etiquette && (
-              <p style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
-                textTransform: "uppercase", letterSpacing: "0.1em",
-                padding: "6px 8px 2px", margin: 0 }}>{etiquette}</p>
-            )}
-            {liste.map(o => ligne(o))}
-          </div>
-        ))}
+        {options.map(o => ligne(o))}
       </div>
     </div>
   );
@@ -145,12 +144,14 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
   return (
     <>
       <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
-      <Facette titre="Destination" options={per.destinations} valeur={filtres.destination}
-        onChange={set("destination")} vide="Toutes destinations" grouper />
-      <Facette titre="Stade de l'intention" options={per.natures} valeur={filtres.nature}
-        onChange={set("nature")} vide="Tous les stades" />
       <Facette titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} vide="Tous les secteurs" />
+      {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
+          logistique — indépendamment de son secteur. Les deux se croisent :
+          « Software & IT services » en R&D n'est pas le même prospect qu'en
+          centre d'appels. */}
+      <Facette titre="Activité prévue" options={per.activites} valeur={filtres.activite}
+        onChange={set("activite")} vide="Toutes les activités" />
     </>
   );
 }
@@ -163,7 +164,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
   // Un changement de filtre ramène au premier écran : rester en page 6 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const clef = `${filtres.destination}|${filtres.nature}|${filtres.secteur}|${recherche}`;
+  const clef = `${filtres.secteur}|${filtres.activite}|${recherche}`;
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 
@@ -196,13 +197,13 @@ export default function VueSignauxPublics({ filtres, onChange }: {
         <span style={{ width: 9, height: 9, borderRadius: "50%",
           background: "var(--bleu-action)", flexShrink: 0 }} />
         <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
-          {filtres.destination || "Toutes destinations"}
+          Signaux d&apos;investissement
         </h2>
         <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px",
           borderRadius: 5, background: "var(--fond)", border: "1px solid var(--bordure-forte)",
           fontSize: 9, fontWeight: 700, color: "var(--gris)", textTransform: "uppercase" as const,
           letterSpacing: "0.05em", flexShrink: 0 }}>
-          {fmtNombre(k.signaux)} {k.signaux > 1 ? "signaux" : "signal"}
+          {PERIMETRE}
         </span>
         {periode && <BadgePeriode>{periode}</BadgePeriode>}
         <div style={{ marginLeft: "auto", position: "relative" as const, minWidth: 200,
@@ -298,11 +299,6 @@ function CarteSignal({ s }: { s: Signal }) {
 
       <h3 style={{ fontSize: 15.5, fontWeight: 700, color: "var(--encre)", lineHeight: 1.25,
         letterSpacing: "-0.01em", margin: 0 }}>{s.entreprise ?? "—"}</h3>
-      {s.parent && s.parent !== s.entreprise && (
-        <span style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 2 }}>
-          groupe {s.parent}
-        </span>
-      )}
 
       {/* Le pied, en deux colonnes séparées d'un filet — la forme des cartes de
           la plateforme. D'OÙ part l'intention, OÙ elle va. */}
