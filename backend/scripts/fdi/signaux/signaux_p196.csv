@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Feb 2016,Hepstar,Hepstar,South Africa,Latin America & C...,Software & IT serv...,n/a,New Funding/Resour...,-,-
-2,Feb 2016,Trafigura Beheer,Puma Energy Int...,Netherlands,South Africa,"Coal, oil & gas",Unspecified,New Investment Stra...,-,-
-3,Feb 2016,Aurobindo Pharma,Aurobindo Pharma,India,Latin America & C...,Pharmaceuticals,n/a,New Investment Stra...,-,-
-4,Feb 2016,China General Nu...,China General Nu...,China,Asia-Pacific,"Coal, oil & gas",Business Services,Considering Project (...,-,-
-5,Feb 2016,Al Ghurair Group,Al Ghurair Group,UAE,Iran,Food and Beverages,n/a,New Investment Stra...,-,-
-6,Feb 2016,Crystal Lagoons,Crystal Lagoons,Netherlands,Egypt,Leisure & entertai...,n/a,New Overseas Suppli...,-,-
-7,Feb 2016,Cleopatra Group,Cleopatra Group,Egypt,Kenya,Ceramics & glass,n/a,New Investment Stra...,-,-
-8,Feb 2016,Eskan Global,Amwal Real Estate,Kuwait,Egypt,Real estate,Construction,Considering Project (...,-,$255.40m
-9,Feb 2016,TAV Airports Hold...,TAV Airports Hold...,Turkey,Asia-Pacific,Real estate,n/a,New Investment Stra...,-,-
-10,Feb 2016,Sumitomo Group,Nikko Asset Mana...,Japan,Middle East,Financial services,n/a,New Personnel,-,-
-11,Feb 2016,Wadi.com,Wadi.com,UAE,Middle East,Consumer products,n/a,New Funding/Resour...,-,$67.00m
-12,Feb 2016,Goldcorp,Goldcorp,Canada,Africa,Metals,Extraction,Considering Project (...,-,-
-13,Feb 2016,Pavers,Pavers England F...,United Kingdom,Middle East,Textiles,Retail,Considering Projec...,-,$50.00m
-14,Feb 2016,Stellar Loyalty,Stellar Loyalty,United States,Middle East,Software & IT serv...,n/a,New Funding/Reso...,-,-
-15,Feb 2016,Rio Tinto Group,Rio Tinto Group,United Kingdom,Africa,Minerals,n/a,New Investment Stra...,-,-
+1,Feb 2016,iStore,iStore,South Africa,Africa,Business machines...,Retail,Considering Project (...,-,-
+2,Feb 2016,Hepstar,Hepstar,South Africa,Latin America & C...,Software & IT serv...,n/a,New Funding/Resour...,-,-
+3,Feb 2016,Trafigura Beheer,Puma Energy Int...,Netherlands,South Africa,"Coal, oil & gas",Unspecified,New Investment Stra...,-,-
+4,Feb 2016,Aurobindo Pharma,Aurobindo Pharma,India,Latin America & C...,Pharmaceuticals,n/a,New Investment Stra...,-,-
+5,Feb 2016,China General Nu...,China General Nu...,China,Asia-Pacific,"Coal, oil & gas",Business Services,Considering Project (...,-,-
+6,Feb 2016,Al Ghurair Group,Al Ghurair Group,UAE,Iran,Food and Beverages,n/a,New Investment Stra...,-,-
+7,Feb 2016,Crystal Lagoons,Crystal Lagoons,Netherlands,Egypt,Leisure & entertai...,n/a,New Overseas Suppli...,-,-
+8,Feb 2016,Cleopatra Group,Cleopatra Group,Egypt,Kenya,Ceramics & glass,n/a,New Investment Stra...,-,-
+9,Feb 2016,Eskan Global,Amwal Real Estate,Kuwait,Egypt,Real estate,Construction,Considering Project (...,-,$255.40m
+10,Feb 2016,TAV Airports Hold...,TAV Airports Hold...,Turkey,Asia-Pacific,Real estate,n/a,New Investment Stra...,-,-
+11,Feb 2016,Sumitomo Group,Nikko Asset Mana...,Japan,Middle East,Financial services,n/a,New Personnel,-,-
+12,Feb 2016,Wadi.com,Wadi.com,UAE,Middle East,Consumer products,n/a,New Funding/Resour...,-,$67.00m
+13,Feb 2016,Goldcorp,Goldcorp,Canada,Africa,Metals,Extraction,Considering Project (...,-,-
+14,Feb 2016,Pavers,Pavers England F...,United Kingdom,Middle East,Textiles,Retail,Considering Projec...,-,$50.00m
+15,Feb 2016,Stellar Loyalty,Stellar Loyalty,United States,Middle East,Software & IT serv...,n/a,New Funding/Reso...,-,-

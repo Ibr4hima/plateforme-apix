@@ -3,6 +3,7 @@
 
     python scripts/fdi/decouper_signaux.py export.csv --depart 2
     python scripts/fdi/decouper_signaux.py export.csv --depart 199 --rang 15
+    python scripts/fdi/decouper_signaux.py nouveaux.csv --en-tete
 
 CE QUE CE SCRIPT RÉSOUT. Le relevé se faisait page par page, à l'œil, quinze
 lignes à la fois. Un export de la source donne les mêmes colonnes mais une
@@ -67,6 +68,79 @@ def completer(page: int, lignes: list[dict], rang: int) -> Path:
     return chemin
 
 
+def ecrire_pages(lignes: list[dict], depart: int) -> list[Path]:
+    """Écrit les lignes par blocs de quinze, à partir de la page donnée.
+
+    Le rang est réécrit ; TOUT LE RESTE est recopié tel quel, troncatures
+    comprises. C'est le préfixe qui retrouve l'entrée de nomenclature —
+    « corriger » un libellé coupé le rendrait introuvable.
+    """
+    DOSSIER_SIGNAUX.mkdir(parents=True, exist_ok=True)
+    ecrits = []
+    for i in range(0, len(lignes), LIGNES_PAR_PAGE):
+        chemin = DOSSIER_SIGNAUX / f"signaux_p{depart + i // LIGNES_PAR_PAGE:03d}.csv"
+        with chemin.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=COLONNES, lineterminator="\n")
+            w.writeheader()
+            for n, l in enumerate(lignes[i:i + LIGNES_PAR_PAGE], 1):
+                w.writerow({**{c: l[c] for c in COLONNES}, "ligne": n})
+        ecrits.append(chemin)
+    return ecrits
+
+
+def pages_existantes() -> list[Path]:
+    """Les pages déjà versionnées, dans l'ordre des numéros."""
+    return sorted(DOSSIER_SIGNAUX.glob("signaux_p*.csv"),
+                  key=lambda c: int(c.stem.rsplit("_p", 1)[1]))
+
+
+def inserer_en_tete(source: Path) -> list[Path]:
+    """Insère des signaux EN TÊTE du relevé et repagine tout derrière.
+
+    POURQUOI C'EST L'OPÉRATION NORMALE. fDi classe par date décroissante : un
+    signal nouveau paraît en première ligne de la première page, et TOUT
+    descend d'un rang jusqu'à la dernière. Rien ne se réécrit « au bout ».
+
+    CE QUE CELA COÛTE, ET QU'IL FAUT SAVOIR AVANT DE LANCER. Chaque rang change
+    donc de signal, et l'import effacera le travail humain qui y était accroché
+    — description saisie, destinations ajoutées à la main — parce qu'il ne
+    décrit plus la bonne entreprise. C'est juste, mais ce n'est pas gratuit :
+    tant que le relevé se constitue, la perte est nulle ; le jour où des heures
+    d'arbitrage y sont posées, elle est totale. Le compte rendu de l'import dit
+    combien de rangs ont changé ; le lire n'est pas facultatif.
+
+    Le fichier d'entrée porte les signaux nouveaux dans l'ordre de la source,
+    du plus récent au plus ancien — c'est-à-dire tel qu'on les lit à l'écran.
+    """
+    pages = pages_existantes()
+    if not pages:
+        raise LigneInvalide(
+            "aucune page existante : utiliser « --depart 1 » plutôt que « --en-tete »")
+
+    anciennes: list[dict] = []
+    for p in pages:
+        with p.open(encoding="utf-8") as f:
+            lues = list(csv.DictReader(f))
+        rangs = sorted(int(l["ligne"]) for l in lues)
+        if rangs != list(range(1, len(lues) + 1)):
+            raise LigneInvalide(f"{p.name} porte des rangs troués : {rangs}")
+        if len(lues) != LIGNES_PAR_PAGE and p is not pages[-1]:
+            raise LigneInvalide(
+                f"{p.name} n'a que {len(lues)} lignes alors qu'elle n'est pas la "
+                f"dernière : le relevé est troué, la repagination le propagerait")
+        anciennes += lues
+
+    with source.open(encoding="utf-8-sig") as f:
+        neuves = list(csv.DictReader(f))
+    if not neuves:
+        raise LigneInvalide(f"{source.name} est vide")
+
+    tout = neuves + anciennes
+    for i, l in enumerate(tout, 1):
+        l["ligne"] = i
+    return ecrire_pages(tout, depart=1)
+
+
 def decouper(source: Path, depart: int, rang: int = 1) -> list[Path]:
     with source.open(encoding="utf-8-sig") as f:
         lignes = list(csv.DictReader(f))
@@ -102,21 +176,7 @@ def decouper(source: Path, depart: int, rang: int = 1) -> list[Path]:
         lignes = lignes[place:]
         depart += 1
 
-    for i in range(0, len(lignes), LIGNES_PAR_PAGE):
-        page = depart + i // LIGNES_PAR_PAGE
-        bloc = lignes[i:i + LIGNES_PAR_PAGE]
-        chemin = DOSSIER_SIGNAUX / f"signaux_p{page:03d}.csv"
-        with chemin.open("w", encoding="utf-8", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=COLONNES, lineterminator="\n")
-            w.writeheader()
-            for n, l in enumerate(bloc, 1):
-                # Le rang est réécrit ; TOUT LE RESTE est recopié tel quel,
-                # troncatures comprises. C'est le préfixe qui retrouve l'entrée
-                # de nomenclature — « corriger » un libellé coupé le rendrait
-                # introuvable.
-                w.writerow({**{c: l[c] for c in COLONNES}, "ligne": n})
-        ecrits.append(chemin)
-    return ecrits
+    return ecrits + ecrire_pages(lignes, depart)
 
 
 def main() -> int:
@@ -139,7 +199,8 @@ def main() -> int:
         print(f"  ✗ fichier introuvable : {source}")
         return 1
     try:
-        ecrits = decouper(source, depart, rang)
+        ecrits = (inserer_en_tete(source) if "--en-tete" in sys.argv
+                  else decouper(source, depart, rang))
     except LigneInvalide as e:
         print(f"  ✗ {e}")
         return 1

@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Dec 2015,Micromax,Micromax,India,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
-2,Dec 2015,Coris Bank Intern...,Coris Bank Intern...,Burkina Faso,Africa,Financial services,Business Services,Considering Project (...,-,-
-3,Dec 2015,Daelim,Daelim,South Korea,Asia-Pacific,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-4,Dec 2015,Lancet Laboratori...,Lancet Laboratori...,South Africa,Africa,Healthcare,Research & Devel...,Considering Project (...,-,-
-5,Dec 2015,Tata Group,Tata Power,India,Asia-Pacific,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-6,Dec 2015,Clariant,Clariant,Switzerland,Asia-Pacific,Chemicals,n/a,New Investment Stra...,-,-
-7,Dec 2015,AeroFarms,AeroFarms,United States,Asia-Pacific,Food and Beverages,Manufacturing,Considering Projec...,-,-
-8,Dec 2015,ItsOn,ItsOn,United States,Latin America & C...,Software & IT serv...,ICT & Internet Inf...,Considering Projec...,-,$12.50m
-9,Dec 2015,Vinted,Vinted,United States,Latin America & C...,Textiles,n/a,New Funding/Resour...,-,$27.00m
-10,Dec 2015,8990 Holdings,8990 Holdings,Philippines,Singapore,Real estate,Construction,Considering Project (...,-,-
-11,Dec 2015,Inspur (Langchao),Inspur (Langchao),China,Africa,Business machines...,n/a,New Investment Stra...,-,-
-12,Dec 2015,Arla Foods,Arla Foods,Denmark,Asia-Pacific,Food and Beverages,n/a,New Investment Stra...,-,-
-13,Dec 2015,FedEx (Federal E...,FedEx Express,United States,Middle East,Transportation & ...,"Logistics, Distribu...",Considering Project (...,-,-
-14,Dec 2015,Zycko,Zycko,United Kingdom,Middle East,Business machines...,n/a,New Funding/Resour...,-,-
-15,Dec 2015,Black Rhino,Black Rhino,South Africa,Ethiopia,Renewable energy,n/a,New Investment Stra...,-,-
+1,Dec 2015,CtrlS Datacenters,CtrlS Datacenters,India,Asia-Pacific,Communications,ICT & Internet Inf...,Considering Project (...,-,$105.61m
+2,Dec 2015,Micromax,Micromax,India,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+3,Dec 2015,Coris Bank Intern...,Coris Bank Intern...,Burkina Faso,Africa,Financial services,Business Services,Considering Project (...,-,-
+4,Dec 2015,Daelim,Daelim,South Korea,Asia-Pacific,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+5,Dec 2015,Lancet Laboratori...,Lancet Laboratori...,South Africa,Africa,Healthcare,Research & Devel...,Considering Project (...,-,-
+6,Dec 2015,Tata Group,Tata Power,India,Asia-Pacific,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+7,Dec 2015,Clariant,Clariant,Switzerland,Asia-Pacific,Chemicals,n/a,New Investment Stra...,-,-
+8,Dec 2015,AeroFarms,AeroFarms,United States,Asia-Pacific,Food and Beverages,Manufacturing,Considering Projec...,-,-
+9,Dec 2015,ItsOn,ItsOn,United States,Latin America & C...,Software & IT serv...,ICT & Internet Inf...,Considering Projec...,-,$12.50m
+10,Dec 2015,Vinted,Vinted,United States,Latin America & C...,Textiles,n/a,New Funding/Resour...,-,$27.00m
+11,Dec 2015,8990 Holdings,8990 Holdings,Philippines,Singapore,Real estate,Construction,Considering Project (...,-,-
+12,Dec 2015,Inspur (Langchao),Inspur (Langchao),China,Africa,Business machines...,n/a,New Investment Stra...,-,-
+13,Dec 2015,Arla Foods,Arla Foods,Denmark,Asia-Pacific,Food and Beverages,n/a,New Investment Stra...,-,-
+14,Dec 2015,FedEx (Federal E...,FedEx Express,United States,Middle East,Transportation & ...,"Logistics, Distribu...",Considering Project (...,-,-
+15,Dec 2015,Zycko,Zycko,United Kingdom,Middle East,Business machines...,n/a,New Funding/Resour...,-,-

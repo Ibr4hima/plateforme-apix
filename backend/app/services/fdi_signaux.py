@@ -253,7 +253,8 @@ LIAISONS = (
 )
 
 
-def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex) -> tuple:
+def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex,
+                     releve: tuple = ()) -> tuple:
     """Ce qui identifie une ligne dans son lot, travail humain exclu.
 
     LE RANG N'EST PAS UNE IDENTITÉ. Une page de fDi est un classement par date
@@ -272,12 +273,21 @@ def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex) ->
     Mieux vaut donc perdre une description que la coller sur un signal qui n'est
     plus le sien.
 
-    LES QUATRE COLONNES MULTIPLES N'ENTRENT PAS DANS L'EMPREINTE : elles vivent
-    en tables de liaison, et une valeur ajoutée à la main y changerait la
-    signature de la ligne à chaque réimport — la garde se retournerait contre le
-    travail qu'elle protège. Les colonnes scalaires suffisent : deux signaux qui
-    partagent date, maison mère, entreprise, pays source et les deux montants
-    sont indiscernables sur le relevé lui-même.
+    LES QUATRE COLONNES MULTIPLES Y ENTRENT, MAIS SEULEMENT PAR CE QUE LE RELEVÉ
+    EN DIT. Elles vivent en tables de liaison, et une valeur ajoutée à la main
+    ne doit surtout pas changer la signature de la ligne — la garde se
+    retournerait contre le travail qu'elle protège. On ne compare donc QUE les
+    valeurs d'origine « import », c'est-à-dire exactement ce que la source a
+    écrit dans la case : une saisie humaine n'y touche jamais.
+
+    Les colonnes scalaires seules ne suffisaient pas, et le relevé complet l'a
+    montré. Deux signaux Swvl d'août 2019, même maison mère, même entreprise,
+    même pays d'origine, pas un montant : ils ne diffèrent que par leur
+    destination, Nigeria pour l'un, Kenya pour l'autre. Une ligne qui glisse de
+    l'un à l'autre passait pour « le même signal », et le travail humain
+    migrait du premier au second sans que rien ne le dise. Un cas sur quatre
+    mille cinq cents — mais silencieux, et sur le point de porter des heures de
+    complétion à la main.
 
     Les nombres sont comparés en NOMBRES, jamais en texte : la base rend un
     Decimal(« 33.30 ») là où la source donne 33.3, et une comparaison de chaînes
@@ -290,6 +300,7 @@ def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex) ->
         annee, mois,
         normaliser(parent or ""), normaliser(entreprise or ""), normaliser(source or ""),
         arrondi(funding), arrondi(capex),
+        tuple(normaliser(v or "") for v in releve),
     )
 
 
@@ -322,10 +333,27 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
     # comparaison que dépend le sort du travail humain : une ligne qui décrit
     # toujours le même signal le garde, une ligne qui a glissé le perd.
     avant = {a.ligne: a for a in (await db.execute(text(
-        "SELECT ligne, annee, mois, parent_brut, entreprise_brut, pays_source_brut,"
+        "SELECT id, ligne, annee, mois, parent_brut, entreprise_brut, pays_source_brut,"
         "       funding_musd, capex_musd"
         "  FROM fdi_signaux_investisseurs WHERE lot_id = :i"),
         {"i": lot_id})).fetchall()}
+
+    # CE QUE LE RELEVÉ AVAIT POSÉ dans les quatre colonnes multiples — et rien
+    # d'autre. Le filtre sur l'origine est ce qui rend la comparaison sûre :
+    # les valeurs ajoutées à la main n'y figurent pas, donc en ajouter une ne
+    # change pas la signature de la ligne et ne déclenche pas l'effacement de
+    # ce qu'on vient d'écrire.
+    #
+    # Une requête par lot, pas une par ligne : quinze allers-retours de plus
+    # par page feraient quatre mille cinq cents sur le relevé complet.
+    releve_avant: dict[int, list[str]] = {}
+    for nom, table, _ in LIAISONS:
+        for r in (await db.execute(text(
+            f"SELECT s.ligne, v.brut FROM {table} v"
+            f"  JOIN fdi_signaux_investisseurs s ON s.id = v.signal_id"
+            f" WHERE s.lot_id = :i AND v.origine = 'import'"
+            f" ORDER BY s.ligne, v.rang"), {"i": lot_id})).fetchall():
+            releve_avant.setdefault(r.ligne, []).append(r.brut or "")
 
     manques: list[str] = []
     rangs: list[int] = []
@@ -337,12 +365,19 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
         rangs.append(r["ligne"])
 
         a = avant.get(r["ligne"])
+        # L'ordre des familles est celui de LIAISONS des deux côtés : la
+        # requête ci-dessus les parcourt dans cet ordre, et la liste ci-dessous
+        # est construite dans le même. Deux ordres différents feraient échouer
+        # la comparaison sur des lignes pourtant identiques, et l'on effacerait
+        # tout à chaque import.
+        releve_neuf = [v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]]
         meme = a is not None and empreinte_signal(
             a.annee, a.mois, a.parent_brut, a.entreprise_brut, a.pays_source_brut,
-            a.funding_musd, a.capex_musd,
+            a.funding_musd, a.capex_musd, tuple(releve_avant.get(r["ligne"], [])),
         ) == empreinte_signal(
             r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
             r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
+            tuple(releve_neuf),
         )
         if a is not None and not meme:
             reinitialises += 1

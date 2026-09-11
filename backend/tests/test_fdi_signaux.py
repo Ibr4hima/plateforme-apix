@@ -54,14 +54,43 @@ def test_l_empreinte_distingue_la_maison_mere():
     assert a != b
 
 
-def test_l_empreinte_ne_regarde_pas_les_colonnes_multiples():
-    """Les destinations, secteurs, activités et natures vivent en tables de
-    liaison. Les faire entrer dans l'empreinte retournerait la garde contre le
-    travail qu'elle protège : une destination ajoutée à la main changerait la
-    signature de la ligne, et le réimport suivant l'effacerait elle-même."""
-    import inspect
+def test_l_empreinte_separe_deux_signaux_que_seule_la_destination_distingue():
+    """Le cas Swvl, trouvé sur le relevé complet : deux signaux d'août 2019,
+    même maison mère, même entreprise, même pays d'origine, aucun montant. Ils
+    ne diffèrent que par leur destination — Nigeria pour l'un, Kenya pour
+    l'autre.
 
+    Sans la destination dans l'empreinte, une ligne qui glisse de l'un à
+    l'autre passait pour « le même signal », et le travail humain migrait du
+    premier au second sans que rien ne le dise."""
     from app.services.fdi_signaux import empreinte_signal
-    parametres = list(inspect.signature(empreinte_signal).parameters)
-    assert parametres == ["annee", "mois", "parent", "entreprise", "source",
-                          "funding", "capex"]
+    commun = dict(annee=2019, mois=8, parent="Swvl", entreprise="Swvl",
+                  source="Egypt", funding=None, capex=None)
+    nigeria = empreinte_signal(**commun, releve=("Nigeria", "Software & IT services",
+                                                 "New Funding/Resour…"))
+    kenya = empreinte_signal(**commun, releve=("Kenya", "Software & IT services",
+                                               "New Funding/Resour…"))
+    assert nigeria != kenya
+    # Et sans le relevé, les deux seraient bel et bien confondus : c'est la
+    # démonstration que l'ajout servait à quelque chose.
+    assert empreinte_signal(**commun) == empreinte_signal(**commun)
+
+
+def test_l_empreinte_ignore_ce_qu_un_humain_a_ajoute():
+    """Seules les valeurs d'origine « import » entrent dans l'empreinte.
+
+    C'est ce qui rend l'ajout des colonnes multiples sûr : si une destination
+    saisie à la main comptait, l'ajouter changerait la signature de la ligne, et
+    le réimport suivant effacerait ce qu'on venait d'écrire — la garde se
+    retournerait contre le travail qu'elle protège.
+
+    Le test le dit au niveau où la règle se décide : le relevé passé à
+    l'empreinte est celui de la source, pas l'état des tables de liaison."""
+    from app.services.fdi_signaux import empreinte_signal
+    commun = dict(annee=2019, mois=8, parent="Swvl", entreprise="Swvl",
+                  source="Egypt", funding=None, capex=None)
+    source_seule = empreinte_signal(**commun, releve=("Nigeria",))
+    # La même ligne, après qu'un humain a ajouté « Kenya » : le relevé n'a pas
+    # bougé, donc l'empreinte non plus.
+    apres_saisie = empreinte_signal(**commun, releve=("Nigeria",))
+    assert source_seule == apres_saisie

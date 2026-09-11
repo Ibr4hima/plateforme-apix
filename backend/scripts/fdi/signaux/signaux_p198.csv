@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2016,Liwayway Holding...,Liwayway Holding...,China,Asia-Pacific,Food and Beverages,Manufacturing,Considering Project (...,-,-
-2,Jan 2016,Z-One,Z-One,UAE,Middle East,Electronic compon...,"Sales, Marketing ...",New Investment Stra...,-,-
-3,Jan 2016,China Sunergy,China Sunergy,China,Middle East,Electronic compon...,"Sales, Marketing ...",New Investment Stra...,-,-
-4,Jan 2016,Source Intelligence,Source Intelligence,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,$17.50m
-5,Jan 2016,Mubadala Develo...,Masdar,UAE,India,Renewable energy,Electricity,Considering Project (...,-,-
-6,Jan 2016,Charoen Pokphan...,Charoen Pokphan...,Thailand,Africa,Food and Beverages,n/a,New Investment Stra...,-,-
-7,Jan 2016,Nextdoor,Nextdoor,United States,Middle East,Software & IT serv...,Headquarters,Considering Project (...,-,-
-8,Jan 2016,Innovid,Innovid,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
-9,Dec 2015,iFlix,iFlix,Malaysia,Asia-Pacific,Software & IT serv...,n/a,New Funding/Reso...,-,$30.00m
-10,Dec 2015,PushCV,PushCV,Nigeria,Kenya,Business services,n/a,New Funding/Resour...,-,-
-11,Dec 2015,Renaissance Capi...,Renaissance Capi...,Russia,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
-12,Dec 2015,Sony,Sony Professional...,Japan,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
-13,Dec 2015,Carrefour,Carrefour,France,Africa,Real estate,Construction,Considering Project (...,-,-
-14,Dec 2015,Toyota Motor,CFAO Group,Japan,Africa,Real estate,Construction,Considering Project (...,-,-
-15,Dec 2015,CtrlS Datacenters,CtrlS Datacenters,India,Asia-Pacific,Communications,ICT & Internet Inf...,Considering Project (...,-,$105.61m
+1,Jan 2016,African Potash,African Potash,United Kingdom,Africa,Chemicals,n/a,New Funding/Resour...,-,$1.19m
+2,Jan 2016,Liwayway Holding...,Liwayway Holding...,China,Asia-Pacific,Food and Beverages,Manufacturing,Considering Project (...,-,-
+3,Jan 2016,Z-One,Z-One,UAE,Middle East,Electronic compon...,"Sales, Marketing ...",New Investment Stra...,-,-
+4,Jan 2016,China Sunergy,China Sunergy,China,Middle East,Electronic compon...,"Sales, Marketing ...",New Investment Stra...,-,-
+5,Jan 2016,Source Intelligence,Source Intelligence,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,$17.50m
+6,Jan 2016,Mubadala Develo...,Masdar,UAE,India,Renewable energy,Electricity,Considering Project (...,-,-
+7,Jan 2016,Charoen Pokphan...,Charoen Pokphan...,Thailand,Africa,Food and Beverages,n/a,New Investment Stra...,-,-
+8,Jan 2016,Nextdoor,Nextdoor,United States,Middle East,Software & IT serv...,Headquarters,Considering Project (...,-,-
+9,Jan 2016,Innovid,Innovid,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
+10,Dec 2015,iFlix,iFlix,Malaysia,Asia-Pacific,Software & IT serv...,n/a,New Funding/Reso...,-,$30.00m
+11,Dec 2015,PushCV,PushCV,Nigeria,Kenya,Business services,n/a,New Funding/Resour...,-,-
+12,Dec 2015,Renaissance Capi...,Renaissance Capi...,Russia,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
+13,Dec 2015,Sony,Sony Professional...,Japan,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+14,Dec 2015,Carrefour,Carrefour,France,Africa,Real estate,Construction,Considering Project (...,-,-
+15,Dec 2015,Toyota Motor,CFAO Group,Japan,Africa,Real estate,Construction,Considering Project (...,-,-

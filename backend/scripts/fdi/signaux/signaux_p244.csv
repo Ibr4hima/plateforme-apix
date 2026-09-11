@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,May 2012,Nae,Nae,Spain,Africa,Business services,Unspecified,New Investment Stra...,-,-
-2,May 2012,Pan Africa Busine...,CNBC Africa,South Africa,Africa,Communications,"Sales, Marketing ...",Considering Project (...,-,-
-3,May 2012,SunGard,SunGard,United States,Nigeria,Software & IT serv...,Unspecified,New Investment Stra...,-,-
-4,May 2012,Haldor Topsoe AS,Haldor Topsoe AS,Denmark,Africa,Chemicals,Unspecified,New Investment Stra...,-,-
-5,May 2012,Tiger Brands,Tiger Brands,South Africa,Africa,Consumer products,Unspecified,New Investment Stra...,-,-
-6,May 2012,Fraport,Fraport,Germany,Latin America & C...,Business services,Unspecified,New Investment Stra...,-,-
-7,May 2012,Apollo Hospitals ...,Apollo Hospitals ...,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
-8,May 2012,Toyota Motor,Toyota Boshoku,Japan,Pakistan,Automotive compo...,Manufacturing,Considering Projec...,-,-
-9,May 2012,Ashley Furniture,Ashley Furniture,United States,Latin America & C...,Consumer products,Retail,Considering Project (...,-,-
-10,May 2012,Syngenta,Syngenta,Switzerland,Africa,Chemicals,"Logistics, Distribu...",Considering Projec...,-,$500.00m
-11,May 2012,Randon,Randon,Brazil,Latin America & C...,Automotive compo...,Manufacturing,Considering Project (...,-,-
-12,May 2012,Volvo,VE Commercial V...,Sweden,Asia-Pacific,Automotive compo...,Unspecified,New Investment Stra...,-,-
-13,May 2012,Deutsche Post,DHL Express,Germany,Middle East,Transportation & ...,Unspecified,New Investment Stra...,-,-
-14,May 2012,Pestech,Pestech,Malaysia,Ghana,Business services,Unspecified,New Funding/Reso...,-,$0.60m
-15,May 2012,Maxwell Stamp,Maxwell Stamp,United Kingdom,Africa,Business services,Business Services,Considering Project (...,-,-
+1,May 2012,Repsol SA,Repsol SA,Spain,United States,"Coal, oil & gas",n/a,New Investment Stra...,-,$23.92bn
+2,May 2012,Nae,Nae,Spain,Africa,Business services,Unspecified,New Investment Stra...,-,-
+3,May 2012,Pan Africa Busine...,CNBC Africa,South Africa,Africa,Communications,"Sales, Marketing ...",Considering Project (...,-,-
+4,May 2012,SunGard,SunGard,United States,Nigeria,Software & IT serv...,Unspecified,New Investment Stra...,-,-
+5,May 2012,Haldor Topsoe AS,Haldor Topsoe AS,Denmark,Africa,Chemicals,Unspecified,New Investment Stra...,-,-
+6,May 2012,Tiger Brands,Tiger Brands,South Africa,Africa,Consumer products,Unspecified,New Investment Stra...,-,-
+7,May 2012,Fraport,Fraport,Germany,Latin America & C...,Business services,Unspecified,New Investment Stra...,-,-
+8,May 2012,Apollo Hospitals ...,Apollo Hospitals ...,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
+9,May 2012,Toyota Motor,Toyota Boshoku,Japan,Pakistan,Automotive compo...,Manufacturing,Considering Projec...,-,-
+10,May 2012,Ashley Furniture,Ashley Furniture,United States,Latin America & C...,Consumer products,Retail,Considering Project (...,-,-
+11,May 2012,Syngenta,Syngenta,Switzerland,Africa,Chemicals,"Logistics, Distribu...",Considering Projec...,-,$500.00m
+12,May 2012,Randon,Randon,Brazil,Latin America & C...,Automotive compo...,Manufacturing,Considering Project (...,-,-
+13,May 2012,Volvo,VE Commercial V...,Sweden,Asia-Pacific,Automotive compo...,Unspecified,New Investment Stra...,-,-
+14,May 2012,Deutsche Post,DHL Express,Germany,Middle East,Transportation & ...,Unspecified,New Investment Stra...,-,-
+15,May 2012,Pestech,Pestech,Malaysia,Ghana,Business services,Unspecified,New Funding/Reso...,-,$0.60m

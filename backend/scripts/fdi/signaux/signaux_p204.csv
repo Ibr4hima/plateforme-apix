@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Aug 2015,Pinnacle Africa,Pinnacle Africa,South Africa,Africa,Business machines...,n/a,New Investment Stra...,-,-
-2,Aug 2015,Benoy,Benoy,United Kingdom,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
-3,Aug 2015,Click n Compare,Click n Compare,South Africa,Nigeria,Software & IT serv...,Unspecified,New Investment Stra...,-,$0.50m
-4,Aug 2015,RDC Properties,RDC Properties,Botswana,Namibia,Real estate,Construction,Considering Project (...,-,-
-5,Aug 2015,M4JAM,M4JAM,South Africa,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-6,Aug 2015,La Vie en Rose,La Vie en Rose,Canada,India,Textiles,Retail,Considering Project (...,-,-
-7,Aug 2015,Rubicon Resources,Rubicon Resources,Australia,Mozambique,Minerals,n/a,New Funding/Resour...,-,-
-8,Aug 2015,Funzi,Funzi,Finland,Africa,Software & IT serv...,"Sales, Marketing ...",Considering Project (...,-,-
-9,Aug 2015,Transnet,Transnet,South Africa,Africa,Transportation & ...,"Logistics, Distribu...",New Investment Stra...,-,-
-10,Aug 2015,Sammit Motors ...,Sammit Motors ...,Thailand,Africa,Automotive compo...,Manufacturing,Considering Projec...,-,-
-11,Aug 2015,Oolu,Oolu,Senegal,Africa,Electronic compon...,n/a,New Funding/Resour...,-,-
-12,Aug 2015,Twitter,Twitter,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-13,Aug 2015,Meta (Facebook),Meta (Facebook),United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-14,Aug 2015,Shapoorji Pallonji...,Sterling and Wilson,India,Morocco,Renewable energy,Electricity,New Investment Stra...,-,-
-15,Aug 2015,Chryso,Chryso Eastern A...,South Africa,Africa,Chemicals,Manufacturing,Considering Project (...,-,-
+1,Aug 2015,TopCheck,TopCheck,Germany,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
+2,Aug 2015,Pinnacle Africa,Pinnacle Africa,South Africa,Africa,Business machines...,n/a,New Investment Stra...,-,-
+3,Aug 2015,Benoy,Benoy,United Kingdom,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
+4,Aug 2015,Click n Compare,Click n Compare,South Africa,Nigeria,Software & IT serv...,Unspecified,New Investment Stra...,-,$0.50m
+5,Aug 2015,RDC Properties,RDC Properties,Botswana,Namibia,Real estate,Construction,Considering Project (...,-,-
+6,Aug 2015,M4JAM,M4JAM,South Africa,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+7,Aug 2015,La Vie en Rose,La Vie en Rose,Canada,India,Textiles,Retail,Considering Project (...,-,-
+8,Aug 2015,Rubicon Resources,Rubicon Resources,Australia,Mozambique,Minerals,n/a,New Funding/Resour...,-,-
+9,Aug 2015,Funzi,Funzi,Finland,Africa,Software & IT serv...,"Sales, Marketing ...",Considering Project (...,-,-
+10,Aug 2015,Transnet,Transnet,South Africa,Africa,Transportation & ...,"Logistics, Distribu...",New Investment Stra...,-,-
+11,Aug 2015,Sammit Motors ...,Sammit Motors ...,Thailand,Africa,Automotive compo...,Manufacturing,Considering Projec...,-,-
+12,Aug 2015,Oolu,Oolu,Senegal,Africa,Electronic compon...,n/a,New Funding/Resour...,-,-
+13,Aug 2015,Twitter,Twitter,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+14,Aug 2015,Meta (Facebook),Meta (Facebook),United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+15,Aug 2015,Shapoorji Pallonji...,Sterling and Wilson,India,Morocco,Renewable energy,Electricity,New Investment Stra...,-,-

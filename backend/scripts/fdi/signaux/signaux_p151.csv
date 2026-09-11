@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Feb 2019,ASUStek,ASUStek,Taiwan,Kenya,Business machines &...,n/a,New Funding/Reso...,-,-
-2,Feb 2019,Senseon,Senseon,United Kingdom,United States,Software & IT services,n/a,New Funding/Resour...,-,-
-3,Feb 2019,Little Cab,Little Cab,Kenya,Ghana,Software & IT services,n/a,New Funding/Resour...,-,-
-4,Feb 2019,Call A Lawyer,Call A Lawyer,France,Spain,Software & IT services,n/a,New Funding/Resour...,-,-
-5,Feb 2019,Coindirect,Coindirect,United Kingdom,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
-6,Feb 2019,Azoomee,Azoomee,United Kingdom,United States,Software & IT services,n/a,New Funding/Resour...,-,-
-7,Feb 2019,Engie (GDF SUEZ...,National Central ...,France,Egypt,Industrial equipment,n/a,Considering Project (...,-,-
-8,Feb 2019,China National B...,China National B...,China,Middle East,Building materials,"Logistics, Distribu...",New Investment Stra...,-,-
-9,Feb 2019,Overtime,Overtime,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
-10,Feb 2019,HelloGold,HelloGold,Malaysia,Africa,Metals,n/a,New Funding/Resour...,-,-
-11,Feb 2019,OQ (Oman Oil Co...,Oman Oil Marketi...,Oman,Saudi Arabia,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-12,Feb 2019,Societe Generale ...,Societe Generale ...,France,Saudi Arabia,Financial services,n/a,New Investment Stra...,-,-
-13,Feb 2019,OpenApp,OpenApp,India,Asia-Pacific,Communications,n/a,New Funding/Resour...,-,-
-14,Feb 2019,Renault,Renault,France,Ghana,Automotive OEM,Manufacturing,Considering Project (...,-,-
-15,Feb 2019,RIU Hotels & Res...,RIU Hotels & Res...,Spain,Asia-Pacific,Hotels & tourism,Construction,Considering Projec...,-,-
+1,Feb 2019,BBK Electronics,Oppo Electronics,China,Middle East,Communications,Manufacturing,New Investment Stra...,-,-
+2,Feb 2019,ASUStek,ASUStek,Taiwan,Kenya,Business machines &...,n/a,New Funding/Reso...,-,-
+3,Feb 2019,Senseon,Senseon,United Kingdom,United States,Software & IT services,n/a,New Funding/Resour...,-,-
+4,Feb 2019,Little Cab,Little Cab,Kenya,Ghana,Software & IT services,n/a,New Funding/Resour...,-,-
+5,Feb 2019,Call A Lawyer,Call A Lawyer,France,Spain,Software & IT services,n/a,New Funding/Resour...,-,-
+6,Feb 2019,Coindirect,Coindirect,United Kingdom,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+7,Feb 2019,Azoomee,Azoomee,United Kingdom,United States,Software & IT services,n/a,New Funding/Resour...,-,-
+8,Feb 2019,Engie (GDF SUEZ...,National Central ...,France,Egypt,Industrial equipment,n/a,Considering Project (...,-,-
+9,Feb 2019,China National B...,China National B...,China,Middle East,Building materials,"Logistics, Distribu...",New Investment Stra...,-,-
+10,Feb 2019,Overtime,Overtime,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
+11,Feb 2019,HelloGold,HelloGold,Malaysia,Africa,Metals,n/a,New Funding/Resour...,-,-
+12,Feb 2019,OQ (Oman Oil Co...,Oman Oil Marketi...,Oman,Saudi Arabia,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+13,Feb 2019,Societe Generale ...,Societe Generale ...,France,Saudi Arabia,Financial services,n/a,New Investment Stra...,-,-
+14,Feb 2019,OpenApp,OpenApp,India,Asia-Pacific,Communications,n/a,New Funding/Resour...,-,-
+15,Feb 2019,Renault,Renault,France,Ghana,Automotive OEM,Manufacturing,Considering Project (...,-,-

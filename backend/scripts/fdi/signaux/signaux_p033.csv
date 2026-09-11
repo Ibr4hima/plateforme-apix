@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Oct 2024,str8bat,str8bat,India,United States,Industrial equipment,n/a,New Funding/Resour...,$3.50m,-
-2,Oct 2024,Aerodyne,Aerodyne,Malaysia,Latin America & C...,Aerospace,n/a,New Investment Stra...,-,-
-3,Oct 2024,Ignite Power,Ignite Power,UAE,Africa,Renewable energy,Electricity,Considering Projec...,-,-
-4,Oct 2024,GEN PLUS Group,GEN PLUS Group,United Kingdom,Middle East,Business services,n/a,New Investment Stra...,-,-
-5,Oct 2024,Irvine's,Irvine's,Zimbabwe,Botswana,Food and Beverages,Manufacturing,Considering Projec...,$18.00m,-
-6,Oct 2024,GoviEx,GoviEx,Canada,Zambia,Minerals,Extraction,Considering Project (...,-,-
-7,Oct 2024,Ooredoo (Qatar T...,Ooredoo (Qatar T...,Qatar,Middle East,Communications,ICT & Internet Infra...,New Funding/Resour...,$549.50m,-
-8,Oct 2024,Sociedad Quimica...,Sociedad Quimica...,Chile,Australia,Chemicals,n/a,New Investment Stra...,-,-
-9,Oct 2024,VelyVelo,VelyVelo,France,Spain,Non-automotive tran...,n/a,New Funding/Resour...,-,-
-10,Oct 2024,Specialty MGA,Specialty MGA Af...,United Kingdom,Middle East,Financial services,"Sales, Marketing & ...",Considering Project (...,-,-
-11,Oct 2024,Coca-Cola Helleni...,Coca-Cola Helleni...,Switzerland,Nigeria,Food and Beverages,n/a,New Investment Stra...,-,$1.00bn
-12,Oct 2024,Volatus Aerospace,Volatus Aerospace,Canada,Africa,Aerospace,n/a,New Investment Stra...,-,-
-13,Oct 2024,JinkoSolar,JinkoSolar,China,Africa,Electronic compon...,n/a,New Investment Stra...,-,-
-14,Oct 2024,Sinotruk (China ...,Sinotruk (China ...,China,South Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-
-15,Oct 2024,Whatfix,Whatfix,United States,United States,Software & IT services,n/a,New Funding/Resour...,$125.00m,-
+1,Oct 2024,Datasonic,Datasonic,Malaysia,Asia-Pacific,Business services,n/a,New Investment Stra...,-,-
+2,Oct 2024,str8bat,str8bat,India,United States,Industrial equipment,n/a,New Funding/Resour...,$3.50m,-
+3,Oct 2024,Aerodyne,Aerodyne,Malaysia,Latin America & C...,Aerospace,n/a,New Investment Stra...,-,-
+4,Oct 2024,Ignite Power,Ignite Power,UAE,Africa,Renewable energy,Electricity,Considering Projec...,-,-
+5,Oct 2024,GEN PLUS Group,GEN PLUS Group,United Kingdom,Middle East,Business services,n/a,New Investment Stra...,-,-
+6,Oct 2024,Irvine's,Irvine's,Zimbabwe,Botswana,Food and Beverages,Manufacturing,Considering Projec...,$18.00m,-
+7,Oct 2024,GoviEx,GoviEx,Canada,Zambia,Minerals,Extraction,Considering Project (...,-,-
+8,Oct 2024,Ooredoo (Qatar T...,Ooredoo (Qatar T...,Qatar,Middle East,Communications,ICT & Internet Infra...,New Funding/Resour...,$549.50m,-
+9,Oct 2024,Sociedad Quimica...,Sociedad Quimica...,Chile,Australia,Chemicals,n/a,New Investment Stra...,-,-
+10,Oct 2024,VelyVelo,VelyVelo,France,Spain,Non-automotive tran...,n/a,New Funding/Resour...,-,-
+11,Oct 2024,Specialty MGA,Specialty MGA Af...,United Kingdom,Middle East,Financial services,"Sales, Marketing & ...",Considering Project (...,-,-
+12,Oct 2024,Coca-Cola Helleni...,Coca-Cola Helleni...,Switzerland,Nigeria,Food and Beverages,n/a,New Investment Stra...,-,$1.00bn
+13,Oct 2024,Volatus Aerospace,Volatus Aerospace,Canada,Africa,Aerospace,n/a,New Investment Stra...,-,-
+14,Oct 2024,JinkoSolar,JinkoSolar,China,Africa,Electronic compon...,n/a,New Investment Stra...,-,-
+15,Oct 2024,Sinotruk (China ...,Sinotruk (China ...,China,South Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-

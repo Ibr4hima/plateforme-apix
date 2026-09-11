@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Oct 2016,Alpha Destination...,Alpha Destination...,UAE,Africa,Hotels & tourism,"Sales, Marketing ...",Considering Project (...,-,-
-2,Oct 2016,Blue Medora,Blue Medora,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
-3,Oct 2016,Little Red,Little Red,Kenya,Africa,Textiles,Retail,Considering Project (...,-,-
-4,Oct 2016,Judo Payments,Judo Payments,United Kingdom,North America,Software & IT serv...,n/a,New Investment Stra...,-,-
-5,Oct 2016,BLender,BLender,Israel,Latin America & C...,Software & IT serv...,n/a,New Investment Stra...,-,-
-6,Oct 2016,Gold Leaf Tobacc...,Gold Leaf Tobacc...,South Africa,Zambia,Food and Beverages,n/a,New Investment Stra...,-,-
-7,Oct 2016,LulaLend,LulaLend,South Africa,Africa,Financial services,n/a,New Funding/Resour...,-,-
-8,Oct 2016,Chalhoub,Chalhoub,UAE,Egypt,Consumer products,n/a,New Investment Stra...,-,-
-9,Oct 2016,Megaroller,Megaroller,South Africa,Nigeria,Industrial equipme...,Manufacturing,Considering Project (...,-,-
-10,Sep 2016,Caterpillar,Caterpillar,United States,Africa,Industrial equipme...,Maintenance & Se...,Considering Project (...,-,$1.00bn
-11,Sep 2016,Sinotruk (China ...,Sinotruk (China ...,China,Asia-Pacific,Automotive OEM,Manufacturing,Considering Project (...,-,-
-12,Sep 2016,D.light Design,D.light Design,United States,Asia-Pacific,Electronic compon...,n/a,New Funding/Resour...,-,$22.00m
-13,Sep 2016,Russian Technolo...,Technodinamika ...,Russia,Africa,Aerospace,"Sales, Marketing ...",Considering Project (...,-,-
-14,Sep 2016,Mara Group,Mara Group,UAE,Middle East,Transportation & ...,n/a,New Investment Stra...,-,-
-15,Sep 2016,Prime Focus,Prime Focus Tech...,India,North America,Software & IT serv...,n/a,New Funding/Resour...,-,-
+1,Oct 2016,mParticle,mParticle,United States,Middle East,Software & IT serv...,"Sales, Marketing ...",New Funding/Resour...,-,-
+2,Oct 2016,Alpha Destination...,Alpha Destination...,UAE,Africa,Hotels & tourism,"Sales, Marketing ...",Considering Project (...,-,-
+3,Oct 2016,Blue Medora,Blue Medora,United States,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
+4,Oct 2016,Little Red,Little Red,Kenya,Africa,Textiles,Retail,Considering Project (...,-,-
+5,Oct 2016,Judo Payments,Judo Payments,United Kingdom,North America,Software & IT serv...,n/a,New Investment Stra...,-,-
+6,Oct 2016,BLender,BLender,Israel,Latin America & C...,Software & IT serv...,n/a,New Investment Stra...,-,-
+7,Oct 2016,Gold Leaf Tobacc...,Gold Leaf Tobacc...,South Africa,Zambia,Food and Beverages,n/a,New Investment Stra...,-,-
+8,Oct 2016,LulaLend,LulaLend,South Africa,Africa,Financial services,n/a,New Funding/Resour...,-,-
+9,Oct 2016,Chalhoub,Chalhoub,UAE,Egypt,Consumer products,n/a,New Investment Stra...,-,-
+10,Oct 2016,Megaroller,Megaroller,South Africa,Nigeria,Industrial equipme...,Manufacturing,Considering Project (...,-,-
+11,Sep 2016,Caterpillar,Caterpillar,United States,Africa,Industrial equipme...,Maintenance & Se...,Considering Project (...,-,$1.00bn
+12,Sep 2016,Sinotruk (China ...,Sinotruk (China ...,China,Asia-Pacific,Automotive OEM,Manufacturing,Considering Project (...,-,-
+13,Sep 2016,D.light Design,D.light Design,United States,Asia-Pacific,Electronic compon...,n/a,New Funding/Resour...,-,$22.00m
+14,Sep 2016,Russian Technolo...,Technodinamika ...,Russia,Africa,Aerospace,"Sales, Marketing ...",Considering Project (...,-,-
+15,Sep 2016,Mara Group,Mara Group,UAE,Middle East,Transportation & ...,n/a,New Investment Stra...,-,-

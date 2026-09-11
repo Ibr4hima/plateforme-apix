@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Nov 2010,Everlight Electron...,Everlight Electron...,Taiwan,Middle East,Electronic compon...,Unspecified,New Personnel,-,-
-2,Nov 2010,The Cooperative ...,The Cooperative ...,Kenya,Uganda,Financial services,Unspecified,New Investment Stra...,-,-
-3,Nov 2010,Societe Generale ...,Societe Generale ...,France,Asia-Pacific,Financial services,Unspecified,New Investment Stra...,-,-
-4,Nov 2010,Lukoil,Lukoil,Russia,Africa,"Coal, oil & gas",Unspecified,New Investment Stra...,-,$800.00m
-5,Nov 2010,Novonor (Odebre...,Braskem,Brazil,Angola,Chemicals,Manufacturing,Considering Project (...,-,-
-6,Nov 2010,National Compan...,Egyptian Contrac...,Egypt,Middle East,Business services,Unspecified,New Investment Stra...,-,-
-7,Nov 2010,Attijariwafa Bank,Attijariwafa Bank,Morocco,Africa,Financial services,Business Services,Considering Project (...,-,-
-8,Nov 2010,Williams & Humb...,Williams & Humb...,Spain,Latin America & C...,Food and Beverages,Unspecified,New Investment Stra...,-,-
-9,Nov 2010,Bridgewater Syst...,Bridgewater Syst...,Canada,Latin America & C...,Communications,ICT & Internet Inf...,Considering Project (...,-,-
-10,Nov 2010,Orolia,McMurdo,France,Africa,Communications,Unspecified,New Overseas Suppli...,-,-
-11,Nov 2010,Southern African ...,Southern African ...,South Africa,Angola,Non-automotive tr...,Unspecified,New Investment Stra...,-,-
-12,Nov 2010,Zuora,Zuora,United States,Middle East,Software & IT serv...,n/a,New Funding/Reso...,-,-
-13,Nov 2010,Surestream Petro...,Surestream Petro...,United Kingdom,Africa,"Coal, oil & gas",n/a,New Funding/Resour...,-,$120.00m
-14,Nov 2010,Woolworths (Sout...,Woolworths (Sout...,South Africa,Africa,Consumer products,Retail,Considering Project (...,-,-
-15,Nov 2010,Linkers (Far East)...,Linkers (Far East)...,Singapore,Latin America & C...,Chemicals,Unspecified,Considering Projec...,-,-
+1,Nov 2010,Xstrata PLC,Xstrata PLC,Switzerland,Mauritania,Metals,Unspecified,Considering Project (...,-,$6.00bn
+2,Nov 2010,Everlight Electron...,Everlight Electron...,Taiwan,Middle East,Electronic compon...,Unspecified,New Personnel,-,-
+3,Nov 2010,The Cooperative ...,The Cooperative ...,Kenya,Uganda,Financial services,Unspecified,New Investment Stra...,-,-
+4,Nov 2010,Societe Generale ...,Societe Generale ...,France,Asia-Pacific,Financial services,Unspecified,New Investment Stra...,-,-
+5,Nov 2010,Lukoil,Lukoil,Russia,Africa,"Coal, oil & gas",Unspecified,New Investment Stra...,-,$800.00m
+6,Nov 2010,Novonor (Odebre...,Braskem,Brazil,Angola,Chemicals,Manufacturing,Considering Project (...,-,-
+7,Nov 2010,National Compan...,Egyptian Contrac...,Egypt,Middle East,Business services,Unspecified,New Investment Stra...,-,-
+8,Nov 2010,Attijariwafa Bank,Attijariwafa Bank,Morocco,Africa,Financial services,Business Services,Considering Project (...,-,-
+9,Nov 2010,Williams & Humb...,Williams & Humb...,Spain,Latin America & C...,Food and Beverages,Unspecified,New Investment Stra...,-,-
+10,Nov 2010,Bridgewater Syst...,Bridgewater Syst...,Canada,Latin America & C...,Communications,ICT & Internet Inf...,Considering Project (...,-,-
+11,Nov 2010,Orolia,McMurdo,France,Africa,Communications,Unspecified,New Overseas Suppli...,-,-
+12,Nov 2010,Southern African ...,Southern African ...,South Africa,Angola,Non-automotive tr...,Unspecified,New Investment Stra...,-,-
+13,Nov 2010,Zuora,Zuora,United States,Middle East,Software & IT serv...,n/a,New Funding/Reso...,-,-
+14,Nov 2010,Surestream Petro...,Surestream Petro...,United Kingdom,Africa,"Coal, oil & gas",n/a,New Funding/Resour...,-,$120.00m
+15,Nov 2010,Woolworths (Sout...,Woolworths (Sout...,South Africa,Africa,Consumer products,Retail,Considering Project (...,-,-

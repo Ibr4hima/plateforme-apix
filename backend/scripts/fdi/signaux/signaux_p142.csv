@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Aug 2019,Swvl,Swvl,Egypt,Nigeria,Software & IT services,n/a,Considering Project (...,-,-
-2,Aug 2019,Swvl,Swvl,Egypt,Kenya,Software & IT services,n/a,New Investment Stra...,-,-
-3,Aug 2019,Nomanini,Nomanini,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,$4.00m
-4,Aug 2019,ThoughtSpot,ThoughtSpot,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
-5,Aug 2019,Malabar Group,Malabar Gold and...,India,Australia,Consumer products,Education & Traini...,Considering Project (...,-,-
-6,Aug 2019,Hinduja Group,Ashok Leyland,India,Zambia,Automotive OEM,Manufacturing,Considering Project (...,-,-
-7,Aug 2019,Korea National Oi...,Korea National Oi...,South Korea,Egypt,"Coal, oil & gas",Extraction,Considering Project (...,-,-
-8,Aug 2019,Deichmann Schu...,Deichmann Schu...,Germany,Middle East,Textiles,n/a,New Investment Stra...,-,$83.82m
-9,Aug 2019,Tala,Tala,United States,India,Financial services,n/a,New Funding/Resour...,-,-
-10,Aug 2019,BioBuu,BioBuu,Tanzania,Uganda,Food and Beverages,Manufacturing,Considering Project (...,-,-
-11,Aug 2019,SOLA Group,SOLA Group,South Africa,Africa,Renewable energy,Electricity,New Funding/Resour...,-,-
-12,Aug 2019,Arada,Arada,UAE,Saudi Arabia,Real estate,n/a,Considering Project (...,-,-
-13,Aug 2019,Cipla,Cipla Quality Che...,India,Africa,Pharmaceuticals,n/a,New Investment Stra...,-,-
-14,Aug 2019,Webhelp,Webhelp,France,Benin,Business services,Customer Contact C...,Considering Project (...,-,-
-15,Aug 2019,Instadeep,Instadeep,United Kingdom,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+1,Sep 2019,PEG Africa,PEG Africa,Ghana,Africa,Renewable energy,n/a,New Funding/Resour...,-,$5.00m
+2,Aug 2019,Swvl,Swvl,Egypt,Nigeria,Software & IT services,n/a,Considering Project (...,-,-
+3,Aug 2019,Swvl,Swvl,Egypt,Kenya,Software & IT services,n/a,New Investment Stra...,-,-
+4,Aug 2019,Nomanini,Nomanini,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,$4.00m
+5,Aug 2019,ThoughtSpot,ThoughtSpot,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
+6,Aug 2019,Malabar Group,Malabar Gold and...,India,Australia,Consumer products,Education & Traini...,Considering Project (...,-,-
+7,Aug 2019,Hinduja Group,Ashok Leyland,India,Zambia,Automotive OEM,Manufacturing,Considering Project (...,-,-
+8,Aug 2019,Korea National Oi...,Korea National Oi...,South Korea,Egypt,"Coal, oil & gas",Extraction,Considering Project (...,-,-
+9,Aug 2019,Deichmann Schu...,Deichmann Schu...,Germany,Middle East,Textiles,n/a,New Investment Stra...,-,$83.82m
+10,Aug 2019,Tala,Tala,United States,India,Financial services,n/a,New Funding/Resour...,-,-
+11,Aug 2019,BioBuu,BioBuu,Tanzania,Uganda,Food and Beverages,Manufacturing,Considering Project (...,-,-
+12,Aug 2019,SOLA Group,SOLA Group,South Africa,Africa,Renewable energy,Electricity,New Funding/Resour...,-,-
+13,Aug 2019,Arada,Arada,UAE,Saudi Arabia,Real estate,n/a,Considering Project (...,-,-
+14,Aug 2019,Cipla,Cipla Quality Che...,India,Africa,Pharmaceuticals,n/a,New Investment Stra...,-,-
+15,Aug 2019,Webhelp,Webhelp,France,Benin,Business services,Customer Contact C...,Considering Project (...,-,-

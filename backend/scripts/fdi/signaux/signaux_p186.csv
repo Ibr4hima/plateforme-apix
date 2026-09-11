@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Dec 2016,Fuzu,Fuzu,Finland,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
-2,Dec 2016,Qstream,Qstream,United States,North America,Software & IT serv...,n/a,New Funding/Resour...,-,$15.00m
-3,Nov 2016,TransferTo,TransferTo,Singapore,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-4,Nov 2016,SunCulture,SunCulture,Kenya,Uganda,Industrial equipme...,n/a,New Investment Stra...,-,-
-5,Nov 2016,Snapplify,Snapplify,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
-6,Nov 2016,TmaxSoft,TmaxSoft,United States,Asia-Pacific,Software & IT serv...,n/a,New Personnel,-,-
-7,Nov 2016,VF Corporation,Wrangler,United States,Middle East,Textiles,Retail,Considering Project (...,-,-
-8,Nov 2016,IKI Mobile,IKI Mobile,Portugal,Turkey,Communications,Manufacturing,Considering Project (...,-,-
-9,Nov 2016,Agco,Agco,United States,Africa,Industrial equipme...,Education & Traini...,Considering Project (...,-,-
-10,Nov 2016,MeTL Group,MeTL Group,Tanzania,Uganda,Chemicals,"Logistics, Distribu...",Considering Projec...,-,-
-11,Nov 2016,Honeywell,Honeywell,United States,Ethiopia,Aerospace,n/a,New Investment Stra...,-,-
-12,Nov 2016,Raghav Corporat...,GolfLAN,India,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
-13,Nov 2016,Formosa Plastics ...,Formosa Plastics ...,Taiwan,Asia-Pacific,Chemicals,"Sales, Marketing ...",Considering Project (...,-,-
-14,Nov 2016,Orkla Group,MTR Foods,Norway,Africa,Food and Beverages,n/a,New Investment Stra...,-,-
-15,Nov 2016,Standard Charter...,Standard Charter...,United Kingdom,Nigeria,Financial services,Business Services,Considering Project (...,-,-
+1,Dec 2016,Zipline,Zipline,United States,Africa,Transportation & ...,n/a,New Funding/Resour...,-,$25.00m
+2,Dec 2016,Fuzu,Fuzu,Finland,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
+3,Dec 2016,Qstream,Qstream,United States,North America,Software & IT serv...,n/a,New Funding/Resour...,-,$15.00m
+4,Nov 2016,TransferTo,TransferTo,Singapore,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+5,Nov 2016,SunCulture,SunCulture,Kenya,Uganda,Industrial equipme...,n/a,New Investment Stra...,-,-
+6,Nov 2016,Snapplify,Snapplify,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
+7,Nov 2016,TmaxSoft,TmaxSoft,United States,Asia-Pacific,Software & IT serv...,n/a,New Personnel,-,-
+8,Nov 2016,VF Corporation,Wrangler,United States,Middle East,Textiles,Retail,Considering Project (...,-,-
+9,Nov 2016,IKI Mobile,IKI Mobile,Portugal,Turkey,Communications,Manufacturing,Considering Project (...,-,-
+10,Nov 2016,Agco,Agco,United States,Africa,Industrial equipme...,Education & Traini...,Considering Project (...,-,-
+11,Nov 2016,MeTL Group,MeTL Group,Tanzania,Uganda,Chemicals,"Logistics, Distribu...",Considering Projec...,-,-
+12,Nov 2016,Honeywell,Honeywell,United States,Ethiopia,Aerospace,n/a,New Investment Stra...,-,-
+13,Nov 2016,Raghav Corporat...,GolfLAN,India,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
+14,Nov 2016,Formosa Plastics ...,Formosa Plastics ...,Taiwan,Asia-Pacific,Chemicals,"Sales, Marketing ...",Considering Project (...,-,-
+15,Nov 2016,Orkla Group,MTR Foods,Norway,Africa,Food and Beverages,n/a,New Investment Stra...,-,-

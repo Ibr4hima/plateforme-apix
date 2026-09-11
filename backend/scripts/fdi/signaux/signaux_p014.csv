@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2026,Rain.xyz,Rain.xyz,United States,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,$250.00m,-
-2,Jan 2026,Manilotti,Manilotti,Italy,Middle East,Consumer electronics,n/a,New Investment Stra...,-,-
-3,Jan 2026,Henon,Henon,Canada,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
-4,Jan 2026,Welo Health,Welo Health,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
-5,Jan 2026,MilkStraw AI,MilkStraw AI,United States,Middle East,Software & IT services,n/a,New Funding/Resour...,$2.00m,-
-6,Jan 2026,Mylapay,Mylapay,India,United States,Financial services,n/a,New Funding/Resour...,$1.00m,-
-7,Dec 2025,VOLZ,VOLZ,Algeria,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
-8,Dec 2025,Candi Solar,Candi Solar,Switzerland,India,Electronic compon...,n/a,New Funding/Resour...,$58.50m,-
-9,Dec 2025,iVoiceUp,iVoiceUp,UAE,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,-,-
-10,Dec 2025,MoEngage,MoEngage,United States,North America,Software & IT services,"Sales, Marketing & ...",New Funding/Resour...,$180.00m,-
-11,Dec 2025,Tenex.ai,Tenex.ai,United States,Middle East,Software & IT services,Headquarters,Considering Projec...,-,-
-12,Dec 2025,Aurassure,Aurassure,India,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,$2.80m,-
-13,Dec 2025,Zazu,Zazu,Germany,Africa,Software & IT services,n/a,New Funding/Resour...,$1.00m,-
-14,Dec 2025,Superbo,Superbo,Hong Kong,United States,Software & IT services,n/a,New Funding/Resour...,-,-
-15,Dec 2025,YTL,YTL,Malaysia,South Africa,Communications,ICT & Internet Infra...,Considering Project (...,-,-
+1,Jan 2026,Essar Group,Black Box,India,Australia,Communications,n/a,New Investment Stra...,-,-
+2,Jan 2026,Rain.xyz,Rain.xyz,United States,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,$250.00m,-
+3,Jan 2026,Manilotti,Manilotti,Italy,Middle East,Consumer electronics,n/a,New Investment Stra...,-,-
+4,Jan 2026,Henon,Henon,Canada,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
+5,Jan 2026,Welo Health,Welo Health,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+6,Jan 2026,MilkStraw AI,MilkStraw AI,United States,Middle East,Software & IT services,n/a,New Funding/Resour...,$2.00m,-
+7,Jan 2026,Mylapay,Mylapay,India,United States,Financial services,n/a,New Funding/Resour...,$1.00m,-
+8,Dec 2025,VOLZ,VOLZ,Algeria,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
+9,Dec 2025,Candi Solar,Candi Solar,Switzerland,India,Electronic compon...,n/a,New Funding/Resour...,$58.50m,-
+10,Dec 2025,iVoiceUp,iVoiceUp,UAE,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,-,-
+11,Dec 2025,MoEngage,MoEngage,United States,North America,Software & IT services,"Sales, Marketing & ...",New Funding/Resour...,$180.00m,-
+12,Dec 2025,Tenex.ai,Tenex.ai,United States,Middle East,Software & IT services,Headquarters,Considering Projec...,-,-
+13,Dec 2025,Aurassure,Aurassure,India,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,$2.80m,-
+14,Dec 2025,Zazu,Zazu,Germany,Africa,Software & IT services,n/a,New Funding/Resour...,$1.00m,-
+15,Dec 2025,Superbo,Superbo,Hong Kong,United States,Software & IT services,n/a,New Funding/Resour...,-,-

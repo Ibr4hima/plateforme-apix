@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Nov 2015,Lintel,Africell,Lebanon,Africa,Communications,n/a,New Investment Stra...,-,-
-2,Nov 2015,Societe Generale ...,Societe Generale ...,France,Africa,Financial services,Business Services,Considering Projec...,-,$4.35bn
-3,Nov 2015,Standard Charter...,Standard Charter...,United Kingdom,Asia-Pacific,Financial services,n/a,New Funding/Resour...,-,-
-4,Nov 2015,Vitol Group,Vivo Energy,Netherlands,Africa,"Coal, oil & gas",Retail,Considering Project (...,-,-
-5,Nov 2015,Equinor (Statoil),Equinor (Statoil),Norway,Latin America & C...,"Coal, oil & gas",Extraction,Considering Project (...,-,-
-6,Nov 2015,Petrobras,Petrobras,Brazil,Latin America & C...,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-7,Nov 2015,Engie (GDF SUEZ...,Engie (GDF SUEZ...,France,Asia-Pacific,"Coal, oil & gas",Electricity,Considering Projec...,-,-
-8,Oct 2015,Mercedes-Benz G...,Mercedes-Benz G...,Germany,Latin America & C...,Automotive OEM,"Sales, Marketing ...",Considering Project (...,-,-
-9,Oct 2015,Russian Machines,GAZ,Russia,Egypt,Automotive OEM,Manufacturing,Considering Project (...,-,-
-10,Oct 2015,e& (Etisalat Group),e& (Etisalat Group),UAE,Africa,Communications,n/a,New Investment Stra...,-,-
-11,Oct 2015,BlisMedia,BlisMedia,United Kingdom,Middle East,Software & IT serv...,"Sales, Marketing & ...",Considering Project (...,-,-
-12,Oct 2015,Verifi,Verifi,United States,North America,Software & IT serv...,n/a,New Investment Stra...,-,-
-13,Oct 2015,Boeing,Boeing,United States,Kenya,Aerospace,"Sales, Marketing ...",Considering Project (...,-,-
-14,Oct 2015,Nomanini,Nomanini,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
-15,Oct 2015,A15,A15,Egypt,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+1,Nov 2015,Lockton,Lockton,United States,Middle East,Financial services,n/a,New Investment Stra...,-,-
+2,Nov 2015,Lintel,Africell,Lebanon,Africa,Communications,n/a,New Investment Stra...,-,-
+3,Nov 2015,Societe Generale ...,Societe Generale ...,France,Africa,Financial services,Business Services,Considering Projec...,-,$4.35bn
+4,Nov 2015,Standard Charter...,Standard Charter...,United Kingdom,Asia-Pacific,Financial services,n/a,New Funding/Resour...,-,-
+5,Nov 2015,Vitol Group,Vivo Energy,Netherlands,Africa,"Coal, oil & gas",Retail,Considering Project (...,-,-
+6,Nov 2015,Equinor (Statoil),Equinor (Statoil),Norway,Latin America & C...,"Coal, oil & gas",Extraction,Considering Project (...,-,-
+7,Nov 2015,Petrobras,Petrobras,Brazil,Latin America & C...,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+8,Nov 2015,Engie (GDF SUEZ...,Engie (GDF SUEZ...,France,Asia-Pacific,"Coal, oil & gas",Electricity,Considering Projec...,-,-
+9,Oct 2015,Mercedes-Benz G...,Mercedes-Benz G...,Germany,Latin America & C...,Automotive OEM,"Sales, Marketing ...",Considering Project (...,-,-
+10,Oct 2015,Russian Machines,GAZ,Russia,Egypt,Automotive OEM,Manufacturing,Considering Project (...,-,-
+11,Oct 2015,e& (Etisalat Group),e& (Etisalat Group),UAE,Africa,Communications,n/a,New Investment Stra...,-,-
+12,Oct 2015,BlisMedia,BlisMedia,United Kingdom,Middle East,Software & IT serv...,"Sales, Marketing & ...",Considering Project (...,-,-
+13,Oct 2015,Verifi,Verifi,United States,North America,Software & IT serv...,n/a,New Investment Stra...,-,-
+14,Oct 2015,Boeing,Boeing,United States,Kenya,Aerospace,"Sales, Marketing ...",Considering Project (...,-,-
+15,Oct 2015,Nomanini,Nomanini,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-

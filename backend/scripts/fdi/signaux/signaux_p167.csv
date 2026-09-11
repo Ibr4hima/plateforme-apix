@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Apr 2018,Makalot Industrial,Makalot Industrial,Taiwan,Latin America & C...,Textiles,Manufacturing,Considering Project (...,-,-
-2,Apr 2018,Exxon Mobil,Exxon Mobil,United States,Algeria,"Coal, oil & gas",n/a,Considering Project (...,-,-
-3,Apr 2018,Onafriq (MFS Afri...,Onafriq (MFS Afri...,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
-4,Apr 2018,PPC (Pretoria Por...,PPC (Pretoria Por...,South Africa,Africa,Building materials,Manufacturing,Considering Project (...,-,-
-5,Apr 2018,Rotho Pharmaceu...,Rotho Pharmaceu...,Japan,Ethiopia,Pharmaceuticals,Manufacturing,Considering Project (...,-,-
-6,Apr 2018,Vandana Luthra C...,Vandana Luthra C...,India,Kenya,Consumer products,n/a,New Investment Stra...,-,-
-7,Apr 2018,RubiBlue,RubiBlue,South Africa,Africa,Software & IT services,n/a,New Investment Stra...,-,-
-8,Apr 2018,Asoko Insight,Asoko Insight,United Kingdom,Africa,Business services,n/a,New Funding/Resour...,-,-
-9,Apr 2018,nCino,nCino,United States,Middle East,Software & IT services,n/a,New Personnel,-,-
-10,Apr 2018,MadfooatCom,MadfooatCom,Jordan,Oman,Software & IT services,n/a,New Funding/Resour...,-,$2.30m
-11,Mar 2018,Fiat Chrysler Aut...,Fiat Chrysler Aut...,United Kingdom,Morocco,Automotive compo...,Manufacturing,Considering Project (...,-,-
-12,Mar 2018,Orange (France T...,Orange (France T...,France,Africa,Software & IT services,n/a,New Investment Stra...,-,-
-13,Mar 2018,Electricite de Fra...,Electricite de Fra...,France,Africa,Renewable energy,"Logistics, Distributio...",Considering Projec...,-,-
-14,Mar 2018,Emirates NBD,Emirates NBD,UAE,Turkey,Financial services,n/a,New Investment Stra...,-,-
-15,Mar 2018,Metropolis Health...,Metropolis Health...,India,Africa,Healthcare,n/a,New Investment Stra...,-,-
+1,Apr 2018,CoinAfrique,CoinAfrique,Senegal,Africa,Software & IT services,n/a,New Funding/Reso...,-,$3.09m
+2,Apr 2018,Makalot Industrial,Makalot Industrial,Taiwan,Latin America & C...,Textiles,Manufacturing,Considering Project (...,-,-
+3,Apr 2018,Exxon Mobil,Exxon Mobil,United States,Algeria,"Coal, oil & gas",n/a,Considering Project (...,-,-
+4,Apr 2018,Onafriq (MFS Afri...,Onafriq (MFS Afri...,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+5,Apr 2018,PPC (Pretoria Por...,PPC (Pretoria Por...,South Africa,Africa,Building materials,Manufacturing,Considering Project (...,-,-
+6,Apr 2018,Rotho Pharmaceu...,Rotho Pharmaceu...,Japan,Ethiopia,Pharmaceuticals,Manufacturing,Considering Project (...,-,-
+7,Apr 2018,Vandana Luthra C...,Vandana Luthra C...,India,Kenya,Consumer products,n/a,New Investment Stra...,-,-
+8,Apr 2018,RubiBlue,RubiBlue,South Africa,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+9,Apr 2018,Asoko Insight,Asoko Insight,United Kingdom,Africa,Business services,n/a,New Funding/Resour...,-,-
+10,Apr 2018,nCino,nCino,United States,Middle East,Software & IT services,n/a,New Personnel,-,-
+11,Apr 2018,MadfooatCom,MadfooatCom,Jordan,Oman,Software & IT services,n/a,New Funding/Resour...,-,$2.30m
+12,Mar 2018,Fiat Chrysler Aut...,Fiat Chrysler Aut...,United Kingdom,Morocco,Automotive compo...,Manufacturing,Considering Project (...,-,-
+13,Mar 2018,Orange (France T...,Orange (France T...,France,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+14,Mar 2018,Electricite de Fra...,Electricite de Fra...,France,Africa,Renewable energy,"Logistics, Distributio...",Considering Projec...,-,-
+15,Mar 2018,Emirates NBD,Emirates NBD,UAE,Turkey,Financial services,n/a,New Investment Stra...,-,-

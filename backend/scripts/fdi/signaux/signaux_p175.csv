@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Nov 2017,Econet Global,Liquid Intelligent ...,Mauritius,Africa,Communications,ICT & Internet Infra...,Considering Projec...,-,$180.00m
-2,Nov 2017,PEGAFrica,PEGAFrica,Ghana,Africa,Renewable energy,n/a,New Investment Stra...,-,-
-3,Nov 2017,Narayana Health ...,Narayana Health ...,India,Africa,Healthcare,n/a,New Investment Stra...,-,-
-4,Nov 2017,Synkers,Synkers,Lebanon,Middle East,Business services,n/a,New Funding/Resour...,-,-
-5,Nov 2017,Laureate Education,Laureate Education,United States,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
-6,Nov 2017,Eventtus,Eventtus,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
-7,Nov 2017,ZTE,ZTE,China,Zimbabwe,Communications,ICT & Internet Infra...,Considering Project (...,-,-
-8,Nov 2017,Andela,Andela,United States,Africa,Business services,n/a,Considering Projec...,-,-
-9,Nov 2017,Commercial Inter...,Commercial Inter...,Egypt,Africa,Financial services,n/a,New Funding/Resour...,-,-
-10,Nov 2017,Jaquar Group,Jaquar Group,India,Asia-Pacific,Consumer products,n/a,New Investment Stra...,-,$16.00m
-11,Nov 2017,Yara International,Yara International,Norway,Ethiopia,Minerals,Extraction,Considering Project (...,-,-
-12,Nov 2017,Rosatom,Rosatom,Russia,South Africa,"Coal, oil & gas",Electricity,Considering Project (...,-,-
-13,Nov 2017,Jitterbit,Jitterbit,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
-14,Nov 2017,Jumo.World,Jumo.World,South Africa,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,$24.00m
-15,Nov 2017,Lucy.ng,Lucy.ng,Nigeria,Africa,Consumer products,n/a,New Investment Stra...,-,-
+1,Nov 2017,TransferTo,TransferTo,Singapore,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+2,Nov 2017,Econet Global,Liquid Intelligent ...,Mauritius,Africa,Communications,ICT & Internet Infra...,Considering Projec...,-,$180.00m
+3,Nov 2017,PEGAFrica,PEGAFrica,Ghana,Africa,Renewable energy,n/a,New Investment Stra...,-,-
+4,Nov 2017,Narayana Health ...,Narayana Health ...,India,Africa,Healthcare,n/a,New Investment Stra...,-,-
+5,Nov 2017,Synkers,Synkers,Lebanon,Middle East,Business services,n/a,New Funding/Resour...,-,-
+6,Nov 2017,Laureate Education,Laureate Education,United States,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
+7,Nov 2017,Eventtus,Eventtus,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
+8,Nov 2017,ZTE,ZTE,China,Zimbabwe,Communications,ICT & Internet Infra...,Considering Project (...,-,-
+9,Nov 2017,Andela,Andela,United States,Africa,Business services,n/a,Considering Projec...,-,-
+10,Nov 2017,Commercial Inter...,Commercial Inter...,Egypt,Africa,Financial services,n/a,New Funding/Resour...,-,-
+11,Nov 2017,Jaquar Group,Jaquar Group,India,Asia-Pacific,Consumer products,n/a,New Investment Stra...,-,$16.00m
+12,Nov 2017,Yara International,Yara International,Norway,Ethiopia,Minerals,Extraction,Considering Project (...,-,-
+13,Nov 2017,Rosatom,Rosatom,Russia,South Africa,"Coal, oil & gas",Electricity,Considering Project (...,-,-
+14,Nov 2017,Jitterbit,Jitterbit,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,-
+15,Nov 2017,Jumo.World,Jumo.World,South Africa,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,-,$24.00m

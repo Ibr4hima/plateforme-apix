@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jul 2011,Siemens,Siemens,Germany,Latin America & C...,"Coal, oil & gas",Unspecified,New Investment Stra...,-,-
-2,Jun 2011,Avnet,Avnet Technolog...,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-3,Jun 2011,Unilever,Unilever,United Kingdom,Latin America & C...,Consumer products,Manufacturing,Considering Project (...,-,-
-4,Jun 2011,Sisecam,Sisecam,Turkey,Iraq,Ceramics & glass,Unspecified,New Investment Stra...,-,-
-5,Jun 2011,Dubai Aluminium ...,Dubai Aluminium ...,UAE,India,Metals,Extraction,Considering Projec...,-,-
-6,Jun 2011,Bollore Group,Africa Global Logi...,France,Africa,Transportation & ...,Unspecified,New Investment Stra...,-,-
-7,Jun 2011,GE Aerospace (G...,GE Aerospace (G...,United States,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
-8,Jun 2011,Husky Energy,Husky Energy,Canada,Latin America & C...,"Coal, oil & gas",Unspecified,New Funding/Resour...,-,-
-9,Jun 2011,Nestle,Nestle,Switzerland,Egypt,Food and Beverages,n/a,New Investment Stra...,-,$225.00m
-10,Jun 2011,Advanced Africa ...,Advanced Africa ...,United States,Zambia,Food and Beverages,n/a,New Investment Stra...,-,$250.00m
-11,Jun 2011,Ericsson,Ericsson,Sweden,Tunisia,Communications,n/a,New Investment Stra...,-,-
-12,Jun 2011,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,n/a,New Funding/Resour...,-,$115.00m
-13,Jun 2011,Grupotec,Grupotec,Spain,Latin America & C...,Renewable energy,n/a,New Investment S...,-,-
-14,Jun 2011,TVS Group,TVS Motor Comp...,India,Africa,Non-automotive tr...,Manufacturing,Considering Project (...,-,-
-15,Jun 2011,Bajaj Group,Bajaj Auto,India,Africa,Non-automotive tr...,Manufacturing,Considering Project (...,-,-
+1,Jul 2011,Towers Watson (...,Towers Watson (...,United States,Middle East,Financial services,Unspecified,New Personnel,-,-
+2,Jul 2011,Siemens,Siemens,Germany,Latin America & C...,"Coal, oil & gas",Unspecified,New Investment Stra...,-,-
+3,Jun 2011,Avnet,Avnet Technolog...,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+4,Jun 2011,Unilever,Unilever,United Kingdom,Latin America & C...,Consumer products,Manufacturing,Considering Project (...,-,-
+5,Jun 2011,Sisecam,Sisecam,Turkey,Iraq,Ceramics & glass,Unspecified,New Investment Stra...,-,-
+6,Jun 2011,Dubai Aluminium ...,Dubai Aluminium ...,UAE,India,Metals,Extraction,Considering Projec...,-,-
+7,Jun 2011,Bollore Group,Africa Global Logi...,France,Africa,Transportation & ...,Unspecified,New Investment Stra...,-,-
+8,Jun 2011,GE Aerospace (G...,GE Aerospace (G...,United States,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+9,Jun 2011,Husky Energy,Husky Energy,Canada,Latin America & C...,"Coal, oil & gas",Unspecified,New Funding/Resour...,-,-
+10,Jun 2011,Nestle,Nestle,Switzerland,Egypt,Food and Beverages,n/a,New Investment Stra...,-,$225.00m
+11,Jun 2011,Advanced Africa ...,Advanced Africa ...,United States,Zambia,Food and Beverages,n/a,New Investment Stra...,-,$250.00m
+12,Jun 2011,Ericsson,Ericsson,Sweden,Tunisia,Communications,n/a,New Investment Stra...,-,-
+13,Jun 2011,Vodafone Group,Vodafone Ghana,United Kingdom,Ghana,Communications,n/a,New Funding/Resour...,-,$115.00m
+14,Jun 2011,Grupotec,Grupotec,Spain,Latin America & C...,Renewable energy,n/a,New Investment S...,-,-
+15,Jun 2011,TVS Group,TVS Motor Comp...,India,Africa,Non-automotive tr...,Manufacturing,Considering Project (...,-,-

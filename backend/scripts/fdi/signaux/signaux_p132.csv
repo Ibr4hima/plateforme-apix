@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2020,Sendy,Sendy,Kenya,Africa,Software & IT services,n/a,New Funding/Resour...,$20.00m,$20.00m
-2,Jan 2020,Paga,Paga,Nigeria,Mexico,Software & IT services,n/a,New Funding/Resour...,-,-
-3,Jan 2020,SettleMint,SettleMint,Belgium,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$2.09m,-
-4,Jan 2020,Basma,Basma,Lebanon,Middle East,Healthcare,n/a,New Funding/Resour...,$1.20m,-
-5,Jan 2020,Engie (GDF SUEZ...,National Central ...,France,India,Industrial equipment,n/a,New Investment Stra...,-,-
-6,Jan 2020,Emaar Properties,Emaar Properties,UAE,Bahrain,Real estate,n/a,New Investment Stra...,-,-
-7,Jan 2020,Hero Group,Hero Electronix,India,Middle East,Financial services,n/a,New Investment Stra...,-,-
-8,Jan 2020,AURA Security,AURA Security,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$0.42m,$0.42m
-9,Jan 2020,Onafriq (MFS Afri...,Onafriq (MFS Afri...,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$1.20m,-
-10,Jan 2020,ClickPesa,ClickPesa,United Kingdom,Africa,Software & IT services,n/a,New Investment Stra...,-,-
-11,Jan 2020,Globeleq Generat...,Globeleq Generat...,United Kingdom,Togo,Renewable energy,Electricity,Considering Projec...,-,-
-12,Jan 2020,Banque Centrale ...,Wizall,Morocco,Benin,Financial services,n/a,New Investment Stra...,-,-
-13,Jan 2020,HMD Global,HMD Global,Finland,Nigeria,Communications,n/a,New Investment Stra...,-,-
-14,Jan 2020,Snyk,Snyk,United Kingdom,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$150.00m,-
-15,Jan 2020,Skynamo,Skynamo,South Africa,United States,Software & IT services,n/a,New Funding/Resour...,$30.00m,-
+1,Jan 2020,OpinionWay,OpinionWay,France,Africa,Business services,Business Services,Considering Projec...,-,-
+2,Jan 2020,Sendy,Sendy,Kenya,Africa,Software & IT services,n/a,New Funding/Resour...,$20.00m,$20.00m
+3,Jan 2020,Paga,Paga,Nigeria,Mexico,Software & IT services,n/a,New Funding/Resour...,-,-
+4,Jan 2020,SettleMint,SettleMint,Belgium,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$2.09m,-
+5,Jan 2020,Basma,Basma,Lebanon,Middle East,Healthcare,n/a,New Funding/Resour...,$1.20m,-
+6,Jan 2020,Engie (GDF SUEZ...,National Central ...,France,India,Industrial equipment,n/a,New Investment Stra...,-,-
+7,Jan 2020,Emaar Properties,Emaar Properties,UAE,Bahrain,Real estate,n/a,New Investment Stra...,-,-
+8,Jan 2020,Hero Group,Hero Electronix,India,Middle East,Financial services,n/a,New Investment Stra...,-,-
+9,Jan 2020,AURA Security,AURA Security,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$0.42m,$0.42m
+10,Jan 2020,Onafriq (MFS Afri...,Onafriq (MFS Afri...,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$1.20m,-
+11,Jan 2020,ClickPesa,ClickPesa,United Kingdom,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+12,Jan 2020,Globeleq Generat...,Globeleq Generat...,United Kingdom,Togo,Renewable energy,Electricity,Considering Projec...,-,-
+13,Jan 2020,Banque Centrale ...,Wizall,Morocco,Benin,Financial services,n/a,New Investment Stra...,-,-
+14,Jan 2020,HMD Global,HMD Global,Finland,Nigeria,Communications,n/a,New Investment Stra...,-,-
+15,Jan 2020,Snyk,Snyk,United Kingdom,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$150.00m,-

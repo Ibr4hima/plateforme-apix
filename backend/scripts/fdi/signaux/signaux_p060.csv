@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Apr 2023,CcHub (Co-creati...,CcHub (Co-creati...,Nigeria,Africa,Business services,Business Services,Considering Projec...,-,-
-2,Apr 2023,Schneider Electric,Himel,France,Middle East,Industrial equipment,n/a,New Investment Stra...,-,-
-3,Apr 2023,Victory Farms,Victory Farms,Kenya,Uganda,Food and Beverages,n/a,New Funding/Resour...,$35.00m,-
-4,Apr 2023,Access Bank,Access Bank,Nigeria,Africa,Financial services,Business Services,New Investment Stra...,-,$300.00m
-5,Apr 2023,Hans Merensky H...,Westfalia Fruit,South Africa,India,Food and Beverages,n/a,New Funding/Resour...,$300.00m,-
-6,Apr 2023,Paymenow,Paymenow,South Africa,Kenya,Software & IT services,n/a,New Funding/Resour...,$14.00m,-
-7,Apr 2023,ForeScout Techno...,ForeScout Techno...,United States,Turkey,Software & IT services,n/a,New Investment Stra...,-,-
-8,Apr 2023,Mauritius Comme...,Mauritius Comme...,Mauritius,Africa,Financial services,n/a,New Funding/Resour...,$147.00m,-
-9,Apr 2023,TerraPay,TerraPay,United Kingdom,Latin America & C...,Financial services,n/a,New Funding/Resour...,$100.00m,-
-10,Apr 2023,Peach Payments,Peach Payments,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
-11,Apr 2023,Databricks,Databricks,United States,Middle East,Software & IT services,"Sales, Marketing & ...",Considering Projec...,-,-
-12,Apr 2023,Chery Automobile,Chery Automobile,China,Africa,Automotive OEM,n/a,New Investment Stra...,-,-
-13,Apr 2023,Sunset Hospitalit...,Sunset Hospitalit...,UAE,Asia-Pacific,Hotels & tourism,n/a,New Investment Stra...,-,-
-14,Apr 2023,Fez Delivery,Fez Delivery,Nigeria,Kenya,Software & IT services,n/a,New Funding/Resour...,$1.00m,-
-15,Apr 2023,Global Process an...,Global Process an...,Nigeria,Africa,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+1,Apr 2023,Ryse Energy,Ryse Energy,UAE,North America,Renewable energy,n/a,New Funding/Resour...,$15.00m,-
+2,Apr 2023,CcHub (Co-creati...,CcHub (Co-creati...,Nigeria,Africa,Business services,Business Services,Considering Projec...,-,-
+3,Apr 2023,Schneider Electric,Himel,France,Middle East,Industrial equipment,n/a,New Investment Stra...,-,-
+4,Apr 2023,Victory Farms,Victory Farms,Kenya,Uganda,Food and Beverages,n/a,New Funding/Resour...,$35.00m,-
+5,Apr 2023,Access Bank,Access Bank,Nigeria,Africa,Financial services,Business Services,New Investment Stra...,-,$300.00m
+6,Apr 2023,Hans Merensky H...,Westfalia Fruit,South Africa,India,Food and Beverages,n/a,New Funding/Resour...,$300.00m,-
+7,Apr 2023,Paymenow,Paymenow,South Africa,Kenya,Software & IT services,n/a,New Funding/Resour...,$14.00m,-
+8,Apr 2023,ForeScout Techno...,ForeScout Techno...,United States,Turkey,Software & IT services,n/a,New Investment Stra...,-,-
+9,Apr 2023,Mauritius Comme...,Mauritius Comme...,Mauritius,Africa,Financial services,n/a,New Funding/Resour...,$147.00m,-
+10,Apr 2023,TerraPay,TerraPay,United Kingdom,Latin America & C...,Financial services,n/a,New Funding/Resour...,$100.00m,-
+11,Apr 2023,Peach Payments,Peach Payments,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
+12,Apr 2023,Databricks,Databricks,United States,Middle East,Software & IT services,"Sales, Marketing & ...",Considering Projec...,-,-
+13,Apr 2023,Chery Automobile,Chery Automobile,China,Africa,Automotive OEM,n/a,New Investment Stra...,-,-
+14,Apr 2023,Sunset Hospitalit...,Sunset Hospitalit...,UAE,Asia-Pacific,Hotels & tourism,n/a,New Investment Stra...,-,-
+15,Apr 2023,Fez Delivery,Fez Delivery,Nigeria,Kenya,Software & IT services,n/a,New Funding/Resour...,$1.00m,-

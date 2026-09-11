@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jul 2018,Simba Corporation,Simba Corporation,Kenya,Ethiopia,Automotive OEM,n/a,New Investment Stra...,-,-
-2,Jul 2018,Majid Al Futtaim ...,Majid Al Futtaim ...,UAE,Middle East,Leisure & entertainm...,Retail,Considering Project (...,-,-
-3,Jul 2018,Yorga,Yorga,Spain,Chile,Textiles,Retail,Considering Project (...,-,-
-4,Jul 2018,Glovo App,Glovo App,Spain,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,-,-
-5,Jul 2018,Vivendi (Vivendi ...,Vivendi (Vivendi ...,France,Africa,Leisure & entertainm...,Retail,Considering Project (...,-,-
-6,Jul 2018,Masterpiece Inter...,Masterpiece Inter...,United States,Asia-Pacific,Transportation & War...,n/a,New Investment Stra...,-,-
-7,Jul 2018,souKare,souKare,UAE,Middle East,Consumer products,n/a,New Funding/Resour...,-,-
-8,Jul 2018,Oolu,Oolu,Senegal,Africa,Electronic components,n/a,New Funding/Resour...,-,-
-9,Jul 2018,Frontierpay,Frontierpay,United Kingdom,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
-10,Jul 2018,Bismart,Bismart,Kenya,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
-11,Jul 2018,Carton Pack,Carton Pack,Italy,Poland,"Paper, printing & pac...",n/a,New Funding/Resour...,-,-
-12,Jul 2018,Potrero Medical,Potrero Medical,United States,Japan,Medical devices,n/a,New Funding/Resour...,-,-
-13,Jul 2018,Volkswagen,SEAT (Sociedad E...,Germany,Africa,Automotive OEM,n/a,New Investment Stra...,-,-
-14,Jul 2018,Traveltek,Traveltek,United Kingdom,Middle East,Software & IT services,n/a,New Investment Stra...,-,-
-15,Jul 2018,Biosure,Biosure,United Kingdom,Kenya,Medical devices,n/a,New Investment Stra...,-,-
+1,Jul 2018,Flywire (peerTran...,Flywire (peerTran...,United States,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,-,$100.00m
+2,Jul 2018,Simba Corporation,Simba Corporation,Kenya,Ethiopia,Automotive OEM,n/a,New Investment Stra...,-,-
+3,Jul 2018,Majid Al Futtaim ...,Majid Al Futtaim ...,UAE,Middle East,Leisure & entertainm...,Retail,Considering Project (...,-,-
+4,Jul 2018,Yorga,Yorga,Spain,Chile,Textiles,Retail,Considering Project (...,-,-
+5,Jul 2018,Glovo App,Glovo App,Spain,Latin America & C...,Software & IT services,n/a,New Funding/Resour...,-,-
+6,Jul 2018,Vivendi (Vivendi ...,Vivendi (Vivendi ...,France,Africa,Leisure & entertainm...,Retail,Considering Project (...,-,-
+7,Jul 2018,Masterpiece Inter...,Masterpiece Inter...,United States,Asia-Pacific,Transportation & War...,n/a,New Investment Stra...,-,-
+8,Jul 2018,souKare,souKare,UAE,Middle East,Consumer products,n/a,New Funding/Resour...,-,-
+9,Jul 2018,Oolu,Oolu,Senegal,Africa,Electronic components,n/a,New Funding/Resour...,-,-
+10,Jul 2018,Frontierpay,Frontierpay,United Kingdom,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
+11,Jul 2018,Bismart,Bismart,Kenya,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+12,Jul 2018,Carton Pack,Carton Pack,Italy,Poland,"Paper, printing & pac...",n/a,New Funding/Resour...,-,-
+13,Jul 2018,Potrero Medical,Potrero Medical,United States,Japan,Medical devices,n/a,New Funding/Resour...,-,-
+14,Jul 2018,Volkswagen,SEAT (Sociedad E...,Germany,Africa,Automotive OEM,n/a,New Investment Stra...,-,-
+15,Jul 2018,Traveltek,Traveltek,United Kingdom,Middle East,Software & IT services,n/a,New Investment Stra...,-,-

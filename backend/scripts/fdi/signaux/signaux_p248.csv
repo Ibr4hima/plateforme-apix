@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Mar 2012,Shoprite,Shoprite,South Africa,Africa,Food and Beverages,Retail,Considering Projec...,-,-
-2,Mar 2012,Norilsk Nickel,Norilsk Nickel,Russia,Asia-Pacific,Metals,Unspecified,New Investment Stra...,-,$9.90m
-3,Mar 2012,Europlus Direct,Europlus Direct,United Kingdom,Asia-Pacific,Software & IT serv...,"Sales, Marketing & ...",Considering Project (...,-,-
-4,Mar 2012,OM Residual UK (...,Mutual & Federal,United Kingdom,Nigeria,Financial services,Unspecified,Considering Projec...,-,-
-5,Mar 2012,MiaSole,MiaSole,United States,Middle East,Electronic compon...,n/a,New Personnel,-,-
-6,Mar 2012,BT Group (British...,BT Group (British...,United Kingdom,Middle East,Communications,n/a,New Investment Stra...,-,-
-7,Mar 2012,Bim Birlesik Maga...,Bim Birlesik Maga...,Turkey,Algeria,Food and Beverages,Unspecified,New Investment Stra...,-,-
-8,Mar 2012,Standard Charter...,Standard Charter...,United Kingdom,Africa,Financial services,Unspecified,New Funding/Resour...,-,-
-9,Mar 2012,M-R Systems,Hospitality Techn...,United States,South Africa,Software & IT serv...,Unspecified,New Investment Stra...,-,-
-10,Mar 2012,SAP,SAP,Germany,Middle East,Software & IT serv...,Education & Traini...,Considering Project (...,-,$450.00m
-11,Mar 2012,GE Aerospace (G...,Fotowatio Renew...,United States,Latin America & C...,Renewable energy,Unspecified,New Investment Stra...,-,$191.50m
-12,Mar 2012,Sonae,Sonae Sierra,Portugal,Germany,Real estate,Unspecified,Considering Projec...,-,-
-13,Mar 2012,Mira Inform,Mira Inform,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
-14,Mar 2012,Ooredoo (Qatar T...,Ooredoo (Qatar T...,Qatar,Tunisia,Communications,Unspecified,New Investment Stra...,-,-
-15,Mar 2012,BankMuscat,BankMuscat,Oman,Mauritius,Financial services,Business Services,Considering Project (...,-,-
+1,Mar 2012,Carlyle Group,Carlyle Group,United States,Middle East,Financial services,Unspecified,New Personnel,-,-
+2,Mar 2012,Shoprite,Shoprite,South Africa,Africa,Food and Beverages,Retail,Considering Projec...,-,-
+3,Mar 2012,Norilsk Nickel,Norilsk Nickel,Russia,Asia-Pacific,Metals,Unspecified,New Investment Stra...,-,$9.90m
+4,Mar 2012,Europlus Direct,Europlus Direct,United Kingdom,Asia-Pacific,Software & IT serv...,"Sales, Marketing & ...",Considering Project (...,-,-
+5,Mar 2012,OM Residual UK (...,Mutual & Federal,United Kingdom,Nigeria,Financial services,Unspecified,Considering Projec...,-,-
+6,Mar 2012,MiaSole,MiaSole,United States,Middle East,Electronic compon...,n/a,New Personnel,-,-
+7,Mar 2012,BT Group (British...,BT Group (British...,United Kingdom,Middle East,Communications,n/a,New Investment Stra...,-,-
+8,Mar 2012,Bim Birlesik Maga...,Bim Birlesik Maga...,Turkey,Algeria,Food and Beverages,Unspecified,New Investment Stra...,-,-
+9,Mar 2012,Standard Charter...,Standard Charter...,United Kingdom,Africa,Financial services,Unspecified,New Funding/Resour...,-,-
+10,Mar 2012,M-R Systems,Hospitality Techn...,United States,South Africa,Software & IT serv...,Unspecified,New Investment Stra...,-,-
+11,Mar 2012,SAP,SAP,Germany,Middle East,Software & IT serv...,Education & Traini...,Considering Project (...,-,$450.00m
+12,Mar 2012,GE Aerospace (G...,Fotowatio Renew...,United States,Latin America & C...,Renewable energy,Unspecified,New Investment Stra...,-,$191.50m
+13,Mar 2012,Sonae,Sonae Sierra,Portugal,Germany,Real estate,Unspecified,Considering Projec...,-,-
+14,Mar 2012,Mira Inform,Mira Inform,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
+15,Mar 2012,Ooredoo (Qatar T...,Ooredoo (Qatar T...,Qatar,Tunisia,Communications,Unspecified,New Investment Stra...,-,-

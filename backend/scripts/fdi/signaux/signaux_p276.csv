@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2011,Oghma Services,Oghma Services,Ireland,Latin America & C...,Business services,n/a,New Overseas Suppli...,-,-
-2,Jan 2011,Botswana Diamo...,Botswana Diamo...,Ireland,Zimbabwe,Minerals,Unspecified,New Funding/Resour...,-,-
-3,Jan 2011,Bacardi,Bacardi,Bermuda,Middle East,Food and Beverages,n/a,New Personnel,-,-
-4,Jan 2011,Power Grid Corpo...,Power Grid Corpo...,India,Kenya,Business services,Business Services,New Investment Stra...,-,-
-5,Jan 2011,Ener-G Holdings ...,Ener-G Holdings ...,United Kingdom,Latin America & C...,Renewable energy,Unspecified,New Investment Stra...,-,-
-6,Jan 2011,NCR Voyix Corpor...,NCR Voyix Corpor...,United States,Latin America & C...,Electronic compon...,Unspecified,New Investment Stra...,-,-
-7,Jan 2011,POSCO (Pohang I...,POSCO (Pohang I...,South Korea,Democratic Repu...,Metals,Extraction,Considering Project (...,-,-
-8,Jan 2011,Essar Group,Essar Projects,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
-9,Jan 2011,Starwood Hotels ...,Starwood Hotels ...,United States,Latin America & C...,Hotels & tourism,Construction,Considering Projec...,-,-
-10,Jan 2011,Tosyali Holding,Toscelik,Turkey,Africa,Metals,Manufacturing,Considering Project (...,-,-
-11,Jan 2011,Dubai World,DP World,UAE,Latin America & C...,Transportation & ...,Unspecified,New Funding/Resour...,-,-
-12,Jan 2011,WPP,Kinetic,Ireland,Middle East,Software & IT serv...,n/a,New Personnel,-,-
-13,Jan 2011,Enel Green Power,Enel Green Power...,Italy,Middle East,Renewable energy,Electricity,Considering Project (...,-,-
-14,Jan 2011,Red Spider Techn...,Red Spider Techn...,United Kingdom,Africa,Industrial equipme...,n/a,New Personnel,-,-
-15,Jan 2011,Targus Technologi...,Targus Technologi...,India,Asia-Pacific,Software & IT serv...,Unspecified,New Investment Stra...,-,-
+1,Jan 2011,Telefonica,Telefonica,Spain,Asia-Pacific,Communications,Unspecified,New Investment Stra...,-,-
+2,Jan 2011,Oghma Services,Oghma Services,Ireland,Latin America & C...,Business services,n/a,New Overseas Suppli...,-,-
+3,Jan 2011,Botswana Diamo...,Botswana Diamo...,Ireland,Zimbabwe,Minerals,Unspecified,New Funding/Resour...,-,-
+4,Jan 2011,Bacardi,Bacardi,Bermuda,Middle East,Food and Beverages,n/a,New Personnel,-,-
+5,Jan 2011,Power Grid Corpo...,Power Grid Corpo...,India,Kenya,Business services,Business Services,New Investment Stra...,-,-
+6,Jan 2011,Ener-G Holdings ...,Ener-G Holdings ...,United Kingdom,Latin America & C...,Renewable energy,Unspecified,New Investment Stra...,-,-
+7,Jan 2011,NCR Voyix Corpor...,NCR Voyix Corpor...,United States,Latin America & C...,Electronic compon...,Unspecified,New Investment Stra...,-,-
+8,Jan 2011,POSCO (Pohang I...,POSCO (Pohang I...,South Korea,Democratic Repu...,Metals,Extraction,Considering Project (...,-,-
+9,Jan 2011,Essar Group,Essar Projects,India,Asia-Pacific,Business services,Unspecified,New Investment Stra...,-,-
+10,Jan 2011,Starwood Hotels ...,Starwood Hotels ...,United States,Latin America & C...,Hotels & tourism,Construction,Considering Projec...,-,-
+11,Jan 2011,Tosyali Holding,Toscelik,Turkey,Africa,Metals,Manufacturing,Considering Project (...,-,-
+12,Jan 2011,Dubai World,DP World,UAE,Latin America & C...,Transportation & ...,Unspecified,New Funding/Resour...,-,-
+13,Jan 2011,WPP,Kinetic,Ireland,Middle East,Software & IT serv...,n/a,New Personnel,-,-
+14,Jan 2011,Enel Green Power,Enel Green Power...,Italy,Middle East,Renewable energy,Electricity,Considering Project (...,-,-
+15,Jan 2011,Red Spider Techn...,Red Spider Techn...,United Kingdom,Africa,Industrial equipme...,n/a,New Personnel,-,-

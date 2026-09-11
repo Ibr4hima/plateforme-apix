@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2019,Copia Global,Copia Global,Kenya,Africa,Consumer products,n/a,New Funding/Resour...,-,-
-2,Jan 2019,42K Running,42K Running,Spain,Italy,Textiles,n/a,New Investment Stra...,-,-
-3,Jan 2019,Branch Internatio...,Branch Internatio...,United States,India,Financial services,n/a,New Funding/Reso...,-,$4.92m
-4,Jan 2019,Realme,Realme,China,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
-5,Jan 2019,Xiaomi (Beijing X...,Xiaomi (Beijing X...,China,Spain,Communications,n/a,New Funding/Resour...,-,-
-6,Jan 2019,CloudFlare,CloudFlare,United States,Latin America & C...,Communications,ICT & Internet Infra...,Considering Project (...,-,-
-7,Jan 2019,Lenovo Group,Lenovo Group,Hong Kong,South Africa,Business machines...,n/a,New Investment Stra...,-,-
-8,Jan 2019,BASF,BASF,Germany,Africa,Chemicals,n/a,New Investment Stra...,-,-
-9,Jan 2019,Redavia,Redavia,Germany,Ghana,Renewable energy,n/a,New Funding/Resour...,-,$6.00m
-10,Jan 2019,Yallacompare,Yallacompare,UAE,Kuwait,Software & IT services,n/a,New Funding/Resour...,-,-
-11,Jan 2019,Tesla Motors,Tesla Motors,United States,South Africa,Automotive OEM,Retail,Considering Project (...,-,-
-12,Jan 2019,Lava International,Lava International,India,Russia,Communications,Manufacturing,Considering Projec...,-,$21.38m
-13,Jan 2019,Rays Power Infra,Rays Power Infra,India,Australia,Renewable energy,n/a,New Funding/Resour...,-,-
-14,Jan 2019,Freyr Energy,Freyr Energy,India,Malaysia,Electronic compon...,n/a,New Funding/Resour...,-,-
-15,Dec 2018,LetsTransport,LetsTransport,India,Asia-Pacific,Transportation & War...,n/a,New Funding/Resour...,-,-
+1,Jan 2019,Huajian Group,Huajian Group,China,Africa,Textiles,n/a,New Investment Stra...,-,$200.00m
+2,Jan 2019,Copia Global,Copia Global,Kenya,Africa,Consumer products,n/a,New Funding/Resour...,-,-
+3,Jan 2019,42K Running,42K Running,Spain,Italy,Textiles,n/a,New Investment Stra...,-,-
+4,Jan 2019,Branch Internatio...,Branch Internatio...,United States,India,Financial services,n/a,New Funding/Reso...,-,$4.92m
+5,Jan 2019,Realme,Realme,China,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+6,Jan 2019,Xiaomi (Beijing X...,Xiaomi (Beijing X...,China,Spain,Communications,n/a,New Funding/Resour...,-,-
+7,Jan 2019,CloudFlare,CloudFlare,United States,Latin America & C...,Communications,ICT & Internet Infra...,Considering Project (...,-,-
+8,Jan 2019,Lenovo Group,Lenovo Group,Hong Kong,South Africa,Business machines...,n/a,New Investment Stra...,-,-
+9,Jan 2019,BASF,BASF,Germany,Africa,Chemicals,n/a,New Investment Stra...,-,-
+10,Jan 2019,Redavia,Redavia,Germany,Ghana,Renewable energy,n/a,New Funding/Resour...,-,$6.00m
+11,Jan 2019,Yallacompare,Yallacompare,UAE,Kuwait,Software & IT services,n/a,New Funding/Resour...,-,-
+12,Jan 2019,Tesla Motors,Tesla Motors,United States,South Africa,Automotive OEM,Retail,Considering Project (...,-,-
+13,Jan 2019,Lava International,Lava International,India,Russia,Communications,Manufacturing,Considering Projec...,-,$21.38m
+14,Jan 2019,Rays Power Infra,Rays Power Infra,India,Australia,Renewable energy,n/a,New Funding/Resour...,-,-
+15,Jan 2019,Freyr Energy,Freyr Energy,India,Malaysia,Electronic compon...,n/a,New Funding/Resour...,-,-

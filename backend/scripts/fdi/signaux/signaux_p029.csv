@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Dec 2024,United Bank for A...,United Bank for A...,Nigeria,Africa,Financial services,Business Services,Considering Project (...,-,-
-2,Nov 2024,Cube Bikes,Cube Bikes,Germany,Egypt,Non-automotive tran...,Manufacturing,Considering Project (...,-,-
-3,Nov 2024,Salesforce.com,Salesforce.com,United States,Nigeria,Software & IT services,n/a,New Investment Stra...,-,-
-4,Nov 2024,MediSun Energy,MediSun Energy,Singapore,Middle East,Renewable energy,Research & Develop...,Considering Projec...,$8.75m,-
-5,Nov 2024,RLX Technology,RLX Technology,China,Latin America & C...,Consumer electronics,n/a,New Investment Stra...,-,-
-6,Nov 2024,Socium,Socium,Côte d Ivoire,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
-7,Nov 2024,Bavovna.AI,Bavovna.AI,United States,North America,Communications,Manufacturing,New Funding/Resour...,$1.70m,-
-8,Nov 2024,EdfaPay,EdfaPay,Saudi Arabia,Pakistan,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
-9,Nov 2024,Gianni Mori Engin...,Gianni Mori Engin...,Italy,Libya,Electronic components,Research & Develop...,Considering Project (...,-,-
-10,Nov 2024,Dubai World,DP World,UAE,India,Transportation & War...,"Logistics, Distributio...",New Investment Stra...,-,-
-11,Nov 2024,Continuous Softw...,Continuous Softw...,Ireland,Middle East,Software & IT services,n/a,New Funding/Resour...,$1.05m,-
-12,Nov 2024,TotalEnergies (To...,TotalEnergies (To...,France,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,$500.00m
-13,Nov 2024,Shell PLC (Royal ...,Shell PLC (Royal ...,United Kingdom,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,$500.00m
-14,Nov 2024,Equinor (Statoil),Equinor (Statoil),Norway,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,-
-15,Nov 2024,Agility,Agility,Kuwait,Morocco,Transportation & War...,n/a,New Investment Stra...,-,-
+1,Dec 2024,Watercycle Techn...,Watercycle Techn...,United Kingdom,Middle East,Industrial equipme...,n/a,New Funding/Resour...,$5.60m,-
+2,Dec 2024,United Bank for A...,United Bank for A...,Nigeria,Africa,Financial services,Business Services,Considering Project (...,-,-
+3,Nov 2024,Cube Bikes,Cube Bikes,Germany,Egypt,Non-automotive tran...,Manufacturing,Considering Project (...,-,-
+4,Nov 2024,Salesforce.com,Salesforce.com,United States,Nigeria,Software & IT services,n/a,New Investment Stra...,-,-
+5,Nov 2024,MediSun Energy,MediSun Energy,Singapore,Middle East,Renewable energy,Research & Develop...,Considering Projec...,$8.75m,-
+6,Nov 2024,RLX Technology,RLX Technology,China,Latin America & C...,Consumer electronics,n/a,New Investment Stra...,-,-
+7,Nov 2024,Socium,Socium,Côte d Ivoire,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
+8,Nov 2024,Bavovna.AI,Bavovna.AI,United States,North America,Communications,Manufacturing,New Funding/Resour...,$1.70m,-
+9,Nov 2024,EdfaPay,EdfaPay,Saudi Arabia,Pakistan,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
+10,Nov 2024,Gianni Mori Engin...,Gianni Mori Engin...,Italy,Libya,Electronic components,Research & Develop...,Considering Project (...,-,-
+11,Nov 2024,Dubai World,DP World,UAE,India,Transportation & War...,"Logistics, Distributio...",New Investment Stra...,-,-
+12,Nov 2024,Continuous Softw...,Continuous Softw...,Ireland,Middle East,Software & IT services,n/a,New Funding/Resour...,$1.05m,-
+13,Nov 2024,TotalEnergies (To...,TotalEnergies (To...,France,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,$500.00m
+14,Nov 2024,Shell PLC (Royal ...,Shell PLC (Royal ...,United Kingdom,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,$500.00m
+15,Nov 2024,Equinor (Statoil),Equinor (Statoil),Norway,Asia-Pacific,Renewable energy,n/a,New Investment Stra...,-,-

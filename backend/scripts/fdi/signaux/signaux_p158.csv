@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Oct 2018,Saudi Basic Indus...,Saudi Basic Indus...,Saudi Arabia,Africa,Plastics,n/a,New Investment Stra...,-,-
-2,Oct 2018,Huobi,Huobi,Singapore,Asia-Pacific,Software & IT services,n/a,New Investment Stra...,-,-
-3,Oct 2018,Moven,Moven,United States,Latin America & C...,Software & IT services,n/a,New Funding/Reso...,-,$10.00m
-4,Oct 2018,Delivery Hero,Talabat,Germany,Middle East,Food and Beverages,n/a,New Investment Stra...,-,-
-5,Oct 2018,Exxon Mobil,Exxon Mobil,United States,Malaysia,"Coal, oil & gas",Extraction,New Investment Stra...,-,-
-6,Oct 2018,Banque Centrale ...,Banque Centrale ...,Morocco,Kenya,Financial services,n/a,New Investment Stra...,-,-
-7,Oct 2018,Cobo Wallet,Cobo Wallet,China,Asia-Pacific,Financial services,n/a,New Funding/Resour...,-,$13.00m
-8,Oct 2018,Ecole hoteliere de...,Ecole hoteliere de...,Switzerland,Asia-Pacific,Business services,Education & Training,Considering Project (...,-,-
-9,Oct 2018,Mitra Innovation,Mitra Innovation,United Kingdom,Tanzania,Software & IT services,n/a,New Investment Stra...,-,-
-10,Oct 2018,Unifonic,Unifonic,Saudi Arabia,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
-11,Oct 2018,faberNovel,faberNovel,France,Africa,Business services,n/a,New Investment Stra...,-,-
-12,Oct 2018,Calidad Pascual (...,Calidad Pascual (...,Spain,China,Food and Beverages,n/a,New Investment Stra...,-,-
-13,Oct 2018,Elion Resources ...,Elion Resources ...,China,Nigeria,Business services,n/a,New Investment Stra...,-,-
-14,Oct 2018,Vodafone Group,Vodacom,United Kingdom,Ethiopia,Communications,n/a,New Investment Stra...,-,-
-15,Oct 2018,MTN Group,MTN Group,South Africa,Ethiopia,Communications,n/a,New Investment Stra...,-,-
+1,Nov 2018,Vodafone Group,Vodacom,United Kingdom,South Africa,Communications,n/a,New Investment Stra...,-,-
+2,Oct 2018,Saudi Basic Indus...,Saudi Basic Indus...,Saudi Arabia,Africa,Plastics,n/a,New Investment Stra...,-,-
+3,Oct 2018,Huobi,Huobi,Singapore,Asia-Pacific,Software & IT services,n/a,New Investment Stra...,-,-
+4,Oct 2018,Moven,Moven,United States,Latin America & C...,Software & IT services,n/a,New Funding/Reso...,-,$10.00m
+5,Oct 2018,Delivery Hero,Talabat,Germany,Middle East,Food and Beverages,n/a,New Investment Stra...,-,-
+6,Oct 2018,Exxon Mobil,Exxon Mobil,United States,Malaysia,"Coal, oil & gas",Extraction,New Investment Stra...,-,-
+7,Oct 2018,Banque Centrale ...,Banque Centrale ...,Morocco,Kenya,Financial services,n/a,New Investment Stra...,-,-
+8,Oct 2018,Cobo Wallet,Cobo Wallet,China,Asia-Pacific,Financial services,n/a,New Funding/Resour...,-,$13.00m
+9,Oct 2018,Ecole hoteliere de...,Ecole hoteliere de...,Switzerland,Asia-Pacific,Business services,Education & Training,Considering Project (...,-,-
+10,Oct 2018,Mitra Innovation,Mitra Innovation,United Kingdom,Tanzania,Software & IT services,n/a,New Investment Stra...,-,-
+11,Oct 2018,Unifonic,Unifonic,Saudi Arabia,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
+12,Oct 2018,faberNovel,faberNovel,France,Africa,Business services,n/a,New Investment Stra...,-,-
+13,Oct 2018,Calidad Pascual (...,Calidad Pascual (...,Spain,China,Food and Beverages,n/a,New Investment Stra...,-,-
+14,Oct 2018,Elion Resources ...,Elion Resources ...,China,Nigeria,Business services,n/a,New Investment Stra...,-,-
+15,Oct 2018,Vodafone Group,Vodacom,United Kingdom,Ethiopia,Communications,n/a,New Investment Stra...,-,-

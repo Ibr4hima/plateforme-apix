@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Dec 2012,Nestle,Nestle,Switzerland,Africa,Food and Beverages,Unspecified,New Investment Stra...,-,-
-2,Dec 2012,NTL Electronics I...,NTL Electronics I...,India,Africa,Electronic compon...,Manufacturing,Considering Project (...,-,-
-3,Nov 2012,Atlantic Grupa,Atlantic Grupa,Croatia,Africa,Consumer products,Unspecified,New Funding/Resour...,-,$399.00m
-4,Nov 2012,Byblos Bank,Byblos Bank,Lebanon,Libya,Financial services,Business Services,Considering Project (...,-,-
-5,Nov 2012,Giordano,Giordano,Hong Kong,Africa,Textiles,Unspecified,New Investment Stra...,-,-
-6,Nov 2012,Hydro Internatio...,Hydro Internatio...,United Kingdom,Middle East,Industrial equipme...,Unspecified,New Personnel,-,-
-7,Nov 2012,Henkel,Henkel,Germany,Asia-Pacific,Consumer products,Shared Services ...,Considering Project (...,-,-
-8,Nov 2012,Suntory,Orangina Schwep...,Japan,Latin America & C...,Food and Beverages,n/a,New Investment Stra...,-,-
-9,Nov 2012,Cepheid,Cepheid,United States,Latin America & C...,Biotechnology,Unspecified,New Personnel,-,-
-10,Nov 2012,EFG Hermes Hold...,EFG Hermes,Egypt,Libya,Financial services,Unspecified,New Investment Stra...,-,-
-11,Oct 2012,Aspera Inc,Aspera Inc,United States,Middle East,Software & IT serv...,Unspecified,New Personnel,-,-
-12,Oct 2012,DUO Marketing +...,DUO Marketing +...,South Africa,Nigeria,Business services,Business Services,Considering Project (...,-,-
-13,Oct 2012,iJento,iJento,United Kingdom,Asia-Pacific,Software & IT serv...,Unspecified,New Funding/Resour...,-,-
-14,Oct 2012,ECS Group (Euro...,ECS Group (Euro...,France,Asia-Pacific,Transportation & War...,n/a,Considering Projec...,-,-
-15,Oct 2012,Pick n Pay Holdings,Pick n Pay,South Africa,Nigeria,Food and Beverages,Unspecified,New Investment Stra...,-,-
+1,Dec 2012,LT Foods,LT Foods,India,Africa,Food and Beverages,Manufacturing,Considering Project (...,-,$50.00m
+2,Dec 2012,Nestle,Nestle,Switzerland,Africa,Food and Beverages,Unspecified,New Investment Stra...,-,-
+3,Dec 2012,NTL Electronics I...,NTL Electronics I...,India,Africa,Electronic compon...,Manufacturing,Considering Project (...,-,-
+4,Nov 2012,Atlantic Grupa,Atlantic Grupa,Croatia,Africa,Consumer products,Unspecified,New Funding/Resour...,-,$399.00m
+5,Nov 2012,Byblos Bank,Byblos Bank,Lebanon,Libya,Financial services,Business Services,Considering Project (...,-,-
+6,Nov 2012,Giordano,Giordano,Hong Kong,Africa,Textiles,Unspecified,New Investment Stra...,-,-
+7,Nov 2012,Hydro Internatio...,Hydro Internatio...,United Kingdom,Middle East,Industrial equipme...,Unspecified,New Personnel,-,-
+8,Nov 2012,Henkel,Henkel,Germany,Asia-Pacific,Consumer products,Shared Services ...,Considering Project (...,-,-
+9,Nov 2012,Suntory,Orangina Schwep...,Japan,Latin America & C...,Food and Beverages,n/a,New Investment Stra...,-,-
+10,Nov 2012,Cepheid,Cepheid,United States,Latin America & C...,Biotechnology,Unspecified,New Personnel,-,-
+11,Nov 2012,EFG Hermes Hold...,EFG Hermes,Egypt,Libya,Financial services,Unspecified,New Investment Stra...,-,-
+12,Oct 2012,Aspera Inc,Aspera Inc,United States,Middle East,Software & IT serv...,Unspecified,New Personnel,-,-
+13,Oct 2012,DUO Marketing +...,DUO Marketing +...,South Africa,Nigeria,Business services,Business Services,Considering Project (...,-,-
+14,Oct 2012,iJento,iJento,United Kingdom,Asia-Pacific,Software & IT serv...,Unspecified,New Funding/Resour...,-,-
+15,Oct 2012,ECS Group (Euro...,ECS Group (Euro...,France,Asia-Pacific,Transportation & War...,n/a,Considering Projec...,-,-

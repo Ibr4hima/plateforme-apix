@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jun 2010,TwoFour,TwoFour,United States,Latin America & C...,Software & IT services,n/a,New Personnel,-,-
-2,Jun 2010,FatPipe Networks,FatPipe Networks...,United States,Latin America & C...,Software & IT services,"Sales, Marketing & ...",Considering Projec...,-,-
-3,May 2010,FLSmidth,FLSmidth,Denmark,Tunisia,Industrial equipment,n/a,New Overseas Suppli...,-,-
-4,May 2010,Accuray,Accuray,United States,Asia-Pacific,Medical devices,n/a,New Personnel,-,-
-5,May 2010,PTT,PTT Exploration a...,Thailand,Latin America & C...,"Coal, oil & gas",Extraction,New Investment Stra...,-,-
-6,May 2010,Acergy,Acergy,United Kingdom,Nigeria,Transportation & War...,n/a,New Overseas Suppli...,-,-
-7,May 2010,Willis Towers Wat...,Willis Towers Wat...,United Kingdom,Middle East,Financial services,"Sales, Marketing & ...",New Personnel,-,-
-8,May 2010,FiveTen,FiveTen,United Kingdom,Middle East,Business services,n/a,New Personnel,-,-
-9,May 2010,Nissan Copper,Nissan Copper,India,Middle East,Metals,n/a,Considering Project (...,-,-
-10,May 2010,Oracle,Sun Microsystems,United States,Africa,Software & IT services,n/a,New Personnel,-,-
-11,May 2010,Panasonic (Matsu...,Panasonic (Matsu...,Japan,Latin America & C...,Consumer electron...,n/a,New Investment Stra...,-,-
-12,May 2010,Shell PLC (Royal ...,Shell Petroleum ...,Netherlands,Nigeria,"Coal, oil & gas",Extraction,Considering Project (...,-,-
-13,May 2010,China National Pe...,PetroChina,China,Latin America & C...,"Coal, oil & gas",Extraction,New Investment Stra...,-,$60.00bn
-14,May 2010,State Bank of Ind...,State Bank of Ind...,India,Latin America & C...,Financial services,Business Services,Considering Project (...,-,-
-15,May 2010,Gold Fields,Gold Fields,South Africa,Mali,Metals,Extraction,Considering Project (...,-,-
+1,Jun 2010,Bahrain Telecom...,Bahrain Telecom...,Bahrain,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+2,Jun 2010,TwoFour,TwoFour,United States,Latin America & C...,Software & IT services,n/a,New Personnel,-,-
+3,Jun 2010,FatPipe Networks,FatPipe Networks...,United States,Latin America & C...,Software & IT services,"Sales, Marketing & ...",Considering Projec...,-,-
+4,May 2010,FLSmidth,FLSmidth,Denmark,Tunisia,Industrial equipment,n/a,New Overseas Suppli...,-,-
+5,May 2010,Accuray,Accuray,United States,Asia-Pacific,Medical devices,n/a,New Personnel,-,-
+6,May 2010,PTT,PTT Exploration a...,Thailand,Latin America & C...,"Coal, oil & gas",Extraction,New Investment Stra...,-,-
+7,May 2010,Acergy,Acergy,United Kingdom,Nigeria,Transportation & War...,n/a,New Overseas Suppli...,-,-
+8,May 2010,Willis Towers Wat...,Willis Towers Wat...,United Kingdom,Middle East,Financial services,"Sales, Marketing & ...",New Personnel,-,-
+9,May 2010,FiveTen,FiveTen,United Kingdom,Middle East,Business services,n/a,New Personnel,-,-
+10,May 2010,Nissan Copper,Nissan Copper,India,Middle East,Metals,n/a,Considering Project (...,-,-
+11,May 2010,Oracle,Sun Microsystems,United States,Africa,Software & IT services,n/a,New Personnel,-,-
+12,May 2010,Panasonic (Matsu...,Panasonic (Matsu...,Japan,Latin America & C...,Consumer electron...,n/a,New Investment Stra...,-,-
+13,May 2010,Shell PLC (Royal ...,Shell Petroleum ...,Netherlands,Nigeria,"Coal, oil & gas",Extraction,Considering Project (...,-,-
+14,May 2010,China National Pe...,PetroChina,China,Latin America & C...,"Coal, oil & gas",Extraction,New Investment Stra...,-,$60.00bn
+15,May 2010,State Bank of Ind...,State Bank of Ind...,India,Latin America & C...,Financial services,Business Services,Considering Project (...,-,-

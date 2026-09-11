@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2022,Zanifu,Zanifu,Kenya,Ghana,Software & IT services,n/a,New Investment Stra...,$1.00m,-
-2,Jan 2022,Tradeling,Tradeling,UAE,Middle East,Software & IT services,n/a,New Investment Stra...,-,-
-3,Jan 2022,Exness,Exness,Cyprus,Uganda,Financial services,n/a,New Investment Stra...,-,-
-4,Jan 2022,WellPal,WellPal,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
-5,Jan 2022,Lucidya,Lucidya,Saudi Arabia,Middle East,Software & IT services,n/a,New Funding/Resour...,$6.00m,-
-6,Jan 2022,Rain Financial,Rain Financial,Bahrain,Pakistan,Financial services,n/a,New Funding/Resour...,$110.00m,-
-7,Jan 2022,Orda,Orda,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,$1.10m,-
-8,Jan 2022,ZingHR,ZingHR,India,United States,Software & IT services,n/a,New Funding/Resour...,$10.00m,-
-9,Jan 2022,Orcas,Orcas,Egypt,Pakistan,Software & IT services,n/a,New Funding/Resour...,$2.10m,-
-10,Jan 2022,Testmate Health,Testmate Health,Switzerland,Nigeria,Medical devices,n/a,New Funding/Resour...,-,-
-11,Jan 2022,PneumoScope,PneumoScope,Switzerland,Nigeria,Medical devices,n/a,New Funding/Resour...,-,-
-12,Jan 2022,Perovskia Solar,Perovskia Solar,Switzerland,Nigeria,Renewable energy,n/a,New Funding/Resour...,-,-
-13,Jan 2022,Gaia Technologies,Gaia Technologies,Switzerland,Nigeria,Chemicals,n/a,New Funding/Resour...,-,-
-14,Jan 2022,Ennos,Ennos,Switzerland,Nigeria,Renewable energy,n/a,New Funding/Resour...,-,-
-15,Jan 2022,Diaxxo,Diaxxo,Switzerland,Nigeria,Medical devices,n/a,New Funding/Resour...,-,-
+1,Jan 2022,Fin (Finclusion Gr...,Fin (Finclusion Gr...,Mauritius,Kenya,Software & IT services,n/a,New Funding/Resour...,$20.00m,-
+2,Jan 2022,Zanifu,Zanifu,Kenya,Ghana,Software & IT services,n/a,New Investment Stra...,$1.00m,-
+3,Jan 2022,Tradeling,Tradeling,UAE,Middle East,Software & IT services,n/a,New Investment Stra...,-,-
+4,Jan 2022,Exness,Exness,Cyprus,Uganda,Financial services,n/a,New Investment Stra...,-,-
+5,Jan 2022,WellPal,WellPal,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,-,-
+6,Jan 2022,Lucidya,Lucidya,Saudi Arabia,Middle East,Software & IT services,n/a,New Funding/Resour...,$6.00m,-
+7,Jan 2022,Rain Financial,Rain Financial,Bahrain,Pakistan,Financial services,n/a,New Funding/Resour...,$110.00m,-
+8,Jan 2022,Orda,Orda,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,$1.10m,-
+9,Jan 2022,ZingHR,ZingHR,India,United States,Software & IT services,n/a,New Funding/Resour...,$10.00m,-
+10,Jan 2022,Orcas,Orcas,Egypt,Pakistan,Software & IT services,n/a,New Funding/Resour...,$2.10m,-
+11,Jan 2022,Testmate Health,Testmate Health,Switzerland,Nigeria,Medical devices,n/a,New Funding/Resour...,-,-
+12,Jan 2022,PneumoScope,PneumoScope,Switzerland,Nigeria,Medical devices,n/a,New Funding/Resour...,-,-
+13,Jan 2022,Perovskia Solar,Perovskia Solar,Switzerland,Nigeria,Renewable energy,n/a,New Funding/Resour...,-,-
+14,Jan 2022,Gaia Technologies,Gaia Technologies,Switzerland,Nigeria,Chemicals,n/a,New Funding/Resour...,-,-
+15,Jan 2022,Ennos,Ennos,Switzerland,Nigeria,Renewable energy,n/a,New Funding/Resour...,-,-

@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Mar 2015,Sichuan Kexin Me...,Sichuan Kexin Me...,China,Africa,Industrial equipme...,Manufacturing,Considering Project (...,-,-
-2,Mar 2015,The Open Univers...,The Open Univers...,Tanzania,Africa,Business services,Business Services,Considering Project (...,-,-
-3,Mar 2015,Actifio,Actifio,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-4,Mar 2015,Alghanim Industr...,Kirby Building Sy...,Kuwait,Africa,Metals,"Sales, Marketing ...",Considering Project (...,-,-
-5,Mar 2015,Beijing Automotiv...,Beiqi Foton Motor,China,Latin America & C...,Automotive OEM,Manufacturing,Considering Project (...,-,-
-6,Mar 2015,Maharashtra Hyb...,Maharashtra Hyb...,India,Asia-Pacific,Food and Beverages,n/a,New Investment Stra...,-,-
-7,Mar 2015,Hester Biosciences,Hester Biosciences,India,Latin America & C...,Pharmaceuticals,Manufacturing,Considering Project (...,-,$2.56m
-8,Mar 2015,Vox Media,Vox Media,United States,Asia-Pacific,Software & IT serv...,n/a,New Investment Stra...,-,-
-9,Mar 2015,KT&G,KT&G,South Korea,Latin America & C...,Food and Beverages,Manufacturing,Considering Project (...,-,-
-10,Mar 2015,Qatar National Ba...,Qatar National Ba...,Qatar,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
-11,Mar 2015,Mauritius Comme...,Mauritius Comme...,Mauritius,Africa,Financial services,n/a,New Investment Stra...,-,-
-12,Mar 2015,PepsiCo,PepsiCo,United States,Egypt,Food and Beverages,n/a,New Investment Stra...,-,$500.00m
-13,Mar 2015,British Gas Group...,British Gas Group...,United Kingdom,Egypt,"Coal, oil & gas",n/a,New Investment Stra...,-,$4.00bn
-14,Mar 2015,Eni SpA,Eni SpA,Italy,Egypt,"Coal, oil & gas",n/a,New Investment Stra...,-,$5.00bn
-15,Mar 2015,Al-Khabeer Capital,Al-Khabeer Capital,Saudi Arabia,Africa,Financial services,n/a,New Investment Stra...,-,-
+1,Mar 2015,Datalab,Datalab,Slovenia,Latin America & C...,Software & IT serv...,n/a,New Funding/Resour...,-,-
+2,Mar 2015,Sichuan Kexin Me...,Sichuan Kexin Me...,China,Africa,Industrial equipme...,Manufacturing,Considering Project (...,-,-
+3,Mar 2015,The Open Univers...,The Open Univers...,Tanzania,Africa,Business services,Business Services,Considering Project (...,-,-
+4,Mar 2015,Actifio,Actifio,United States,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+5,Mar 2015,Alghanim Industr...,Kirby Building Sy...,Kuwait,Africa,Metals,"Sales, Marketing ...",Considering Project (...,-,-
+6,Mar 2015,Beijing Automotiv...,Beiqi Foton Motor,China,Latin America & C...,Automotive OEM,Manufacturing,Considering Project (...,-,-
+7,Mar 2015,Maharashtra Hyb...,Maharashtra Hyb...,India,Asia-Pacific,Food and Beverages,n/a,New Investment Stra...,-,-
+8,Mar 2015,Hester Biosciences,Hester Biosciences,India,Latin America & C...,Pharmaceuticals,Manufacturing,Considering Project (...,-,$2.56m
+9,Mar 2015,Vox Media,Vox Media,United States,Asia-Pacific,Software & IT serv...,n/a,New Investment Stra...,-,-
+10,Mar 2015,KT&G,KT&G,South Korea,Latin America & C...,Food and Beverages,Manufacturing,Considering Project (...,-,-
+11,Mar 2015,Qatar National Ba...,Qatar National Ba...,Qatar,Asia-Pacific,Financial services,n/a,New Investment Stra...,-,-
+12,Mar 2015,Mauritius Comme...,Mauritius Comme...,Mauritius,Africa,Financial services,n/a,New Investment Stra...,-,-
+13,Mar 2015,PepsiCo,PepsiCo,United States,Egypt,Food and Beverages,n/a,New Investment Stra...,-,$500.00m
+14,Mar 2015,British Gas Group...,British Gas Group...,United Kingdom,Egypt,"Coal, oil & gas",n/a,New Investment Stra...,-,$4.00bn
+15,Mar 2015,Eni SpA,Eni SpA,Italy,Egypt,"Coal, oil & gas",n/a,New Investment Stra...,-,$5.00bn

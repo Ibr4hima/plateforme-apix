@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,May 2022,PayMob,PayMob,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$50.00m,-
-2,May 2022,PayMasta (Lastmi...,PayMasta (Lastmi...,United Kingdom,Africa,Software & IT services,n/a,New Investment Stra...,-,-
-3,May 2022,Caerus Mineral R...,Caerus Mineral R...,United Kingdom,Africa,Minerals,n/a,New Investment Stra...,-,-
-4,May 2022,WorkTrips.com (H...,WorkTrips.com (H...,Poland,Africa,Software & IT services,n/a,New Funding/Resour...,$24.23m,-
-5,May 2022,Kwaba,Kwaba,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
-6,May 2022,Carvansons,Carvansons,United Kingdom,Asia-Pacific,Consumer products,n/a,New Funding/Resour...,-,-
-7,May 2022,Leatherback,Leatherback,United Kingdom,Nigeria,Financial services,n/a,New Investment Stra...,-,-
-8,May 2022,Coinbase,Coinbase,United States,India,Software & IT services,n/a,New Investment Stra...,-,-
-9,May 2022,OnePort 365,OnePort 365,Nigeria,Africa,Transportation & War...,n/a,New Funding/Resour...,$5.00m,-
-10,Apr 2022,Africure Pharmac...,Africure Pharmac...,India,Africa,Pharmaceuticals,n/a,New Funding/Resour...,$14.93m,-
-11,Apr 2022,Umba,Umba,United States,Kenya,Financial services,n/a,New Funding/Resour...,$15.00m,-
-12,Apr 2022,The Food Lab,The Food Lab,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$4.50m,-
-13,Apr 2022,Manila Water Co...,Manila Water Co...,Philippines,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
-14,Apr 2022,ieng (i engineerin...,ieng (i engineerin...,Lebanon,Africa,Business services,n/a,New Funding/Resour...,$20.00m,-
-15,Apr 2022,Swvl,Swvl,UAE,United States,Software & IT services,n/a,New Investment Stra...,-,-
+1,May 2022,Cashew Payments,Cashew Payments,UAE,Egypt,Financial services,n/a,New Funding/Resour...,-,$10.00m
+2,May 2022,PayMob,PayMob,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$50.00m,-
+3,May 2022,PayMasta (Lastmi...,PayMasta (Lastmi...,United Kingdom,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+4,May 2022,Caerus Mineral R...,Caerus Mineral R...,United Kingdom,Africa,Minerals,n/a,New Investment Stra...,-,-
+5,May 2022,WorkTrips.com (H...,WorkTrips.com (H...,Poland,Africa,Software & IT services,n/a,New Funding/Resour...,$24.23m,-
+6,May 2022,Kwaba,Kwaba,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,-,-
+7,May 2022,Carvansons,Carvansons,United Kingdom,Asia-Pacific,Consumer products,n/a,New Funding/Resour...,-,-
+8,May 2022,Leatherback,Leatherback,United Kingdom,Nigeria,Financial services,n/a,New Investment Stra...,-,-
+9,May 2022,Coinbase,Coinbase,United States,India,Software & IT services,n/a,New Investment Stra...,-,-
+10,May 2022,OnePort 365,OnePort 365,Nigeria,Africa,Transportation & War...,n/a,New Funding/Resour...,$5.00m,-
+11,Apr 2022,Africure Pharmac...,Africure Pharmac...,India,Africa,Pharmaceuticals,n/a,New Funding/Resour...,$14.93m,-
+12,Apr 2022,Umba,Umba,United States,Kenya,Financial services,n/a,New Funding/Resour...,$15.00m,-
+13,Apr 2022,The Food Lab,The Food Lab,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$4.50m,-
+14,Apr 2022,Manila Water Co...,Manila Water Co...,Philippines,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
+15,Apr 2022,ieng (i engineerin...,ieng (i engineerin...,Lebanon,Africa,Business services,n/a,New Funding/Resour...,$20.00m,-

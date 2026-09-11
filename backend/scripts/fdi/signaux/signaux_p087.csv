@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Feb 2022,Freterium,Freterium,Morocco,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,$4.00m,-
-2,Feb 2022,Wasla,Wasla,Egypt,Africa,Software & IT services,n/a,New Funding/Resour...,$9.00m,-
-3,Feb 2022,MoneyHash,MoneyHash,United States,Middle East,Software & IT services,n/a,New Funding/Resour...,$3.00m,-
-4,Feb 2022,Nawy,Nawy,Egypt,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
-5,Feb 2022,Stitch,Stitch,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$21.00m,-
-6,Feb 2022,ProXalys (Probou...,ProXalys (Probou...,Senegal,Africa,Software & IT services,n/a,Considering Project (...,$0.15m,-
-7,Feb 2022,Okeanos,Okeanos,United States,Egypt,Chemicals,Manufacturing,Considering Project (...,-,-
-8,Feb 2022,Pyypl,Pyypl,UAE,Bahrain,Software & IT services,n/a,New Funding/Resour...,$11.00m,-
-9,Feb 2022,Hubpay,Hubpay,UAE,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$20.00m,-
-10,Feb 2022,Thndr,Thndr,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$20.00m,-
-11,Feb 2022,iM Global Partner,iM Global Partner,France,Middle East,Financial services,n/a,New Investment Stra...,-,-
-12,Feb 2022,Livspace,Livspace,India,Singapore,Consumer products,n/a,New Funding/Resour...,$180.00m,-
-13,Feb 2022,Fincog (The Finte...,Fincog (The Finte...,Netherlands,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
-14,Feb 2022,Reliance Health,Reliance Health,Nigeria,Egypt,Software & IT services,n/a,New Funding/Resour...,$40.00m,-
-15,Feb 2022,CyborgIntell,CyborgIntell,India,South Africa,Software & IT services,n/a,New Funding/Resour...,$1.19m,-
+1,Feb 2022,Maser,Maser,India,Africa,Consumer electronics,"Logistics, Distributio...",Considering Project (...,-,$50.00m
+2,Feb 2022,Freterium,Freterium,Morocco,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,$4.00m,-
+3,Feb 2022,Wasla,Wasla,Egypt,Africa,Software & IT services,n/a,New Funding/Resour...,$9.00m,-
+4,Feb 2022,MoneyHash,MoneyHash,United States,Middle East,Software & IT services,n/a,New Funding/Resour...,$3.00m,-
+5,Feb 2022,Nawy,Nawy,Egypt,Africa,Software & IT services,n/a,New Funding/Resour...,$5.00m,-
+6,Feb 2022,Stitch,Stitch,South Africa,Africa,Software & IT services,n/a,New Funding/Resour...,$21.00m,-
+7,Feb 2022,ProXalys (Probou...,ProXalys (Probou...,Senegal,Africa,Software & IT services,n/a,Considering Project (...,$0.15m,-
+8,Feb 2022,Okeanos,Okeanos,United States,Egypt,Chemicals,Manufacturing,Considering Project (...,-,-
+9,Feb 2022,Pyypl,Pyypl,UAE,Bahrain,Software & IT services,n/a,New Funding/Resour...,$11.00m,-
+10,Feb 2022,Hubpay,Hubpay,UAE,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$20.00m,-
+11,Feb 2022,Thndr,Thndr,Egypt,Middle East,Software & IT services,n/a,New Funding/Resour...,$20.00m,-
+12,Feb 2022,iM Global Partner,iM Global Partner,France,Middle East,Financial services,n/a,New Investment Stra...,-,-
+13,Feb 2022,Livspace,Livspace,India,Singapore,Consumer products,n/a,New Funding/Resour...,$180.00m,-
+14,Feb 2022,Fincog (The Finte...,Fincog (The Finte...,Netherlands,Latin America & C...,Business services,n/a,New Investment Stra...,-,-
+15,Feb 2022,Reliance Health,Reliance Health,Nigeria,Egypt,Software & IT services,n/a,New Funding/Resour...,$40.00m,-

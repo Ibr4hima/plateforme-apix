@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Aug 2026,Radio-Canada (C...,Radio-Canada (C...,Canada,Africa,Communications,"Sales, Marketing & ...",Considering Project (...,-,-
-2,Aug 2026,Biodeal Pharmac...,Biodeal Pharmac...,India,Kyrgyzstan,Pharmaceuticals,n/a,New Funding/Resour...,$44.00m,-
-3,Aug 2026,Dangote Group,Dangote Group,Nigeria,Cameroon,"Coal, oil & gas","Logistics, Distributio...",Considering Project (...,-,-
-4,Aug 2026,PalmPay,PalmPay,Nigeria,Hong Kong,Financial services,n/a,New Investment Stra...,-,-
-5,Aug 2026,Boundless Wande...,Boundless Wande...,Nigeria,Africa,Hotels & tourism,n/a,New Investment Stra...,-,-
-6,Aug 2026,CWB,CWB,UAE,Middle East,Business services,n/a,Considering Project (...,-,-
-7,Aug 2026,Horizon3.ai,Horizon3.ai,United States,Singapore,Software & IT services,n/a,New Funding/Resour...,$250.00m,-
-8,Aug 2026,TenTrade,TenTrade,Cyprus,Africa,Financial services,n/a,New Investment Stra...,-,-
-9,Aug 2026,Aflabox,Aflabox,Italy,Nigeria,Biotechnology,n/a,New Funding/Resour...,$1.56m,-
-10,Jul 2026,Digitain,Digitain,Armenia,Middle East,Software & IT services,n/a,New Investment Stra...,-,-
-11,Jul 2026,State Oil Compan...,Socar Trading,Azerbaijan,India,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-12,Jul 2026,Schneider Electric,Schneider Electric,France,Egypt,Electronic components,Manufacturing,Considering Project (...,-,-
-13,Jul 2026,Sorbino Group,Sorbino Group,Italy,Africa,Textiles,Retail,Considering Project (...,-,-
-14,Jul 2026,BluEnergies,BluEnergies,Canada,Liberia,"Coal, oil & gas",Extraction,Considering Project (...,-,-
-15,Jul 2026,TotalEnergies (To...,TotalEnergies (To...,France,Liberia,"Coal, oil & gas",Extraction,Considering Project (...,-,-
+1,Aug 2026,Moment (Moment…,Moment (Moment…,UAE,Africa,Software & IT services,n/a,New Funding/Resour…,-,$22.00m
+2,Aug 2026,Radio-Canada (C...,Radio-Canada (C...,Canada,Africa,Communications,"Sales, Marketing & ...",Considering Project (...,-,-
+3,Aug 2026,Biodeal Pharmac...,Biodeal Pharmac...,India,Kyrgyzstan,Pharmaceuticals,n/a,New Funding/Resour...,$44.00m,-
+4,Aug 2026,Dangote Group,Dangote Group,Nigeria,Cameroon,"Coal, oil & gas","Logistics, Distributio...",Considering Project (...,-,-
+5,Aug 2026,PalmPay,PalmPay,Nigeria,Hong Kong,Financial services,n/a,New Investment Stra...,-,-
+6,Aug 2026,Boundless Wande...,Boundless Wande...,Nigeria,Africa,Hotels & tourism,n/a,New Investment Stra...,-,-
+7,Aug 2026,CWB,CWB,UAE,Middle East,Business services,n/a,Considering Project (...,-,-
+8,Aug 2026,Horizon3.ai,Horizon3.ai,United States,Singapore,Software & IT services,n/a,New Funding/Resour...,$250.00m,-
+9,Aug 2026,TenTrade,TenTrade,Cyprus,Africa,Financial services,n/a,New Investment Stra...,-,-
+10,Aug 2026,Aflabox,Aflabox,Italy,Nigeria,Biotechnology,n/a,New Funding/Resour...,$1.56m,-
+11,Jul 2026,Digitain,Digitain,Armenia,Middle East,Software & IT services,n/a,New Investment Stra...,-,-
+12,Jul 2026,State Oil Compan...,Socar Trading,Azerbaijan,India,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+13,Jul 2026,Schneider Electric,Schneider Electric,France,Egypt,Electronic components,Manufacturing,Considering Project (...,-,-
+14,Jul 2026,Sorbino Group,Sorbino Group,Italy,Africa,Textiles,Retail,Considering Project (...,-,-
+15,Jul 2026,BluEnergies,BluEnergies,Canada,Liberia,"Coal, oil & gas",Extraction,Considering Project (...,-,-

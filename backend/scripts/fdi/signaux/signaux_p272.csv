@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Mar 2011,Castletown Enter...,Castletown Enter...,United Kingdom,Tanzania,"Coal, oil & gas","Logistics, Distribu...",Considering Project (...,-,-
-2,Mar 2011,GAIL (India),GAIL (India),India,Nigeria,Chemicals,Unspecified,New Investment Stra...,-,-
-3,Mar 2011,FirstRand,FirstRand,South Africa,Nigeria,Financial services,Unspecified,New Investment Stra...,-,-
-4,Mar 2011,Havells India,Havells India,India,Asia-Pacific,Electronic compon...,Unspecified,New Investment Stra...,-,-
-5,Mar 2011,Building Astrom,Building Astrom,Romania,Morocco,Real estate,Construction,New Overseas Suppli...,-,-
-6,Mar 2011,Sinohydro,Sinohydro,China,Morocco,Unspecified,Construction,New Overseas Suppli...,-,$1.77bn
-7,Mar 2011,Heilongjiang Beid...,Heilongjiang Beid...,China,Australia,Food and Beverages,"Logistics, Distribu...",Considering Project (...,-,-
-8,Mar 2011,Vale (Companhia ...,Vale (Companhia ...,Brazil,Peru,"Coal, oil & gas",n/a,Considering Projec...,-,$9.00bn
-9,Mar 2011,DOF Subsea,DOF Subsea UK,Norway,Côte d Ivoire,Business services,Business Services,New Overseas Suppli...,-,-
-10,Mar 2011,Corporation Bank,Corporation Bank,India,South Africa,Financial services,Business Services,Considering Project (...,-,-
-11,Mar 2011,Micropolluants Te...,Micropolluants Te...,France,Africa,Business services,Unspecified,New Investment Stra...,-,-
-12,Mar 2011,The Hilong Group...,The Hilong Group...,China,Latin America & C...,Chemicals,Manufacturing,Considering Projec...,-,$18.99m
-13,Mar 2011,Posco Daewoo (D...,Posco Daewoo (D...,South Korea,Asia-Pacific,"Coal, oil & gas",Extraction,Considering Project (...,-,-
-14,Mar 2011,Guangzhou Radio...,GRG International,China,Africa,Electronic compon...,Manufacturing,New Overseas Suppli...,-,-
-15,Mar 2011,FirstRand,FirstRand,South Africa,Nigeria,Financial services,Business Services,Considering Project (...,-,-
+1,Mar 2011,SABMiller,SABMiller,United Kingdom,Africa,Food and Beverages,Unspecified,New Investment Stra...,-,-
+2,Mar 2011,Castletown Enter...,Castletown Enter...,United Kingdom,Tanzania,"Coal, oil & gas","Logistics, Distribu...",Considering Project (...,-,-
+3,Mar 2011,GAIL (India),GAIL (India),India,Nigeria,Chemicals,Unspecified,New Investment Stra...,-,-
+4,Mar 2011,FirstRand,FirstRand,South Africa,Nigeria,Financial services,Unspecified,New Investment Stra...,-,-
+5,Mar 2011,Havells India,Havells India,India,Asia-Pacific,Electronic compon...,Unspecified,New Investment Stra...,-,-
+6,Mar 2011,Building Astrom,Building Astrom,Romania,Morocco,Real estate,Construction,New Overseas Suppli...,-,-
+7,Mar 2011,Sinohydro,Sinohydro,China,Morocco,Unspecified,Construction,New Overseas Suppli...,-,$1.77bn
+8,Mar 2011,Heilongjiang Beid...,Heilongjiang Beid...,China,Australia,Food and Beverages,"Logistics, Distribu...",Considering Project (...,-,-
+9,Mar 2011,Vale (Companhia ...,Vale (Companhia ...,Brazil,Peru,"Coal, oil & gas",n/a,Considering Projec...,-,$9.00bn
+10,Mar 2011,DOF Subsea,DOF Subsea UK,Norway,Côte d Ivoire,Business services,Business Services,New Overseas Suppli...,-,-
+11,Mar 2011,Corporation Bank,Corporation Bank,India,South Africa,Financial services,Business Services,Considering Project (...,-,-
+12,Mar 2011,Micropolluants Te...,Micropolluants Te...,France,Africa,Business services,Unspecified,New Investment Stra...,-,-
+13,Mar 2011,The Hilong Group...,The Hilong Group...,China,Latin America & C...,Chemicals,Manufacturing,Considering Projec...,-,$18.99m
+14,Mar 2011,Posco Daewoo (D...,Posco Daewoo (D...,South Korea,Asia-Pacific,"Coal, oil & gas",Extraction,Considering Project (...,-,-
+15,Mar 2011,Guangzhou Radio...,GRG International,China,Africa,Electronic compon...,Manufacturing,New Overseas Suppli...,-,-

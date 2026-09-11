@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Apr 2016,Artience (Toyo Ink),DYO Printing Inks,Japan,Asia-Pacific,Chemicals,n/a,New Investment Stra...,-,-
-2,Apr 2016,World Wide Techn...,World Wide Techn...,United States,Middle East,Communications,n/a,New Investment Stra...,-,-
-3,Apr 2016,Godrej & Boyce ...,Godrej Consumer...,India,North America,Consumer products,n/a,New Investment Stra...,-,-
-4,Apr 2016,Level 3 Communi...,Level 3 Communi...,United States,Middle East,Communications,ICT & Internet Inf...,Considering Project (...,-,-
-5,Apr 2016,XtraSpace,XtraSpace,South Africa,Zambia,Transportation & ...,n/a,New Investment Stra...,-,-
-6,Mar 2016,OnAir Medya Co...,OnAir Medya Co...,Turkey,Africa,Communications,"Sales, Marketing ...",Considering Project (...,-,-
-7,Mar 2016,The Kuok Group,Kerry Logistics N...,Malaysia,Asia-Pacific,Transportation & ...,n/a,New Investment Stra...,-,-
-8,Mar 2016,M-Files Corporation,M-Files Corporation,Finland,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
-9,Mar 2016,Clavister,Clavister,Sweden,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
-10,Mar 2016,TotalEnergies (To...,TotalEnergies (To...,France,Kenya,Transportation & ...,"Logistics, Distribu...",Considering Project (...,-,-
-11,Mar 2016,Honeywell,ADI International,United States,Africa,Consumer electron...,n/a,New Investment Stra...,-,-
-12,Mar 2016,Sinotruk (China ...,Sinotruk (China ...,China,Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-
-13,Mar 2016,China Merchants ...,China Merchants ...,Hong Kong,Asia-Pacific,Transportation & ...,"Logistics, Distributio...",Considering Project (...,-,-
-14,Mar 2016,Baker McKenzie (...,Baker McKenzie (...,United States,Latin America & C...,Business services,Shared Services ...,Considering Project (...,-,-
-15,Mar 2016,Uber Technologies,Uber Technologies,United States,Ghana,Software & IT serv...,n/a,New Investment Stra...,-,-
+1,Apr 2016,Renault,Renault,France,Morocco,Automotive OEM,n/a,New Investment Stra...,-,$1.04bn
+2,Apr 2016,Artience (Toyo Ink),DYO Printing Inks,Japan,Asia-Pacific,Chemicals,n/a,New Investment Stra...,-,-
+3,Apr 2016,World Wide Techn...,World Wide Techn...,United States,Middle East,Communications,n/a,New Investment Stra...,-,-
+4,Apr 2016,Godrej & Boyce ...,Godrej Consumer...,India,North America,Consumer products,n/a,New Investment Stra...,-,-
+5,Apr 2016,Level 3 Communi...,Level 3 Communi...,United States,Middle East,Communications,ICT & Internet Inf...,Considering Project (...,-,-
+6,Apr 2016,XtraSpace,XtraSpace,South Africa,Zambia,Transportation & ...,n/a,New Investment Stra...,-,-
+7,Mar 2016,OnAir Medya Co...,OnAir Medya Co...,Turkey,Africa,Communications,"Sales, Marketing ...",Considering Project (...,-,-
+8,Mar 2016,The Kuok Group,Kerry Logistics N...,Malaysia,Asia-Pacific,Transportation & ...,n/a,New Investment Stra...,-,-
+9,Mar 2016,M-Files Corporation,M-Files Corporation,Finland,Asia-Pacific,Software & IT serv...,n/a,New Funding/Resour...,-,-
+10,Mar 2016,Clavister,Clavister,Sweden,Africa,Software & IT serv...,n/a,New Investment Stra...,-,-
+11,Mar 2016,TotalEnergies (To...,TotalEnergies (To...,France,Kenya,Transportation & ...,"Logistics, Distribu...",Considering Project (...,-,-
+12,Mar 2016,Honeywell,ADI International,United States,Africa,Consumer electron...,n/a,New Investment Stra...,-,-
+13,Mar 2016,Sinotruk (China ...,Sinotruk (China ...,China,Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-
+14,Mar 2016,China Merchants ...,China Merchants ...,Hong Kong,Asia-Pacific,Transportation & ...,"Logistics, Distributio...",Considering Project (...,-,-
+15,Mar 2016,Baker McKenzie (...,Baker McKenzie (...,United States,Latin America & C...,Business services,Shared Services ...,Considering Project (...,-,-

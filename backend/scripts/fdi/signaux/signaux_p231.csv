@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jun 2013,Qualitynet,Qualitynet,Kuwait,Iraq,Communications,Unspecified,New Investment Stra...,-,-
-2,Jun 2013,Metito,Metito,UAE,Egypt,Industrial equipme...,Unspecified,New Investment Stra...,-,-
-3,Jun 2013,Societe Generale ...,Societe Generale ...,France,Africa,Financial services,n/a,New Investment Stra...,-,-
-4,Jun 2013,Every1Mobile,Every1Mobile,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
-5,Jun 2013,Mitsui & Co,Mitsui & Co,Japan,Mozambique,Chemicals,Electricity,Considering Projec...,-,-
-6,Jun 2013,Panzura,Panzura,United States,Asia-Pacific,Software & IT serv...,Unspecified,New Funding/Resour...,-,-
-7,Jun 2013,Michelin,Michelin,France,Latin America & C...,Rubber,Manufacturing,New Investment Stra...,-,$2.60bn
-8,May 2013,Siemens Gamesa...,Siemens Gamesa...,Spain,Kenya,Engines & turbines,Unspecified,New Overseas Suppli...,-,-
-9,May 2013,TP (Teleperforma...,TP (Teleperforma...,France,India,Business services,Customer Contact...,Considering Projec...,-,-
-10,May 2013,Sameer Group,Sameer Africa,Kenya,Zimbabwe,Rubber,Unspecified,New Investment Stra...,-,-
-11,May 2013,Ohio State Univer...,Ohio State Univer...,United States,Africa,Business services,Business Services,New Investment Stra...,-,-
-12,May 2013,Takaful Insurance...,Takaful Insurance...,Kenya,Uganda,Financial services,n/a,New Investment Stra...,-,-
-13,May 2013,Christian Dior,Christian Dior,France,India,Textiles,n/a,New Investment Stra...,-,-
-14,May 2013,Life Healthcare,Life Healthcare,South Africa,Asia-Pacific,Healthcare,n/a,New Investment Stra...,-,-
-15,May 2013,Fawaz Alhokair G...,Fawaz Alhokair G...,Saudi Arabia,Egypt,Real estate,n/a,New Investment Stra...,-,$715.62m
+1,Jun 2013,Dena Bank,Dena Bank,India,Africa,Financial services,Business Services,Considering Project (...,-,-
+2,Jun 2013,Qualitynet,Qualitynet,Kuwait,Iraq,Communications,Unspecified,New Investment Stra...,-,-
+3,Jun 2013,Metito,Metito,UAE,Egypt,Industrial equipme...,Unspecified,New Investment Stra...,-,-
+4,Jun 2013,Societe Generale ...,Societe Generale ...,France,Africa,Financial services,n/a,New Investment Stra...,-,-
+5,Jun 2013,Every1Mobile,Every1Mobile,South Africa,Africa,Software & IT serv...,n/a,New Funding/Resour...,-,-
+6,Jun 2013,Mitsui & Co,Mitsui & Co,Japan,Mozambique,Chemicals,Electricity,Considering Projec...,-,-
+7,Jun 2013,Panzura,Panzura,United States,Asia-Pacific,Software & IT serv...,Unspecified,New Funding/Resour...,-,-
+8,Jun 2013,Michelin,Michelin,France,Latin America & C...,Rubber,Manufacturing,New Investment Stra...,-,$2.60bn
+9,May 2013,Siemens Gamesa...,Siemens Gamesa...,Spain,Kenya,Engines & turbines,Unspecified,New Overseas Suppli...,-,-
+10,May 2013,TP (Teleperforma...,TP (Teleperforma...,France,India,Business services,Customer Contact...,Considering Projec...,-,-
+11,May 2013,Sameer Group,Sameer Africa,Kenya,Zimbabwe,Rubber,Unspecified,New Investment Stra...,-,-
+12,May 2013,Ohio State Univer...,Ohio State Univer...,United States,Africa,Business services,Business Services,New Investment Stra...,-,-
+13,May 2013,Takaful Insurance...,Takaful Insurance...,Kenya,Uganda,Financial services,n/a,New Investment Stra...,-,-
+14,May 2013,Christian Dior,Christian Dior,France,India,Textiles,n/a,New Investment Stra...,-,-
+15,May 2013,Life Healthcare,Life Healthcare,South Africa,Asia-Pacific,Healthcare,n/a,New Investment Stra...,-,-

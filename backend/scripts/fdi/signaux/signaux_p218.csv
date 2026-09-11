@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Sep 2014,Shanghai Electric,Shanghai Electric,China,Middle East,Renewable energy,Electricity,Considering Project (...,-,$14.50bn
-2,Sep 2014,Meta (Facebook),Meta (Facebook),United States,Africa,Software & IT serv...,"Sales, Marketing ...",Considering Project (...,-,-
-3,Sep 2014,Outstock Belts,Outstock Belts,Spain,India,Textiles,n/a,New Investment Stra...,-,-
-4,Sep 2014,Accelyst Solutions,Accelyst Solutions,India,Latin America & C...,Software & IT serv...,n/a,New Investment Stra...,-,-
-5,Sep 2014,ZB Financial,ZB Reinsurance,Zimbabwe,Mozambique,Financial services,n/a,New Investment Stra...,-,-
-6,Aug 2014,OneLogix,OneLogix,South Africa,Africa,Transportation & ...,n/a,New Investment Stra...,-,-
-7,Aug 2014,GE Aerospace (G...,GE Aerospace (G...,United States,Ethiopia,"Coal, oil & gas",n/a,New Investment Stra...,-,-
-8,Aug 2014,Essel Group,Zee Entertainme...,India,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
-9,Aug 2014,Continental Reins...,Continental Reins...,Nigeria,Africa,Financial services,n/a,New Investment Stra...,-,-
-10,Aug 2014,Funeral Services ...,Funeral Services ...,Botswana,Africa,Business services,n/a,New Investment Stra...,-,-
-11,Aug 2014,Shoprite,Shoprite,South Africa,Africa,Food and Beverages,Retail,Considering Project (...,-,-
-12,Aug 2014,Dentons,Dentons,United Kingdom,Africa,Business services,Business Services,Considering Project (...,-,-
-13,Aug 2014,Ford Motor Comp...,Ford Motor Comp...,United States,Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-
-14,Aug 2014,Coca-Cola,Coca-Cola,United States,Africa,Business services,Manufacturing,Considering Project (...,-,$5.00bn
-15,Aug 2014,SkyMet,SkyMet,India,Asia-Pacific,Business services,n/a,New Funding/Resour...,-,-
+1,Sep 2014,Econet Global,Liquid Intelligent ...,Mauritius,Africa,Communications,ICT & Internet Inf...,Considering Project (...,-,$200.00m
+2,Sep 2014,Shanghai Electric,Shanghai Electric,China,Middle East,Renewable energy,Electricity,Considering Project (...,-,$14.50bn
+3,Sep 2014,Meta (Facebook),Meta (Facebook),United States,Africa,Software & IT serv...,"Sales, Marketing ...",Considering Project (...,-,-
+4,Sep 2014,Outstock Belts,Outstock Belts,Spain,India,Textiles,n/a,New Investment Stra...,-,-
+5,Sep 2014,Accelyst Solutions,Accelyst Solutions,India,Latin America & C...,Software & IT serv...,n/a,New Investment Stra...,-,-
+6,Sep 2014,ZB Financial,ZB Reinsurance,Zimbabwe,Mozambique,Financial services,n/a,New Investment Stra...,-,-
+7,Aug 2014,OneLogix,OneLogix,South Africa,Africa,Transportation & ...,n/a,New Investment Stra...,-,-
+8,Aug 2014,GE Aerospace (G...,GE Aerospace (G...,United States,Ethiopia,"Coal, oil & gas",n/a,New Investment Stra...,-,-
+9,Aug 2014,Essel Group,Zee Entertainme...,India,Asia-Pacific,Communications,n/a,New Investment Stra...,-,-
+10,Aug 2014,Continental Reins...,Continental Reins...,Nigeria,Africa,Financial services,n/a,New Investment Stra...,-,-
+11,Aug 2014,Funeral Services ...,Funeral Services ...,Botswana,Africa,Business services,n/a,New Investment Stra...,-,-
+12,Aug 2014,Shoprite,Shoprite,South Africa,Africa,Food and Beverages,Retail,Considering Project (...,-,-
+13,Aug 2014,Dentons,Dentons,United Kingdom,Africa,Business services,Business Services,Considering Project (...,-,-
+14,Aug 2014,Ford Motor Comp...,Ford Motor Comp...,United States,Africa,Automotive OEM,Manufacturing,Considering Project (...,-,-
+15,Aug 2014,Coca-Cola,Coca-Cola,United States,Africa,Business services,Manufacturing,Considering Project (...,-,$5.00bn

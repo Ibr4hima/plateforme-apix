@@ -1,16 +1,16 @@
 ligne,date,parent,entreprise,source,destination,secteur,activite,signal,funding,capex
-1,Jan 2022,Metro Africa Expr...,Metro Africa Expr...,Nigeria,Ghana,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
-2,Jan 2022,CBI,CBI,Morocco,Africa,Software & IT services,n/a,New Investment Stra...,-,-
-3,Jan 2022,Kuehne + Nagel I...,Kuehne + Nagel I...,Switzerland,Africa,Transportation & War...,n/a,New Investment Stra...,-,-
-4,Jan 2022,Copia Global,Copia Global,Kenya,Nigeria,Consumer products,n/a,New Investment Stra...,-,-
-5,Jan 2022,Udroppy,Udroppy,United States,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,$0.80m,-
-6,Jan 2022,Hello World Kids,Hello World Kids,Jordan,Pakistan,Software & IT services,n/a,New Funding/Resour...,-,-
-7,Jan 2022,Teesas,Teesas,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,$1.60m,-
-8,Dec 2021,Paylend,Paylend,Kenya,Nigeria,Software & IT services,n/a,New Funding/Resour...,$2.00m,-
-9,Dec 2021,WEX,WEX,United States,Asia-Pacific,Software & IT services,n/a,New Personnel,-,-
-10,Dec 2021,Dawatech,Dawatech,Jordan,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,-,-
-11,Dec 2021,ShopConnect (nV...,ShopConnect (nV...,India,United States,Software & IT services,n/a,New Funding/Resour...,$1.50m,-
-12,Dec 2021,SimpliFi,SimpliFi,UAE,Pakistan,Software & IT services,n/a,New Funding/Resour...,$5.10m,-
-13,Dec 2021,Zesty.io,Zesty.io,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$3.00m,-
-14,Dec 2021,MAX.NG,MAX.NG,Nigeria,Ghana,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
-15,Dec 2021,E Green Global (E...,E Green Global (E...,South Korea,Asia-Pacific,Biotechnology,n/a,New Funding/Resour...,$15.00m,-
+1,Jan 2022,Youseum,Youseum,Netherlands,Middle East,Leisure & entertainm...,n/a,New Funding/Resour...,$3.39m,-
+2,Jan 2022,Metro Africa Expr...,Metro Africa Expr...,Nigeria,Ghana,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
+3,Jan 2022,CBI,CBI,Morocco,Africa,Software & IT services,n/a,New Investment Stra...,-,-
+4,Jan 2022,Kuehne + Nagel I...,Kuehne + Nagel I...,Switzerland,Africa,Transportation & War...,n/a,New Investment Stra...,-,-
+5,Jan 2022,Copia Global,Copia Global,Kenya,Nigeria,Consumer products,n/a,New Investment Stra...,-,-
+6,Jan 2022,Udroppy,Udroppy,United States,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,$0.80m,-
+7,Jan 2022,Hello World Kids,Hello World Kids,Jordan,Pakistan,Software & IT services,n/a,New Funding/Resour...,-,-
+8,Jan 2022,Teesas,Teesas,Nigeria,Africa,Software & IT services,n/a,New Funding/Resour...,$1.60m,-
+9,Dec 2021,Paylend,Paylend,Kenya,Nigeria,Software & IT services,n/a,New Funding/Resour...,$2.00m,-
+10,Dec 2021,WEX,WEX,United States,Asia-Pacific,Software & IT services,n/a,New Personnel,-,-
+11,Dec 2021,Dawatech,Dawatech,Jordan,Saudi Arabia,Software & IT services,n/a,New Funding/Resour...,-,-
+12,Dec 2021,ShopConnect (nV...,ShopConnect (nV...,India,United States,Software & IT services,n/a,New Funding/Resour...,$1.50m,-
+13,Dec 2021,SimpliFi,SimpliFi,UAE,Pakistan,Software & IT services,n/a,New Funding/Resour...,$5.10m,-
+14,Dec 2021,Zesty.io,Zesty.io,United States,Asia-Pacific,Software & IT services,n/a,New Funding/Resour...,$3.00m,-
+15,Dec 2021,MAX.NG,MAX.NG,Nigeria,Ghana,Software & IT services,n/a,New Funding/Resour...,$31.00m,-
