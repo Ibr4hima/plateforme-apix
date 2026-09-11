@@ -304,6 +304,82 @@ def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex,
     )
 
 
+def cle_signal(*args, **kw) -> str:
+    """L'empreinte sous forme de chaîne, telle qu'elle est STOCKÉE et indexée.
+
+    C'EST LA CLÉ D'IDENTITÉ DU SIGNAL. Deux conséquences qui obligent :
+
+    Elle doit être STABLE DANS LE TEMPS. Si sa définition change — un champ de
+    plus, une normalisation retouchée — les signaux déjà en base ne se
+    reconnaissent plus, et le réimport suivant les insère tous une seconde
+    fois. Un test épingle donc la valeur exacte d'une ligne connue : toute
+    modification involontaire de la formule fait tomber la suite au lieu de
+    doubler quatre mille cinq cents lignes en silence.
+
+    Elle ne doit contenir AUCUN travail humain, pour que saisir n'altère jamais
+    l'identité de ce qu'on saisit — voir `empreinte_signal`.
+    """
+    brut = "\x1f".join(
+        "" if v is None else str(v)
+        for v in _aplatir(empreinte_signal(*args, **kw))
+    )
+    return hashlib.sha256(brut.encode()).hexdigest()
+
+
+def _aplatir(valeur):
+    """Déplie les tuples imbriqués, pour que la chaîne signée soit sans ambiguïté."""
+    for v in valeur:
+        if isinstance(v, tuple):
+            yield from _aplatir(v)
+        else:
+            yield v
+
+
+async def reprendre_empreintes(db: "AsyncSession") -> int:
+    """Donne son empreinte à chaque signal qui n'en a pas encore. Renvoie le compte.
+
+    LA BASCULE NE DOIT RIEN DOUBLER. Le jour où l'identité passe du rang au
+    contenu, les lignes déjà en base n'ont pas de clé : le premier import ne les
+    reconnaîtrait pas et les insérerait une seconde fois — quatre mille cinq
+    cents doublons, et tout le travail humain resté sur les originaux pendant
+    que les écrans affichent les copies. C'est arrivé une fois sur la base de
+    vérification, ce qui a valu cette fonction.
+
+    LA CLÉ EST RECALCULÉE DEPUIS CE QUE LA BASE PORTE, non depuis les CSV : ce
+    sont les mêmes valeurs, mais passer par la base garantit qu'une ligne saisie
+    à la main — qui n'a aucun fichier derrière elle — reçoit sa clé comme les
+    autres.
+
+    Idempotente : une ligne qui a déjà son empreinte n'est pas relue.
+    """
+    from sqlalchemy import text
+
+    lignes = (await db.execute(text(
+        "SELECT id, annee, mois, parent_brut, entreprise_brut, pays_source_brut,"
+        "       funding_musd, capex_musd"
+        "  FROM fdi_signaux_investisseurs WHERE empreinte IS NULL"))).fetchall()
+    if not lignes:
+        return 0
+
+    # Le relevé de chaque ligne, en une requête par famille plutôt qu'une par
+    # ligne : à quatre mille cinq cents lignes, la différence est celle entre
+    # quelques secondes et un quart d'heure.
+    releve: dict[int, list[str]] = {}
+    for nom, table, _ in LIAISONS:
+        for r in (await db.execute(text(
+            f"SELECT signal_id, brut FROM {table}"
+            f" WHERE origine = 'import' ORDER BY signal_id, rang"))).fetchall():
+            releve.setdefault(r.signal_id, []).append(r.brut or "")
+
+    for l in lignes:
+        await db.execute(text(
+            "UPDATE fdi_signaux_investisseurs SET empreinte = :e WHERE id = :i"),
+            {"i": l.id, "e": cle_signal(
+                l.annee, l.mois, l.parent_brut, l.entreprise_brut, l.pays_source_brut,
+                l.funding_musd, l.capex_musd, tuple(releve.get(l.id, [])))})
+    return len(lignes)
+
+
 async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: str,
                        lignes: list[dict], ref: dict, correspondance: dict[str, str],
                        utilisateur: str | None = None,
@@ -329,128 +405,78 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             "VALUES (:l, :p, :s, 'signaux', 'saisie', :u) RETURNING id"),
             {"l": libelle, "p": perimetre, "s": sens, "u": utilisateur})).scalar_one()
 
-    # L'ÉTAT D'AVANT, POUR SAVOIR CE QUE CHAQUE RANG DÉSIGNAIT. C'est de cette
-    # comparaison que dépend le sort du travail humain : une ligne qui décrit
-    # toujours le même signal le garde, une ligne qui a glissé le perd.
-    avant = {a.ligne: a for a in (await db.execute(text(
-        "SELECT id, ligne, annee, mois, parent_brut, entreprise_brut, pays_source_brut,"
-        "       funding_musd, capex_musd"
-        "  FROM fdi_signaux_investisseurs WHERE lot_id = :i"),
-        {"i": lot_id})).fetchall()}
-
-    # CE QUE LE RELEVÉ AVAIT POSÉ dans les quatre colonnes multiples — et rien
-    # d'autre. Le filtre sur l'origine est ce qui rend la comparaison sûre :
-    # les valeurs ajoutées à la main n'y figurent pas, donc en ajouter une ne
-    # change pas la signature de la ligne et ne déclenche pas l'effacement de
-    # ce qu'on vient d'écrire.
-    #
-    # Une requête par lot, pas une par ligne : quinze allers-retours de plus
-    # par page feraient quatre mille cinq cents sur le relevé complet.
-    releve_avant: dict[int, list[str]] = {}
-    for nom, table, _ in LIAISONS:
-        for r in (await db.execute(text(
-            f"SELECT s.ligne, v.brut FROM {table} v"
-            f"  JOIN fdi_signaux_investisseurs s ON s.id = v.signal_id"
-            f" WHERE s.lot_id = :i AND v.origine = 'import'"
-            f" ORDER BY s.ligne, v.rang"), {"i": lot_id})).fetchall():
-            releve_avant.setdefault(r.ligne, []).append(r.brut or "")
-
     manques: list[str] = []
-    rangs: list[int] = []
-    reinitialises = 0
+    crees = majs = 0
     for l in lignes:
         r = await resoudre_ligne(db, l, ref, correspondance, utilisateur)
         manques += [f"L{r['ligne']} · {m}" for m in r.pop("manques")]
         listes = {nom: r.pop(nom) for nom, _, _ in LIAISONS}
-        rangs.append(r["ligne"])
 
-        a = avant.get(r["ligne"])
-        # L'ordre des familles est celui de LIAISONS des deux côtés : la
-        # requête ci-dessus les parcourt dans cet ordre, et la liste ci-dessous
-        # est construite dans le même. Deux ordres différents feraient échouer
-        # la comparaison sur des lignes pourtant identiques, et l'on effacerait
-        # tout à chaque import.
-        releve_neuf = [v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]]
-        meme = a is not None and empreinte_signal(
-            a.annee, a.mois, a.parent_brut, a.entreprise_brut, a.pays_source_brut,
-            a.funding_musd, a.capex_musd, tuple(releve_avant.get(r["ligne"], [])),
-        ) == empreinte_signal(
+        # L'IDENTITÉ DE LA LIGNE : son contenu, pas sa place. L'ordre des
+        # familles est celui de LIAISONS, ici comme partout ailleurs où cette
+        # clé se calcule — deux ordres différents donneraient deux clés pour un
+        # même signal, et le réimport le doublerait.
+        r["empreinte"] = cle_signal(
             r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
             r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
-            tuple(releve_neuf),
-        )
-        if a is not None and not meme:
-            reinitialises += 1
+            tuple(v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]))
+
+        # LE TRAVAIL HUMAIN N'EST PLUS JAMAIS REMIS EN CAUSE. Il l'était tant
+        # que l'identité tenait au rang : une ligne qui glissait emportait la
+        # description de celle qui l'occupait. Puisque la ligne retrouvée est
+        # LA MÊME par construction, tout ce qu'un humain y a posé lui appartient
+        # — la décision sur l'entreprise, les descriptions, et les valeurs
+        # ajoutées dans les quatre colonnes multiples.
+        #
+        # Ce qui se réécrit, ce sont les colonnes du relevé et les
+        # rattachements qui en dérivent : une nomenclature corrigée doit
+        # redescendre jusqu'ici. Et la provenance — quelle page, quel rang —
+        # qui change à chaque repagination et n'est plus qu'un repère.
+        avant = (await db.execute(text(
+            "SELECT id FROM fdi_signaux_investisseurs WHERE empreinte = :e"),
+            {"e": r["empreinte"]})).first()
 
         signal_id = (await db.execute(text("""
             INSERT INTO fdi_signaux_investisseurs
-                (lot_id, ligne, annee, mois, parent_brut, parent_id,
+                (lot_id, ligne, empreinte, annee, mois, parent_brut, parent_id,
                  entreprise_brut, entreprise_id, statut_entreprise,
                  pays_source_brut, pays_source_id,
                  capex_musd, capex_estime, funding_musd, funding_estime,
                  modifie_le, modifie_par)
-            VALUES (:lot, :ligne, :annee, :mois, :parent_brut, :parent_id,
+            VALUES (:lot, :ligne, :empreinte, :annee, :mois, :parent_brut, :parent_id,
                     :entreprise_brut, :entreprise_id, :statut_entreprise,
                     :pays_source_brut, :pays_source_id,
                     :capex_musd, :capex_estime, :funding_musd, :funding_estime,
                     now(), :u)
-            ON CONFLICT (lot_id, ligne) DO UPDATE SET
-                annee = EXCLUDED.annee, mois = EXCLUDED.mois,
-                parent_brut = EXCLUDED.parent_brut,
-                entreprise_brut = EXCLUDED.entreprise_brut,
-                -- UNE DÉCISION HUMAINE SURVIT AU RÉIMPORT. Compléter un nom
-                -- tronqué depuis l'administration met la ligne à « resolu » ;
-                -- laisser le relevé réécrire entreprise_id effacerait ce
-                -- travail en silence, à la première mise à jour de la page.
-                --
-                -- La garde tient à ce que le TEXTE BRUT n'ait pas bougé : si
-                -- la source écrit désormais autre chose, ce n'est plus la même
-                -- entreprise qu'on avait tranchée, et la décision ne vaut plus.
-                -- Même règle que pour les valeurs ajoutées à la main, et pour
-                -- la même raison.
+            ON CONFLICT (empreinte) WHERE empreinte IS NOT NULL DO UPDATE SET
+                lot_id = EXCLUDED.lot_id, ligne = EXCLUDED.ligne,
+                parent_id = CASE
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                    THEN fdi_signaux_investisseurs.parent_id ELSE EXCLUDED.parent_id END,
                 entreprise_id = CASE
-                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
                     THEN fdi_signaux_investisseurs.entreprise_id
                     ELSE EXCLUDED.entreprise_id END,
                 statut_entreprise = CASE
-                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
+                    WHEN fdi_signaux_investisseurs.statut_entreprise = 'resolu'
                     THEN 'resolu' ELSE EXCLUDED.statut_entreprise END,
-                parent_id = CASE
-                    WHEN :meme AND fdi_signaux_investisseurs.statut_entreprise = 'resolu'
-                    THEN fdi_signaux_investisseurs.parent_id
-                    ELSE EXCLUDED.parent_id END,
-                -- LES DESCRIPTIONS SUIVENT LA MÊME RÈGLE, et c'est ce qui
-                -- manquait : elles n'étaient jamais touchées, donc elles
-                -- restaient sur le rang quand le rang changeait de signal. Une
-                -- description recollée sur la mauvaise entreprise ne se voit
-                -- pas — aucune erreur, aucune ligne rouge.
-                description_en = CASE WHEN :meme
-                    THEN fdi_signaux_investisseurs.description_en ELSE NULL END,
-                description_fr = CASE WHEN :meme
-                    THEN fdi_signaux_investisseurs.description_fr ELSE NULL END,
-                pays_source_brut = EXCLUDED.pays_source_brut,
                 pays_source_id = EXCLUDED.pays_source_id,
-                capex_musd = EXCLUDED.capex_musd, capex_estime = EXCLUDED.capex_estime,
-                funding_musd = EXCLUDED.funding_musd, funding_estime = EXCLUDED.funding_estime,
+                capex_estime = EXCLUDED.capex_estime,
+                funding_estime = EXCLUDED.funding_estime,
                 modifie_le = now(), modifie_par = EXCLUDED.modifie_par
-            RETURNING id"""), {**r, "lot": lot_id, "u": utilisateur,
-                               "meme": meme})).scalar_one()
+            RETURNING id"""), {**r, "lot": lot_id, "u": utilisateur})).scalar_one()
+        if avant:
+            majs += 1
+        else:
+            crees += 1
 
-        # SEULES LES VALEURS DU RELEVÉ SONT REMPLACÉES — tant que le rang décrit
-        # LE MÊME SIGNAL. Celles qu'un humain a ajoutées portent origine
-        # « saisie » et survivent : c'est toute la raison d'être de cette
-        # colonne, puisque le relevé ne peut pas être exhaustif sur ces quatre
-        # colonnes-là.
-        #
-        # Mais si le rang a glissé, ces valeurs-là n'appartiennent plus à cette
-        # ligne : une destination ajoutée pour Oracle qui resterait accrochée au
-        # rang deviendrait, après l'arrivée d'un signal en tête de page, une
-        # destination d'Arc Ride. Elles partent donc avec le reste.
-        origines = "" if meme else " OR origine = 'saisie'"
+        # SEULES LES VALEURS DU RELEVÉ SONT REMPLACÉES. Celles qu'un humain a
+        # ajoutées portent origine « saisie » et survivent toujours : c'est
+        # toute la raison d'être de cette colonne, puisque le relevé ne peut pas
+        # être exhaustif sur ces quatre colonnes-là.
         for nom, table, colonnes in LIAISONS:
             await db.execute(text(
-                f"DELETE FROM {table} WHERE signal_id = :s"
-                f"   AND (origine = 'import'{origines})"),
+                f"DELETE FROM {table} WHERE signal_id = :s AND origine = 'import'"),
                 {"s": signal_id})
             for v in listes[nom]:
                 champs = ", ".join(colonnes)
@@ -460,12 +486,15 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
                     f"VALUES (:s, :rang, :brut, {valeurs}, 'import')"),
                     {"s": signal_id, **v})
 
-    # Les lignes que la page ne montre plus : le relevé fait foi. Une saisie
-    # manuelle, elle, vit dans son propre lot et n'est pas concernée.
-    await db.execute(text(
-        "DELETE FROM fdi_signaux_investisseurs "
-        " WHERE lot_id = :i AND origine = 'import' AND NOT (ligne = ANY(:rangs))"),
-        {"i": lot_id, "rangs": rangs})
+    # AUCUNE SUPPRESSION. Une ligne que cette page ne montre plus n'a pas
+    # disparu du relevé : elle a glissé vers la page suivante, qui l'importera.
+    # La supprimer ici pour la réinsérer là-bas lui ferait perdre son identité,
+    # et avec elle tout ce qu'un humain y avait posé — c'est précisément ce
+    # qu'on vient de corriger.
+    #
+    # Un signal réellement retiré par la source demeure donc en base. C'est
+    # assumé : la plateforme garde ce qu'elle a vu, et l'administration dispose
+    # d'une suppression explicite pour les cas où il faut trancher.
     await db.execute(text(
         "UPDATE fdi_lots_import SET nb_lignes = "
         "  (SELECT count(*) FROM fdi_signaux_investisseurs WHERE lot_id = :i) "
@@ -475,9 +504,5 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
             "UPDATE fdi_lots_import SET empreinte = :e WHERE id = :i"),
             {"e": empreinte_page, "i": lot_id})
 
-    # « reinitialises » se rapporte à l'opérateur, pas au programme : il compte
-    # les rangs qui décrivaient un autre signal et dont le travail humain a donc
-    # été effacé. C'est une perte légitime, mais elle doit se dire — sans quoi
-    # personne ne saurait qu'il faut ressaisir.
-    return {"inchange": False, "lot_id": lot_id, "lignes": len(rangs),
-            "manques": manques, "reinitialises": reinitialises}
+    return {"inchange": False, "lot_id": lot_id, "lignes": crees + majs,
+            "manques": manques, "crees": crees, "majs": majs}

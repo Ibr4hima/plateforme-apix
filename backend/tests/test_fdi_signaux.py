@@ -94,3 +94,64 @@ def test_l_empreinte_ignore_ce_qu_un_humain_a_ajoute():
     # bougé, donc l'empreinte non plus.
     apres_saisie = empreinte_signal(**commun, releve=("Nigeria",))
     assert source_seule == apres_saisie
+
+
+# ── La clé d'identité ────────────────────────────────────────────────────────
+
+def test_la_cle_est_figee_dans_le_temps():
+    """LA VALEUR EXACTE, épinglée — et ce test est le garde-fou le plus
+    important du module.
+
+    La clé identifie le signal EN BASE. Si sa formule bouge — un champ de plus,
+    une normalisation retouchée, un séparateur changé — les quatre mille cinq
+    cents lignes déjà enregistrées cessent de se reconnaître, et le réimport
+    suivant les insère toutes une seconde fois. Le travail humain reste alors
+    sur les originaux pendant que les écrans affichent les copies.
+
+    C'est arrivé une fois sur la base de vérification, avant que la reprise
+    d'empreintes n'existe : la base est passée de 4 501 à 9 002 lignes en un
+    import. Ce test fait tomber la suite AVANT, au lieu de laisser découvrir.
+
+    Si cette valeur doit changer un jour, c'est une migration — pas une
+    correction de test.
+    """
+    from app.services.fdi_signaux import cle_signal
+    assert cle_signal(2026, 9, "Zeal Rewards", "Zeal Rewards", "United Kingdom",
+                      10.0, None,
+                      ("Middle East", "Software & IT services",
+                       "New Funding/Resour…")) == (
+        "3312260bd37481d099555d3468ddbfcfc3cba131e565e7ff0bdee30daee95a6f")
+
+
+def test_la_cle_ne_depend_pas_du_rang_ni_de_la_page():
+    """Une même ligne garde sa clé où qu'elle tombe dans la pagination : c'est
+    tout l'objet de la bascule. Ni le lot ni le rang n'entrent dans le calcul —
+    la signature ne les reçoit même pas."""
+    import inspect
+
+    from app.services.fdi_signaux import cle_signal, empreinte_signal
+    for f in (cle_signal, empreinte_signal):
+        params = set(inspect.signature(f).parameters)
+        assert not params & {"lot", "lot_id", "ligne", "rang", "page"}
+
+
+def test_deux_signaux_de_la_meme_entreprise_a_des_dates_differentes_sont_distincts():
+    """Le relevé porte deux Zeal Rewards — septembre 2026 à 10 M$ et janvier
+    2024 à 4 M$. Les confondre fusionnerait deux signaux réels en une fiche."""
+    from app.services.fdi_signaux import cle_signal
+    commun = dict(parent="Zeal Rewards", entreprise="Zeal Rewards",
+                  source="United Kingdom", capex=None,
+                  releve=("Middle East", "Software & IT services"))
+    assert (cle_signal(2026, 9, funding=10.0, **commun)
+            != cle_signal(2024, 1, funding=4.0, **commun))
+
+
+def test_la_cle_est_insensible_au_marqueur_de_troncature():
+    """Les exports écrivent « ... », le relevé manuel « … ». Une même ligne
+    relevée des deux façons doit donner la même clé, sinon changer de mode de
+    saisie doublerait tout le relevé."""
+    from app.services.fdi_signaux import cle_signal
+    commun = dict(annee=2026, mois=9, entreprise="Zeal Rewards",
+                  source="United Kingdom", funding=10.0, capex=None)
+    assert (cle_signal(parent="Radio-Canada (C...", **commun, releve=("Africa",))
+            == cle_signal(parent="Radio-Canada (C…", **commun, releve=("Africa",)))

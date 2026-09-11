@@ -67,7 +67,7 @@ async def main() -> int:
         print("  aucune page de signaux à importer.")
         return 0
 
-    total = inchanges = reinitialises = 0
+    total = inchanges = crees = 0
     tout = "--tout" in sys.argv
     contexte = S.empreinte_contexte()
     manques: list[str] = []
@@ -79,6 +79,14 @@ async def main() -> int:
             fusions = await appliquer_alias_entreprises(db, "import")
             if fusions:
                 print(f"  {fusions} entreprise(s) fusionnée(s) (fdi_entreprises_alias.csv)")
+
+            # AVANT TOUT IMPORT : les lignes d'avant la bascule vers
+            # l'identité par le contenu n'ont pas de clé, et sans elle le
+            # premier import les doublerait toutes.
+            reprises = await S.reprendre_empreintes(db)
+            if reprises:
+                print(f"  {reprises} signal(aux) ont reçu leur empreinte "
+                      f"(reprise unique, à la bascule d'identité)")
 
             ref = await S.referentiels(db)
             correspondance = lire_pays_csv()
@@ -97,16 +105,15 @@ async def main() -> int:
                     inchanges += 1
                     continue
                 total += rapport["lignes"]
-                reinitialises += rapport.get("reinitialises", 0)
-                # UN RANG QUI A CHANGÉ DE SIGNAL SE DIT À VOIX HAUTE. La page de
-                # fDi est classée par date décroissante : un signal nouveau en
-                # tête, et tout descend d'un cran. Le travail humain accroché à
-                # ces rangs — description, destinations ajoutées à la main — est
-                # effacé, parce qu'il ne décrit plus la bonne entreprise. La
-                # perte est juste, mais taire qu'elle a lieu ferait croire à une
-                # saisie encore en place.
-                marque = (f"   ⟲ {rapport['reinitialises']} rang(s) ont changé de signal"
-                          if rapport.get("reinitialises") else "")
+                crees += rapport.get("crees", 0)
+                # CE QUI EST CRÉÉ SE DIT, le reste non. Depuis que l'identité
+                # d'un signal tient à son contenu, une page rejouée ne crée
+                # rien : elle retrouve ses lignes où qu'elles soient tombées. Un
+                # nombre de créations inattendu est donc le symptôme à guetter —
+                # soit la source a publié du nouveau, soit la formule de clé a
+                # changé et la base est en train de se dédoubler.
+                marque = (f"   + {rapport['crees']} nouveau(x)"
+                          if rapport.get("crees") else "")
                 print(f"  {libelle:<32} {rapport['lignes']:>3} lignes{marque}")
 
             # LE RAPPORT DÉCRIT L'ÉTAT DE LA BASE, PAS LE TRAVAIL FAIT. Depuis
@@ -188,10 +195,9 @@ async def main() -> int:
         print(f"  {inchanges} page(s) inchangée(s), non réécrite(s) "
               f"— « --tout » pour les rejouer quand même")
     print(f"  → {total} signaux écrits, {en_base} en base")
-    if reinitialises:
-        print(f"  ⟲ {reinitialises} rang(s) désignaient un autre signal qu'au précédent "
-              f"import : description et valeurs saisies à la main y ont été effacées, "
-              f"elles ne décrivaient plus la bonne entreprise.")
+    if crees:
+        print(f"  + {crees} signal(aux) créé(s) — les autres ont été retrouvés par leur "
+              f"contenu, où qu'ils soient tombés dans la pagination.")
     if arbitrer:
         print(f"  ⚠ {arbitrer} ligne(s) dont l'entreprise reste à arbitrer "
               f"(administration → fDi Markets → Investor signals)")

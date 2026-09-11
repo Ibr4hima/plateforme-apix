@@ -471,3 +471,149 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
 
     await db.commit()
     return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent}
+
+
+# ── Créer un signal à la main ────────────────────────────────────────────────
+class SignalIn(BaseModel):
+    """Une ligne de relevé, telle qu'on la lit à l'écran de fDi.
+
+    Les champs portent les mêmes noms que les colonnes du relevé et reçoivent
+    les mêmes valeurs, VERBATIM, troncatures comprises : c'est le même lecteur
+    qui les interprète, donc le même appariement, les mêmes rattachements et la
+    même clé d'identité. Saisir un signal à la main ou l'importer d'un fichier
+    doit produire exactement la même ligne — sans quoi l'import suivant en
+    ferait un second.
+    """
+    date: str                       # « Sep 2026 »
+    parent: str | None = None
+    entreprise: str
+    source: str | None = None
+    destination: str | None = None
+    secteur: str | None = None
+    activite: str | None = None
+    signal: str | None = None
+    funding: str | None = None      # « $10.00m », « - », « * - »
+    capex: str | None = None
+
+
+# Le lot des signaux saisis à la main. Il en faut un : la colonne est
+# obligatoire, et ces lignes n'appartiennent à aucune page de fDi. Il porte
+# `source = 'saisie'`, ce qui le distingue des lots relevés dans les écrans qui
+# rendent compte de la provenance.
+LOT_SAISIE = "Signaux · saisie manuelle"
+
+
+@router.post("/signaux-investisseurs", status_code=201)
+async def creer_signal(body: SignalIn,
+                       db: AsyncSession = Depends(get_db),
+                       user: dict = Depends(require_admin)):
+    """Ajoute un signal que la source vient de publier, sans passer par un import.
+
+    POURQUOI CETTE PORTE EXISTE. fDi publie quelques signaux par semaine. Les
+    faire entrer par le relevé demandait de réexporter, découper, redéployer —
+    pour trois lignes. On les saisit désormais ici, et l'écran les montre
+    aussitôt.
+
+    L'IDENTITÉ EST CELLE DU CONTENU, comme pour une ligne importée. Deux
+    conséquences qui font tout l'intérêt de la manœuvre : le même signal ne peut
+    pas entrer deux fois — s'il est déjà là, la saisie est refusée et l'on est
+    renvoyé vers lui ; et le jour où un export du relevé le rapporte, l'import
+    le RECONNAÎT au lieu de le dupliquer, puis met simplement à jour sa
+    provenance. Ce qui aura été complété entre-temps reste en place.
+    """
+    from app.services.fdi_projets import lire_pays_csv
+    from app.services.fdi_signaux import (LIAISONS, cle_signal, referentiels,
+                                          resoudre_ligne)
+
+    lot_id = (await db.execute(text(
+        "SELECT id FROM fdi_lots_import WHERE libelle = :l AND base = 'signaux'"),
+        {"l": LOT_SAISIE})).scalar_one_or_none()
+    if lot_id is None:
+        lot_id = (await db.execute(text(
+            "INSERT INTO fdi_lots_import (libelle, perimetre, sens, base, source, importe_par)"
+            " VALUES (:l, 'Saisie', 'destination', 'signaux', 'saisie', :u) RETURNING id"),
+            {"l": LOT_SAISIE, "u": str(user.get("email") or "admin")})).scalar_one()
+
+    # Le rang n'identifie plus rien — il ne sert qu'à ranger les saisies dans
+    # leur lot, dans l'ordre où elles sont arrivées.
+    rang = 1 + (await db.execute(text(
+        "SELECT coalesce(max(ligne), 0) FROM fdi_signaux_investisseurs WHERE lot_id = :i"),
+        {"i": lot_id})).scalar_one()
+
+    ref = await referentiels(db)
+    ligne = {"ligne": rang, **body.model_dump()}
+    r = await resoudre_ligne(db, ligne, ref, lire_pays_csv(),
+                             str(user.get("email") or "admin"))
+    manques = r.pop("manques")
+    if not r["annee"]:
+        raise HTTPException(422, f"Période illisible : « {body.date} » — attendu « Sep 2026 ».")
+    listes = {nom: r.pop(nom) for nom, _, _ in LIAISONS}
+
+    r["empreinte"] = cle_signal(
+        r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
+        r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
+        tuple(v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]))
+
+    # DÉJÀ LÀ ? On refuse, et l'on dit où le trouver. Insérer un second
+    # exemplaire ferait deux fiches pour un seul signal, chacune à compléter.
+    existe = (await db.execute(text(
+        "SELECT id FROM fdi_signaux_investisseurs WHERE empreinte = :e"),
+        {"e": r["empreinte"]})).first()
+    if existe:
+        raise HTTPException(409, "Ce signal est déjà enregistré — il porte exactement "
+                                 "la même période, la même entreprise et les mêmes "
+                                 "valeurs de relevé.")
+
+    signal_id = (await db.execute(text("""
+        INSERT INTO fdi_signaux_investisseurs
+            (lot_id, ligne, empreinte, annee, mois, parent_brut, parent_id,
+             entreprise_brut, entreprise_id, statut_entreprise,
+             pays_source_brut, pays_source_id,
+             capex_musd, capex_estime, funding_musd, funding_estime,
+             origine, modifie_le, modifie_par)
+        VALUES (:lot, :ligne, :empreinte, :annee, :mois, :parent_brut, :parent_id,
+                :entreprise_brut, :entreprise_id, :statut_entreprise,
+                :pays_source_brut, :pays_source_id,
+                :capex_musd, :capex_estime, :funding_musd, :funding_estime,
+                'saisie', now(), :u)
+        RETURNING id"""),
+        {**r, "lot": lot_id, "u": str(user.get("email") or "admin")})).scalar_one()
+
+    # Les valeurs du relevé portent l'origine « import » MÊME ICI, et ce n'est
+    # pas une coquetterie : l'origine dit de quelle COLONNE du relevé vient la
+    # valeur, pas qui l'a tapée. Le jour où un export rapporte ce signal,
+    # l'import remplacera ces valeurs-là — ce sont les siennes — et laissera
+    # intactes celles qu'on aura ajoutées ensuite en complétion.
+    for nom, table, colonnes in LIAISONS:
+        for v in listes[nom]:
+            champs = ", ".join(colonnes)
+            valeurs = ", ".join(f":{c}" for c in colonnes)
+            await db.execute(text(
+                f"INSERT INTO {table} (signal_id, rang, brut, {champs}, origine) "
+                f"VALUES (:s, :rang, :brut, {valeurs}, 'import')"),
+                {"s": signal_id, **v})
+
+    await db.commit()
+    return {"id": signal_id, "manques": manques}
+
+
+@router.delete("/signaux-investisseurs/{signal_id}", status_code=204)
+async def supprimer_signal(signal_id: int,
+                           db: AsyncSession = Depends(get_db),
+                           user: dict = Depends(require_admin)):
+    """Retire un signal de la base.
+
+    POURQUOI IL LE FAUT. Depuis que l'identité tient au contenu, l'import ne
+    supprime plus rien : une ligne absente d'une page a presque toujours glissé
+    vers la suivante, et l'effacer pour la réinsérer lui ferait perdre tout ce
+    qu'un humain y a posé. Restent deux cas où il faut pouvoir trancher à la
+    main — une saisie fautive, et un signal que la source a retiré.
+
+    Les valeurs rattachées partent avec, par les clés étrangères.
+    """
+    supprime = (await db.execute(text(
+        "DELETE FROM fdi_signaux_investisseurs WHERE id = :i RETURNING id"),
+        {"i": signal_id})).first()
+    if not supprime:
+        raise HTTPException(404, "Signal introuvable.")
+    await db.commit()
