@@ -22,8 +22,8 @@ import { Check, FileText, Loader2, Plus, X } from "lucide-react";
 
 import { API_BASE } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
-import { Avis, Carte, ChampRecherche, Compteur, LigneVide, btnSecondaire,
-         IS, TD, TH } from "@/components/admin/UIAdmin";
+import { Avis, Carte, ChampRecherche, Compteur, LigneVide, btnPrincipal,
+         btnSecondaire, IS, TD, TH } from "@/components/admin/UIAdmin";
 
 type Valeur = {
   id: number; rang: number; brut: string | null; libelle: string | null;
@@ -289,6 +289,115 @@ function ChampNom({ depart, occupe, onValider, onFermer }: {
   );
 }
 
+
+/** Les champs d'une saisie, dans l'ordre des colonnes de fDi. Le nom de chaque
+    clé est celui que l'API attend, et l'étiquette celle que la source affiche :
+    on remplit ce formulaire en LISANT l'écran de fDi, pas en traduisant. */
+const CHAMPS = [
+  { cle: "date",        titre: "Date",           exemple: "Sep 2026",              large: false },
+  { cle: "parent",      titre: "Parent company", exemple: "Zeal Rewards",          large: true },
+  { cle: "entreprise",  titre: "Company",        exemple: "Zeal Rewards",          large: true },
+  { cle: "source",      titre: "Source",         exemple: "United Kingdom",        large: true, liste: "destinations" },
+  { cle: "destination", titre: "Destination",    exemple: "Middle East",           large: true, liste: "destinations" },
+  { cle: "secteur",     titre: "Sector",         exemple: "Software & IT services", large: true, liste: "secteurs" },
+  { cle: "activite",    titre: "Activity",       exemple: "n/a",                   large: true, liste: "activites" },
+  { cle: "signal",      titre: "Signal",         exemple: "New Funding/Resources", large: true, liste: "natures" },
+  { cle: "funding",     titre: "Funding",        exemple: "$10.00m",               large: false },
+  { cle: "capex",       titre: "Capex",          exemple: "-",                     large: false },
+] as const;
+
+type Saisie = Record<(typeof CHAMPS)[number]["cle"], string>;
+const SAISIE_VIDE = Object.fromEntries(CHAMPS.map(c => [c.cle, ""])) as Saisie;
+
+/** Saisir un signal que fDi vient de publier, sans passer par un import.
+
+    POURQUOI CE FORMULAIRE RESSEMBLE AU TABLEAU DE LA SOURCE et non à une fiche
+    de la plateforme : on le remplit en recopiant l'écran de fDi, colonne par
+    colonne, dans l'ordre où elles s'y présentent. Les étiquettes sont donc
+    celles de fDi, en anglais. Toute autre disposition obligerait à chercher où
+    va quoi, quinze fois de suite.
+
+    ON RECOPIE VERBATIM, TRONCATURES COMPRISES. C'est le préfixe qui retrouve
+    l'entrée de nomenclature ; « compléter » un libellé coupé de son propre chef
+    le rendrait introuvable. Les listes proposées donnent les libellés ANGLAIS
+    du référentiel, qui sont ceux de la source — les choisir évite la faute de
+    frappe sans rien inventer.
+
+    UNE CASE VIDE ET UN TIRET NE DISENT PAS LA MÊME CHOSE. La source écrit « - »
+    quand elle n'a pas de valeur et « n/a » quand la colonne ne s'applique pas ;
+    les deux se recopient tels quels. */
+function FormulaireSignal({ ref, occupe, onEnregistrer, onFermer }: {
+  ref: Referentiels | null; occupe: boolean;
+  onEnregistrer: (s: Saisie) => void; onFermer: () => void;
+}) {
+  const [s, setS] = useState<Saisie>(SAISIE_VIDE);
+  const pret = s.date.trim() !== "" && s.entreprise.trim() !== "";
+
+  return (
+    <div style={{ border: "1px solid rgb(var(--bleu-rgb) / 0.25)", borderRadius: 14,
+      background: "rgb(var(--bleu-rgb) / 0.03)", padding: "16px 18px", marginBottom: 14 }}>
+
+      {/* Les listes de suggestions, une par famille. Elles ne contraignent
+          rien : un libellé que le référentiel ignore encore reste saisissable,
+          et l'écran le signalera comme non rattaché plutôt que de le refuser. */}
+      {(["destinations", "secteurs", "activites", "natures"] as const).map(f => (
+        <datalist key={f} id={`liste-${f}`}>
+          {(ref?.[f] ?? []).map(p => (
+            <option key={`${f}-${p.id}`} value={p.libelle_en || p.libelle}>{p.libelle}</option>
+          ))}
+        </datalist>
+      ))}
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 12, marginBottom: 12 }}>
+        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--encre)" }}>
+          Nouveau signal — recopier la ligne de fDi, colonne par colonne
+        </span>
+        <button onClick={onFermer} style={{ ...btnSecondaire, padding: "5px 9px" }}>
+          <X size={13} />
+        </button>
+      </div>
+
+      <div style={{ display: "grid", gap: 10,
+        gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
+        {CHAMPS.map(c => (
+          <label key={c.cle} style={{ display: "block", minWidth: 0,
+            gridColumn: c.large ? undefined : "span 1" }}>
+            <span style={{ display: "block", fontSize: 9.5, fontWeight: 800,
+              letterSpacing: "0.11em", textTransform: "uppercase", color: "var(--gris)",
+              marginBottom: 4 }}>
+              {c.titre}
+              {(c.cle === "date" || c.cle === "entreprise") && (
+                <span style={{ color: "var(--danger)" }}> *</span>
+              )}
+            </span>
+            <input name={c.cle} value={s[c.cle]} disabled={occupe}
+              list={"liste" in c && c.liste ? `liste-${c.liste}` : undefined}
+              onChange={e => setS(v => ({ ...v, [c.cle]: e.target.value }))}
+              onKeyDown={e => {
+                if (e.key === "Enter" && pret && !occupe) onEnregistrer(s);
+                if (e.key === "Escape") onFermer();
+              }}
+              placeholder={c.exemple} style={IS} />
+          </label>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
+        <button onClick={() => onEnregistrer(s)} disabled={!pret || occupe}
+          style={btnPrincipal(pret && !occupe)}>
+          {occupe ? "Enregistrement…" : "Enregistrer le signal"}
+        </button>
+        <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
+          Recopier tel quel, troncatures comprises — c&apos;est le début du libellé
+          qui retrouve la nomenclature.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
 export default function VueSignaux() {
   const [signaux, setSignaux] = useState<Signal[]>([]);
   const [ref, setRef] = useState<Referentiels | null>(null);
@@ -307,6 +416,11 @@ export default function VueSignaux() {
   const [decrit, setDecrit] = useState<number | null>(null);
   // Le signal dont on complète le nom d'entreprise.
   const [nomme, setNomme] = useState<number | null>(null);
+  // Le panneau de saisie d'un signal nouveau, et ce que la dernière saisie a
+  // laissé sans rattachement — à dire, sinon la ligne entre avec des cases
+  // vides que personne ne saura devoir reprendre.
+  const [ajout, setAjout] = useState(false);
+  const [apresSaisie, setApresSaisie] = useState<string[] | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
@@ -396,6 +510,24 @@ export default function VueSignaux() {
     return r;
   });
 
+  const creer = (saisie: Saisie) => agir(async () => {
+    const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify(saisie),
+    });
+    if (r.ok) {
+      // Le panneau se referme, et ce qui n'a pas pu être rattaché s'affiche :
+      // un secteur mal recopié entre quand même, mais il faudra y revenir.
+      const d = await r.clone().json().catch(() => ({ manques: [] }));
+      setAjout(false);
+      setApresSaisie(d.manques ?? []);
+      // La saisie va en tête de liste : on la retrouve sans la chercher.
+      setPage(1); setRecherche("");
+    }
+    return r;
+  });
+
   const retirer = (s: Signal, famille: string, v: Valeur) => agir(async () =>
     fetch(`${API_BASE}/fdi/signaux-investisseurs/${s.id}/valeurs/${famille}/${v.id}`, {
       method: "DELETE", headers: await authHeaders(),
@@ -418,12 +550,36 @@ export default function VueSignaux() {
     <Carte
       titre="Investor signals"
       extra={
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
           <Compteur n={retenues} mot="signal" couleur="var(--bleu)" />
+          {/* fDi publie quelques signaux par semaine. Les faire entrer par un
+              réimport — réexporter, découper, redéployer — pour trois lignes
+              n'avait pas de sens ; on les saisit ici. */}
+          <button onClick={() => { setAjout(v => !v); setApresSaisie(null); }}
+            style={{ ...btnSecondaire, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Plus size={13} /> Ajouter un signal
+          </button>
         </span>
       }
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+
+      {apresSaisie && (
+        <div style={{ marginBottom: 14 }}>
+          <Avis ton={apresSaisie.length ? "info" : "ok"}>
+            {apresSaisie.length
+              ? `Signal enregistré, mais ${apresSaisie.length} valeur(s) n'ont pas été
+                 rattachées : ${apresSaisie.join(" · ")}. La ligne est en base ; il reste
+                 à corriger la graphie ou à compléter depuis le tableau.`
+              : "Signal enregistré, toutes ses valeurs rattachées."}
+          </Avis>
+        </div>
+      )}
+
+      {ajout && (
+        <FormulaireSignal ref={ref} occupe={occupe} onEnregistrer={creer}
+          onFermer={() => setAjout(false)} />
+      )}
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
         marginBottom: 14 }}>
