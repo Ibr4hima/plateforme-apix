@@ -12,6 +12,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from sqlalchemy import text as sa_text  # noqa: E402
+
 from app.core.database import AsyncSessionLocal, engine  # noqa: E402
 from app.services.fdi_classification import ClassificationInvalide, importer  # noqa: E402
 
@@ -20,6 +22,23 @@ async def main() -> int:
     try:
         async with AsyncSessionLocal() as db:
             rapport = await importer(db)
+            await db.commit()
+
+            # LES STATISTIQUES DU PLANIFICATEUR, comme après les deux autres
+            # imports. Ces tables-ci sont petites — quelques dizaines de lignes —
+            # mais elles sont JOINTES à tout ce que les écrans affichent : un
+            # secteur, une activité, une nature de signal. PostgreSQL qui n'a
+            # jamais analysé fdi_secteurs suppose une cardinalité par défaut et
+            # choisit ses plans dessus.
+            #
+            # Mesuré : la première page de la vue publique des signaux tombait à
+            # 2 945 ms après un simple rechargement de la nomenclature, alors
+            # même que pas une ligne de signal n'avait bougé, et revenait à
+            # 44 ms par ce seul ANALYZE. Les deux tables n'avaient jamais été
+            # analysées de leur existence.
+            for t in ("fdi_secteurs", "fdi_sous_secteurs", "fdi_activites",
+                      "fdi_signaux", "fdi_types_projet", "fdi_regions_monde"):
+                await db.execute(sa_text(f"ANALYZE {t}"))
             await db.commit()
     except ClassificationInvalide as e:
         print(f"  ✗ classification invalide : {e}")

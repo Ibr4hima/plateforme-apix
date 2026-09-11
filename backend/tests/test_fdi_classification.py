@@ -27,7 +27,8 @@ def tables():
 def test_effectifs_de_la_nomenclature(tables):
     """Les volumes de la source fDi, figés : un écart doit se remarquer.
 
-    Dix-huit activités et non dix-sept depuis que « Unspecified » y figure. Ce
+    Trente-huit secteurs et dix-huit activités, et non trente-sept et
+    dix-sept, depuis que « Unspecified » y figure des deux côtés. Ce
     n'est pas une activité de plus au catalogue de fDi, c'est une valeur que la
     source ÉCRIT et qu'il fallait pouvoir recevoir : elle coexiste avec « n/a »
     dans la même colonne et ne dit pas la même chose — « n/a » signale une
@@ -36,7 +37,7 @@ def test_effectifs_de_la_nomenclature(tables):
     onze signaux d'un filtre où ils avaient leur place.
     """
     rapport = verifier(tables)
-    assert rapport["secteurs"] == 37
+    assert rapport["secteurs"] == 38
     assert rapport["sous_secteurs"] == 270
     assert rapport["activites"] == 18
     assert rapport["signaux"] == 5
@@ -44,7 +45,24 @@ def test_effectifs_de_la_nomenclature(tables):
 
 
 def test_chaque_secteur_a_au_moins_un_sous_secteur(tables):
+    """Un secteur dont on aurait oublié les sous-secteurs ne se voit pas
+    autrement : l'écran affiche un filtre qui ne descend nulle part."""
     assert verifier(tables)["secteurs_sans_sous_secteur"] == []
+
+
+def test_l_exemption_d_arborescence_est_nommee_et_ne_couvre_que_le_remplissage(tables):
+    """« Unspecified » n'est pas une branche de l'arbre fDi mais une valeur que
+    la source écrit faute de secteur renseigné : lui inventer un sous-secteur
+    ferait entrer dans la nomenclature une entrée jamais publiée.
+
+    L'exemption est donc nommée — et ce test veille à ce qu'elle le reste : si
+    l'on venait à y glisser un secteur réel pour faire taire la vérification,
+    le garde-fou ne garderait plus rien."""
+    from app.services.fdi_classification import SANS_ARBORESCENCE
+    assert SANS_ARBORESCENCE == {"unspecified"}
+    # Et le secteur exempté existe bel et bien : une exemption qui ne
+    # correspond à aucun code serait un reste oublié.
+    assert "unspecified" in {s["code"] for s in tables["secteurs"]}
 
 
 def test_un_libelle_partage_est_toujours_tranche_par_son_secteur(tables):

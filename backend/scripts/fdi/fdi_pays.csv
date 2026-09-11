@@ -13,6 +13,7 @@ Armenia,ARM,Arménie
 Australia,AUS,Australie
 Austria,AUT,Autriche
 Azerbaijan,AZE,Azerbaïdjan
+"Bolivia, Plurinational State of",BOL,Bolivie
 Bahamas,BHS,Bahamas
 The Bahamas,BHS,Bahamas
 Bahrain,BHR,Bahreïn
@@ -24,7 +25,6 @@ Bermuda,BMU,Bermudes
 Bhutan,BTN,Bhoutan
 Belarus,BLR,Biélorussie
 Bolivia,BOL,Bolivie
-"Bolivia, Plurinational State of",BOL,Bolivie
 Bosnia and Herzegovina,BIH,Bosnie-Herzégovine
 Bosnia-Herzegovina,BIH,Bosnie-Herzégovine
 Botswana,BWA,Botswana
@@ -35,10 +35,10 @@ Bulgaria,BGR,Bulgarie
 Burkina Faso,BFA,Burkina Faso
 Burundi,BDI,Burundi
 Benin,BEN,Bénin
+"Congo, Democratic Republic of the",COD,République démocratique du Congo
 Cambodia,KHM,Cambodge
 Cameroon,CMR,Cameroun
 Canada,CAN,Canada
-Cayman Islands,CYM,Îles Caïmans
 Cabo Verde,CPV,Cap-Vert
 Cape Verde,CPV,Cap-Vert
 Chile,CHL,Chili
@@ -50,9 +50,7 @@ Congo,COG,Congo
 Congo (Brazzaville),COG,Congo
 Republic of the Congo,COG,Congo
 Democratic People's Republic of Korea,PRK,Corée du Nord
-"Korea, North",PRK,Corée du Nord
 North Korea,PRK,Corée du Nord
-"Korea, South",KOR,Corée du Sud
 Republic of Korea,KOR,Corée du Sud
 South Korea,KOR,Corée du Sud
 Costa Rica,CRI,Costa Rica
@@ -87,11 +85,11 @@ Haiti,HTI,Haïti
 Honduras,HND,Honduras
 Hong Kong,HKG,Hong Kong
 Hungary,HUN,Hongrie
+"Iran, Islamic Republic of",IRN,Iran
 India,IND,Inde
 Indonesia,IDN,Indonésie
 Iraq,IRQ,Irak
 Iran,IRN,Iran
-"Iran, Islamic Republic of",IRN,Iran
 Ireland,IRL,Irlande
 Iceland,ISL,Islande
 Israel,ISR,Israël
@@ -99,6 +97,7 @@ Italy,ITA,Italie
 Jamaica,JAM,Jamaïque
 Japan,JPN,Japon
 Jordan,JOR,Jordanie
+"Korea, South",KOR,Corée du Sud
 Kazakhstan,KAZ,Kazakhstan
 Kenya,KEN,Kenya
 Kyrgyzstan,KGZ,Kirghizistan
@@ -114,6 +113,7 @@ Libya,LBY,Libye
 Liechtenstein,LIE,Liechtenstein
 Lithuania,LTU,Lituanie
 Luxembourg,LUX,Luxembourg
+"Moldova, Republic of",MDA,Moldavie
 Macao,MAC,Macao
 Macau,MAC,Macao
 FYR Macedonia,MKD,Macédoine du Nord
@@ -131,7 +131,6 @@ Mauritania,MRT,Mauritanie
 Mexico,MEX,Mexique
 Micronesia,FSM,Micronésie
 Moldova,MDA,Moldavie
-"Moldova, Republic of",MDA,Moldavie
 Monaco,MCO,Monaco
 Mongolia,MNG,Mongolie
 Montenegro,MNE,Monténégro
@@ -150,6 +149,7 @@ Nepal,NPL,Népal
 Oman,OMN,Oman
 Uganda,UGA,Ouganda
 Uzbekistan,UZB,Ouzbékistan
+"Korea, North",PRK,Corée du Nord
 Pakistan,PAK,Pakistan
 Palau,PLW,Palaos
 Panama,PAN,Panama
@@ -172,13 +172,13 @@ Rwanda,RWA,Rwanda
 Central African Republic,CAF,République centrafricaine
 Dominican Republic,DOM,République dominicaine
 Congo (Kinshasa),COD,République démocratique du Congo
-"Congo, Democratic Republic of the",COD,République démocratique du Congo
 DR Congo,COD,République démocratique du Congo
 Democratic Republic of the Congo,COD,République démocratique du Congo
 Saint Kitts and Nevis,KNA,Saint-Kitts-et-Nevis
 San Marino,SMR,Saint-Marin
 Saint Vincent and the Grenadines,VCT,Saint-Vincent-et-les-Grenadines
 Saint Lucia,LCA,Sainte-Lucie
+El Salvador,SLV,Salvador
 Samoa,WSM,Samoa
 Sao Tome and Principe,STP,Sao Tomé-et-Principe
 Serbia,SRB,Serbie
@@ -198,9 +198,10 @@ Sweden,SWE,Suède
 Syria,SYR,Syrie
 Syrian Arab Republic,SYR,Syrie
 Senegal,SEN,Sénégal
+"Tanzania, United Republic of",TZA,Tanzanie
 Tajikistan,TJK,Tadjikistan
 Tanzania,TZA,Tanzanie
-"Tanzania, United Republic of",TZA,Tanzanie
+Taiwan,TWN,Taïwan
 Chad,TCD,Tchad
 Czech Republic,CZE,Tchéquie
 Czechia,CZE,Tchéquie
@@ -218,9 +219,9 @@ Türkiye,TUR,Turquie
 Tuvalu,TUV,Tuvalu
 Ukraine,UKR,Ukraine
 Uruguay,URY,Uruguay
+"Venezuela, Bolivarian Republic of",VEN,Venezuela
 Vanuatu,VUT,Vanuatu
 Venezuela,VEN,Venezuela
-"Venezuela, Bolivarian Republic of",VEN,Venezuela
 Viet Nam,VNM,Viêt Nam
 Vietnam,VNM,Viêt Nam
 Yemen,YEM,Yémen
@@ -235,6 +236,6 @@ USA,USA,États-Unis
 United States,USA,États-Unis
 United States of America,USA,États-Unis
 Ethiopia,ETH,Éthiopie
+Cayman Islands,CYM,Îles Caïmans
 Marshall Islands,MHL,Îles Marshall
 Solomon Islands,SLB,Îles Salomon
-Taiwan,TWN,Taïwan

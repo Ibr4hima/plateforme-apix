@@ -86,6 +86,23 @@ def lire_csv(dossier: Path | None = None) -> dict[str, list[dict]]:
     return tables
 
 
+# LES SEULS SECTEURS QUI N'OUVRENT AUCUNE ARBORESCENCE.
+#
+# « Chaque secteur porte au moins un sous-secteur » est un vrai garde-fou : il
+# attrape le secteur dont on aurait oublié de transcrire les sous-secteurs, et
+# ce genre d'oubli ne se voit pas autrement — l'écran affiche simplement un
+# filtre qui ne descend nulle part.
+#
+# « Unspecified » y échappe parce que ce n'est PAS une branche de l'arbre de
+# fDi : c'est une valeur de remplissage que la source écrit quand elle n'a pas
+# renseigné le secteur. Lui inventer un sous-secteur pour satisfaire la règle
+# ferait entrer dans la nomenclature une entrée que fDi n'a jamais publiée.
+#
+# L'exemption est NOMMÉE, et c'est ce qui la rend acceptable : un secteur réel
+# laissé sans sous-secteur continue de faire échouer la vérification.
+SANS_ARBORESCENCE = {"unspecified"}
+
+
 def verifier(tables: dict[str, list[dict]]) -> dict:
     """Les contrôles qui doivent tenir avant d'écrire quoi que ce soit.
 
@@ -148,7 +165,7 @@ def verifier(tables: dict[str, list[dict]]) -> dict:
     if vides:
         raise ClassificationInvalide(f"libellés manquants : {vides[:5]}")
 
-    sans_ss = sorted(codes - {s["secteur_code"] for s in sous})
+    sans_ss = sorted(codes - {s["secteur_code"] for s in sous} - SANS_ARBORESCENCE)
     partages = sum(1 for _, n in Counter(s["cle_appariement"] for s in sous).items() if n > 1)
     return {
         "secteurs": len(secteurs),
