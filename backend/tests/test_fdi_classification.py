@@ -25,11 +25,20 @@ def tables():
 
 
 def test_effectifs_de_la_nomenclature(tables):
-    """Les volumes de la source fDi, figés : un écart doit se remarquer."""
+    """Les volumes de la source fDi, figés : un écart doit se remarquer.
+
+    Dix-huit activités et non dix-sept depuis que « Unspecified » y figure. Ce
+    n'est pas une activité de plus au catalogue de fDi, c'est une valeur que la
+    source ÉCRIT et qu'il fallait pouvoir recevoir : elle coexiste avec « n/a »
+    dans la même colonne et ne dit pas la même chose — « n/a » signale une
+    colonne sans objet pour ce signal, « Unspecified » une activité qui existe
+    mais que la source n'a pas renseignée. Les confondre aurait fait disparaître
+    onze signaux d'un filtre où ils avaient leur place.
+    """
     rapport = verifier(tables)
     assert rapport["secteurs"] == 37
     assert rapport["sous_secteurs"] == 270
-    assert rapport["activites"] == 17
+    assert rapport["activites"] == 18
     assert rapport["signaux"] == 5
     assert rapport["types_projet"] == 3
 

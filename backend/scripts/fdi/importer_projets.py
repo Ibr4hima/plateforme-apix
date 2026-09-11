@@ -164,6 +164,24 @@ async def main() -> int:
                     f" ORDER BY l.id, p.ligne"))).fetchall():
                     non_resolus.append(f"{r.libelle} L{r.ligne} · {nom} « {r.brut} »")
             await db.commit()
+
+            # LES STATISTIQUES DU PLANIFICATEUR, APRÈS ÉCRITURE ET AVANT USAGE.
+            #
+            # Un import massif réécrit des milliers de lignes ; PostgreSQL, lui,
+            # garde les statistiques d'avant jusqu'au prochain passage de
+            # l'autovacuum — qui peut tarder de plusieurs minutes. Entre les
+            # deux, le planificateur choisit ses plans sur une table qu'il croit
+            # petite, et il se trompe.
+            #
+            # Ce n'est pas une inquiétude de principe : mesuré ici, la première
+            # page de la vue publique des signaux est passée de 45 ms à 3 599 ms
+            # juste après le versement de deux mille neuf cents lignes, et est
+            # revenue à 45 ms par ce seul ANALYZE. Un déploiement qui rend
+            # l'écran inutilisable pendant quelques minutes est un déploiement
+            # raté, même si toutes les données sont justes.
+            for t in ("fdi_projets", "fdi_entreprises", "fdi_lots_import"):
+                await db.execute(sa_text(f"ANALYZE {t}"))
+            await db.commit()
     except LigneInvalide as e:
         # Rien n'est écrit : une page illisible s'arrête avant la base plutôt
         # que d'y laisser la moitié d'un lot.
