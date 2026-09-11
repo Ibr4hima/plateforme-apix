@@ -342,8 +342,15 @@ function FormulaireSignal({ ref, occupe, onEnregistrer, onFermer }: {
           et l'écran le signalera comme non rattaché plutôt que de le refuser. */}
       {(["destinations", "secteurs", "activites", "natures"] as const).map(f => (
         <datalist key={f} id={`liste-${f}`}>
+          {/* LA CLÉ PORTE LA NATURE, et ce n'est pas une précaution de style :
+              les destinations réunissent DEUX référentiels — les régions du
+              monde de fDi et les pays — dont les identifiants se recoupent. La
+              région 1 et le pays 1 se disputaient la même clé, et React en
+              omettait une. C'est la convention déjà tenue par la liste de
+              complétion, quelques lignes plus haut. */}
           {(ref?.[f] ?? []).map(p => (
-            <option key={`${f}-${p.id}`} value={p.libelle_en || p.libelle}>{p.libelle}</option>
+            <option key={`${f}-${p.nature ?? ""}-${p.id}`}
+              value={p.libelle_en || p.libelle}>{p.libelle}</option>
           ))}
         </datalist>
       ))}
