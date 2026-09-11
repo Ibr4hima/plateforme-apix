@@ -300,8 +300,60 @@ def empreinte_signal(annee, mois, parent, entreprise, source, funding, capex,
         annee, mois,
         normaliser(parent or ""), normaliser(entreprise or ""), normaliser(source or ""),
         arrondi(funding), arrondi(capex),
-        tuple(normaliser(v or "") for v in releve),
+        # Le relevé arrive DÉJÀ CANONIQUE, par `signature_releve` — on ne le
+        # normalise pas ici. Le normaliser détruirait les séparateurs qui
+        # distinguent « le pays 42 » de « la région 42 ».
+        tuple(releve),
     )
+
+
+# Les préfixes de signature, un par famille. Ils tiennent dans un caractère
+# parce que la chaîne signée n'a pas à être lisible — seulement stable.
+_PREFIXES = {"destinations": "d", "secteurs": "s", "activites": "a", "natures": "n"}
+
+
+def signature_releve(listes: dict[str, list[dict]]) -> tuple[str, ...]:
+    """Ce que le relevé dit des quatre colonnes multiples, sous forme canonique.
+
+    ON SIGNE LE SENS, PAS LE TEXTE — et c'est ce qui permet à la saisie et à
+    l'import de produire la même identité pour le même signal.
+
+    La source affiche ses libellés TRONQUÉS : « New Funding/Resour… ». Un import
+    recopie cette troncature ; un formulaire où l'on CHOISIT dans le
+    référentiel, lui, connaît le libellé entier. Signer le texte brut ferait
+    donc deux signatures pour un seul signal, et l'export qui l'apporterait plus
+    tard en créerait un doublon au lieu de le reconnaître — exactement ce que la
+    bascule d'identité était censée empêcher.
+
+    On signe donc le POSTE rattaché : « d:p42 » pour le pays 42, « d:r3 » pour
+    la région 3. Le libellé tronqué et le libellé entier désignent le même
+    poste, donc la même signature.
+
+    CE QUI N'EST PAS RATTACHÉ se signe par son texte normalisé, faute de mieux,
+    et se reconnaît au tilde. La conséquence est à connaître : si la
+    nomenclature est corrigée plus tard et que la valeur se rattache enfin, la
+    signature change et l'import créera une seconde ligne. Le compte rendu
+    l'annonce — « + N créé(s) » là où l'on n'attendait rien — et c'est le seul
+    endroit où cela peut arriver. Aujourd'hui aucune valeur du relevé n'est dans
+    ce cas.
+    """
+    from app.services.fdi_projets import normaliser
+    out: list[str] = []
+    for nom, _, colonnes in LIAISONS:
+        p = _PREFIXES[nom]
+        for v in listes.get(nom, []):
+            if nom == "destinations":
+                if v.get("pays_id"):
+                    out.append(f"{p}:p{v['pays_id']}")
+                elif v.get("region_id"):
+                    out.append(f"{p}:r{v['region_id']}")
+                else:
+                    out.append(f"{p}:~{normaliser(v.get('brut') or '')}")
+            else:
+                ident = v.get(colonnes[0])
+                out.append(f"{p}:{ident}" if ident
+                           else f"{p}:~{normaliser(v.get('brut') or '')}")
+    return tuple(out)
 
 
 def cle_signal(*args, **kw) -> str:
@@ -364,19 +416,20 @@ async def reprendre_empreintes(db: "AsyncSession") -> int:
     # Le relevé de chaque ligne, en une requête par famille plutôt qu'une par
     # ligne : à quatre mille cinq cents lignes, la différence est celle entre
     # quelques secondes et un quart d'heure.
-    releve: dict[int, list[str]] = {}
-    for nom, table, _ in LIAISONS:
+    releve: dict[int, dict[str, list[dict]]] = {}
+    for nom, table, colonnes in LIAISONS:
+        cols = ", ".join(colonnes)
         for r in (await db.execute(text(
-            f"SELECT signal_id, brut FROM {table}"
+            f"SELECT signal_id, brut, {cols} FROM {table}"
             f" WHERE origine = 'import' ORDER BY signal_id, rang"))).fetchall():
-            releve.setdefault(r.signal_id, []).append(r.brut or "")
+            releve.setdefault(r.signal_id, {}).setdefault(nom, []).append(dict(r._mapping))
 
     for l in lignes:
         await db.execute(text(
             "UPDATE fdi_signaux_investisseurs SET empreinte = :e WHERE id = :i"),
             {"i": l.id, "e": cle_signal(
                 l.annee, l.mois, l.parent_brut, l.entreprise_brut, l.pays_source_brut,
-                l.funding_musd, l.capex_musd, tuple(releve.get(l.id, [])))})
+                l.funding_musd, l.capex_musd, signature_releve(releve.get(l.id, {})))})
     return len(lignes)
 
 
@@ -419,7 +472,7 @@ async def importer_lot(db: "AsyncSession", libelle: str, perimetre: str, sens: s
         r["empreinte"] = cle_signal(
             r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
             r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
-            tuple(v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]))
+            signature_releve(listes))
 
         # LE TRAVAIL HUMAIN N'EST PLUS JAMAIS REMIS EN CAUSE. Il l'était tant
         # que l'identité tenait au rang : une ligne qui glissait emportait la

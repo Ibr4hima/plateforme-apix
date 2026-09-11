@@ -474,33 +474,51 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
 
 
 # ── Créer un signal à la main ────────────────────────────────────────────────
-class SignalIn(BaseModel):
-    """Une ligne de relevé, telle qu'on la lit à l'écran de fDi.
+class DestinationIn(BaseModel):
+    """Un pays OU une région du monde, jamais les deux — comme en base."""
+    pays_id: int | None = None
+    region_id: int | None = None
 
-    Les champs portent les mêmes noms que les colonnes du relevé et reçoivent
-    les mêmes valeurs, VERBATIM, troncatures comprises : c'est le même lecteur
-    qui les interprète, donc le même appariement, les mêmes rattachements et la
-    même clé d'identité. Saisir un signal à la main ou l'importer d'un fichier
-    doit produire exactement la même ligne — sans quoi l'import suivant en
-    ferait un second.
+
+class SignalIn(BaseModel):
+    """Un signal saisi depuis l'administration.
+
+    TOUT EST CHOISI, RIEN N'EST RETAPÉ — sauf les deux noms d'entreprise, qui
+    n'appartiennent à aucun référentiel. C'est le point qui a fait refaire ce
+    formulaire : recopier « New Funding/Resour… » à la main, c'était inviter la
+    faute de frappe sur la valeur qui sert justement à rattacher la ligne.
+
+    On reçoit donc des IDENTIFIANTS de référentiel. Le libellé stocké est celui
+    du poste, en anglais — la langue de la source — de sorte qu'une ligne saisie
+    se lit comme une ligne importée.
+
+    LES QUATRE COLONNES MULTIPLES LE SONT ICI AUSSI. La source n'en montre
+    qu'une par case, mais elle en cache d'autres : pouvoir les poser dès la
+    saisie évite d'avoir à rouvrir la ligne pour la compléter.
     """
-    date: str                       # « Sep 2026 »
-    parent: str | None = None
+    annee: int
+    mois: int
     entreprise: str
-    source: str | None = None
-    destination: str | None = None
-    secteur: str | None = None
-    activite: str | None = None
-    signal: str | None = None
-    funding: str | None = None      # « $10.00m », « - », « * - »
-    capex: str | None = None
+    parent: str | None = None
+    pays_source_id: int | None = None
+    destinations: list[DestinationIn] = []
+    secteurs: list[int] = []
+    activites: list[int] = []
+    natures: list[int] = []
+    funding_musd: float | None = None
+    funding_estime: bool = False
+    capex_musd: float | None = None
+    capex_estime: bool = False
 
 
 # Le lot des signaux saisis à la main. Il en faut un : la colonne est
-# obligatoire, et ces lignes n'appartiennent à aucune page de fDi. Il porte
-# `source = 'saisie'`, ce qui le distingue des lots relevés dans les écrans qui
-# rendent compte de la provenance.
+# obligatoire, et ces lignes n'appartiennent à aucune page de fDi.
 LOT_SAISIE = "Signaux · saisie manuelle"
+
+# Les mois tels que fDi les écrit. La saisie choisit un mois et une année ; on
+# reconstruit la date de la source pour que le lecteur partagé l'interprète.
+MOIS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
 @router.post("/signaux-investisseurs", status_code=201)
@@ -511,19 +529,64 @@ async def creer_signal(body: SignalIn,
 
     POURQUOI CETTE PORTE EXISTE. fDi publie quelques signaux par semaine. Les
     faire entrer par le relevé demandait de réexporter, découper, redéployer —
-    pour trois lignes. On les saisit désormais ici, et l'écran les montre
-    aussitôt.
+    pour trois lignes. On les saisit ici, et l'écran les montre aussitôt.
 
-    L'IDENTITÉ EST CELLE DU CONTENU, comme pour une ligne importée. Deux
-    conséquences qui font tout l'intérêt de la manœuvre : le même signal ne peut
-    pas entrer deux fois — s'il est déjà là, la saisie est refusée et l'on est
-    renvoyé vers lui ; et le jour où un export du relevé le rapporte, l'import
-    le RECONNAÎT au lieu de le dupliquer, puis met simplement à jour sa
-    provenance. Ce qui aura été complété entre-temps reste en place.
+    L'IDENTITÉ EST CELLE DU CONTENU, comme pour une ligne importée, et elle
+    porte les POSTES rattachés plutôt que leurs libellés. C'est ce qui permet à
+    une saisie et à un import de se reconnaître : la source écrit ses libellés
+    tronqués, le formulaire connaît les entiers, et les deux désignent le même
+    poste. Le jour où un export apporte ce signal, l'import le retrouve au lieu
+    de le dupliquer, et ce qui aura été complété entre-temps reste en place.
     """
     from app.services.fdi_projets import lire_pays_csv
     from app.services.fdi_signaux import (LIAISONS, cle_signal, referentiels,
-                                          resoudre_ligne)
+                                          resoudre_ligne, signature_releve)
+
+    if not 1 <= body.mois <= 12:
+        raise HTTPException(422, "Mois attendu entre 1 et 12.")
+    if not 1990 <= body.annee <= 2100:
+        raise HTTPException(422, "Année hors des bornes plausibles.")
+    if not body.entreprise.strip():
+        raise HTTPException(422, "Le nom de l'entreprise est obligatoire.")
+
+    # LES LIBELLÉS DES POSTES CHOISIS, en anglais. Une requête par famille : on
+    # écrit le libellé en base pour que la ligne se lise comme une ligne
+    # importée, et un identifiant qui n'existe pas doit être refusé ici plutôt
+    # que de produire une valeur muette.
+    async def libelles(table: str, ids: list[int]) -> dict[int, str]:
+        if not ids:
+            return {}
+        lignes = (await db.execute(text(
+            f"SELECT id, libelle_en FROM {table} WHERE id = ANY(:ids)"),
+            {"ids": list(set(ids))})).fetchall()
+        trouves = {r.id: r.libelle_en for r in lignes}
+        manquants = sorted(set(ids) - set(trouves))
+        if manquants:
+            raise HTTPException(422, f"{table} : identifiant(s) inconnu(s) {manquants}.")
+        return trouves
+
+    pays_ids = [d.pays_id for d in body.destinations if d.pays_id]
+    region_ids = [d.region_id for d in body.destinations if d.region_id]
+    if any(d.pays_id and d.region_id for d in body.destinations):
+        raise HTTPException(422, "Une destination est un pays OU une région, pas les deux.")
+    if any(not d.pays_id and not d.region_id for d in body.destinations):
+        raise HTTPException(422, "Une destination sans pays ni région n'a pas de sens.")
+
+    from app.services.fdi_projets import libelles_pays_en
+    en_pays = libelles_pays_en()
+    besoins = list({*pays_ids, *([body.pays_source_id] if body.pays_source_id else [])})
+    iso = {r.id: (r.code_iso3, r.nom_fr) for r in (await db.execute(text(
+        "SELECT id, code_iso3, nom_fr FROM ref_pays WHERE id = ANY(:ids)"),
+        {"ids": besoins})).fetchall()} if besoins else {}
+    inconnus = sorted(set(besoins) - set(iso))
+    if inconnus:
+        raise HTTPException(422, f"ref_pays : identifiant(s) inconnu(s) {inconnus}.")
+    nom_pays = {i: (en_pays.get(c or "") or n) for i, (c, n) in iso.items()}
+
+    regions = await libelles("fdi_regions_monde", region_ids)
+    secteurs = await libelles("fdi_secteurs", body.secteurs)
+    activites = await libelles("fdi_activites", body.activites)
+    natures = await libelles("fdi_signaux", body.natures)
 
     lot_id = (await db.execute(text(
         "SELECT id FROM fdi_lots_import WHERE libelle = :l AND base = 'signaux'"),
@@ -534,25 +597,57 @@ async def creer_signal(body: SignalIn,
             " VALUES (:l, 'Saisie', 'destination', 'signaux', 'saisie', :u) RETURNING id"),
             {"l": LOT_SAISIE, "u": str(user.get("email") or "admin")})).scalar_one()
 
-    # Le rang n'identifie plus rien — il ne sert qu'à ranger les saisies dans
-    # leur lot, dans l'ordre où elles sont arrivées.
+    # Le rang n'identifie plus rien — il range les saisies dans leur lot, dans
+    # l'ordre où elles sont arrivées.
     rang = 1 + (await db.execute(text(
         "SELECT coalesce(max(ligne), 0) FROM fdi_signaux_investisseurs WHERE lot_id = :i"),
         {"i": lot_id})).scalar_one()
 
+    # LE MÊME LECTEUR QUE L'IMPORT pour la partie scalaire — période, maison
+    # mère, entreprise, pays d'origine. Les quatre colonnes multiples lui sont
+    # passées vides : elles ne viennent pas d'un texte à apparier mais de choix
+    # déjà faits, qu'on pose juste après. Partager ce lecteur n'est pas une
+    # économie : c'est la garantie qu'une entreprise saisie se rattache comme
+    # une entreprise importée, alias compris.
     ref = await referentiels(db)
-    ligne = {"ligne": rang, **body.model_dump()}
+    ligne = {
+        "ligne": rang,
+        "date": f"{MOIS_EN[body.mois - 1]} {body.annee}",
+        "parent": (body.parent or "").strip() or None,
+        "entreprise": body.entreprise.strip(),
+        "source": nom_pays.get(body.pays_source_id or 0),
+        "destination": "-", "secteur": "-", "activite": "-", "signal": "-",
+        "funding": "-", "capex": "-",
+    }
     r = await resoudre_ligne(db, ligne, ref, lire_pays_csv(),
                              str(user.get("email") or "admin"))
-    manques = r.pop("manques")
-    if not r["annee"]:
-        raise HTTPException(422, f"Période illisible : « {body.date} » — attendu « Sep 2026 ».")
-    listes = {nom: r.pop(nom) for nom, _, _ in LIAISONS}
+    r.pop("manques")
+    for nom, _, _ in LIAISONS:
+        r.pop(nom)
+
+    r["funding_musd"] = body.funding_musd
+    r["funding_estime"] = body.funding_estime if body.funding_musd is not None else None
+    r["capex_musd"] = body.capex_musd
+    r["capex_estime"] = body.capex_estime if body.capex_musd is not None else None
+
+    listes = {
+        "destinations": [
+            ({"rang": i, "brut": nom_pays[d.pays_id], "pays_id": d.pays_id, "region_id": None}
+             if d.pays_id else
+             {"rang": i, "brut": regions[d.region_id], "pays_id": None, "region_id": d.region_id})
+            for i, d in enumerate(body.destinations, 1)],
+        "secteurs":  [{"rang": i, "brut": secteurs[x], "secteur_id": x}
+                      for i, x in enumerate(body.secteurs, 1)],
+        "activites": [{"rang": i, "brut": activites[x], "activite_id": x}
+                      for i, x in enumerate(body.activites, 1)],
+        "natures":   [{"rang": i, "brut": natures[x], "nature_id": x}
+                      for i, x in enumerate(body.natures, 1)],
+    }
 
     r["empreinte"] = cle_signal(
         r["annee"], r["mois"], r["parent_brut"], r["entreprise_brut"],
         r["pays_source_brut"], r["funding_musd"], r["capex_musd"],
-        tuple(v["brut"] for nom, _, _ in LIAISONS for v in listes[nom]))
+        signature_releve(listes))
 
     # DÉJÀ LÀ ? On refuse, et l'on dit où le trouver. Insérer un second
     # exemplaire ferait deux fiches pour un seul signal, chacune à compléter.
@@ -562,7 +657,7 @@ async def creer_signal(body: SignalIn,
     if existe:
         raise HTTPException(409, "Ce signal est déjà enregistré — il porte exactement "
                                  "la même période, la même entreprise et les mêmes "
-                                 "valeurs de relevé.")
+                                 "valeurs.")
 
     signal_id = (await db.execute(text("""
         INSERT INTO fdi_signaux_investisseurs
@@ -579,11 +674,11 @@ async def creer_signal(body: SignalIn,
         RETURNING id"""),
         {**r, "lot": lot_id, "u": str(user.get("email") or "admin")})).scalar_one()
 
-    # Les valeurs du relevé portent l'origine « import » MÊME ICI, et ce n'est
-    # pas une coquetterie : l'origine dit de quelle COLONNE du relevé vient la
-    # valeur, pas qui l'a tapée. Le jour où un export rapporte ce signal,
-    # l'import remplacera ces valeurs-là — ce sont les siennes — et laissera
-    # intactes celles qu'on aura ajoutées ensuite en complétion.
+    # Les valeurs portent l'origine « import » MÊME ICI, et ce n'est pas une
+    # coquetterie : l'origine dit de quelle COLONNE du relevé vient la valeur,
+    # pas qui l'a tapée. Le jour où un export rapporte ce signal, l'import
+    # remplacera celles-là — ce sont les siennes — et laissera intactes celles
+    # qu'on aura ajoutées ensuite en complétion.
     for nom, table, colonnes in LIAISONS:
         for v in listes[nom]:
             champs = ", ".join(colonnes)
@@ -594,7 +689,7 @@ async def creer_signal(body: SignalIn,
                 {"s": signal_id, **v})
 
     await db.commit()
-    return {"id": signal_id, "manques": manques}
+    return {"id": signal_id}
 
 
 @router.delete("/signaux-investisseurs/{signal_id}", status_code=204)

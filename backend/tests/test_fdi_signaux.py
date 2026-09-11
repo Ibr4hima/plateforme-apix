@@ -60,20 +60,54 @@ def test_l_empreinte_separe_deux_signaux_que_seule_la_destination_distingue():
     ne diffèrent que par leur destination — Nigeria pour l'un, Kenya pour
     l'autre.
 
-    Sans la destination dans l'empreinte, une ligne qui glisse de l'un à
+    Sans les colonnes multiples dans l'empreinte, une ligne qui glisse de l'un à
     l'autre passait pour « le même signal », et le travail humain migrait du
     premier au second sans que rien ne le dise."""
     from app.services.fdi_signaux import empreinte_signal
     commun = dict(annee=2019, mois=8, parent="Swvl", entreprise="Swvl",
                   source="Egypt", funding=None, capex=None)
-    nigeria = empreinte_signal(**commun, releve=("Nigeria", "Software & IT services",
-                                                 "New Funding/Resour…"))
-    kenya = empreinte_signal(**commun, releve=("Kenya", "Software & IT services",
-                                               "New Funding/Resour…"))
-    assert nigeria != kenya
-    # Et sans le relevé, les deux seraient bel et bien confondus : c'est la
-    # démonstration que l'ajout servait à quelque chose.
-    assert empreinte_signal(**commun) == empreinte_signal(**commun)
+    assert (empreinte_signal(**commun, releve=("d:p119", "s:30"))
+            != empreinte_signal(**commun, releve=("d:p101", "s:30")))
+
+
+def test_une_saisie_et_un_import_donnent_LA_MEME_identite():
+    """LA PROPRIÉTÉ QUI PERMET DE SAISIR SANS ATTENDRE L'EXPORT.
+
+    La source affiche ses libellés tronqués — « New Funding/Resour… » — et un
+    import recopie la troncature. Le formulaire de saisie, lui, fait CHOISIR
+    dans le référentiel : il connaît le libellé entier. Si l'identité portait le
+    texte, ces deux chemins produiraient deux signatures, et l'export qui
+    apporterait plus tard un signal déjà saisi en créerait un doublon.
+
+    Elle porte le POSTE : les deux écritures désignent la nature 3, donc le même
+    signal."""
+    from app.services.fdi_signaux import signature_releve
+    tronque = signature_releve({"natures": [{"brut": "New Funding/Resour…", "nature_id": 3}]})
+    entier = signature_releve({"natures": [
+        {"brut": "New Funding / Resources for Expansion", "nature_id": 3}]})
+    assert tronque == entier == ("n:3",)
+
+
+def test_un_pays_et_une_region_de_meme_identifiant_ne_se_confondent_pas():
+    """Les destinations réunissent DEUX référentiels dont les identifiants se
+    recoupent : la région 1 et le pays 1 existent tous deux. Les signer pareil
+    ferait de « Africa » et de l'Afghanistan le même signal."""
+    from app.services.fdi_signaux import signature_releve
+    pays = signature_releve({"destinations": [{"brut": "X", "pays_id": 1, "region_id": None}]})
+    region = signature_releve({"destinations": [{"brut": "X", "pays_id": None, "region_id": 1}]})
+    assert pays == ("d:p1",) and region == ("d:r1",)
+
+
+def test_une_valeur_non_rattachee_se_signe_par_son_texte():
+    """Faute de poste, on signe le texte normalisé — et on le marque d'un tilde
+    pour qu'il ne se confonde jamais avec un identifiant.
+
+    La conséquence est assumée et documentée : si la nomenclature est corrigée
+    plus tard et que la valeur se rattache enfin, la signature change et
+    l'import crée une seconde ligne. Le compte rendu l'annonce."""
+    from app.services.fdi_signaux import signature_releve
+    assert signature_releve({"secteurs": [{"brut": "Secteur Inconnu", "secteur_id": None}]}) \
+        == ("s:~secteur inconnu",)
 
 
 def test_l_empreinte_ignore_ce_qu_un_humain_a_ajoute():
@@ -89,10 +123,10 @@ def test_l_empreinte_ignore_ce_qu_un_humain_a_ajoute():
     from app.services.fdi_signaux import empreinte_signal
     commun = dict(annee=2019, mois=8, parent="Swvl", entreprise="Swvl",
                   source="Egypt", funding=None, capex=None)
-    source_seule = empreinte_signal(**commun, releve=("Nigeria",))
-    # La même ligne, après qu'un humain a ajouté « Kenya » : le relevé n'a pas
+    source_seule = empreinte_signal(**commun, releve=("d:p119",))
+    # La même ligne, après qu'un humain a ajouté le Kenya : le relevé n'a pas
     # bougé, donc l'empreinte non plus.
-    apres_saisie = empreinte_signal(**commun, releve=("Nigeria",))
+    apres_saisie = empreinte_signal(**commun, releve=("d:p119",))
     assert source_seule == apres_saisie
 
 
@@ -117,10 +151,8 @@ def test_la_cle_est_figee_dans_le_temps():
     """
     from app.services.fdi_signaux import cle_signal
     assert cle_signal(2026, 9, "Zeal Rewards", "Zeal Rewards", "United Kingdom",
-                      10.0, None,
-                      ("Middle East", "Software & IT services",
-                       "New Funding/Resour…")) == (
-        "3312260bd37481d099555d3468ddbfcfc3cba131e565e7ff0bdee30daee95a6f")
+                      10.0, None, ("d:r2", "s:30", "n:3")) == (
+        "9e9d5b63c8bc205843002981970715783a5929c22aa4625f00cb10c5e23bfeeb")
 
 
 def test_la_cle_ne_depend_pas_du_rang_ni_de_la_page():
@@ -140,8 +172,7 @@ def test_deux_signaux_de_la_meme_entreprise_a_des_dates_differentes_sont_distinc
     2024 à 4 M$. Les confondre fusionnerait deux signaux réels en une fiche."""
     from app.services.fdi_signaux import cle_signal
     commun = dict(parent="Zeal Rewards", entreprise="Zeal Rewards",
-                  source="United Kingdom", capex=None,
-                  releve=("Middle East", "Software & IT services"))
+                  source="United Kingdom", capex=None, releve=("d:r2", "s:30"))
     assert (cle_signal(2026, 9, funding=10.0, **commun)
             != cle_signal(2024, 1, funding=4.0, **commun))
 
@@ -153,5 +184,5 @@ def test_la_cle_est_insensible_au_marqueur_de_troncature():
     from app.services.fdi_signaux import cle_signal
     commun = dict(annee=2026, mois=9, entreprise="Zeal Rewards",
                   source="United Kingdom", funding=10.0, capex=None)
-    assert (cle_signal(parent="Radio-Canada (C...", **commun, releve=("Africa",))
-            == cle_signal(parent="Radio-Canada (C…", **commun, releve=("Africa",)))
+    assert (cle_signal(parent="Radio-Canada (C...", **commun, releve=("d:r1",))
+            == cle_signal(parent="Radio-Canada (C…", **commun, releve=("d:r1",)))

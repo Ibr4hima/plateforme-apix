@@ -1,0 +1,33 @@
+-- =============================================================================
+-- Migration 152 — la signature d'un signal porte le POSTE, non le texte
+--
+-- POURQUOI LA FORMULE CHANGE. L'identité d'un signal reposait sur le texte brut
+-- de ses quatre colonnes multiples. La source affiche ces libellés TRONQUÉS —
+-- « New Funding/Resour… » — et un import recopie la troncature. Mais le
+-- formulaire de saisie, lui, fait CHOISIR dans le référentiel : il connaît le
+-- libellé entier.
+--
+-- Deux signatures pour un seul signal, donc : celle du texte coupé et celle du
+-- texte complet. L'export qui apporterait plus tard un signal saisi à la main
+-- en aurait créé un doublon au lieu de le reconnaître — exactement ce que la
+-- bascule d'identité de la migration 151 devait empêcher.
+--
+-- La signature porte désormais le poste rattaché — « le pays 42 », « la région
+-- 3 » — et non plus son libellé. Le texte tronqué et le texte entier désignent
+-- le même poste, donc la même identité.
+--
+-- CE QUE FAIT CETTE MIGRATION, ET RIEN D'AUTRE : elle efface les empreintes
+-- pour qu'elles soient recalculées. `scripts/fdi/importer_signaux.py` les
+-- reconstruit au passage suivant, depuis ce que la base porte, AVANT d'importer
+-- quoi que ce soit — c'est la même reprise qui avait servi à la bascule.
+--
+-- SANS CET EFFACEMENT, la base se dédoublerait : les lignes garderaient leur
+-- ancienne empreinte, le premier import en calculerait de nouvelles, et rien ne
+-- se reconnaîtrait. L'index partiel accepte les valeurs nulles précisément pour
+-- rendre cette reprise possible.
+--
+-- Idempotente : la rejouer efface des empreintes qui seront de nouveau
+-- recalculées, sans perte — la signature ne porte aucun travail humain.
+-- =============================================================================
+
+UPDATE fdi_signaux_investisseurs SET empreinte = NULL WHERE empreinte IS NOT NULL;

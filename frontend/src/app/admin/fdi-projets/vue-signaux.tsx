@@ -290,120 +290,313 @@ function ChampNom({ depart, occupe, onValider, onFermer }: {
 }
 
 
-/** Les champs d'une saisie, dans l'ordre des colonnes de fDi. Le nom de chaque
-    clé est celui que l'API attend, et l'étiquette celle que la source affiche :
-    on remplit ce formulaire en LISANT l'écran de fDi, pas en traduisant. */
-const CHAMPS = [
-  { cle: "date",        titre: "Date",           exemple: "Sep 2026",              large: false },
-  { cle: "parent",      titre: "Parent company", exemple: "Zeal Rewards",          large: true },
-  { cle: "entreprise",  titre: "Company",        exemple: "Zeal Rewards",          large: true },
-  { cle: "source",      titre: "Source",         exemple: "United Kingdom",        large: true, liste: "destinations" },
-  { cle: "destination", titre: "Destination",    exemple: "Middle East",           large: true, liste: "destinations" },
-  { cle: "secteur",     titre: "Sector",         exemple: "Software & IT services", large: true, liste: "secteurs" },
-  { cle: "activite",    titre: "Activity",       exemple: "n/a",                   large: true, liste: "activites" },
-  { cle: "signal",      titre: "Signal",         exemple: "New Funding/Resources", large: true, liste: "natures" },
-  { cle: "funding",     titre: "Funding",        exemple: "$10.00m",               large: false },
-  { cle: "capex",       titre: "Capex",          exemple: "-",                     large: false },
-] as const;
+/** Ce qu'une saisie envoie : des IDENTIFIANTS, jamais des libellés.
 
-type Saisie = Record<(typeof CHAMPS)[number]["cle"], string>;
-const SAISIE_VIDE = Object.fromEntries(CHAMPS.map(c => [c.cle, ""])) as Saisie;
+    C'est ce qui a fait refaire ce formulaire. Recopier « New Funding/Resour… »
+    à la main, c'était inviter la faute de frappe sur la valeur qui sert
+    justement à rattacher la ligne. Seuls les deux noms d'entreprise se tapent —
+    ils n'appartiennent à aucun référentiel. */
+type Saisie = {
+  annee: number; mois: number;
+  entreprise: string; parent: string;
+  pays_source_id: number | null;
+  destinations: Poste[]; secteurs: Poste[]; activites: Poste[]; natures: Poste[];
+  funding_musd: string; funding_estime: boolean;
+  capex_musd: string; capex_estime: boolean;
+};
 
-/** Saisir un signal que fDi vient de publier, sans passer par un import.
+const MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin",
+                 "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
-    POURQUOI CE FORMULAIRE RESSEMBLE AU TABLEAU DE LA SOURCE et non à une fiche
-    de la plateforme : on le remplit en recopiant l'écran de fDi, colonne par
-    colonne, dans l'ordre où elles s'y présentent. Les étiquettes sont donc
-    celles de fDi, en anglais. Toute autre disposition obligerait à chercher où
-    va quoi, quinze fois de suite.
+/** Le libellé d'un intertitre de la fiche. */
+const TITRE_BLOC: React.CSSProperties = {
+  fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase",
+  color: "var(--bleu)", marginBottom: 10, display: "block",
+};
+const ETIQ_CHAMP: React.CSSProperties = {
+  display: "block", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.11em",
+  textTransform: "uppercase", color: "var(--gris)", marginBottom: 5,
+};
 
-    ON RECOPIE VERBATIM, TRONCATURES COMPRISES. C'est le préfixe qui retrouve
-    l'entrée de nomenclature ; « compléter » un libellé coupé de son propre chef
-    le rendrait introuvable. Les listes proposées donnent les libellés ANGLAIS
-    du référentiel, qui sont ceux de la source — les choisir évite la faute de
-    frappe sans rien inventer.
+/** Un choix dans un référentiel — un seul poste, ou plusieurs.
 
-    UNE CASE VIDE ET UN TIRET NE DISENT PAS LA MÊME CHOSE. La source écrit « - »
-    quand elle n'a pas de valeur et « n/a » quand la colonne ne s'applique pas ;
-    les deux se recopient tels quels. */
-function FormulaireSignal({ ref, occupe, onEnregistrer, onFermer }: {
-  ref: Referentiels | null; occupe: boolean;
-  onEnregistrer: (s: Saisie) => void; onFermer: () => void;
+    ON CHERCHE EN ANGLAIS, ON RELIT EN FRANÇAIS. C'est l'écran de fDi qu'on a
+    sous les yeux en saisissant : chercher « Middle East » dans une liste
+    française obligerait à traduire de tête. Une fois choisie, la valeur
+    s'affiche en français — c'est ainsi qu'on la lira partout ensuite.
+
+    La liste ne s'ouvre qu'à la frappe. Deux cent six destinations déroulées
+    sous chaque case feraient une fiche illisible. */
+function Choix({ options, valeurs, onChange, unique, placeholder, occupe }: {
+  options: Poste[]; valeurs: Poste[]; onChange: (v: Poste[]) => void;
+  unique?: boolean; placeholder: string; occupe: boolean;
 }) {
-  const [s, setS] = useState<Saisie>(SAISIE_VIDE);
-  const pret = s.date.trim() !== "" && s.entreprise.trim() !== "";
+  const [q, setQ] = useState("");
+  const cherche = q.trim().toLowerCase();
+  const prises = new Set(valeurs.map(v => `${v.nature ?? ""}-${v.id}`));
+  const visibles = cherche
+    ? options.filter(o => !prises.has(`${o.nature ?? ""}-${o.id}`)
+        && ((o.libelle_en ?? "").toLowerCase().includes(cherche)
+            || o.libelle.toLowerCase().includes(cherche))).slice(0, 40)
+    : [];
 
   return (
-    <div style={{ border: "1px solid rgb(var(--bleu-rgb) / 0.25)", borderRadius: 14,
-      background: "rgb(var(--bleu-rgb) / 0.03)", padding: "16px 18px", marginBottom: 14 }}>
-
-      {/* Les listes de suggestions, une par famille. Elles ne contraignent
-          rien : un libellé que le référentiel ignore encore reste saisissable,
-          et l'écran le signalera comme non rattaché plutôt que de le refuser. */}
-      {(["destinations", "secteurs", "activites", "natures"] as const).map(f => (
-        <datalist key={f} id={`liste-${f}`}>
-          {/* LA CLÉ PORTE LA NATURE, et ce n'est pas une précaution de style :
-              les destinations réunissent DEUX référentiels — les régions du
-              monde de fDi et les pays — dont les identifiants se recoupent. La
-              région 1 et le pays 1 se disputaient la même clé, et React en
-              omettait une. C'est la convention déjà tenue par la liste de
-              complétion, quelques lignes plus haut. */}
-          {(ref?.[f] ?? []).map(p => (
-            <option key={`${f}-${p.nature ?? ""}-${p.id}`}
-              value={p.libelle_en || p.libelle}>{p.libelle}</option>
-          ))}
-        </datalist>
-      ))}
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 12, marginBottom: 12 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--encre)" }}>
-          Nouveau signal — recopier la ligne de fDi, colonne par colonne
-        </span>
-        <button onClick={onFermer} style={{ ...btnSecondaire, padding: "5px 9px" }}>
-          <X size={13} />
-        </button>
-      </div>
-
-      <div style={{ display: "grid", gap: 10,
-        gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
-        {CHAMPS.map(c => (
-          <label key={c.cle} style={{ display: "block", minWidth: 0,
-            gridColumn: c.large ? undefined : "span 1" }}>
-            <span style={{ display: "block", fontSize: 9.5, fontWeight: 800,
-              letterSpacing: "0.11em", textTransform: "uppercase", color: "var(--gris)",
-              marginBottom: 4 }}>
-              {c.titre}
-              {(c.cle === "date" || c.cle === "entreprise") && (
-                <span style={{ color: "var(--danger)" }}> *</span>
+    <div>
+      {valeurs.length > 0 && (
+        <div style={{ marginBottom: 6 }}>
+          {valeurs.map(v => (
+            <span key={`${v.nature ?? ""}-${v.id}`}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5,
+                fontSize: 11, lineHeight: 1.4, padding: "3px 8px", borderRadius: 7,
+                marginRight: 4, marginBottom: 4, color: "var(--encre)",
+                background: "rgb(var(--bleu-rgb) / 0.08)",
+                border: "1px solid rgb(var(--bleu-rgb) / 0.30)" }}>
+              {v.libelle}
+              {v.nature === "region" && (
+                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.06em",
+                  textTransform: "uppercase", color: "var(--gris)" }}>région</span>
               )}
+              <button onClick={() => onChange(valeurs.filter(x => x !== v))}
+                aria-label="Retirer" disabled={occupe}
+                style={{ border: "none", background: "none", padding: 0,
+                  cursor: "pointer", display: "inline-flex", color: "var(--gris)" }}>
+                <X size={10} />
+              </button>
             </span>
-            <input name={c.cle} value={s[c.cle]} disabled={occupe}
-              list={"liste" in c && c.liste ? `liste-${c.liste}` : undefined}
-              onChange={e => setS(v => ({ ...v, [c.cle]: e.target.value }))}
-              onKeyDown={e => {
-                if (e.key === "Enter" && pret && !occupe) onEnregistrer(s);
-                if (e.key === "Escape") onFermer();
-              }}
-              placeholder={c.exemple} style={IS} />
-          </label>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
-        <button onClick={() => onEnregistrer(s)} disabled={!pret || occupe}
-          style={btnPrincipal(pret && !occupe)}>
-          {occupe ? "Enregistrement…" : "Enregistrer le signal"}
-        </button>
-        <span style={{ fontSize: 11.5, color: "var(--gris)" }}>
-          Recopier tel quel, troncatures comprises — c&apos;est le début du libellé
-          qui retrouve la nomenclature.
-        </span>
+      {(!unique || valeurs.length === 0) && (
+        <div style={{ position: "relative" }}>
+          <input value={q} disabled={occupe} onChange={e => setQ(e.target.value)}
+            placeholder={placeholder} style={{ ...IS, padding: "8px 11px", fontSize: 12.5 }} />
+          {visibles.length > 0 && (
+            <div style={{ position: "absolute", zIndex: 5, top: "100%", left: 0, right: 0,
+              marginTop: 4, maxHeight: 210, overflowY: "auto", background: "var(--carte)",
+              border: "1px solid var(--bordure-forte)", borderRadius: 10,
+              boxShadow: "var(--ombre-2)" }}>
+              {visibles.map(o => (
+                <button key={`${o.nature ?? ""}-${o.id}`}
+                  onClick={() => { onChange(unique ? [o] : [...valeurs, o]); setQ(""); }}
+                  style={{ display: "flex", alignItems: "baseline", gap: 8, width: "100%",
+                    padding: "6px 11px", border: "none", background: "transparent",
+                    cursor: "pointer", textAlign: "left", fontFamily: "inherit" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--carte-douce)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                  <span style={{ fontSize: 12, color: "var(--encre)" }}>{o.libelle_en ?? o.libelle}</span>
+                  <span style={{ fontSize: 10.5, color: "var(--gris)" }}>{o.libelle}</span>
+                  {o.nature === "region" && (
+                    <span style={{ marginLeft: "auto", fontSize: 8.5, fontWeight: 800,
+                      letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "var(--gris)" }}>région</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Un montant : le nombre, et la case qui dit qu'il est ESTIMÉ.
+
+    La distinction n'est pas décorative. fDi marque d'une astérisque les
+    montants produits par son algorithme plutôt que déclarés par l'entreprise,
+    et toute la plateforme la porte ensuite — un total qui mêlerait les deux
+    sans le dire ne pourrait pas se défendre en réunion. */
+function Montant2({ valeur, estime, onValeur, onEstime, occupe, etiquette }: {
+  valeur: string; estime: boolean; onValeur: (v: string) => void;
+  onEstime: (v: boolean) => void; occupe: boolean; etiquette: string;
+}) {
+  return (
+    <div>
+      <span style={ETIQ_CHAMP}>{etiquette}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <input value={valeur} disabled={occupe} inputMode="decimal"
+          onChange={e => onValeur(e.target.value.replace(",", "."))}
+          placeholder="—" style={{ ...IS, padding: "8px 11px", fontSize: 12.5, width: 110 }} />
+        <span style={{ fontSize: 11.5, color: "var(--gris)" }}>M$</span>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 6,
+          fontSize: 11.5, color: valeur ? "var(--texte)" : "var(--gris)",
+          cursor: valeur ? "pointer" : "default" }}>
+          <input type="checkbox" checked={estime} disabled={occupe || !valeur}
+            onChange={e => onEstime(e.target.checked)} />
+          estimé
+        </label>
       </div>
     </div>
   );
 }
 
+/** La fiche de saisie d'un signal.
+
+    POURQUOI UNE FICHE ET NON UN BANDEAU DE CHAMPS. Un signal n'est pas une
+    ligne de tableur : il a une période, une entreprise, un trajet, des
+    natures, des montants qualifiés. Les aligner à plat obligeait à tout relire
+    pour savoir où l'on en était. La fiche les groupe par question — quand et
+    qui, ce que le signal vise, ce qu'il chiffre — et chaque groupe se lit seul.
+
+    RIEN NE SE TAPE, TOUT SE CHOISIT, sauf les deux noms d'entreprise : ils
+    n'appartiennent à aucun référentiel, et c'est justement pour eux que
+    l'écran garde un arbitrage. Le reste vient des nomenclatures, donc se
+    rattache d'emblée — une saisie ne crée plus de travail de correction.
+
+    LES QUATRE COLONNES MULTIPLES LE SONT AUSSI ICI. La source n'en montre
+    qu'une par case et cache les autres ; pouvoir les poser dès la saisie évite
+    de rouvrir la ligne pour la compléter juste après. */
+function FicheSaisie({ ref, occupe, onEnregistrer, onFermer }: {
+  ref: Referentiels | null; occupe: boolean;
+  onEnregistrer: (s: Saisie) => void; onFermer: () => void;
+}) {
+  const maintenant = new Date();
+  const [s, setS] = useState<Saisie>({
+    annee: maintenant.getFullYear(), mois: maintenant.getMonth() + 1,
+    entreprise: "", parent: "", pays_source_id: null,
+    destinations: [], secteurs: [], activites: [], natures: [],
+    funding_musd: "", funding_estime: false, capex_musd: "", capex_estime: false,
+  });
+  const maj = <K extends keyof Saisie>(k: K, v: Saisie[K]) => setS(x => ({ ...x, [k]: v }));
+  const pret = s.entreprise.trim() !== "";
+  // Les pays seuls, pour l'origine : un investissement part d'un PAYS, jamais
+  // d'une région du monde — celles-ci ne servent qu'aux destinations.
+  const pays = (ref?.destinations ?? []).filter(d => d.nature === "pays");
+  const origine = pays.find(p => p.id === s.pays_source_id);
+  const annees = Array.from({ length: 12 }, (_, i) => maintenant.getFullYear() + 1 - i);
+
+  return (
+    <div onMouseDown={e => { if (e.target === e.currentTarget) onFermer(); }}
+      style={{ position: "fixed", inset: 0, background: "rgb(var(--ombre-rgb) / 0.4)",
+        backdropFilter: "blur(6px)", display: "flex", alignItems: "center",
+        justifyContent: "center", zIndex: 300, padding: 24 }}>
+      <div style={{ background: "var(--carte-douce)", borderRadius: 20, width: "100%",
+        maxWidth: 720, maxHeight: "92vh", display: "flex", flexDirection: "column",
+        overflow: "hidden", border: "1px solid var(--bordure-forte)",
+        boxShadow: "var(--ombre-2)" }}>
+        <div style={{ height: 4, background: "var(--bleu-action)" }} />
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 16, padding: "18px 26px 14px", borderBottom: "1px solid var(--bordure)" }}>
+          <div>
+            <h2 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--encre)" }}>
+              Nouveau signal d&apos;investissement
+            </h2>
+            <p style={{ fontSize: 11.5, color: "var(--gris)", marginTop: 3 }}>
+              Tout se choisit dans les référentiels — seul le nom de l&apos;entreprise se saisit.
+            </p>
+          </div>
+          <button onClick={onFermer} aria-label="Fermer"
+            style={{ ...btnSecondaire, padding: "6px 9px" }}><X size={14} /></button>
+        </div>
+
+        <div style={{ padding: "20px 26px", overflowY: "auto", flex: 1,
+          display: "flex", flexDirection: "column", gap: 22,
+          overscrollBehavior: "contain" }}>
+
+          <section>
+            <span style={TITRE_BLOC}>Quand, et qui</span>
+            <div style={{ display: "grid", gap: 12,
+              gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))" }}>
+              <div>
+                <span style={ETIQ_CHAMP}>Période</span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select value={s.mois} disabled={occupe}
+                    onChange={e => maj("mois", Number(e.target.value))}
+                    style={{ ...IS, padding: "8px 10px", fontSize: 12.5, flex: 1 }}>
+                    {MOIS_FR.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                  </select>
+                  <select value={s.annee} disabled={occupe}
+                    onChange={e => maj("annee", Number(e.target.value))}
+                    style={{ ...IS, padding: "8px 10px", fontSize: 12.5, width: 100 }}>
+                    {annees.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>
+                  Entreprise <span style={{ color: "var(--danger)" }}>*</span>
+                </span>
+                <input name="entreprise" value={s.entreprise} disabled={occupe}
+                  onChange={e => maj("entreprise", e.target.value)}
+                  placeholder="Nom complet, non tronqué"
+                  style={{ ...IS, padding: "8px 11px", fontSize: 12.5 }} />
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>Maison mère</span>
+                <input name="parent" value={s.parent} disabled={occupe}
+                  onChange={e => maj("parent", e.target.value)}
+                  placeholder="Si différente de l'entreprise"
+                  style={{ ...IS, padding: "8px 11px", fontSize: 12.5 }} />
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>Pays d&apos;origine</span>
+                <Choix options={pays} valeurs={origine ? [origine] : []} unique occupe={occupe}
+                  placeholder="Chercher un pays…"
+                  onChange={v => maj("pays_source_id", v[0]?.id ?? null)} />
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <span style={TITRE_BLOC}>Ce que le signal vise</span>
+            <div style={{ display: "grid", gap: 12,
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+              <div>
+                <span style={ETIQ_CHAMP}>Destinations</span>
+                <Choix options={ref?.destinations ?? []} valeurs={s.destinations}
+                  onChange={v => maj("destinations", v)} occupe={occupe}
+                  placeholder="Pays ou région du monde…" />
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>Secteurs</span>
+                <Choix options={ref?.secteurs ?? []} valeurs={s.secteurs}
+                  onChange={v => maj("secteurs", v)} occupe={occupe}
+                  placeholder="Chercher un secteur…" />
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>Activités</span>
+                <Choix options={ref?.activites ?? []} valeurs={s.activites}
+                  onChange={v => maj("activites", v)} occupe={occupe}
+                  placeholder="Chercher une activité…" />
+              </div>
+              <div>
+                <span style={ETIQ_CHAMP}>Nature du signal</span>
+                <Choix options={ref?.natures ?? []} valeurs={s.natures}
+                  onChange={v => maj("natures", v)} occupe={occupe}
+                  placeholder="Chercher une nature…" />
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <span style={TITRE_BLOC}>Ce qu&apos;il chiffre</span>
+            <div style={{ display: "grid", gap: 12,
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+              <Montant2 etiquette="Fonds levés" valeur={s.funding_musd} estime={s.funding_estime}
+                onValeur={v => maj("funding_musd", v)} onEstime={v => maj("funding_estime", v)}
+                occupe={occupe} />
+              <Montant2 etiquette="Investissement prévu" valeur={s.capex_musd} estime={s.capex_estime}
+                onValeur={v => maj("capex_musd", v)} onEstime={v => maj("capex_estime", v)}
+                occupe={occupe} />
+            </div>
+          </section>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10,
+          padding: "14px 26px", borderTop: "1px solid var(--bordure)",
+          background: "var(--carte)" }}>
+          <button onClick={onFermer} style={btnSecondaire}>Annuler</button>
+          <button onClick={() => onEnregistrer(s)} disabled={!pret || occupe}
+            style={btnPrincipal(pret && !occupe)}>
+            {occupe ? "Enregistrement…" : "Enregistrer le signal"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function VueSignaux() {
   const [signaux, setSignaux] = useState<Signal[]>([]);
@@ -427,7 +620,7 @@ export default function VueSignaux() {
   // laissé sans rattachement — à dire, sinon la ligne entre avec des cases
   // vides que personne ne saura devoir reprendre.
   const [ajout, setAjout] = useState(false);
-  const [apresSaisie, setApresSaisie] = useState<string[] | null>(null);
+  const [apresSaisie, setApresSaisie] = useState<boolean>(false);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
@@ -521,14 +714,29 @@ export default function VueSignaux() {
     const r = await fetch(`${API_BASE}/fdi/signaux-investisseurs`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify(saisie),
+      body: JSON.stringify({
+        annee: saisie.annee, mois: saisie.mois,
+        entreprise: saisie.entreprise.trim(),
+        parent: saisie.parent.trim() || null,
+        pays_source_id: saisie.pays_source_id,
+        // Une destination est un pays OU une région : la nature tranche, et
+        // c'est elle qui distingue deux postes de même identifiant.
+        destinations: saisie.destinations.map(d => d.nature === "region"
+          ? { region_id: d.id } : { pays_id: d.id }),
+        secteurs: saisie.secteurs.map(p => p.id),
+        activites: saisie.activites.map(p => p.id),
+        natures: saisie.natures.map(p => p.id),
+        funding_musd: saisie.funding_musd ? Number(saisie.funding_musd) : null,
+        funding_estime: saisie.funding_estime,
+        capex_musd: saisie.capex_musd ? Number(saisie.capex_musd) : null,
+        capex_estime: saisie.capex_estime,
+      }),
     });
     if (r.ok) {
       // Le panneau se referme, et ce qui n'a pas pu être rattaché s'affiche :
       // un secteur mal recopié entre quand même, mais il faudra y revenir.
-      const d = await r.clone().json().catch(() => ({ manques: [] }));
       setAjout(false);
-      setApresSaisie(d.manques ?? []);
+      setApresSaisie(true);
       // La saisie va en tête de liste : on la retrouve sans la chercher.
       setPage(1); setRecherche("");
     }
@@ -562,7 +770,7 @@ export default function VueSignaux() {
           {/* fDi publie quelques signaux par semaine. Les faire entrer par un
               réimport — réexporter, découper, redéployer — pour trois lignes
               n'avait pas de sens ; on les saisit ici. */}
-          <button onClick={() => { setAjout(v => !v); setApresSaisie(null); }}
+          <button onClick={() => { setAjout(v => !v); setApresSaisie(false); }}
             style={{ ...btnSecondaire, display: "inline-flex", alignItems: "center", gap: 6 }}>
             <Plus size={13} /> Ajouter un signal
           </button>
@@ -573,18 +781,15 @@ export default function VueSignaux() {
 
       {apresSaisie && (
         <div style={{ marginBottom: 14 }}>
-          <Avis ton={apresSaisie.length ? "info" : "ok"}>
-            {apresSaisie.length
-              ? `Signal enregistré, mais ${apresSaisie.length} valeur(s) n'ont pas été
-                 rattachées : ${apresSaisie.join(" · ")}. La ligne est en base ; il reste
-                 à corriger la graphie ou à compléter depuis le tableau.`
-              : "Signal enregistré, toutes ses valeurs rattachées."}
-          </Avis>
+          {/* Plus de valeurs « non rattachées » à signaler : tout est choisi
+              dans les référentiels, donc tout se rattache. Seul le nom de
+              l'entreprise peut rester à arbitrer, et le filtre le compte. */}
+          <Avis ton="ok">Signal enregistré.</Avis>
         </div>
       )}
 
       {ajout && (
-        <FormulaireSignal ref={ref} occupe={occupe} onEnregistrer={creer}
+        <FicheSaisie ref={ref} occupe={occupe} onEnregistrer={creer}
           onFermer={() => setAjout(false)} />
       )}
 
