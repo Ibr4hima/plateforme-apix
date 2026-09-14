@@ -305,34 +305,26 @@ export default function RapportSignaux() {
                 const z = d.zones[Math.min(zone, d.zones.length - 1)];
                 return (
                   <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
-                    {/* L'EN-TÊTE DU TABLEAU DE BORD : le titre et le poids de la
-                        zone à gauche, la bascule calée à droite. Elle tient sur
-                        la même ligne parce qu'elle commande les trois cartes qui
-                        suivent — la mettre au-dessus de la première seule ferait
-                        croire qu'elle ne règle que celle-là. */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 14,
-                      flexWrap: "wrap", marginBottom: 14 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h2 style={{ fontSize: "1.05rem", fontWeight: 800,
-                          color: "var(--encre)", letterSpacing: "-0.01em" }}>
-                          L&apos;Afrique de l&apos;Ouest, trois périmètres
-                        </h2>
-                        {/* LE POIDS DE LA ZONE SOUS SON NOM, et le nom déployé
-                            du sigle avec lui : « premier secteur avec 40 signaux »
-                            ne se lit pas de la même façon selon que la zone en
-                            porte 60 ou 600, et CEDEAO ne parle qu'à qui le sait
-                            déjà. */}
-                        <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 4 }}>
-                          {z.nom !== z.court ? `${z.nom} · ` : ""}
-                          {fmtNombre(z.signaux)} signaux · {fmtNombre(z.entreprises)} entreprises
-                          {periode ? ` · ${periode}` : ""}
-                        </p>
-                      </div>
+                    {/* L'EN-TÊTE DE SECTION DE LA PLATEFORME : le titre, puis
+                        la bascule COLLÉE À LUI plutôt que repoussée au bord
+                        droit. C'est le dessin des « Flux bilatéraux » du
+                        tableau de bord, et il se lit mieux : l'œil passe du
+                        sujet au choix sans traverser la page, et la bascule
+                        appartient visiblement au titre — donc à la section
+                        entière — au lieu de flotter au-dessus de la troisième
+                        carte. */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16,
+                      flexWrap: "wrap", marginBottom: 16 }}>
+                      <h2 style={{ fontSize: "1.3rem", fontWeight: 800,
+                        color: "var(--encre)", letterSpacing: "-0.015em", margin: 0 }}>
+                        Bilan ouest-africain des investissements
+                      </h2>
                       {/* LE SIGLE, PAS LE NOM DÉPLOYÉ. Le référentiel porte
                           « Communauté économique des États de l'Afrique de
                           l'Ouest » ; personne ne dit cela, et trois noms de cette
                           longueur débordent la bascule. Le nom complet reste en
-                          infobulle et sous le titre. */}
+                          infobulle, et la pastille de chaque carte rappelle la
+                          zone lue. */}
                       <span className="rap-sans-impression">
                         <SegmentRapport valeur={String(zone)} onChange={(v) => setZone(Number(v))}
                           options={d.zones.map((o, i) => ({ v: String(i), l: o.court, titre: o.nom }))} />
