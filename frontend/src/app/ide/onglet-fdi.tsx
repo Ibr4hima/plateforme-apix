@@ -269,9 +269,10 @@ export default function OngletFdi({ onVue }: {
 
 
   const bornes = per?.annees ?? [null, null];
-  const nbFiltres = secteurs.length + sousSecteurs.length + activites.length + types.length
+  const nbFiltresProjets = secteurs.length + sousSecteurs.length + activites.length + types.length
     + (rechercheD.trim() ? 1 : 0)
     + ((anneeMin !== bornes[0] || anneeMax !== bornes[1]) ? 1 : 0);
+  const nbFiltres = nbFiltresProjets;
   // L'état de la page s'écrit dans l'URL — vue, pays, période, facettes,
   // recherche. Trois raisons : le lien devient partageable, F5 ne perd rien,
   // et le rapport peut ramener EXACTEMENT ici, filtres compris.
@@ -295,10 +296,37 @@ export default function OngletFdi({ onVue }: {
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types, rechercheD, bornes]);
 
-  const reinit = () => {
+  const reinitProjets = () => {
     setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
     setAnneeMin(bornes[0]); setAnneeMax(bornes[1]);
   };
+  const reinit = reinitProjets;
+
+  // LE COMPTEUR ET LA REMISE À ZÉRO SUIVENT LA VUE OUVERTE, et c'était un
+  // défaut tant qu'il n'y avait qu'un jeu de filtres : l'en-tête annonçait
+  // toujours ceux des projets, y compris en lisant les signaux, et la croix
+  // rouge remettait à zéro une colonne qu'on n'avait pas sous les yeux.
+  //
+  // Le pays d'observation des projets n'est PAS compté : il n'est pas un
+  // filtre qu'on ajoute mais le sujet de la page — il y en a toujours un, et
+  // « réinitialiser » ne doit pas laisser l'écran sans pays.
+  const filtresDeLaVue = {
+    projets: {
+      nb: nbFiltresProjets,
+      remettre: reinitProjets,
+    },
+    signaux: {
+      nb: (Object.entries(filtresSignaux)
+        .filter(([c, v]) => (c === "recherche" ? v.trim() : v)).length),
+      remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
+    },
+    entreprises: {
+      nb: filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
+        + filtresEntreprises.activites.length
+        + (filtresEntreprises.recherche.trim() ? 1 : 0),
+      remettre: () => setFiltresEntreprises(FILTRES_ENTREPRISES_VIDES),
+    },
+  }[vue];
 
   // Le pays de référence est épinglé au-dessus ; il n'est pas retiré des
   // groupes pour autant — il garde sa place dans sa région, où l'œil ira le
@@ -380,13 +408,16 @@ export default function OngletFdi({ onVue }: {
               style={{ background: "rgb(var(--bleu-rgb) / 0.08)", border: "none", cursor: "pointer",
                 borderRadius: 8, padding: "6px 8px", display: "flex", alignItems: "center", gap: 5 }}>
               <SlidersHorizontal size={14} style={{ color: "var(--bleu)" }} />
-              {sidebarOpen && nbFiltres > 0 && (
+              {sidebarOpen && filtresDeLaVue.nb > 0 && (
                 <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
-                  background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999, padding: "1px 5px" }}>{nbFiltres}</span>
+                  background: "rgb(var(--bleu-rgb) / 0.15)", borderRadius: 999,
+                  padding: "1px 5px" }}>{filtresDeLaVue.nb}</span>
               )}
             </button>
-            {sidebarOpen && nbFiltres > 0 && (
-              <button onClick={reinit} title="Tout réinitialiser"
+            {sidebarOpen && filtresDeLaVue.nb > 0 && (
+              <button onClick={filtresDeLaVue.remettre}
+                title={`Retirer ${filtresDeLaVue.nb > 1 ? "les " + filtresDeLaVue.nb + " filtres" : "le filtre"}`}
+                aria-label="Réinitialiser les filtres"
                 style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "1px solid rgb(var(--danger-rgb) / 0.20)",
                   cursor: "pointer", borderRadius: 999, padding: 5, display: "flex", alignItems: "center" }}>
                 <X size={13} style={{ color: "var(--danger)" }} />
