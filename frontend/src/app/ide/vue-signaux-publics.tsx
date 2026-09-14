@@ -35,14 +35,23 @@ import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "
 import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche,
          ListeJetons, moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
 
-/** Ce que le lecteur peut restreindre. L'API sait aussi filtrer par
-    destination et par stade — la colonne ne les propose plus, mais les routes
-    les gardent : le jour où on les remettra, il n'y aura qu'un composant à
-    ajouter. Les porter dans cet état sans que rien ne les pilote aurait fait
-    croire à des filtres actifs. */
-export type FiltresSignaux = { secteur: string; activite: string; recherche: string };
+/** Ce que le lecteur peut restreindre.
+
+    L'ORDRE DES FACETTES SUIT L'ORDRE DES QUESTIONS. On demande d'abord D'OÙ
+    part l'intention — c'est la question d'une agence de promotion : qui
+    investit —, puis dans quoi et pour y faire quoi, et enfin OÙ elle va. La
+    destination ferme la colonne parce qu'elle est, sur ce relevé, la moins
+    discriminante : il a été tiré sous « Dest = Afrique », et plus d'un signal
+    sur quatre vise le continent entier.
+
+    L'API sait aussi filtrer par stade ; la colonne ne le propose pas. Le porter
+    sans que rien ne le pilote ferait croire à un filtre actif. */
+export type FiltresSignaux = {
+  origine: string; secteur: string; activite: string; destination: string;
+  recherche: string;
+};
 export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
-  secteur: "", activite: "", recherche: "",
+  origine: "", secteur: "", activite: "", destination: "", recherche: "",
 };
 
 type Valeur = { id: number; libelle: string | null; court?: string | null;
@@ -59,7 +68,8 @@ type Signal = {
 type Compte = { nom: string; nb: number; nature?: "pays" | "region" };
 type Perimetre = {
   annees: [number | null, number | null]; total_signaux: number;
-  destinations: Compte[]; secteurs: Compte[]; activites: Compte[]; natures: Compte[];
+  origines: Compte[]; destinations: Compte[];
+  secteurs: Compte[]; activites: Compte[]; natures: Compte[];
 };
 type Reponse = {
   kpis: { signaux: number; annees: [number | null, number | null];
@@ -84,8 +94,10 @@ const PERIMETRE = "Afrique";
     l'URL, ils partagent le même téléchargement sans se connaître. */
 function urlPerimetre(f: FiltresSignaux, recherche: string): string {
   const p = new URLSearchParams();
+  if (f.origine) p.set("origine", f.origine);
   if (f.secteur) p.set("secteurs", f.secteur);
   if (f.activite) p.set("activites", f.activite);
+  if (f.destination) p.set("destination", f.destination);
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/signaux/perimetre?${p}`;
 }
@@ -103,6 +115,12 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
   return (
     <>
       <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+      {/* D'OÙ PART L'INTENTION. C'est la première question d'une agence de
+          promotion : quels pays regardent l'Afrique, et lesquels regardent le
+          Sénégal. Un signal a UNE origine — contrairement à ses destinations,
+          qui peuvent être plusieurs. */}
+      <FacetteUnique titre="Pays d'origine" options={per.origines} valeur={filtres.origine}
+        onChange={set("origine")} vide="Tous les pays" />
       <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} vide="Tous les secteurs" />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
@@ -111,6 +129,14 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           centre d'appels. */}
       <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
         onChange={set("activite")} vide="Toutes les activités" />
+      {/* OÙ ELLE VA. Pays et régions du monde dans une seule liste : ce sont
+          deux référentiels, mais une seule question pour qui lit. « Afrique »
+          n'est pas un pays, et le ranger à part obligerait à choisir deux fois
+          — alors qu'un signal continental est exactement ce qu'on cherche
+          quand on démarche. */}
+      <FacetteUnique titre="Destination" options={per.destinations}
+        valeur={filtres.destination} onChange={set("destination")}
+        vide="Toutes les destinations" />
     </>
   );
 }
@@ -126,7 +152,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
 
   // Un changement de filtre ramène au premier écran : rester en page 6 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const clef = `${filtres.secteur}|${filtres.activite}|${recherche}`;
+  const clef = urlPerimetre(filtres, recherche);
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 

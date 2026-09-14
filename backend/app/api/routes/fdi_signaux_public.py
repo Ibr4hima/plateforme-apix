@@ -39,7 +39,8 @@ router = APIRouter(prefix="/fdi/public", tags=["fdi"])
 
 def _filtres(destination: str | None, annee_min: int | None, annee_max: int | None,
              secteurs: str | None, activites: str | None, natures: str | None,
-             recherche: str | None, sauf: str | None = None) -> tuple[list[str], dict]:
+             recherche: str | None, sauf: str | None = None,
+             origine: str | None = None) -> tuple[list[str], dict]:
     """Les conditions demandées, éventuellement privées d'une facette.
 
     Chaque facette est comptée sous les filtres des AUTRES, jamais sous le
@@ -47,6 +48,19 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
     liste des secteurs — sinon on ne pourrait plus en cocher un second.
     """
     where, params = ["1 = 1"], {}
+
+    # LE PAYS D'OÙ PART L'INTENTION. Il est porté par le signal lui-même, non
+    # par une table de liaison : un signal a UNE origine, là où il peut viser
+    # plusieurs destinations. La condition est donc directe, sans EXISTS.
+    #
+    # Le rapprochement se fait sur le libellé français, comme pour toutes les
+    # autres facettes : c'est ce que la colonne affiche, et c'est donc ce que le
+    # lien renvoie. Un signal dont le pays n'a pas été rattaché n'apparaît sous
+    # aucun choix — il n'a pas de nom français à proposer.
+    if origine and sauf != "origine":
+        where.append("EXISTS (SELECT 1 FROM ref_pays po"
+                     "         WHERE po.id = s.pays_source_id AND po.nom_fr = :origine)")
+        params["origine"] = origine
 
     if destination and sauf != "destination":
         # UNE DESTINATION EST UN PAYS OU UNE RÉGION DU MONDE. On interroge les
@@ -95,6 +109,7 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
 
 @router.get("/signaux/perimetre")
 async def perimetre_signaux(
+    origine: str | None = None,
     destination: str | None = None,
     annee_min: int | None = None,
     annee_max: int | None = None,
@@ -108,9 +123,22 @@ async def perimetre_signaux(
 
     async def compter(sql: str, sauf: str | None):
         where, params = _filtres(destination, annee_min, annee_max, secteurs,
-                                 activites, natures, recherche, sauf)
+                                 activites, natures, recherche, sauf, origine)
         return (await db.execute(text(sql.replace("{where}", " AND ".join(where))),
                                  params)).fetchall()
+
+    # LES PAYS D'OÙ PARTENT LES INTENTIONS. La question précède celle du
+    # secteur dans la colonne parce qu'elle précède dans la lecture : on
+    # demande d'abord QUI investit, ensuite dans quoi. Un signal dont le pays
+    # d'origine n'a pas été rattaché ne compte nulle part ici — il n'a pas de
+    # nom français à proposer, et inventer une ligne « non rattaché » ferait un
+    # choix qui ne mène à rien.
+    origines = await compter("""
+        SELECT p.nom_fr AS nom, count(DISTINCT s.id) AS nb
+          FROM fdi_signaux_investisseurs s
+          JOIN ref_pays p ON p.id = s.pays_source_id
+         WHERE {where}
+         GROUP BY p.nom_fr ORDER BY count(DISTINCT s.id) DESC, p.nom_fr""", "origine")
 
     # Les destinations proposées : pays et régions du monde dans une seule
     # liste, distingués par leur nature — ce sont deux référentiels, mais une
@@ -142,6 +170,7 @@ async def perimetre_signaux(
     return {
         "annees": [bornes.a0, bornes.a1],
         "total_signaux": bornes.n,
+        "origines": [{"nom": r.nom, "nb": r.nb} for r in origines],
         "destinations": [{"nom": r.nom, "nature": r.nature, "nb": r.nb} for r in destinations],
         "secteurs":  [{"nom": r.nom, "nb": r.nb} for r in
                       await facette("fdi_signal_secteurs", "fdi_secteurs", "secteur_id", "secteurs")],
@@ -154,6 +183,7 @@ async def perimetre_signaux(
 
 @router.get("/signaux")
 async def signaux_publics(
+    origine: str | None = None,
     destination: str | None = None,
     annee_min: int | None = None,
     annee_max: int | None = None,
@@ -167,7 +197,7 @@ async def signaux_publics(
 ):
     """Les signaux retenus : compteurs, série annuelle, classements et liste."""
     where, params = _filtres(destination, annee_min, annee_max, secteurs,
-                             activites, natures, recherche)
+                             activites, natures, recherche, None, origine)
     filtre = " AND ".join(where)
     par_page = max(1, min(par_page, 100))
     page = max(1, page)
