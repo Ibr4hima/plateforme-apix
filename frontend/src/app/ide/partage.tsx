@@ -1256,11 +1256,15 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
 
 /** Une facette à CHOIX UNIQUE, dans la colonne de filtres.
 
-    PARTAGÉE ENTRE LES VUES SIGNAUX ET ENTREPRISES, qui posent le même geste au
-    même endroit : un seul secteur, une seule activité, et la ligne du haut pour
-    revenir à l'absence de filtre. Elle a d'abord été écrite deux fois, et les
-    deux exemplaires avaient commencé à diverger — hauteur de liste, poids du
-    libellé retenu. Une seule définition, donc, et plus de dérive possible.
+    RIEN N'EST COCHÉ AU DÉPART, ET RIEN NE VAUT « TOUT ». Il n'y a pas de ligne
+    « Tous les pays » en tête : une facette vide montre déjà tout, et proposer
+    un choix nommé « tout » ferait croire à un filtre là où il n'y en a pas —
+    on coche alors « Tous les secteurs » en pensant avoir agi.
+
+    D'où la contrepartie, qui n'est pas facultative : RECLIQUER SUR LA VALEUR
+    RETENUE LA RETIRE. Sans ligne de retour et sans ce geste, un choix serait
+    définitif — on ne pourrait plus revenir à la liste entière sans recharger la
+    page.
 
     Le compte à droite n'est pas décoratif : il dit d'avance si le filtre
     laissera quelque chose, et évite de cliquer pour découvrir un écran vide.
@@ -1269,39 +1273,34 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
     couple secteur / sous-secteur se pose emboîté — voir `FacetteSecteurs`. */
 export type OptionFacette = { nom: string; nb: number };
 
-export function FacetteUnique({ titre, options, valeur, onChange, vide }: {
-  titre: string; options: OptionFacette[]; valeur: string; vide: string;
+export function FacetteUnique({ titre, options, valeur, onChange }: {
+  titre: string; options: OptionFacette[]; valeur: string;
+  /** Reçoit la valeur choisie, ou la chaîne vide quand on décoche. */
   onChange: (v: string) => void;
 }) {
   if (options.length === 0) return null;
-
-  const ligne = (o: OptionFacette | null) => {
-    const nom = o?.nom ?? "";
-    const sel = valeur === nom;
-    return (
-      <button key={nom || "__tous"} onClick={() => onChange(nom)} style={LIGNE_FACETTE}
-        title={o?.nom}
-        onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-        <Pastille coche={sel} />
-        <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {o ? o.nom : vide}
-        </span>
-        {o && (
-          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-            fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
-        )}
-      </button>
-    );
-  };
-
   return (
     <div style={{ marginBottom: 18 }}>
       <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
       <div style={{ maxHeight: 220, overflowY: "auto" }}>
-        {ligne(null)}
-        {options.map(o => ligne(o))}
+        {options.map(o => {
+          const sel = valeur === o.nom;
+          return (
+            <button key={o.nom} onClick={() => onChange(sel ? "" : o.nom)}
+              style={LIGNE_FACETTE}
+              title={sel ? `${o.nom} — cliquer pour retirer ce filtre` : o.nom}
+              onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+              <Pastille coche={sel} />
+              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {o.nom}
+              </span>
+              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

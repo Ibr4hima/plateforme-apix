@@ -37,12 +37,13 @@ import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFic
 
 /** Ce que le lecteur peut restreindre.
 
-    L'ORDRE DES FACETTES SUIT L'ORDRE DES QUESTIONS. On demande d'abord D'OÙ
-    part l'intention — c'est la question d'une agence de promotion : qui
-    investit —, puis dans quoi et pour y faire quoi, et enfin OÙ elle va. La
-    destination ferme la colonne parce qu'elle est, sur ce relevé, la moins
-    discriminante : il a été tiré sous « Dest = Afrique », et plus d'un signal
-    sur quatre vise le continent entier.
+    L'ORDRE DES FACETTES SUIT LE TRAJET. D'OÙ part l'intention, OÙ elle va —
+    les deux questions géographiques se lisent ensemble, comme sur la carte où
+    origine et destination se font face — puis dans quoi, et pour y faire quoi.
+
+    AUCUNE FACETTE N'EST COCHÉE AU DÉPART : la colonne vide montre tout. Il n'y
+    a donc pas de ligne « Tous les pays », qui ferait croire à un filtre là où
+    il n'y en a pas ; recliquer sur la valeur retenue la retire.
 
     L'API sait aussi filtrer par stade ; la colonne ne le propose pas. Le porter
     sans que rien ne le pilote ferait croire à un filtre actif. */
@@ -120,23 +121,22 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           Sénégal. Un signal a UNE origine — contrairement à ses destinations,
           qui peuvent être plusieurs. */}
       <FacetteUnique titre="Pays d'origine" options={per.origines} valeur={filtres.origine}
-        onChange={set("origine")} vide="Tous les pays" />
-      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
-        onChange={set("secteur")} vide="Tous les secteurs" />
-      {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
-          logistique — indépendamment de son secteur. Les deux se croisent :
-          « Software & IT services » en R&D n'est pas le même prospect qu'en
-          centre d'appels. */}
-      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
-        onChange={set("activite")} vide="Toutes les activités" />
+        onChange={set("origine")} />
       {/* OÙ ELLE VA. Pays et régions du monde dans une seule liste : ce sont
           deux référentiels, mais une seule question pour qui lit. « Afrique »
           n'est pas un pays, et le ranger à part obligerait à choisir deux fois
           — alors qu'un signal continental est exactement ce qu'on cherche
           quand on démarche. */}
       <FacetteUnique titre="Destination" options={per.destinations}
-        valeur={filtres.destination} onChange={set("destination")}
-        vide="Toutes les destinations" />
+        valeur={filtres.destination} onChange={set("destination")} />
+      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
+        onChange={set("secteur")} />
+      {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
+          logistique — indépendamment de son secteur. Les deux se croisent :
+          « Software & IT services » en R&D n'est pas le même prospect qu'en
+          centre d'appels. */}
+      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
+        onChange={set("activite")} />
     </>
   );
 }
