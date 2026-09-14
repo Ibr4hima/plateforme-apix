@@ -32,7 +32,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFiche,
+import { API, BadgePeriode, ETIQ, Pagination, FacetteUnique, fmtNombre, LigneFiche,
          ListeJetons, moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
@@ -238,18 +238,7 @@ export default function VueSignauxPublics({ filtres, onChange }: {
         return s ? <FicheSignal s={s} onClose={() => setOuvert(null)} /> : null;
       })()}
 
-      {d.pages > 1 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 12, marginTop: 28 }}>
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-            style={boutonPage(page > 1)}>Précédents</button>
-          <span style={{ fontSize: 12.5, color: "var(--gris)" }}>
-            Page {d.page} sur {d.pages}
-          </span>
-          <button disabled={page >= d.pages} onClick={() => setPage(p => p + 1)}
-            style={boutonPage(page < d.pages)}>Suivants</button>
-        </div>
-      )}
+      <Pagination courante={d.page} pages={d.pages} onPage={setPage} nom="signaux" />
     </div>
   );
 }

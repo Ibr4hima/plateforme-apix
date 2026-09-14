@@ -1393,12 +1393,138 @@ export function ListeJetons({ valeurs }: { valeurs: string[] }) {
 export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
   borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
 
-/** Le bouton d'une pagination de cartes. Partagé : les vues Signaux et
-    Entreprises paginent la même chose — des cartes — et devaient le faire de
-    la même façon. */
-export const boutonPage = (actif: boolean): React.CSSProperties => ({
-  border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-  borderRadius: 999, padding: "8px 16px", fontSize: 12.5, color: "var(--encre)",
-  cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.4,
-  fontFamily: "var(--font-google-sans)",
-});
+/** Les pages à montrer autour de la page courante, avec des trous.
+
+    CENT QUATRE-VINGT-HUIT PAGES NE S'ALIGNENT PAS. On garde la première et la
+    dernière — ce sont les deux seuls repères absolus —, la page courante et ses
+    voisines immédiates, et l'on marque les sauts. Le lecteur sait toujours où
+    il est, combien il en reste, et peut atteindre un bord en un clic.
+
+    Un `null` est un trou, pas une page. */
+function fenetrePages(courante: number, pages: number): (number | null)[] {
+  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
+  const gardees = new Set([1, pages, courante, courante - 1, courante + 1]);
+  // Aux deux extrémités, on déroule un cran de plus : sans cela la bande
+  // sautait de « 1 » à « … » dès la page 3, ce qui donne l'impression d'un
+  // trou là où il n'y en a qu'un de deux pages.
+  if (courante <= 3) [2, 3, 4].forEach(n => gardees.add(n));
+  if (courante >= pages - 2) [pages - 3, pages - 2, pages - 1].forEach(n => gardees.add(n));
+
+  const out: (number | null)[] = [];
+  let precedente = 0;
+  for (const n of [...gardees].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b)) {
+    if (precedente && n > precedente + 1) out.push(null);
+    out.push(n);
+    precedente = n;
+  }
+  return out;
+}
+
+/** La pagination des vues à cartes — Signaux d'investissement et Entreprises.
+
+    POURQUOI UNE BANDE DE NUMÉROS PLUTÔT QUE DEUX FLÈCHES. « Page 1 sur 188 »
+    entre deux boutons ne dit pas où l'on est : il faut cliquer cent quatre-
+    vingt-sept fois pour voir la fin, et rien ne permet de revenir au début. La
+    bande donne les deux bords, le voisinage immédiat, et le champ de saut fait
+    le reste — on tape un numéro, on valide, on y est.
+
+    Elle est PARTAGÉE par les deux vues : elles paginent la même chose — des
+    cartes — et deux paginations différentes dans le même écran donneraient
+    l'impression de deux produits. */
+export function Pagination({ courante, pages, onPage, nom = "page" }: {
+  courante: number; pages: number; onPage: (n: number) => void;
+  /** Le mot qui nomme ce qu'on parcourt, pour l'accessibilité. */
+  nom?: string;
+}) {
+  const [saut, setSaut] = useState("");
+  if (pages <= 1) return null;
+
+  const fleche = (actif: boolean): React.CSSProperties => ({
+    display: "inline-flex", alignItems: "center", gap: 6, height: 34,
+    padding: "0 14px", borderRadius: 999, border: "none", background: "transparent",
+    fontSize: 12.5, fontWeight: 600, fontFamily: "var(--font-google-sans)",
+    color: actif ? "var(--encre)" : "var(--gris)",
+    cursor: actif ? "pointer" : "default", opacity: actif ? 1 : 0.45,
+  });
+  const numero = (sel: boolean): React.CSSProperties => ({
+    minWidth: 34, height: 34, padding: "0 10px", borderRadius: 999, border: "none",
+    fontSize: 12.5, fontWeight: sel ? 700 : 500, fontFamily: "var(--font-google-sans)",
+    fontVariantNumeric: "tabular-nums", cursor: sel ? "default" : "pointer",
+    background: sel ? "var(--bleu)" : "transparent",
+    color: sel ? "var(--sur-bleu, #fff)" : "var(--texte)",
+    transition: "background 0.15s, color 0.15s",
+  });
+
+  const aller = (n: number) => { if (n >= 1 && n <= pages && n !== courante) onPage(n); };
+
+  return (
+    <nav aria-label={`Pagination des ${nom}s`}
+      style={{ display: "flex", flexDirection: "column", alignItems: "center",
+        gap: 10, marginTop: 34 }}>
+
+      {/* La barre : les deux flèches encadrent la bande, séparées d'un filet —
+          leur geste n'est pas le même que celui d'un numéro. */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 2,
+        padding: 4, borderRadius: 999, background: "var(--carte)",
+        border: "1px solid var(--bordure)",
+        boxShadow: "0 1px 3px rgb(var(--ombre-rgb) / 0.06)" }}>
+
+        <button disabled={courante <= 1} onClick={() => aller(courante - 1)}
+          style={fleche(courante > 1)} aria-label="Page précédente"
+          onMouseEnter={e => { if (courante > 1) e.currentTarget.style.background = "var(--carte-douce)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+          <ChevronDown size={14} style={{ transform: "rotate(90deg)" }} />
+          Précédent
+        </button>
+
+        <span style={{ width: 1, height: 20, background: "var(--bordure)", margin: "0 4px" }} />
+
+        {fenetrePages(courante, pages).map((n, i) => n === null ? (
+          <span key={`trou-${i}`} aria-hidden
+            style={{ width: 22, textAlign: "center", color: "var(--gris)",
+              fontSize: 12.5, userSelect: "none" }}>…</span>
+        ) : (
+          <button key={n} onClick={() => aller(n)} style={numero(n === courante)}
+            aria-current={n === courante ? "page" : undefined}
+            aria-label={`Page ${n}`}
+            onMouseEnter={e => { if (n !== courante) e.currentTarget.style.background = "var(--carte-douce)"; }}
+            onMouseLeave={e => { if (n !== courante) e.currentTarget.style.background = "transparent"; }}>
+            {n}
+          </button>
+        ))}
+
+        <span style={{ width: 1, height: 20, background: "var(--bordure)", margin: "0 4px" }} />
+
+        <button disabled={courante >= pages} onClick={() => aller(courante + 1)}
+          style={fleche(courante < pages)} aria-label="Page suivante"
+          onMouseEnter={e => { if (courante < pages) e.currentTarget.style.background = "var(--carte-douce)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+          Suivant
+          <ChevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
+        </button>
+      </div>
+
+      {/* LE SAUT DE PAGE. Sur cent quatre-vingt-huit pages, la bande ne suffit
+          pas : on tape un numéro, on valide, on y est. C'est un formulaire pour
+          que la touche Entrée fasse son office sans qu'on ait à l'écouter. */}
+      <form onSubmit={e => {
+          e.preventDefault();
+          const n = Number(saut);
+          if (n >= 1 && n <= pages) { onPage(n); setSaut(""); }
+        }}
+        style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12,
+          color: "var(--gris)" }}>
+        <label htmlFor="saut-page">Aller à la page</label>
+        <input id="saut-page" value={saut} inputMode="numeric" placeholder={String(courante)}
+          onChange={e => setSaut(e.target.value.replace(/\D/g, "").slice(0, 5))}
+          aria-label={`Aller à une page, de 1 à ${pages}`}
+          style={{ width: 62, height: 30, padding: "0 10px", borderRadius: 999,
+            border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+            fontSize: 12.5, color: "var(--encre)", textAlign: "center",
+            fontVariantNumeric: "tabular-nums", outline: "none",
+            fontFamily: "var(--font-google-sans)" }} />
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>sur {pages}</span>
+      </form>
+    </nav>
+  );
+}

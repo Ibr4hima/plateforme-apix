@@ -40,7 +40,7 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, boutonPage, type ChoixSous, ETIQ, Facette, FacetteSecteurs, Filet,
+import { API, type ChoixSous, Pagination, ETIQ, Facette, FacetteSecteurs, Filet,
          fmtNombre, LigneFiche, ListeJetons, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
@@ -228,18 +228,7 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
 
       {ouverte && <FicheEntreprise e={ouverte} onClose={() => setOuverte(null)} />}
 
-      {d.pages > 1 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 12, marginTop: 28 }}>
-          <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-            style={boutonPage(page > 1)}>Précédentes</button>
-          <span style={{ fontSize: 12.5, color: "var(--gris)" }}>
-            Page {d.page} sur {d.pages}
-          </span>
-          <button disabled={page >= d.pages} onClick={() => setPage(p => p + 1)}
-            style={boutonPage(page < d.pages)}>Suivantes</button>
-        </div>
-      )}
+      <Pagination courante={d.page} pages={d.pages} onPage={setPage} nom="entreprise" />
     </div>
   );
 }
