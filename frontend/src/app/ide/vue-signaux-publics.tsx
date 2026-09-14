@@ -32,8 +32,9 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, ETIQ, Pagination, FacetteUnique, fmtNombre, LigneFiche,
-         ListeJetons, moisEnClair, TEXTE_DESC, TitreFiche } from "./partage";
+import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, fmtNombre,
+         LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
+         TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -81,7 +82,7 @@ type Reponse = {
   page: number; pages: number; signaux: Signal[];
 };
 
-const PAR_PAGE = 24;
+const PAR_PAGE = 30;
 
 /** Le périmètre du relevé, tel qu'il a été interrogé chez fDi : « Dest =
     Africa ». Il qualifie la page comme « Projets reçus » qualifie celle des
@@ -251,18 +252,27 @@ export default function VueSignauxPublics({ filtres, onChange }: {
     La correspondance porte sur le libellé COURT, qui est celui de la
     nomenclature : un stade ajouté un jour sans teinte déclarée prendra le gris,
     ce qui se voit et se corrige, plutôt que de casser l'affichage. */
-const BADGES: Record<string, React.CSSProperties> = {
-  "Projet à l'étude": badge_vert,
-  "Stratégie d'investissement": badge_bleu,
-  "Financement levé": badge_violet,
-  "Nomination régionale": badge_orange,
+const TEINTES: Record<string, string> = {
+  "Projet à l'étude": "vert",
+  "Stratégie d'investissement": "bleu",
+  "Financement levé": "violet",
+  "Nomination régionale": "orange",
 };
+const BADGES: Record<string, React.CSSProperties> = {
+  vert: badge_vert, bleu: badge_bleu, violet: badge_violet, orange: badge_orange,
+};
+
+/** La teinte d'un signal — celle de son stade, et donc celle de son survol. Un
+    stade ajouté un jour sans teinte déclarée prend le gris, ce qui se voit et
+    se corrige, plutôt que de casser l'affichage. */
+const teinteDe = (s: Signal) => TEINTES[s.natures[0]?.court ?? ""] ?? "gris";
 
 function PastilleStade({ v }: { v: Valeur }) {
   const court = v.court ?? v.libelle ?? "";
   return (
     <span title={v.libelle ?? undefined}
-      style={{ ...(BADGES[court] ?? badge_gris), whiteSpace: "nowrap", flexShrink: 0 }}>
+      style={{ ...(BADGES[TEINTES[court]] ?? badge_gris),
+        whiteSpace: "nowrap", flexShrink: 0 }}>
       {court}
     </span>
   );
@@ -276,15 +286,7 @@ function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
-      style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
-        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
-        padding: "15px 17px 13px", cursor: "pointer",
-        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
-        e.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
-        e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
-        e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+      style={CARTE_CLIQUABLE} {...survolCarte(teinteDe(s))}>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 8, marginBottom: 10 }}>

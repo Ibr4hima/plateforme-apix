@@ -223,9 +223,17 @@ async def projets(
     activites: str | None = None,
     types: str | None = None,
     recherche: str | None = None,
+    page: int = 1,
+    par_page: int = 30,
     db: AsyncSession = Depends(get_db),
 ):
     """Les projets du périmètre demandé, leurs agrégats et leurs classements.
+
+    LA PAGINATION NE PORTE QUE SUR LA LISTE. Compteurs, séries annuelles et
+    classements restent calculés sur TOUT le filtre — c'est la règle de cet
+    écran : un chiffre qu'on ne retrouve pas dans la liste en dessous est un
+    chiffre qu'on ne peut pas défendre, mais un total qui ne vaudrait que pour
+    trente lignes ne vaudrait rien du tout.
 
     Les filtres à choix multiple (`secteurs`, `activites`, `types`) reçoivent
     des libellés séparés par une barre verticale : le point-virgule et la
@@ -276,6 +284,11 @@ async def projets(
         "types":       await classement("COALESCE(t.libelle_fr, p.type_brut)"),
     }
 
+    # Le nombre de pages se déduit du compteur, déjà calculé sur tout le filtre :
+    # une requête de comptage de plus ne dirait rien que celui-ci ne dise.
+    par_page = max(1, min(par_page, 100))
+    page = max(1, page)
+
     lignes = (await db.execute(text(f"""
         SELECT p.id, p.annee, p.mois,
                COALESCE(e.nom, p.entreprise_brut) AS entreprise,
@@ -290,13 +303,16 @@ async def projets(
                p.description_fr, p.description_en
         {base}
         ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.capex_musd DESC NULLS LAST
-        LIMIT 400"""), params)).fetchall()
+        LIMIT :n OFFSET :o"""),
+        {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 
     def nb(v):
         return float(v) if v is not None else None
 
     return {
         "sens": sens if sens in COTE else "destination",
+        "page": page,
+        "pages": max(1, -(-k.nb // par_page)) if k.nb else 1,
         "kpis": {
             "projets": k.nb, "capex_musd": nb(k.capex), "emplois": k.emplois,
             "capex_moyen": nb(k.capex) / k.nb if k.capex and k.nb else None,

@@ -1393,6 +1393,42 @@ export function ListeJetons({ valeurs }: { valeurs: string[] }) {
 export const TEXTE_DESC = { fontSize: 13.5, lineHeight: 1.8, marginTop: 10, paddingLeft: 14,
   borderLeft: "2px solid var(--bordure-forte)", color: "var(--texte)" } as const;
 
+/** Le survol d'une carte cliquable, TEINTÉ COMME SON ÉTIQUETTE.
+
+    Le contour virait au bleu quelle que soit la carte : une extension verte,
+    un projet à l'étude vert, une levée de fonds violette prenaient tous le même
+    halo. La couleur du badge n'est pas décorative — elle porte le stade ou la
+    nature, c'est-à-dire ce qui décide du geste commercial — et le survol doit
+    la confirmer plutôt que la contredire.
+
+    La teinte est un JETON de la charte (« vert », « violet », « orange »,
+    « gris »…), pas une couleur en dur : c'est la même source que les badges,
+    donc les deux ne peuvent pas diverger.
+
+    Le retour se fait toujours au filet neutre : une carte au repos ne porte
+    aucune couleur, sans quoi la grille clignoterait de cinq teintes à la fois. */
+export function survolCarte(teinte: string) {
+  const bougé = (e: React.MouseEvent<HTMLElement>, survol: boolean) => {
+    const c = e.currentTarget;
+    c.style.borderColor = survol ? `rgb(var(--${teinte}-rgb) / 0.45)`
+                                 : "rgb(var(--encre-rgb) / 0.12)";
+    c.style.boxShadow = survol ? `0 4px 16px rgb(var(--${teinte}-rgb) / 0.16)` : "none";
+    c.style.transform = survol ? "translateY(-1px)" : "none";
+  };
+  return {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => bougé(e, true),
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => bougé(e, false),
+  };
+}
+
+/** Le gabarit d'une carte cliquable, partagé par les trois vues. */
+export const CARTE_CLIQUABLE: React.CSSProperties = {
+  display: "flex", flexDirection: "column", background: "var(--carte)",
+  border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
+  padding: "15px 17px 13px", cursor: "pointer",
+  transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
+};
+
 /** Les pages à montrer autour de la page courante, avec des trous.
 
     CENT QUATRE-VINGT-HUIT PAGES NE S'ALIGNENT PAS. On garde la première et la

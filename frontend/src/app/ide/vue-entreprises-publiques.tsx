@@ -40,8 +40,9 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { API, type ChoixSous, Pagination, ETIQ, Facette, FacetteSecteurs, Filet,
-         fmtNombre, LigneFiche, ListeJetons, TitreFiche } from "./partage";
+import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
+         Filet, fmtNombre, LigneFiche, ListeJetons, Pagination, survolCarte,
+         TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
     et de la même façon : sélection multiple, secteurs et sous-secteurs
@@ -84,7 +85,7 @@ type Fiche = {
   activites: Compte[];
 };
 
-const PAR_PAGE = 24;
+const PAR_PAGE = 30;
 
 /** Le périmètre du relevé dont ces entreprises sont tirées. Il qualifie la page
     comme « Projets reçus » qualifie celle des projets. */
@@ -248,18 +249,12 @@ const Jeton = ({ children }: { children: React.ReactNode }) => (
     Ici le pays d'origine tient la ligne du haut : il fait partie de l'identité
     de la fiche, puisque c'est lui qui, avec le nom, la distingue d'une autre. */
 function CarteEntreprise({ e, onOuvrir }: { e: Entreprise; onOuvrir: () => void }) {
+  // Une carte d'entreprise ne porte pas d'étiquette : rien ne la qualifie d'une
+  // couleur, elle garde donc le bleu de la plateforme.
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onOuvrir(); } }}
-      style={{ display: "flex", flexDirection: "column", background: "var(--carte)",
-        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16,
-        padding: "15px 17px 13px", cursor: "pointer",
-        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
-      onMouseEnter={ev => { ev.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
-        ev.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
-        ev.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={ev => { ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
-        ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; }}>
+      style={CARTE_CLIQUABLE} {...survolCarte("bleu")}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
         <DrapeauPays iso={e.origine_iso} nom={e.origine ?? ""} taille={14} sansIso="rien" />

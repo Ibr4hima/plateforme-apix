@@ -30,9 +30,9 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, btnVue, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
-         Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE, moisEnClair,
-         Pastille, TEXTE_DESC, TitreFiche } from "./partage";
+import { API, BadgePeriode, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
+         FacetteSecteurs, Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE,
+         moisEnClair, Pagination, Pastille, survolCarte, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
          type FiltresSignaux } from "./vue-signaux-publics";
 import VueEntreprisesPubliques, { FiltresEntreprisesPanneau,
@@ -64,6 +64,7 @@ type Projet = {
 };
 type Reponse = {
   sens: string;
+  page: number; pages: number;
   kpis: { projets: number; capex_musd: number | null; emplois: number | null;
           capex_moyen: number | null; entreprises: number; partenaires: number;
           part_estimee: number | null; annees: [number | null, number | null] };
@@ -77,6 +78,10 @@ const VUES = [
   { v: "signaux" as const, l: "Signaux d'investissement", src: "Investor signals" },
   { v: "entreprises" as const, l: "Entreprises", src: "Company database" },
 ];
+
+/** Trente cartes par page, comme les vues Signaux et Entreprises. Les trois
+    paginent la même chose et devaient le faire au même rythme. */
+const PAR_PAGE = 30;
 
 const TITRE_SS = { fontSize: 11, fontWeight: 700, color: "var(--gris)",
   textTransform: "uppercase" as const, letterSpacing: "0.1em" };
@@ -158,6 +163,9 @@ export default function OngletFdi({ onVue }: {
   const [anneeMax, setAnneeMax] = useState<number | null>(null);
   // Le projet dont la fiche est ouverte, par identifiant.
   const [ouvert, setOuvert] = useState<number | null>(null);
+  // La page de la liste. Les compteurs, eux, portent sur TOUT le filtre : on
+  // pagine ce qu'on lit, pas ce qu'on compte.
+  const [page, setPage] = useState(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizing = useRef(false);
@@ -252,7 +260,10 @@ export default function OngletFdi({ onVue }: {
     setAnneeMax(a => a ?? per.annees[1]);
   }, [per]);
 
-  const url = useMemo(() => {
+  // Le filtre SANS la page : il sert à l'adresse, et à savoir quand revenir au
+  // premier écran. Rester en page 40 d'un résultat qui n'en compte plus qu'une
+  // n'aurait aucun sens.
+  const filtre = useMemo(() => {
     const p = new URLSearchParams({ sens });
     if (pays) p.set("pays", pays);
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
@@ -261,8 +272,15 @@ export default function OngletFdi({ onVue }: {
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
-    return `${API}/fdi/public/projets?${p}`;
+    return p.toString();
   }, [sens, pays, anneeMinD, anneeMaxD, selectionSectorielle, activites, types, rechercheD]);
+
+  const [vuFiltre, setVuFiltre] = useState(filtre);
+  if (filtre !== vuFiltre) { setVuFiltre(filtre); setPage(1); }
+
+  const url = useMemo(
+    () => `${API}/fdi/public/projets?${filtre}&page=${page}&par_page=${PAR_PAGE}`,
+    [filtre, page]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   const d = q.data;
@@ -660,6 +678,8 @@ export default function OngletFdi({ onVue }: {
                         libellePartenaire={libellePartenaire} />
                     ))}
                   </div>
+                  <Pagination courante={d.page} pages={d.pages} onPage={setPage}
+                    nom="projet" />
                 </div>
               )}
             </>
@@ -703,11 +723,22 @@ function Montant({ v, estime, unite, taille = 16 }: {
     amène quelqu'un qui n'était pas là. La couleur porte la distinction, le mot
     la nomme — en casse normale, parce qu'un libellé de nomenclature n'est pas
     une alerte. */
+/** La teinte d'un type de projet — celle de son badge, et donc celle du survol
+    de sa carte. Une extension ne prolonge pas la même histoire qu'une
+    implantation nouvelle, et la couleur porte la distinction. */
+const teinteType = (type: string | null) =>
+  !type ? "bleu"
+  : /extension/i.test(type) ? "vert"
+  : /co-implantation|co-location/i.test(type) ? "violet" : "bleu";
+
+const BADGES_TYPE: Record<string, React.CSSProperties> = {
+  vert: badge_vert, violet: badge_violet, bleu: badge_bleu,
+};
+
 function PastilleType({ type }: { type: string | null }) {
   if (!type) return null;
-  const style = /extension/i.test(type) ? badge_vert
-    : /co-implantation|co-location/i.test(type) ? badge_violet : badge_bleu;
-  return <span style={{ ...style, whiteSpace: "nowrap" as const, flexShrink: 0 }}>{type}</span>;
+  return <span style={{ ...BADGES_TYPE[teinteType(type)],
+    whiteSpace: "nowrap" as const, flexShrink: 0 }}>{type}</span>;
 }
 
 /** Un projet, en tuile.
@@ -722,14 +753,7 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
   return (
     <article onClick={onOuvrir} role="button" tabIndex={0}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOuvrir(); } }}
-      style={{ display: "flex", flexDirection: "column" as const, background: "var(--carte)",
-        border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, padding: "15px 17px 13px",
-        cursor: "pointer", transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s" }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgb(var(--bleu-rgb) / 0.38)";
-        e.currentTarget.style.boxShadow = "0 4px 16px rgb(var(--ombre-rgb) / 0.10)";
-        e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
-        e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+      style={CARTE_CLIQUABLE} {...survolCarte(teinteType(p.type_projet))}>
 
       {/* Période et type : le contexte, avant le nom. */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
@@ -749,9 +773,15 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
         paddingTop: 13, borderTop: "1px solid var(--bordure)" }}>
         <div style={{ minWidth: 0 }}>
           <span style={{ ...ETIQ, display: "block", marginBottom: 4 }}>{libellePartenaire}</span>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--encre)", display: "block",
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-            {p.partenaire ?? "—"}
+          {/* Le drapeau, comme sur les cartes de signaux : dans une grille de
+              trente pays, il se repère avant le nom. Un pays non rattaché n'en
+              a pas — la place n'est pas réservée pour autant, sans quoi les
+              noms ne s'aligneraient plus. */}
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5,
+            fontWeight: 700, color: "var(--encre)", overflow: "hidden" }}>
+            <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={14} sansIso="rien" />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis",
+              whiteSpace: "nowrap" as const }}>{p.partenaire ?? "—"}</span>
           </span>
         </div>
         <div style={{ minWidth: 0, paddingLeft: 14, borderLeft: "1px solid var(--bordure)" }}>
