@@ -33,18 +33,14 @@ import { ArrowLeft } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
-import DrapeauPays from "@/components/shared/DrapeauPays";
-import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
-         badge_violet } from "@/lib/couleurs";
 import { useD3Pret } from "@/lib/d3lazy";
-import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, ChiffreCle,
+import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
          ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays,
          moisEnClair, SegmentRapport } from "../partage";
 
 type Rang = { nom: string; nb: number; iso?: string | null };
 type Gros = {
   id: number; periode: string; entreprise: string | null; origine: string | null;
-  origine_iso: string | null; destination_iso: string | null;
   montant: number | null; estime: boolean | null;
   nature: string | null; destination: string | null;
 };
@@ -74,140 +70,43 @@ type Zone = {
     qu'il devra venir. */
 const PERIMETRE = "Afrique";
 
-/** LES CINQ TEINTES DES STADES, celles des pastilles de la vue publique. Un
-    rapport qui recolorerait « Financement levé » obligerait à refaire le
-    rapprochement de tête en passant de l'écran au document. Le gris reste le
-    repli : un stade que fDi ajouterait demain se verrait, au lieu d'emprunter
-    la couleur d'un autre et de mentir en silence. */
-const BADGES_STADE: Record<string, React.CSSProperties> = {
-  "Projet à l'étude": badge_vert,
-  "Stratégie d'investissement": badge_orange,
-  "Financement levé": badge_violet,
-  "Nomination régionale": badge_bleu,
-  "Contrat de fourniture": badge_ambre,
-};
-
-/** Les signaux les plus lourds — le tableau qu'on lit en diagonale pour savoir
-    qui approcher.
-
-    CE QUI A CHANGÉ PAR RAPPORT AU TABLEAU ORDINAIRE QU'IL ÉTAIT, et pourquoi :
-
-      * L'ORIGINE ET LA DESTINATION SONT UN TRAJET, non deux colonnes. « Émirats
-        arabes unis » puis, deux centimètres plus loin, « Égypte » demandait de
-        recomposer le mouvement ; une flèche entre deux drapeaux le donne d'un
-        coup d'œil, et rend au passage la moitié de la largeur que ces deux
-        colonnes se partageaient.
-
-      * LE MONTANT EST LA COLONNE QU'ON VIENT LIRE, il en a donc la taille et le
-        poids. Il était rendu au même corps que la période, dans un tableau
-        classé par montant : la hiérarchie de la page démentait son propre tri.
-
-      * UNE BARRE SOUS CHAQUE MONTANT dit l'écart au plus gros. Entre 80 et
-        60 Md $ l'œil ne fait pas la différence sur des chiffres alignés ; la
-        barre montre que le second vaut les trois quarts du premier, et que le
-        huitième n'en vaut pas le vingtième.
-
-      * LE RANG EST ÉCRIT. Un tableau trié par montant porte un classement
-        implicite ; l'écrire évite de recompter les lignes pour citer « le
-        troisième plus gros ».
-
-      * PLUS DE FILETS ENTRE LES LIGNES, un fond alterné à la place — c'est ce
-        que font les classements du même rapport, et deux grammaires de tableau
-        sur une même page se voient.
-
-    L'ENTREPRISE PEUT S'AFFICHER TRONQUÉE — « Vantage Data Ce… ». Ce n'est pas la
-    colonne qui coupe : la source elle-même ne publie qu'un nom écourté, et le
-    relevé porte ce que la source montre. Inventer la fin serait pire. */
-function TableauGros({ lignes, unite, accent }: {
-  lignes: Gros[]; unite: string; accent: string;
-}) {
+/** Un tableau de signaux remarquables. Les deux montants ont le même gabarit —
+    ils se lisent l'un après l'autre — mais jamais la même colonne : voir
+    l'en-tête du fichier. */
+function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
   if (lignes.length === 0) {
     return <p style={{ fontSize: 12, color: "var(--gris)" }}>Aucun montant renseigné.</p>;
   }
-  const sommet = Math.max(1e-9, ...lignes.map(l => l.montant ?? 0));
-  const ENT: React.CSSProperties = { fontSize: 9, fontWeight: 800, color: "var(--gris)",
-    letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap" };
-  // Une grille plutôt qu'un <table> : les colonnes se règlent au minmax, la
-  // ligne reste une ligne flexible, et rien ne se décale quand un nom s'allonge.
-  const COLS = "26px minmax(130px,1.25fr) minmax(190px,1.9fr) minmax(140px,max-content) 92px 132px";
   return (
     <div style={{ overflowX: "auto" }}>
-      <div style={{ minWidth: 720 }}>
-        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 12,
-          alignItems: "center", padding: "0 10px 8px" }}>
-          <span style={ENT}>#</span>
-          <span style={ENT}>Entreprise</span>
-          <span style={ENT}>Origine → destination</span>
-          <span style={ENT}>Stade</span>
-          <span style={ENT}>Période</span>
-          <span style={{ ...ENT, textAlign: "right" }}>{unite}</span>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {lignes.map((l, i) => {
-            const rang = i + 1, podium = rang <= 3;
-            return (
-              <div key={`${l.id}-${unite}`} style={{ display: "grid",
-                gridTemplateColumns: COLS, gap: 12, alignItems: "center",
-                padding: "9px 10px", borderRadius: 9,
-                background: i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
-                <span style={{ display: "inline-flex", alignItems: "center",
-                  justifyContent: "center", minWidth: 20, height: 20, borderRadius: 10,
-                  fontSize: 10, fontWeight: 800,
-                  background: podium ? accent : "var(--bleu-voile)",
-                  color: podium ? "var(--sur-bleu)" : "var(--texte)" }}>{rang}</span>
-
-                <span title={l.entreprise ?? undefined} style={{ fontSize: 13, fontWeight: 700,
-                  color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis",
-                  whiteSpace: "nowrap" }}>{l.entreprise ?? "—"}</span>
-
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 7,
-                  minWidth: 0, fontSize: 12, color: "var(--texte)" }}>
-                  <DrapeauPays iso={l.origine_iso} nom={l.origine ?? ""} taille={14} />
-                  <span title={l.origine ?? undefined} style={{ overflow: "hidden",
-                    textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.origine ?? "—"}</span>
-                  <span style={{ color: "var(--gris)", flexShrink: 0 }}>→</span>
-                  <DrapeauPays iso={l.destination_iso} nom={l.destination ?? ""} taille={14} />
-                  <span title={l.destination ?? undefined} style={{ fontWeight: 650,
-                    color: "var(--encre)", overflow: "hidden", textOverflow: "ellipsis",
-                    whiteSpace: "nowrap" }}>{l.destination ?? "—"}</span>
-                </span>
-
-                <span>
-                  {l.nature && (
-                    <span style={{ ...(BADGES_STADE[l.nature] ?? badge_gris),
-                      whiteSpace: "nowrap" }}>{l.nature}</span>
-                  )}
-                </span>
-
-                <span style={{ fontSize: 11.5, color: "var(--gris)", whiteSpace: "nowrap",
-                  fontVariantNumeric: "tabular-nums" }}>{moisEnClair(l.periode)}</span>
-
-                <span style={{ display: "flex", flexDirection: "column",
-                  alignItems: "flex-end", gap: 5 }}>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: "var(--encre)",
-                    whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                    {/* Le « ≈ » reste, sa note explicative non : la valeur vient
-                        de l'algorithme du Financial Times et n'a pas été déclarée
-                        par l'entreprise. L'infobulle le dit à qui s'interroge,
-                        sans alourdir la page pour tous les autres. */}
-                    {l.estime && (
-                      <span title="Valeur estimée par la source, non déclarée par l'entreprise"
-                        style={{ color: "var(--gris)" }}>≈ </span>
-                    )}
-                    {fmtVal(l.montant)}
-                  </span>
-                  <span style={{ width: "100%", height: 4, borderRadius: 99,
-                    background: "var(--bleu-voile)", overflow: "hidden" }}>
-                    <span style={{ display: "block", height: "100%", borderRadius: 99,
-                      background: accent, opacity: podium ? 0.9 : 0.5,
-                      width: `${Math.max(3, (l.montant ?? 0) / sommet * 100)}%` }} />
-                  </span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            {["Entreprise", "Origine", "Destination", "Stade", "Période", unite].map((t, i) => (
+              <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
+                letterSpacing: "0.1em", textTransform: "uppercase",
+                textAlign: i === 5 ? "right" : "left", padding: "8px 10px",
+                borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" }}>{t}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {lignes.map(l => (
+            <tr key={`${l.id}-${unite}`}>
+              <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{l.entreprise ?? "—"}</td>
+              <td style={CEL}>{l.origine ?? "—"}</td>
+              <td style={CEL}>{l.destination ?? "—"}</td>
+              <td style={CEL}>{l.nature ?? "—"}</td>
+              <td style={{ ...CEL, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+                {moisEnClair(l.periode)}
+              </td>
+              <td style={{ ...CEL, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                {l.estime && <span style={{ fontWeight: 800 }}>≈ </span>}{fmtVal(l.montant)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -468,13 +367,13 @@ export default function RapportSignaux() {
 
               <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
                 <Carte titre="Les plus grosses levées de fonds" tag={periode}>
-                  <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" accent="var(--violet)" />
+                  <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" />
                 </Carte>
               </div>
 
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
                 <Carte titre="Les plus gros investissements annoncés" tag={periode}>
-                  <TableauGros lignes={d.remarquables.capex} unite="Investissement" accent="var(--bleu)" />
+                  <TableauGros lignes={d.remarquables.capex} unite="Investissement" />
                 </Carte>
               </div>
 
