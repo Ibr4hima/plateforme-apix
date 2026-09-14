@@ -1277,7 +1277,12 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
 
     ELLE NE SERT PAS AUX SECTEURS : un sous-secteur ne se lit pas seul, et le
     couple secteur / sous-secteur se pose emboîté — voir `FacetteSecteurs`. */
-export type OptionFacette = { nom: string; nb: number; groupe?: string };
+export type OptionFacette = {
+  nom: string; nb: number; groupe?: string;
+  /** Faux pour une valeur que la recherche ne doit PAS atteindre. Elle reste
+      listée tant qu'on ne cherche pas, et disparaît dès qu'on tape. */
+  cherchable?: boolean;
+};
 
 export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
   titre: string; options: OptionFacette[]; valeur: string;
@@ -1297,8 +1302,15 @@ export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
   const cle = sansAccent(q.trim());
   // LA VALEUR RETENUE RESTE VISIBLE même si la recherche l'exclut : sans cela,
   // taper trois lettres ôterait au lecteur le seul moyen de la décocher.
+  //
+  // UNE VALEUR NON CHERCHABLE DISPARAÎT DÈS QU'ON TAPE. Les destinations mêlent
+  // les régions du monde et les pays ; on cherche un pays, jamais une région —
+  // elles sont sept, en tête de liste, et se prennent du regard. Les laisser
+  // répondre à la frappe ferait remonter « Afrique » sur « afr » au milieu des
+  // pays africains, c'est-à-dire mettre en tête ce qu'on ne cherchait pas.
   const visibles = !cle ? options
-    : options.filter(o => o.nom === valeur || sansAccent(o.nom).includes(cle));
+    : options.filter(o => o.nom === valeur
+        || (o.cherchable !== false && sansAccent(o.nom).includes(cle)));
 
   return (
     <div style={{ marginBottom: 18 }}>

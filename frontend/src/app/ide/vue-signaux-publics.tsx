@@ -134,10 +134,15 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           — alors qu'un signal continental est exactement ce qu'on cherche
           quand on démarche. */}
       {/* Le filet sépare les régions des pays : le groupe porte la nature, que
-          le serveur trie régions d'abord. */}
+          le serveur trie régions d'abord.
+
+          LA RECHERCHE NE PORTE QUE SUR LES PAYS. Les régions sont sept, en tête
+          de liste, et se prennent du regard ; les faire répondre à la frappe
+          remonterait « Afrique » sur « afr » au-dessus des pays africains. */}
       <FacetteUnique titre="Destination" valeur={filtres.destination}
-        options={per.destinations.map(d => ({ ...d, groupe: d.nature }))}
-        onChange={set("destination")} />
+        options={per.destinations.map(d => ({ ...d, groupe: d.nature,
+          cherchable: d.nature === "pays" }))}
+        onChange={set("destination")} chercher="Rechercher un pays…" />
       <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
