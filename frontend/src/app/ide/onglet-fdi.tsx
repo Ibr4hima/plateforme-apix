@@ -194,6 +194,12 @@ export default function OngletFdi({ onVue }: {
     if (liste("act").length) setActivites(liste("act"));
     if (liste("typ").length) setTypes(liste("typ"));
     if (p.get("q")) setRecherche(p.get("q") as string);
+    const sig = {
+      origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
+      secteur: p.get("s_sec") ?? "", activite: p.get("s_act") ?? "",
+      nature: p.get("s_nat") ?? "", recherche: p.get("s_q") ?? "",
+    };
+    if (Object.values(sig).some(Boolean)) setFiltresSignaux(sig);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -311,8 +317,23 @@ export default function OngletFdi({ onVue }: {
     poser("act", activites.join("|"));
     poser("typ", types.join("|"));
     poser("q", rechercheD.trim());
+    // LES FILTRES DES SIGNAUX Y VONT AUSSI, préfixés pour ne pas se confondre
+    // avec ceux des projets — « sec » et « act » sont déjà pris, et deux vues
+    // qui écriraient la même clef se marcheraient dessus au rechargement.
+    //
+    // Deux raisons, et la seconde a décidé : le lien devient partageable et F5
+    // ne perd rien ; surtout, le RAPPORT lit cette adresse pour porter la même
+    // sélection que l'écran d'où on l'a demandé. Un rapport qui démentirait
+    // l'écran ne servirait à rien.
+    poser("s_ori", filtresSignaux.origine);
+    poser("s_dest", filtresSignaux.destination);
+    poser("s_sec", filtresSignaux.secteur);
+    poser("s_act", filtresSignaux.activite);
+    poser("s_nat", filtresSignaux.nature);
+    poser("s_q", filtresSignaux.recherche.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
-  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types, rechercheD, bornes]);
+  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,
+      rechercheD, bornes, filtresSignaux]);
 
   const reinitProjets = () => {
     setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");

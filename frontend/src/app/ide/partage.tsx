@@ -1614,3 +1614,78 @@ export function Pagination({ courante, pages, onPage, nom = "page" }: {
     </nav>
   );
 }
+
+
+// ── Les briques d'un rapport ─────────────────────────────────────────────────
+// PARTAGÉES PAR LES RAPPORTS DE PROJETS ET DE SIGNAUX. Les deux se posent sur
+// la même table, se citent dans la même réunion, et s'impriment sur le même
+// papier : deux gabarits différents se remarqueraient aussitôt. Elles ont
+// d'abord vécu dans le seul rapport des projets ; les recopier pour le second
+// les aurait laissées diverger, comme l'ont déjà fait le sélecteur de vue et
+// la pagination avant d'être remontés ici.
+
+/** La date d'édition, en toutes lettres. Un rapport se cite, et un document
+    sans date se cite mal. */
+export function dateDuJour(): string {
+  const d = new Date();
+  return `${d.getDate()} ${MOIS_RAPPORT[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Une cellule de tableau de rapport. */
+export const CEL = { fontSize: 12, color: "var(--texte)", padding: "10px 10px",
+  borderBottom: "1px solid var(--bordure)" } as const;
+
+const MOIS_RAPPORT = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+  "août", "septembre", "octobre", "novembre", "décembre"];
+
+export function ChiffreCle({ label, valeur, note, annee }: {
+  label: string; valeur: string; note?: string | null; annee?: string | null;
+}) {
+  return (
+    <div style={{ background: "var(--carte)", borderRadius: 14, padding: "15px 16px",
+      border: "1px solid rgb(var(--encre-rgb) / 0.12)", minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8, flexWrap: "wrap" as const }}>
+        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: "var(--bleu)",
+          textTransform: "uppercase" as const, lineHeight: 1.4 }}>{label}</p>
+        {annee && (
+          <span style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)",
+            padding: "1px 7px", borderRadius: 4, lineHeight: 1.5, fontVariantNumeric: "tabular-nums" }}>{annee}</span>
+        )}
+      </div>
+      <p style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1 }}>{valeur}</p>
+      <div style={{ marginTop: 6, minHeight: 13 }}>
+        {note && <p style={{ fontSize: 10.5, color: "var(--gris)", lineHeight: 1.3 }}>{note}</p>}
+      </div>
+    </div>
+  );
+}
+
+/** La lecture, en toutes lettres. Le fond bleu très pâle la distingue des
+    chiffres : c'est une interprétation, pas une mesure. */
+export function ARetenir({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: "var(--bleu-voile)", border: "1px solid rgb(var(--bleu-rgb) / 0.22)",
+      borderRadius: 12, padding: "14px 17px", marginTop: 16 }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" as const,
+        color: "var(--bleu)", marginBottom: 7 }}>À retenir</p>
+      <p style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.75 }}>{children}</p>
+    </div>
+  );
+}
+
+export function CarteRapport({ titre, tag, children }: { titre: string; tag?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: "var(--carte)", borderRadius: 14,
+      border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px", minWidth: 0 }}>
+      <p style={{ fontSize: 11, fontWeight: 800, color: "var(--bleu)", letterSpacing: "0.14em",
+        textTransform: "uppercase" as const, marginBottom: 14, display: "flex",
+        alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+        {titre}
+        {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gris)", background: "var(--bleu-voile)",
+          padding: "2px 8px", borderRadius: 5, textTransform: "none" as const,
+          letterSpacing: "0.04em", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
+      </p>
+      {children}
+    </div>
+  );
+}

@@ -268,13 +268,67 @@ async def signaux_publics(
               JOIN fdi_signal_secteurs v ON v.signal_id = s.id
               JOIN fdi_secteurs n ON n.id = v.secteur_id
              WHERE {filtre} GROUP BY n.libelle_fr ORDER BY count(DISTINCT s.id) DESC, n.libelle_fr LIMIT 10"""),
+        # Le libellé COURT, celui des pastilles de carte et du filtre : un
+        # rapport qui nommerait autrement la même chose obligerait à faire le
+        # rapprochement de tête.
         "natures": await top("""
-            SELECT n.libelle_fr AS nom, count(DISTINCT s.id) AS nb
+            SELECT n.libelle_court_fr AS nom, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN fdi_signal_natures v ON v.signal_id = s.id
               JOIN fdi_signaux n ON n.id = v.nature_id
-             WHERE {filtre} GROUP BY n.libelle_fr ORDER BY count(DISTINCT s.id) DESC, n.libelle_fr LIMIT 10"""),
+             WHERE {filtre} GROUP BY n.libelle_court_fr
+             ORDER BY count(DISTINCT s.id) DESC, n.libelle_court_fr LIMIT 10"""),
+        # LES DESTINATIONS MÊLENT PAYS ET RÉGIONS, ici comme partout ailleurs
+        # sur cet écran : ce sont deux référentiels, mais une seule question.
+        "destinations": await top("""
+            SELECT coalesce(p.nom_fr, r.libelle_fr) AS nom, count(DISTINCT s.id) AS nb
+              FROM fdi_signaux_investisseurs s
+              JOIN fdi_signal_destinations d ON d.signal_id = s.id
+              LEFT JOIN ref_pays p ON p.id = d.pays_id
+              LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
+             WHERE {filtre} AND coalesce(p.nom_fr, r.libelle_fr) IS NOT NULL
+             GROUP BY 1 ORDER BY count(DISTINCT s.id) DESC, 1 LIMIT 10"""),
+        "activites": await top("""
+            SELECT n.libelle_fr AS nom, count(DISTINCT s.id) AS nb
+              FROM fdi_signaux_investisseurs s
+              JOIN fdi_signal_activites v ON v.signal_id = s.id
+              JOIN fdi_activites n ON n.id = v.activite_id
+             WHERE {filtre} GROUP BY n.libelle_fr
+             ORDER BY count(DISTINCT s.id) DESC, n.libelle_fr LIMIT 10"""),
     }
+
+    # LES SIGNAUX LES PLUS LOURDS, sur tout le périmètre et non sur la page
+    # lue. Un rapport qui classerait les trente lignes affichées donnerait le
+    # plus gros de la page, pas le plus gros du relevé — et personne ne verrait
+    # la différence.
+    #
+    # Les deux montants sont classés SÉPARÉMENT parce qu'ils ne disent pas la
+    # même chose : des fonds levés mesurent ce qu'une entreprise a réuni, un
+    # investissement prévu ce qu'elle annonce dépenser. Les additionner ferait
+    # un total qui ne correspond à rien.
+    async def plus_gros(colonne: str):
+        return [{"id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
+                 "entreprise": r.entreprise, "origine": r.origine,
+                 "montant": float(r.montant) if r.montant is not None else None,
+                 "estime": r.estime, "nature": r.nature, "destination": r.destination}
+                for r in (await db.execute(text(f"""
+            SELECT s.id, s.annee, s.mois,
+                   coalesce(e.nom, '—') AS entreprise, po.nom_fr AS origine,
+                   s.{colonne}_musd AS montant, s.{colonne}_estime AS estime,
+                   (SELECT n.libelle_court_fr FROM fdi_signal_natures v
+                      JOIN fdi_signaux n ON n.id = v.nature_id
+                     WHERE v.signal_id = s.id ORDER BY v.rang LIMIT 1) AS nature,
+                   (SELECT coalesce(p.nom_fr, r.libelle_fr) FROM fdi_signal_destinations d
+                      LEFT JOIN ref_pays p ON p.id = d.pays_id
+                      LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
+                     WHERE d.signal_id = s.id ORDER BY d.rang LIMIT 1) AS destination
+              FROM fdi_signaux_investisseurs s
+              LEFT JOIN fdi_entreprises e ON e.id = s.entreprise_id
+              LEFT JOIN ref_pays po ON po.id = s.pays_source_id
+             WHERE {filtre} AND s.{colonne}_musd IS NOT NULL
+             ORDER BY s.{colonne}_musd DESC LIMIT 8"""), params)).fetchall()]
+
+    remarquables = {"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
 
     # ON COUPE AVANT DE JOINDRE, comme le tableau des projets : la sélection se
     # fait sur la seule table des signaux, et les quatre listes ne sont
@@ -323,6 +377,7 @@ async def signaux_publics(
                        "capex_musd": float(r.capex_musd) if r.capex_musd is not None else None}
                       for r in par_annee],
         "tops": tops,
+        "remarquables": remarquables,
         "page": page,
         "pages": max(1, -(-kpis.signaux // par_page)),
         "signaux": [{

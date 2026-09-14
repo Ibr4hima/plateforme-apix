@@ -79,20 +79,27 @@ export default function IdePage() {
                 proposer ce lien depuis « réalisés » laisserait croire à un
                 rapport de cette section-là.
 
-                ET SEULEMENT DEPUIS LA VUE PROJETS : le rapport est bâti sur les
-                projets annoncés. L'offrir au-dessus des signaux ou des
-                entreprises promettrait un document que ces vues ne produisent
-                pas. */}
+                CHAQUE VUE A LE SIEN, et le bouton mène à celui de la vue
+                ouverte : les projets annoncés et les signaux d'investisseur ne
+                se lisent pas de la même façon — un fait contre une intention —
+                et un rapport unique aurait menti sur l'un des deux.
+
+                Pas de rapport au-dessus d'Entreprises : cette vue regroupe ce
+                que la vue Projets montre déjà, et son rapport répéterait
+                l'autre. Le proposer promettrait un document qui n'apporte
+                rien. */}
             {/* La forme du segment actif des vues : pastille pleine dans son
                 anneau clair. Le rapport est une destination, pas une option —
                 il mérite le poids qu'a l'onglet en cours. */}
-            {section === "projetes" && vueFdi === "projets" && (
+            {section === "projetes" && (vueFdi === "projets" || vueFdi === "signaux") && (
               <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
                 borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
                 {/* L'adresse est lue AU CLIC, pas au rendu : les filtres de
                     l'onglet s'écrivent dans l'URL au fil des choix, et un href
                     figé au rendu ramènerait le lecteur à un état périmé. */}
-                <button onClick={()=>router.push(`/ide/rapport?retour=${encodeURIComponent(window.location.search)}`)}
+                <button onClick={()=>router.push(
+                  `/ide/${vueFdi === "signaux" ? "rapport-signaux" : "rapport"}`
+                  + `?retour=${encodeURIComponent(window.location.search)}`)}
                   style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 18px", borderRadius:999,
                     border:"none", cursor:"pointer",
                     background:"var(--bleu-action)", color:"var(--sur-bleu)", fontSize:12.5, fontWeight:700,
