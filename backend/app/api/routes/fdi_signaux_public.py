@@ -324,24 +324,38 @@ async def signaux_publics(
     async def plus_gros(colonne: str):
         return [{"id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
                  "entreprise": r.entreprise, "origine": r.origine,
+                 "origine_iso": r.origine_iso, "destination_iso": r.destination_iso,
                  "montant": float(r.montant) if r.montant is not None else None,
                  "estime": r.estime, "nature": r.nature, "destination": r.destination}
                 for r in (await db.execute(text(f"""
             SELECT s.id, s.annee, s.mois,
-                   coalesce(e.nom, '—') AS entreprise, po.nom_fr AS origine,
+                   coalesce(e.nom, '—') AS entreprise,
+                   po.nom_fr AS origine, po.code_iso2 AS origine_iso,
                    s.{colonne}_musd AS montant, s.{colonne}_estime AS estime,
                    (SELECT n.libelle_court_fr FROM fdi_signal_natures v
                       JOIN fdi_signaux n ON n.id = v.nature_id
                      WHERE v.signal_id = s.id ORDER BY v.rang LIMIT 1) AS nature,
-                   (SELECT coalesce(p.nom_fr, r.libelle_fr) FROM fdi_signal_destinations d
-                      LEFT JOIN ref_pays p ON p.id = d.pays_id
-                      LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
-                     WHERE d.signal_id = s.id ORDER BY d.rang LIMIT 1) AS destination
+                   d1.nom AS destination,
+                   -- L'ISO N'EST RENDU QUE SI LA DESTINATION EST UN PAYS. Une
+                   -- région — « Moyen-Orient », « Amérique latine » — n'a pas de
+                   -- drapeau, et lui en donner un serait faux : le rendu met un
+                   -- globe à sa place, ce qui est exactement ce qu'elle est.
+                   d1.iso AS destination_iso
               FROM fdi_signaux_investisseurs s
               LEFT JOIN fdi_entreprises e ON e.id = s.entreprise_id
               LEFT JOIN ref_pays po ON po.id = s.pays_source_id
+              LEFT JOIN LATERAL (
+                   SELECT coalesce(p.nom_fr, r.libelle_fr) AS nom, p.code_iso2 AS iso
+                     FROM fdi_signal_destinations d
+                     LEFT JOIN ref_pays p ON p.id = d.pays_id
+                     LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
+                    WHERE d.signal_id = s.id ORDER BY d.rang LIMIT 1) d1 ON TRUE
              WHERE {filtre} AND s.{colonne}_musd IS NOT NULL
-             ORDER BY s.{colonne}_musd DESC LIMIT 8"""), params)).fetchall()]
+             -- L'IDENTIFIANT DÉPARTAGE LES EX ÆQUO. Deux signaux à 60 000 M$
+             -- s'échangeaient leurs rangs d'un chargement à l'autre, faute de
+             -- second critère : un rapport qu'on cite ne peut pas changer
+             -- d'ordre entre le moment où on le lit et celui où on l'imprime.
+             ORDER BY s.{colonne}_musd DESC, s.id LIMIT 8"""), params)).fetchall()]
 
     remarquables = {"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
 
