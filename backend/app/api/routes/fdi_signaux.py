@@ -193,11 +193,37 @@ async def lister_signaux(
     params |= {"n": par_page, "o": (page - 1) * par_page}
     filtre = " AND ".join(where)
 
+    # L'ARBITRAGE SE FAIT PAR NOM, LE RESTE PAR DATE. Sur le tableau général,
+    # le plus récent d'abord est la bonne lecture : on vient voir ce qui vient
+    # de tomber. Dans la file d'arbitrage, la date ne veut rien dire — ce qu'on
+    # y traite, c'est un NOM tronqué — et l'ordre chronologique dispersait les
+    # lignes portant le même texte coupé sur soixante-six pages. Rangées par
+    # nom, les vingt « Nestle … » se suivent et se tranchent d'un seul coup
+    # d'œil, avec le même contexte en tête.
+    #
+    # Le tri est insensible à la casse et aux accents : « Édenred » ne doit pas
+    # tomber après « Zurich » parce que son É sort de l'alphabet ASCII. La date
+    # départage encore, pour que deux lignes homonymes gardent un ordre stable
+    # d'un chargement à l'autre.
+    #
+    # La réduction est celle qu'emploie déjà la recherche de la plateforme —
+    # NFKD puis retrait de tout ce qui sort de l'ASCII imprimable — plutôt qu'un
+    # `unaccent` qui supposerait une extension installée.
+    CLE_TRI = ("lower(regexp_replace(normalize("
+               "coalesce(e.nom, s.entreprise_brut, ''), NFKD), '[^ -~]', '', 'g'))")
+    DATE = "s.annee DESC, s.mois DESC NULLS LAST, s.lot_id, s.ligne"
+    tri = f"{CLE_TRI}, {DATE}" if a_arbitrer else DATE
+
+    # La jointure sur les entreprises n'est posée QUE pour le tri par nom : la
+    # coller au tableau général ferait payer à chaque page une jointure dont son
+    # ordre chronologique n'a que faire.
     lignes = (await db.execute(text(f"""
         WITH choisis AS MATERIALIZED (
-            SELECT s.id FROM fdi_signaux_investisseurs s
+            SELECT s.id{f", {CLE_TRI} AS cle_tri" if a_arbitrer else ""}
+              FROM fdi_signaux_investisseurs s
+              {"LEFT JOIN fdi_entreprises e ON e.id = s.entreprise_id" if a_arbitrer else ""}
              WHERE {filtre}
-             ORDER BY s.annee DESC, s.mois DESC NULLS LAST, s.lot_id, s.ligne
+             ORDER BY {tri}
              LIMIT :n OFFSET :o
         )
         SELECT s.id, s.annee, s.mois, s.entreprise_brut, s.parent_brut,
@@ -214,7 +240,8 @@ async def lister_signaux(
         LEFT JOIN fdi_entreprises pa ON pa.id = s.parent_id
         LEFT JOIN ref_pays ps ON ps.id = s.pays_source_id
         JOIN fdi_lots_import l ON l.id = s.lot_id
-        ORDER BY s.annee DESC, s.mois DESC NULLS LAST, s.lot_id, s.ligne
+        ORDER BY {"c.cle_tri, " if a_arbitrer else ""}s.annee DESC,
+                 s.mois DESC NULLS LAST, s.lot_id, s.ligne
     """), params)).fetchall()
 
     retenues = (await db.execute(text(
@@ -426,13 +453,37 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
 
     cle = normaliser(nom)
     signataire = str(user.get("email") or "admin")
+    maintenant = datetime.now(timezone.utc)
     r = (await db.execute(text(
-        "SELECT id FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
+        "SELECT id, nom FROM fdi_entreprises WHERE nom_normalise = :c"), {"c": cle})).first()
     if not r:
         r = (await db.execute(text(
             "INSERT INTO fdi_entreprises (nom, nom_normalise, statut_nom, modifie_le, modifie_par) "
-            "VALUES (:n, :c, 'complet', :d, :u) RETURNING id"),
-            {"n": nom, "c": cle, "d": datetime.now(timezone.utc), "u": signataire})).first()
+            "VALUES (:n, :c, 'complet', :d, :u) RETURNING id, nom"),
+            {"n": nom, "c": cle, "d": maintenant, "u": signataire})).first()
+        renomme = None
+    else:
+        # LA CORRECTION D'ORTHOGRAPHE ÉTAIT PERDUE, ET SANS LE DIRE. Quand le
+        # nom saisi se réduit à la même clef qu'une entreprise existante —
+        # « Nestlé » contre « Nestle », « Coca Cola » contre « Coca-Cola » — on
+        # se rattachait à elle sans toucher à son libellé : la ligne passait à
+        # « résolu », donc perdait sa couleur d'alerte, mais affichait toujours
+        # l'ancienne graphie. Vu de l'écran, la modification n'avait pas été
+        # prise en compte, sans le moindre message.
+        #
+        # LE LIBELLÉ SAISI L'EMPORTE DÉSORMAIS. C'est un changement de GRAPHIE,
+        # jamais d'identité : la clef normalisée est la même des deux côtés, donc
+        # aucune ligne ne change d'entreprise, aucun alias ne bouge, et rien
+        # n'est re-rapproché. Seul l'affichage suit ce que l'arbitre a écrit —
+        # et il l'écrit avec la ligne sous les yeux, ce qui en fait la meilleure
+        # autorité dont on dispose. Un nom lui-même tronqué a déjà été refusé
+        # plus haut, donc cette adoption ne peut pas dégrader un nom complet.
+        renomme = r.nom if (r.nom or "") != nom else None
+        if renomme is not None:
+            await db.execute(text(
+                "UPDATE fdi_entreprises SET nom = :n, statut_nom = 'complet', "
+                "       modifie_le = :d, modifie_par = :u WHERE id = :i"),
+                {"n": nom, "d": maintenant, "u": signataire, "i": r.id})
 
     # La maison mère suit SEULEMENT si elle porte exactement le même texte : ce
     # sont alors deux affichages du même nom coupé, et les laisser diverger
@@ -445,7 +496,7 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
         f"      parent_id = {':e' if meme_parent else 'parent_id'}, "
         "       modifie_le = :d, modifie_par = :u "
         " WHERE id = :i"),
-        {"e": r.id, "d": datetime.now(timezone.utc), "u": signataire, "i": signal_id})
+        {"e": r.id, "d": maintenant, "u": signataire, "i": signal_id})
 
     # ON SE TROMPE, ET UNE COQUILLE NE DOIT PAS SURVIVRE À SA CORRECTION.
     # Corriger « Indonesie » en « Indonesia » laissait la faute en base comme
@@ -470,7 +521,13 @@ async def nommer_entreprise(signal_id: int, body: EntrepriseIn,
                                 WHERE x.entreprise_id = :a)"""), {"a": abandonnee})
 
     await db.commit()
-    return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent}
+    # LE NOM RENDU EST CELUI QUI EST EN BASE, jamais celui qui a été tapé : c'est
+    # la seule façon pour l'écran de ne pas afficher ce que la base ne porte pas.
+    # `renomme` dit l'ancienne graphie quand il y en avait une, pour que l'écran
+    # puisse signaler qu'une entreprise déjà connue a été renommée — un fait qui
+    # dépasse cette ligne, puisque tout ce qui la désigne change d'affichage.
+    return {"entreprise_id": r.id, "nom": nom, "parent_suivi": meme_parent,
+            "renomme": renomme}
 
 
 # ── Créer un signal à la main ────────────────────────────────────────────────

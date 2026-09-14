@@ -623,6 +623,9 @@ export default function VueSignaux() {
   const [apresSaisie, setApresSaisie] = useState<boolean>(false);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState<string | null>(null);
+  // La graphie qu'un arbitrage vient de remplacer sur une entreprise déjà
+  // connue, le temps de le dire une fois.
+  const [renomme, setRenomme] = useState<{ avant: string; apres: string } | null>(null);
   const [occupe, setOccupe] = useState(false);
 
   // Sans délai, taper « Oracle » lancerait six requêtes dont cinq pour rien.
@@ -662,7 +665,7 @@ export default function VueSignaux() {
   }, []);
 
   const agir = async (faire: () => Promise<Response>) => {
-    setOccupe(true); setErreur(null);
+    setOccupe(true); setErreur(null); setRenomme(null);
     try {
       const r = await faire();
       if (!r.ok) {
@@ -706,7 +709,16 @@ export default function VueSignaux() {
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({ nom }),
     });
-    if (r.ok) setNomme(null);
+    if (r.ok) {
+      setNomme(null);
+      // UN RENOMMAGE DÉPASSE LA LIGNE QU'ON VIENT D'ARBITRER. Quand le nom
+      // saisi désigne une entreprise DÉJÀ connue sous une autre graphie, c'est
+      // elle qu'on rattache, et son libellé change partout où elle apparaît —
+      // signaux comme projets. Le taire laisserait croire que la correction
+      // n'a porté que sur cette ligne.
+      const d = await r.clone().json().catch(() => null);
+      setRenomme(d?.renomme ? { avant: d.renomme, apres: d.nom } : null);
+    }
     return r;
   });
 
@@ -778,6 +790,15 @@ export default function VueSignaux() {
       }
     >
       {erreur && <div style={{ marginBottom: 14 }}><Avis ton="erreur">{erreur}</Avis></div>}
+
+      {renomme && (
+        <div style={{ marginBottom: 14 }}>
+          <Avis ton="ok">
+            Entreprise déjà connue sous « {renomme.avant} » : elle porte
+            désormais « {renomme.apres} », ici et partout ailleurs.
+          </Avis>
+        </div>
+      )}
 
       {apresSaisie && (
         <div style={{ marginBottom: 14 }}>
