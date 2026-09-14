@@ -81,6 +81,7 @@ type Perimetre = {
 type Fiche = {
   nom: string; origine: string | null; origine_iso: string | null;
   projets: number; pays: number; annees: [number | null, number | null];
+  filiales: Compte[];
   destinations: Compte[]; secteurs: Compte[]; sous_secteurs: Compte[];
   activites: Compte[];
 };
@@ -365,6 +366,26 @@ function FicheEntreprise({ e, onClose }: { e: Entreprise; onClose: () => void })
         <p style={{ fontSize: 13, color: "var(--gris)", padding: "24px 0" }}>Chargement…</p>
       ) : (
         <>
+          {/* SOUS QUELS NOMS LE GROUPE A SIGNÉ. La liste vient en tête parce
+              qu'elle répond à la première question que pose une fiche de groupe
+              — « qu'est-ce que ce nom recouvre » — avant celle de savoir où il
+              est allé. C'est aussi la contrepartie du regroupement : l'écran ne
+              montre plus « Orange Mali », et sans cette section le nom de la
+              filiale ne serait plus lisible nulle part.
+
+              Les projets signés par le groupe lui-même n'y figurent pas : la
+              somme des filiales est donc souvent inférieure au total de la
+              fiche, la différence étant ce qu'il a mené en propre.
+
+              EN JETONS, NON EN LIGNES COMPTÉES. Orange en compte vingt et une,
+              TotalEnergies vingt-deux : en lignes, elles repoussaient à elles
+              seules tout le reste de la fiche — pays, secteurs, activités —
+              sous la ligne de flottaison. Ce qu'on vient lire ici est la liste
+              des noms, pas leur arithmétique ; le compte par filiale reste
+              accessible là où il se vérifie, dans la vue Projets. */}
+          <Jetons titre={accord(f.filiales.length, "Filiale", "Filiales")}
+            valeurs={f.filiales} />
+
           {/* OÙ, ET COMBIEN DE FOIS. Le compte garde ici tout son sens : il dit
               où l'entreprise est réellement installée et où elle n'a fait qu'un
               passage — trente-neuf projets en Afrique du Sud contre un en

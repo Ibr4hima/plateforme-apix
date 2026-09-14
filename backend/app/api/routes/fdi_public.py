@@ -414,6 +414,7 @@ async def projets(
 JOINTURES_ENTREPRISE = """
     FROM fdi_projets p
     LEFT JOIN fdi_entreprises   e  ON e.id  = p.entreprise_id
+    LEFT JOIN fdi_entreprises   pa ON pa.id = p.parent_id
     LEFT JOIN ref_pays          rp ON rp.id = p.pays_source_id
     LEFT JOIN ref_pays          rd ON rd.id = p.pays_dest_id
     LEFT JOIN fdi_secteurs      s  ON s.id  = p.secteur_id
@@ -426,7 +427,36 @@ JOINTURES_ENTREPRISE = """
 # trois du périmètre, les quatre de la fiche — pour une colonne que personne ne
 # demande.
 
-NOM_ENTREPRISE = "COALESCE(e.nom, p.entreprise_brut)"
+# ── L'INVESTISSEUR EST LA SOCIÉTÉ MÈRE, PAS LA FILIALE QUI SIGNE ─────────────
+# POURQUOI LE RELEVÉ NOMME LES DEUX. fDi enregistre, pour chaque projet,
+# l'entité qui investit ET le groupe auquel elle appartient. L'entité est
+# souvent une filiale nommée d'après son pays d'implantation — « Standard
+# Chartered Kenya Bank », « Orange Mali », « Total Nigeria » — c'est-à-dire un
+# nom qui désigne un BUREAU, pas un investisseur.
+#
+# CE QUE GROUPER SUR LA FILIALE PRODUISAIT : un même groupe éclaté en autant de
+# lignes que de pays où il s'est implanté. TotalEnergies apparaissait sous
+# vingt-deux raisons sociales, Orange sous vingt et une, Tata sous dix-neuf —
+# chacune avec deux ou trois projets, aucune ne disant que le groupe en a
+# vingt-six, quarante-neuf, quarante-six. La question que pose cet écran est
+# « quels groupes investissent en Afrique » ; elle appelle le nom du groupe.
+#
+# Le regroupement passe donc à la mère, et 8 701 lignes deviennent 7 245.
+#
+# LE PAYS D'ORIGINE RESTE DANS LA CLEF, et ce n'est pas un oubli. fDi tronque
+# les raisons sociales longues : « National Bank of … » recouvre des banques des
+# Émirats, du Koweït, du Kenya et de Grèce, que le seul nom fondrait en un
+# investisseur unique. Le pays les sépare. Le prix de cette prudence est connu
+# et mesuré : 42 groupes sur 7 199 se présentent sous plusieurs origines, le
+# plus souvent parce qu'ils ont réellement déménagé leur siège — International
+# Workplace Group du Luxembourg vers la Suisse, Shell des Pays-Bas vers le
+# Royaume-Uni. Le jour où l'on préférera l'inverse, c'est ORIGINE_ENTREPRISE
+# qui sort de la clef, ici et dans la fiche.
+NOM_ENTREPRISE = "COALESCE(pa.nom, p.parent_brut, e.nom, p.entreprise_brut)"
+# Le nom porté par le projet lui-même : il ne sert plus à grouper, mais la
+# recherche le fouille encore et la fiche l'énumère. Qui tape « Orange Mali »
+# doit trouver Orange, et non un écran vide.
+NOM_FILIALE = "COALESCE(e.nom, p.entreprise_brut)"
 ORIGINE_ENTREPRISE = "COALESCE(rp.nom_fr, p.pays_source_brut)"
 
 
@@ -456,7 +486,20 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
     if recherche and recherche.strip():
         reduit = _reduire(recherche.strip())
         if reduit:
-            where.append(f"position(:q in {CLE_DEST.format(c=NOM_ENTREPRISE)}) > 0")
+            # ON CHERCHE DANS LES DEUX NOMS, celui du groupe et celui de la
+            # filiale qui signe. Depuis que l'écran range par société mère,
+            # chercher « Orange Mali » sur le seul nom de groupe ne rendrait
+            # rien — alors que c'est sous ce nom-là que le projet est annoncé,
+            # et donc sous celui-là qu'on l'a lu ailleurs. Le groupe remonte,
+            # sous son nom de groupe : c'est lui la ligne de cet écran.
+            #
+            # La carte ne compte alors que les projets retenus — ceux de la
+            # filiale cherchée — comme sous n'importe quel autre filtre de cette
+            # colonne. La FICHE, elle, n'est pas filtrée et rend le groupe
+            # entier : c'est là qu'on voit les quarante-neuf projets d'Orange.
+            where.append(
+                f"(position(:q in {CLE_DEST.format(c=NOM_ENTREPRISE)}) > 0"
+                f" OR position(:q in {CLE_DEST.format(c=NOM_FILIALE)}) > 0)")
             params["q"] = reduit
 
     # SECTEUR ET SOUS-SECTEUR FORMENT UNE HIÉRARCHIE, PAS DEUX FACETTES : ils se
@@ -577,10 +620,27 @@ async def fiche_entreprise(
             {JOINTURES_ENTREPRISE} WHERE {ou} AND {expr} IS NOT NULL
             GROUP BY 1 ORDER BY count(*) DESC, 1"""), params)).fetchall()]
 
+    # LES FILIALES QUI ONT SIGNÉ SOUS CE GROUPE. C'est la contrepartie du
+    # regroupement : l'écran ne montre plus « Orange Mali », il faut donc que la
+    # fiche du groupe dise sous quels noms ses projets ont été annoncés —
+    # sinon l'information ne serait plus lisible nulle part.
+    #
+    # LES PROJETS SIGNÉS PAR LE GROUPE LUI-MÊME N'Y FIGURENT PAS. fDi répète le
+    # nom du groupe dans la colonne « entreprise » quand aucune filiale n'est
+    # distinguée ; l'inscrire comme sa propre filiale n'apprendrait rien et
+    # ferait douter du reste de la liste. Une somme des filiales inférieure au
+    # total de la fiche s'explique donc par les projets menés en propre.
+    filiales = [{"nom": r.nom, "nb": r.nb} for r in (await db.execute(text(f"""
+        SELECT {NOM_FILIALE} AS nom, count(*) AS nb
+        {JOINTURES_ENTREPRISE} WHERE {ou}
+          AND {NOM_FILIALE} IS NOT NULL AND {NOM_FILIALE} <> {NOM_ENTREPRISE}
+        GROUP BY 1 ORDER BY count(*) DESC, 1"""), params)).fetchall()]
+
     return {
         "nom": nom, "origine": origine, "origine_iso": base.origine_iso,
         "projets": base.projets, "pays": base.pays,
         "annees": [base.a0, base.a1],
+        "filiales": filiales,
         "destinations":  await liste("COALESCE(rd.nom_fr, p.pays_dest_brut)"),
         "secteurs":      await liste(FACETTES["secteurs"]),
         "sous_secteurs": await liste(FACETTES["sous_secteurs"]),
