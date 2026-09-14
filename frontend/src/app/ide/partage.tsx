@@ -1121,7 +1121,8 @@ export function Facette({ titre, options, choix, setChoix }: {
           return (
             <button key={o.nom} onClick={() => bascule(o.nom)} title={o.nom}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 7,
-                border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const, width: "100%" }}
+                border: "none", cursor: "pointer", background: "transparent", textAlign: "left" as const,
+                width: "100%", opacity: o.nb === 0 && !sel ? 0.45 : 1 }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
               <Pastille coche={sel} />
@@ -1212,7 +1213,8 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
           const dedans = sousSecteurs.filter(s => s.secteur === o.nom);
           return (
             <div key={o.nom}>
-              <button onClick={() => basculerSecteur(o.nom)} title={o.nom} style={LIGNE_FACETTE}
+              <button onClick={() => basculerSecteur(o.nom)} title={o.nom}
+                style={{ ...LIGNE_FACETTE, opacity: o.nb === 0 && !ouvert ? 0.45 : 1 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
                 <Pastille coche={ouvert} />
@@ -1231,7 +1233,8 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
                   {dedans.map(ss => {
                     const sel = choixSous.some(x => x.nom === ss.nom && x.secteur === o.nom);
                     return (
-                      <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom} style={LIGNE_FACETTE}
+                      <button key={ss.nom} onClick={() => basculerSous(o.nom, ss.nom)} title={ss.nom}
+                        style={{ ...LIGNE_FACETTE, opacity: ss.nb === 0 && !sel ? 0.45 : 1 }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
                         <Pastille coche={sel} teinte="var(--orange)" />
@@ -1342,7 +1345,11 @@ export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
             <Fragment key={o.nom}>
             {filet && <div style={{ height: 1, background: "var(--bordure)",
               margin: "7px 8px" }} />}
-            <button onClick={() => onChange(sel ? "" : o.nom)} style={LIGNE_FACETTE}
+            {/* UNE LIGNE À ZÉRO S'ATTÉNUE, mais ne disparaît pas. Elle dit ce
+                que la sélection écarte — et reste cliquable, puisque le clic
+                remplace le choix courant au lieu de s'y ajouter. */}
+            <button onClick={() => onChange(sel ? "" : o.nom)}
+              style={{ ...LIGNE_FACETTE, opacity: o.nb === 0 && !sel ? 0.45 : 1 }}
               title={sel ? `${o.nom} — cliquer pour retirer ce filtre` : o.nom}
               onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>

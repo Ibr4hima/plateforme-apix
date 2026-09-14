@@ -52,14 +52,27 @@ JOINTURES = """
 """
 
 
-def _filtres(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
-             activites, types, recherche, sauf: str | None = None) -> tuple[list[str], dict]:
-    """Les conditions du périmètre demandé, éventuellement privées d'une facette.
+def _conditions(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
+                activites, types, recherche,
+                sauf: str | None = None) -> tuple[list[str], list[str], dict]:
+    """Les conditions, séparées en DEUX : le sujet de la page, et les facettes.
 
-    `sauf` sert au filtrage EN CASCADE : pour compter les options d'une
-    facette, on applique tous les filtres SAUF le sien. Sans cela, cocher
-    « Communications » réduirait la liste des secteurs à « Communications »
-    seul, et l'on ne pourrait plus en ajouter un deuxième.
+    LA DISTINCTION COMMANDE CE QUE LA COLONNE DE FILTRES MONTRE. Le sujet — le
+    sens de lecture et le pays observé — dit de quoi la page parle : une liste
+    de secteurs n'a aucune raison de proposer des secteurs absents du pays lu.
+    Les facettes, elles, ne retirent plus rien de la liste : elles ne font que
+    changer les COMPTES.
+
+    C'est ce qui remplace le filtrage en cascade. Une facette cochée réduisait
+    les autres listes, et les valeurs sans correspondance disparaissaient — on
+    ne pouvait plus voir, ni choisir, ce que la sélection excluait. Elles
+    restent désormais toutes affichées, avec le nombre que le clic rendrait
+    vraiment : zéro quand la combinaison est vide, ce qui se lit et se comprend.
+
+    `sauf` reste, et pour la même raison qu'avant : une facette ne se compte
+    jamais sous son propre filtre, sinon cocher « Communications » ramènerait
+    ce seul secteur à un compte non nul et l'on ne pourrait plus en ajouter un
+    second en connaissance de cause.
 
     Secteur et sous-secteur forment UNE hiérarchie, pas deux facettes : ils se
     combinent par un OU, jamais par un ET. L'écran envoie d'un côté les
@@ -67,20 +80,26 @@ def _filtres(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
     secteurs où l'on est descendu ; les additionner par un ET aurait vidé la
     sélection dès qu'on précise un secteur tout en en gardant un autre entier.
     """
-    where, params = ["1 = 1"], {}
-    # LE PAYS EST UNE FACETTE COMME LES AUTRES : il ne se filtre pas lui-même.
+    contexte, facettes, params = ["1 = 1"], ["1 = 1"], {}
+    # LE PAYS NE SE FILTRE PAS LUI-MÊME quand on compte les pays : sans cela la
+    # liste se réduirait au pays retenu une fraction de seconde après le
+    # chargement, et il n'y aurait plus moyen d'en choisir un autre.
     # Tant qu'un seul périmètre était relevé, l'oubli ne se voyait pas — la
     # liste ne contenait qu'un pays de toute façon. Au deuxième, elle se
     # réduisait au pays retenu une fraction de seconde après le chargement :
     # les autres apparaissaient, puis s'effaçaient, sans plus aucun moyen d'en
     # choisir un.
     if pays and sauf != "pays":
-        where.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
+        contexte.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
         params["pays"] = pays
+
+    # LA PÉRIODE EST UNE FACETTE, elle aussi : restreindre 2015-2019 ne doit pas
+    # faire disparaître un secteur de la liste, seulement mettre son compte à
+    # zéro s'il n'a rien annoncé pendant ces années-là.
     if annee_min is not None:
-        where.append("p.annee >= :a0"); params["a0"] = annee_min
+        facettes.append("p.annee >= :a0"); params["a0"] = annee_min
     if annee_max is not None:
-        where.append("p.annee <= :a1"); params["a1"] = annee_max
+        facettes.append("p.annee <= :a1"); params["a1"] = annee_max
 
     if sauf != "secteurs":
         branches = []
@@ -90,18 +109,28 @@ def _filtres(observe: str, pays, annee_min, annee_max, secteurs, sous_secteurs,
                 branches.append(f"{FACETTES[cle]} = ANY(:{cle})")
                 params[cle] = valeurs
         if branches:
-            where.append(f"({' OR '.join(branches)})")
+            facettes.append(f"({' OR '.join(branches)})")
 
     for cle, brut in (("activites", activites), ("types", types)):
         valeurs = _liste(brut)
         if valeurs and cle != sauf:
-            where.append(f"{FACETTES[cle]} = ANY(:{cle})")
+            facettes.append(f"{FACETTES[cle]} = ANY(:{cle})")
             params[cle] = valeurs
     if recherche and recherche.strip():
-        where.append("(lower(COALESCE(e.nom, p.entreprise_brut)) LIKE :q "
-                     "OR lower(COALESCE(p.description_fr, p.description_en, '')) LIKE :q)")
+        facettes.append("(lower(COALESCE(e.nom, p.entreprise_brut)) LIKE :q "
+                        "OR lower(COALESCE(p.description_fr, p.description_en, '')) LIKE :q)")
         params["q"] = f"%{recherche.strip().lower()}%"
-    return where, params
+    return contexte, facettes, params
+
+
+def _filtres(*args, **kw) -> tuple[list[str], dict]:
+    """Toutes les conditions réunies — ce que la LISTE et les COMPTEURS appliquent.
+
+    La colonne de filtres, elle, a besoin de les distinguer : voir
+    `_conditions`. Ici rien ne se distingue, tout filtre.
+    """
+    contexte, facettes, params = _conditions(*args, **kw)
+    return contexte + facettes, params
 
 
 @router.get("/perimetre")
@@ -117,23 +146,33 @@ async def perimetre(
     recherche: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """De quoi remplir les filtres : uniquement ce que les données portent, et
-    uniquement ce qui reste atteignable COMPTE TENU des autres filtres.
+    """De quoi remplir les filtres : tout ce que les données portent sur le
+    périmètre lu, et le nombre que chaque choix rendrait.
 
-    Chaque facette est comptée sous les filtres des AUTRES facettes, jamais
-    sous le sien : cocher un secteur doit restreindre les activités proposées,
-    pas la liste des secteurs — sinon on ne pourrait plus en cocher un second.
+    AUCUNE FACETTE N'EN EXCLUT UNE AUTRE. La liste des secteurs est celle du
+    pays observé, entière, qu'on ait coché une activité ou non ; ce que la
+    sélection change, c'est le COMPTE en regard — zéro quand la combinaison est
+    vide. On voit donc ce qu'on écarte au lieu de le voir disparaître, et l'on
+    peut toujours en changer.
+
+    D'où la forme de la requête : le WHERE porte le sujet de la page — sens et
+    pays —, et le compte porte les facettes dans un FILTER. Une seule passe, et
+    les valeurs à zéro survivent au GROUP BY puisqu'elles satisfont le WHERE.
     """
     observe, partenaire = _sens(sens)
     joint = JOINTURES.format(observe=observe, partenaire=partenaire)
 
     async def compter(expr: str, sauf: str | None):
-        where, params = _filtres(observe, pays, annee_min, annee_max,
-                                 secteurs, sous_secteurs, activites, types, recherche, sauf)
+        contexte, facettes, params = _conditions(
+            observe, pays, annee_min, annee_max,
+            secteurs, sous_secteurs, activites, types, recherche, sauf)
         return (await db.execute(text(f"""
-            SELECT {expr} AS nom, count(*) AS nb
-            {joint} WHERE {' AND '.join(where)} AND {expr} IS NOT NULL
-            GROUP BY 1 ORDER BY count(*) DESC, 1"""), params)).fetchall()
+            SELECT {expr} AS nom,
+                   count(*) FILTER (WHERE {' AND '.join(facettes)}) AS nb
+            {joint} WHERE {' AND '.join(contexte)} AND {expr} IS NOT NULL
+            GROUP BY 1
+            ORDER BY count(*) FILTER (WHERE {' AND '.join(facettes)}) DESC, 1"""),
+            params)).fetchall()
 
     # LES PAYS PROPOSÉS SONT CEUX DONT LE PÉRIMÈTRE EST COMPLET dans ce sens.
     # Un relevé « Dest = Sénégal » fait apparaître la France, la Turquie, le
@@ -170,13 +209,16 @@ async def perimetre(
     # Les sous-secteurs portent le nom de leur secteur : l'écran les emboîte
     # sous lui, et un même libellé — « Other » vit sous vingt-quatre secteurs
     # chez fDi — ne se confond pas avec son homonyme.
-    where_ss, params_ss = _filtres(observe, pays, annee_min, annee_max,
-                                   secteurs, sous_secteurs, activites, types, recherche, "secteurs")
+    ctx_ss, fac_ss, params_ss = _conditions(observe, pays, annee_min, annee_max,
+                                            secteurs, sous_secteurs, activites, types,
+                                            recherche, "secteurs")
     lignes_ss = (await db.execute(text(f"""
         SELECT {FACETTES["sous_secteurs"]} AS nom, {FACETTES["secteurs"]} AS secteur,
-               count(*) AS nb
-        {joint} WHERE {' AND '.join(where_ss)} AND {FACETTES["sous_secteurs"]} IS NOT NULL
-        GROUP BY 1, 2 ORDER BY count(*) DESC, 1"""), params_ss)).fetchall()
+               count(*) FILTER (WHERE {' AND '.join(fac_ss)}) AS nb
+        {joint} WHERE {' AND '.join(ctx_ss)} AND {FACETTES["sous_secteurs"]} IS NOT NULL
+        GROUP BY 1, 2
+        ORDER BY count(*) FILTER (WHERE {' AND '.join(fac_ss)}) DESC, 1"""),
+        params_ss)).fetchall()
     lignes_act = await compter(FACETTES["activites"], "activites")
     lignes_typ = await compter(FACETTES["types"], "types")
 
@@ -462,20 +504,22 @@ async def perimetre_entreprises(
     ici est « combien d'investisseurs dans ce secteur », et afficher un nombre
     de projets à côté d'une liste d'entreprises ferait lire l'un pour l'autre.
     """
+    # AUCUNE FACETTE N'EN EXCLUT UNE AUTRE : la liste vient de tout le relevé —
+    # le WHERE ne porte que l'existence de la valeur — et les facettes passent
+    # en FILTER sur le compte. Une combinaison vide s'affiche à zéro au lieu de
+    # disparaître de la colonne.
     async def compter(expr: str, sauf: str, avec_secteur: bool = False):
         where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
                                              activites, sauf)
         secteur_col = f", {FACETTES['secteurs']} AS secteur" if avec_secteur else ""
+        compte = (f"count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE}))"
+                  f" FILTER (WHERE {' AND '.join(where)})")
         return (await db.execute(text(f"""
-            SELECT {expr} AS nom{secteur_col},
-                   count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE})) AS nb
+            SELECT {expr} AS nom{secteur_col}, {compte} AS nb
             {JOINTURES_ENTREPRISE}
-            WHERE {' AND '.join(where)} AND {expr} IS NOT NULL
-              AND {NOM_ENTREPRISE} IS NOT NULL
+            WHERE {expr} IS NOT NULL AND {NOM_ENTREPRISE} IS NOT NULL
             GROUP BY 1{', 2' if avec_secteur else ''}
-            ORDER BY 
-              count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE})) DESC, 1"""),
-            params)).fetchall()
+            ORDER BY {compte} DESC, 1"""), params)).fetchall()
 
     lignes_sec = await compter(FACETTES["secteurs"], "secteurs")
     # Les sous-secteurs portent le nom de leur secteur : l'écran les emboîte

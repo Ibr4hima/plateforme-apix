@@ -43,9 +43,16 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
              origine: str | None = None) -> tuple[list[str], dict]:
     """Les conditions demandées, éventuellement privées d'une facette.
 
-    Chaque facette est comptée sous les filtres des AUTRES, jamais sous le
-    sien : cocher un secteur doit restreindre les activités proposées, pas la
-    liste des secteurs — sinon on ne pourrait plus en cocher un second.
+    AUCUNE FACETTE N'EN EXCLUT UNE AUTRE dans la colonne de filtres : ces
+    conditions y sont posées en FILTER sur le compte, non en WHERE sur la liste
+    — les valeurs restent donc toutes affichées, avec le nombre que le clic
+    rendrait, zéro compris. Voir `perimetre_signaux`.
+
+    La LISTE des signaux, elle, les applique toutes en WHERE : c'est le même
+    jeu de conditions, employé deux fois de deux façons.
+
+    `sauf` reste : une facette ne se compte jamais sous son propre filtre,
+    sinon cocher un secteur ramènerait ce seul secteur à un compte non nul.
     """
     where, params = ["1 = 1"], {}
 
@@ -126,11 +133,16 @@ async def perimetre_signaux(
 ):
     """De quoi remplir les filtres : uniquement ce que les données portent."""
 
+    # LA LISTE VIENT DE TOUT LE RELEVÉ, LE COMPTE DES FACETTES. D'où le
+    # « 1 = 1 » posé en WHERE et les conditions passées en FILTER : une valeur
+    # dont la combinaison est vide survit au GROUP BY et s'affiche à zéro, au
+    # lieu de disparaître de la colonne.
     async def compter(sql: str, sauf: str | None):
         where, params = _filtres(destination, annee_min, annee_max, secteurs,
                                  activites, natures, recherche, sauf, origine)
-        return (await db.execute(text(sql.replace("{where}", " AND ".join(where))),
-                                 params)).fetchall()
+        return (await db.execute(
+            text(sql.replace("{where}", "1 = 1")
+                    .replace("{facettes}", " AND ".join(where))), params)).fetchall()
 
     # LES PAYS D'OÙ PARTENT LES INTENTIONS. La question précède celle du
     # secteur dans la colonne parce qu'elle précède dans la lecture : on
@@ -139,19 +151,21 @@ async def perimetre_signaux(
     # nom français à proposer, et inventer une ligne « non rattaché » ferait un
     # choix qui ne mène à rien.
     origines = await compter("""
-        SELECT p.nom_fr AS nom, count(DISTINCT s.id) AS nb
+        SELECT p.nom_fr AS nom, count(DISTINCT s.id) FILTER (WHERE {facettes}) AS nb
           FROM fdi_signaux_investisseurs s
           JOIN ref_pays p ON p.id = s.pays_source_id
          WHERE {where}
-         GROUP BY p.nom_fr ORDER BY count(DISTINCT s.id) DESC, p.nom_fr""", "origine")
+         GROUP BY p.nom_fr
+         ORDER BY count(DISTINCT s.id) FILTER (WHERE {facettes}) DESC, p.nom_fr""", "origine")
 
     # Les destinations proposées : pays et régions du monde dans une seule
     # liste, distingués par leur nature — ce sont deux référentiels, mais une
     # seule question pour qui lit.
     destinations = await compter("""
-        SELECT nom, nature, count(DISTINCT signal_id) AS nb FROM (
+        SELECT nom, nature, count(DISTINCT signal_id) FILTER (WHERE garde) AS nb FROM (
             SELECT d.signal_id, coalesce(p.nom_fr, r.libelle_fr) AS nom,
-                   CASE WHEN d.pays_id IS NOT NULL THEN 'pays' ELSE 'region' END AS nature
+                   CASE WHEN d.pays_id IS NOT NULL THEN 'pays' ELSE 'region' END AS nature,
+                   ({facettes}) AS garde
             FROM fdi_signaux_investisseurs s
             JOIN fdi_signal_destinations d ON d.signal_id = s.id
             LEFT JOIN ref_pays p ON p.id = d.pays_id
@@ -162,17 +176,20 @@ async def perimetre_signaux(
         -- par accident — ce sont les plus gros comptes — mais l'écran sépare
         -- les deux groupes d'un filet, et un groupement qui dépend des volumes
         -- se déferait le jour où un pays passerait devant une région.
-        ORDER BY (nature = 'pays'), count(DISTINCT signal_id) DESC, nom""", "destination")
+        ORDER BY (nature = 'pays'),
+                 count(DISTINCT signal_id) FILTER (WHERE garde) DESC, nom""", "destination")
 
     async def facette(table: str, ref: str, colonne: str, sauf: str,
                       libelle: str = "libelle_fr"):
         return await compter(f"""
-            SELECT n.{libelle} AS nom, count(DISTINCT s.id) AS nb
+            SELECT n.{libelle} AS nom,
+                   count(DISTINCT s.id) FILTER (WHERE {{facettes}}) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN {table} v ON v.signal_id = s.id
               JOIN {ref} n ON n.id = v.{colonne}
              WHERE {{where}}
-             GROUP BY n.{libelle} ORDER BY count(DISTINCT s.id) DESC, n.{libelle}""", sauf)
+             GROUP BY n.{libelle}
+             ORDER BY count(DISTINCT s.id) FILTER (WHERE {{facettes}}) DESC, n.{libelle}""", sauf)
 
     bornes = (await db.execute(text(
         "SELECT min(annee) AS a0, max(annee) AS a1, count(*) AS n "
