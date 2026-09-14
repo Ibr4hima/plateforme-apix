@@ -31,7 +31,8 @@ import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
-import { badge_bleu, badge_gris, badge_orange, badge_vert, badge_violet } from "@/lib/couleurs";
+import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
+         badge_violet } from "@/lib/couleurs";
 import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, fmtNombre,
          LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
          TitreFiche } from "./partage";
@@ -126,7 +127,7 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           Sénégal. Un signal a UNE origine — contrairement à ses destinations,
           qui peuvent être plusieurs. */}
       <FacetteUnique titre="Pays d'origine" options={per.origines} valeur={filtres.origine}
-        onChange={set("origine")} />
+        onChange={set("origine")} chercher="Rechercher un pays…" />
       {/* OÙ ELLE VA. Pays et régions du monde dans une seule liste : ce sont
           deux référentiels, mais une seule question pour qui lit. « Afrique »
           n'est pas un pays, et le ranger à part obligerait à choisir deux fois
@@ -252,14 +253,27 @@ export default function VueSignauxPublics({ filtres, onChange }: {
     La correspondance porte sur le libellé COURT, qui est celui de la
     nomenclature : un stade ajouté un jour sans teinte déclarée prendra le gris,
     ce qui se voit et se corrige, plutôt que de casser l'affichage. */
+/** UNE COULEUR PAR STADE, ET AUCUNE PARTAGÉE. C'est la seule règle qui rend la
+    teinte utile : deux stades de même couleur, et la pastille ne distingue plus
+    rien — l'œil devrait relire le mot, ce que la couleur était censée épargner.
+
+    Les cinq stades ont donc chacun la leur. « Contrat de fourniture » tombait
+    jusqu'ici sur le gris du défaut, faute d'une cinquième teinte déclarée ; la
+    charte en porte une, l'ambre, « distincte des quatre mais assortie ».
+
+    Le gris reste le repli, et c'est voulu : un stade que fDi ajouterait demain
+    s'afficherait en gris — ce qui se voit et se corrige — plutôt que d'emprunter
+    la couleur d'un autre et de mentir en silence. */
 const TEINTES: Record<string, string> = {
   "Projet à l'étude": "vert",
-  "Stratégie d'investissement": "bleu",
+  "Stratégie d'investissement": "orange",
   "Financement levé": "violet",
-  "Nomination régionale": "orange",
+  "Nomination régionale": "bleu",
+  "Contrat de fourniture": "ambre",
 };
 const BADGES: Record<string, React.CSSProperties> = {
-  vert: badge_vert, bleu: badge_bleu, violet: badge_violet, orange: badge_orange,
+  vert: badge_vert, bleu: badge_bleu, violet: badge_violet,
+  orange: badge_orange, ambre: badge_ambre,
 };
 
 /** La teinte d'un signal — celle de son stade, et donc celle de son survol. Un

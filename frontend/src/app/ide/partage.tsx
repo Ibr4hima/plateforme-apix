@@ -4,7 +4,7 @@ import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, FileSpreadsheet } from "lucide-react";
+import { X, Plus, Table, ChevronDown, FileSpreadsheet, Search } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
 import { IconeCached } from "@/components/shared/PickerKpi";
@@ -1279,22 +1279,53 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
     couple secteur / sous-secteur se pose emboîté — voir `FacetteSecteurs`. */
 export type OptionFacette = { nom: string; nb: number; groupe?: string };
 
-export function FacetteUnique({ titre, options, valeur, onChange }: {
+export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
   titre: string; options: OptionFacette[]; valeur: string;
   /** Reçoit la valeur choisie, ou la chaîne vide quand on décoche. */
   onChange: (v: string) => void;
+  /** Le texte du champ de recherche. Absent, la facette n'en a pas : une
+      liste de cinq stades se parcourt du regard, et un champ au-dessus ne
+      ferait qu'occuper la place. */
+  chercher?: string;
 }) {
+  const [q, setQ] = useState("");
   if (options.length === 0) return null;
+
+  // La recherche ignore casse et accents : « egypte » doit trouver « Égypte ».
+  const sansAccent = (v: string) =>
+    v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const cle = sansAccent(q.trim());
+  // LA VALEUR RETENUE RESTE VISIBLE même si la recherche l'exclut : sans cela,
+  // taper trois lettres ôterait au lecteur le seul moyen de la décocher.
+  const visibles = !cle ? options
+    : options.filter(o => o.nom === valeur || sansAccent(o.nom).includes(cle));
+
   return (
     <div style={{ marginBottom: 18 }}>
       <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
+      {chercher && (
+        <div style={{ position: "relative", marginBottom: 8 }}>
+          <Search size={13} style={{ position: "absolute", left: 9, top: "50%",
+            transform: "translateY(-50%)", color: "var(--gris)" }} />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder={chercher}
+            aria-label={chercher}
+            style={{ width: "100%", padding: "8px 8px 8px 30px", borderRadius: 8,
+              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
+              fontSize: 12, color: "var(--encre)", outline: "none",
+              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" }} />
+        </div>
+      )}
       <div style={{ maxHeight: 220, overflowY: "auto" }}>
-        {options.map((o, i) => {
+        {visibles.length === 0 && (
+          <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center",
+            padding: "8px 0" }}>Aucun résultat</p>
+        )}
+        {visibles.map((o, i) => {
           const sel = valeur === o.nom;
           // Le filet se pose AVANT la première valeur d'un nouveau groupe, donc
           // jamais en tête de liste : une liste qui s'ouvre sur un trait
           // donnerait l'impression d'une section vide au-dessus.
-          const filet = i > 0 && o.groupe !== options[i - 1].groupe;
+          const filet = i > 0 && o.groupe !== visibles[i - 1].groupe;
           return (
             <Fragment key={o.nom}>
             {filet && <div style={{ height: 1, background: "var(--bordure)",
