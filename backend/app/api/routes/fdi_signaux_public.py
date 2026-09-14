@@ -278,22 +278,29 @@ async def signaux_publics(
               JOIN fdi_signaux n ON n.id = v.nature_id
              WHERE {filtre} GROUP BY n.libelle_court_fr
              ORDER BY count(DISTINCT s.id) DESC, n.libelle_court_fr LIMIT 10"""),
-        # LES DESTINATIONS MÊLENT PAYS ET RÉGIONS, ici comme partout ailleurs
-        # sur cet écran : ce sont deux référentiels, mais une seule question.
+        # DES PAYS D'AFRIQUE, ET RIEN D'AUTRE. La colonne de filtres mêle pays
+        # et régions parce qu'elle sert à choisir ; ce classement-ci sert à
+        # comparer, et on ne compare pas « Afrique » à « Nigeria » — la région
+        # contient le pays, elle arriverait mécaniquement en tête et écraserait
+        # les destinations réelles. Les pays hors du continent sont écartés pour
+        # la même raison de lecture : le rapport porte sur l'Afrique.
         "destinations": await top("""
-            SELECT coalesce(p.nom_fr, r.libelle_fr) AS nom, count(DISTINCT s.id) AS nb
+            SELECT p.nom_fr AS nom, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN fdi_signal_destinations d ON d.signal_id = s.id
-              LEFT JOIN ref_pays p ON p.id = d.pays_id
-              LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
-             WHERE {filtre} AND coalesce(p.nom_fr, r.libelle_fr) IS NOT NULL
+              JOIN ref_pays p ON p.id = d.pays_id
+             WHERE {filtre} AND p.continent = 'Afrique'
              GROUP BY 1 ORDER BY count(DISTINCT s.id) DESC, 1 LIMIT 10"""),
+        # « NON PRÉCISÉE » N'EST PAS UNE ACTIVITÉ, c'est l'absence d'activité :
+        # la source n'a rien dit. La laisser au classement reviendrait à
+        # présenter le silence comme le premier métier visé en Afrique.
         "activites": await top("""
             SELECT n.libelle_fr AS nom, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN fdi_signal_activites v ON v.signal_id = s.id
               JOIN fdi_activites n ON n.id = v.activite_id
-             WHERE {filtre} GROUP BY n.libelle_fr
+             WHERE {filtre} AND n.libelle_fr <> 'Non précisée'
+             GROUP BY n.libelle_fr
              ORDER BY count(DISTINCT s.id) DESC, n.libelle_fr LIMIT 10"""),
     }
 
@@ -329,6 +336,8 @@ async def signaux_publics(
              ORDER BY s.{colonne}_musd DESC LIMIT 8"""), params)).fetchall()]
 
     remarquables = {"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
+
+    zones = await _zones(db, filtre, params)
 
     # ON COUPE AVANT DE JOINDRE, comme le tableau des projets : la sélection se
     # fait sur la seule table des signaux, et les quatre listes ne sont
@@ -377,6 +386,7 @@ async def signaux_publics(
                        "capex_musd": float(r.capex_musd) if r.capex_musd is not None else None}
                       for r in par_annee],
         "tops": tops,
+        "zones": zones,
         "remarquables": remarquables,
         "page": page,
         "pages": max(1, -(-kpis.signaux // par_page)),
@@ -393,3 +403,114 @@ async def signaux_publics(
             "activites": r.activites, "natures": r.natures,
         } for r in lignes],
     }
+
+
+# ── Les trois lectures de l'Afrique de l'Ouest ────────────────────────────────
+# POURQUOI TROIS ZONES ET NON UNE. « Afrique de l'Ouest » est une géographie,
+# la CEDEAO une union politique et commerciale, l'UEMOA une union monétaire.
+# Elles ne se recouvrent pas, et la différence est justement ce qu'un décideur
+# cherche à lire : un signal qui vise la Mauritanie est ouest-africain sans être
+# CEDEAO ; un signal qui vise le Ghana est CEDEAO sans être UEMOA. Les donner
+# côte à côte, sous une bascule, laisse la comparaison se faire.
+#
+# LA COMPOSITION N'EST PAS ÉCRITE ICI. Elle vient de ref_groupements /
+# ref_pays_groupements, le référentiel que l'administration tient déjà — le
+# même qu'emploie la lecture du commerce extérieur. Une adhésion corrigée
+# là-bas se répercute donc sur ce rapport sans toucher au code, et le jour où
+# le retrait du Burkina Faso, du Mali et du Niger de la CEDEAO sera acté au
+# référentiel, le rapport le suivra de lui-même.
+#
+# UN GROUPEMENT ABSENT NE FAIT PAS ÉCHOUER LA PAGE : il rend trois listes
+# vides, et l'écran n'affiche pas sa bascule.
+ZONES_OUEST = ["AFRIQUE_DE_L_OUEST", "CEDEAO", "UEMOA"]
+
+# L'APPARTENANCE SE LIT SUR LES DESTINATIONS, PAS SUR L'ORIGINE. La question
+# posée est « où l'argent veut aller », non « d'où il part » : un signal compte
+# dans une zone dès qu'il vise au moins un de ses pays. Les destinations
+# régionales — « Afrique », « Afrique de l'Ouest » — n'y entrent pas : elles ne
+# désignent aucun État, et les faire entrer dans les trois zones à la fois
+# gonflerait les trois du même montant sans rien distinguer.
+#
+# DISTINCT est indispensable : un signal visant le Sénégal ET la Côte d'Ivoire
+# appartient une seule fois à l'UEMOA, sans quoi il pèserait double dans le
+# classement des secteurs.
+_APPARTENANCE = """
+    WITH choisis AS MATERIALIZED (
+        SELECT s.id FROM fdi_signaux_investisseurs s WHERE {filtre}
+    ),
+    zones AS (
+        SELECT g.code, g.pays_ids FROM ref_groupements g WHERE g.code = ANY(:zones)
+    ),
+    appart AS (
+        SELECT DISTINCT z.code AS zone, c.id AS signal_id, d.pays_id
+          FROM choisis c
+          JOIN fdi_signal_destinations d ON d.signal_id = c.id
+          JOIN zones z ON d.pays_id = ANY(z.pays_ids)
+    )
+"""
+
+
+async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
+    """Secteurs, pays visés et entreprises, pour chacune des trois zones."""
+
+    async def classement(corps: str) -> dict:
+        sql = (_APPARTENANCE.replace("{filtre}", filtre) + corps)
+        rangs: dict = {c: [] for c in ZONES_OUEST}
+        for r in (await db.execute(text(sql), {**params, "zones": ZONES_OUEST})).fetchall():
+            # Dix par zone. Le découpage se fait ici plutôt qu'en SQL : une
+            # fenêtre numérotée par zone coûterait un tri de plus pour un
+            # volume que la liste des zones borne déjà.
+            if len(rangs[r.zone]) < 10:
+                rangs[r.zone].append({"nom": r.nom, "nb": r.nb})
+        return rangs
+
+    secteurs = await classement("""
+        SELECT a.zone, n.libelle_fr AS nom, count(DISTINCT a.signal_id) AS nb
+          FROM appart a
+          JOIN fdi_signal_secteurs v ON v.signal_id = a.signal_id
+          JOIN fdi_secteurs n ON n.id = v.secteur_id
+         GROUP BY a.zone, n.libelle_fr
+         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, n.libelle_fr""")
+
+    # LES PAYS VISÉS DE LA ZONE, ET EUX SEULS. `appart` ne porte déjà que les
+    # pays membres : un signal visant à la fois le Sénégal et le Kenya compte
+    # pour le Sénégal dans l'UEMOA, et le Kenya n'y apparaît pas — ce qu'on
+    # demande, c'est la destination DANS la zone, pas le reste du signal.
+    destinations = await classement("""
+        SELECT a.zone, p.nom_fr AS nom, count(DISTINCT a.signal_id) AS nb
+          FROM appart a JOIN ref_pays p ON p.id = a.pays_id
+         GROUP BY a.zone, p.nom_fr
+         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, p.nom_fr""")
+
+    entreprises = await classement("""
+        SELECT a.zone, e.nom AS nom, count(DISTINCT a.signal_id) AS nb
+          FROM appart a
+          JOIN fdi_signaux_investisseurs s ON s.id = a.signal_id
+          JOIN fdi_entreprises e ON e.id = s.entreprise_id
+         GROUP BY a.zone, e.nom
+         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, e.nom""")
+
+    # LE NOMBRE DE SIGNAUX DE LA ZONE, séparément : c'est lui qui donne son
+    # poids à un classement. « Premier secteur avec 40 signaux » ne se lit pas
+    # de la même façon selon que la zone en porte 60 ou 600.
+    totaux = {r.zone: {"signaux": r.signaux, "entreprises": r.entreprises}
+              for r in (await db.execute(text(
+                  _APPARTENANCE.replace("{filtre}", filtre) + """
+        SELECT a.zone, count(DISTINCT a.signal_id) AS signaux,
+               count(DISTINCT s.entreprise_id) AS entreprises
+          FROM appart a JOIN fdi_signaux_investisseurs s ON s.id = a.signal_id
+         GROUP BY a.zone"""), {**params, "zones": ZONES_OUEST})).fetchall()}
+
+    noms = {r.code: r.nom_fr for r in (await db.execute(text(
+        "SELECT code, nom_fr FROM ref_groupements WHERE code = ANY(:zones)"),
+        {"zones": ZONES_OUEST})).fetchall()}
+
+    return [{
+        "code": c,
+        "nom": noms.get(c, c),
+        "signaux": totaux.get(c, {}).get("signaux", 0),
+        "entreprises": totaux.get(c, {}).get("entreprises", 0),
+        "secteurs": secteurs[c],
+        "destinations": destinations[c],
+        "entreprises_top": entreprises[c],
+    } for c in ZONES_OUEST if c in noms]

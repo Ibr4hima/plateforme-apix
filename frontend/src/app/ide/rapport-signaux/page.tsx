@@ -53,7 +53,16 @@ type Signaux = {
                capex_musd: number | null }[];
   tops: Record<"origines" | "entreprises" | "secteurs" | "natures"
              | "destinations" | "activites", Rang[]>;
+  zones: Zone[];
   remarquables: { funding: Gros[]; capex: Gros[] };
+};
+
+/** Une des trois lectures de l'Afrique de l'Ouest. Le nom vient du référentiel
+    des groupements, jamais du code : c'est l'administration qui tient la
+    composition, et une adhésion corrigée là-bas doit se voir ici. */
+type Zone = {
+  code: string; nom: string; signaux: number; entreprises: number;
+  secteurs: Rang[]; destinations: Rang[]; entreprises_top: Rang[];
 };
 
 /** Le périmètre du relevé, tel qu'il a été interrogé chez fDi. Écrit ici comme
@@ -104,6 +113,11 @@ function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
 
 export default function RapportSignaux() {
   const d3Pret = useD3Pret();
+
+  // La zone ouest-africaine regardée. Le rang plutôt que le code : l'ordre vient
+  // du serveur — géographie, union commerciale, union monétaire — et une zone
+  // que le référentiel ne porterait pas n'aurait pas d'onglet à sélectionner.
+  const [zone, setZone] = useState(0);
 
   // Le rapport porte sur ce que le lecteur regardait, et le lien de retour le
   // ramène EXACTEMENT à son écran — filtres compris. C'est l'onglet qui écrit
@@ -160,6 +174,7 @@ export default function RapportSignaux() {
         @media print {
           .rap-sans-impression { display: none !important; }
           .rap-eviter-coupure { break-inside: avoid; }
+          .rap-zone-impression { display: block !important; }
         }
       `}</style>
 
@@ -187,7 +202,7 @@ export default function RapportSignaux() {
               </h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0",
                 fontWeight: 500 }}>
-                Source fDi Markets, base « Investor signals » — Mise à jour le {dateEdition}
+                Source fDi Markets — Mise à jour le {dateEdition}
               </p>
             </div>
             <div style={{ flexShrink: 0 }} className="rap-sans-impression">
@@ -205,42 +220,17 @@ export default function RapportSignaux() {
                 annoncent dépenser. */}
             <div className="rap-kpis" style={{ marginTop: -46, position: "relative", zIndex: 2 }}>
               <ChiffreCle label="Signaux relevés" valeur={fmtNombre(d.kpis.signaux)} annee={periode}
-                note={`${fmtNombre(d.kpis.entreprises)} entreprises · ${d.kpis.origines} pays d'origine`} />
+                note={`${fmtNombre(d.kpis.entreprises)} entreprises`} />
               <ChiffreCle label="Fonds levés" valeur={fmtVal(d.kpis.funding_musd)} annee={periode}
                 note="cumul des levées annoncées" />
               <ChiffreCle label="Investissement prévu" valeur={fmtVal(d.kpis.capex_musd)} annee={periode}
                 note="cumul des montants annoncés" />
-              <ChiffreCle label="À compléter" valeur={fmtNombre(d.kpis.a_completer)} annee={periode}
-                note="signaux sans destination africaine visible" />
+              {/* LE NOMBRE DE PAYS D'OÙ PARTENT LES INTENTIONS. C'est la mesure
+                  de l'ÉTENDUE du vivier : cent signaux venus de six pays et cent
+                  signaux venus de quarante ne demandent pas la même prospection. */}
+              <ChiffreCle label="NB pays source" valeur={fmtNombre(d.kpis.origines)} annee={periode}
+                note="pays d'origine des entreprises" />
             </div>
-
-            {/* L'AVERTISSEMENT VIENT AVANT LES CHIFFRES QU'IL QUALIFIE. Placé en
-                note de bas de page, il serait lu après coup — c'est-à-dire trop
-                tard pour changer la lecture. */}
-            {d.kpis.plancher && (
-              <div className="rap-eviter-coupure" style={{ marginTop: 22,
-                background: "rgb(var(--orange-rgb) / 0.06)",
-                border: "1px solid rgb(var(--orange-rgb) / 0.24)", borderRadius: 12,
-                padding: "14px 17px" }}>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em",
-                  textTransform: "uppercase", color: "var(--orange)", marginBottom: 7 }}>
-                  Ce que ce document ne peut pas encore dire
-                </p>
-                <p style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.75 }}>
-                  {/* Les espaces autour des expressions sont explicites : un saut de
-                      ligne JSX entre une accolade et du texte est avalé, et l'on
-                      obtient « 425n'exposent ». Vu à l'écran avant d'être corrigé. */}
-                  Le tableau de la source n&apos;affiche qu&apos;une destination par signal et
-                  cache les suivantes.{" "}
-                  <strong>{fmtNombre(d.kpis.a_completer)} signaux</strong>{" sur "}
-                  {fmtNombre(d.kpis.signaux)}{" n\u2019exposent donc aucune destination africaine "}
-                  {"à ce jour, sans qu\u2019on puisse conclure qu\u2019ils n\u2019en visent pas. "}
-                  {"Tout dénombrement par destination est un "}
-                  <strong>plancher</strong>
-                  {" tant que la complétion manuelle n\u2019est pas achevée."}
-                </p>
-              </div>
-            )}
 
             <section style={{ marginTop: 26 }}>
               {d3Pret && serie[0].data.length > 0 && (
@@ -257,14 +247,13 @@ export default function RapportSignaux() {
                   rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.funding_musd }))} />
               </div>
 
-              {/* LES SIX CLASSEMENTS, dans l'ordre des questions : qui vient,
-                  d'où, ce qu'il vise, pour y faire quoi, et à quel stade. */}
+              {/* LES CINQ CLASSEMENTS, dans l'ordre des questions : qui vient,
+                  d'où, ce qu'il vise, et pour y faire quoi. */}
               {d3Pret && (
                 <div className="rap-duo" style={{ marginTop: 16 }}>
                   {([
-                    { cle: "natures" as const, titre: "Stade des intentions", couleur: "var(--orange)" },
                     { cle: "origines" as const, titre: "Pays d'origine", couleur: "var(--bleu)" },
-                    { cle: "destinations" as const, titre: "Destinations visées", couleur: "var(--vert)" },
+                    { cle: "destinations" as const, titre: "Destinations visées — pays d'Afrique", couleur: "var(--vert)" },
                     { cle: "secteurs" as const, titre: "Secteurs visés", couleur: "var(--violet)" },
                     { cle: "activites" as const, titre: "Activités prévues", couleur: "var(--bleu)" },
                     { cle: "entreprises" as const, titre: "Entreprises les plus actives", couleur: "var(--orange)" },
@@ -281,7 +270,84 @@ export default function RapportSignaux() {
                 </div>
               )}
 
-              <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
+              {/* ─── L'AFRIQUE DE L'OUEST, LUE DE TROIS FAÇONS ──────────────────
+                  POURQUOI UNE BASCULE ET NON TROIS SECTIONS. La géographie,
+                  l'union commerciale et l'union monétaire recouvrent presque les
+                  mêmes pays ; ce qui intéresse, c'est l'ÉCART entre elles, et un
+                  écart se voit en changeant de zone sur place, pas en faisant
+                  trois pages de haut en bas.
+
+                  La composition vient du référentiel des groupements, jamais du
+                  code : une adhésion corrigée par l'administration se répercute
+                  ici toute seule. Une zone absente du référentiel ne fait pas
+                  d'onglet — la bascule n'offre que ce qui donnera un classement. */}
+              {d3Pret && d.zones?.length > 0 && (() => {
+                const z = d.zones[Math.min(zone, d.zones.length - 1)];
+                const carte = (titre: string, couleur: string, rangs: Rang[]) => {
+                  const rows = rangs.slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }));
+                  if (rows.length === 0) return null;
+                  return (
+                    <Carte titre={`${titre} — ${z.nom}`} tag="nombre de signaux">
+                      <GrapheBarresH data={rows} couleur={couleur} fmt={fmtNombre} exposant={1} />
+                    </Carte>
+                  );
+                };
+                return (
+                  <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 14,
+                      flexWrap: "wrap", marginBottom: 14 }}>
+                      <h2 style={{ fontSize: "1.05rem", fontWeight: 800,
+                        color: "var(--encre)", letterSpacing: "-0.01em" }}>
+                        L&apos;Afrique de l&apos;Ouest, trois périmètres
+                      </h2>
+                      {/* LE POIDS DE LA ZONE À CÔTÉ DE SON NOM. « Premier secteur
+                          avec 40 signaux » ne se lit pas de la même façon selon
+                          que la zone en porte 60 ou 600. */}
+                      <p style={{ fontSize: 12, color: "var(--gris)" }}>
+                        {fmtNombre(z.signaux)} signaux · {fmtNombre(z.entreprises)} entreprises
+                        {periode ? ` · ${periode}` : ""}
+                      </p>
+                    </div>
+
+                    <div className="rap-sans-impression" style={{ display: "inline-flex",
+                      gap: 4, padding: 4, borderRadius: 999, background: "var(--champ)",
+                      border: "1px solid var(--bordure)", marginBottom: 14, flexWrap: "wrap" }}>
+                      {d.zones.map((o, i) => (
+                        <button key={o.code} type="button" onClick={() => setZone(i)}
+                          aria-pressed={i === zone}
+                          style={{ border: "none", cursor: "pointer", borderRadius: 999,
+                            padding: "6px 15px", fontSize: 12, fontWeight: 700,
+                            fontFamily: "inherit",
+                            background: i === zone ? "var(--carte)" : "transparent",
+                            color: i === zone ? "var(--encre)" : "var(--gris)",
+                            boxShadow: i === zone ? "0 1px 3px rgb(0 0 0 / 0.10)" : "none" }}>
+                          {o.nom}
+                        </button>
+                      ))}
+                    </div>
+                    {/* À L'IMPRESSION, LA BASCULE DISPARAÎT ET LE NOM RESTE : une
+                        feuille de papier ne se clique pas, et trois graphiques
+                        sans zone nommée ne voudraient rien dire. */}
+                    <p style={{ display: "none", fontSize: 12, fontWeight: 700,
+                      color: "var(--encre)", marginBottom: 10 }}
+                      className="rap-zone-impression">Zone : {z.nom}</p>
+
+                    {/* LES TROIS CARTES GARDENT LA MÊME DEMI-LARGEUR, la
+                        troisième laissant une demi-colonne vide. Lui donner la
+                        pleine largeur a été essayé et rejeté : une barre longue
+                        comme la page pour une entreprise qui porte TROIS signaux
+                        donne à un petit nombre l'allure d'un grand. La colonne
+                        vide coûte moins cher que cette illusion. */}
+                    <div className="rap-duo">
+                      {carte("Secteurs les plus visés", "var(--violet)", z.secteurs)}
+                      {carte("Pays les plus visés", "var(--vert)", z.destinations)}
+                      {carte("Entreprises les plus actives", "var(--orange)", z.entreprises_top)}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
                 <Carte titre="Les plus grosses levées de fonds" tag={periode}>
                   <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" />
                 </Carte>
@@ -290,13 +356,6 @@ export default function RapportSignaux() {
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
                 <Carte titre="Les plus gros investissements annoncés" tag={periode}>
                   <TableauGros lignes={d.remarquables.capex} unite="Investissement" />
-                  <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                    Un <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}signale une
-                    valeur estimée par l&apos;algorithme du Financial Times, et non déclarée par
-                    l&apos;entreprise. Les deux tableaux ne s&apos;additionnent pas : des fonds levés
-                    mesurent ce qu&apos;une entreprise a réuni, un investissement prévu ce
-                    qu&apos;elle annonce dépenser.
-                  </p>
                 </Carte>
               </div>
 
@@ -317,11 +376,6 @@ export default function RapportSignaux() {
                     {anneesFortes[0] && (
                       <> L&apos;année la plus dense est <strong>{anneesFortes[0].annee}</strong>{" "}
                         ({fmtNombre(anneesFortes[0].nb)} signaux).</>
-                    )}
-                    {d.kpis.plancher && (
-                      <> Ces dénombrements sont des <strong>planchers</strong> : la complétion des
-                        destinations reste à faire sur{" "}
-                        {fmtNombre(d.kpis.a_completer)} signaux.</>
                     )}
                   </>
                 ) : "Aucun signal n'a encore été importé pour ce périmètre."}
