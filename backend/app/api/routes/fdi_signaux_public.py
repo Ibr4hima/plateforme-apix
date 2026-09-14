@@ -81,10 +81,15 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
         where.append("s.annee <= :a1")
         params["a1"] = annee_max
 
-    for nom, table, ref, colonne in (
-            ("secteurs",  "fdi_signal_secteurs",  "fdi_secteurs",     "secteur_id"),
-            ("activites", "fdi_signal_activites", "fdi_activites",    "activite_id"),
-            ("natures",   "fdi_signal_natures",   "fdi_signaux",      "nature_id")):
+    # LA NATURE SE DÉSIGNE PAR SON LIBELLÉ COURT, les autres par leur libellé
+    # plein. Ce n'est pas une irrégularité : « Projet à l'étude » est ce que
+    # portent les pastilles des cartes, et un filtre qui nommerait autrement la
+    # même chose — « Considering Project (New or Expansion) » — obligerait à
+    # faire le rapprochement de tête.
+    for nom, table, ref, colonne, libelle in (
+            ("secteurs",  "fdi_signal_secteurs",  "fdi_secteurs",  "secteur_id",  "libelle_fr"),
+            ("activites", "fdi_signal_activites", "fdi_activites", "activite_id", "libelle_fr"),
+            ("natures",   "fdi_signal_natures",   "fdi_signaux",   "nature_id",   "libelle_court_fr")):
         choix = {"secteurs": secteurs, "activites": activites, "natures": natures}[nom]
         if not choix or sauf == nom:
             continue
@@ -93,7 +98,7 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
             continue
         where.append(f"""EXISTS (
             SELECT 1 FROM {table} v JOIN {ref} n ON n.id = v.{colonne}
-             WHERE v.signal_id = s.id AND n.libelle_fr = ANY(:{nom}))""")
+             WHERE v.signal_id = s.id AND n.{libelle} = ANY(:{nom}))""")
         params[nom] = valeurs
 
     if recherche and recherche.strip() and sauf != "recherche":
@@ -152,16 +157,22 @@ async def perimetre_signaux(
             LEFT JOIN ref_pays p ON p.id = d.pays_id
             LEFT JOIN fdi_regions_monde r ON r.id = d.region_id
             WHERE {where} AND coalesce(p.nom_fr, r.libelle_fr) IS NOT NULL
-        ) x GROUP BY nom, nature ORDER BY count(DISTINCT signal_id) DESC, nom""", "destination")
+        ) x GROUP BY nom, nature
+        -- LES RÉGIONS D'ABORD, LES PAYS ENSUITE. Elles se retrouvaient en tête
+        -- par accident — ce sont les plus gros comptes — mais l'écran sépare
+        -- les deux groupes d'un filet, et un groupement qui dépend des volumes
+        -- se déferait le jour où un pays passerait devant une région.
+        ORDER BY (nature = 'pays'), count(DISTINCT signal_id) DESC, nom""", "destination")
 
-    async def facette(table: str, ref: str, colonne: str, sauf: str):
+    async def facette(table: str, ref: str, colonne: str, sauf: str,
+                      libelle: str = "libelle_fr"):
         return await compter(f"""
-            SELECT n.libelle_fr AS nom, count(DISTINCT s.id) AS nb
+            SELECT n.{libelle} AS nom, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN {table} v ON v.signal_id = s.id
               JOIN {ref} n ON n.id = v.{colonne}
              WHERE {{where}}
-             GROUP BY n.libelle_fr ORDER BY count(DISTINCT s.id) DESC, n.libelle_fr""", sauf)
+             GROUP BY n.{libelle} ORDER BY count(DISTINCT s.id) DESC, n.{libelle}""", sauf)
 
     bornes = (await db.execute(text(
         "SELECT min(annee) AS a0, max(annee) AS a1, count(*) AS n "
@@ -177,7 +188,8 @@ async def perimetre_signaux(
         "activites": [{"nom": r.nom, "nb": r.nb} for r in
                       await facette("fdi_signal_activites", "fdi_activites", "activite_id", "activites")],
         "natures":   [{"nom": r.nom, "nb": r.nb} for r in
-                      await facette("fdi_signal_natures", "fdi_signaux", "nature_id", "natures")],
+                      await facette("fdi_signal_natures", "fdi_signaux", "nature_id",
+                                    "natures", "libelle_court_fr")],
     }
 
 

@@ -1269,9 +1269,15 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
     Le compte à droite n'est pas décoratif : il dit d'avance si le filtre
     laissera quelque chose, et évite de cliquer pour découvrir un écran vide.
 
+    LE GROUPE, quand il est fourni, ne fait qu'un FILET entre deux familles de
+    valeurs — il ne se nomme pas. Les destinations réunissent les régions du
+    monde et les pays : ce sont deux référentiels, mais une seule question, et
+    les coiffer chacun d'un titre ferait croire à deux filtres. Un trait suffit
+    à dire que l'on change de nature de chose.
+
     ELLE NE SERT PAS AUX SECTEURS : un sous-secteur ne se lit pas seul, et le
     couple secteur / sous-secteur se pose emboîté — voir `FacetteSecteurs`. */
-export type OptionFacette = { nom: string; nb: number };
+export type OptionFacette = { nom: string; nb: number; groupe?: string };
 
 export function FacetteUnique({ titre, options, valeur, onChange }: {
   titre: string; options: OptionFacette[]; valeur: string;
@@ -1283,11 +1289,17 @@ export function FacetteUnique({ titre, options, valeur, onChange }: {
     <div style={{ marginBottom: 18 }}>
       <span style={{ ...TITRE_FACETTE, display: "block", marginBottom: 8 }}>{titre}</span>
       <div style={{ maxHeight: 220, overflowY: "auto" }}>
-        {options.map(o => {
+        {options.map((o, i) => {
           const sel = valeur === o.nom;
+          // Le filet se pose AVANT la première valeur d'un nouveau groupe, donc
+          // jamais en tête de liste : une liste qui s'ouvre sur un trait
+          // donnerait l'impression d'une section vide au-dessus.
+          const filet = i > 0 && o.groupe !== options[i - 1].groupe;
           return (
-            <button key={o.nom} onClick={() => onChange(sel ? "" : o.nom)}
-              style={LIGNE_FACETTE}
+            <Fragment key={o.nom}>
+            {filet && <div style={{ height: 1, background: "var(--bordure)",
+              margin: "7px 8px" }} />}
+            <button onClick={() => onChange(sel ? "" : o.nom)} style={LIGNE_FACETTE}
               title={sel ? `${o.nom} — cliquer pour retirer ce filtre` : o.nom}
               onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
@@ -1299,6 +1311,7 @@ export function FacetteUnique({ titre, options, valeur, onChange }: {
               <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
                 fontVariantNumeric: "tabular-nums" }}>{o.nb}</span>
             </button>
+            </Fragment>
           );
         })}
       </div>

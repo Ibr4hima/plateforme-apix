@@ -45,14 +45,17 @@ import { API, BadgePeriode, boutonPage, ETIQ, FacetteUnique, fmtNombre, LigneFic
     a donc pas de ligne « Tous les pays », qui ferait croire à un filtre là où
     il n'y en a pas ; recliquer sur la valeur retenue la retire.
 
-    L'API sait aussi filtrer par stade ; la colonne ne le propose pas. Le porter
-    sans que rien ne le pilote ferait croire à un filtre actif. */
+    LA NATURE DU SIGNAL FERME LA COLONNE, et c'est la facette qui décide du
+    geste commercial : un projet à l'étude s'approche aujourd'hui, une levée de
+    fonds se suit, une nomination régionale s'observe. Elle vient en dernier
+    parce qu'on la lit après avoir cerné qui, où et dans quoi — mais c'est
+    souvent sur elle qu'on repart. */
 export type FiltresSignaux = {
-  origine: string; secteur: string; activite: string; destination: string;
-  recherche: string;
+  origine: string; destination: string; secteur: string; activite: string;
+  nature: string; recherche: string;
 };
 export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
-  origine: "", secteur: "", activite: "", destination: "", recherche: "",
+  origine: "", destination: "", secteur: "", activite: "", nature: "", recherche: "",
 };
 
 type Valeur = { id: number; libelle: string | null; court?: string | null;
@@ -99,6 +102,7 @@ function urlPerimetre(f: FiltresSignaux, recherche: string): string {
   if (f.secteur) p.set("secteurs", f.secteur);
   if (f.activite) p.set("activites", f.activite);
   if (f.destination) p.set("destination", f.destination);
+  if (f.nature) p.set("natures", f.nature);
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/signaux/perimetre?${p}`;
 }
@@ -127,8 +131,11 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           n'est pas un pays, et le ranger à part obligerait à choisir deux fois
           — alors qu'un signal continental est exactement ce qu'on cherche
           quand on démarche. */}
-      <FacetteUnique titre="Destination" options={per.destinations}
-        valeur={filtres.destination} onChange={set("destination")} />
+      {/* Le filet sépare les régions des pays : le groupe porte la nature, que
+          le serveur trie régions d'abord. */}
+      <FacetteUnique titre="Destination" valeur={filtres.destination}
+        options={per.destinations.map(d => ({ ...d, groupe: d.nature }))}
+        onChange={set("destination")} />
       <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
@@ -137,6 +144,11 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           centre d'appels. */}
       <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
         onChange={set("activite")} />
+      {/* CE QUE LE SIGNAL DIT DU MOMENT. Les libellés sont les COURTS, ceux des
+          pastilles de carte : un filtre qui nommerait autrement la même chose
+          obligerait à faire le rapprochement de tête. */}
+      <FacetteUnique titre="Nature du signal" options={per.natures} valeur={filtres.nature}
+        onChange={set("nature")} />
     </>
   );
 }
