@@ -9,6 +9,7 @@ import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
 import { IconeCached } from "@/components/shared/PickerKpi";
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
+import DrapeauPays from "@/components/shared/DrapeauPays";
 
 
 import { API_BASE as API } from "@/lib/api";
@@ -1686,6 +1687,127 @@ export function CarteRapport({ titre, tag, children }: { titre: string; tag?: st
           letterSpacing: "0.04em", fontVariantNumeric: "tabular-nums" }}>{tag}</span>}
       </p>
       {children}
+    </div>
+  );
+}
+
+// ─── Classements de rapport, au dessin du tableau de bord ─────────────────────
+// POURQUOI REPRENDRE CE DESSIN PLUTÔT QU'UN GRAPHE EN BARRES. Les rapports
+// portaient des barres horizontales dessinées en d3 ; le tableau de bord, lui,
+// range ses classements en LIGNES — rang, drapeau, nom, valeur, barre — et
+// c'est le dessin que la maison connaît. Trois gains, au-delà de l'unité :
+//
+//   * la ligne tient dans un tiers de page là où la barre demandait une moitié,
+//     donc trois classements s'alignent sans laisser de colonne vide ;
+//   * le rang se lit comme un rang, chiffré, au lieu de se déduire d'une pile ;
+//   * plus de d3 à charger pour un classement, donc rien à attendre à
+//     l'impression — une barre en <div> s'imprime, un SVG monté après coup non.
+
+export type RangClasse = { nom: string; nb: number; iso?: string | null };
+
+/** Bascule segmentée — celle du tableau de bord, au pixel près. */
+export function SegmentRapport<T extends string>({ valeur, options, onChange }: {
+  valeur: T; options: { v: T; l: string; titre?: string }[]; onChange: (v: T) => void;
+}) {
+  return (
+    <div style={{ display: "inline-flex", background: "var(--bleu-voile)", borderRadius: 999,
+      padding: 3, gap: 2, flexShrink: 0, flexWrap: "wrap" as const }}>
+      {options.map(o => {
+        const actif = o.v === valeur;
+        return (
+          <button key={o.v} type="button" onClick={() => onChange(o.v)} title={o.titre}
+            aria-pressed={actif}
+            style={{ border: "none", cursor: "pointer", padding: "5px 14px", borderRadius: 999,
+              fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const, fontFamily: "inherit",
+              background: actif ? "var(--carte)" : "transparent",
+              color: actif ? "var(--bleu)" : "var(--gris-fort)",
+              boxShadow: actif ? "var(--ombre-1)" : "none",
+              transition: "color .15s, background .15s" }}>{o.l}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Un classement : rang, drapeau s'il y a lieu, nom, nombre, barre.
+ *
+ *  LA BARRE SE MESURE AU PREMIER DU CLASSEMENT, et il n'y a pas de colonne
+ *  « part ». C'est volontaire : un signal porte plusieurs secteurs et plusieurs
+ *  destinations, donc la somme des lignes dépasse le nombre de signaux, et une
+ *  part calculée dessus ne voudrait rien dire. La barre dit un rapport de
+ *  grandeur entre les lignes, ce qui est vrai ; un pourcentage dirait une part
+ *  d'un tout, ce qui serait faux.
+ *
+ *  LES TROIS PREMIERS SONT MARQUÉS, comme au tableau de bord : pastille pleine
+ *  et barre à pleine opacité. Le regard doit trouver le podium sans lire.
+ */
+export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
+  colonne = "Nom", drapeaux, max = 8 }: {
+  titre: string; tag?: string; rows: RangClasse[]; accent?: string;
+  colonne?: string; drapeaux?: boolean; max?: number;
+}) {
+  const lignes = rows.slice(0, max);
+  if (lignes.length === 0) return null;
+  const sommet = Math.max(1e-9, ...lignes.map(r => r.nb));
+  const ENT = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em",
+    color: "var(--gris)", textTransform: "uppercase" as const };
+  return (
+    <div style={{ background: "var(--carte)", borderRadius: 14,
+      border: "1px solid rgb(var(--encre-rgb) / 0.12)", padding: "16px 18px",
+      minWidth: 0, display: "flex", flexDirection: "column" as const, gap: 10 }}>
+      <p style={{ fontSize: 11, fontWeight: 800, color: accent, letterSpacing: "0.12em",
+        textTransform: "uppercase" as const, margin: 0, display: "flex",
+        alignItems: "center", gap: 8, flexWrap: "wrap" as const }}>
+        {titre}
+        {tag && <span style={{ fontSize: 9, fontWeight: 700, color: "var(--gris)",
+          background: "var(--bleu-voile)", padding: "2px 8px", borderRadius: 5,
+          textTransform: "none" as const, letterSpacing: "0.04em" }}>{tag}</span>}
+      </p>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+        <span style={{ ...ENT, width: 22, flexShrink: 0 }}>#</span>
+        <span style={{ ...ENT, flex: 1, minWidth: 0 }}>{colonne}</span>
+        <span style={{ ...ENT, width: 40, textAlign: "right" as const, flexShrink: 0 }}>Signaux</span>
+        <span style={{ width: "24%", flexShrink: 0 }} />
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
+        {lignes.map((r, i) => {
+          const rang = i + 1, podium = rang <= 3;
+          return (
+            <div key={`${r.nom}-${rang}`} style={{ display: "flex", alignItems: "center",
+              gap: 8, padding: "4px 8px", borderRadius: 8,
+              background: i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
+              <span style={{ width: 22, flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", alignItems: "center",
+                  justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
+                  borderRadius: 10, fontSize: 10, fontWeight: 800,
+                  background: podium ? accent : "var(--bleu-voile)",
+                  color: podium ? "var(--sur-bleu)" : "var(--texte)" }}>{rang}</span>
+              </span>
+              <span style={{ flex: 1, minWidth: 0, display: "inline-flex",
+                alignItems: "center", gap: 7 }}>
+                {drapeaux && <DrapeauPays iso={r.iso} nom={r.nom} taille={14} />}
+                {/* Le nom complet reste en infobulle : une colonne d'un tiers de
+                    page coupe « Logiciels et services informatiques », et le
+                    lecteur doit pouvoir retrouver ce qui a été coupé. */}
+                <span title={r.nom} style={{ fontSize: 12, fontWeight: 650,
+                  color: "var(--encre)", overflow: "hidden",
+                  textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.nom}</span>
+              </span>
+              <span style={{ width: 40, fontSize: 11.5, fontWeight: 800, color: accent,
+                textAlign: "right" as const, flexShrink: 0,
+                fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.nb)}</span>
+              <div style={{ width: "24%", height: 7, background: "var(--bleu-voile)",
+                borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                <div style={{ height: "100%", borderRadius: 99, background: accent,
+                  opacity: podium ? 0.9 : 0.55,
+                  width: `${Math.min(100, Math.max(3, r.nb / sommet * 100))}%` }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

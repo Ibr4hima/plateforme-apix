@@ -32,13 +32,13 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
-import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
-         dateDuJour, fmtNombre, fmtVal, GrapheMultiPays, moisEnClair } from "../partage";
+         ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays,
+         moisEnClair, SegmentRapport } from "../partage";
 
-type Rang = { nom: string; nb: number };
+type Rang = { nom: string; nb: number; iso?: string | null };
 type Gros = {
   id: number; periode: string; entreprise: string | null; origine: string | null;
   montant: number | null; estime: boolean | null;
@@ -61,7 +61,7 @@ type Signaux = {
     des groupements, jamais du code : c'est l'administration qui tient la
     composition, et une adhésion corrigée là-bas doit se voir ici. */
 type Zone = {
-  code: string; nom: string; signaux: number; entreprises: number;
+  code: string; nom: string; court: string; signaux: number; entreprises: number;
   secteurs: Rang[]; destinations: Rang[]; entreprises_top: Rang[];
 };
 
@@ -169,7 +169,20 @@ export default function RapportSignaux() {
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
+        /* SIX COLONNES POUR NE JAMAIS LAISSER DE TROU. Cinq classements sur une
+           grille de deux ou de trois laissent forcément une case vide au dernier
+           rang. Sur six colonnes, trois cartes de deux colonnes remplissent la
+           première rangée et deux cartes de trois colonnes remplissent la
+           seconde : chaque rangée est pleine, et les largeurs restent lisibles. */
+        .rap-grille { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 16px; align-items: start; }
+        .rap-tiers  { grid-column: span 2; }
+        .rap-moitie { grid-column: span 3; }
+        @media (max-width: 1080px) {
+          .rap-grille { grid-template-columns: repeat(2, minmax(0,1fr)); }
+          .rap-tiers, .rap-moitie { grid-column: span 1; }
+        }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) { .rap-grille { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         @media print {
           .rap-sans-impression { display: none !important; }
@@ -247,28 +260,35 @@ export default function RapportSignaux() {
                   rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.funding_musd }))} />
               </div>
 
-              {/* LES CINQ CLASSEMENTS, dans l'ordre des questions : qui vient,
-                  d'où, ce qu'il vise, et pour y faire quoi. */}
-              {d3Pret && (
-                <div className="rap-duo" style={{ marginTop: 16 }}>
-                  {([
-                    { cle: "origines" as const, titre: "Pays d'origine", couleur: "var(--bleu)" },
-                    { cle: "destinations" as const, titre: "Destinations visées — pays d'Afrique", couleur: "var(--vert)" },
-                    { cle: "secteurs" as const, titre: "Secteurs visés", couleur: "var(--violet)" },
-                    { cle: "activites" as const, titre: "Activités prévues", couleur: "var(--bleu)" },
-                    { cle: "entreprises" as const, titre: "Entreprises les plus actives", couleur: "var(--orange)" },
-                  ]).map(c => {
-                    const rows = (d.tops[c.cle] ?? []).slice(0, 8)
-                      .map(r => ({ label: r.nom, valeur: r.nb }));
-                    if (rows.length === 0) return null;
-                    return (
-                      <Carte key={c.cle} titre={c.titre} tag="nombre de signaux">
-                        <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
-                      </Carte>
-                    );
-                  })}
+              {/* LES CINQ CLASSEMENTS, dans l'ordre des questions : d'où l'on
+                  vient, ce qu'on vise, dans quel secteur, pour y faire quoi, et
+                  qui s'y montre le plus. Les trois premiers tiennent au tiers de
+                  page, les deux derniers à la moitié — les noms d'activités et
+                  d'entreprises sont les plus longs, ils ont la place en plus. */}
+              <div className="rap-grille" style={{ marginTop: 16 }}>
+                <div className="rap-tiers">
+                  <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux
+                    accent="var(--bleu)" rows={d.tops.origines ?? []} />
                 </div>
-              )}
+                <div className="rap-tiers">
+                  <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
+                    colonne="Pays" drapeaux accent="var(--vert)"
+                    rows={d.tops.destinations ?? []} />
+                </div>
+                <div className="rap-tiers">
+                  <ClassementRapport titre="Secteurs visés" colonne="Secteur"
+                    accent="var(--violet)" rows={d.tops.secteurs ?? []} />
+                </div>
+                <div className="rap-moitie">
+                  <ClassementRapport titre="Activités prévues" colonne="Activité"
+                    accent="var(--bleu)" rows={d.tops.activites ?? []} />
+                </div>
+                <div className="rap-moitie">
+                  <ClassementRapport titre="Entreprises les plus actives"
+                    colonne="Entreprise" accent="var(--orange)"
+                    rows={d.tops.entreprises ?? []} />
+                </div>
+              </div>
 
               {/* ─── L'AFRIQUE DE L'OUEST, LUE DE TROIS FAÇONS ──────────────────
                   POURQUOI UNE BASCULE ET NON TROIS SECTIONS. La géographie,
@@ -281,67 +301,73 @@ export default function RapportSignaux() {
                   code : une adhésion corrigée par l'administration se répercute
                   ici toute seule. Une zone absente du référentiel ne fait pas
                   d'onglet — la bascule n'offre que ce qui donnera un classement. */}
-              {d3Pret && d.zones?.length > 0 && (() => {
+              {d.zones?.length > 0 && (() => {
                 const z = d.zones[Math.min(zone, d.zones.length - 1)];
-                const carte = (titre: string, couleur: string, rangs: Rang[]) => {
-                  const rows = rangs.slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }));
-                  if (rows.length === 0) return null;
-                  return (
-                    <Carte titre={`${titre} — ${z.nom}`} tag="nombre de signaux">
-                      <GrapheBarresH data={rows} couleur={couleur} fmt={fmtNombre} exposant={1} />
-                    </Carte>
-                  );
-                };
                 return (
                   <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 14,
+                    {/* L'EN-TÊTE DU TABLEAU DE BORD : le titre et le poids de la
+                        zone à gauche, la bascule calée à droite. Elle tient sur
+                        la même ligne parce qu'elle commande les trois cartes qui
+                        suivent — la mettre au-dessus de la première seule ferait
+                        croire qu'elle ne règle que celle-là. */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 14,
                       flexWrap: "wrap", marginBottom: 14 }}>
-                      <h2 style={{ fontSize: "1.05rem", fontWeight: 800,
-                        color: "var(--encre)", letterSpacing: "-0.01em" }}>
-                        L&apos;Afrique de l&apos;Ouest, trois périmètres
-                      </h2>
-                      {/* LE POIDS DE LA ZONE À CÔTÉ DE SON NOM. « Premier secteur
-                          avec 40 signaux » ne se lit pas de la même façon selon
-                          que la zone en porte 60 ou 600. */}
-                      <p style={{ fontSize: 12, color: "var(--gris)" }}>
-                        {fmtNombre(z.signaux)} signaux · {fmtNombre(z.entreprises)} entreprises
-                        {periode ? ` · ${periode}` : ""}
-                      </p>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h2 style={{ fontSize: "1.05rem", fontWeight: 800,
+                          color: "var(--encre)", letterSpacing: "-0.01em" }}>
+                          L&apos;Afrique de l&apos;Ouest, trois périmètres
+                        </h2>
+                        {/* LE POIDS DE LA ZONE SOUS SON NOM, et le nom déployé
+                            du sigle avec lui : « premier secteur avec 40 signaux »
+                            ne se lit pas de la même façon selon que la zone en
+                            porte 60 ou 600, et CEDEAO ne parle qu'à qui le sait
+                            déjà. */}
+                        <p style={{ fontSize: 12, color: "var(--gris)", marginTop: 4 }}>
+                          {z.nom !== z.court ? `${z.nom} · ` : ""}
+                          {fmtNombre(z.signaux)} signaux · {fmtNombre(z.entreprises)} entreprises
+                          {periode ? ` · ${periode}` : ""}
+                        </p>
+                      </div>
+                      {/* LE SIGLE, PAS LE NOM DÉPLOYÉ. Le référentiel porte
+                          « Communauté économique des États de l'Afrique de
+                          l'Ouest » ; personne ne dit cela, et trois noms de cette
+                          longueur débordent la bascule. Le nom complet reste en
+                          infobulle et sous le titre. */}
+                      <span className="rap-sans-impression">
+                        <SegmentRapport valeur={String(zone)} onChange={(v) => setZone(Number(v))}
+                          options={d.zones.map((o, i) => ({ v: String(i), l: o.court, titre: o.nom }))} />
+                      </span>
                     </div>
-
-                    <div className="rap-sans-impression" style={{ display: "inline-flex",
-                      gap: 4, padding: 4, borderRadius: 999, background: "var(--champ)",
-                      border: "1px solid var(--bordure)", marginBottom: 14, flexWrap: "wrap" }}>
-                      {d.zones.map((o, i) => (
-                        <button key={o.code} type="button" onClick={() => setZone(i)}
-                          aria-pressed={i === zone}
-                          style={{ border: "none", cursor: "pointer", borderRadius: 999,
-                            padding: "6px 15px", fontSize: 12, fontWeight: 700,
-                            fontFamily: "inherit",
-                            background: i === zone ? "var(--carte)" : "transparent",
-                            color: i === zone ? "var(--encre)" : "var(--gris)",
-                            boxShadow: i === zone ? "0 1px 3px rgb(0 0 0 / 0.10)" : "none" }}>
-                          {o.nom}
-                        </button>
-                      ))}
-                    </div>
-                    {/* À L'IMPRESSION, LA BASCULE DISPARAÎT ET LE NOM RESTE : une
-                        feuille de papier ne se clique pas, et trois graphiques
-                        sans zone nommée ne voudraient rien dire. */}
+                    {/* À L'IMPRESSION, LA BASCULE DISPARAÎT ET LA ZONE RESTE :
+                        une feuille de papier ne se clique pas, et trois
+                        classements sans zone nommée ne voudraient rien dire. */}
                     <p style={{ display: "none", fontSize: 12, fontWeight: 700,
                       color: "var(--encre)", marginBottom: 10 }}
                       className="rap-zone-impression">Zone : {z.nom}</p>
 
-                    {/* LES TROIS CARTES GARDENT LA MÊME DEMI-LARGEUR, la
-                        troisième laissant une demi-colonne vide. Lui donner la
-                        pleine largeur a été essayé et rejeté : une barre longue
-                        comme la page pour une entreprise qui porte TROIS signaux
-                        donne à un petit nombre l'allure d'un grand. La colonne
-                        vide coûte moins cher que cette illusion. */}
-                    <div className="rap-duo">
-                      {carte("Secteurs les plus visés", "var(--violet)", z.secteurs)}
-                      {carte("Pays les plus visés", "var(--vert)", z.destinations)}
-                      {carte("Entreprises les plus actives", "var(--orange)", z.entreprises_top)}
+                    {/* TROIS CLASSEMENTS, TROIS TIERS DE PAGE, aucune case vide :
+                        c'est ce que la mise en lignes permet et que les barres
+                        interdisaient.
+
+                        LE SIGLE EST DANS LA PASTILLE, PAS DANS LE TITRE. Accolé
+                        au titre, il le faisait passer à deux lignes sur une
+                        carte et une seule sur les autres, et les trois en-têtes
+                        ne s'alignaient plus. La pastille le porte sans allonger
+                        la ligne, et une carte découpée ou imprimée reste
+                        interprétable. */}
+                    <div className="rap-grille">
+                      <div className="rap-tiers">
+                        <ClassementRapport titre="Secteurs les plus visés" tag={z.court}
+                          colonne="Secteur" accent="var(--violet)" rows={z.secteurs} />
+                      </div>
+                      <div className="rap-tiers">
+                        <ClassementRapport titre="Pays les plus visés" tag={z.court}
+                          colonne="Pays" drapeaux accent="var(--vert)" rows={z.destinations} />
+                      </div>
+                      <div className="rap-tiers">
+                        <ClassementRapport titre="Entreprises les plus actives" tag={z.court}
+                          colonne="Entreprise" accent="var(--orange)" rows={z.entreprises_top} />
+                      </div>
                     </div>
                   </div>
                 );

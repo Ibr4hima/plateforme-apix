@@ -249,15 +249,22 @@ async def signaux_publics(
         FROM fdi_signaux_investisseurs s WHERE {filtre}
         GROUP BY s.annee ORDER BY s.annee"""), params)).fetchall()
 
+    # LE CODE ISO DU PAYS SUIT LE NOM QUAND IL Y EN A UN : c'est lui qui donne
+    # le drapeau, et un classement de pays sans drapeaux ne ressemble pas au
+    # reste de la plateforme. Les classements qui ne portent pas sur des pays —
+    # secteurs, activités, entreprises — n'ont pas la colonne, et le rendu s'en
+    # passe plutôt que d'inventer un drapeau à un secteur.
     async def top(sql: str):
-        return [{"nom": r.nom, "nb": r.nb} for r in
-                (await db.execute(text(sql.replace("{filtre}", filtre)), params)).fetchall()]
+        lignes = (await db.execute(text(sql.replace("{filtre}", filtre)), params)).fetchall()
+        return [{"nom": r.nom, "nb": r.nb,
+                 **({"iso": r.iso} if "iso" in r._mapping else {})} for r in lignes]
 
     tops = {
         "origines": await top("""
-            SELECT p.nom_fr AS nom, count(*) AS nb
+            SELECT p.nom_fr AS nom, p.code_iso2 AS iso, count(*) AS nb
               FROM fdi_signaux_investisseurs s JOIN ref_pays p ON p.id = s.pays_source_id
-             WHERE {filtre} GROUP BY p.nom_fr ORDER BY count(*) DESC, p.nom_fr LIMIT 10"""),
+             WHERE {filtre} GROUP BY p.nom_fr, p.code_iso2
+             ORDER BY count(*) DESC, p.nom_fr LIMIT 10"""),
         "entreprises": await top("""
             SELECT e.nom AS nom, count(*) AS nb
               FROM fdi_signaux_investisseurs s JOIN fdi_entreprises e ON e.id = s.entreprise_id
@@ -285,12 +292,13 @@ async def signaux_publics(
         # les destinations réelles. Les pays hors du continent sont écartés pour
         # la même raison de lecture : le rapport porte sur l'Afrique.
         "destinations": await top("""
-            SELECT p.nom_fr AS nom, count(DISTINCT s.id) AS nb
+            SELECT p.nom_fr AS nom, p.code_iso2 AS iso, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
               JOIN fdi_signal_destinations d ON d.signal_id = s.id
               JOIN ref_pays p ON p.id = d.pays_id
              WHERE {filtre} AND p.continent = 'Afrique'
-             GROUP BY 1 ORDER BY count(DISTINCT s.id) DESC, 1 LIMIT 10"""),
+             GROUP BY p.nom_fr, p.code_iso2
+             ORDER BY count(DISTINCT s.id) DESC, p.nom_fr LIMIT 10"""),
         # « NON PRÉCISÉE » N'EST PAS UNE ACTIVITÉ, c'est l'absence d'activité :
         # la source n'a rien dit. La laisser au classement reviendrait à
         # présenter le silence comme le premier métier visé en Afrique.
@@ -450,6 +458,25 @@ _APPARTENANCE = """
 """
 
 
+def _abrege(code: str, nom: str) -> str:
+    """Le nom court d'une zone : le sigle quand il y en a un.
+
+    POURQUOI PAS SIMPLEMENT `nom_fr`. Le référentiel porte le nom déployé —
+    « Communauté économique des États de l'Afrique de l'Ouest » — qui est juste,
+    mais qui ne tient pas dans une bascule et qu'aucun décideur n'écrit : on dit
+    CEDEAO. Le nom complet reste rendu à côté, pour que le sigle soit lisible
+    par qui ne le connaît pas.
+
+    LA RÈGLE PLUTÔT QU'UNE TABLE DE CORRESPONDANCE : un code d'un seul tenant,
+    tout en majuscules, EST le sigle de la zone — c'est ainsi que le référentiel
+    est tenu (CEDEAO, UEMOA, UE, OCDE). Un code découpé par des soulignés est un
+    identifiant technique — AFRIQUE_DE_L_OUEST — et n'a rien à faire à l'écran :
+    c'est alors le nom français qui s'affiche. Une zone ajoutée demain suit la
+    règle sans qu'on touche à ce fichier.
+    """
+    return code if "_" not in code and code.isupper() and code.isalpha() else nom
+
+
 async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
     """Secteurs, pays visés et entreprises, pour chacune des trois zones."""
 
@@ -461,7 +488,8 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
             # fenêtre numérotée par zone coûterait un tri de plus pour un
             # volume que la liste des zones borne déjà.
             if len(rangs[r.zone]) < 10:
-                rangs[r.zone].append({"nom": r.nom, "nb": r.nb})
+                rangs[r.zone].append({"nom": r.nom, "nb": r.nb,
+                                      **({"iso": r.iso} if "iso" in r._mapping else {})})
         return rangs
 
     secteurs = await classement("""
@@ -477,9 +505,10 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
     # pour le Sénégal dans l'UEMOA, et le Kenya n'y apparaît pas — ce qu'on
     # demande, c'est la destination DANS la zone, pas le reste du signal.
     destinations = await classement("""
-        SELECT a.zone, p.nom_fr AS nom, count(DISTINCT a.signal_id) AS nb
+        SELECT a.zone, p.nom_fr AS nom, p.code_iso2 AS iso,
+               count(DISTINCT a.signal_id) AS nb
           FROM appart a JOIN ref_pays p ON p.id = a.pays_id
-         GROUP BY a.zone, p.nom_fr
+         GROUP BY a.zone, p.nom_fr, p.code_iso2
          ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, p.nom_fr""")
 
     entreprises = await classement("""
@@ -508,6 +537,7 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
     return [{
         "code": c,
         "nom": noms.get(c, c),
+        "court": _abrege(c, noms.get(c, c)),
         "signaux": totaux.get(c, {}).get("signaux", 0),
         "entreprises": totaux.get(c, {}).get("entreprises", 0),
         "secteurs": secteurs[c],
