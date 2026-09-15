@@ -1,11 +1,11 @@
 "use client";
 
-import { Check, Eye, EyeOff, FileSignature, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
-import EnteteAdmin, { BoutonPrincipal } from "@/components/admin/EnteteAdmin";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
 import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
 import { ChampRecherche } from "@/components/admin/UIAdmin";
 import AccordVueModal from "@/components/shared/AccordVueModal";
@@ -548,7 +548,7 @@ export default function AdminAccords() {
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
-      <EnteteAdmin icone={<FileSignature size={19} />} titre="Accords & Traités"
+      <EnteteAdmin titre="Accords & Traités"
         compteur={loading ? null : accords.length}
         recherche={!loading && !erreur && accords.length > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
@@ -564,7 +564,7 @@ export default function AdminAccords() {
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : accords.length === 0 ? (
-          <EtatVide icone={<FileSignature size={26} />} titre="Aucun accord enregistré"
+          <EtatVide icone={<IconeModule taille={26} />} titre="Aucun accord enregistré"
             texte="Les accords publiés alimentent la page publique des traités d'investissement."
             action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
               Ajouter un accord

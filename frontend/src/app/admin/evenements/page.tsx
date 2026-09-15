@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
-import EnteteAdmin, { BoutonPrincipal } from "@/components/admin/EnteteAdmin";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
 import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -691,7 +691,7 @@ export default function EvenementsAdminPage() {
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
-      <EnteteAdmin icone={<CalendarDays size={19} />} titre="Événements"
+      <EnteteAdmin titre="Événements"
         compteur={loading ? null : tous.length}
         recherche={!loading && !erreur && tous.length > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
@@ -707,7 +707,7 @@ export default function EvenementsAdminPage() {
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : tous.length === 0 ? (
-          <EtatVide icone={<CalendarDays size={26} />} titre="Aucun événement enregistré"
+          <EtatVide icone={<IconeModule taille={26} />} titre="Aucun événement enregistré"
             texte="Les événements publiés alimentent l'agenda de la page publique."
             action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
               Ajouter un événement

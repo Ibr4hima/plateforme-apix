@@ -30,9 +30,38 @@
 // données.
 
 import React from "react";
+import { usePathname } from "next/navigation";
+import { MODULES_ADMIN } from "@/components/admin/navAdmin";
 
-export default function EnteteAdmin({ icone, titre, compteur, sousTitre, recherche, action, children }: {
-  icone?: React.ReactNode;
+/** Le pictogramme du module courant — CELUI DE LA BARRE LATÉRALE, pris à la
+ *  même source.
+ *
+ *  POURQUOI IL N'EST PAS PASSÉ EN PARAMÈTRE. Chaque page choisissait le sien
+ *  dans lucide, et la barre latérale le sien dans Material Symbols : le même
+ *  module se présentait donc sous deux dessins selon qu'on le lisait dans le
+ *  menu ou en tête de page. Deux sources, deux vérités, et une dérive garantie
+ *  au premier module ajouté.
+ *
+ *  L'en-tête va désormais le chercher dans `navAdmin.ts`, d'après l'adresse
+ *  courante. Il n'y a plus rien à tenir en accord : changer l'icône du menu
+ *  change celle de la page, et une page ne PEUT PLUS en afficher une autre.
+ *
+ *  Il est rendu PLEIN, comme l'entrée active du menu : c'est la même page, elle
+ *  se signale des deux côtés de la même façon. */
+export function IconeModule({ taille = 20 }: { taille?: number }) {
+  const pathname = usePathname() || "";
+  const item = MODULES_ADMIN.find(
+    m => m.type === "link" && (pathname === m.href || pathname.startsWith(m.href + "/")));
+  const nom = item && item.type === "link" ? item.icon : null;
+  if (!nom) return null;
+  return (
+    <span className="material-symbols-outlined" aria-hidden
+      style={{ fontSize: taille, lineHeight: 1, fontVariationSettings:
+        "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>{nom}</span>
+  );
+}
+
+export default function EnteteAdmin({ titre, compteur, sousTitre, recherche, action, children }: {
   titre: string;
   /** Le nombre d'éléments du module. Affiché en pastille contre le titre. */
   compteur?: number | null;
@@ -53,14 +82,12 @@ export default function EnteteAdmin({ icone, titre, compteur, sousTitre, recherc
       <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
         padding: children ? "18px 32px 15px" : "18px 32px" }}>
 
-        {icone && (
-          <span aria-hidden style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgb(var(--bleu-rgb) / 0.09)",
-            border: "1px solid rgb(var(--bleu-rgb) / 0.16)", color: "var(--bleu)" }}>
-            {icone}
-          </span>
-        )}
+        <span aria-hidden style={{ width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgb(var(--bleu-rgb) / 0.09)",
+          border: "1px solid rgb(var(--bleu-rgb) / 0.16)", color: "var(--bleu)" }}>
+          <IconeModule />
+        </span>
 
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
