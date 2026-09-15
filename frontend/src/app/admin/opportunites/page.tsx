@@ -10,7 +10,7 @@ import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
-import { ActionCarte, EtatVide, STYLE_GRILLE } from "@/components/admin/CarteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, STYLE_GRILLE } from "@/components/admin/CarteAdmin";
 import { Segments } from "@/components/admin/UIAdmin";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_gris, voile } from "@/lib/couleurs";
@@ -628,83 +628,6 @@ const secColor = (nom:string) => {
   return SECTEUR_COLORS[0];
 };
 
-function AvantagesGroupes({ avgs, onVue, onEdit, onToggle, onDelete, avgToggle, avgDel }:
-  { avgs:any[]; onVue:(a:any)=>void; onEdit:(a:any)=>void; onToggle:(a:any)=>void; onDelete:(id:number)=>void; avgToggle:number|null; avgDel:number|null }) {
-
-  // Grouper par secteur uniquement
-  const secMap = new Map<number, {id:number; nom:string; items:any[]}>();
-  avgs.forEach(a => {
-    const sid = a.secteur_id || 0;
-    if (!secMap.has(sid)) secMap.set(sid, {id:sid, nom:a.secteur_nom||"Sans secteur", items:[]});
-    secMap.get(sid)!.items.push(a);
-  });
-  const SEC_ORDER = ["primaire","secondaire","tertiaire"];
-  const secteurs = Array.from(secMap.values()).sort((a,b)=>{
-    const ai = SEC_ORDER.findIndex(o=>a.nom.toLowerCase().includes(o));
-    const bi = SEC_ORDER.findIndex(o=>b.nom.toLowerCase().includes(o));
-    return (ai===-1?99:ai)-(bi===-1?99:bi);
-  });
-
-  return (
-    <div style={{display:"flex",flexDirection:"column" as const,gap:28}}>
-      {secteurs.map((sec) => {
-        const color = secColor(sec.nom);
-        return (
-          <div key={sec.id}>
-            {/* Header secteur */}
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-              <div style={{width:3,height:20,borderRadius:2,background:color,flexShrink:0}}/>
-              <span style={{fontSize:13,fontWeight:700,color,textTransform:"uppercase" as const,letterSpacing:"0.1em"}}>{sec.nom}</span>
-            </div>
-            {/* Grille de cards */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-              {sec.items.map((a:any) => (
-                <div key={a.id} onClick={()=>onVue(a)}
-                  style={{background:"var(--carte)",borderTop:"1px solid var(--bordure-forte)",borderRight:"1px solid var(--bordure-forte)",borderBottom:"1px solid var(--bordure-forte)",borderLeft:`3px solid ${a.est_publie?color:"var(--gris)"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.15s",boxShadow:"var(--ombre-1)",minWidth:0}}
-                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow=`0 4px 16px ${voile(color, 9)}`;ev.currentTarget.style.borderTopColor=`${voile(color, 31)}`;ev.currentTarget.style.borderRightColor=`${voile(color, 31)}`;ev.currentTarget.style.borderBottomColor=`${voile(color, 31)}`;}}
-                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.borderTopColor="var(--bordure-forte)";ev.currentTarget.style.borderRightColor="var(--bordure-forte)";ev.currentTarget.style.borderBottomColor="var(--bordure-forte)";}}>
-                  <div style={{fontWeight:700,fontSize:13,color:"var(--encre)",marginBottom:3,lineHeight:1.35}}><TextTicker text={a.activite_nom||"Activité non définie"}/></div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:8}}>
-                    {a.secteur_nom&&<span style={{fontSize:11,color:"var(--gris)"}}>{a.secteur_nom}</span>}
-                    {a.branche_nom&&<><span style={{fontSize:10,color:"var(--gris)"}}>›</span><span style={{fontSize:11,color:"var(--gris)"}}>{a.branche_nom}</span></>}
-                  </div>
-                  {(a.selections||[]).length>0&&(
-                    <div style={{display:"flex",flexWrap:"wrap" as const,gap:5,marginBottom:8}}>
-                      {(a.selections||[]).slice(0,3).map((s:any)=>(
-                        <span key={s.id} style={{fontSize:10,fontWeight:600,color,background:`${voile(color, 6)}`,border:`1px solid ${voile(color, 15)}`,padding:"2px 8px",borderRadius:999}}>{s.type_libelle}</span>
-                      ))}
-                      {(a.selections||[]).length>3&&<span style={{fontSize:10,color:"var(--gris)"}}>+{(a.selections||[]).length-3}</span>}
-                    </div>
-                  )}
-                  {(a.fichiers||[]).length>0&&<div style={{fontSize:11,color:"var(--gris)",marginBottom:8}}>{a.fichiers.length} document{a.fichiers.length>1?"s":""}</div>}
-                  <div style={{display:"flex",gap:5,borderTop:"1px solid var(--bordure)",paddingTop:8}} onClick={ev=>ev.stopPropagation()}>
-                    <button className="ro-w" onClick={()=>onEdit(a)}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:"rgb(var(--bleu-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:"var(--bleu)",fontWeight:600}}>
-                      <Pencil size={11}/> Modifier
-                    </button>
-                    <button onClick={()=>onToggle(a)} disabled={avgToggle===a.id}
-                      style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:4,background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--gris-rgb) / 0.08)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 0",fontSize:11,color:a.est_publie?"var(--vert)":"var(--gris-fort)",fontWeight:600}}>
-                      {avgToggle===a.id?<Loader2 size={11} style={{animation:"spin 1s linear infinite"}}/>:a.est_publie?<><EyeOff size={11}/> Public</>:<><Eye size={11}/> Publier</>}
-                    </button>
-                    <button className="ro-w" onClick={()=>onDelete(a.id)} disabled={avgDel===a.id}
-                      style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 9px"}}>
-                      {avgDel===a.id?<Loader2 size={11} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={11} style={{color:"var(--danger)"}}/>}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Modal vue Potentialité (admin)
-// ══════════════════════════════════════════════════════════════════════════════
 function PotentialiteVueModal({ pot: p, onClose, onEdit }: {
   pot:any; onClose:()=>void; onEdit:(p:any)=>void;
 }) {
@@ -1185,128 +1108,86 @@ export default function OpportunitesAdminPage() {
               })()}
             </div>
 
-            {/* ── Fiches du niveau retenu ── */}
+            {/* ── Fiches du niveau retenu ───────────────────────────────────
+                UNE GRILLE DE CARTES, comme les cinq autres modules. Ces fiches
+                étaient rendues en petites tuiles serrées à l'intérieur d'un
+                grand cadre blanc, lui-même précédé d'un bandeau de groupe : à
+                trois fiches, cela faisait un cadre presque vide, et l'objet le
+                plus important de la page — la fiche — y était l'élément le plus
+                petit. Une potentialité porte un titre, un territoire, un
+                rattachement et un nombre d'activités : c'est exactement ce que
+                la carte partagée sait montrer.
+
+                LE REGROUPEMENT PAR TERRITOIRE PARENT DISPARAÎT avec les
+                bandeaux. Il donnait une lecture — « ce pôle couvre trois
+                régions » — mais au prix d'un niveau d'emboîtement de plus sous
+                une bascule qui segmentait déjà. Le parent se lit maintenant sur
+                chaque carte, en colonne. */}
             {(() => {
               const niveau = selectedNiveau ?? niveauDefaut;
+              const meta = NIVEAUX_POTS.find(x=>x.key===niveau)!;
+              const items = pots.filter((p:any)=>p.niveau===niveau);
+              if (items.length===0) return (
+                <EtatVide icone={<IconeModule taille={26} />}
+                  titre={`Aucune fiche · ${meta.label}`}
+                  texte="Les potentialités publiées alimentent la page publique des opportunités par zone." />
+              );
+              // Le territoire parent, pour la colonne de rattachement.
+              const regionDuDept = (nom:string) => {
+                const dep = geoRef.departements.find((d:any)=>d.nom===nom);
+                return geoRef.regions.find((r:any)=>r.id===dep?.region_id)?.nom || null;
+              };
+              const deptDeArr = (nom:string) => {
+                const arr = geoRef.arrondissements.find((a:any)=>a.nom===nom);
+                return geoRef.departements.find((d:any)=>d.id===arr?.departement_id)?.nom || null;
+              };
+              const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
+              const parent = (p:any): string|null => niveau==="pole" ? null
+                : niveau==="region" ? poleDeRegion(p.region_nom||"")
+                : niveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||""))
+                : (p.departement_nom || deptDeArr(p.arrondissement_nom||""));
+              const libelleParent = niveau==="region" ? "Pôle" : niveau==="departement" ? "Région" : "Département";
               return (
-              <div className="charge-in">
-              {(()=>{
-                const meta = NIVEAUX_POTS.find(x=>x.key===niveau)!;
-                const items = pots.filter((p:any)=>p.niveau===niveau);
-                // LE BANDEAU DE NIVEAU A DISPARU : il répétait, en gros et en
-                // couleur, ce que la bascule juste au-dessus venait de dire.
-                if (items.length===0) return (
-                  <EtatVide icone={<IconeModule taille={26} />}
-                    titre={`Aucune fiche · ${meta.label}`}
-                    texte="Les potentialités publiées alimentent la page publique des opportunités par zone." />
-                );
-
-                // Rattachements géographiques via le référentiel déjà chargé
-                const regionDuDept = (nom:string) => {
-                  const dep = geoRef.departements.find((d:any)=>d.nom===nom);
-                  return geoRef.regions.find((r:any)=>r.id===dep?.region_id)?.nom || null;
-                };
-                const deptDeArr = (nom:string) => {
-                  const arr = geoRef.arrondissements.find((a:any)=>a.nom===nom);
-                  return geoRef.departements.find((d:any)=>d.id===arr?.departement_id)?.nom || null;
-                };
-                const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
-                // Regroupement des fiches par rattachement territorial
-                const groupeDe = (p:any): string => niveau==="pole" ? meta.label
-                  : niveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
-                  : niveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
-                  : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
-                const rattachement = niveau==="region" ? "Pôle" : niveau==="departement" ? "Région" : "Département";
-                const groupes = new Map<string, any[]>();
-                items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
-                const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
-
-                // Tuile compacte (gabarit public) + actions d'administration
-                const Tuile = ({p}:{p:any}) => {
-                  const nbActs = (p.activite_ids||[]).length;
-                  return (
-                    <div onClick={()=>setPotVue(p)}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:p.est_publie===false?0.7:1}}
-                      onMouseEnter={ev=>{
-                        ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
-                        // Nom trop long : glisse pour révéler la fin
-                        const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                        const span = box?.firstElementChild as HTMLElement | null;
-                        if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                      }}
-                      onMouseLeave={ev=>{
-                        ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                        const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                      }}>
-                      <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                      <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                        <span style={{display:"inline-block"}}>{potTitle(p)}</span>
-                      </div>
-                      {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
-                      {/* Actions d'administration */}
-                      <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
-                        <button onClick={()=>{setPotEdit(p);setPotModal(true);}} title="Modifier"
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--bleu-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                          onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.14)"}
-                          onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.07)"}>
-                          <Pencil size={12} style={{color:"var(--bleu)"}}/>
-                        </button>
-                        <button onClick={()=>togglePot(p)} disabled={potToggle===p.id} title={p.est_publie?"Retirer de la page publique":"Publier"}
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:p.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--orange-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
-                          {potToggle===p.id
-                            ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"var(--gris)"}}/>
-                            : p.est_publie ? <EyeOff size={12} style={{color:"var(--vert)"}}/> : <Eye size={12} style={{color:"var(--orange)"}}/>}
-                        </button>
-                        <button onClick={()=>deletePot(p.id)} disabled={potDel===p.id} title="Supprimer"
-                          style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                          onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.14)"}
-                          onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.07)"}>
-                          {potDel===p.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                };
-
-                // Pôles : pas de regroupement pertinent → conteneur sans en-tête
-                if (niveau==="pole") return (
-                  <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                      {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
-                    </div>
-                  </div>
-                );
-                // Autres niveaux : un bandeau de rattachement par groupe
-                return (
-                  <div style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
-                    {cles.map(cle=>{
-                      const fiches = groupes.get(cle)!;
-                      return (
-                        <div key={cle}>
-                          {/* TITRE DE GROUPE, ET NON PLUS UN BANDEAU. Le cadre
-                              dégradé avec sa tuile chiffrée pesait autant que
-                              les fiches qu'il annonçait, et il se répétait à
-                              chaque groupe. Un intitulé, un nom, un compte : le
-                              regroupement se lit, il n'a pas à s'exposer. */}
-                          <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10,flexWrap:"wrap" as const}}>
-                            <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.13em",color:"var(--gris)",textTransform:"uppercase" as const}}>{rattachement}</span>
-                            <span style={{fontWeight:800,fontSize:14,color:"var(--encre)",letterSpacing:"-0.01em"}}>{cle}</span>
-                            <span style={{fontSize:12,color:"var(--gris)"}}>· {fiches.length} fiche{fiches.length>1?"s":""}</span>
-                          </div>
-                          {/* Fiches du groupe */}
-                          <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
-                            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
-                              {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-              </div>
+                <div className="charge-in adm-grille">
+                  {items.map((p:any)=>{
+                    const nbActs = (p.activite_ids||[]).length;
+                    return (
+                      <CarteAdmin key={p.id} onVoir={()=>setPotVue(p)}
+                        aria={`Ouvrir la fiche : ${potTitle(p)}`}
+                        pointille={p.est_publie===false} titre={potTitle(p)}
+                        badge={p.niveau_nom ? (
+                          <span title={p.niveau_nom}
+                            style={{fontSize:11,fontWeight:700,color:meta.color,padding:"4px 12px",
+                              borderRadius:999,border:`1px solid ${voile(meta.color, 35)}`,
+                              background:`${voile(meta.color, 5)}`,whiteSpace:"nowrap" as const,
+                              overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                            {p.niveau_nom}
+                          </span>
+                        ) : null}
+                        donnees={niveau==="pole" ? [
+                          <Donnee key="a" label="Activités" valeur={String(nbActs)} />,
+                          <Donnee key="s" label="Secteurs" valeur={String((p.secteur_ids||[]).length)} />,
+                        ] : [
+                          <Donnee key="p" label={libelleParent} valeur={parent(p)} />,
+                          <Donnee key="a" label="Activités" valeur={String(nbActs)} />,
+                        ]}
+                        actions={<>
+                          <ActionCarte onClick={()=>{setPotEdit(p);setPotModal(true);}} titre="Modifier"
+                            teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
+                          <ActionCarte onClick={()=>togglePot(p)} enCours={potToggle===p.id}
+                            titre={p.est_publie?"Retirer de la page publique":"Publier"}
+                            teinte={p.est_publie?"var(--vert)":"var(--orange)"}
+                            icone={p.est_publie?<EyeOff size={13}/>:<Eye size={13}/>}>
+                            {p.est_publie?"Retirer":"Publier"}
+                          </ActionCarte>
+                          {p.est_publie===false && <EtiquetteNonPublie />}
+                          <span style={{marginLeft:"auto"}} />
+                          <ActionCarte onClick={()=>deletePot(p.id)} enCours={potDel===p.id}
+                            titre="Supprimer" teinte="var(--danger)" icone={<Trash2 size={13}/>} />
+                        </>} />
+                    );
+                  })}
+                </div>
               );
             })()}
             </>
@@ -1355,85 +1236,67 @@ export default function OpportunitesAdminPage() {
               })()}
             </div>
 
-            {/* ── Branches du secteur retenu ── */}
+            {/* ── Avantages du secteur retenu ────────────────────────────────
+                MÊME GRILLE QUE PARTOUT AILLEURS. Ces avantages étaient rendus
+                en tuiles serrées dans un cadre par branche, chaque cadre
+                précédé d'un bandeau : deux niveaux d'emboîtement pour une liste
+                d'activités. La branche devient la pastille de la carte, et
+                l'emboîtement disparaît avec elle. */}
             {(() => {
               const secteur = selectedSec ?? secteurDefaut;
+              const meta = SECTEURS_AVGS.find(x=>x.key===secteur)!;
+              const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(secteur));
+              if (items.length===0) return (
+                <EtatVide icone={<IconeModule taille={26} />}
+                  titre={`Aucun avantage · ${meta.label}`}
+                  texte="Les avantages publiés alimentent la page publique des incitations à l'investissement." />
+              );
               return (
-              <div className="charge-in">
-              {(()=>{
-                const meta = SECTEURS_AVGS.find(x=>x.key===secteur)!;
-                const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(secteur));
-                const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
-                filtered.forEach((a:any)=>{
-                  const bid=a.branche_id||0;
-                  if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
-                  braMap.get(bid)!.items.push(a);
-                });
-                const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
-                return (
-                  <div style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
-                    {bras.map(bra=>(
-                      <div key={bra.id}>
-                        {/* Titre de branche, même allègement que les groupes
-                            de potentialités. */}
-                        <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10,flexWrap:"wrap" as const}}>
-                          <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.13em",color:"var(--gris)",textTransform:"uppercase" as const}}>Branche</span>
-                          <span style={{fontWeight:800,fontSize:14,color:"var(--encre)",letterSpacing:"-0.01em"}}>{bra.nom}</span>
-                          <span style={{fontSize:12,color:"var(--gris)"}}>· {bra.items.length} avantage{bra.items.length>1?"s":""}</span>
-                        </div>
-                        {/* Activités de la branche */}
-                        <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
-                          <div style={{display:"grid",gridTemplateColumns:`repeat(${secteur==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
-                            {bra.items.map((a:any)=>(
-                              <div key={a.id} onClick={()=>setAvgVue(a)}
-                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
-                                onMouseEnter={ev=>{
-                                  ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
-                                  // Nom trop long : glisse pour révéler la fin
-                                  const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                                  const span = box?.firstElementChild as HTMLElement | null;
-                                  if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                                }}
-                                onMouseLeave={ev=>{
-                                  ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
-                                  const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                                  if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                                }}>
-                                <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
-                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
-                                  <span style={{display:"inline-block"}}>{a.activite_nom}</span>
-                                </div>
-                                {/* Actions d'administration */}
-                                <div className="ro-w" style={{display:"flex",alignItems:"center",gap:3,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
-                                  <button onClick={()=>{setAvgEdit(a);setAvgModal(true);}} title="Modifier"
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--bleu-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.14)"}
-                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.07)"}>
-                                    <Pencil size={12} style={{color:"var(--bleu)"}}/>
-                                  </button>
-                                  <button onClick={()=>toggleAvg(a)} disabled={avgToggle===a.id} title={a.est_publie?"Retirer de la page publique":"Publier"}
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:a.est_publie?"rgb(var(--vert-rgb) / 0.07)":"rgb(var(--orange-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}>
-                                    {avgToggle===a.id
-                                      ? <Loader2 size={12} style={{animation:"spin 1s linear infinite",color:"var(--gris)"}}/>
-                                      : a.est_publie ? <EyeOff size={12} style={{color:"var(--vert)"}}/> : <Eye size={12} style={{color:"var(--orange)"}}/>}
-                                  </button>
-                                  <button onClick={()=>deleteAvg(a.id)} disabled={avgDel===a.id} title="Supprimer"
-                                    style={{display:"flex",alignItems:"center",justifyContent:"center",background:"rgb(var(--danger-rgb) / 0.07)",border:"none",cursor:"pointer",borderRadius:7,padding:"6px 7px",transition:"background 0.15s"}}
-                                    onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.14)"}
-                                    onMouseLeave={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.07)"}>
-                                    {avgDel===a.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-              </div>
+                <div className="charge-in adm-grille">
+                  {items.map((a:any)=>{
+                    const nbSel = (a.selections||[]).length;
+                    return (
+                      <CarteAdmin key={a.id} onVoir={()=>setAvgVue(a)}
+                        aria={`Ouvrir la fiche : ${a.activite_nom||"Avantage"}`}
+                        pointille={a.est_publie===false}
+                        titre={a.activite_nom || "Activité non précisée"}
+                        badge={a.branche_nom ? (
+                          <span title={a.branche_nom}
+                            style={{fontSize:11,fontWeight:700,color:meta.color,padding:"4px 12px",
+                              borderRadius:999,border:`1px solid ${voile(meta.color, 35)}`,
+                              background:`${voile(meta.color, 5)}`,whiteSpace:"nowrap" as const,
+                              overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>
+                            {a.branche_nom}
+                          </span>
+                        ) : null}
+                        donnees={[
+                          <Donnee key="s" label="Secteur" valeur={a.secteur_nom||null} />,
+                          // UN AVANTAGE SE DÉCRIT DE DEUX FAÇONS : par des
+                          // types cochés au référentiel, ou par un texte libre.
+                          // La colonne dit celle qui est employée — compter les
+                          // seules sélections affichait « Aucun » sur une fiche
+                          // pourtant renseignée en toutes lettres.
+                          <Donnee key="n" label={nbSel > 1 ? "Avantages" : "Avantage"}
+                            valeur={nbSel > 0 ? String(nbSel) : (a.avantages ? "Texte libre" : null)}
+                            absent="Non renseigné" />,
+                        ]}
+                        actions={<>
+                          <ActionCarte onClick={()=>{setAvgEdit(a);setAvgModal(true);}} titre="Modifier"
+                            teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
+                          <ActionCarte onClick={()=>toggleAvg(a)} enCours={avgToggle===a.id}
+                            titre={a.est_publie?"Retirer de la page publique":"Publier"}
+                            teinte={a.est_publie?"var(--vert)":"var(--orange)"}
+                            icone={a.est_publie?<EyeOff size={13}/>:<Eye size={13}/>}>
+                            {a.est_publie?"Retirer":"Publier"}
+                          </ActionCarte>
+                          {a.est_publie===false && <EtiquetteNonPublie />}
+                          <span style={{marginLeft:"auto"}} />
+                          <ActionCarte onClick={()=>deleteAvg(a.id)} enCours={avgDel===a.id}
+                            titre="Supprimer" teinte="var(--danger)" icone={<Trash2 size={13}/>} />
+                        </>} />
+                    );
+                  })}
+                </div>
               );
             })()}
             </>
