@@ -6,10 +6,12 @@ import NaemaSelect from "@/components/shared/NaemaSelect";
 import { FModal, FSection, FGrid, FLabel, FInput, FSelect, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { Building2, Check, ChevronDown, ChevronRight, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
+import { ChampRecherche, Segments } from "@/components/admin/UIAdmin";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { badgePole, poleAccent, voile, POLE_COULEURS, normPole } from "@/lib/couleurs";
@@ -902,6 +904,30 @@ function ZoneVue({ zone: z, onClose, onEdit, onAddEntreprise, onRetirerEntrepris
 }
 
 // ── Page principale ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// LA PAGE — dessin seulement. Mêmes appels, mêmes modales, mêmes actions.
+//
+// CE QUI DISPARAÎT, ET POURQUOI C'EST LE PLUS GROS GAIN DE CETTE PAGE :
+//
+//   * LES TROIS GRANDES CARTES DE TYPE. Chacune portait un bandeau dégradé, un
+//     point qui pulse, un titre, deux encadrés de compteurs et une rangée
+//     d'action — soit une hauteur d'écran entière AVANT la première zone. Or
+//     elles ne servaient qu'à DEUX choses : choisir un type et en créer une.
+//     Choisir un type, c'est une bascule ; créer, c'est le bouton d'action de
+//     la page. Ni l'un ni l'autre ne demande une carte.
+//
+//   * L'ÉTAT « RIEN DE SÉLECTIONNÉ ». Tant qu'on n'avait pas cliqué un type, la
+//     page ne montrait aucune zone : on arrivait sur un écran de trois cartes
+//     décoratives. Un type est désormais toujours retenu — celui qui porte des
+//     zones, à défaut le premier — et la grille est là dès l'arrivée.
+//
+//   * LE BANDEAU DU TYPE SÉLECTIONNÉ, qui répétait sous les cartes ce que la
+//     carte cliquée venait de dire, avec son pastillage et son compte.
+//
+// Les compteurs qu'ils portaient ne sont pas perdus : le nombre de zones est
+// dans la bascule, celui des entreprises dans la ligne de contexte du titre.
+// ═══════════════════════════════════════════════════════════════════════════
+
 export default function GestionZonesPage() {
   const [zones,        setZones]        = useState<any[]>([]);
   const [polesCount,   setPolesCount]   = useState(0);
@@ -909,7 +935,7 @@ export default function GestionZonesPage() {
   const [branches,     setBranches]     = useState<any[]>([]);
   const [activites,    setActivites]    = useState<any[]>([]);
   const [onglet,       setOnglet]       = useState<"zones"|"poles">("zones");
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [typeChoisi,   setTypeChoisi]   = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
   const [erreur,       setErreur]       = useState(false);
   const [vueId,        setVueId]        = useState<string | null>(null);
@@ -921,6 +947,7 @@ export default function GestionZonesPage() {
   const [deleting,     setDeleting]     = useState<string | null>(null);
   const [deletingEnt,  setDeletingEnt]  = useState<number | null>(null);
   const [detailEnt,    setDetailEnt]    = useState<any>(null);
+  const [q,            setQ]            = useState("");
 
   const vue = vueId ? (zones.find(z => z.id === vueId) ?? null) : null;
 
@@ -971,222 +998,130 @@ export default function GestionZonesPage() {
     finally { setDeletingEnt(null); }
   };
 
+  const parType = useMemo(() => Object.fromEntries(
+    TYPE_ZONES.map(t => [t.key, zones.filter(z => z.type_zone === t.key)])
+  ) as Record<string, any[]>, [zones]);
+
+  // UN TYPE EST TOUJOURS RETENU — celui qui porte des zones, à défaut le
+  // premier. C'est ce qui supprime l'écran d'accueil vide : on arrive sur des
+  // données, pas sur un choix à faire.
+  const typeActif = typeChoisi
+    ?? TYPE_ZONES.find(t => (parType[t.key] || []).length > 0)?.key
+    ?? TYPE_ZONES[0].key;
+  const t = TYPE_ZONES.find(x => x.key === typeActif)!;
+  const zonesDuType = parType[typeActif] || [];
+
+  const liste = useMemo(() => {
+    const texte = q.trim().toLowerCase();
+    if (!texte) return zonesDuType;
+    return zonesDuType.filter(z => [z.nom_zone, z.pole_nom, z.region_nom, z.departement_nom]
+      .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
+  }, [zonesDuType, q]);
+
+  // La ligne de contexte porte ce que les encadrés des cartes de type
+  // disaient : combien d'entreprises sont installées dans ce type de zone.
+  const nbEnt = zonesDuType.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
+  const sousTitre = onglet === "zones" && !loading && !erreur
+    ? `${t.label} · ${nbEnt} entreprise${nbEnt > 1 ? "s" : ""} installée${nbEnt > 1 ? "s" : ""}`
+    : null;
+
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+      <style>{STYLE_GRILLE}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      {/* La création se fait depuis la carte du type concerné (« Ajouter une ZES »…) */}
-      <BarreTitre titre="Pôles & Zones d'investissement" compact ton="orange" pleineLargeur>
-        <BarreTitreSegment
-          options={[
-            { v: "zones", l: "Zones d'investissement", count: zones.length },
-            { v: "poles", l: "Pôles territoires",      count: polesCount },
-          ]}
-          value={onglet} onChange={v => setOnglet(v)} />
-      </BarreTitre>
+      <EnteteAdmin titre="Pôles & Zones d'investissement"
+        compteur={loading ? null : (onglet === "zones" ? zones.length : polesCount)}
+        sousTitre={sousTitre}
+        recherche={onglet === "zones" && !loading && !erreur && zonesDuType.length > 0 ? (
+          <ChampRecherche value={q} onChange={setQ} arrondi
+            placeholder="Rechercher…" style={{ width: 238 }} />
+        ) : null}
+        action={onglet === "zones" ? (
+          // LE BOUTON NOMME LE TYPE RETENU. « Ajouter une zone » aurait obligé à
+          // choisir le type dans la modale ; la bascule l'a déjà choisi.
+          <BoutonPrincipal onClick={() => openAjouterZone(typeActif)} icone={<Plus size={15} />}>
+            Ajouter une {t.code}
+          </BoutonPrincipal>
+        ) : null}>
 
-      <div style={{ padding: "28px 40px 80px" }}>
-      {loading ? (
-        <SkeletonCards n={3} cols={3} height={190} />
-      ) : erreur ? (
-        <ErreurChargement onRetry={() => charger()} />
-      ) : onglet === "poles" ? <OngletPoles /> : (
-        <div>
-          {/* Cards types — style page publique */}
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(TYPE_ZONES.length, 3)},1fr)`, gap: 14, marginBottom: selectedType ? 32 : 0 }}>
-            {TYPE_ZONES.map(t => {
-              const zDuT = zones.filter(z => z.type_zone === t.key);
-              const nbEnt = zDuT.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
-              const active = selectedType === t.key;
-              const c = t.color;
-              const GRADS: Record<string,string> = {
-                "var(--bleu)":"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)",
-                "var(--orange)":"linear-gradient(90deg,var(--orange) 0%,var(--orange) 60%,var(--orange) 100%)",
-                "var(--vert)":"linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)",
-              };
-              const grad = GRADS[c] || `linear-gradient(90deg,${c} 0%,${c} 100%)`;
+        {/* DEUX BASCULES SUR UNE LIGNE, ET C'EST ICI LÉGITIME : ce ne sont pas
+            des filtres qui doublent la grille, c'est la NAVIGATION de la page.
+            À gauche, quel sous-module on lit ; à droite, quel type de zone.
+            Sans elles, on ne voit rien. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <Segments value={onglet} onChange={v => setOnglet(v)} options={[
+            { v: "zones", l: "Zones d'investissement", n: zones.length },
+            { v: "poles", l: "Pôles territoires",      n: polesCount },
+          ] as const} />
+          {onglet === "zones" && (
+            <div style={{ marginLeft: "auto" }}>
+              <Segments value={typeActif} onChange={setTypeChoisi} options={
+                TYPE_ZONES.map(x => ({ v: x.key, l: x.code, n: (parType[x.key] || []).length }))} />
+            </div>
+          )}
+        </div>
+      </EnteteAdmin>
+
+      <div style={{ padding: "20px 32px 80px" }}>
+        {loading ? (
+          <SkeletonCards n={6} cols={3} height={172} />
+        ) : erreur ? (
+          <ErreurChargement onRetry={() => charger()} />
+        ) : onglet === "poles" ? <OngletPoles /> : zonesDuType.length === 0 ? (
+          <EtatVide icone={<IconeModule taille={26} />} titre={`Aucune zone ${t.code}`}
+            texte={t.label + " — aucune zone de ce type n'est enregistrée."}
+            action={<BoutonPrincipal onClick={() => openAjouterZone(typeActif)} icone={<Plus size={15} />}>
+              Ajouter une {t.code}
+            </BoutonPrincipal>} />
+        ) : liste.length === 0 ? (
+          <EtatVide icone={<Search size={26} />} titre="Aucune zone trouvée"
+            texte={`Aucune zone ${t.code} ne correspond à « ${q.trim()} ».`}
+            action={
+              <button onClick={() => setQ("")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
+                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "var(--font-google-sans)" }}>
+                <X size={13} /> Effacer la recherche
+              </button>
+            } />
+        ) : (
+          <div className="charge-in adm-grille">
+            {liste.map(z => {
+              const n = z.entreprises?.length || 0;
+              const lieu = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
               return (
-                <div key={t.key} onClick={() => setSelectedType(active ? null : t.key)}
-                  style={{ background: "var(--carte)", border: `1.5px solid ${voile(c, active ? 60 : 45)}`, borderRadius: 14, cursor: "pointer",
-                    transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-                    boxShadow: active ? `0 12px 28px ${voile(c, 18)}` : `0 4px 18px ${voile(c, 15)}`,
-                    transform: active ? "translateY(-2px)" : "none",
-                    display: "flex", flexDirection: "column" as const, overflow: "hidden", minWidth: 0 }}
-                  onMouseEnter={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = `0 12px 28px ${voile(c, 18)}`; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = `${voile(c, 60)}`; }
-                    // Titre trop long : glisse pour révéler la fin
-                    const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
-                    const span = box?.firstElementChild as HTMLElement | null;
-                    if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                  }}
-                  onMouseLeave={ev => {
-                    if (!active) { ev.currentTarget.style.boxShadow = `0 4px 18px ${voile(c, 15)}`; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = `${voile(c, 45)}`; }
-                    const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
-                    if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                  }}>
-
-                  {/* Bandeau du type — même style que la page publique */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 7, background: grad, padding: "6px 16px" }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--carte)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }}/>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: "var(--sur-bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{t.code}</span>
-                    {active && (
-                      <span style={{ marginLeft: "auto", width: 16, height: 16, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width="9" height="7" viewBox="0 0 9 7"><path d="M1 3.5L3.5 6L8 1" stroke="var(--carte)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ padding: "14px 16px 14px", flex: 1 }}>
-                    {/* Libellé du type (défile au survol si trop long) */}
-                    <div data-marquee style={{ fontWeight: 700, fontSize: 13.5, color: "var(--encre)", lineHeight: 1.35, overflow: "hidden", whiteSpace: "nowrap" as const }}>
-                      <span style={{ display: "inline-block" }}>{t.label}</span>
-                    </div>
-
-                    {/* Compteurs libellés */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                      <div style={{ background: `${voile(c, 4)}`, border: `1px solid ${voile(c, 12)}`, borderRadius: 10, padding: "8px 11px" }}>
-                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: nbEnt > 0 ? "var(--encre)" : "var(--gris)" }}>{nbEnt}</p>
-                      </div>
-                      <div style={{ background: `${voile(c, 4)}`, border: `1px solid ${voile(c, 12)}`, borderRadius: 10, padding: "8px 11px" }}>
-                        <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", color: c, textTransform: "uppercase" as const, marginBottom: 3 }}>Zone{zDuT.length > 1 ? "s" : ""}</p>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: zDuT.length > 0 ? "var(--encre)" : "var(--gris)" }}>{zDuT.length}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action */}
-                  <div style={{ display: "flex", borderTop: "1px solid var(--bordure)" }}>
-                    <button className="ro-w" onClick={ev => { ev.stopPropagation(); openAjouterZone(t.key); }}
-                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: c, fontWeight: 700, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                      onMouseEnter={ev => ev.currentTarget.style.background = `${voile(c, 5)}`}
-                      onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                      <Plus size={13} /> Ajouter une {t.code}
-                    </button>
-                  </div>
-                </div>
+                <CarteAdmin key={z.id} onVoir={() => setVueId(z.id)}
+                  aria={`Ouvrir la fiche : ${z.nom_zone}`} titre={z.nom_zone}
+                  contexte={z.superficie
+                    ? <TexteContexte>{Number(z.superficie).toLocaleString("fr-FR")} ha</TexteContexte>
+                    : null}
+                  // Le pôle tient le coin droit, comme sur la grille des
+                  // entreprises : c'est le même rattachement territorial, il se
+                  // lit donc au même endroit et dans la même couleur.
+                  badge={z.pole_nom ? (
+                    <span title={z.pole_nom}
+                      style={{ ...badgePole(z.pole_nom), whiteSpace: "nowrap", overflow: "hidden",
+                        textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>{z.pole_nom}</span>
+                  ) : null}
+                  donnees={[
+                    <Donnee key="l" label="Localisation" valeur={lieu || null} />,
+                    <Donnee key="e" label={n > 1 ? "Entreprises" : "Entreprise"} valeur={String(n)} />,
+                  ]}
+                  actions={<>
+                    <ActionCarte onClick={() => openEditZone(z)} titre="Modifier"
+                      teinte="var(--bleu)" icone={<Pencil size={13} />}>Modifier</ActionCarte>
+                    <ActionCarte onClick={() => { setEntModalZone(z); setEntModal(true); }}
+                      titre="Rattacher une entreprise à cette zone"
+                      teinte="var(--vert)" icone={<Plus size={13} />}>Entreprise</ActionCarte>
+                    <span style={{ marginLeft: "auto" }} />
+                    <ActionCarte onClick={() => handleDeleteZone(z.id)} enCours={deleting === z.id}
+                      titre="Supprimer" teinte="var(--danger)" icone={<Trash2 size={13} />} />
+                  </>} />
               );
             })}
           </div>
-
-          {/* Zones du type sélectionné */}
-          {selectedType && (() => {
-            const t = TYPE_ZONES.find(x => x.key === selectedType)!;
-            const zDuT = zones.filter(z => z.type_zone === t.key);
-            return zDuT.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 24px", color: "var(--gris)" }}>
-                <Building2 size={44} style={{ marginBottom: 14, opacity: 0.3 }} />
-                <p style={{ fontSize: 15, fontWeight: 600, color: "var(--texte)" }}>Aucune zone {t.code}</p>
-                <p style={{ fontSize: 13.5, marginTop: 6 }}>Utilisez « Ajouter une {t.code} » sur la carte du type pour en créer une.</p>
-              </div>
-            ) : (
-              <>
-              {/* En-tête du type sélectionné — même bandeau que la page publique */}
-              <div style={{ display: "flex", alignItems: "center", gap: 15, padding: "15px 20px", marginBottom: 20, borderRadius: 16,
-                background: `linear-gradient(100deg, ${voile(t.color, 8)} 0%, ${voile(t.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
-                border: `1px solid ${voile(t.color, 13)}` }}>
-                <div style={{ width: 44, height: 44, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--carte)", border: `1px solid ${t.border}`, boxShadow: `0 2px 6px ${voile(t.color, 10)}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.02em", color: t.color }}>{t.code}</span>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 9.5, fontWeight: 700, color: t.color, textTransform: "uppercase" as const, letterSpacing: "0.12em", marginBottom: 3 }}>Type de zone</div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "var(--encre)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{t.label}</div>
-                </div>
-                <span style={{ display: "inline-flex", alignItems: "center", fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)", background: t.color, padding: "6px 15px", borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const, boxShadow: `0 2px 8px ${voile(t.color, 25)}` }}>
-                  {zDuT.length} zone{zDuT.length > 1 ? "s" : ""}
-                </span>
-              </div>
-
-              <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
-                {zDuT.map(z => {
-                  // Accent de survol = couleur du pôle (comme la page publique)
-                  const hoverC = z.pole_nom ? poleAccent(z.pole_nom) : `${voile(t.color, 33)}`;
-                  const nbEnt = z.entreprises?.length || 0;
-                  return (
-                  <div key={z.id} onClick={() => setVueId(z.id)}
-                    style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden" }}
-                    onMouseEnter={ev => {
-                      ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = hoverC;
-                      // Contenus trop longs : glissent pour révéler la fin
-                      ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
-                        const span = box.firstElementChild as HTMLElement | null;
-                        if (span) { const d = span.scrollWidth - (box as HTMLElement).clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
-                      });
-                    }}
-                    onMouseLeave={ev => {
-                      ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)";
-                      ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
-                        const span = box.firstElementChild as HTMLElement | null;
-                        if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
-                      });
-                    }}>
-
-                    <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
-                      {/* Nom + superficie | badge pôle */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div data-marquee style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", whiteSpace: "nowrap" as const }}>
-                            <span style={{ display: "inline-block" }}>{z.nom_zone}</span>
-                          </div>
-                          {z.superficie && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{Number(z.superficie).toLocaleString("fr-FR")} ha</div>}
-                        </div>
-                        {z.pole_nom && (
-                          <span title={z.pole_nom} style={{ ...badgePole(z.pole_nom), whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
-                            {z.pole_nom}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Localisation · Entreprises en rangée épurée */}
-                      <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Localisation</p>
-                          <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: (z.departement_nom || z.region_nom) ? "var(--encre)" : "var(--gris)", overflow: "hidden", whiteSpace: "nowrap" as const }}>
-                            <span style={{ display: "inline-block" }}>{[z.departement_nom, z.region_nom].filter(Boolean).join(", ") || "—"}</span>
-                          </p>
-                        </div>
-                        <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Entreprise{nbEnt > 1 ? "s" : ""}</p>
-                          <p style={{ fontSize: 12.5, fontWeight: 700, color: nbEnt > 0 ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{nbEnt}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
-                      <button onClick={() => openEditZone(z)}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
-                        onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                        <Pencil size={12} /> Modifier
-                      </button>
-                      <div style={{ width: 1, background: "var(--fond)" }} />
-                      <button onClick={() => { setEntModalZone(z); setEntModal(true); }}
-                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--vert)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--vert-rgb) / 0.05)"}
-                        onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                        <Plus size={12} /> Entreprise
-                      </button>
-                      <div style={{ width: 1, background: "var(--fond)" }} />
-                      <button onClick={() => handleDeleteZone(z.id)} disabled={deleting === z.id}
-                        style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
-                        onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-                        {deleting === z.id ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
-                      </button>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-              </>
-            );
-          })()}
-        </div>
-      )}
+        )}
       </div>
 
       {vue && (
