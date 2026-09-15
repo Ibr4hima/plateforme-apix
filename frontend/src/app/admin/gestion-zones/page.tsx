@@ -1018,20 +1018,12 @@ export default function GestionZonesPage() {
       .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
   }, [zonesDuType, q]);
 
-  // La ligne de contexte porte ce que les encadrés des cartes de type
-  // disaient : combien d'entreprises sont installées dans ce type de zone.
-  const nbEnt = zonesDuType.reduce((a, z) => a + (z.entreprises?.length || 0), 0);
-  const sousTitre = onglet === "zones" && !loading && !erreur
-    ? `${t.label} · ${nbEnt} entreprise${nbEnt > 1 ? "s" : ""} installée${nbEnt > 1 ? "s" : ""}`
-    : null;
-
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin titre="Pôles & Zones d'investissement"
         compteur={loading ? null : (onglet === "zones" ? zones.length : polesCount)}
-        sousTitre={sousTitre}
         recherche={onglet === "zones" && !loading && !erreur && zonesDuType.length > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
             placeholder="Rechercher…" style={{ width: 238 }} />

@@ -61,13 +61,10 @@ export function IconeModule({ taille = 20 }: { taille?: number }) {
   );
 }
 
-export default function EnteteAdmin({ titre, compteur, sousTitre, recherche, action, children }: {
+export default function EnteteAdmin({ titre, compteur, recherche, action, children }: {
   titre: string;
   /** Le nombre d'éléments du module. Affiché en pastille contre le titre. */
   compteur?: number | null;
-  /** Une ligne de contexte sous le titre. À n'employer que si elle apprend
-      quelque chose que la liste ne montre pas déjà. */
-  sousTitre?: React.ReactNode;
   /** Le champ de recherche, sur la ligne du titre. */
   recherche?: React.ReactNode;
   /** L'action principale, à droite. Une seule : les autres vivent sur les lignes. */
@@ -89,19 +86,19 @@ export default function EnteteAdmin({ titre, compteur, sousTitre, recherche, act
           <IconeModule />
         </span>
 
-        <div style={{ minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <h1 style={{ margin: 0, fontSize: "1.34rem", fontWeight: 800, color: "var(--encre)",
-              letterSpacing: "-0.015em", lineHeight: 1.2, whiteSpace: "nowrap" }}>{titre}</h1>
-            {compteur != null && (
-              <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--bleu)",
-                background: "rgb(var(--bleu-rgb) / 0.09)", padding: "3px 10px", borderRadius: 999,
-                fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{compteur}</span>
-            )}
-          </div>
-          {sousTitre && (
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--gris)", overflow: "hidden",
-              textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sousTitre}</p>
+        {/* LE TITRE EST SEUL SUR SA LIGNE, sans ligne de contexte sous lui. Les
+            sous-titres essayés y redisaient ce que la grille montre déjà —
+            « 7 événements », « Zones Économiques Spéciales · 2 entreprises
+            installées » — et faisaient du titre un bloc de deux étages là où une
+            page d'administration n'a qu'à se nommer. Le compte tient dans la
+            pastille, le reste se lit sur les cartes. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+          <h1 style={{ margin: 0, fontSize: "1.34rem", fontWeight: 800, color: "var(--encre)",
+            letterSpacing: "-0.015em", lineHeight: 1.2, whiteSpace: "nowrap" }}>{titre}</h1>
+          {compteur != null && (
+            <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--bleu)",
+              background: "rgb(var(--bleu-rgb) / 0.09)", padding: "3px 10px", borderRadius: 999,
+              fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{compteur}</span>
           )}
         </div>
 
