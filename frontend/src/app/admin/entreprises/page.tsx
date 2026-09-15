@@ -5,17 +5,19 @@ import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FBut
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import PaysSelect from "@/components/shared/PaysSelect";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
-import { Building2, Eye, EyeOff, Loader2, Pencil, Plus, Trash, Trash2, User, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Eye, EyeOff, Loader2, Pencil, Plus, Search, Trash, Trash2, User, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
-import BarreTitre from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
+import { ChampRecherche } from "@/components/admin/UIAdmin";
 import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { fetchTous } from "@/lib/fetchTous";
 import { fmtDate } from "@/lib/format";
-import { badgePole, poleAccent, badge_gris } from "@/lib/couleurs";
+import { badgePole } from "@/lib/couleurs";
 
 import { API_BASE } from "@/lib/api";
 
@@ -462,74 +464,63 @@ function EntrepriseModal({ open, onClose, editItem, onSaved }: {
     </FModal>
   );
 }
-// ── Carte entreprise (gabarit public + barre d'actions d'administration) ──────
+// ═══════════════════════════════════════════════════════════════════════════
+// LA LISTE — dessin seulement. Mêmes appels, même ordre, mêmes actions.
+// La carte, ses données, ses actions et l'état vide viennent du gabarit partagé
+// des grilles d'administration : c'est là que se décide la forme, ici que se
+// décide le CONTENU — quel badge, quelles données, quel contexte.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Carte entreprise ─────────────────────────────────────────────────────────
 function CarteEntreprise({ e, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
   e: any; onVoir: () => void; onEditer: () => void; onPublier: () => void; onSupprimer: () => void;
   publiant: boolean; supprimant: boolean;
 }) {
-  // Couleur du pôle territoire : jetons partagés du design system.
-  const accentPole = poleAccent(e.pole_territoire_nom || "");
+  const nonPublie = e.est_publie === false;
+
+  // LA FORME JURIDIQUE PERD SA PARENTHÈSE — « Société Anonyme (SA) » devient
+  // « Société Anonyme ». Le sigle ne tenait pas sur la ligne de contexte, et une
+  // forme coupée à « Société par actions simplifi… (SA… » n'apprend rien de plus
+  // que la forme entière. La fiche porte le libellé complet.
+  const forme = e.forme_juridique ? e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "") : null;
+
   return (
-    <div onClick={onVoir}
-      style={{ background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
-      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accentPole; }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
-
-      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
-        {/* Dénomination + forme juridique | publication & pôle territoire */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)", lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom}</div>
-            {e.forme_juridique && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{e.forme_juridique.replace(/\s*\([^)]*\)\s*$/, "")}</div>}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flexShrink: 1, justifyContent: "flex-end" }}>
-            {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
-            {e.pole_territoire_nom && (
-              <span title={e.pole_territoire_nom} style={{ ...badgePole(e.pole_territoire_nom), whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
-                {e.pole_territoire_nom}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Date de création · Région en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date de création</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.date_creation ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{e.date_creation ? fmtDate(e.date_creation) : "—"}</p>
-          </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Région</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: e.region_nom ? "var(--encre)" : "var(--gris)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.region_nom || "—"}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions d'administration */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
-        <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          <Pencil size={12} /> Modifier
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
-          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
-        </button>
-      </div>
-    </div>
+    <CarteAdmin onVoir={onVoir} aria={`Ouvrir la fiche : ${e.nom}`}
+      pointille={nonPublie} titre={e.nom}
+      contexte={forme ? <TexteContexte>{forme}</TexteContexte> : null}
+      // LE PÔLE TIENT LE COIN DROIT : c'est le rattachement territorial, la
+      // propriété par laquelle on cherche une entreprise sur cette grille, et
+      // celle que toutes portent. Sa couleur vient des jetons de pôle du design
+      // system — la même que sur la page publique et sur la carte des zones.
+      badge={e.pole_territoire_nom ? (
+        <span title={e.pole_territoire_nom}
+          style={{ ...badgePole(e.pole_territoire_nom), whiteSpace: "nowrap",
+            overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0 }}>
+          {e.pole_territoire_nom}
+        </span>
+      ) : null}
+      // « CRÉATION », NON « DATE DE CRÉATION » : l'intitulé passait à deux
+      // lignes dans une colonne de 140 px et décalait la valeur d'un cran par
+      // rapport à celle d'à côté. Le mot seul suffit — une date se reconnaît.
+      donnees={[
+        <Donnee key="c" label="Création" valeur={e.date_creation ? fmtDate(e.date_creation) : null} />,
+        <Donnee key="r" label="Région" valeur={e.region_nom || null} />,
+      ]}
+      actions={<>
+        <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
+          Modifier
+        </ActionCarte>
+        <ActionCarte onClick={onPublier} enCours={publiant}
+          titre={e.est_publie ? "Retirer de la page publique" : "Publier"}
+          teinte={e.est_publie ? "var(--vert)" : "var(--orange)"}
+          icone={e.est_publie ? <EyeOff size={13} /> : <Eye size={13} />}>
+          {e.est_publie ? "Retirer" : "Publier"}
+        </ActionCarte>
+        {nonPublie && <EtiquetteNonPublie />}
+        <span style={{ marginLeft: "auto" }} />
+        <ActionCarte onClick={onSupprimer} enCours={supprimant} titre="Supprimer"
+          teinte="var(--danger)" icone={<Trash2 size={13} />} />
+      </>} />
   );
 }
 
@@ -543,6 +534,7 @@ export default function AdminEntreprises() {
   const [vue,         setVue]         = useState<any>(null);
   const [deleting,    setDeleting]    = useState<string|null>(null);
   const [togglingId,  setTogglingId]  = useState<string|null>(null);
+  const [q,           setQ]           = useState("");
 
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
@@ -573,39 +565,56 @@ export default function AdminEntreprises() {
     } finally { setTogglingId(null); }
   };
 
+  // LA RECHERCHE PORTE SUR CE QUE LA CARTE MONTRE, plus le pôle et la forme :
+  // ce sont les quatre entrées par lesquelles on cherche une entreprise dans un
+  // registre — son nom, son territoire, sa région, son statut juridique.
+  const liste = useMemo(() => {
+    const texte = q.trim().toLowerCase();
+    if (!texte) return entreprises;
+    return entreprises.filter(e => [e.nom, e.pole_territoire_nom, e.region_nom, e.forme_juridique]
+      .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
+  }, [entreprises, q]);
+
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+      <style>{STYLE_GRILLE}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Entreprises installées" compact ton="orange" pleineLargeur
-        droite={
-          <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={ev => { ev.currentTarget.style.background = "var(--orange-voile)"; ev.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={ev => { ev.currentTarget.style.background = "var(--carte)"; ev.currentTarget.style.transform = "none"; }}>
-            <Plus size={15} /> Ajouter une entreprise
-          </button>
-        }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{entreprises.length}</span>
-      </BarreTitre>
+      <EnteteAdmin titre="Entreprises installées"
+        compteur={loading ? null : entreprises.length}
+        recherche={!loading && !erreur && entreprises.length > 0 ? (
+          <ChampRecherche value={q} onChange={setQ} arrondi
+            placeholder="Rechercher…" style={{ width: 238 }} />
+        ) : null}
+        action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+          Ajouter une entreprise
+        </BoutonPrincipal>} />
 
-      {/* ── Grille pleine largeur (3 colonnes) ── */}
-      <div style={{ padding: "28px 40px 80px" }}>
+      <div style={{ padding: "20px 32px 80px" }}>
         {loading ? (
-          <SkeletonCards n={6} cols={3} height={200} />
+          <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : entreprises.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
-            <Building2 size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucune entreprise enregistrée</p>
-            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter une entreprise » pour commencer.</p>
-          </div>
+          <EtatVide icone={<IconeModule taille={26} />} titre="Aucune entreprise enregistrée"
+            texte="Les entreprises publiées alimentent l'annuaire des sociétés installées."
+            action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+              Ajouter une entreprise
+            </BoutonPrincipal>} />
+        ) : liste.length === 0 ? (
+          <EtatVide icone={<Search size={26} />} titre="Aucune entreprise trouvée"
+            texte={`Aucune entreprise ne correspond à « ${q.trim()} ».`}
+            action={
+              <button onClick={() => setQ("")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
+                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "var(--font-google-sans)" }}>
+                <X size={13} /> Effacer la recherche
+              </button>
+            } />
         ) : (
-          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
-            {entreprises.map(e => (
+          <div className="charge-in adm-grille">
+            {liste.map(e => (
               <CarteEntreprise key={e.id} e={e}
                 onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
                 onPublier={() => handleTogglePublie(e)} onSupprimer={() => handleDelete(e.id)}
