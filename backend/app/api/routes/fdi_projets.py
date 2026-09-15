@@ -68,9 +68,16 @@ CLE_DEST = "lower(regexp_replace(normalize(coalesce({c}, ''), NFKD), '[^ -~]', '
 # Le défaut était encore LATENT ici — aucun projet n'a été saisi à ce jour —
 # mais le formulaire existe, et le corriger d'avance évite qu'il se découvre
 # sur la première saisie réelle.
-ORDRE_PROJETS = ("p.annee DESC, p.mois DESC NULLS LAST, "
-                 "(p.origine = 'saisie') DESC, "
-                 "CASE WHEN p.origine = 'saisie' THEN p.created_at END DESC, "
+#
+# La règle est isolée de l'ordre complet parce que les deux écrans ne rangent
+# PAS pareil ce qui suit : l'administration enchaîne sur l'ordre du relevé, la
+# vue publique sur le montant. Ce qu'ils partagent, c'est exactement ceci — une
+# saisie passe en tête de son mois, la dernière d'abord — et le partager
+# littéralement évite que l'un des deux dérive le jour où la règle changera.
+SAISIE_EN_TETE = ("(p.origine = 'saisie') DESC, "
+                  "CASE WHEN p.origine = 'saisie' THEN p.created_at END DESC")
+
+ORDRE_PROJETS = (f"p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE}, "
                  "p.lot_id, p.ligne, p.id")
 
 

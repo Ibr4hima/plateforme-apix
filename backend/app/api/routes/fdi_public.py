@@ -17,6 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.api.routes.fdi_projets import SAISIE_EN_TETE
 from app.services.fdi_projets import COTE, filtres_multiples as _liste, sens_de_lecture as _sens
 
 router = APIRouter(prefix="/fdi/public", tags=["fdi"])
@@ -344,7 +345,21 @@ async def projets(
                p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime,
                p.description_fr, p.description_en
         {base}
-        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.capex_musd DESC NULLS LAST
+        -- LE PLUS RÉCEMMENT CONNU D'ABORD, PUIS LE PLUS GROS. À l'intérieur
+        -- d'un mois, cet écran range par montant — c'est le classement voulu,
+        -- et il ne change pas. Mais un projet saisi à la main se rangeait à son
+        -- montant comme n'importe quelle ligne du relevé, donc disparaissait au
+        -- milieu de la page alors qu'on vient de l'ajouter. Il passe désormais
+        -- en tête de son mois, la dernière saisie d'abord, exactement comme sur
+        -- les signaux et sur le tableau d'administration.
+        --
+        -- L'IDENTIFIANT FERME LE TRI, et ce n'est pas décoratif : deux projets
+        -- du même mois au même montant n'avaient aucun départage, si bien que
+        -- Postgres pouvait les rendre dans un ordre différent d'une page à
+        -- l'autre — donc en montrer un deux fois et en sauter un autre à la
+        -- frontière des pages.
+        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE},
+                 p.capex_musd DESC NULLS LAST, p.id
         LIMIT :n OFFSET :o"""),
         {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 
