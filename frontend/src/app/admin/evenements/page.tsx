@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, MapPin, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
-import BarreTitre from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal } from "@/components/admin/EnteteAdmin";
 import EvenementVueModal from "@/components/shared/EvenementVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -507,7 +507,26 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
   );
 }
 
-// ── Cartes & filtres (mêmes jetons que la page publique) ──────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LA LISTE — refonte visuelle. Rien du comportement n'a changé : mêmes appels,
+// mêmes filtres, même tri, mêmes actions. Ce qui suit ne touche qu'au dessin.
+//
+// CE QUE LA GRILLE PRÉCÉDENTE FAISAIT MAL, et qui a guidé chaque choix :
+//
+//   * TROIS COULEURS PAR CARTE. Un liseré de rôle, une pastille de rôle, une
+//     bande de statut, trois actions colorées en bas — soit jusqu'à cinq accents
+//     sur un même rectangle. Rien ne ressortait parce que tout ressortait.
+//
+//   * LES ACTIONS PESAIENT AUTANT QUE LES DONNÉES. La barre du bas, répétée à
+//     l'identique sur chaque carte, occupait un tiers de sa hauteur et son poids
+//     visuel entier — alors qu'on la lit une fois sur vingt.
+//
+//   * « DATE » ET « LIEU » ÉTAIENT ÉTIQUETÉS. Un intitulé en capitales au-dessus
+//     de « 30 mars 2027 » n'apprend rien : la forme de la donnée la nomme. Deux
+//     pictogrammes suffisent, et rendent la moitié de la hauteur de la carte.
+//
+// ═══════════════════════════════════════════════════════════════════════════
 
 // Badges de rôle APIX : organisation vert, participant orange, partenaire bleu,
 // invité violet, sponsor ambre — identiques à la page publique.
@@ -519,12 +538,6 @@ const ROLE_BADGE: Record<string, React.CSSProperties> = {
   "Invité":          badge_violet,
   "Sponsor":         badge_ambre,
 };
-const ROLE_ACCENT: Record<string, string> = {
-  "Organisateur": "var(--vert)", "Co-organisateur": "var(--vert)",
-  "Participant": "var(--orange)", "Partenaire": "var(--bleu)",
-  "Invité": "var(--violet)", "Sponsor": "var(--ambre)",
-};
-const accentRole = (role?: string | null) => (role && ROLE_ACCENT[role]) || "var(--bleu)";
 
 // Échéance d'un événement à venir : « Dans 2 ans », « Dans 3 mois », « Dans 12 jours »
 function dansCombien(e: any): string | null {
@@ -541,7 +554,34 @@ function dansCombien(e: any): string | null {
   return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
 }
 
-// ── Carte événement (gabarit public + barre d'actions d'administration) ────────
+/** Une action de carte : muette au repos, teintée au survol.
+ *
+ *  ELLES NE SONT PLUS QUE DU GRIS TANT QU'ON NE LES VISE PAS. Coloriées en
+ *  permanence, trois par carte et sept cartes par écran, elles faisaient
+ *  vingt et une taches de couleur pour des gestes qu'on fait rarement — et
+ *  la donnée, elle, passait après. Le survol rend la couleur au moment où
+ *  elle sert : quand la main est déjà sur le bouton. */
+function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
+  onClick: () => void; titre: string; teinte: string; enCours?: boolean;
+  icone: React.ReactNode; children?: React.ReactNode;
+}) {
+  return (
+    <button onClick={onClick} disabled={enCours} title={titre} aria-label={titre}
+      style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none",
+        background: "transparent", color: "var(--gris-fort)", cursor: enCours ? "default" : "pointer",
+        padding: "6px 9px", borderRadius: 8, fontSize: 11.5, fontWeight: 650,
+        fontFamily: "var(--font-google-sans)", transition: "background 0.14s, color 0.14s" }}
+      onMouseEnter={ev => { ev.currentTarget.style.color = teinte;
+        ev.currentTarget.style.background = `color-mix(in srgb, ${teinte} 9%, transparent)`; }}
+      onMouseLeave={ev => { ev.currentTarget.style.color = "var(--gris-fort)";
+        ev.currentTarget.style.background = "transparent"; }}>
+      {enCours ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : icone}
+      {children}
+    </button>
+  );
+}
+
+// ── Carte événement ──────────────────────────────────────────────────────────
 function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
   e: any; estProchain: boolean;
   onVoir: () => void; onEditer: () => void; onPublier: () => void; onSupprimer: () => void;
@@ -550,105 +590,130 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   const statut = computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
   const estEnCours = statut === "en_cours";
   const estPasse   = statut === "termine";
-  const accent = estProchain
-    ? { c: "var(--bleu)", grad: "linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu) 60%,var(--bleu-clair) 100%)", label: "Prochain événement", b: "rgb(var(--bleu-rgb) / 0.45)", b2: "rgb(var(--bleu-rgb) / 0.6)", sh: "0 4px 18px rgb(var(--bleu-rgb) / 0.15)" }
+  const nonPublie  = e.est_publie === false;
+
+  // LE STATUT NE TIENT PLUS QU'À UN FILET DE TROIS PIXELS EN HAUT, et à une
+  // pastille contre le titre. La bande dégradée qu'il occupait auparavant
+  // criait plus fort que le nom de l'événement, qui est pourtant ce qu'on
+  // cherche. Une seule carte sur sept porte cette marque : à trois pixels, elle
+  // se voit d'un coup d'œil sur la grille entière.
+  const marque = estProchain
+    ? { c: "var(--bleu)", rgb: "var(--bleu-rgb)", label: "Prochain" }
     : estEnCours
-    ? { c: "var(--vert)", grad: "linear-gradient(90deg,var(--vert-fonce) 0%,var(--vert) 60%,var(--vert) 100%)", label: "Événement en cours", b: "rgb(var(--vert-rgb) / 0.45)", b2: "rgb(var(--vert-rgb) / 0.6)", sh: "0 4px 18px rgb(var(--vert-rgb) / 0.15)" }
+    ? { c: "var(--vert)", rgb: "var(--vert-rgb)", label: "En cours" }
     : null;
+
   // Plage compacte (« 6 → 10 juin 2026 ») : une plage écrite en entier des deux
   // côtés déborde de la colonne et se fait tronquer.
   const dateStr = e.date_debut
     ? fmtPlageDates(e.date_debut, e.date_fin)
     : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
-  const txtC = estPasse ? "var(--texte)" : "var(--encre)";
-  const hoverC = accent ? accent.c : accentRole(e.role_apix);
-  const sousTitre = statut === "a_venir"
-    ? (dansCombien(e) ?? (e.edition != null ? ordinalEdition(e.edition) : null))
-    : (e.edition != null ? ordinalEdition(e.edition) : null);
 
-  const marquee = (ev: React.MouseEvent, reset: boolean) => {
-    ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box => {
-      const span = box.firstElementChild as HTMLElement | null;
-      if (!span) return;
-      if (reset) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; return; }
-      const d = span.scrollWidth - (box as HTMLElement).clientWidth;
-      if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; }
-    });
-  };
+  // Sous-titre : l'échéance quand elle existe — c'est ce qu'on veut savoir d'un
+  // événement à venir —, sinon l'édition.
+  const edition = e.edition != null ? ordinalEdition(e.edition) : null;
+  const echeance = statut === "a_venir" ? dansCombien(e) : null;
+  const meta = [echeance, edition].filter(Boolean).join(" · ");
 
   return (
     <div {...carteCliquable(onVoir, `Ouvrir la fiche : ${e.nom_event}`)}
-      style={{ background: estPasse ? "var(--carte-douce)" : "var(--carte)", border: accent ? `1.5px solid ${accent.b}` : "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: accent ? accent.sh : "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: e.est_publie === false ? 0.85 : 1 }}
-      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent ? accent.b2 : `${hoverC}55`; marquee(ev, false); }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = accent ? accent.sh : "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = accent ? accent.b : "rgb(var(--encre-rgb) / 0.12)"; marquee(ev, true); }}>
+      className="ev-carte"
+      style={{ background: "var(--carte)", borderRadius: 14, cursor: "pointer",
+        border: nonPublie ? "1px dashed rgb(var(--encre-rgb) / 0.22)" : "1px solid rgb(var(--encre-rgb) / 0.11)",
+        display: "flex", flexDirection: "column" as const, overflow: "hidden",
+        transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s" }}>
 
-      {/* Bande d'accent : prochain événement (bleu) / en cours (vert) */}
-      {accent && (
-        <div style={{ display: "flex", alignItems: "center", gap: 7, background: accent.grad, padding: "6px 16px", flexShrink: 0 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--carte)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 800, color: "var(--sur-bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{accent.label}</span>
-        </div>
+      {marque && (
+        <span aria-hidden style={{ height: 3, flexShrink: 0,
+          background: `linear-gradient(90deg, ${marque.c}, rgb(${marque.rgb} / 0.35))` }} />
       )}
 
-      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
-        {/* Titre + échéance | publication & rôle APIX */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
+      <div style={{ padding: "16px 18px 14px", flex: 1, display: "flex",
+        flexDirection: "column" as const, gap: 12, opacity: estPasse ? 0.82 : 1 }}>
+
+        {/* Titre + rôle APIX */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          gap: 10, minWidth: 0 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</div>
-            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
+            {/* LE TITRE A LA LIGNE POUR LUI SEUL. La pastille de statut, posée à
+                sa gauche, lui prenait le quart de la largeur : « Salon
+                international de l'agriculture… » se coupait à « Salon
+                international … », et c'est le NOM qu'on cherche sur une grille,
+                pas le statut. La pastille descend donc d'une ligne, où elle
+                voisine l'édition sans rien disputer à personne. */}
+            <div title={e.nom_event} style={{ fontWeight: 800, fontSize: 15, color: "var(--encre)",
+              lineHeight: 1.3, letterSpacing: "-0.01em", overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5,
+              minWidth: 0, flexWrap: "wrap" as const }}>
+              {marque && (
+                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.10em",
+                  textTransform: "uppercase" as const, color: marque.c,
+                  background: `rgb(${marque.rgb} / 0.11)`, padding: "2px 7px", borderRadius: 999,
+                  flexShrink: 0, whiteSpace: "nowrap" as const }}>{marque.label}</span>
+              )}
+              {meta && <span style={{ fontSize: 11.5, color: "var(--gris)" }}>{meta}</span>}
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-            {e.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
-            {e.role_apix && <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris), whiteSpace: "nowrap" as const, flexShrink: 0 }}>{ROLES_APIX_LABELS[e.role_apix] || e.role_apix}</span>}
-          </div>
+          {e.role_apix && (
+            <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris),
+              whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+              {ROLES_APIX_LABELS[e.role_apix] || e.role_apix}
+            </span>
+          )}
         </div>
 
-        {/* Date · Lieu en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
-          {/* La date prend un peu plus de place que le lieu, et rétrécit d'un
-              cran sur les plages à cheval sur deux années — la seule forme qui
-              ne tient pas dans la colonne (« 28 déc. 2026 → 3 janv. 2027 »). */}
-          <div style={{ flex: 1.15, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Date</p>
-            <p data-marquee style={{ fontSize: (dateStr?.length ?? 0) > 22 ? 11 : 12.5, fontWeight: 700, color: dateStr ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums", overflow: "hidden", whiteSpace: "nowrap" as const }}>
-              <span style={{ display: "inline-block" }}>{dateStr || "—"}</span>
-            </p>
-          </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Lieu</p>
-            <p data-marquee style={{ fontSize: 12.5, fontWeight: 700, color: lieu ? txtC : "var(--gris)", overflow: "hidden", whiteSpace: "nowrap" as const }}>
-              <span style={{ display: "inline-block" }}>{lieu || "—"}</span>
-            </p>
-          </div>
+        {/* LA DATE ET LE LIEU SUR UNE SEULE LIGNE, sans intitulés : deux
+            pictogrammes disent de quoi il s'agit, et la carte y gagne la moitié
+            de sa hauteur. Ils passent à la ligne d'eux-mêmes quand la colonne
+            est étroite, au lieu de se faire tronquer. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" as const,
+          marginTop: "auto", fontSize: 12.5, color: "var(--texte)" }}>
+          <span title={dateStr || undefined} style={{ display: "inline-flex", alignItems: "center",
+            gap: 6, minWidth: 0, fontWeight: 650, fontVariantNumeric: "tabular-nums" }}>
+            <CalendarDays size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+              {dateStr || "Date à préciser"}
+            </span>
+          </span>
+          <span aria-hidden style={{ color: "var(--bordure-forte)" }}>·</span>
+          <span title={lieu || undefined} style={{ display: "inline-flex", alignItems: "center",
+            gap: 6, minWidth: 0, fontWeight: 650 }}>
+            <MapPin size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+              {lieu || "Lieu à préciser"}
+            </span>
+          </span>
         </div>
       </div>
 
       {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
           Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }}
+      <div className="ro-w" style={{ display: "flex", alignItems: "center", gap: 2,
+        padding: "6px 10px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)" }}
         onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
-        <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          <Pencil size={12} /> Modifier
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: e.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = e.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : e.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
-          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
-        </button>
+        <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
+          Modifier
+        </ActionCarte>
+        <ActionCarte onClick={onPublier} enCours={publiant}
+          titre={e.est_publie ? "Retirer de la page publique" : "Publier"}
+          teinte={e.est_publie ? "var(--vert)" : "var(--orange)"}
+          icone={e.est_publie ? <EyeOff size={13} /> : <Eye size={13} />}>
+          {e.est_publie ? "Retirer" : "Publier"}
+        </ActionCarte>
+        {/* L'ÉTAT « NON PUBLIÉ » SE DIT ICI, à côté du bouton qui le change, et
+            non plus en pastille près du titre : c'est une propriété de gestion,
+            pas une caractéristique de l'événement. */}
+        {nonPublie && (
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em",
+            textTransform: "uppercase" as const, color: "var(--gris)",
+            background: "rgb(var(--encre-rgb) / 0.06)", padding: "3px 8px", borderRadius: 999,
+            whiteSpace: "nowrap" as const }}>Non publié</span>
+        )}
+        <span style={{ marginLeft: "auto" }} />
+        <ActionCarte onClick={onSupprimer} enCours={supprimant} titre="Supprimer"
+          teinte="var(--danger)" icone={<Trash2 size={13} />} />
       </div>
     </div>
   );
@@ -752,38 +817,42 @@ export default function EvenementsAdminPage() {
     };
   }, [tous, pubF]);
 
+  // LA LIGNE DE CONTEXTE DIT L'ÉTAT DU MODULE, pas le nombre de lignes filtrées
+  // — celui-là est au bout de la barre d'outils, là où on vient de le changer.
+  const sousTitre = useMemo(() => {
+    if (loading || erreur || tous.length === 0) return null;
+    const nonPub = tous.filter(e => e.est_publie === false).length;
+    const bouts = [
+      parStatut.en_cours > 0 ? `${parStatut.en_cours} en cours` : null,
+      parStatut.a_venir  > 0 ? `${parStatut.a_venir} à venir`   : null,
+      nonPub > 0 ? `${nonPub} non publié${nonPub > 1 ? "s" : ""}` : null,
+    ].filter(Boolean);
+    return bouts.join(" · ");
+  }, [tous, parStatut, loading, erreur]);
+
+  const avecOutils = !loading && !erreur && tous.length > 0;
+
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
+.ev-carte:hover { box-shadow: 0 6px 22px rgb(var(--ombre-rgb) / 0.10); transform: translateY(-2px);
+  border-color: rgb(var(--encre-rgb) / 0.20); }
+.ev-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }`}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Événements" compact ton="orange" pleineLargeur
-        droite={
-          <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-voile)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "none"; }}>
-            <Plus size={15} /> Ajouter un événement
-          </button>
-        }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{tous.length}</span>
-      </BarreTitre>
-
-      {/* ── Barre d'outils + grille ── */}
-      <div style={{ padding: "22px 32px 80px" }}>
-        {!loading && !erreur && tous.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, background: "var(--carte)",
-            border: "1px solid rgb(var(--encre-rgb) / 0.10)", borderRadius: 14, padding: "11px 14px", marginBottom: 16 }}>
-            <ChampRecherche value={q} onChange={setQ} placeholder="Nom, organisateur, ville, pays…" style={{ width: 268 }} />
+      <EnteteAdmin icone={<CalendarDays size={19} />} titre="Événements"
+        compteur={loading ? null : tous.length} sousTitre={sousTitre}
+        action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+          Ajouter un événement
+        </BoutonPrincipal>}>
+        {avecOutils && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
+            <ChampRecherche value={q} onChange={setQ} placeholder="Nom, organisateur, ville, pays…" style={{ width: 252 }} />
             <Segments value={statutF} onChange={setStatutF} accent="var(--orange)" options={[
               { v: "tous",     l: "Tous",     n: parStatut.tous },
               { v: "a_venir",  l: "À venir",  n: parStatut.a_venir },
               { v: "en_cours", l: "En cours", n: parStatut.en_cours },
               { v: "termine",  l: "Passés",   n: parStatut.termine },
             ] as const} />
-            <span style={{ width: 1, height: 22, background: "var(--fond)" }} />
             <Segments value={pubF} onChange={setPubF} accent="var(--orange)" options={[
               { v: "tous",    l: "Tous" },
               { v: "publies", l: "Publiés" },
@@ -791,42 +860,50 @@ export default function EvenementsAdminPage() {
             ] as const} />
             {nbFiltres > 0 && (
               <button onClick={reinit} title="Tout réinitialiser"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgb(var(--danger-rgb) / 0.07)",
-                  border: "1px solid rgb(var(--danger-rgb) / 0.20)", color: "var(--danger)", borderRadius: 999, padding: "6px 13px",
-                  fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
+                  border: "1px solid var(--bordure-forte)", color: "var(--gris-fort)", borderRadius: 999,
+                  padding: "6px 12px", fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "var(--font-google-sans)" }}>
                 <X size={12} /> Réinitialiser
               </button>
             )}
-            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "var(--gris)", whiteSpace: "nowrap" as const }}>
+            {/* Le compte de la sélection se tient au bout de la barre qui l'a
+                produite : c'est la réponse au geste qu'on vient de faire. */}
+            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700,
+              color: nbFiltres > 0 ? "var(--orange)" : "var(--gris)", whiteSpace: "nowrap" as const }}>
               {liste.length === tous.length
                 ? `${tous.length} événement${tous.length > 1 ? "s" : ""}`
                 : `${liste.length} sur ${tous.length}`}
             </span>
           </div>
         )}
+      </EnteteAdmin>
 
+      <div style={{ padding: "18px 32px 80px" }}>
         {loading ? (
-          <SkeletonCards n={6} cols={3} height={220} />
+          <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : tous.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
-            <CalendarDays size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun événement enregistré</p>
-            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un événement » pour commencer.</p>
-          </div>
+          <EtatVide icone={<CalendarDays size={26} />} titre="Aucun événement enregistré"
+            texte="Les événements publiés alimentent l'agenda de la page publique."
+            action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+              Ajouter un événement
+            </BoutonPrincipal>} />
         ) : liste.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "70px 24px", color: "var(--gris)" }}>
-            <Search size={44} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun événement pour ces filtres</p>
-            <button onClick={reinit}
-              style={{ marginTop: 14, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
-                color: "var(--orange)", fontFamily: "var(--font-google-sans)", textDecoration: "underline" }}>
-              Réinitialiser les filtres
-            </button>
-          </div>
+          <EtatVide icone={<Search size={26} />} titre="Aucun événement pour ces filtres"
+            texte="Aucune ligne ne répond à la sélection en cours."
+            action={
+              <button onClick={reinit}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 10,
+                  padding: "9px 16px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "var(--font-google-sans)" }}>
+                <X size={13} /> Réinitialiser les filtres
+              </button>
+            } />
         ) : (
-          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 14 }}>
+          <div className="charge-in ev-grille">
             {liste.map(e => (
               <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
                 onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
@@ -846,6 +923,30 @@ export default function EvenementsAdminPage() {
       ) : null} />
 
       <EvenementModal open={modal} onClose={() => setModal(false)} editItem={editItem} onSaved={charger} />
+    </div>
+  );
+}
+
+/** Un état vide d'administration : un pictogramme posé dans une tuile, une
+    phrase qui dit ce que le module contient, et la sortie.
+ *
+ *  L'ANCIEN ÉTAT VIDE EXPLIQUAIT L'INTERFACE — « Cliquez sur "Ajouter un
+ *  événement" » — en désignant un bouton situé ailleurs sur l'écran. Le bouton
+ *  est désormais DANS le vide, là où le regard est déjà, et la phrase sert à
+ *  dire ce à quoi le module sert. */
+function EtatVide({ icone, titre, texte, action }: {
+  icone: React.ReactNode; titre: string; texte: string; action?: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center",
+      textAlign: "center" as const, padding: "78px 24px", background: "var(--carte)",
+      border: "1px dashed var(--bordure-forte)", borderRadius: 16 }}>
+      <span aria-hidden style={{ width: 54, height: 54, borderRadius: 16, display: "flex",
+        alignItems: "center", justifyContent: "center", background: "rgb(var(--encre-rgb) / 0.045)",
+        color: "var(--gris)", marginBottom: 16 }}>{icone}</span>
+      <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.01em" }}>{titre}</p>
+      <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 6, maxWidth: 380, lineHeight: 1.6 }}>{texte}</p>
+      {action && <div style={{ marginTop: 20 }}>{action}</div>}
     </div>
   );
 }
