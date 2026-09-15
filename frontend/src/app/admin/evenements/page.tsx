@@ -18,6 +18,7 @@ import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, F
 import { confirmer } from "@/components/shared/Confirmation";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
 import { ChampRecherche } from "@/components/admin/UIAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, PastilleContexte, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
 import { fmtPlageDates } from "@/lib/format";
 import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
@@ -510,29 +511,15 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LA LISTE — dessin seulement. Mêmes appels, même tri, mêmes actions.
-//
-// CE QUI A ÉTÉ RETIRÉ, ET POURQUOI CHAQUE RETRAIT REND LA PAGE PLUS LISIBLE :
-//
-//   * LES DEUX BASCULES DE FILTRE. « Tous / À venir / En cours / Passés » et
-//     « Tous / Publiés / Non publiés » occupaient la moitié de la largeur de
-//     l'en-tête pour des tris qu'un module de sept lignes ne demande pas : la
-//     grille est déjà rangée par statut, et le statut se lit sur chaque carte.
-//     La recherche, elle, reste : c'est le seul geste qui ne peut pas se faire
-//     à l'œil quand la liste s'allonge.
-//
-//   * LES DEUX COMPTES REDONDANTS. Le total figurait trois fois — pastille du
-//     titre, ligne de contexte, bout de la barre d'outils.
-//
-// LA CARTE REPREND LE GABARIT DES FICHES PUBLIQUES : contexte discret en haut,
-// titre en gros, un filet, puis les données en colonnes étiquetées. C'est la
-// forme que la plateforme emploie déjà pour un projet ou un signal, et deux
-// grammaires de carte sur un même produit se voient.
+// La carte, ses données, ses actions et l'état vide viennent du gabarit partagé
+// des grilles d'administration : c'est là que se décide la forme, ici que se
+// décide le CONTENU — quel statut, quelles dates, quel contexte.
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Badges de rôle APIX : organisation vert, participant orange, partenaire bleu,
-// invité violet, sponsor ambre — identiques à la page publique. Le rôle occupe
-// le coin haut-droit de la carte, seul : c'est la seule propriété que TOUTES
-// les cartes portent, donc la seule qui gagne à être toujours au même endroit.
+// invité violet, sponsor ambre — identiques à la page publique. Le rôle tient le
+// coin haut-droit : c'est la propriété que TOUTES les cartes portent, donc la
+// seule qui gagne à être toujours au même endroit.
 const ROLE_BADGE: Record<string, React.CSSProperties> = {
   "Organisateur":    badge_vert,
   "Co-organisateur": badge_vert,
@@ -557,54 +544,6 @@ function dansCombien(e: any): string | null {
   return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
 }
 
-/** Une donnée de carte : l'intitulé au-dessus, la valeur dessous.
- *
- *  LES INTITULÉS REVIENNENT, et c'est un retour en arrière assumé. Ils avaient
- *  été retirés au profit de deux pictogrammes, qui tenaient moins de place mais
- *  demandaient de reconnaître un calendrier et une épingle avant de lire. Sur
- *  une fiche qu'on parcourt en diagonale, un mot écrit se lit plus vite qu'un
- *  symbole à interpréter — et c'est la forme que portent déjà les fiches de
- *  projets et de signaux. */
-function Donnee({ label, valeur, absent }: { label: string; valeur: string | null; absent: string }) {
-  return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.13em", color: "var(--gris)",
-        textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</p>
-      <p title={valeur || undefined} style={{ fontSize: 13, fontWeight: 700,
-        color: valeur ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums",
-        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-        {valeur || absent}
-      </p>
-    </div>
-  );
-}
-
-/** Une action de carte : muette au repos, teintée au survol.
- *
- *  ELLES NE SONT QUE DU GRIS TANT QU'ON NE LES VISE PAS. Coloriées en
- *  permanence, trois par carte et six cartes par écran, elles faisaient dix-huit
- *  taches de couleur pour des gestes qu'on fait rarement — et la donnée passait
- *  après. Le survol rend la couleur au moment où elle sert. */
-function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
-  onClick: () => void; titre: string; teinte: string; enCours?: boolean;
-  icone: React.ReactNode; children?: React.ReactNode;
-}) {
-  return (
-    <button onClick={onClick} disabled={enCours} title={titre} aria-label={titre}
-      style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none",
-        background: "transparent", color: "var(--gris-fort)", cursor: enCours ? "default" : "pointer",
-        padding: "6px 10px", borderRadius: 8, fontSize: 11, fontWeight: 650,
-        fontFamily: "var(--font-google-sans)", transition: "background 0.14s, color 0.14s" }}
-      onMouseEnter={ev => { ev.currentTarget.style.color = teinte;
-        ev.currentTarget.style.background = `color-mix(in srgb, ${teinte} 9%, transparent)`; }}
-      onMouseLeave={ev => { ev.currentTarget.style.color = "var(--gris-fort)";
-        ev.currentTarget.style.background = "transparent"; }}>
-      {enCours ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : icone}
-      {children}
-    </button>
-  );
-}
-
 // ── Carte événement ──────────────────────────────────────────────────────────
 function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
   e: any; estProchain: boolean;
@@ -616,9 +555,8 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   const estPasse   = statut === "termine";
   const nonPublie  = e.est_publie === false;
 
-  // LE STATUT NE TIENT QU'À UNE PASTILLE, posée en tête de la ligne de
-  // contexte. La bande dégradée qu'elle remplace criait plus fort que le nom de
-  // l'événement, qui est pourtant ce qu'on cherche sur une grille.
+  // Le statut ne paraît que sur une carte sur six : il prend la pastille de
+  // contexte, à gauche, où il ne dispute rien au rôle qui tient le coin droit.
   const marque = estProchain
     ? { c: "var(--bleu)", rgb: "var(--bleu-rgb)", label: "Prochain" }
     : estEnCours
@@ -632,8 +570,6 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
     : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
 
-  // La ligne de contexte, au-dessus du titre : l'échéance quand elle existe —
-  // c'est ce qu'on veut savoir d'un événement à venir —, puis l'édition.
   const edition = e.edition != null ? ordinalEdition(e.edition) : null;
   const echeance = statut === "a_venir" ? dansCombien(e) : null;
   // QUAND LA PASTILLE DE STATUT EST LÀ, LE CONTEXTE SE RÉDUIT. À trois éléments
@@ -643,68 +579,22 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   const contexte = marque ? (echeance || edition) : [echeance, edition].filter(Boolean).join(" · ");
 
   return (
-    <div {...carteCliquable(onVoir, `Ouvrir la fiche : ${e.nom_event}`)}
-      className="ev-carte"
-      style={{ background: "var(--carte)", borderRadius: 16, cursor: "pointer",
-        border: nonPublie ? "1px dashed rgb(var(--encre-rgb) / 0.22)" : "1px solid rgb(var(--encre-rgb) / 0.10)",
-        display: "flex", flexDirection: "column" as const, overflow: "hidden",
-        transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s" }}>
-
-      <div style={{ padding: "15px 20px 13px", flex: 1, display: "flex",
-        flexDirection: "column" as const, opacity: estPasse ? 0.84 : 1 }}>
-
-        {/* LA LIGNE DE SERVICE : le statut et le contexte à gauche, le rôle à
-            droite. Deux pastilles au même coin se seraient disputé la place —
-            et l'une n'apparaît que sur une carte sur six, l'autre sur toutes.
-            C'est la constante qui tient le coin, la variable qui vient se poser
-            devant le texte de contexte. */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 12, minHeight: 24 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            {marque && (
-              <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.10em",
-                textTransform: "uppercase" as const, color: marque.c, padding: "3px 9px",
-                borderRadius: 999, background: `rgb(${marque.rgb} / 0.10)`, flexShrink: 0,
-                whiteSpace: "nowrap" as const }}>{marque.label}</span>
-            )}
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gris)", overflow: "hidden",
-              textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{contexte}</span>
-          </span>
-          {e.role_apix && (
-            <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris),
-              flexShrink: 0, whiteSpace: "nowrap" as const }}>
-              {ROLES_APIX_LABELS[e.role_apix] || e.role_apix}
-            </span>
-          )}
-        </div>
-
-        {/* 15,5 px : exactement le corps de la carte publique, dont cette carte
-            reprend le gabarit. À 17 elle donnait au titre d'un événement le rang
-            d'un titre de section. */}
-        <h3 title={e.nom_event} style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)",
-          lineHeight: 1.35, letterSpacing: "-0.01em", margin: "5px 0 0", overflow: "hidden",
-          textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</h3>
-
-        <div style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)",
-          paddingTop: 12, marginTop: 13 }}>
-          {/* La date prend un peu plus de place que le lieu : c'est la seule des
-              deux qui puisse s'étendre sur deux années (« 28 déc. 2026 → 3 janv.
-              2027 »). */}
-          <div style={{ flex: 1.15, minWidth: 0, display: "flex" }}>
-            <Donnee label="Date" valeur={dateStr} absent="À préciser" />
-          </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)", margin: "0 20px" }} />
-          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
-            <Donnee label="Lieu" valeur={lieu || null} absent="À préciser" />
-          </div>
-        </div>
-      </div>
-
-      {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
-          Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "center", gap: 2,
-        padding: "4px 10px", borderTop: "1px solid var(--bordure)" }}
-        onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
+    <CarteAdmin onVoir={onVoir} aria={`Ouvrir la fiche : ${e.nom_event}`}
+      attenue={estPasse} pointille={nonPublie} titre={e.nom_event}
+      contexte={<>
+        {marque && <PastilleContexte teinte={marque.c} rgb={marque.rgb}>{marque.label}</PastilleContexte>}
+        {contexte && <TexteContexte>{contexte}</TexteContexte>}
+      </>}
+      badge={e.role_apix ? (
+        <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris), flexShrink: 0, whiteSpace: "nowrap" }}>
+          {ROLES_APIX_LABELS[e.role_apix] || e.role_apix}
+        </span>
+      ) : null}
+      donnees={[
+        <Donnee key="d" label="Date" valeur={dateStr} absent="À préciser" />,
+        <Donnee key="l" label="Lieu" valeur={lieu || null} absent="À préciser" />,
+      ]}
+      actions={<>
         <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
           Modifier
         </ActionCarte>
@@ -714,24 +604,14 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
           icone={e.est_publie ? <EyeOff size={13} /> : <Eye size={13} />}>
           {e.est_publie ? "Retirer" : "Publier"}
         </ActionCarte>
-        {/* L'ÉTAT « NON PUBLIÉ » SE DIT ICI, à côté du bouton qui le change, et
-            non près du titre : c'est une propriété de gestion, pas une
-            caractéristique de l'événement. */}
-        {nonPublie && (
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em",
-            textTransform: "uppercase" as const, color: "var(--gris)",
-            background: "rgb(var(--encre-rgb) / 0.06)", padding: "3px 8px", borderRadius: 999,
-            whiteSpace: "nowrap" as const }}>Non publié</span>
-        )}
+        {nonPublie && <EtiquetteNonPublie />}
         <span style={{ marginLeft: "auto" }} />
         <ActionCarte onClick={onSupprimer} enCours={supprimant} titre="Supprimer"
           teinte="var(--danger)" icone={<Trash2 size={13} />} />
-      </div>
-    </div>
+      </>} />
   );
 }
 
-// ── Page principale ───────────────────────────────────────────────────────────
 export default function EvenementsAdminPage() {
   const [tous,       setTous]       = useState<any[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -809,10 +689,7 @@ export default function EvenementsAdminPage() {
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.ev-carte:hover { box-shadow: 0 8px 26px rgb(var(--ombre-rgb) / 0.10); transform: translateY(-2px);
-  border-color: rgb(var(--encre-rgb) / 0.18); }
-.ev-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }`}</style>
+      <style>{STYLE_GRILLE}</style>
 
       <EnteteAdmin icone={<CalendarDays size={19} />} titre="Événements"
         compteur={loading ? null : tous.length}
@@ -848,7 +725,7 @@ export default function EvenementsAdminPage() {
               </button>
             } />
         ) : (
-          <div className="charge-in ev-grille">
+          <div className="charge-in adm-grille">
             {liste.map(e => (
               <CarteEvenement key={e.id} e={e} estProchain={prochainId != null && e.id === prochainId}
                 onVoir={() => setVue(e)} onEditer={() => openEdit(e)}
@@ -872,26 +749,3 @@ export default function EvenementsAdminPage() {
   );
 }
 
-/** Un état vide d'administration : un pictogramme posé dans une tuile, une
-    phrase qui dit ce que le module contient, et la sortie.
- *
- *  L'ANCIEN ÉTAT VIDE EXPLIQUAIT L'INTERFACE — « Cliquez sur "Ajouter un
- *  événement" » — en désignant un bouton situé ailleurs sur l'écran. Le bouton
- *  est désormais DANS le vide, là où le regard est déjà, et la phrase sert à
- *  dire ce à quoi le module sert. */
-function EtatVide({ icone, titre, texte, action }: {
-  icone: React.ReactNode; titre: string; texte: string; action?: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center",
-      textAlign: "center" as const, padding: "78px 24px", background: "var(--carte)",
-      border: "1px dashed var(--bordure-forte)", borderRadius: 16 }}>
-      <span aria-hidden style={{ width: 54, height: 54, borderRadius: 16, display: "flex",
-        alignItems: "center", justifyContent: "center", background: "rgb(var(--bleu-rgb) / 0.07)",
-        color: "var(--bleu)", marginBottom: 16 }}>{icone}</span>
-      <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.01em" }}>{titre}</p>
-      <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 6, maxWidth: 380, lineHeight: 1.6 }}>{texte}</p>
-      {action && <div style={{ marginTop: 20 }}>{action}</div>}
-    </div>
-  );
-}

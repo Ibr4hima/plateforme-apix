@@ -1,11 +1,13 @@
 "use client";
 
-import { Check, Eye, EyeOff, FileText, Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, Eye, EyeOff, FileSignature, FileText, Loader2, Pencil, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import NaemaSelect from "@/components/shared/NaemaSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
 import { FModal, FSection, FGrid, FLabel, FInput, FSegmented, FButton, FButtonGhost, FError } from "@/components/shared/FormUI";
-import BarreTitre from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
+import { ChampRecherche } from "@/components/admin/UIAdmin";
 import AccordVueModal from "@/components/shared/AccordVueModal";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -399,7 +401,12 @@ function AccordModal({ open, onClose, editItem, onSaved }: {
     </FModal>
   );
 }
-// ── Carte accord (gabarit public + barre d'actions d'administration) ──────────
+// ═══════════════════════════════════════════════════════════════════════════
+// LA LISTE — dessin seulement. Mêmes appels, même tri, mêmes actions.
+// La carte, ses données, ses actions et l'état vide viennent du gabarit partagé
+// des grilles d'administration : c'est là que se décide la forme, ici que se
+// décide le CONTENU — quel statut, quelles dates, quel contexte.
+// ═══════════════════════════════════════════════════════════════════════════
 
 // Durée écoulée depuis une date : « 3 ans », « 1 an », « 7 mois »…
 const dureeDepuis = (dstr: string): string => {
@@ -413,11 +420,13 @@ const dureeDepuis = (dstr: string): string => {
 };
 
 // Statuts sur les jetons du design system : en vigueur vert, signé bleu,
-// expiré gris ; l'accent de survol suit la couleur du statut.
-const STATUT_CARTE: Record<string, { label: string; badge: React.CSSProperties; accent: string }> = {
-  en_vigueur: { label: "En vigueur",           badge: badge_vert, accent: "var(--vert)" },
-  signe:      { label: "Signé non en vigueur", badge: badge_bleu, accent: "var(--bleu)" },
-  expire:     { label: "Expiré",               badge: badge_gris, accent: "var(--gris)" },
+// expiré gris. Le badge tient le coin droit de la carte — c'est la propriété
+// que TOUS les accords portent, donc la seule qui gagne à être toujours au même
+// endroit.
+const STATUT_CARTE: Record<string, { label: string; badge: React.CSSProperties }> = {
+  en_vigueur: { label: "En vigueur",           badge: badge_vert },
+  signe:      { label: "Signé non en vigueur", badge: badge_bleu },
+  expire:     { label: "Expiré",               badge: badge_gris },
 };
 
 function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, supprimant }: {
@@ -427,74 +436,52 @@ function CarteAccord({ a, onVoir, onEditer, onPublier, onSupprimer, publiant, su
   const statut = computeStatut(a);
   const st = statut ? STATUT_CARTE[statut] : null;
   const estExpire = statut === "expire";
-  const txtC = estExpire ? "var(--texte)" : "var(--encre)";
-  const accent = st ? st.accent : "var(--gris)";
-  // Date secondaire : expiration si renseignée, sinon entrée en vigueur
-  const dateSec = a.date_expiration
-    ? { label: "Expiration", val: fmtDate(a.date_expiration), vide: false }
-    : { label: "Entrée en vigueur", val: a.date_entree_vigueur ? fmtDate(a.date_entree_vigueur) : "Non définie", vide: !a.date_entree_vigueur };
-  const sousTitre = statut === "en_vigueur" && a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
+  const nonPublie = a.est_publie === false;
+
+  // LA SECONDE COLONNE CHANGE DE SUJET SELON L'ACCORD, et c'est voulu : une
+  // expiration connue prime sur une entrée en vigueur, parce que c'est la date
+  // qui appelle une action. À défaut, l'entrée en vigueur — ou le fait qu'elle
+  // manque, ce qui est en soi l'information utile sur un accord signé.
+  const secondaire = a.date_expiration
+    ? { label: "Expiration", valeur: fmtDate(a.date_expiration), absent: "—" }
+    : { label: "Entrée en vigueur",
+        valeur: a.date_entree_vigueur ? fmtDate(a.date_entree_vigueur) : null,
+        absent: "Non définie" };
+
+  // L'ANCIENNETÉ PLUTÔT QUE LA RÉFÉRENCE. « Signé il y a 10 ans » situe
+  // l'accord d'un coup d'œil ; un numéro de référence ne se lit que lorsqu'on le
+  // cherche, et il est sur la fiche. Il reste en secours quand aucune date ne
+  // permet de calculer une ancienneté.
+  const anciennete =
+    statut === "en_vigueur" && a.date_entree_vigueur ? `En vigueur depuis ${dureeDepuis(a.date_entree_vigueur)}`
     : statut === "signe" && a.date_signature ? `Signé il y a ${dureeDepuis(a.date_signature)}`
     : statut === "expire" && a.date_expiration ? `Expiré depuis ${dureeDepuis(a.date_expiration)}`
     : a.reference || null;
 
   return (
-    <div onClick={onVoir}
-      style={{ background: estExpire ? "var(--carte-douce)" : "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, cursor: "pointer", transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow: "none", display: "flex", flexDirection: "column" as const, overflow: "hidden", opacity: a.est_publie === false ? 0.85 : 1 }}
-      onMouseEnter={ev => { ev.currentTarget.style.boxShadow = "var(--ombre-1)"; ev.currentTarget.style.transform = "translateY(-2px)"; ev.currentTarget.style.borderColor = accent; }}
-      onMouseLeave={ev => { ev.currentTarget.style.boxShadow = "none"; ev.currentTarget.style.transform = "none"; ev.currentTarget.style.borderColor = "rgb(var(--encre-rgb) / 0.12)"; }}>
-
-      <div style={{ padding: "18px 20px 16px", flex: 1, display: "flex", flexDirection: "column" as const, gap: 13 }}>
-        {/* Titre + ancienneté du statut | publication & statut */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, minWidth: 0 }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 15.5, color: txtC, lineHeight: 1.35, letterSpacing: "-0.01em" }}>{a.titre}</div>
-            {sousTitre && <div style={{ fontSize: 11, fontWeight: 500, color: "var(--gris)", marginTop: 3 }}>{sousTitre}</div>}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "flex-end" }}>
-            {a.est_publie === false && <span style={{ ...badge_gris, whiteSpace: "nowrap" as const, flexShrink: 0 }}>Non publié</span>}
-            {st && <span style={{ ...st.badge, whiteSpace: "nowrap" as const, flexShrink: 0 }}>{st.label}</span>}
-          </div>
-        </div>
-
-        {/* Dates en rangée épurée */}
-        <div style={{ display: "flex", alignItems: "center", borderTop: "1px solid var(--bordure)", paddingTop: 13, marginTop: "auto" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>Signature</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: a.date_signature ? txtC : "var(--gris)", fontVariantNumeric: "tabular-nums" }}>{a.date_signature ? fmtDate(a.date_signature) : "—"}</p>
-          </div>
-          <div style={{ width: 1, alignSelf: "stretch", background: "var(--fond)", margin: "0 18px" }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", color: "var(--gris)", textTransform: "uppercase" as const, marginBottom: 4 }}>{dateSec.label}</p>
-            <p style={{ fontSize: 12.5, fontWeight: 700, color: dateSec.vide ? "var(--gris)" : txtC, fontVariantNumeric: "tabular-nums" }}>{dateSec.val}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions d'administration */}
-      <div className="ro-w" style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)" }} onClick={ev => ev.stopPropagation()}>
-        <button onClick={onEditer}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: "var(--bleu)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--bleu-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          <Pencil size={12} /> Modifier
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onPublier} disabled={publiant}
-          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "10px 0", fontSize: 11.5, color: a.est_publie ? "var(--vert)" : "var(--orange)", fontWeight: 600, fontFamily: "var(--font-google-sans)", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = a.est_publie ? "rgb(var(--vert-rgb) / 0.05)" : "rgb(var(--orange-rgb) / 0.06)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {publiant ? <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> : a.est_publie ? <><EyeOff size={12} /> Retirer</> : <><Eye size={12} /> Publier</>}
-        </button>
-        <div style={{ width: 1, background: "var(--fond)" }} />
-        <button onClick={onSupprimer} disabled={supprimant} title="Supprimer"
-          style={{ width: 46, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={ev => ev.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.05)"}
-          onMouseLeave={ev => ev.currentTarget.style.background = "none"}>
-          {supprimant ? <Loader2 size={12} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={12} style={{ color: "var(--danger)" }} />}
-        </button>
-      </div>
-    </div>
+    <CarteAdmin onVoir={onVoir} aria={`Ouvrir la fiche : ${a.titre}`}
+      attenue={estExpire} pointille={nonPublie} titre={a.titre}
+      contexte={anciennete ? <TexteContexte>{anciennete}</TexteContexte> : null}
+      badge={st ? <span style={{ ...st.badge, whiteSpace: "nowrap", flexShrink: 0 }}>{st.label}</span> : null}
+      donnees={[
+        <Donnee key="s" label="Signature" valeur={a.date_signature ? fmtDate(a.date_signature) : null} />,
+        <Donnee key="d" label={secondaire.label} valeur={secondaire.valeur} absent={secondaire.absent} />,
+      ]}
+      actions={<>
+        <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
+          Modifier
+        </ActionCarte>
+        <ActionCarte onClick={onPublier} enCours={publiant}
+          titre={a.est_publie ? "Retirer de la page publique" : "Publier"}
+          teinte={a.est_publie ? "var(--vert)" : "var(--orange)"}
+          icone={a.est_publie ? <EyeOff size={13} /> : <Eye size={13} />}>
+          {a.est_publie ? "Retirer" : "Publier"}
+        </ActionCarte>
+        {nonPublie && <EtiquetteNonPublie />}
+        <span style={{ marginLeft: "auto" }} />
+        <ActionCarte onClick={onSupprimer} enCours={supprimant} titre="Supprimer"
+          teinte="var(--danger)" icone={<Trash2 size={13} />} />
+      </>} />
   );
 }
 
@@ -508,6 +495,7 @@ export default function AdminAccords() {
   const [vue,        setVue]        = useState<any>(null);
   const [deleting,   setDeleting]   = useState<number|null>(null);
   const [togglingId, setTogglingId] = useState<number|null>(null);
+  const [q,          setQ]          = useState("");
 
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
@@ -545,39 +533,57 @@ export default function AdminAccords() {
     } finally { setTogglingId(null); }
   };
 
+  // LA RECHERCHE PORTE SUR LE TITRE ET LA RÉFÉRENCE. Le titre d'un accord est
+  // fait des deux pays qu'il lie — « Sénégal — Canada » —, donc chercher un pays
+  // revient à chercher dans le titre. La référence, elle, est ce qu'on a sous la
+  // main quand on vient d'un courrier.
+  const liste = useMemo(() => {
+    const texte = q.trim().toLowerCase();
+    if (!texte) return accords;
+    return accords.filter(a => [a.titre, a.reference]
+      .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
+  }, [accords, q]);
+
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
+      <style>{STYLE_GRILLE}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Accords & Traités" compact ton="orange" pleineLargeur
-        droite={
-          <button className="ro-w" onClick={openCreate}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--carte)", color: "var(--orange)", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily: "var(--font-google-sans)", transition: "background 0.15s, transform 0.15s", flexShrink: 0, whiteSpace: "nowrap" as const }}
-            onMouseEnter={e => { e.currentTarget.style.background = "var(--orange-voile)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; e.currentTarget.style.transform = "none"; }}>
-            <Plus size={15} /> Ajouter un accord
-          </button>
-        }>
-        <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 12px", borderRadius: 999, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.24)", fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", flexShrink: 0 }}>{accords.length}</span>
-      </BarreTitre>
+      <EnteteAdmin icone={<FileSignature size={19} />} titre="Accords & Traités"
+        compteur={loading ? null : accords.length}
+        recherche={!loading && !erreur && accords.length > 0 ? (
+          <ChampRecherche value={q} onChange={setQ} arrondi
+            placeholder="Rechercher…" style={{ width: 238 }} />
+        ) : null}
+        action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+          Ajouter un accord
+        </BoutonPrincipal>} />
 
-      {/* ── Grille pleine largeur (3 colonnes) ── */}
-      <div style={{ padding: "28px 40px 80px" }}>
+      <div style={{ padding: "20px 32px 80px" }}>
         {loading ? (
-          <SkeletonCards n={6} cols={3} height={200} />
+          <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : accords.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "var(--gris)" }}>
-            <FileText size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--texte)" }}>Aucun accord enregistré</p>
-            <p style={{ fontSize: 14, marginTop: 6 }}>Cliquez sur « Ajouter un accord » pour commencer.</p>
-          </div>
+          <EtatVide icone={<FileSignature size={26} />} titre="Aucun accord enregistré"
+            texte="Les accords publiés alimentent la page publique des traités d'investissement."
+            action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
+              Ajouter un accord
+            </BoutonPrincipal>} />
+        ) : liste.length === 0 ? (
+          <EtatVide icone={<Search size={26} />} titre="Aucun accord trouvé"
+            texte={`Aucun accord ne correspond à « ${q.trim()} ».`}
+            action={
+              <button onClick={() => setQ("")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
+                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                  fontFamily: "var(--font-google-sans)" }}>
+                <X size={13} /> Effacer la recherche
+              </button>
+            } />
         ) : (
-          <div className="charge-in" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 }}>
-            {accords.map(a => (
+          <div className="charge-in adm-grille">
+            {liste.map(a => (
               <CarteAccord key={a.id} a={a}
                 onVoir={() => setVue(a)} onEditer={() => openEdit(a)}
                 onPublier={() => handleTogglePublie(a)} onSupprimer={() => handleDelete(a.id)}
