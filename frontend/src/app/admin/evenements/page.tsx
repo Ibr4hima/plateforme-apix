@@ -569,7 +569,7 @@ function Donnee({ label, valeur, absent }: { label: string; valeur: string | nul
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
       <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.13em", color: "var(--gris)",
-        textTransform: "uppercase" as const, marginBottom: 6 }}>{label}</p>
+        textTransform: "uppercase" as const, marginBottom: 4 }}>{label}</p>
       <p title={valeur || undefined} style={{ fontSize: 13, fontWeight: 700,
         color: valeur ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums",
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
@@ -593,7 +593,7 @@ function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
     <button onClick={onClick} disabled={enCours} title={titre} aria-label={titre}
       style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none",
         background: "transparent", color: "var(--gris-fort)", cursor: enCours ? "default" : "pointer",
-        padding: "6px 10px", borderRadius: 8, fontSize: 11.5, fontWeight: 650,
+        padding: "6px 10px", borderRadius: 8, fontSize: 11, fontWeight: 650,
         fontFamily: "var(--font-google-sans)", transition: "background 0.14s, color 0.14s" }}
       onMouseEnter={ev => { ev.currentTarget.style.color = teinte;
         ev.currentTarget.style.background = `color-mix(in srgb, ${teinte} 9%, transparent)`; }}
@@ -650,7 +650,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
         display: "flex", flexDirection: "column" as const, overflow: "hidden",
         transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s" }}>
 
-      <div style={{ padding: "18px 22px 16px", flex: 1, display: "flex",
+      <div style={{ padding: "15px 20px 13px", flex: 1, display: "flex",
         flexDirection: "column" as const, opacity: estPasse ? 0.84 : 1 }}>
 
         {/* LA LIGNE DE SERVICE : le statut et le contexte à gauche, le rôle à
@@ -659,7 +659,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
             C'est la constante qui tient le coin, la variable qui vient se poser
             devant le texte de contexte. */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 12, minHeight: 26 }}>
+          gap: 12, minHeight: 24 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             {marque && (
               <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.10em",
@@ -678,12 +678,15 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
           )}
         </div>
 
-        <h3 title={e.nom_event} style={{ fontWeight: 800, fontSize: 17, color: "var(--encre)",
-          lineHeight: 1.3, letterSpacing: "-0.015em", margin: "6px 0 0", overflow: "hidden",
+        {/* 15,5 px : exactement le corps de la carte publique, dont cette carte
+            reprend le gabarit. À 17 elle donnait au titre d'un événement le rang
+            d'un titre de section. */}
+        <h3 title={e.nom_event} style={{ fontWeight: 800, fontSize: 15.5, color: "var(--encre)",
+          lineHeight: 1.35, letterSpacing: "-0.01em", margin: "5px 0 0", overflow: "hidden",
           textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</h3>
 
         <div style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)",
-          paddingTop: 15, marginTop: 16 }}>
+          paddingTop: 12, marginTop: 13 }}>
           {/* La date prend un peu plus de place que le lieu : c'est la seule des
               deux qui puisse s'étendre sur deux années (« 28 déc. 2026 → 3 janv.
               2027 »). */}
@@ -700,7 +703,7 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
       {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
           Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
       <div className="ro-w" style={{ display: "flex", alignItems: "center", gap: 2,
-        padding: "6px 12px", borderTop: "1px solid var(--bordure)" }}
+        padding: "4px 10px", borderTop: "1px solid var(--bordure)" }}
         onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
         <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
           Modifier
@@ -815,7 +818,7 @@ export default function EvenementsAdminPage() {
         compteur={loading ? null : tous.length}
         recherche={!loading && !erreur && tous.length > 0 ? (
           <ChampRecherche value={q} onChange={setQ} arrondi
-            placeholder="Nom, organisateur, ville, pays…" style={{ width: 274 }} />
+            placeholder="Rechercher…" style={{ width: 238 }} />
         ) : null}
         action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
           Ajouter un événement
@@ -823,7 +826,7 @@ export default function EvenementsAdminPage() {
 
       <div style={{ padding: "20px 32px 80px" }}>
         {loading ? (
-          <SkeletonCards n={6} cols={3} height={196} />
+          <SkeletonCards n={6} cols={3} height={172} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : tous.length === 0 ? (
