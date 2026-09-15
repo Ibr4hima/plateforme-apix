@@ -13,9 +13,7 @@ import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listeP
 import { confirmer } from "@/components/shared/Confirmation";
 import { fmtPhone } from "@/lib/telephone";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import { badgePole } from "@/lib/couleurs";
-import { IconeModule } from "@/components/admin/EnteteAdmin";
-import { ActionCarte, CarteAdmin, Donnee, EtatVide, EtiquetteNonPublie, STYLE_GRILLE } from "@/components/admin/CarteAdmin";
+import { badge_gris, poleAccent } from "@/lib/couleurs";
 
 // Bouton « + » rond en pointillés d'une liste de contacts : actif seulement si
 // toutes les entrées existantes sont complètes et valides.
@@ -775,48 +773,77 @@ export default function BanqueProjets({ registerOpenNew }: { registerOpenNew?: (
 
   return (
     <div>
-      <style>{STYLE_GRILLE}</style>
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       {loading ? (
-        <SkeletonCards n={6} cols={3} height={172}/>
+        <SkeletonCards n={6} cols={3} height={190}/>
       ) : projets.length===0 ? (
-        <EtatVide icone={<IconeModule taille={26} />} titre="Aucun projet enregistré"
-          texte="La banque de projets alimente les opportunités proposées aux investisseurs." />
+        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
+          <Layers size={48} style={{ marginBottom:16, opacity:0.3 }}/>
+          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun projet enregistré</p>
+          <p style={{ fontSize:14, marginTop:6 }}>Cliquez sur « Nouveau projet » pour commencer.</p>
+        </div>
       ) : (
-        <div className="charge-in adm-grille">
-          {projets.map(p=>(
-            <CarteAdmin key={p.id} onVoir={()=>setVue(p)}
-              aria={`Ouvrir la fiche : ${p.titre_projet}`}
-              pointille={p.est_publie===false} titre={p.titre_projet}
-              // LE PÔLE PASSE DU SOUS-TITRE AU COIN DROIT, comme sur les grilles
-              // des entreprises et des zones : c'est le même rattachement
-              // territorial, il se lit donc à la même place et dans la même
-              // couleur. En sous-titre gris, il ne se distinguait pas d'une
-              // légende.
-              badge={p.pole_nom ? (
-                <span title={p.pole_nom}
-                  style={{ ...badgePole(p.pole_nom), whiteSpace:"nowrap", overflow:"hidden",
-                    textOverflow:"ellipsis", flexShrink:1, minWidth:0 }}>{p.pole_nom}</span>
-              ) : null}
-              donnees={[
-                <Donnee key="r" label="Région" valeur={p.region_nom||null} />,
-                <Donnee key="d" label="Département" valeur={p.departement_nom||null} />,
-              ]}
-              actions={<>
-                <ActionCarte onClick={()=>{ setEdit(p); setModal(true); }} titre="Modifier"
-                  teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
-                <ActionCarte onClick={()=>handleTogglePublie(p)} enCours={togglingId===p.id}
-                  titre={p.est_publie?"Retirer de la page publique":"Publier"}
-                  teinte={p.est_publie?"var(--vert)":"var(--orange)"}
-                  icone={p.est_publie?<EyeOff size={13}/>:<Eye size={13}/>}>
-                  {p.est_publie?"Retirer":"Publier"}
-                </ActionCarte>
-                {p.est_publie===false && <EtiquetteNonPublie />}
-                <span style={{ marginLeft:"auto" }} />
-                <ActionCarte onClick={()=>handleDelete(p.id)} enCours={deleting===p.id}
-                  titre="Supprimer" teinte="var(--danger)" icone={<Trash2 size={13}/>} />
-              </>} />
-          ))}
+        <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
+          {projets.map(p=>{
+            // Accent de survol = couleur du pôle territoire (comme la page publique)
+            const hoverC = p.pole_nom ? poleAccent(p.pole_nom) : "rgb(var(--bleu-rgb) / 0.33)";
+            return (
+            <div key={p.id} onClick={()=>setVue(p)}
+              style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden", opacity:p.est_publie===false?0.85:1 }}
+              onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
+              onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
+
+              <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
+                {/* Titre + pôle en sous-titre | publication */}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
+                  <div style={{ minWidth:0, flex:1 }}>
+                    <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", whiteSpace:"nowrap", textOverflow:"ellipsis" }}>{p.titre_projet}</div>
+                    {p.pole_nom&&<div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{p.pole_nom}</div>}
+                  </div>
+                  {p.est_publie===false&&<span style={{ ...badge_gris, whiteSpace:"nowrap" as const, flexShrink:0 }}>Non publié</span>}
+                </div>
+
+                {/* Région · Département en rangée épurée */}
+                <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Région</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.region_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.region_nom||"—"}</p>
+                  </div>
+                  <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>Département</p>
+                    <p style={{ fontSize:12.5, fontWeight:700, color:p.departement_nom?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.departement_nom||"—"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={ev=>ev.stopPropagation()}>
+                <button className="ro-w" onClick={()=>{ setEdit(p); setModal(true); }}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
+                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                  <Pencil size={12}/> Modifier
+                </button>
+                <div style={{ width:1, background:"var(--fond)" }}/>
+                <button className="ro-w" onClick={()=>handleTogglePublie(p)} disabled={togglingId===p.id}
+                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:p.est_publie?"var(--vert)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background=p.est_publie?"rgb(var(--vert-rgb) / 0.05)":"rgb(var(--orange-rgb) / 0.06)"}
+                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                  {togglingId===p.id?<Loader2 size={12} style={{animation:"spin 1s linear infinite"}}/>:p.est_publie?<><EyeOff size={12}/> Retirer</>:<><Eye size={12}/> Publier</>}
+                </button>
+                <div style={{ width:1, background:"var(--fond)" }}/>
+                <button className="ro-w" onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
+                  style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
+                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
+                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
+                  {deleting===p.id?<Loader2 size={12} style={{color:"var(--danger)",animation:"spin 1s linear infinite"}}/>:<Trash2 size={12} style={{color:"var(--danger)"}}/>}
+                </button>
+              </div>
+            </div>
+            );
+          })}
         </div>
       )}
       <ProjetModal open={modal} onClose={()=>{ setModal(false); setEdit(null); }} edit={edit} onSaved={charger}/>
