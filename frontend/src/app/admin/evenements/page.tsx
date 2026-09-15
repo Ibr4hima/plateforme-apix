@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, MapPin, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, FileText, Loader2, Upload, X, CalendarDays, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { authHeaders } from "@/lib/authHeaders";
 import EnteteAdmin, { BoutonPrincipal } from "@/components/admin/EnteteAdmin";
@@ -17,7 +17,7 @@ import PaysMultiSelect from "@/components/shared/PaysMultiSelect";
 import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FSegmented, FToggle, FButton, FButtonGhost, FError, FInfo } from "@/components/shared/FormUI";
 import { confirmer } from "@/components/shared/Confirmation";
 import { carteCliquable } from "@/components/shared/PanneauFiltres";
-import { ChampRecherche, Segments } from "@/components/admin/UIAdmin";
+import { ChampRecherche } from "@/components/admin/UIAdmin";
 import { fmtPlageDates } from "@/lib/format";
 import { computeStatutEvenement as computeStatut } from "@/lib/statuts";
 
@@ -509,27 +509,30 @@ function EvenementModal({ open, onClose, editItem, onSaved }: {
 
 
 // ═══════════════════════════════════════════════════════════════════════════
-// LA LISTE — refonte visuelle. Rien du comportement n'a changé : mêmes appels,
-// mêmes filtres, même tri, mêmes actions. Ce qui suit ne touche qu'au dessin.
+// LA LISTE — dessin seulement. Mêmes appels, même tri, mêmes actions.
 //
-// CE QUE LA GRILLE PRÉCÉDENTE FAISAIT MAL, et qui a guidé chaque choix :
+// CE QUI A ÉTÉ RETIRÉ, ET POURQUOI CHAQUE RETRAIT REND LA PAGE PLUS LISIBLE :
 //
-//   * TROIS COULEURS PAR CARTE. Un liseré de rôle, une pastille de rôle, une
-//     bande de statut, trois actions colorées en bas — soit jusqu'à cinq accents
-//     sur un même rectangle. Rien ne ressortait parce que tout ressortait.
+//   * LES DEUX BASCULES DE FILTRE. « Tous / À venir / En cours / Passés » et
+//     « Tous / Publiés / Non publiés » occupaient la moitié de la largeur de
+//     l'en-tête pour des tris qu'un module de sept lignes ne demande pas : la
+//     grille est déjà rangée par statut, et le statut se lit sur chaque carte.
+//     La recherche, elle, reste : c'est le seul geste qui ne peut pas se faire
+//     à l'œil quand la liste s'allonge.
 //
-//   * LES ACTIONS PESAIENT AUTANT QUE LES DONNÉES. La barre du bas, répétée à
-//     l'identique sur chaque carte, occupait un tiers de sa hauteur et son poids
-//     visuel entier — alors qu'on la lit une fois sur vingt.
+//   * LES DEUX COMPTES REDONDANTS. Le total figurait trois fois — pastille du
+//     titre, ligne de contexte, bout de la barre d'outils.
 //
-//   * « DATE » ET « LIEU » ÉTAIENT ÉTIQUETÉS. Un intitulé en capitales au-dessus
-//     de « 30 mars 2027 » n'apprend rien : la forme de la donnée la nomme. Deux
-//     pictogrammes suffisent, et rendent la moitié de la hauteur de la carte.
-//
+// LA CARTE REPREND LE GABARIT DES FICHES PUBLIQUES : contexte discret en haut,
+// titre en gros, un filet, puis les données en colonnes étiquetées. C'est la
+// forme que la plateforme emploie déjà pour un projet ou un signal, et deux
+// grammaires de carte sur un même produit se voient.
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Badges de rôle APIX : organisation vert, participant orange, partenaire bleu,
-// invité violet, sponsor ambre — identiques à la page publique.
+// invité violet, sponsor ambre — identiques à la page publique. Le rôle occupe
+// le coin haut-droit de la carte, seul : c'est la seule propriété que TOUTES
+// les cartes portent, donc la seule qui gagne à être toujours au même endroit.
 const ROLE_BADGE: Record<string, React.CSSProperties> = {
   "Organisateur":    badge_vert,
   "Co-organisateur": badge_vert,
@@ -554,13 +557,34 @@ function dansCombien(e: any): string | null {
   return `Dans ${jours} jour${jours > 1 ? "s" : ""}`;
 }
 
+/** Une donnée de carte : l'intitulé au-dessus, la valeur dessous.
+ *
+ *  LES INTITULÉS REVIENNENT, et c'est un retour en arrière assumé. Ils avaient
+ *  été retirés au profit de deux pictogrammes, qui tenaient moins de place mais
+ *  demandaient de reconnaître un calendrier et une épingle avant de lire. Sur
+ *  une fiche qu'on parcourt en diagonale, un mot écrit se lit plus vite qu'un
+ *  symbole à interpréter — et c'est la forme que portent déjà les fiches de
+ *  projets et de signaux. */
+function Donnee({ label, valeur, absent }: { label: string; valeur: string | null; absent: string }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.13em", color: "var(--gris)",
+        textTransform: "uppercase" as const, marginBottom: 6 }}>{label}</p>
+      <p title={valeur || undefined} style={{ fontSize: 13, fontWeight: 700,
+        color: valeur ? "var(--encre)" : "var(--gris)", fontVariantNumeric: "tabular-nums",
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+        {valeur || absent}
+      </p>
+    </div>
+  );
+}
+
 /** Une action de carte : muette au repos, teintée au survol.
  *
- *  ELLES NE SONT PLUS QUE DU GRIS TANT QU'ON NE LES VISE PAS. Coloriées en
- *  permanence, trois par carte et sept cartes par écran, elles faisaient
- *  vingt et une taches de couleur pour des gestes qu'on fait rarement — et
- *  la donnée, elle, passait après. Le survol rend la couleur au moment où
- *  elle sert : quand la main est déjà sur le bouton. */
+ *  ELLES NE SONT QUE DU GRIS TANT QU'ON NE LES VISE PAS. Coloriées en
+ *  permanence, trois par carte et six cartes par écran, elles faisaient dix-huit
+ *  taches de couleur pour des gestes qu'on fait rarement — et la donnée passait
+ *  après. Le survol rend la couleur au moment où elle sert. */
 function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
   onClick: () => void; titre: string; teinte: string; enCours?: boolean;
   icone: React.ReactNode; children?: React.ReactNode;
@@ -569,7 +593,7 @@ function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
     <button onClick={onClick} disabled={enCours} title={titre} aria-label={titre}
       style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none",
         background: "transparent", color: "var(--gris-fort)", cursor: enCours ? "default" : "pointer",
-        padding: "6px 9px", borderRadius: 8, fontSize: 11.5, fontWeight: 650,
+        padding: "6px 10px", borderRadius: 8, fontSize: 11.5, fontWeight: 650,
         fontFamily: "var(--font-google-sans)", transition: "background 0.14s, color 0.14s" }}
       onMouseEnter={ev => { ev.currentTarget.style.color = teinte;
         ev.currentTarget.style.background = `color-mix(in srgb, ${teinte} 9%, transparent)`; }}
@@ -592,11 +616,9 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
   const estPasse   = statut === "termine";
   const nonPublie  = e.est_publie === false;
 
-  // LE STATUT NE TIENT PLUS QU'À UN FILET DE TROIS PIXELS EN HAUT, et à une
-  // pastille contre le titre. La bande dégradée qu'il occupait auparavant
-  // criait plus fort que le nom de l'événement, qui est pourtant ce qu'on
-  // cherche. Une seule carte sur sept porte cette marque : à trois pixels, elle
-  // se voit d'un coup d'œil sur la grille entière.
+  // LE STATUT NE TIENT QU'À UNE PASTILLE, posée en tête de la ligne de
+  // contexte. La bande dégradée qu'elle remplace criait plus fort que le nom de
+  // l'événement, qui est pourtant ce qu'on cherche sur une grille.
   const marque = estProchain
     ? { c: "var(--bleu)", rgb: "var(--bleu-rgb)", label: "Prochain" }
     : estEnCours
@@ -610,88 +632,75 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
     : e.prochain_mois ? `${e.prochain_jour ? e.prochain_jour + " " : ""}${MOIS_VIEW[(e.prochain_mois || 1) - 1]} ${e.prochain_annee || ""}`.trim() : null;
   const lieu = [e.ville, e.pays_hote_nom].filter(Boolean).join(", ");
 
-  // Sous-titre : l'échéance quand elle existe — c'est ce qu'on veut savoir d'un
-  // événement à venir —, sinon l'édition.
+  // La ligne de contexte, au-dessus du titre : l'échéance quand elle existe —
+  // c'est ce qu'on veut savoir d'un événement à venir —, puis l'édition.
   const edition = e.edition != null ? ordinalEdition(e.edition) : null;
   const echeance = statut === "a_venir" ? dansCombien(e) : null;
-  const meta = [echeance, edition].filter(Boolean).join(" · ");
+  // QUAND LA PASTILLE DE STATUT EST LÀ, LE CONTEXTE SE RÉDUIT. À trois éléments
+  // — pastille, échéance, édition — la ligne débordait et se coupait au milieu
+  // d'un mot (« Dans 1 mois · 7ème édit… »). On garde alors l'échéance, qui dit
+  // quand agir ; l'édition se lit sur la fiche.
+  const contexte = marque ? (echeance || edition) : [echeance, edition].filter(Boolean).join(" · ");
 
   return (
     <div {...carteCliquable(onVoir, `Ouvrir la fiche : ${e.nom_event}`)}
       className="ev-carte"
-      style={{ background: "var(--carte)", borderRadius: 14, cursor: "pointer",
-        border: nonPublie ? "1px dashed rgb(var(--encre-rgb) / 0.22)" : "1px solid rgb(var(--encre-rgb) / 0.11)",
+      style={{ background: "var(--carte)", borderRadius: 16, cursor: "pointer",
+        border: nonPublie ? "1px dashed rgb(var(--encre-rgb) / 0.22)" : "1px solid rgb(var(--encre-rgb) / 0.10)",
         display: "flex", flexDirection: "column" as const, overflow: "hidden",
         transition: "box-shadow 0.18s, transform 0.18s, border-color 0.18s" }}>
 
-      {marque && (
-        <span aria-hidden style={{ height: 3, flexShrink: 0,
-          background: `linear-gradient(90deg, ${marque.c}, rgb(${marque.rgb} / 0.35))` }} />
-      )}
+      <div style={{ padding: "18px 22px 16px", flex: 1, display: "flex",
+        flexDirection: "column" as const, opacity: estPasse ? 0.84 : 1 }}>
 
-      <div style={{ padding: "16px 18px 14px", flex: 1, display: "flex",
-        flexDirection: "column" as const, gap: 12, opacity: estPasse ? 0.82 : 1 }}>
-
-        {/* Titre + rôle APIX */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start",
-          gap: 10, minWidth: 0 }}>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            {/* LE TITRE A LA LIGNE POUR LUI SEUL. La pastille de statut, posée à
-                sa gauche, lui prenait le quart de la largeur : « Salon
-                international de l'agriculture… » se coupait à « Salon
-                international … », et c'est le NOM qu'on cherche sur une grille,
-                pas le statut. La pastille descend donc d'une ligne, où elle
-                voisine l'édition sans rien disputer à personne. */}
-            <div title={e.nom_event} style={{ fontWeight: 800, fontSize: 15, color: "var(--encre)",
-              lineHeight: 1.3, letterSpacing: "-0.01em", overflow: "hidden",
-              textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 5,
-              minWidth: 0, flexWrap: "wrap" as const }}>
-              {marque && (
-                <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.10em",
-                  textTransform: "uppercase" as const, color: marque.c,
-                  background: `rgb(${marque.rgb} / 0.11)`, padding: "2px 7px", borderRadius: 999,
-                  flexShrink: 0, whiteSpace: "nowrap" as const }}>{marque.label}</span>
-              )}
-              {meta && <span style={{ fontSize: 11.5, color: "var(--gris)" }}>{meta}</span>}
-            </div>
-          </div>
+        {/* LA LIGNE DE SERVICE : le statut et le contexte à gauche, le rôle à
+            droite. Deux pastilles au même coin se seraient disputé la place —
+            et l'une n'apparaît que sur une carte sur six, l'autre sur toutes.
+            C'est la constante qui tient le coin, la variable qui vient se poser
+            devant le texte de contexte. */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 12, minHeight: 26 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            {marque && (
+              <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.10em",
+                textTransform: "uppercase" as const, color: marque.c, padding: "3px 9px",
+                borderRadius: 999, background: `rgb(${marque.rgb} / 0.10)`, flexShrink: 0,
+                whiteSpace: "nowrap" as const }}>{marque.label}</span>
+            )}
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--gris)", overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{contexte}</span>
+          </span>
           {e.role_apix && (
             <span style={{ ...(ROLE_BADGE[e.role_apix] || badge_gris),
-              whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+              flexShrink: 0, whiteSpace: "nowrap" as const }}>
               {ROLES_APIX_LABELS[e.role_apix] || e.role_apix}
             </span>
           )}
         </div>
 
-        {/* LA DATE ET LE LIEU SUR UNE SEULE LIGNE, sans intitulés : deux
-            pictogrammes disent de quoi il s'agit, et la carte y gagne la moitié
-            de sa hauteur. Ils passent à la ligne d'eux-mêmes quand la colonne
-            est étroite, au lieu de se faire tronquer. */}
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" as const,
-          marginTop: "auto", fontSize: 12.5, color: "var(--texte)" }}>
-          <span title={dateStr || undefined} style={{ display: "inline-flex", alignItems: "center",
-            gap: 6, minWidth: 0, fontWeight: 650, fontVariantNumeric: "tabular-nums" }}>
-            <CalendarDays size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-              {dateStr || "Date à préciser"}
-            </span>
-          </span>
-          <span aria-hidden style={{ color: "var(--bordure-forte)" }}>·</span>
-          <span title={lieu || undefined} style={{ display: "inline-flex", alignItems: "center",
-            gap: 6, minWidth: 0, fontWeight: 650 }}>
-            <MapPin size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-              {lieu || "Lieu à préciser"}
-            </span>
-          </span>
+        <h3 title={e.nom_event} style={{ fontWeight: 800, fontSize: 17, color: "var(--encre)",
+          lineHeight: 1.3, letterSpacing: "-0.015em", margin: "6px 0 0", overflow: "hidden",
+          textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{e.nom_event}</h3>
+
+        <div style={{ display: "flex", alignItems: "stretch", borderTop: "1px solid var(--bordure)",
+          paddingTop: 15, marginTop: 16 }}>
+          {/* La date prend un peu plus de place que le lieu : c'est la seule des
+              deux qui puisse s'étendre sur deux années (« 28 déc. 2026 → 3 janv.
+              2027 »). */}
+          <div style={{ flex: 1.15, minWidth: 0, display: "flex" }}>
+            <Donnee label="Date" valeur={dateStr} absent="À préciser" />
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "var(--bordure)", margin: "0 20px" }} />
+          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <Donnee label="Lieu" valeur={lieu || null} absent="À préciser" />
+          </div>
         </div>
       </div>
 
       {/* Actions d'administration — la barre retient clic ET clavier : sans quoi
           Entrée sur « Modifier » remonterait à la carte et ouvrirait la fiche. */}
       <div className="ro-w" style={{ display: "flex", alignItems: "center", gap: 2,
-        padding: "6px 10px", borderTop: "1px solid var(--bordure)", background: "var(--carte-douce)" }}
+        padding: "6px 12px", borderTop: "1px solid var(--bordure)" }}
         onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
         <ActionCarte onClick={onEditer} titre="Modifier" teinte="var(--bleu)" icone={<Pencil size={13} />}>
           Modifier
@@ -703,8 +712,8 @@ function CarteEvenement({ e, estProchain, onVoir, onEditer, onPublier, onSupprim
           {e.est_publie ? "Retirer" : "Publier"}
         </ActionCarte>
         {/* L'ÉTAT « NON PUBLIÉ » SE DIT ICI, à côté du bouton qui le change, et
-            non plus en pastille près du titre : c'est une propriété de gestion,
-            pas une caractéristique de l'événement. */}
+            non près du titre : c'est une propriété de gestion, pas une
+            caractéristique de l'événement. */}
         {nonPublie && (
           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em",
             textTransform: "uppercase" as const, color: "var(--gris)",
@@ -729,10 +738,7 @@ export default function EvenementsAdminPage() {
   const [vue,        setVue]        = useState<any>(null);
   const [deleting,   setDeleting]   = useState<any>(null);
   const [togglingId, setTogglingId] = useState<any>(null);
-  // Filtres de la barre d'outils
-  const [q,       setQ]       = useState("");
-  const [statutF, setStatutF] = useState<"tous"|"a_venir"|"en_cours"|"termine">("tous");
-  const [pubF,    setPubF]    = useState<"tous"|"publies"|"prives">("tous");
+  const [q,          setQ]          = useState("");
 
   const charger = useCallback(async () => {
     setLoading(true); setErreur(false);
@@ -779,109 +785,45 @@ export default function EvenementsAdminPage() {
   // c'est ce que dit leur carte.
   const statutDe = (e: any) => computeStatut(e) ?? ((e.prochain_annee || e.prochain_mois) ? "a_venir" : null);
 
-  // Liste affichée : filtres de la barre d'outils puis ordre de travail —
-  // en cours d'abord, puis les prochains par échéance, les sans-date, et enfin
-  // les passés du plus récent au plus ancien. L'API rendait un ordre qui
-  // renvoyait le prochain événement en fin de grille.
+  // Liste affichée : la recherche, puis l'ordre de travail — en cours d'abord,
+  // puis les prochains par échéance, les sans-date, et enfin les passés du plus
+  // récent au plus ancien. L'API rendait un ordre qui renvoyait le prochain
+  // événement en fin de grille.
   const liste = useMemo(() => {
     const texte = q.trim().toLowerCase();
-    const filtres = tous.filter(e => {
-      if (pubF === "publies" && e.est_publie === false) return false;
-      if (pubF === "prives"  && e.est_publie !== false) return false;
-      if (statutF !== "tous" && statutDe(e) !== statutF) return false;
-      if (!texte) return true;
-      return [e.nom_event, e.organisateur, e.ville, e.pays_hote_nom, e.role_apix]
-        .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte));
-    });
+    const filtres = !texte ? tous : tous.filter(e =>
+      [e.nom_event, e.organisateur, e.ville, e.pays_hote_nom, e.role_apix]
+        .filter(Boolean).some((v: string) => v.toLowerCase().includes(texte)));
     const rang = (e: any) => { const s = statutDe(e); return s === "en_cours" ? 0 : s === "a_venir" ? 1 : s === null ? 2 : 3; };
-    return filtres.sort((a, b) => {
+    return [...filtres].sort((a, b) => {
       const ra = rang(a), rb = rang(b);
       if (ra !== rb) return ra - rb;
       const da = dateDebutDe(a)?.getTime() ?? 0, db = dateDebutDe(b)?.getTime() ?? 0;
       if (da !== db) return ra === 3 ? db - da : da - db;   // passés : du plus récent
       return (a.nom_event || "").localeCompare(b.nom_event || "", "fr");
     });
-  }, [tous, q, statutF, pubF]);
-
-  const nbFiltres = (q ? 1 : 0) + (statutF !== "tous" ? 1 : 0) + (pubF !== "tous" ? 1 : 0);
-  const reinit = () => { setQ(""); setStatutF("tous"); setPubF("tous"); };
-  // Compteurs des onglets de statut, calculés sur le seul filtre de publication
-  // (sinon « À venir (3) » afficherait 3 alors que l'onglet est déjà actif).
-  const parStatut = useMemo(() => {
-    const base = tous.filter(e => pubF === "tous" || (pubF === "publies" ? e.est_publie !== false : e.est_publie === false));
-    return {
-      tous: base.length,
-      a_venir:  base.filter(e => statutDe(e) === "a_venir").length,
-      en_cours: base.filter(e => statutDe(e) === "en_cours").length,
-      termine:  base.filter(e => statutDe(e) === "termine").length,
-    };
-  }, [tous, pubF]);
-
-  // LA LIGNE DE CONTEXTE DIT L'ÉTAT DU MODULE, pas le nombre de lignes filtrées
-  // — celui-là est au bout de la barre d'outils, là où on vient de le changer.
-  const sousTitre = useMemo(() => {
-    if (loading || erreur || tous.length === 0) return null;
-    const nonPub = tous.filter(e => e.est_publie === false).length;
-    const bouts = [
-      parStatut.en_cours > 0 ? `${parStatut.en_cours} en cours` : null,
-      parStatut.a_venir  > 0 ? `${parStatut.a_venir} à venir`   : null,
-      nonPub > 0 ? `${nonPub} non publié${nonPub > 1 ? "s" : ""}` : null,
-    ].filter(Boolean);
-    return bouts.join(" · ");
-  }, [tous, parStatut, loading, erreur]);
-
-  const avecOutils = !loading && !erreur && tous.length > 0;
+  }, [tous, q]);
 
   return (
     <div style={{ fontFamily: "var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.ev-carte:hover { box-shadow: 0 6px 22px rgb(var(--ombre-rgb) / 0.10); transform: translateY(-2px);
-  border-color: rgb(var(--encre-rgb) / 0.20); }
-.ev-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }`}</style>
+.ev-carte:hover { box-shadow: 0 8px 26px rgb(var(--ombre-rgb) / 0.10); transform: translateY(-2px);
+  border-color: rgb(var(--encre-rgb) / 0.18); }
+.ev-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }`}</style>
 
       <EnteteAdmin icone={<CalendarDays size={19} />} titre="Événements"
-        compteur={loading ? null : tous.length} sousTitre={sousTitre}
+        compteur={loading ? null : tous.length}
+        recherche={!loading && !erreur && tous.length > 0 ? (
+          <ChampRecherche value={q} onChange={setQ} arrondi
+            placeholder="Nom, organisateur, ville, pays…" style={{ width: 274 }} />
+        ) : null}
         action={<BoutonPrincipal onClick={openCreate} icone={<Plus size={15} />}>
           Ajouter un événement
-        </BoutonPrincipal>}>
-        {avecOutils && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" as const }}>
-            <ChampRecherche value={q} onChange={setQ} placeholder="Nom, organisateur, ville, pays…" style={{ width: 252 }} />
-            <Segments value={statutF} onChange={setStatutF} accent="var(--orange)" options={[
-              { v: "tous",     l: "Tous",     n: parStatut.tous },
-              { v: "a_venir",  l: "À venir",  n: parStatut.a_venir },
-              { v: "en_cours", l: "En cours", n: parStatut.en_cours },
-              { v: "termine",  l: "Passés",   n: parStatut.termine },
-            ] as const} />
-            <Segments value={pubF} onChange={setPubF} accent="var(--orange)" options={[
-              { v: "tous",    l: "Tous" },
-              { v: "publies", l: "Publiés" },
-              { v: "prives",  l: "Non publiés" },
-            ] as const} />
-            {nbFiltres > 0 && (
-              <button onClick={reinit} title="Tout réinitialiser"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
-                  border: "1px solid var(--bordure-forte)", color: "var(--gris-fort)", borderRadius: 999,
-                  padding: "6px 12px", fontSize: 11.5, fontWeight: 700, cursor: "pointer",
-                  fontFamily: "var(--font-google-sans)" }}>
-                <X size={12} /> Réinitialiser
-              </button>
-            )}
-            {/* Le compte de la sélection se tient au bout de la barre qui l'a
-                produite : c'est la réponse au geste qu'on vient de faire. */}
-            <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700,
-              color: nbFiltres > 0 ? "var(--orange)" : "var(--gris)", whiteSpace: "nowrap" as const }}>
-              {liste.length === tous.length
-                ? `${tous.length} événement${tous.length > 1 ? "s" : ""}`
-                : `${liste.length} sur ${tous.length}`}
-            </span>
-          </div>
-        )}
-      </EnteteAdmin>
+        </BoutonPrincipal>} />
 
-      <div style={{ padding: "18px 32px 80px" }}>
+      <div style={{ padding: "20px 32px 80px" }}>
         {loading ? (
-          <SkeletonCards n={6} cols={3} height={172} />
+          <SkeletonCards n={6} cols={3} height={196} />
         ) : erreur ? (
           <ErreurChargement onRetry={() => charger()} />
         ) : tous.length === 0 ? (
@@ -891,15 +833,15 @@ export default function EvenementsAdminPage() {
               Ajouter un événement
             </BoutonPrincipal>} />
         ) : liste.length === 0 ? (
-          <EtatVide icone={<Search size={26} />} titre="Aucun événement pour ces filtres"
-            texte="Aucune ligne ne répond à la sélection en cours."
+          <EtatVide icone={<Search size={26} />} titre="Aucun événement trouvé"
+            texte={`Aucun événement ne correspond à « ${q.trim()} ».`}
             action={
-              <button onClick={reinit}
+              <button onClick={() => setQ("")}
                 style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
-                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 10,
-                  padding: "9px 16px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                  border: "1px solid var(--bordure-forte)", color: "var(--texte)", borderRadius: 999,
+                  padding: "9px 18px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
                   fontFamily: "var(--font-google-sans)" }}>
-                <X size={13} /> Réinitialiser les filtres
+                <X size={13} /> Effacer la recherche
               </button>
             } />
         ) : (
@@ -942,8 +884,8 @@ function EtatVide({ icone, titre, texte, action }: {
       textAlign: "center" as const, padding: "78px 24px", background: "var(--carte)",
       border: "1px dashed var(--bordure-forte)", borderRadius: 16 }}>
       <span aria-hidden style={{ width: 54, height: 54, borderRadius: 16, display: "flex",
-        alignItems: "center", justifyContent: "center", background: "rgb(var(--encre-rgb) / 0.045)",
-        color: "var(--gris)", marginBottom: 16 }}>{icone}</span>
+        alignItems: "center", justifyContent: "center", background: "rgb(var(--bleu-rgb) / 0.07)",
+        color: "var(--bleu)", marginBottom: 16 }}>{icone}</span>
       <p style={{ fontSize: 15.5, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.01em" }}>{titre}</p>
       <p style={{ fontSize: 13, color: "var(--gris)", marginTop: 6, maxWidth: 380, lineHeight: 1.6 }}>{texte}</p>
       {action && <div style={{ marginTop: 20 }}>{action}</div>}

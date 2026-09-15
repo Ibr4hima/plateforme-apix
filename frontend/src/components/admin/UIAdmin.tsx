@@ -81,15 +81,23 @@ export const LigneVide = ({ colSpan, texte }: { colSpan: number; texte: string }
 );
 
 // ── Champ de recherche compact ────────────────────────────────────────────────
-export function ChampRecherche({ value, onChange, placeholder, style }: {
-  value: string; onChange: (v: string) => void; placeholder: string; style?: React.CSSProperties;
+export function ChampRecherche({ value, onChange, placeholder, style, arrondi }: {
+  value: string; onChange: (v: string) => void; placeholder: string;
+  style?: React.CSSProperties;
+  /** Forme de pastille, pour les champs posés sur la ligne du titre : ils y
+      voisinent le bouton d'action, qui est arrondi, et un rectangle à angles
+      vifs à côté de lui se voit immédiatement. */
+  arrondi?: boolean;
 }) {
+  const pilule: React.CSSProperties = arrondi
+    ? { borderRadius: 999, height: 38, paddingLeft: 36, paddingRight: value ? 34 : 16, fontSize: 13 }
+    : { paddingLeft: 32, paddingRight: value ? 30 : 12 };
   return (
     <div style={{ position: "relative", ...style }}>
-      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...IS, paddingLeft: 32, paddingRight: value ? 30 : 12 }} />
+      <Search size={arrondi ? 14 : 13} style={{ position: "absolute", left: arrondi ? 14 : 11, top: "50%", transform: "translateY(-50%)", color: "var(--gris)" }} />
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...IS, ...pilule }} />
       {value && (
-        <button onClick={() => onChange("")} aria-label="Effacer" style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+        <button onClick={() => onChange("")} aria-label="Effacer" style={{ position: "absolute", right: arrondi ? 13 : 9, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
           <X size={12} style={{ color: "var(--gris)" }} />
         </button>
       )}
