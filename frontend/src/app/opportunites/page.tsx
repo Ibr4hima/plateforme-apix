@@ -4,8 +4,7 @@ import NavActions from "@/components/layout/NavActions";
 import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Segments } from "@/components/shared/Segments";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGeoArbre, useNaema, useNaemaArbre, useRefPolesTerritoires } from "@/lib/referentiels";
 import { useTous, VIDE } from "@/lib/donnees";
 import { useEtatUrl } from "@/lib/useEtatUrl";
@@ -34,77 +33,7 @@ const NIVEAUX_POTS = [
   {key:"arrondissement", label:"Arrondissements",   unit:"arrondissement", abbr:"ARR",  color:"var(--violet)"},
 ] as const;
 
-
-/** LA CARTE DES TROIS ONGLETS — un titre, une ligne de contexte, une pastille,
- *  et deux données étiquetées sous un filet.
- *
- *  POURQUOI ELLE REMPLACE LES TUILES. Les potentialités et les avantages
- *  étaient rendus en petites étiquettes serrées, à l'intérieur d'un grand cadre
- *  blanc précédé d'un bandeau : à deux ou trois fiches, un cadre presque vide
- *  occupait la largeur de l'écran, et l'objet qu'on vient consulter y était
- *  l'élément le plus petit. L'onglet des projets, lui, employait déjà cette
- *  carte-ci. Une même page ne peut pas présenter ses trois collections de trois
- *  façons. */
-function CarteOpp({ onVoir, aria, titre, contexte, badge, teinte, donnees }: {
-  onVoir: () => void; aria: string; titre: string;
-  contexte?: string | null; badge?: string | null; teinte: string;
-  donnees: { label: string; valeur: string | null }[];
-}) {
-  return (
-    <div {...carteCliquable(onVoir, aria)}
-      style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,
-        cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",
-        padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
-      onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(teinte, 33)}`;}}
-      onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
-
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,minWidth:0}}>
-        <div style={{minWidth:0,flex:1}}>
-          <div title={titre} style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,
-            letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{titre}</div>
-          {contexte && <div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3,
-            overflow:"hidden",whiteSpace:"nowrap" as const,textOverflow:"ellipsis"}}>{contexte}</div>}
-        </div>
-        {badge && (
-          <span title={badge} style={{fontSize:11,fontWeight:700,color:teinte,padding:"4px 12px",
-            borderRadius:999,border:`1px solid ${voile(teinte, 35)}`,background:`${voile(teinte, 5)}`,
-            whiteSpace:"nowrap" as const,overflow:"hidden",textOverflow:"ellipsis",flexShrink:1,minWidth:0}}>{badge}</span>
-        )}
-      </div>
-
-      <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
-        {donnees.map((d,i)=>(
-          <React.Fragment key={d.label}>
-            {i>0 && <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>}
-            <div style={{flex:1,minWidth:0}}>
-              <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",
-                textTransform:"uppercase" as const,marginBottom:4}}>{d.label}</p>
-              <p title={d.valeur||undefined} style={{fontSize:12.5,fontWeight:700,
-                color:d.valeur?"var(--encre)":"var(--gris)",overflow:"hidden",
-                textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{d.valeur||"—"}</p>
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** La bascule d'un onglet, avec la ligne de couverture à sa droite.
- *  Elle remplace les trois ou quatre grandes cartes de compteurs : elles
- *  portaient un gros nombre, une barre et une phrase pour un geste unique —
- *  choisir —, et tant qu'on n'avait pas choisi, la page ne montrait RIEN. */
-function BasculeCouverture({ children, couverture }: {
-  children: React.ReactNode; couverture: React.ReactNode;
-}) {
-  return (
-    <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap" as const,marginBottom:18}}>
-      {children}
-      <span style={{fontSize:12,color:"var(--gris)",whiteSpace:"nowrap" as const}}>{couverture}</span>
-    </div>
-  );
-}
-
+// ── Modal vue projet (identique admin) ───────────────────────────────────────
 export default function OpportunitesPage() {
   const [onglet, setOnglet] = useEtatUrl<"projets"|"potentialites"|"avantages">("onglet", "projets", ["projets","potentialites","avantages"]);
 
@@ -255,15 +184,39 @@ export default function OpportunitesPage() {
                 ) : (
                   <>
                   <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
-                    {projetsFiltres.map(p=>(
-                      <CarteOpp key={p.id} onVoir={()=>setProjSel(p)}
-                        aria={`Ouvrir la fiche : ${p.titre_projet}`}
-                        titre={p.titre_projet} badge={p.pole_nom||null} teinte="var(--bleu)"
-                        donnees={[
-                          {label:"Région",valeur:p.region_nom||null},
-                          {label:"Département",valeur:p.departement_nom||null},
-                        ]} />
-                    ))}
+                    {projetsFiltres.map(p=>{
+                      return (
+                      <div key={p.id} {...carteCliquable(()=>setProjSel(p))}
+                        style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:"pointer",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:13}}
+                        onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor="rgb(var(--bleu-rgb) / 0.33)";}}
+                        onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";
+                            ev.currentTarget.querySelectorAll("[data-marquee]").forEach(box=>{
+                              const span = box.firstElementChild as HTMLElement | null;
+                              if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                            });
+                          }}>
+
+                        {/* Titre + pôle territoire en sous-titre */}
+                        <div style={{minWidth:0}}>
+                          <div style={{fontWeight:800,fontSize:15.5,color:"var(--encre)",lineHeight:1.35,letterSpacing:"-0.01em",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{p.titre_projet}</div>
+                          {p.pole_nom&&<div style={{fontSize:11,fontWeight:500,color:"var(--gris)",marginTop:3}}>{p.pole_nom}</div>}
+                        </div>
+
+                        {/* Région · Département en rangée épurée */}
+                        <div style={{display:"flex",alignItems:"center",borderTop:"1px solid var(--bordure)",paddingTop:13,marginTop:"auto"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Région</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.region_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.region_nom||"—"}</p>
+                          </div>
+                          <div style={{width:1,alignSelf:"stretch",background:"var(--fond)",margin:"0 18px"}}/>
+                          <div style={{flex:1,minWidth:0}}>
+                            <p style={{fontSize:9,fontWeight:800,letterSpacing:"0.12em",color:"var(--gris)",textTransform:"uppercase" as const,marginBottom:4}}>Département</p>
+                            <p style={{fontSize:12.5,fontWeight:700,color:p.departement_nom?"var(--encre)":"var(--gris)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{p.departement_nom||"—"}</p>
+                          </div>
+                        </div>
+                      </div>
+                      );
+                    })}
                   </div>
                   </>
                 )}
@@ -274,69 +227,164 @@ export default function OpportunitesPage() {
             {onglet==="potentialites"&&(
               <>
                 {potsLoad ? (
-                  <SkeletonCards n={6} cols={2} height={150}/>
+                  <SkeletonCards n={4} cols={4} height={190}/>
                 ) : potsErr ? (
                   <ErreurChargement onRetry={()=>chargerPots()}/>
-                ) : (()=>{
-                  // UN NIVEAU EST TOUJOURS RETENU — celui qui porte des fiches,
-                  // à défaut le premier. C'est ce qui supprime l'écran d'accueil
-                  // où quatre cartes de compteurs tenaient lieu de contenu.
-                  const defaut = NIVEAUX_POTS.find(n=>pots.some((p:any)=>p.niveau===n.key))?.key ?? NIVEAUX_POTS[0].key;
-                  const niveau = selectedNiveau ?? defaut;
-                  const meta = NIVEAUX_POTS.find(x=>x.key===niveau)!;
-                  const items = pots.filter((p:any)=>p.niveau===niveau);
-                  const total = niveau==="pole" ? poles.length
-                    : niveau==="region" ? regions.length
-                    : niveau==="departement" ? regions.reduce((s:number,r:any)=>s+(r.departements?.length||0),0)
-                    : regions.reduce((s:number,r:any)=>s+(r.departements||[]).reduce((s2:number,d:any)=>s2+(d.arrondissements?.length||0),0),0);
-                  const pct = total>0 ? Math.round(items.length/total*100) : 0;
+                ) : (
+                  <>
+                  {/* ── Picker 4 cards — niveau de découpage territorial ── */}
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+                    {NIVEAUX_POTS.map(n=>{
+                      const count=pots.filter((p:any)=>p.niveau===n.key).length;
+                      const total = n.key==="pole" ? poles.length
+                        : n.key==="region" ? regions.length
+                        : n.key==="departement" ? regions.reduce((s:number,r:any)=>s+(r.departements?.length||0),0)
+                        : regions.reduce((s:number,r:any)=>s+(r.departements||[]).reduce((s2:number,d:any)=>s2+(d.arrondissements?.length||0),0),0);
+                      const pct = total>0 ? Math.round(count/total*100) : 0;
+                      return (
+                        <div key={n.key} {...(count>0?carteCliquable(()=>setSelectedNiveau(selectedNiveau===n.key?null:n.key)):{})}
+                          style={{background:"var(--carte)",border:selectedNiveau===n.key?`1.5px solid ${voile(n.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(n.color, 53)}`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedNiveau===n.key?`0 4px 18px ${voile(n.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedNiveau===n.key?`${voile(n.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
-                  // Le territoire parent, pour la colonne de rattachement.
-                  const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
-                  const deptDeArr = (nom:string) => {
-                    for (const r of regions) for (const d of (r.departements||[])) if ((d.arrondissements||[]).some((a:any)=>a.nom===nom)) return d.nom;
-                    return null;
-                  };
-                  const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
-                  const parent = (p:any): string|null => niveau==="pole" ? null
-                    : niveau==="region" ? poleDeRegion(p.region_nom||"")
-                    : niveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||""))
-                    : (p.departement_nom || deptDeArr(p.arrondissement_nom||""));
-                  const libelleParent = niveau==="region" ? "Pôle" : niveau==="departement" ? "Région" : "Département";
+                          {/* Niveau */}
+                          <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                            <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
+                            <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
+                          </div>
 
-                  return (
-                    <>
-                      <BasculeCouverture couverture={
-                        <>{items.length} fiche{items.length>1?"s":""} sur {total||"—"} {meta.unit}{total>1?"s":""}{total>0?` · ${pct} %`:""}</>
-                      }>
-                        <Segments value={niveau} onChange={(v:string)=>setSelectedNiveau(v)}
-                          accent={meta.color}
-                          options={NIVEAUX_POTS.map(n=>({
-                            v:n.key, l:n.label, n:pots.filter((p:any)=>p.niveau===n.key).length }))} />
-                      </BasculeCouverture>
+                          {/* Compteur principal */}
+                          <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                            <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
+                          </div>
 
-                      {items.length===0 ? (
-                        <div style={{textAlign:"center",padding:"70px 24px",color:"var(--gris)"}}>
-                          <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucune fiche · {meta.label}</p>
-                          <p style={{fontSize:14,marginTop:6}}>Choisissez un autre niveau territorial.</p>
+                          {/* Couverture des fiches */}
+                          <div style={{marginTop:"auto"}}>
+                            <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                              <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
+                            </div>
+                            <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                              {count>0
+                                ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
+                                : "Aucune fiche définie"}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
-                          {items.map((p:any)=>(
-                            <CarteOpp key={p.id} onVoir={()=>setPotSel(p)}
-                              aria={`Ouvrir la fiche : ${potTitle(p)}`}
-                              titre={potTitle(p)} badge={p.niveau_nom||null} teinte={meta.color}
-                              donnees={niveau==="pole"
-                                ? [{label:"Activités",valeur:String((p.activite_ids||[]).length)},
-                                   {label:"Secteurs",valeur:String((p.secteur_ids||[]).length)}]
-                                : [{label:libelleParent,valeur:parent(p)},
-                                   {label:"Activités",valeur:String((p.activite_ids||[]).length)}]} />
-                          ))}
+                      );
+                    })}
+                  </div>
+                  {/* ── Fiches du niveau sélectionné, affichées sous les cards ── */}
+                  {selectedNiveau!==null&&(
+                  <div className="charge-in" style={{marginTop:selectedNiveau==="pole"?0:26}}>
+                    {(()=>{
+                      const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
+                      const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
+                      const bandeau = (
+                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 18px",borderRadius:16,
+                          background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                          border:`1px solid ${voile(meta.color, 13)}`}}>
+                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
+                          </div>
+                          <div style={{minWidth:0,flex:1}}>
+                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
+                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
+                          </div>
                         </div>
-                      )}
-                    </>
-                  );
-                })()}
+                      );
+                      if (items.length===0) return <>{bandeau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
+                      // Rattachements géographiques via le référentiel déjà chargé
+                      const regionDuDept = (nom:string) => regions.find((r:any)=>(r.departements||[]).some((d:any)=>d.nom===nom))?.nom || null;
+                      const deptDeArr = (nom:string) => {
+                        for (const r of regions) for (const d of (r.departements||[])) if ((d.arrondissements||[]).some((a:any)=>a.nom===nom)) return d.nom;
+                        return null;
+                      };
+                      const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
+                      // Regroupement des fiches par rattachement territorial
+                      const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
+                        : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
+                        : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
+                        : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
+                      const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
+                      const groupes = new Map<string, any[]>();
+                      items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
+                      const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
+                      return (
+                        <>
+                        {selectedNiveau==="pole"&&bandeau}
+                        {(()=>{
+                          const Tuile = ({p}:{p:any}) => {
+                            const nbActs = (p.activite_ids||[]).length;
+                            return (
+                              <div {...carteCliquable(()=>setPotSel(p))}
+                                style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                onMouseEnter={ev=>{
+                                  ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                  // Nom trop long : glisse pour révéler la fin
+                                  const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                  const span = box?.firstElementChild as HTMLElement | null;
+                                  if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                }}
+                                onMouseLeave={ev=>{
+                                  ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                  const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                  if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                }}>
+                                <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                  <span style={{display:"inline-block"}}>{potTitle(p)}</span>
+                                </div>
+                                {nbActs>0&&<span style={{fontSize:10.5,fontWeight:700,color:"var(--gris)",flexShrink:0,whiteSpace:"nowrap" as const}}>{nbActs} activité{nbActs>1?"s":""}</span>}
+                              </div>
+                            );
+                          };
+                          // Pôles : pas de regroupement pertinent → conteneur sans en-tête
+                          if (selectedNiveau==="pole") return (
+                            <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                                {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                              </div>
+                            </div>
+                          );
+                          // Autres niveaux : un bandeau de rattachement par groupe
+                          return (
+                        <div style={{display:"flex",flexDirection:"column" as const,gap:22}}>
+                          {cles.map(cle=>{
+                            const fiches = groupes.get(cle)!;
+                            return (
+                              <div key={cle}>
+                                {/* Bandeau du rattachement territorial */}
+                                <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                                  background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                                  border:`1px solid ${voile(meta.color, 13)}`}}>
+                                  <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                                    <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
+                                  </div>
+                                  <div style={{minWidth:0,flex:1}}>
+                                    <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
+                                    <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
+                                  </div>
+                                </div>
+                                {/* Fiches du groupe */}
+                                <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
+                                    {fiches.map((p:any)=><Tuile key={p.id} p={p}/>)}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                          );
+                        })()}
+                        </>
+                      );
+                    })()}
+                  </div>
+                  )}
+                  </>
+                )}
               </>
             )}
 
@@ -344,59 +392,114 @@ export default function OpportunitesPage() {
             {onglet==="avantages"&&(
               <>
                 {avgsLoad ? (
-                  <SkeletonCards n={6} cols={2} height={150}/>
+                  <SkeletonCards n={3} cols={3} height={190}/>
                 ) : avgsErr ? (
                   <ErreurChargement onRetry={()=>chargerAvgs()}/>
-                ) : (()=>{
-                  const defaut = SECTEURS_AVGS.find(x=>avgs.some((a:any)=>(a.secteur_nom||"").toLowerCase().includes(x.key)))?.key ?? SECTEURS_AVGS[0].key;
-                  const secteur = selectedSecAvg ?? defaut;
-                  const meta = SECTEURS_AVGS.find(x=>x.key===secteur)!;
-                  const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(secteur));
-                  const sec = secteurs.find((r:any)=>r.nom.toLowerCase().includes(secteur));
-                  const branchIds = new Set((sec ? branches.filter((b:any)=>b.secteur_id===sec.id) : []).map((b:any)=>b.id));
-                  const actCount = activites.filter((a:any)=>branchIds.has(a.branche_id)).length;
-                  const pct = actCount>0 ? Math.round(items.length/actCount*100) : 0;
-                  return (
-                    <>
-                      <BasculeCouverture couverture={
-                        <>{items.length} avantage{items.length>1?"s":""} sur {actCount||"—"} activité{actCount>1?"s":""}{actCount>0?` · ${pct} %`:""}</>
-                      }>
-                        <Segments value={secteur} onChange={(v:string)=>setSelectedSecAvg(v)}
-                          accent={meta.color}
-                          options={SECTEURS_AVGS.map(x=>({
-                            v:x.key, l:x.label,
-                            n:avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(x.key)).length }))} />
-                      </BasculeCouverture>
+                ) : (
+                  <>
+                  {/* ── Vue secteurs : 3 cards compteur ── */}
+                  <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+                    {SECTEURS_AVGS.map(s=>{
+                      const items = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key));
+                      const count = items.length;
+                      const sec = secteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
+                      const secBranches = sec ? branches.filter((b:any)=>b.secteur_id===sec.id) : [];
+                      const branchIds = new Set(secBranches.map((b:any)=>b.id));
+                      const actCount = activites.filter((a:any)=>branchIds.has(a.branche_id)).length;
+                      const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
+                      return (
+                        <div key={s.key} {...(count>0?carteCliquable(()=>setSelectedSecAvg(selectedSecAvg===s.key?null:s.key)):{})}
+                          style={{background:"var(--carte)",border:selectedSecAvg===s.key?`1.5px solid ${voile(s.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
+                          onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(s.color, 53)}`;}}}
+                          onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=selectedSecAvg===s.key?`0 4px 18px ${voile(s.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=selectedSecAvg===s.key?`${voile(s.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
 
-                      {items.length===0 ? (
-                        <div style={{textAlign:"center",padding:"70px 24px",color:"var(--gris)"}}>
-                          <p style={{fontSize:16,fontWeight:600,color:"var(--texte)"}}>Aucun avantage · {meta.label}</p>
-                          <p style={{fontSize:14,marginTop:6}}>Choisissez un autre secteur.</p>
+                          {/* Secteur */}
+                          <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                            <span style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0}}/>
+                            <span style={{fontSize:10.5,fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
+                          </div>
+
+                          {/* Compteur principal */}
+                          <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+                            <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
+                            <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
+                          </div>
+
+                          {/* Couverture des avantages */}
+                          <div style={{marginTop:"auto"}}>
+                            <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
+                              <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
+                            </div>
+                            <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
+                              {count>0
+                                ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
+                                : "Aucun avantage défini"}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14}}>
-                          {items.map((a:any)=>{
-                            const nbSel = (a.selections||[]).length;
-                            return (
-                              <CarteOpp key={a.id} onVoir={()=>setAvgSel(a)}
-                                aria={`Ouvrir la fiche : ${a.activite_nom||"Avantage"}`}
-                                titre={a.activite_nom||"Activité non précisée"}
-                                badge={a.branche_nom||null} teinte={meta.color}
-                                donnees={[
-                                  {label:"Secteur",valeur:a.secteur_nom||null},
-                                  // Un avantage se décrit par des types cochés au
-                                  // référentiel OU par un texte libre : la colonne
-                                  // dit celui qui est employé.
-                                  {label:nbSel>1?"Avantages":"Avantage",
-                                   valeur:nbSel>0?String(nbSel):(a.avantages?"Texte libre":null)},
-                                ]} />
-                            );
-                          })}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                      );
+                    })}
+                  </div>
+                  {/* ── Branches et activités du secteur sélectionné, sous les cards ── */}
+                  {selectedSecAvg!==null&&(()=>{
+                    const meta = SECTEURS_AVGS.find(x=>x.key===selectedSecAvg)!;
+                    const filtered=avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSecAvg!));
+                    const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
+                    filtered.forEach((a:any)=>{
+                      const bid=a.branche_id||0;
+                      if(!braMap.has(bid)) braMap.set(bid,{id:bid,nom:a.branche_nom||"Sans branche",items:[]});
+                      braMap.get(bid)!.items.push(a);
+                    });
+                    const bras=Array.from(braMap.values()).sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
+                    return (
+                      <div className="charge-in" style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
+                        {bras.map(bra=>(
+                          <div key={bra.id}>
+                            {/* Bandeau de la branche */}
+                            <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
+                              background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
+                              border:`1px solid ${voile(meta.color, 13)}`}}>
+                              <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
+                                <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
+                              </div>
+                              <div style={{minWidth:0,flex:1}}>
+                                <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
+                                <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
+                              </div>
+                            </div>
+                            {/* Activités de la branche */}
+                            <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
+                              <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSecAvg==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
+                                {bra.items.map((a:any)=>(
+                                  <div key={a.id} {...carteCliquable(()=>setAvgSel(a))}
+                                    style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0}}
+                                    onMouseEnter={ev=>{
+                                      ev.currentTarget.style.borderColor=`${voile(meta.color, 33)}`;ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="translateY(-1px)";ev.currentTarget.style.boxShadow="var(--ombre-2)";
+                                      // Nom trop long : glisse pour révéler la fin
+                                      const box = ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null;
+                                      const span = box?.firstElementChild as HTMLElement | null;
+                                      if (box && span) { const d = span.scrollWidth - box.clientWidth; if (d > 0) { span.style.transition = `transform ${Math.max(0.6, d / 40)}s ease`; span.style.transform = `translateX(-${d}px)`; } }
+                                    }}
+                                    onMouseLeave={ev=>{
+                                      ev.currentTarget.style.borderColor="var(--bordure)";ev.currentTarget.style.background="var(--carte-douce)";ev.currentTarget.style.transform="none";ev.currentTarget.style.boxShadow="none";
+                                      const span = (ev.currentTarget.querySelector("[data-marquee]") as HTMLElement | null)?.firstElementChild as HTMLElement | null;
+                                      if (span) { span.style.transition = "transform 0.4s ease"; span.style.transform = "translateX(0)"; }
+                                    }}>
+                                    <span style={{width:6,height:6,borderRadius:"50%",background:meta.color,flexShrink:0}}/>
+                                    <div data-marquee style={{flex:1,minWidth:0,fontSize:12.5,fontWeight:600,color:"var(--encre)",overflow:"hidden",whiteSpace:"nowrap" as const}}>
+                                      <span style={{display:"inline-block"}}>{a.activite_nom}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                  </>
+                )}
               </>
             )}
           </div>
