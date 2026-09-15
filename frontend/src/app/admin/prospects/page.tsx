@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Building2, Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Send, Trash2, Upload, User, Video, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, FileText, Globe, Link2, Loader2, Mail, MapPin, MessageCircle, MessageSquare, Pencil, Phone, Plus, Search, Send, Trash2, Upload, User, Video, X } from "lucide-react";
 import PhoneInput, { isPhoneComplete, isEmailComplete, isContactComplete, listePreteAjout, doublonsDans, contactsPartages, normPhone, normEmail } from "@/components/shared/PhoneInput";
 import PaysSelect from "@/components/shared/PaysSelect";
 import RichTextEditor from "@/components/shared/RichTextEditor";
@@ -10,7 +10,9 @@ import { FModal, FSection, FGrid, FPanel, FLabel, FInput, FSelect, FButton, FBut
 import { parsePhoneNumber } from "libphonenumber-js";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, PastilleContexte, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
+import { ChampRecherche, Segments } from "@/components/admin/UIAdmin";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_bleu, badge_vert, badge_rouge, badge_gris, voile } from "@/lib/couleurs";
 
@@ -1742,7 +1744,16 @@ export default function ProspectsPage() {
   const [echangeEdit,     setEchangeEdit]     = useState<any>(null);
   const [echangeProspect, setEchangeProspect] = useState<any>(null);
   const [deleting,     setDeleting]     = useState<number|null>(null);
+  // LA RECHERCHE ÉTAIT DÉJÀ CÂBLÉE, SANS CHAMP POUR LA REMPLIR. `q` partait
+  // depuis toujours à l'API (`/prospects?q=…`), mais aucune page ne pouvait le
+  // renseigner : le module était le seul de l'administration où l'on ne pouvait
+  // pas chercher, alors que le service savait répondre. On lui donne son champ,
+  // à la place où tous les autres modules ont le leur — sur la ligne du titre.
+  // `saisie` est ce qu'on tape, `q` ce qu'on interroge : sans ce délai, chaque
+  // frappe déclencherait une requête de liste et trois requêtes de compteurs.
+  const [saisie,       setSaisie]       = useState("");
   const [q,            setQ]            = useState("");
+  useEffect(() => { const t = setTimeout(() => setQ(saisie.trim()), 280); return () => clearTimeout(t); }, [saisie]);
   const [terminerOpenId,  setTerminerOpenId]  = useState<number|null>(null);
   const [terminerForm,    setTerminerForm]    = useState<{ issue:string; commentaire:string }>({ issue:"", commentaire:"" });
   const [savingTerminer,  setSavingTerminer]  = useState(false);
@@ -1814,8 +1825,8 @@ export default function ProspectsPage() {
 
   return (
     <div style={{ fontFamily:"var(--font-google-sans)" }}>
+      <style>{STYLE_GRILLE}</style>
       <style>{`
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
         @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
         [data-rte] ul{padding-left:20px;list-style-type:disc}
@@ -1826,216 +1837,220 @@ export default function ProspectsPage() {
         [data-rte] *{font-family:var(--font-google-sans);font-size:13px}
       `}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Prospects" compact ton="orange" pleineLargeur
-        droite={onglet!=="precedents" ? (
-          <button className="ro-w" onClick={()=>{ setEdit(null); setModal(true); }}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"var(--carte)", color:"var(--orange)", fontWeight:700, fontSize:13, padding:"9px 18px", borderRadius:999, border:"none", cursor:"pointer", boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)", fontFamily:"var(--font-google-sans)", transition:"background 0.15s, transform 0.15s", flexShrink:0, whiteSpace:"nowrap" as const }}
-            onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
-            onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
-            <Plus size={15}/> Nouveau prospect
-          </button>
+      {/* ══════════════════════════════════════════════════════════════════
+          L'EN-TÊTE COMMUN DE L'ADMINISTRATION. Le bandeau orange pleine
+          largeur venait des pages publiques ; il a quitté les six autres
+          modules pour la même raison qu'ici. Une page de prospection se
+          TRAVAILLE — on y revient chaque jour pour relancer, conclure,
+          consigner un échange — et un aplat saturé y reprenait le premier rang
+          de l'attention à chaque retour. L'en-tête est du papier, collé en
+          haut : le titre, le compte, la recherche et « Nouveau prospect »
+          restent à l'écran pendant qu'on fait défiler la liste.
+          ══════════════════════════════════════════════════════════════════ */}
+      <EnteteAdmin titre="Prospects" compteur={loading ? null : total}
+        recherche={<ChampRecherche value={saisie} onChange={setSaisie} arrondi
+          placeholder="Rechercher…" style={{ width:238 }} />}
+        action={onglet!=="precedents" ? (
+          <BoutonPrincipal onClick={()=>{ setEdit(null); setModal(true); }} icone={<Plus size={15}/>}>
+            Nouveau prospect
+          </BoutonPrincipal>
         ) : undefined}>
-        <BarreTitreSegment
-          options={([["cibles","Investisseurs ciblés"],["historique","Investisseurs en contact"],["precedents","Investisseurs transformés"]] as const)
-            .map(([v,l])=>({ v, l, count: counts[v] }))}
-          value={onglet} onChange={v=>setOnglet(v)} />
-      </BarreTitre>
+        {/* TROIS ÉTATS D'UNE MÊME RELATION, DONC UNE BASCULE : un investisseur
+            ciblé qu'on n'a pas encore appelé, un investisseur avec qui l'on
+            échange, un investisseur dont la prospection est close. Chacun
+            appelle des gestes différents — contacter, conclure, re-contacter —
+            ce qui justifie la seconde rangée de l'en-tête. */}
+        <Segments value={onglet} onChange={v=>setOnglet(v)} options={([
+          ["cibles","Investisseurs ciblés"],
+          ["historique","Investisseurs en contact"],
+          ["precedents","Investisseurs transformés"],
+        ] as const).map(([v,l])=>({ v, l, n: counts[v] }))} />
+      </EnteteAdmin>
 
-      <div style={{ padding:"28px 40px 80px" }}>
+      <div style={{ padding:"20px 32px 80px" }}>
       {loading ? (
-        <SkeletonCards n={6} cols={3} height={190}/>
+        <SkeletonCards n={6} cols={3} height={172}/>
       ) : prospects.length === 0 ? (
-        <div style={{ textAlign:"center" as const, padding:"80px 24px", color:"var(--gris)" }}>
-          <Building2 size={48} style={{ marginBottom:16, opacity:0.3 }}/>
-          <p style={{ fontSize:16, fontWeight:600, color:"var(--texte)" }}>Aucun prospect</p>
-          <p style={{ fontSize:14, marginTop:6 }}>{onglet==="cibles"?"Cliquez sur « Nouveau prospect » pour commencer.":onglet==="historique"?"Aucun échange enregistré pour l'instant.":"Aucune prospection conclue pour l'instant."}</p>
-        </div>
+        q ? (
+          <EtatVide icone={<Search size={26}/>} titre="Aucun prospect trouvé"
+            texte={`Aucun prospect ne correspond à « ${q} » dans cet onglet.`}
+            action={
+              <button onClick={()=>setSaisie("")}
+                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent",
+                  border:"1px solid var(--bordure-forte)", color:"var(--texte)", borderRadius:999,
+                  padding:"9px 18px", fontSize:12.5, fontWeight:700, cursor:"pointer",
+                  fontFamily:"var(--font-google-sans)" }}>
+                <X size={13}/> Effacer la recherche
+              </button>
+            } />
+        ) : (
+          <EtatVide icone={<IconeModule taille={26}/>}
+            titre={onglet==="cibles" ? "Aucun investisseur ciblé"
+              : onglet==="historique" ? "Aucune prospection en cours"
+              : "Aucune prospection conclue"}
+            texte={onglet==="cibles"
+              ? "Les investisseurs ciblés sont les entreprises repérées mais pas encore approchées."
+              : onglet==="historique"
+              ? "Un investisseur rejoint cet onglet dès le premier échange enregistré."
+              : "Les prospections conclues — installation ou possibilité écartée — sont archivées ici."}
+            action={onglet!=="precedents" ? (
+              <BoutonPrincipal onClick={()=>{ setEdit(null); setModal(true); }} icone={<Plus size={15}/>}>
+                Nouveau prospect
+              </BoutonPrincipal>
+            ) : undefined} />
+        )
       ) : (
-        <>
-          <div className="charge-in" style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14 }}>
-            {prospects.map(p=>{
-              const activite = badgeProspect(p);
-              const fmtJour = (d:string) => new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
-              const lastCycle = [...(p.cycles||[])].sort((a:any,b:any)=>b.cycle_num-a.cycle_num)[0];
-              const echsCourant = echangesDuCycle(p, null);
-              const dernierEch = echsCourant.length ? [...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1) : null;
-              // Second bloc libellé, contextuel selon l'onglet
-              const info2 = onglet==="historique"
-                ? (activite?.label==="À recontacter"
-                    ? { label:`Cycle ${lastCycle?.cycle_num??""} conclu`, value: lastCycle?.conclu_le ? fmtJour(lastCycle.conclu_le) : null }
-                    : { label:"Dernier échange", value: dernierEch ? fmtJour(dernierEch.date_echange) : null })
-                : onglet==="precedents"
-                ? (p.issue==="installe"
-                    ? { label:"Accord conclu", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
-                    : p.issue==="decline"
-                    ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
-                    : { label:"Conclusion", value: null })
-                : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
-              // Accent de survol = couleur du statut (comme la page publique)
-              const hoverC = activite ? (STATUT_HEX[activite.label] || "var(--gris)") : "rgb(var(--bleu-rgb) / 0.33)";
-              const badgeStatut = activite ? (STATUT_BADGE[activite.label] || badge_gris) : null;
-              return (
-                <div key={p.id} onClick={()=>setVue(p)}
-                  style={{ background:"var(--carte)", border:"1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius:16, cursor:"pointer", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", boxShadow:"none", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-                  onMouseEnter={ev=>{ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=hoverC;}}
-                  onMouseLeave={ev=>{ev.currentTarget.style.boxShadow="none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor="rgb(var(--encre-rgb) / 0.12)";}}>
+        // ── LA GRILLE PARTAGÉE ────────────────────────────────────────────
+        // `adm-grille` : le nombre de colonnes suit la largeur de la fenêtre,
+        // comme sur les six autres modules. La grille imposait auparavant trois
+        // colonnes quelle que soit la place, ce qui tronquait les dénominations
+        // sociales — celles-ci sont longues.
+        <div className="charge-in adm-grille">
+          {prospects.map(p=>{
+            const activite = badgeProspect(p);
+            const fmtJour = (d:string) => new Date(d).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});
+            const lastCycle = [...(p.cycles||[])].sort((a:any,b:any)=>b.cycle_num-a.cycle_num)[0];
+            const echsCourant = echangesDuCycle(p, null);
+            const dernierEch = echsCourant.length ? [...echsCourant].sort((a:any,b:any)=>a.date_echange.localeCompare(b.date_echange)).at(-1) : null;
+            // Seconde colonne, contextuelle selon l'onglet.
+            const info2 = onglet==="historique"
+              ? (activite?.label==="À recontacter"
+                  ? { label:`Cycle ${lastCycle?.cycle_num??""} conclu`, value: lastCycle?.conclu_le ? fmtJour(lastCycle.conclu_le) : null }
+                  : { label:"Dernier échange", value: dernierEch ? fmtJour(dernierEch.date_echange) : null })
+              : onglet==="precedents"
+              ? (p.issue==="installe"
+                  ? { label:"Accord conclu", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
+                  : p.issue==="decline"
+                  ? { label:"Décliné le", value: p.issue_conclu_le ? fmtJour(p.issue_conclu_le) : null }
+                  : { label:"Conclusion", value: null })
+              : { label:"Téléphone", value: p.telephones?.[0] ? fmtPhone(p.telephones[0]) : null };
+            const badgeStatut = activite ? (STATUT_BADGE[activite.label] || badge_gris) : null;
+            const nbEchangesCourants = echangesDuCycle(p, null).length;
+            const terminerDisabled = nbEchangesCourants === 0;
 
-                  <div style={{ padding:"18px 20px 16px", flex:1, display:"flex", flexDirection:"column" as const, gap:13 }}>
-                    {/* Dénomination + repère temporel | badge de statut */}
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, minWidth:0 }}>
-                      <div style={{ minWidth:0, flex:1 }}>
-                        <div style={{ fontWeight:800, fontSize:15.5, color:"var(--encre)", lineHeight:1.35, letterSpacing:"-0.01em", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{p.nom}</div>
-                        {(()=>{
-                          const sousTitre = onglet==="cibles"
-                            ? (p.nb_echanges>0 ? "Déjà contacté" : null)
-                            : onglet==="precedents" && p.issue_conclu_le
-                            ? `${p.issue==="decline"?"Décliné":"Conclu"} le ${fmtJour(p.issue_conclu_le)}`
-                            : null;
-                          return sousTitre && <div style={{ fontSize:11, fontWeight:500, color:"var(--gris)", marginTop:3 }}>{sousTitre}</div>;
-                        })()}
-                      </div>
-                      {onglet!=="cibles" && activite && badgeStatut && (
-                        <span style={{ ...badgeStatut, whiteSpace:"nowrap" as const, flexShrink:0 }}>{activite.label}</span>
-                      )}
-                    </div>
-
-                    {/* Pays · info contextuelle en rangée épurée */}
-                    <div style={{ display:"flex", alignItems:"center", borderTop:"1px solid var(--bordure)", paddingTop:13, marginTop:"auto" }}>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{onglet==="cibles"?"Pays":"Email"}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:(onglet==="cibles"?p.siege_nom:p.mails?.[0])?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>
-                          {(onglet==="cibles" ? p.siege_nom : p.mails?.[0]) || "—"}
-                        </p>
-                      </div>
-                      <div style={{ width:1, alignSelf:"stretch", background:"var(--fond)", margin:"0 18px" }}/>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <p style={{ fontSize:9, fontWeight:800, letterSpacing:"0.12em", color:"var(--gris)", textTransform:"uppercase" as const, marginBottom:4 }}>{info2.label}</p>
-                        <p style={{ fontSize:12.5, fontWeight:700, color:info2.value?"var(--encre)":"var(--gris)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const, fontVariantNumeric:"tabular-nums" }}>{info2.value||"—"}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  {onglet==="precedents" ? (
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
-                      <button onClick={()=>setVue(p)}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--texte)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--gris-rgb) / 0.07)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        Consulter
-                      </button>
-                      {p.issue==="decline" && (
-                        <>
-                          <div style={{ width:1, background:"var(--fond)" }}/>
-                          <button onClick={()=>handleRecontact(p.id)}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            <MessageSquare size={12}/> Re-contacter
-                          </button>
-                        </>
-                      )}
-                      <div style={{ width:1, background:"var(--fond)" }}/>
-                      <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                        style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
-                        title="Supprimer définitivement (test)"
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        {deleting===p.id?<Loader2 size={12} style={{ color:"var(--danger)",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"var(--danger)" }}/>}
-                      </button>
-                    </div>
-                  ) : onglet==="historique" ? (
-                    <div onClick={e=>e.stopPropagation()}>
-                      {(()=>{
-                        const nbEchangesCourants = echangesDuCycle(p, null).length;
-                        const terminerDisabled = nbEchangesCourants === 0;
-                        return (
-                        <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }}>
-                          <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            <MessageSquare size={12}/> Contacter
-                          </button>
-                          <div style={{ width:1, background:"var(--fond)" }}/>
-                          <button disabled={terminerDisabled} onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
-                            title={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":undefined}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:terminerDisabled?"not-allowed":"pointer", padding:"10px 0", fontSize:11.5, color:terminerDisabled?"var(--gris)":"var(--orange)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>{if(!terminerDisabled)ev.currentTarget.style.background="rgb(var(--orange-rgb) / 0.05)";}}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            <Check size={12}/> Terminer
-                          </button>
-                        </div>
-                        );
-                      })()}
-                      {terminerOpenId===p.id && (
-                        <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
-                          <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
-                          <div style={{ display:"flex", gap:6, marginBottom:10 }}>
-                            {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"var(--gris-fort)"}].map(({val,lbl,col})=>(
-                              <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
-                                style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${voile(col, 9)}`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
-                                {lbl}
-                              </button>
-                            ))}
-                          </div>
-                          <div style={{ marginBottom:10 }}>
-                            <p style={{ fontSize:11, fontWeight:600, color:"var(--texte)", marginBottom:5 }}>Commentaire *</p>
-                            <RichTextEditor value={terminerForm.commentaire} onChange={(v:string)=>setTerminerForm(f=>({ ...f, commentaire:v }))}/>
-                          </div>
-                          <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
-                            onClick={()=>handleTerminer(p.id)}
-                            style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--orange-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
-                            {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
-                            Conclure la prospection
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : onglet==="cibles" && p.nb_echanges > 0 ? (
-                    // Prospect déjà contacté dans "Investisseurs ciblés" : Modifier uniquement, pas Contacter ni Delete
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
-                      <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        <Pencil size={12}/> Modifier
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="ro-w" style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }} onClick={e=>e.stopPropagation()}>
-                      <button onClick={()=>{ setEdit(p); setModal(true); }}
-                        style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        <Pencil size={12}/> Modifier
-                      </button>
-                      {!estFige(p) && (
-                        <>
-                          <div style={{ width:1, background:"var(--fond)" }}/>
-                          <button onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
-                            style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                            onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
-                            onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                            <MessageSquare size={12}/> Contacter
-                          </button>
-                        </>
-                      )}
-                      <div style={{ width:1, background:"var(--fond)" }}/>
-                      <button onClick={()=>handleDelete(p.id)} disabled={deleting===p.id}
-                        style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
-                        onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
-                        onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                        {deleting===p.id?<Loader2 size={12} style={{ color:"var(--danger)",animation:"spin 1s linear infinite" }}/>:<Trash2 size={12} style={{ color:"var(--danger)" }}/>}
-                      </button>
-                    </div>
+            return (
+              <CarteAdmin key={p.id} onVoir={()=>setVue(p)} aria={`Ouvrir la fiche : ${p.nom}`}
+                titre={p.nom}
+                // UNE PROSPECTION ÉCARTÉE RESTE LISIBLE MAIS CESSE D'APPELER :
+                // elle est close, elle n'attend plus rien de personne.
+                attenue={onglet==="precedents" && p.issue==="decline"}
+                // LA LIGNE DE SERVICE NE REDIT PLUS LA COLONNE, ET NE RESTE PAS
+                // VIDE. Sur l'onglet des prospections conclues, elle affichait
+                // « Décliné le 12 mars 2026 » juste au-dessus d'une colonne
+                // intitulée « Décliné le » portant la même date : la date tient
+                // dans la colonne, comme partout ailleurs. Sur « Investisseurs
+                // ciblés » elle ne portait au contraire rien du tout, et la
+                // carte s'ouvrait sur une bande blanche.
+                //
+                // Elle dit maintenant, à chaque onglet, ce que la carte ne
+                // montre pas ailleurs : la date de ciblage sur le premier
+                // onglet, où les colonnes prennent le pays et le téléphone ; le
+                // PAYS sur les deux autres, où elles prennent l'e-mail et une
+                // date — sans quoi l'origine de l'investisseur disparaissait dès
+                // le premier échange enregistré.
+                contexte={onglet==="cibles" ? <>
+                  {p.nb_echanges>0 && (
+                    <PastilleContexte teinte="var(--bleu)" rgb="var(--bleu-rgb)">Déjà contacté</PastilleContexte>
                   )}
-                </div>
-              );
-            })}
-          </div>
-        </>
+                  {p.created_at && <TexteContexte>Ciblé le {fmtJour(p.created_at)}</TexteContexte>}
+                </> : (p.siege_nom ? <TexteContexte>{p.siege_nom}</TexteContexte> : null)}
+                // LE STATUT TIENT LE COIN DROIT : c'est la propriété que toutes
+                // les cartes de ces deux onglets portent. Sur « Investisseurs
+                // ciblés », personne n'a encore été contacté — il n'y a pas de
+                // statut d'activité à montrer.
+                badge={onglet!=="cibles" && activite && badgeStatut ? (
+                  <span style={{ ...badgeStatut, whiteSpace:"nowrap" as const, flexShrink:0 }}>{activite.label}</span>
+                ) : null}
+                donnees={[
+                  <Donnee key="a" label={onglet==="cibles" ? "Pays" : "Email"}
+                    valeur={(onglet==="cibles" ? p.siege_nom : p.mails?.[0]) || null} />,
+                  <Donnee key="b" label={info2.label} valeur={info2.value || null} />,
+                ]}
+                actions={
+                  onglet==="precedents" ? (
+                    // L'ONGLET DES PROSPECTIONS CONCLUES EST EN LECTURE SEULE :
+                    // rien n'y est modifiable, et « Consulter » y est le seul
+                    // geste que toutes les cartes partagent. Ailleurs il aurait
+                    // fait double emploi avec le clic sur la carte et aurait été
+                    // retiré ; ici, l'écarter laissait une barre d'actions vide,
+                    // avec une corbeille seule à son extrémité droite.
+                    <>
+                      <ActionCarte onClick={()=>setVue(p)} titre="Consulter la fiche"
+                        teinte="var(--bleu)" icone={<FileText size={13}/>}>Consulter</ActionCarte>
+                      {p.issue==="decline" && (
+                        <ActionCarte onClick={()=>handleRecontact(p.id)} titre="Re-contacter cette entreprise"
+                          teinte="var(--vert)" icone={<MessageSquare size={13}/>}>Re-contacter</ActionCarte>
+                      )}
+                      <span style={{ marginLeft:"auto" }}/>
+                      <ActionCarte onClick={()=>handleDelete(p.id)} enCours={deleting===p.id}
+                        titre="Supprimer définitivement" teinte="var(--danger)" icone={<Trash2 size={13}/>}/>
+                    </>
+                  ) : onglet==="historique" ? (
+                    <>
+                      <ActionCarte onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
+                        titre="Enregistrer un échange" teinte="var(--vert)" icone={<MessageSquare size={13}/>}>
+                        Contacter
+                      </ActionCarte>
+                      <ActionCarte
+                        onClick={()=>{ if(!terminerDisabled){ setTerminerOpenId(terminerOpenId===p.id?null:p.id); setTerminerForm({ issue:"", commentaire:"" }); } }}
+                        desactive={terminerDisabled}
+                        titre={terminerDisabled?"Au moins un échange est requis pour terminer ce cycle":"Conclure la prospection"}
+                        teinte="var(--orange)" icone={<Check size={13}/>}>
+                        Terminer
+                      </ActionCarte>
+                    </>
+                  ) : p.nb_echanges > 0 ? (
+                    // Ciblé mais déjà approché : on peut corriger la fiche, pas
+                    // la supprimer ni la contacter d'ici — l'échange se consigne
+                    // depuis « Investisseurs en contact ».
+                    <ActionCarte onClick={()=>{ setEdit(p); setModal(true); }} titre="Modifier"
+                      teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
+                  ) : (
+                    <>
+                      <ActionCarte onClick={()=>{ setEdit(p); setModal(true); }} titre="Modifier"
+                        teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
+                      {!estFige(p) && (
+                        <ActionCarte onClick={()=>{ setEchangeEdit(null); setEchangeProspect(p); setEchangeModal(true); }}
+                          titre="Enregistrer un premier échange" teinte="var(--vert)"
+                          icone={<MessageSquare size={13}/>}>Contacter</ActionCarte>
+                      )}
+                      <span style={{ marginLeft:"auto" }}/>
+                      <ActionCarte onClick={()=>handleDelete(p.id)} enCours={deleting===p.id}
+                        titre="Supprimer" teinte="var(--danger)" icone={<Trash2 size={13}/>}/>
+                    </>
+                  )
+                }
+                // ── LE DÉPLIANT DE CONCLUSION ─────────────────────────────
+                // Conclure demande une issue et un commentaire. Les demander
+                // dans une modale ferait perdre de vue la fiche qu'on clôt ;
+                // le dépliant s'ouvre sous la carte visée, et n'agrandit
+                // qu'elle.
+                pied={onglet==="historique" && terminerOpenId===p.id ? (
+                  <div style={{ margin:"0 14px 14px", padding:"12px 14px", background:"var(--carte-douce)", borderRadius:10, border:"1px solid var(--bordure)" }}>
+                    <p style={{ fontSize:11, fontWeight:700, color:"var(--orange)", letterSpacing:"0.1em", textTransform:"uppercase" as const, marginBottom:10 }}>Conclusion de la prospection</p>
+                    <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+                      {[{val:"installe",lbl:"Installation au Sénégal",col:"var(--vert)"},{val:"decline",lbl:"Possibilité écartée",col:"var(--gris-fort)"}].map(({val,lbl,col})=>(
+                        <button key={val} type="button" onClick={()=>setTerminerForm(f=>({ ...f, issue:val }))}
+                          style={{ flex:1, padding:"8px 6px", borderRadius:8, border:`1.5px solid ${terminerForm.issue===val?col:"var(--bordure-forte)"}`, background:terminerForm.issue===val?`${voile(col, 9)}`:"transparent", color:terminerForm.issue===val?col:"var(--gris)", fontSize:11, fontWeight:700, cursor:"pointer", transition:"all 0.15s" }}>
+                          {lbl}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ marginBottom:10 }}>
+                      <p style={{ fontSize:11, fontWeight:600, color:"var(--texte)", marginBottom:5 }}>Commentaire *</p>
+                      <RichTextEditor value={terminerForm.commentaire} onChange={(v:string)=>setTerminerForm(f=>({ ...f, commentaire:v }))}/>
+                    </div>
+                    <button disabled={!terminerForm.issue||!terminerForm.commentaire||savingTerminer}
+                      onClick={()=>handleTerminer(p.id)}
+                      style={{ width:"100%", padding:"9px 0", borderRadius:8, border:"none", cursor:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"not-allowed":"pointer", background:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--fond-creux2)":"var(--bleu-action)", color:(!terminerForm.issue||!terminerForm.commentaire||savingTerminer)?"var(--gris)":"var(--sur-bleu)", fontWeight:700, fontSize:12, display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+                      {savingTerminer?<Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>:<Check size={12}/>}
+                      Conclure la prospection
+                    </button>
+                  </div>
+                ) : null} />
+            );
+          })}
+        </div>
       )}
       </div>
 

@@ -30,7 +30,15 @@ import { Loader2 } from "lucide-react";
     douze fermetures qui réécrivent un style en ligne se sentent au défilement. */
 export const STYLE_GRILLE = `
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.adm-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+/* align-items: start — CHAQUE CARTE GARDE SA HAUTEUR PROPRE. Par défaut une
+   grille étire toutes les cartes d'une rangée à la hauteur de la plus haute :
+   inoffensif tant qu'elles se ressemblent, désastreux dès que l'une s'ouvre.
+   Le dépliant de conclusion d'une prospection fait passer sa carte de 183 à
+   520 px, et sa voisine, vide, s'étirait avec elle — une colonne de blanc avec
+   une barre d'actions échouée tout en bas. Les cartes ayant partout la même
+   structure, leur hauteur naturelle est la même : rien ne change ailleurs. */
+.adm-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px; align-items: start; }
 .adm-carte { background: var(--carte); border-radius: 16px; cursor: pointer; display: flex;
   flex-direction: column; overflow: hidden; border: 1px solid rgb(var(--encre-rgb) / 0.10);
   transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s; }
@@ -68,19 +76,27 @@ export function Donnee({ label, valeur, absent = "—" }: {
  *  permanence, trois par carte et six cartes par écran, elles faisaient dix-huit
  *  taches de couleur pour des gestes qu'on fait rarement — et la donnée passait
  *  après. Le survol rend la couleur au moment où elle sert. */
-export function ActionCarte({ onClick, titre, teinte, enCours, icone, children }: {
+export function ActionCarte({ onClick, titre, teinte, enCours, desactive, icone, children }: {
   onClick: () => void; titre: string; teinte: string; enCours?: boolean;
+  /** Le geste existe mais n'est pas encore possible — conclure une prospection
+   *  sans y avoir consigné le moindre échange, par exemple. Il reste À SA
+   *  PLACE, en gris pâle, et son `title` dit ce qui manque : le retirer ferait
+   *  changer la barre d'actions d'une carte à l'autre pour une raison qu'on ne
+   *  pourrait pas deviner. Distinct de `enCours`, qui tourne pendant l'appel. */
+  desactive?: boolean;
   icone: React.ReactNode; children?: React.ReactNode;
 }) {
+  const inerte = enCours || desactive;
   return (
-    <button onClick={onClick} disabled={enCours} title={titre} aria-label={titre}
+    <button onClick={onClick} disabled={inerte} title={titre} aria-label={titre}
       style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none",
-        background: "transparent", color: "var(--gris-fort)", cursor: enCours ? "default" : "pointer",
+        background: "transparent", color: desactive ? "var(--gris)" : "var(--gris-fort)",
+        cursor: enCours ? "default" : desactive ? "not-allowed" : "pointer",
         padding: "6px 10px", borderRadius: 8, fontSize: 11, fontWeight: 650,
         fontFamily: "var(--font-google-sans)", transition: "background 0.14s, color 0.14s" }}
-      onMouseEnter={ev => { ev.currentTarget.style.color = teinte;
+      onMouseEnter={ev => { if (inerte) return; ev.currentTarget.style.color = teinte;
         ev.currentTarget.style.background = `color-mix(in srgb, ${teinte} 9%, transparent)`; }}
-      onMouseLeave={ev => { ev.currentTarget.style.color = "var(--gris-fort)";
+      onMouseLeave={ev => { if (inerte) return; ev.currentTarget.style.color = "var(--gris-fort)";
         ev.currentTarget.style.background = "transparent"; }}>
       {enCours ? <Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> : icone}
       {children}
@@ -99,7 +115,7 @@ export function ActionCarte({ onClick, titre, teinte, enCours, icone, children }
  *  d'appeler ; `pointille` passe la bordure en tirets, ce qui se repère de loin
  *  sur une grille et vaut mieux qu'un troisième badge. */
 export function CarteAdmin({ onVoir, aria, attenue, pointille, contexte, badge, titre,
-  donnees, actions }: {
+  donnees, actions, pied }: {
   onVoir: () => void;
   aria: string;
   attenue?: boolean;
@@ -110,6 +126,15 @@ export function CarteAdmin({ onVoir, aria, attenue, pointille, contexte, badge, 
   /** Deux au plus : au-delà, les colonnes deviennent illisibles à 340 px. */
   donnees: React.ReactNode[];
   actions: React.ReactNode;
+  /** Un dépliant sous la barre d'actions, replié par défaut.
+   *
+   *  RÉSERVÉ AU GESTE QUI DEMANDE UNE SAISIE SUR PLACE. Conclure une
+   *  prospection réclame une issue et un commentaire ; les demander dans une
+   *  modale ferait perdre de vue la fiche qu'on est en train de clore. Le
+   *  dépliant s'ouvre SOUS la carte concernée, à l'endroit où l'on a cliqué, et
+   *  n'agrandit qu'elle. Aucun autre module ne s'en sert : une carte de liste
+   *  qui contient un formulaire n'est plus une carte de liste. */
+  pied?: React.ReactNode;
 }) {
   return (
     <div role="button" tabIndex={0} aria-label={aria} onClick={onVoir}
@@ -119,8 +144,15 @@ export function CarteAdmin({ onVoir, aria, attenue, pointille, contexte, badge, 
       <div style={{ padding: "15px 20px 13px", flex: 1, display: "flex",
         flexDirection: "column", opacity: attenue ? 0.84 : 1 }}>
 
+        {/* 27 px, LA HAUTEUR D'UNE PASTILLE. La ligne de service était réservée
+            à 24 px : une carte qui porte un badge mesurait 183 px, une carte qui
+            n'en porte pas, 180. Trois pixels ne se voient pas seuls — ils se
+            voient quand deux cartes se touchent dans une grille, et ils
+            suffisaient à ce que deux onglets d'un même module ne s'alignent pas.
+            La réserve vaut désormais la hauteur du badge : toutes les cartes de
+            l'administration font la même. */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 12, minHeight: 24 }}>
+          gap: 12, minHeight: 27 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             {contexte}
           </span>
@@ -151,6 +183,12 @@ export function CarteAdmin({ onVoir, aria, attenue, pointille, contexte, badge, 
         onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
         {actions}
       </div>
+
+      {pied && (
+        <div onClick={ev => ev.stopPropagation()} onKeyDown={ev => ev.stopPropagation()}>
+          {pied}
+        </div>
+      )}
     </div>
   );
 }
