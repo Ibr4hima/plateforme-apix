@@ -95,6 +95,35 @@ LISTES = """
 """
 
 
+# ── L'ORDRE DE LECTURE D'UNE LISTE DE SIGNAUX ────────────────────────────────
+# LE PLUS RÉCEMMENT CONNU D'ABORD, et c'est plus subtil qu'un tri par date.
+#
+# fDi ne date ses signaux qu'au MOIS : à l'intérieur d'un mois, il n'existe
+# aucune chronologie dans la donnée elle-même. Ce qui en tient lieu, c'est
+# l'ordre du relevé — la première ligne de la première page est le signal que
+# fDi affichait en tête, donc le plus frais. `(lot_id, ligne)` porte cet ordre
+# et doit être suivi tel quel.
+#
+# CE QUI NE MARCHAIT PAS. Un signal saisi à la main part dans un lot qui lui est
+# propre, et ce lot porte un identifiant supérieur à tous les lots d'import. Un
+# tri par `(lot_id, ligne)` — ou par `id`, ce qui revient au même — rejetait donc
+# chaque saisie EN BAS de son mois, à la place du plus ancien, alors qu'on la
+# saisit précisément parce qu'elle vient d'apparaître en tête de la source. Deux
+# saisies du même mois se lisaient en outre de la plus ancienne à la plus
+# récente, à l'envers de tout le reste de l'écran.
+#
+# LES SAISIES PASSENT DONC EN TÊTE DE LEUR MOIS, la dernière entrée d'abord, et
+# les lignes importées suivent dans l'ordre du relevé. Le CASE est nécessaire :
+# trier tout le monde par `created_at` retournerait l'ordre des lots d'import,
+# dont toutes les lignes sont écrites à la même seconde, par rang croissant.
+ORDRE_SIGNAUX = """
+    s.annee DESC, s.mois DESC NULLS LAST,
+    (s.origine = 'saisie') DESC,
+    CASE WHEN s.origine = 'saisie' THEN s.created_at END DESC,
+    s.lot_id, s.ligne, s.id
+"""
+
+
 def _ligne(r) -> dict:
     return {
         "id": r.id,
@@ -211,8 +240,7 @@ async def lister_signaux(
     # `unaccent` qui supposerait une extension installée.
     CLE_TRI = ("lower(regexp_replace(normalize("
                "coalesce(e.nom, s.entreprise_brut, ''), NFKD), '[^ -~]', '', 'g'))")
-    DATE = "s.annee DESC, s.mois DESC NULLS LAST, s.lot_id, s.ligne"
-    tri = f"{CLE_TRI}, {DATE}" if a_arbitrer else DATE
+    tri = f"{CLE_TRI}, {ORDRE_SIGNAUX}" if a_arbitrer else ORDRE_SIGNAUX
 
     # La jointure sur les entreprises n'est posée QUE pour le tri par nom : la
     # coller au tableau général ferait payer à chaque page une jointure dont son
@@ -240,8 +268,7 @@ async def lister_signaux(
         LEFT JOIN fdi_entreprises pa ON pa.id = s.parent_id
         LEFT JOIN ref_pays ps ON ps.id = s.pays_source_id
         JOIN fdi_lots_import l ON l.id = s.lot_id
-        ORDER BY {"c.cle_tri, " if a_arbitrer else ""}s.annee DESC,
-                 s.mois DESC NULLS LAST, s.lot_id, s.ligne
+        ORDER BY {"c.cle_tri, " if a_arbitrer else ""}{ORDRE_SIGNAUX}
     """), params)).fetchall()
 
     retenues = (await db.execute(text(

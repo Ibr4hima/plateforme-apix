@@ -30,7 +30,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.api.routes.fdi_signaux import LISTES, VISE_AFRIQUE
+from app.api.routes.fdi_signaux import LISTES, ORDRE_SIGNAUX, VISE_AFRIQUE
 
 # Même préfixe public que les projets annoncés : les deux vues se lisent l'une
 # après l'autre, et leurs adresses doivent se ressembler.
@@ -360,7 +360,7 @@ async def signaux_publics(
         WITH choisis AS MATERIALIZED (
             SELECT s.id FROM fdi_signaux_investisseurs s
              WHERE {filtre}
-             ORDER BY s.annee DESC, s.mois DESC NULLS LAST, s.id
+             ORDER BY {ORDRE_SIGNAUX}
              LIMIT :n OFFSET :o
         )
         SELECT s.id, s.annee, s.mois,
@@ -374,7 +374,7 @@ async def signaux_publics(
         LEFT JOIN fdi_entreprises e  ON e.id  = s.entreprise_id
         LEFT JOIN fdi_entreprises pa ON pa.id = s.parent_id
         LEFT JOIN ref_pays p ON p.id = s.pays_source_id
-        ORDER BY s.annee DESC, s.mois DESC NULLS LAST, s.id
+        ORDER BY {ORDRE_SIGNAUX}
     """), {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 
     def _mois(r) -> str:

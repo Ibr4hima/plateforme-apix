@@ -55,6 +55,24 @@ def _mois(r) -> str:
 # compris — le cas qui départage les règles approchantes.
 CLE_DEST = "lower(regexp_replace(normalize(coalesce({c}, ''), NFKD), '[^ -~]', '', 'g'))"
 
+# ── L'ORDRE DE LECTURE D'UNE LISTE DE PROJETS ────────────────────────────────
+# Le même raisonnement que pour les signaux, et la même correction. fDi ne date
+# ses lignes qu'au MOIS ; à l'intérieur d'un mois, c'est l'ordre du relevé qui
+# tient lieu de fraîcheur, et `(lot_id, ligne)` le porte.
+#
+# Un projet SAISI À LA MAIN part dans un lot à lui, dont l'identifiant dépasse
+# tous les lots d'import : trié ainsi, il tombait en bas de son mois, à la place
+# du plus ancien, alors qu'on le saisit parce qu'il vient d'apparaître. Les
+# saisies passent donc en tête de leur mois, la dernière entrée d'abord.
+#
+# Le défaut était encore LATENT ici — aucun projet n'a été saisi à ce jour —
+# mais le formulaire existe, et le corriger d'avance évite qu'il se découvre
+# sur la première saisie réelle.
+ORDRE_PROJETS = ("p.annee DESC, p.mois DESC NULLS LAST, "
+                 "(p.origine = 'saisie') DESC, "
+                 "CASE WHEN p.origine = 'saisie' THEN p.created_at END DESC, "
+                 "p.lot_id, p.ligne, p.id")
+
 
 def _reduire(v: str) -> str:
     """La même réduction, côté Python : la recherche compare des textes réduits
@@ -313,8 +331,7 @@ async def lister_projets(
     # ces quinze-là. Joindre d'abord et couper ensuite obligeait Postgres à
     # construire les seize mille huit cents lignes complètes pour en jeter
     # 16 857 : cent cinquante millisecondes de travail perdu par page tournée.
-    ordre = (f"{CLE_DEST.format(c='p.pays_dest_brut')}, p.annee DESC, "
-             "p.mois DESC NULLS LAST, p.lot_id, p.ligne")
+    ordre = f"{CLE_DEST.format(c='p.pays_dest_brut')}, {ORDRE_PROJETS}"
     # « MATERIALIZED » et une jointure, PAS un « IN ». Écrit
     # « WHERE p.id IN (SELECT id FROM choisis) », Postgres ne pousse pas le
     # filtre : il construit les seize mille huit cents lignes jointes puis n'en
@@ -457,7 +474,7 @@ async def arbitrage(page: int = 1, par_page: int = 20,
 
     # Les projets des libellés de la page, d'un coup, regroupés ici.
     par_brut: dict[str, list] = {}
-    for r in (await db.execute(text("""
+    for r in (await db.execute(text(f"""
         SELECT p.entreprise_brut AS brut, p.id, p.ligne, p.annee, p.mois,
                p.capex_musd, p.type_brut,
                s.libelle_fr AS secteur, l.libelle AS lot,
@@ -469,7 +486,7 @@ async def arbitrage(page: int = 1, par_page: int = 20,
         LEFT JOIN ref_pays o ON o.id = p.pays_source_id
         JOIN fdi_lots_import l ON l.id = p.lot_id
         WHERE p.statut_entreprise <> 'resolu' AND p.entreprise_brut = ANY(:bruts)
-        ORDER BY p.annee DESC, p.mois DESC NULLS LAST, p.ligne
+        ORDER BY {ORDRE_PROJETS}
     """), {"bruts": liste_bruts})).fetchall():
         par_brut.setdefault(r.brut, []).append(r)
 
