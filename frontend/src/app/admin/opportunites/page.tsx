@@ -9,7 +9,9 @@ import RichTextEditor from "@/components/shared/RichTextEditor";
 import BanqueProjets from "@/components/opportunites/BanqueProjets";
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, EtatVide, STYLE_GRILLE } from "@/components/admin/CarteAdmin";
+import { Segments } from "@/components/admin/UIAdmin";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { badge_gris, voile } from "@/lib/couleurs";
 
@@ -1010,7 +1012,12 @@ export default function OpportunitesAdminPage() {
   const [avgDel,    setAvgDel]    = useState<number|null>(null);
   const [avgToggle, setAvgToggle] = useState<number|null>(null);
   const [selectedSec, setSelectedSec] = useState<string|null>(null);
+  const secteurDefaut = SECTEURS_AVGS.find(x=>avgs.some((a:any)=>(a.secteur_nom||"").toLowerCase().includes(x.key)))?.key ?? SECTEURS_AVGS[0].key;
   const [selectedNiveau, setSelectedNiveau] = useState<string|null>(null);
+  // LE NIVEAU RETENU PAR DÉFAUT EST CELUI QUI PORTE DES FICHES. Retenir le
+  // premier de la liste ouvrait la page sur « Aucune fiche » alors que le
+  // niveau voisin en comptait trois : le module paraissait vide.
+  const niveauDefaut = NIVEAUX_POTS.find(n=>pots.some((p:any)=>p.niveau===n.key))?.key ?? NIVEAUX_POTS[0].key;
   const [refSecteurs,  setRefSecteurs]  = useState<any[]>([]);
   const [refBranches,  setRefBranches]  = useState<any[]>([]);
   const [refActivites, setRefActivites] = useState<any[]>([]);
@@ -1119,30 +1126,25 @@ export default function OpportunitesAdminPage() {
 
   return (
     <div style={{fontFamily:"var(--font-google-sans)"}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-@keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
+      <style>{STYLE_GRILLE}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Opportunités d'investissement" compact ton="orange" pleineLargeur
-        droite={
-          <button className="ro-w" onClick={actionOnglet.onClick}
-            style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--carte)",color:"var(--orange)",fontWeight:700,fontSize:13,padding:"9px 18px",borderRadius:999,border:"none",cursor:"pointer",boxShadow:"0 3px 12px rgb(var(--ombre-rgb) / 0.16)",fontFamily:"var(--font-google-sans)",transition:"background 0.15s, transform 0.15s",flexShrink:0,whiteSpace:"nowrap" as const}}
-            onMouseEnter={ev=>{ev.currentTarget.style.background="var(--orange-voile)";ev.currentTarget.style.transform="translateY(-1px)";}}
-            onMouseLeave={ev=>{ev.currentTarget.style.background="var(--carte)";ev.currentTarget.style.transform="none";}}>
-            <Plus size={15}/> {actionOnglet.label}
-          </button>
-        }>
-        <BarreTitreSegment
-          options={TABS.map(t=>({
-            v: t.key,
-            l: t.label,
-            count: t.key==="projets" ? projetsCount : t.key==="potentialites" ? pots.length : avgsTotal,
-          }))}
-          value={onglet} onChange={v=>setOnglet(v)} />
-      </BarreTitre>
+      <EnteteAdmin titre="Opportunités d'investissement"
+        compteur={onglet==="projets" ? projetsCount : onglet==="potentialites" ? pots.length : avgsTotal}
+        action={<BoutonPrincipal onClick={actionOnglet.onClick} icone={<Plus size={15}/>}>
+          {actionOnglet.label}
+        </BoutonPrincipal>}>
+        {/* TROIS SOUS-MODULES, DONC UNE BASCULE — et non trois filtres. Chacun a
+            ses données, sa modale et son action de création : la page en réunit
+            trois, elle ne les filtre pas. C'est le cas où la seconde rangée de
+            l'en-tête se justifie. */}
+        <Segments value={onglet} onChange={v=>setOnglet(v)} options={TABS.map(t=>({
+          v: t.key,
+          l: t.label,
+          n: t.key==="projets" ? projetsCount : t.key==="potentialites" ? pots.length : avgsTotal,
+        }))} />
+      </EnteteAdmin>
 
-      <div style={{padding:"28px 40px 80px"}}>
+      <div style={{padding:"20px 32px 80px"}}>
       {onglet==="projets" && <BanqueProjets registerOpenNew={fn=>{ openNewProjet.current=fn; }}/>}
 
       {onglet==="potentialites" && (
@@ -1151,71 +1153,53 @@ export default function OpportunitesAdminPage() {
             <SkeletonCards n={4} cols={4} height={190}/>
           ) : (
             <>
-            {/* ── Sélecteur de niveau territorial (gabarit public) ── */}
-            <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:14}}>
-              {NIVEAUX_POTS.map(n=>{
-                const count = pots.filter((p:any)=>p.niveau===n.key).length;
-                const total = n.key==="pole" ? poles.length
-                  : n.key==="region" ? geoTotaux.regions
-                  : n.key==="departement" ? geoTotaux.departements
+            {/* ── Sélecteur de niveau territorial ────────────────────────────
+                QUATRE GRANDES CARTES DEVENUES UNE BASCULE. Elles portaient
+                chacune un gros nombre, une barre de couverture et une phrase,
+                pour un geste unique : choisir un niveau. Et tant qu'on n'avait
+                pas choisi, la page ne montrait AUCUNE fiche — on ouvrait un
+                module de gestion et l'on tombait sur quatre cartes de chiffres.
+
+                La couverture qu'elles disaient n'est pas perdue : elle tient en
+                une ligne sous la bascule, pour le seul niveau qu'on regarde. */}
+            <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap" as const,marginBottom:18}}>
+              <Segments value={selectedNiveau ?? niveauDefaut}
+                onChange={(v:string)=>setSelectedNiveau(v)}
+                options={NIVEAUX_POTS.map(n=>({
+                  v:n.key, l:n.label, n:pots.filter((p:any)=>p.niveau===n.key).length }))} />
+              {(()=>{
+                const k = selectedNiveau ?? niveauDefaut;
+                const n = NIVEAUX_POTS.find(x=>x.key===k)!;
+                const count = pots.filter((p:any)=>p.niveau===k).length;
+                const total = k==="pole" ? poles.length
+                  : k==="region" ? geoTotaux.regions
+                  : k==="departement" ? geoTotaux.departements
                   : geoTotaux.arrondissements;
                 const pct = total>0 ? Math.round(count/total*100) : 0;
-                const actif = selectedNiveau===n.key;
                 return (
-                  // Clic = bascule : les fiches se déplient sous les cards
-                  <div key={n.key} onClick={()=>count>0&&setSelectedNiveau(actif?null:n.key)}
-                    style={{background:"var(--carte)",border:actif?`1.5px solid ${voile(n.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${voile(n.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(n.color, 53)}`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${voile(n.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${voile(n.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
-
-                    {/* Niveau */}
-                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                      <span style={{width:7,height:7,borderRadius:"50%",background:n.color,flexShrink:0}}/>
-                      <span style={{fontSize:10.5,fontWeight:800,color:n.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{n.label}</span>
-                    </div>
-
-                    {/* Compteur principal */}
-                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize:"2rem",fontWeight:800,color:total>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{total||"—"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>{n.unit}{total>1?"s":""}</span>
-                    </div>
-
-                    {/* Couverture des fiches */}
-                    <div style={{marginTop:"auto"}}>
-                      <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
-                        <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:n.color,borderRadius:99,transition:"width 0.4s ease"}}/>
-                      </div>
-                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
-                        {count>0
-                          ? <>{count} fiche{count>1?"s":""} définie{count>1?"s":""}{total>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
-                          : "Aucune fiche définie"}
-                      </p>
-                    </div>
-                  </div>
+                  <span style={{fontSize:12,color:"var(--gris)",whiteSpace:"nowrap" as const}}>
+                    {count} fiche{count>1?"s":""} sur {total || "—"} {n.unit}{total>1?"s":""}
+                    {total>0 ? ` · ${pct} %` : ""}
+                  </span>
                 );
-              })}
+              })()}
             </div>
 
-            {/* ── Fiches du niveau sélectionné, dépliées sous les cards ── */}
-            {selectedNiveau!==null && (
+            {/* ── Fiches du niveau retenu ── */}
+            {(() => {
+              const niveau = selectedNiveau ?? niveauDefaut;
+              return (
               <div className="charge-in">
               {(()=>{
-                const meta = NIVEAUX_POTS.find(x=>x.key===selectedNiveau)!;
-                const items = pots.filter((p:any)=>p.niveau===selectedNiveau);
-                const bandeauNiveau = (
-                  <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",margin:"26px 0 14px",borderRadius:16,
-                    background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
-                    border:`1px solid ${voile(meta.color, 13)}`}}>
-                    <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                      <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{items.length}</span>
-                    </div>
-                    <div style={{minWidth:0,flex:1}}>
-                      <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Niveau territorial</p>
-                      <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{meta.label}</div>
-                    </div>
-                  </div>
+                const meta = NIVEAUX_POTS.find(x=>x.key===niveau)!;
+                const items = pots.filter((p:any)=>p.niveau===niveau);
+                // LE BANDEAU DE NIVEAU A DISPARU : il répétait, en gros et en
+                // couleur, ce que la bascule juste au-dessus venait de dire.
+                if (items.length===0) return (
+                  <EtatVide icone={<IconeModule taille={26} />}
+                    titre={`Aucune fiche · ${meta.label}`}
+                    texte="Les potentialités publiées alimentent la page publique des opportunités par zone." />
                 );
-                if (items.length===0) return <>{bandeauNiveau}<div style={{textAlign:"center",padding:"40px 0",color:"var(--gris)"}}><p style={{fontSize:13}}>Aucune fiche</p></div></>;
 
                 // Rattachements géographiques via le référentiel déjà chargé
                 const regionDuDept = (nom:string) => {
@@ -1228,11 +1212,11 @@ export default function OpportunitesAdminPage() {
                 };
                 const poleDeRegion = (nom:string) => poles.find((x:any)=>(x.localisation||"").includes(nom))?.pole_territoire || null;
                 // Regroupement des fiches par rattachement territorial
-                const groupeDe = (p:any): string => selectedNiveau==="pole" ? meta.label
-                  : selectedNiveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
-                  : selectedNiveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
+                const groupeDe = (p:any): string => niveau==="pole" ? meta.label
+                  : niveau==="region" ? (poleDeRegion(p.region_nom||"") || "Autres")
+                  : niveau==="departement" ? (p.region_nom || regionDuDept(p.departement_nom||"") || "Autres")
                   : (p.departement_nom || deptDeArr(p.arrondissement_nom||"") || "Autres");
-                const rattachement = selectedNiveau==="region" ? "Pôle" : selectedNiveau==="departement" ? "Région" : "Département";
+                const rattachement = niveau==="region" ? "Pôle" : niveau==="departement" ? "Région" : "Département";
                 const groupes = new Map<string, any[]>();
                 items.forEach((p:any)=>{ const k=groupeDe(p); if(!groupes.has(k)) groupes.set(k,[]); groupes.get(k)!.push(p); });
                 const cles = Array.from(groupes.keys()).sort((a,b)=>a.localeCompare(b,"fr"));
@@ -1286,15 +1270,12 @@ export default function OpportunitesAdminPage() {
                 };
 
                 // Pôles : pas de regroupement pertinent → conteneur sans en-tête
-                if (selectedNiveau==="pole") return (
-                  <>
-                  {bandeauNiveau}
+                if (niveau==="pole") return (
                   <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,padding:16}}>
                       {items.map((p:any)=><Tuile key={p.id} p={p}/>)}
                     </div>
                   </div>
-                  </>
                 );
                 // Autres niveaux : un bandeau de rattachement par groupe
                 return (
@@ -1303,17 +1284,15 @@ export default function OpportunitesAdminPage() {
                       const fiches = groupes.get(cle)!;
                       return (
                         <div key={cle}>
-                          {/* Bandeau du rattachement territorial */}
-                          <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                            background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
-                            border:`1px solid ${voile(meta.color, 13)}`}}>
-                            <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                              <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{fiches.length}</span>
-                            </div>
-                            <div style={{minWidth:0,flex:1}}>
-                              <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>{rattachement}</p>
-                              <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{cle}</div>
-                            </div>
+                          {/* TITRE DE GROUPE, ET NON PLUS UN BANDEAU. Le cadre
+                              dégradé avec sa tuile chiffrée pesait autant que
+                              les fiches qu'il annonçait, et il se répétait à
+                              chaque groupe. Un intitulé, un nom, un compte : le
+                              regroupement se lit, il n'a pas à s'exposer. */}
+                          <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10,flexWrap:"wrap" as const}}>
+                            <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.13em",color:"var(--gris)",textTransform:"uppercase" as const}}>{rattachement}</span>
+                            <span style={{fontWeight:800,fontSize:14,color:"var(--encre)",letterSpacing:"-0.01em"}}>{cle}</span>
+                            <span style={{fontSize:12,color:"var(--gris)"}}>· {fiches.length} fiche{fiches.length>1?"s":""}</span>
                           </div>
                           {/* Fiches du groupe */}
                           <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
@@ -1328,7 +1307,8 @@ export default function OpportunitesAdminPage() {
                 );
               })()}
               </div>
-            )}
+              );
+            })()}
             </>
           )}
           <PotentialiteModal open={potModal} onClose={()=>setPotModal(false)} edit={potEdit} poles={poles} onSaved={chargerPots}/>
@@ -1348,57 +1328,41 @@ export default function OpportunitesAdminPage() {
             </div>
           ) : (
             <>
-            {/* ── Sélecteur de secteur (gabarit public) ── */}
-            <div className="charge-in" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:14}}>
-              {SECTEURS_AVGS.map(s=>{
-                const count = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key)).length;
-                const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(s.key));
-                const branches = sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : [];
-                const branchIds = new Set(branches.map((b:any)=>b.id));
+            {/* ── Sélecteur de secteur ───────────────────────────────────────
+                Même traitement que le sélecteur de niveau, et pour la même
+                raison : trois cartes de chiffres pour un seul geste, et rien
+                d'affiché tant qu'on n'avait pas cliqué. La couverture passe en
+                une ligne, pour le secteur qu'on regarde. */}
+            <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap" as const,marginBottom:18}}>
+              <Segments value={selectedSec ?? secteurDefaut}
+                onChange={(v:string)=>setSelectedSec(v)}
+                options={SECTEURS_AVGS.map(s=>({
+                  v:s.key, l:s.label,
+                  n:avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(s.key)).length }))} />
+              {(()=>{
+                const k = selectedSec ?? secteurDefaut;
+                const count = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(k)).length;
+                const sec = refSecteurs.find((r:any)=>r.nom.toLowerCase().includes(k));
+                const branchIds = new Set((sec ? refBranches.filter((b:any)=>b.secteur_id===sec.id) : []).map((b:any)=>b.id));
                 const actCount = refActivites.filter((a:any)=>branchIds.has(a.branche_id)).length;
                 const pct = actCount>0 ? Math.round(count/actCount*100) : 0;
-                const actif = selectedSec===s.key;
                 return (
-                  // Clic = bascule : les branches se déplient sous les cards
-                  <div key={s.key} onClick={()=>count>0&&setSelectedSec(actif?null:s.key)}
-                    style={{background:"var(--carte)",border:actif?`1.5px solid ${voile(s.color, 53)}`:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,cursor:count>0?"pointer":"default",transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s",boxShadow:actif?`0 4px 18px ${voile(s.color, 15)}`:"none",padding:"18px 20px 16px",display:"flex",flexDirection:"column" as const,gap:14,opacity:count>0?1:0.55}}
-                    onMouseEnter={ev=>{if(count>0){ev.currentTarget.style.boxShadow="var(--ombre-1)";ev.currentTarget.style.transform="translateY(-2px)";ev.currentTarget.style.borderColor=`${voile(s.color, 53)}`;}}}
-                    onMouseLeave={ev=>{ev.currentTarget.style.boxShadow=actif?`0 4px 18px ${voile(s.color, 15)}`:"none";ev.currentTarget.style.transform="none";ev.currentTarget.style.borderColor=actif?`${voile(s.color, 53)}`:"rgb(var(--encre-rgb) / 0.12)";}}>
-
-                    {/* Secteur */}
-                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                      <span style={{width:7,height:7,borderRadius:"50%",background:s.color,flexShrink:0}}/>
-                      <span style={{fontSize:10.5,fontWeight:800,color:s.color,letterSpacing:"0.1em",textTransform:"uppercase" as const,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{s.label}</span>
-                    </div>
-
-                    {/* Compteur principal */}
-                    <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-                      <span style={{fontSize:"2rem",fontWeight:800,color:actCount>0?"var(--encre)":"var(--gris)",lineHeight:1,letterSpacing:"-0.02em",fontVariantNumeric:"tabular-nums"}}>{actCount||"—"}</span>
-                      <span style={{fontSize:12,fontWeight:600,color:"var(--gris)"}}>activité{actCount>1?"s":""}</span>
-                    </div>
-
-                    {/* Couverture des avantages */}
-                    <div style={{marginTop:"auto"}}>
-                      <div style={{height:6,background:"var(--fond)",borderRadius:99,overflow:"hidden",marginBottom:7}}>
-                        <div style={{height:"100%",width:`${Math.max(pct>0?4:0,pct)}%`,background:s.color,borderRadius:99,transition:"width 0.4s ease"}}/>
-                      </div>
-                      <p style={{fontSize:11,fontWeight:600,color:count>0?"var(--texte)":"var(--gris)"}}>
-                        {count>0
-                          ? <>{count} avantage{count>1?"s":""} défini{count>1?"s":""}{actCount>0?<span style={{color:"var(--gris)",fontWeight:500}}> · {pct} %</span>:null}</>
-                          : "Aucun avantage défini"}
-                      </p>
-                    </div>
-                  </div>
+                  <span style={{fontSize:12,color:"var(--gris)",whiteSpace:"nowrap" as const}}>
+                    {count} avantage{count>1?"s":""} sur {actCount || "—"} activité{actCount>1?"s":""}
+                    {actCount>0 ? ` · ${pct} %` : ""}
+                  </span>
                 );
-              })}
+              })()}
             </div>
 
-            {/* ── Branches du secteur sélectionné, dépliées sous les cards ── */}
-            {selectedSec!==null && (
+            {/* ── Branches du secteur retenu ── */}
+            {(() => {
+              const secteur = selectedSec ?? secteurDefaut;
+              return (
               <div className="charge-in">
               {(()=>{
-                const meta = SECTEURS_AVGS.find(x=>x.key===selectedSec)!;
-                const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(selectedSec!));
+                const meta = SECTEURS_AVGS.find(x=>x.key===secteur)!;
+                const filtered = avgs.filter((a:any)=>(a.secteur_nom||"").toLowerCase().includes(secteur));
                 const braMap = new Map<number,{id:number;nom:string;items:any[]}>();
                 filtered.forEach((a:any)=>{
                   const bid=a.branche_id||0;
@@ -1410,21 +1374,16 @@ export default function OpportunitesAdminPage() {
                   <div style={{marginTop:26,display:"flex",flexDirection:"column" as const,gap:22}}>
                     {bras.map(bra=>(
                       <div key={bra.id}>
-                        {/* Bandeau de la branche */}
-                        <div style={{display:"flex",alignItems:"center",gap:15,padding:"15px 20px",marginBottom:14,borderRadius:16,
-                          background:`linear-gradient(100deg, ${voile(meta.color, 8)} 0%, ${voile(meta.color, 2)} 42%, rgba(255,255,255,0) 100%)`,
-                          border:`1px solid ${voile(meta.color, 13)}`}}>
-                          <div style={{width:44,height:44,borderRadius:13,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"var(--carte)",border:`1px solid ${voile(meta.color, 20)}`,boxShadow:`0 2px 6px ${voile(meta.color, 10)}`}}>
-                            <span style={{fontSize:14,fontWeight:800,color:meta.color,fontVariantNumeric:"tabular-nums"}}>{bra.items.length}</span>
-                          </div>
-                          <div style={{minWidth:0,flex:1}}>
-                            <p style={{fontSize:9.5,fontWeight:700,color:meta.color,letterSpacing:"0.12em",textTransform:"uppercase" as const,marginBottom:3}}>Branche</p>
-                            <div style={{fontWeight:800,fontSize:16,color:"var(--encre)",lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" as const}}>{bra.nom}</div>
-                          </div>
+                        {/* Titre de branche, même allègement que les groupes
+                            de potentialités. */}
+                        <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:10,flexWrap:"wrap" as const}}>
+                          <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.13em",color:"var(--gris)",textTransform:"uppercase" as const}}>Branche</span>
+                          <span style={{fontWeight:800,fontSize:14,color:"var(--encre)",letterSpacing:"-0.01em"}}>{bra.nom}</span>
+                          <span style={{fontSize:12,color:"var(--gris)"}}>· {bra.items.length} avantage{bra.items.length>1?"s":""}</span>
                         </div>
                         {/* Activités de la branche */}
                         <div style={{background:"var(--carte)",border:"1px solid rgb(var(--encre-rgb) / 0.12)",borderRadius:16,boxShadow:"none"}}>
-                          <div style={{display:"grid",gridTemplateColumns:`repeat(${selectedSec==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
+                          <div style={{display:"grid",gridTemplateColumns:`repeat(${secteur==="secondaire"?2:3},1fr)`,gap:10,padding:16}}>
                             {bra.items.map((a:any)=>(
                               <div key={a.id} onClick={()=>setAvgVue(a)}
                                 style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",background:"var(--carte-douce)",border:"1px solid var(--bordure)",borderRadius:12,cursor:"pointer",transition:"border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s",minWidth:0,opacity:a.est_publie===false?0.7:1}}
@@ -1475,7 +1434,8 @@ export default function OpportunitesAdminPage() {
                 );
               })()}
               </div>
-            )}
+              );
+            })()}
             </>
           )}
 
