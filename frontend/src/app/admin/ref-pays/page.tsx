@@ -2,11 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  Globe, Loader2, Pencil,
+  Loader2, Pencil,
   Plus, Search, Trash2, Users, X, Check, AlertTriangle
 } from "lucide-react";
 import { authHeaders } from "@/lib/authHeaders";
 import { voile } from "@/lib/couleurs";
+import EnteteAdmin, { BoutonPrincipal, IconeModule } from "@/components/admin/EnteteAdmin";
+import { ActionCarte, CarteAdmin, Donnee, EtatVide, STYLE_GRILLE, TexteContexte } from "@/components/admin/CarteAdmin";
+import { ChampRecherche, Ligne, Segments, Tableau, TD, TH } from "@/components/admin/UIAdmin";
+import { SkeletonRows } from "@/components/shared/Skeleton";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -32,6 +36,31 @@ function Badge({ label, color="var(--gris)" }: { label:string; color?:string }) 
     <span style={{ fontSize:10.5, fontWeight:700, color, background:`${voile(color, 7)}`, padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
       {label}
     </span>
+  );
+}
+
+/** Une action de LIGNE de tableau : un pictogramme seul, muet au repos, teinté
+ *  au survol — la règle des barres d'actions des cartes, transposée là où la
+ *  place manque pour un libellé.
+ *
+ *  ELLES ÉTAIENT DES PASTILLES COLORÉES EN PERMANENCE. Deux par ligne sur
+ *  274 lignes, cela faisait cinq cent quarante-huit ronds bleus et rouges dans
+ *  un tableau dont le sujet est le RÉFÉRENTIEL, pas sa maintenance. Le survol
+ *  rend la couleur au moment où elle sert. */
+function IconeAction({ onClick, titre, teinte, children }: {
+  onClick:()=>void; titre:string; teinte:string; children:React.ReactNode;
+}) {
+  return (
+    <button onClick={onClick} title={titre} aria-label={titre}
+      style={{ background:"transparent", border:"none", cursor:"pointer", borderRadius:999, width:28, height:28,
+        display:"inline-flex", alignItems:"center", justifyContent:"center", color:"var(--gris)",
+        transition:"background 0.14s, color 0.14s" }}
+      onMouseEnter={e=>{ e.currentTarget.style.color = teinte;
+        e.currentTarget.style.background = `color-mix(in srgb, ${teinte} 10%, transparent)`; }}
+      onMouseLeave={e=>{ e.currentTarget.style.color = "var(--gris)";
+        e.currentTarget.style.background = "transparent"; }}>
+      {children}
+    </button>
   );
 }
 
@@ -389,10 +418,14 @@ export default function RefPaysPage() {
   const [meta,    setMeta]    = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Filtres pays
+  // Filtres pays. `saisie` est ce qu'on tape, `search` ce qu'on interroge : la
+  // recherche part au SERVEUR, et sans ce délai chaque caractère déclenchait
+  // trois requêtes — pays, groupements et méta sont rechargés ensemble.
+  const [saisie,     setSaisie]     = useState("");
   const [search,     setSearch]     = useState("");
   const [filtCont,   setFiltCont]   = useState("");
   const [filtRegion, setFiltRegion] = useState("");
+  useEffect(() => { const t = setTimeout(() => setSearch(saisie.trim()), 280); return () => clearTimeout(t); }, [saisie]);
 
   // Modals
   const [modalPays,  setModalPays]  = useState(false);
@@ -462,188 +495,199 @@ export default function RefPaysPage() {
   }) || [];
 
   return (
-    <div style={{ padding:"36px 40px 80px", fontFamily:"var(--font-google-sans)" }}>
+    <div style={{ fontFamily:"var(--font-google-sans)" }}>
+      <style>{STYLE_GRILLE}</style>
       <style>{`
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes vueIn{from{opacity:0;transform:translateY(10px) scale(0.985);}to{opacity:1;transform:none;}}
-        @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
       `}</style>
 
-      {/* Header */}
-      <div style={{ marginBottom:8 }}>
-        <h1 style={{ fontWeight:800, fontSize:"1.75rem", color:"var(--encre)" }}>Référentiel Pays &amp; Groupements</h1>
-      </div>
+      {/* ══════════════════════════════════════════════════════════════════
+          L'EN-TÊTE COMMUN. Le titre flottait seul au-dessus d'une rangée
+          d'onglets soulignés — deux étages qui ne tenaient ensemble que par
+          leur voisinage, et qui défilaient tous les deux hors de l'écran dès
+          la troisième ligne du tableau. L'en-tête de l'administration les
+          réunit et les retient en haut : sur un référentiel de 274 pays,
+          savoir où l'on est et pouvoir chercher sans remonter compte plus
+          qu'ailleurs.
+          ══════════════════════════════════════════════════════════════════ */}
+      <EnteteAdmin titre="Pays & Groupements"
+        compteur={loading ? null : (onglet==="pays" ? pays.length : grps.length)}
+        recherche={onglet==="pays" ? (
+          <ChampRecherche value={saisie} onChange={setSaisie} arrondi
+            placeholder="Rechercher…" style={{ width:238 }} />
+        ) : null}
+        action={
+          <BoutonPrincipal icone={<Plus size={15}/>}
+            onClick={()=>{ if(onglet==="pays"){ setEditPays(null); setModalPays(true); } else { setEditGrp(null); setModalGrp(true); } }}>
+            {onglet==="pays" ? "Nouveau pays" : "Nouveau groupement"}
+          </BoutonPrincipal>
+        }>
+        {/* DEUX RÉFÉRENTIELS DISTINCTS — des pays, et des ensembles de pays —
+            chacun avec sa forme, sa modale et son action de création. La page
+            en réunit deux, elle ne les filtre pas. */}
+        <Segments value={onglet} onChange={v=>setOnglet(v)} options={[
+          { v:"pays" as const,        l:"Pays",        n: loading ? undefined : pays.length },
+          { v:"groupements" as const, l:"Groupements", n: loading ? undefined : grps.length },
+        ]} />
+      </EnteteAdmin>
 
-      {/* Onglets */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", background:"var(--carte)", borderBottom:"1px solid var(--bordure-forte)", marginBottom:24 }}>
-        <div style={{ display:"flex" }}>
-          {([["pays","Pays"],["groupements","Groupements"]] as const).map(([key,label])=>{
-            const actif = onglet===key;
-            const count = key==="pays"?pays.length:grps.length;
-            return (
-            <button key={key} onClick={()=>setOnglet(key)}
-              style={{ display:"flex", alignItems:"center", padding:"14px 22px", border:"none", borderBottom:`2px solid ${actif?"var(--bleu)":"transparent"}`, background:"transparent", color:actif?"var(--bleu)":"var(--gris)", fontWeight:600, cursor:"pointer", fontSize:13, transition:"all 0.15s", fontFamily:"var(--font-google-sans)" }}>
-              {key==="pays"?<Globe size={13} style={{ marginRight:7 }}/>:<Users size={13} style={{ marginRight:7 }}/>} {label}
-              {count>0 && <span style={{ marginLeft:7, fontSize:11, fontWeight:700, color:actif?"var(--bleu)":"var(--gris)", background:actif?"rgb(var(--bleu-rgb) / 0.1)":"var(--fond)", padding:"1px 7px", borderRadius:999 }}>{count}</span>}
-            </button>
-            );
-          })}
-        </div>
-        <button
-          onClick={()=>{ if(onglet==="pays"){ setEditPays(null); setModalPays(true); } else { setEditGrp(null); setModalGrp(true); } }}
-          style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:10, border:"none", background:"var(--bleu-action)", color:"var(--sur-bleu)", fontWeight:700, cursor:"pointer", fontSize:13, boxShadow:"0 4px 14px rgb(var(--ombre-rgb) / 0.3)", marginBottom:4, fontFamily:"var(--font-google-sans)" }}>
-          <Plus size={15} /> {onglet==="pays"?"Nouveau pays":"Nouveau groupement"}
-        </button>
-      </div>
-
-      {loading ? (
-        <div style={{ display:"flex", justifyContent:"center", padding:60 }}>
-          <Loader2 size={28} style={{ color:"var(--gris)", animation:"spin 1s linear infinite" }} />
-        </div>
-      ) : onglet === "pays" ? (
+      <div style={{ padding:"20px 32px 80px" }}>
+      {onglet === "pays" ? (
 
         // ── ONGLET PAYS ─────────────────────────────────────────────────────
         <div>
-          {/* Filtres */}
-          <div style={{ display:"flex", gap:10, marginBottom:18, flexWrap:"wrap" as const, alignItems:"center" }}>
-            <div style={{ position:"relative" as const, flex:"1 1 240px" }}>
-              <Search size={13} style={{ position:"absolute" as const, left:11, top:"50%", transform:"translateY(-50%)", color:"var(--gris)" }} />
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher par nom ou code ISO…" style={{...IS, paddingLeft:32}} />
-            </div>
-            <select value={filtCont} onChange={e=>{ setFiltCont(e.target.value); setFiltRegion(""); }} style={{...IS, width:"auto", minWidth:150}}>
+          {/* LES DEUX FILTRES GÉOGRAPHIQUES RESTENT DANS LA PAGE, la recherche
+              est montée dans l'en-tête. Ils ne jouent pas le même rôle : on
+              cherche un pays qu'on a en tête, on filtre pour PARCOURIR une
+              zone. Le premier geste doit rester sous la main quand on défile,
+              le second se pose une fois et ne bouge plus. */}
+          <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" as const, alignItems:"center" }}>
+            <select value={filtCont} onChange={e=>{ setFiltCont(e.target.value); setFiltRegion(""); }} style={{...IS, width:"auto", minWidth:170, height:38, borderRadius:999, paddingLeft:15, cursor:"pointer", fontWeight:600}}>
               <option value="">Tous les continents</option>
               {CONTINENTS.map(c=><option key={c} value={c}>{c}</option>)}
             </select>
-            <select value={filtRegion} onChange={e=>setFiltRegion(e.target.value)} style={{...IS, width:"auto", minWidth:200}} disabled={!filtCont}>
+            <select value={filtRegion} onChange={e=>setFiltRegion(e.target.value)} disabled={!filtCont}
+              title={!filtCont ? "Choisissez d'abord un continent" : undefined}
+              style={{...IS, width:"auto", minWidth:200, height:38, borderRadius:999, paddingLeft:15, fontWeight:600,
+                cursor:filtCont?"pointer":"not-allowed", opacity:filtCont?1:0.55}}>
               <option value="">Toutes les régions</option>
               {regionsFiltrees.map((r:string)=><option key={r} value={r}>{r}</option>)}
             </select>
-            {(search||filtCont||filtRegion) && (
-              <button onClick={()=>{ setSearch(""); setFiltCont(""); setFiltRegion(""); }} title="Tout réinitialiser"
-                style={{ background:"rgb(var(--danger-rgb) / 0.08)", border:"1px solid rgb(var(--danger-rgb) / 0.20)", cursor:"pointer", borderRadius:999, padding:"7px", display:"flex", alignItems:"center", transition:"background 0.15s", flexShrink:0 }}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.15)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.08)";}}>
-                <X size={15} style={{ color:"var(--danger)" }} />
+            {/* MUET AU REPOS : la remise à zéro était la seule pastille rouge
+                de la page, pour un geste qui ne détruit rien. */}
+            {(saisie||filtCont||filtRegion) && (
+              <button onClick={()=>{ setSaisie(""); setFiltCont(""); setFiltRegion(""); }} title="Réinitialiser la recherche et les filtres"
+                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent", border:"1px solid var(--bordure-forte)",
+                  color:"var(--gris-fort)", borderRadius:999, height:38, padding:"0 15px", fontSize:12.5, fontWeight:650,
+                  cursor:"pointer", fontFamily:"var(--font-google-sans)", whiteSpace:"nowrap" as const,
+                  transition:"color 0.14s, border-color 0.14s, background 0.14s" }}
+                onMouseEnter={e=>{ e.currentTarget.style.color="var(--encre)"; e.currentTarget.style.background="rgb(var(--encre-rgb) / 0.04)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.color="var(--gris-fort)"; e.currentTarget.style.background="transparent"; }}>
+                <X size={13} /> Réinitialiser
               </button>
             )}
           </div>
 
-          {/* Tableau */}
-          <div style={{ background:"var(--carte)", borderRadius:14, border:"1px solid var(--bordure)", overflow:"hidden", boxShadow:"var(--ombre-1)" }}>
-            <div style={{ height:3, background:"linear-gradient(90deg,var(--bleu-nuit) 0%,var(--bleu-action) 60%,var(--bleu-clair) 100%)" }} />
-            <table style={{ width:"100%", borderCollapse:"collapse" as const }}>
+          {/* LE TABLEAU PARTAGÉ DE L'ADMINISTRATION, à la place du tableau
+              maison : même en-tête discret sur fond ivoire, mêmes filets,
+              mêmes coins. Le liseré dégradé de 3 px qui le coiffait est
+              retiré — il annonçait le tableau comme une pièce de vitrine
+              alors qu'il est l'outil de travail de la page. */}
+          {loading ? <SkeletonRows n={10} /> : pays.length===0 ? (
+            <EtatVide icone={<Search size={26}/>} titre="Aucun pays trouvé"
+              texte="Aucun pays ne correspond à cette recherche ou à ces filtres."
+              action={
+                <button onClick={()=>{ setSaisie(""); setFiltCont(""); setFiltRegion(""); }}
+                  style={{ display:"inline-flex", alignItems:"center", gap:7, background:"transparent",
+                    border:"1px solid var(--bordure-forte)", color:"var(--texte)", borderRadius:999,
+                    padding:"9px 18px", fontSize:12.5, fontWeight:700, cursor:"pointer",
+                    fontFamily:"var(--font-google-sans)" }}>
+                  <X size={13}/> Réinitialiser
+                </button>
+              } />
+          ) : (
+            <Tableau hauteurMax={640}>
               <thead>
-                <tr style={{ borderBottom:"1px solid var(--bordure)" }}>
-                  {["ISO","Pays","Continent","Région","Revenu","Statut","Actions"].map(h=>(
-                    <th key={h} style={{ padding:"12px 14px", textAlign:"left" as const, fontSize:10, fontWeight:800, color:"var(--texte)", textTransform:"uppercase" as const, letterSpacing:"0.1em" }}>{h}</th>
-                  ))}
+                <tr>
+                  <th style={{ ...TH, width:76 }}>ISO</th>
+                  <th style={TH}>Pays</th>
+                  <th style={TH}>Continent</th>
+                  <th style={TH}>Région</th>
+                  <th style={TH}>Revenu</th>
+                  <th style={TH}>Statut</th>
+                  <th style={{ ...TH, width:76, textAlign:"right" as const }} className="ro-w">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pays.map(p=>(
-                  <tr key={p.id} style={{ borderBottom:"1px solid var(--filet)", transition:"background 0.12s" }}
-                    onMouseEnter={e=>(e.currentTarget.style.background="var(--carte-douce)")}
-                    onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-                    <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.code_iso3}</span>
+                  <Ligne key={p.id}>
+                    <td style={TD}>
+                      {p.code_iso3
+                        ? <span style={{ fontSize:10.5, fontWeight:800, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999 }}>{p.code_iso3}</span>
+                        : <span style={{ color:"var(--gris)" }}>–</span>}
                     </td>
-                    <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:13, fontWeight:600, color:"var(--encre)" }}>{p.nom_fr}</span>
+                    <td style={{ ...TD, fontWeight:700 }}>{p.nom_fr}</td>
+                    <td style={{ ...TD, color:"var(--texte)" }}>{p.continent||"—"}</td>
+                    <td style={{ ...TD, color:"var(--texte)", whiteSpace:"nowrap" as const }}>{p.region_geo||"—"}</td>
+                    <td style={TD}>
+                      {p.niveau_revenu ? <Badge label={p.niveau_revenu} color={REVENU_COLOR[p.niveau_revenu]||"var(--gris)"} /> : <span style={{ color:"var(--gris)" }}>—</span>}
                     </td>
-                    <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:12, color:"var(--texte)" }}>{p.continent||"—"}</span>
-                    </td>
-                    <td style={{ padding:"10px 14px" }}>
-                      <span style={{ fontSize:12, color:"var(--texte)" }}>{p.region_geo||"—"}</span>
-                    </td>
-                    <td style={{ padding:"10px 14px" }}>
-                      {p.niveau_revenu ? <Badge label={p.niveau_revenu} color={REVENU_COLOR[p.niveau_revenu]||"var(--gris)"} /> : <span style={{ color:"var(--gris)", fontSize:12 }}>—</span>}
-                    </td>
-                    <td style={{ padding:"10px 14px" }}>
+                    <td style={TD}>
                       <div style={{ display:"flex", gap:4 }}>
                         {p.est_industrialise && <Badge label="Industrialisé" color="var(--bleu)" />}
                         {p.est_emergent      && <Badge label="Émergent"      color="var(--vert)" />}
+                        {!p.est_industrialise && !p.est_emergent && <span style={{ color:"var(--gris)" }}>—</span>}
                       </div>
                     </td>
-                    <td style={{ padding:"10px 14px" }}>
-                      <div style={{ display:"flex", gap:5 }}>
-                        <button onClick={()=>{ setEditPays(p); setModalPays(true); }} title="Modifier"
-                          style={{ background:"rgb(var(--bleu-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:999, width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}
-                          onMouseEnter={e=>(e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.13)")}
-                          onMouseLeave={e=>(e.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.07)")}>
-                          <Pencil size={12} style={{ color:"var(--bleu)" }} />
-                        </button>
-                        <button onClick={()=>handleDeletePays(p)} title="Supprimer"
-                          style={{ background:"rgb(var(--danger-rgb) / 0.07)", border:"none", cursor:"pointer", borderRadius:999, width:26, height:26, display:"flex", alignItems:"center", justifyContent:"center", transition:"background 0.15s" }}
-                          onMouseEnter={e=>(e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.13)")}
-                          onMouseLeave={e=>(e.currentTarget.style.background="rgb(var(--danger-rgb) / 0.07)")}>
-                          <Trash2 size={12} style={{ color:"var(--danger)" }} />
-                        </button>
-                      </div>
+                    {/* Muettes au repos, teintées au survol — la règle des
+                        actions de l'administration, appliquée aux lignes. */}
+                    <td style={{ ...TD, textAlign:"right" as const, whiteSpace:"nowrap" as const }} className="ro-w">
+                      <IconeAction titre={`Modifier ${p.nom_fr}`} teinte="var(--bleu)"
+                        onClick={()=>{ setEditPays(p); setModalPays(true); }}><Pencil size={13} /></IconeAction>
+                      <IconeAction titre={`Supprimer ${p.nom_fr}`} teinte="var(--danger)"
+                        onClick={()=>handleDeletePays(p)}><Trash2 size={13} /></IconeAction>
                     </td>
-                  </tr>
+                  </Ligne>
                 ))}
               </tbody>
-            </table>
-            {pays.length===0 && <p style={{ textAlign:"center" as const, padding:"40px 0", color:"var(--gris)", fontSize:14 }}>Aucun pays trouvé</p>}
-          </div>
-          <p style={{ fontSize:12, color:"var(--gris)", marginTop:10 }}>{pays.length} pays affichés</p>
+            </Tableau>
+          )}
         </div>
 
       ) : (
 
         // ── ONGLET GROUPEMENTS ────────────────────────────────────────────────
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:14 }}>
-          {grps.map(g=>(
-            <div key={g.id} style={{ background:"var(--carte)", border:"1px solid var(--bordure)", borderRadius:14, boxShadow:"var(--ombre-1)", transition:"box-shadow 0.18s, transform 0.18s, border-color 0.18s", display:"flex", flexDirection:"column" as const, overflow:"hidden" }}
-              onMouseEnter={e=>{ e.currentTarget.style.boxShadow="var(--ombre-2)"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.borderColor="rgb(var(--orange-rgb) / 0.25)"; }}
-              onMouseLeave={e=>{ e.currentTarget.style.boxShadow="var(--ombre-1)"; e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="var(--bordure)"; }}>
-              <div style={{ height:3, background:"linear-gradient(90deg,var(--orange-action) 0%,var(--orange-action) 60%,var(--orange-action) 100%)", flexShrink:0 }} />
-              <div style={{ padding:"14px 16px 14px", flex:1 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, marginBottom:12 }}>
-                  <span style={{ display:"inline-flex", alignItems:"center", gap:7, fontSize:10.5, fontWeight:700, color:"var(--orange)", background:"rgb(var(--orange-rgb) / 0.08)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const }}>
-                    <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--orange-action)", ["--pc" as any]:"rgb(var(--orange-rgb) / 0.4)", animation:"pulseDotC 1.6s ease-out infinite", flexShrink:0 }}/>
-                    {g.code}
+        // LA CARTE PARTAGÉE DE L'ADMINISTRATION. Ces fiches avaient leur propre
+        // dessin : un bandeau orange plein de 3 px, un point qui CLIGNOTAIT en
+        // permanence à côté du code, et la description enfermée dans un encadré
+        // orange — trois signaux d'alerte pour une ligne de référentiel qui
+        // n'alerte de rien. Un groupement porte un code, un nom, un libellé
+        // anglais et un nombre de membres : c'est exactement ce que la carte
+        // commune sait montrer.
+        loading ? <SkeletonRows n={6} /> : grps.length===0 ? (
+          <EtatVide icone={<IconeModule taille={26}/>} titre="Aucun groupement"
+            texte="Les groupements réunissent des pays sous un même ensemble — continent, région, union économique."
+            action={<BoutonPrincipal onClick={()=>{ setEditGrp(null); setModalGrp(true); }} icone={<Plus size={15}/>}>
+              Nouveau groupement
+            </BoutonPrincipal>} />
+        ) : (
+          <div className="charge-in adm-grille">
+            {grps.map(g=>(
+              <CarteAdmin key={g.id} onVoir={()=>setPanelGrp(g)} aria={`Membres du groupement : ${g.nom_fr}`}
+                titre={g.nom_fr}
+                // LE NOMBRE DE MEMBRES TIENT LE COIN DROIT : c'est ce que TOUS
+                // les groupements portent, et la seule mesure qui dise si un
+                // groupement est renseigné ou resté vide.
+                badge={
+                  <span style={{ fontSize:10.5, fontWeight:800, whiteSpace:"nowrap" as const, padding:"3px 10px", borderRadius:999,
+                    color: g.nb_pays>0 ? "var(--bleu)" : "var(--gris)",
+                    background: g.nb_pays>0 ? "rgb(var(--bleu-rgb) / 0.08)" : "rgb(var(--gris-rgb) / 0.12)" }}>
+                    {g.nb_pays} pays
                   </span>
-                  <span style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", background:"rgb(var(--bleu-rgb) / 0.07)", padding:"3px 10px", borderRadius:999, whiteSpace:"nowrap" as const, flexShrink:0 }}>{g.nb_pays} pays</span>
-                </div>
-                <p style={{ fontWeight:700, fontSize:13.5, color:"var(--encre)", lineHeight:1.35 }}>{g.nom_fr}</p>
-                {g.nom_en && <p style={{ fontSize:11, color:"var(--gris)", marginTop:2 }}>{g.nom_en}</p>}
-                {g.description && (
-                  <div style={{ background:"rgb(var(--orange-rgb) / 0.04)", border:"1px solid rgb(var(--orange-rgb) / 0.12)", borderRadius:10, padding:"8px 11px", marginTop:10 }}>
-                    <p style={{ fontSize:12, color:"var(--texte)", lineHeight:1.5 }}>{g.description}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div style={{ display:"flex", alignItems:"stretch", borderTop:"1px solid var(--bordure)" }}>
-                <button onClick={()=>{ setEditGrp(g); setModalGrp(true); }}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--bleu)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--bleu-rgb) / 0.05)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  <Pencil size={12}/> Modifier
-                </button>
-                <div style={{ width:1, background:"var(--fond)" }}/>
-                <button onClick={()=>setPanelGrp(g)}
-                  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:5, background:"none", border:"none", cursor:"pointer", padding:"10px 0", fontSize:11.5, color:"var(--vert)", fontWeight:600, fontFamily:"var(--font-google-sans)", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--vert-rgb) / 0.05)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  <Users size={12}/> Membres ({g.nb_pays})
-                </button>
-                <div style={{ width:1, background:"var(--fond)" }}/>
-                <button onClick={()=>handleDeleteGrp(g)}
-                  style={{ width:46, display:"flex", alignItems:"center", justifyContent:"center", background:"none", border:"none", cursor:"pointer", transition:"background 0.15s" }}
-                  onMouseEnter={ev=>ev.currentTarget.style.background="rgb(var(--danger-rgb) / 0.05)"}
-                  onMouseLeave={ev=>ev.currentTarget.style.background="none"}>
-                  <Trash2 size={12} style={{ color:"var(--danger)" }} />
-                </button>
-              </div>
-            </div>
-          ))}
-          {grps.length===0 && <p style={{ color:"var(--gris)", fontSize:14, gridColumn:"1/-1", textAlign:"center" as const, padding:"40px 0" }}>Aucun groupement</p>}
-        </div>
+                }
+                // Un groupement sans aucun membre est une coquille : la bordure
+                // en tirets le signale de loin sur la grille, sans ajouter de
+                // badge d'alerte.
+                pointille={g.nb_pays===0}
+                contexte={g.description ? <TexteContexte>{g.description}</TexteContexte> : null}
+                donnees={[
+                  <Donnee key="c" label="Code"        valeur={g.code || null} />,
+                  <Donnee key="e" label="Nom anglais" valeur={g.nom_en || null} />,
+                ]}
+                actions={<>
+                  <ActionCarte onClick={()=>{ setEditGrp(g); setModalGrp(true); }} titre="Modifier"
+                    teinte="var(--bleu)" icone={<Pencil size={13}/>}>Modifier</ActionCarte>
+                  <ActionCarte onClick={()=>setPanelGrp(g)} titre="Gérer les pays membres"
+                    teinte="var(--vert)" icone={<Users size={13}/>}>Membres</ActionCarte>
+                  <span style={{ marginLeft:"auto" }}/>
+                  <ActionCarte onClick={()=>handleDeleteGrp(g)} titre={`Supprimer ${g.nom_fr}`}
+                    teinte="var(--danger)" icone={<Trash2 size={13}/>} />
+                </>} />
+            ))}
+          </div>
+        )
       )}
+      </div>
 
       {/* Modals & overlays */}
       <ModalPays   open={modalPays} onClose={()=>setModalPays(false)} edit={editPays} meta={meta} onSaved={charger} />
