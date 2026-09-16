@@ -1817,9 +1817,18 @@ export function SegmentRapport<T extends string>({ valeur, options, onChange }: 
  *  et barre à pleine opacité. Le regard doit trouver le podium sans lire.
  */
 export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
-  colonne = "Nom", drapeaux, max = 8 }: {
+  colonne = "Nom", libelleValeur = "Signaux", drapeaux, max = 8 }: {
   titre: string; tag?: string; rows: RangClasse[]; accent?: string;
-  colonne?: string; drapeaux?: boolean; max?: number;
+  colonne?: string;
+  /** Ce que la colonne chiffrée dénombre.
+   *
+   *  IL ÉTAIT ÉCRIT « SIGNAUX » EN DUR, le composant n'ayant d'abord servi
+   *  qu'au rapport des signaux. Le rapport des projets annoncés classe des
+   *  PROJETS : garder « Signaux » au-dessus de ses nombres y aurait désigné
+   *  l'autre relevé de la plateforme — celui des intentions — et fait lire
+   *  56 intentions françaises là où il y a 56 projets annoncés. */
+  libelleValeur?: string;
+  drapeaux?: boolean; max?: number;
 }) {
   const lignes = rows.slice(0, max);
   if (lignes.length === 0) return null;
@@ -1842,7 +1851,7 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
         <span style={{ ...ENT, width: 22, flexShrink: 0 }}>#</span>
         <span style={{ ...ENT, flex: 1, minWidth: 0 }}>{colonne}</span>
-        <span style={{ ...ENT, width: 40, textAlign: "right" as const, flexShrink: 0 }}>Signaux</span>
+        <span style={{ ...ENT, width: 40, textAlign: "right" as const, flexShrink: 0 }}>{libelleValeur}</span>
         <span style={{ width: "24%", flexShrink: 0 }} />
       </div>
 

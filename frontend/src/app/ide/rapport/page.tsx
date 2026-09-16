@@ -26,7 +26,7 @@ import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
-         dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
+         ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
 
 const PAYS = "Sénégal";
 
@@ -167,12 +167,12 @@ export default function RapportIde() {
                   ses colonnes chiffrées s'élargissent en conséquence : « 1,2 Md
                   $ » ne tient pas dans la place d'un nombre de projets. */}
               <div className="rap-trio">
-                <CarteTableauAnnees titre="Investissement annoncé par année"
+                <CarteTableauAnnees titre="Valeur des invest. annoncés par année"
                   libelleValeur="Montant" fmt={fmtVal} largeurValeur={58} largeurEcart={62} barre={false}
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.capex_musd }))} />
-                <CarteTableauAnnees titre="Projets annoncés"
+                <CarteTableauAnnees titre="Projets annoncés" accent="var(--orange)"
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.nb }))} />
-                <CarteTableauAnnees titre="Emplois annoncés" accent="var(--violet)"
+                <CarteTableauAnnees titre="Emplois annoncés" accent="var(--vert)"
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.emplois }))} />
               </div>
 
@@ -211,31 +211,44 @@ export default function RapportIde() {
                   distribuer. « Nature des implantations » nommait une autre
                   colonne du relevé, celle des TYPES de projet, qui n'est pas
                   affichée ici. */}
-              {d3Pret && (
+              {/* ── LES DEUX PREMIERS CLASSEMENTS SONT DES LISTES ORDONNÉES ──
+                  CELLES DU RAPPORT DES SIGNAUX, au composant près. Un graphe à
+                  barres range par longueur ; ces deux classements-là se lisent
+                  par RANG — quel est le premier pays d'origine, le deuxième, le
+                  troisième —, et le rang n'y était écrit nulle part : il fallait
+                  le compter de l'œil. La liste le numérote, met le podium en
+                  pastille pleine, garde la barre pour la proportion, et tient
+                  huit lignes dans la hauteur que le graphe prenait pour six.
+
+                  Les deux rapports de la plateforme se ressemblent désormais là
+                  où ils disent la même chose. La colonne chiffrée dit « Projets »
+                  et non « Signaux » : ce sont deux relevés distincts, et le
+                  lecteur qui passe de l'un à l'autre doit voir lequel il lit. */}
               <div className="rap-duo" style={{ marginTop: 16 }}>
-                {([
-                  { cle: "partenaires" as const, titre: "Origine des projets", couleur: "var(--orange)" },
-                  { cle: "secteurs" as const, titre: "Secteurs les plus visés", couleur: "var(--bleu)" },
-                  { cle: "activites" as const, titre: "Les activités les plus menées", couleur: "var(--vert)" },
-                ]).map((c, i) => {
-                  const rows = (fdi.tops[c.cle] ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }));
-                  if (rows.length === 0) return null;
-                  // LE TROISIÈME PREND TOUTE LA LARGEUR. À quatre classements la
-                  // grille tombait juste ; à trois, le dernier laissait une
-                  // demi-page blanche à sa droite. Il l'occupe — et c'est celui
-                  // qui en profite le plus : ses libellés sont les plus longs
-                  // du rapport (« Logistique, distribution et transport »), et
-                  // une colonne de moitié les serrait contre leurs barres.
-                  const pleineLargeur = i === 2;
-                  return (
-                    <div key={c.cle} style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
-                      <Carte titre={c.titre} tag="nombre de projets">
-                        <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
-                      </Carte>
-                    </div>
-                  );
-                })}
+                <ClassementRapport titre="Origine des projets" colonne="Pays"
+                  libelleValeur="Projets" accent="var(--orange)" rows={fdi.tops.partenaires ?? []} />
+                <ClassementRapport titre="Secteurs les plus visés" colonne="Secteur"
+                  libelleValeur="Projets" accent="var(--bleu)" rows={fdi.tops.secteurs ?? []} />
               </div>
+
+              {/* ── ET LE TROISIÈME RESTE UN GRAPHE, SUR TOUTE LA LARGEUR ─────
+                  POURQUOI CELUI-LÀ GARDE SES BARRES. Ses valeurs s'effondrent —
+                  69, 46, 43, puis 13, 11, 11, 11, 10 : deux marches nettes que
+                  la longueur des barres montre d'un coup d'œil, et qu'une
+                  colonne de nombres alignés laisserait à calculer. Les deux
+                  autres classements, eux, décroissent doucement ; c'est leur
+                  rang qui les distingue, pas leur écart.
+
+                  Il prend toute la largeur depuis qu'ils ne sont plus quatre, et
+                  c'est celui qui en profite le plus : ses libellés sont les plus
+                  longs du rapport (« Logistique, distribution et transport »). */}
+              {d3Pret && (fdi.tops.activites ?? []).length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <Carte titre="Les activités les plus menées" tag="nombre de projets">
+                    <GrapheBarresH couleur="var(--vert)" fmt={fmtNombre} exposant={1}
+                      data={(fdi.tops.activites ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }))} />
+                  </Carte>
+                </div>
               )}
 
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
