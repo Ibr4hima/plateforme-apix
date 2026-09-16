@@ -11,26 +11,28 @@
 // ligne est une entreprise — et c'est ce chiffre-là qui dit s'il faut démarcher
 // quelques grands groupes ou ratisser large.
 //
-// TROIS QUESTIONS, DANS CET ORDRE :
+// TROIS TEMPS :
 //
-//   1. QUI SONT-ILS ? Combien, d'où, à quelle échelle, depuis quand.
-//   2. COMMENT SE RÉPARTISSENT-ILS ? Concentration, empreinte géographique,
-//      renouvellement — ce qui dit quelle STRATÉGIE de démarchage a du sens.
-//   3. QUE FAIT-ON DEMAIN ? Les listes nommées : qui est déjà ici, et surtout
-//      qui ne l'est pas encore.
+//   1. QUATRE COMPTEURS. Combien d'investisseurs, d'où, à quelle cadence, et
+//      combien sont déjà venus au Sénégal.
+//   2. TROIS CLASSEMENTS — origines, secteurs, activités —, tous comptés en
+//      INVESTISSEURS et non en projets.
+//   3. LE CLASSEMENT NOMMÉ, avec une colonne qui dit pour chaque groupe s'il a
+//      déjà annoncé un projet au Sénégal. Un « non » en regard d'un grand
+//      nombre de projets désigne une cible de prospection.
 //
 // Les deux partis pris des autres rapports valent ici aussi : aucun chiffre
 // sans sa période, et la lecture de l'encadré final est CALCULÉE, jamais
 // rédigée d'avance.
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useDonnees } from "@/lib/donnees";
-import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
+import { API, ARetenir, CarteRapport as Carte, CEL, ChiffreCle,
          ClassementRapport, dateDuJour, fmtNombre } from "../partage";
 
 /** Le périmètre du relevé. Il qualifie le document comme « Sénégal » qualifie
@@ -51,16 +53,11 @@ type Rapport = {
     annees: [number | null, number | null];
     au_senegal: number; un_seul_projet: number; un_seul_pays: number;
   };
-  concentration: Record<string, { projets: number; part: number | null }>;
-  empreinte: { tranche: string; investisseurs: number; projets: number }[];
   actifs: Invest[];
-  absents_senegal: Invest[];
-  presents_senegal: Invest[];
   origines: { nom: string; iso: string | null; investisseurs: number;
               projets: number; au_senegal: number }[];
   secteurs: { nom: string; projets: number; investisseurs: number }[];
   activites: { nom: string; projets: number; investisseurs: number }[];
-  nouveaux: { annee: number; investisseurs: number }[];
 };
 
 /** Une part, écrite comme on la lit à voix haute. */
@@ -98,18 +95,15 @@ export default function RapportEntreprises() {
   const periode = d?.kpis?.annees?.[0] != null
     ? `${d.kpis.annees[0]} — ${d.kpis.annees[1]}` : "";
 
-  // La tranche d'empreinte la plus peuplée, pour la phrase finale.
-  const tranchePrincipale = useMemo(() => {
-    if (!d?.empreinte?.length) return null;
-    return [...d.empreinte].sort((a, b) => b.investisseurs - a.investisseurs)[0];
-  }, [d]);
-
   return (
     <main style={{ minHeight: "100vh", background: "var(--champ)", fontFamily: "var(--font-google-sans)" }}>
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
+        .rap-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: start; }
+        @media (max-width: 1080px) { .rap-trio { grid-template-columns: repeat(2, minmax(0,1fr)); } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
+        @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         @media print {
           .rap-sans-impression { display: none !important; }
@@ -165,140 +159,38 @@ export default function RapportEntreprises() {
                 note={`soit ${pct(d.kpis.au_senegal, d.kpis.investisseurs)} des investisseurs du relevé`} />
             </div>
 
-            {/* ── 2. COMMENT SE RÉPARTISSENT-ILS ─────────────────────────────── */}
-            <div className="rap-duo" style={{ marginTop: 44 }}>
-              {/* LA QUESTION STRATÉGIQUE DU DOCUMENT. Si les dix premiers
-                  investisseurs portaient la moitié des projets, on démarcherait
-                  dix entreprises. Le tableau dit ce qu'il en est vraiment, et
-                  la dernière ligne — tout le reste — est celle qui décide. */}
-              <Carte titre="Concentration des annonces" tag={periode}>
-                <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                  <thead>
-                    <tr>
-                      {["Investisseurs", "Projets portés", "Part du total"].map((t, i) => (
-                        <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-                          letterSpacing: "0.1em", textTransform: "uppercase" as const,
-                          textAlign: i === 0 ? "left" as const : "right" as const, padding: "8px 10px",
-                          borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const }}>{t}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {["10", "50", "100"].map(p => {
-                      const c = d.concentration[p];
-                      if (!c) return null;
-                      return (
-                        <tr key={p}>
-                          <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>Les {p} premiers</td>
-                          <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(c.projets)}</td>
-                          <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800, color: "var(--bleu)", fontVariantNumeric: "tabular-nums" }}>
-                            {c.part != null ? `${c.part.toLocaleString("fr-FR")} %` : "—"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {(() => {
-                      const c = d.concentration["100"];
-                      if (!c) return null;
-                      const reste = d.kpis.projets - c.projets;
-                      return (
-                        <tr>
-                          <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>
-                            Les {fmtNombre(Math.max(0, d.kpis.investisseurs - 100))} autres
-                          </td>
-                          <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(reste)}</td>
-                          <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800, color: "var(--bleu)", fontVariantNumeric: "tabular-nums" }}>
-                            {pct(reste, d.kpis.projets)}
-                          </td>
-                        </tr>
-                      );
-                    })()}
-                  </tbody>
-                </table>
-                <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                  Plus la part des premiers est faible, moins une liste courte suffit :
-                  le volume vient alors du nombre d&apos;investisseurs, non de quelques habitués.
-                </p>
-              </Carte>
+            {/* ── Les classements, sur trois colonnes ─────────────────────────
+                ILS SE COMPTENT EN INVESTISSEURS, non en projets : la question
+                est « combien d'entreprises françaises investissent en Afrique »,
+                pas « combien de projets français ». C'est ce qui les distingue
+                des classements du rapport des projets annoncés, qui portent les
+                mêmes intitulés et comptent autre chose.
 
-              {/* COMBIEN DE PAYS CHACUN A-T-IL TOUCHÉS. Un investisseur présent
-                  dans un seul pays africain est un prospect d'EXTENSION — il a
-                  franchi le pas du continent, il lui reste à choisir le suivant.
-                  Un panafricain à vingt pays se démarche autrement. Les deux
-                  populations ne se comptent nulle part ailleurs. */}
-              <Carte titre="Empreinte africaine des investisseurs" tag={periode}>
-                <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                  <thead>
-                    <tr>
-                      {["Pays d'implantation", "Investisseurs", "Part", "Projets"].map((t, i) => (
-                        <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-                          letterSpacing: "0.1em", textTransform: "uppercase" as const,
-                          textAlign: i === 0 ? "left" as const : "right" as const, padding: "8px 10px",
-                          borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const }}>{t}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {d.empreinte.map(e => (
-                      <tr key={e.tranche}>
-                        <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>
-                          {e.tranche === "1" ? "Un seul pays" : `${e.tranche} pays`}
-                        </td>
-                        <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(e.investisseurs)}</td>
-                        <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800, color: "var(--bleu)", fontVariantNumeric: "tabular-nums" }}>
-                          {pct(e.investisseurs, d.kpis.investisseurs)}
-                        </td>
-                        <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(e.projets)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                  Un investisseur d&apos;un seul pays a déjà franchi le pas du continent :
-                  il lui reste à choisir le suivant.
-                </p>
-              </Carte>
-            </div>
-
-            {/* ── Les classements, deux par deux ──────────────────────────────
-                LES ORIGINES SE COMPTENT EN INVESTISSEURS, non en projets : la
-                question est « combien d'entreprises françaises investissent en
-                Afrique », pas « combien de projets français ». Secteurs et
-                activités portent les deux comptes, et c'est leur RAPPORT qui
-                informe — un secteur à 2 251 projets pour 626 investisseurs est
-                tenu par des habitués qui reviennent ; le même volume réparti sur
-                2 000 entreprises serait un marché ouvert. */}
-            <div className="rap-duo" style={{ marginTop: 16 }}>
+                TROIS COLONNES PARCE QU'ILS SONT TROIS. À deux par rangée, le
+                dernier serait resté seul à côté d'une demi-page blanche ; ils
+                sont de même nature et de même longueur, ils tiennent la même
+                largeur. */}
+            <div className="rap-trio" style={{ marginTop: 44 }}>
               <ClassementRapport titre="Pays d'origine des investisseurs" colonne="Pays"
                 libelleValeur="Invest." drapeaux max={10} accent="var(--bleu)"
                 rows={(d.origines ?? []).map(o => ({ nom: o.nom, nb: o.investisseurs, iso: o.iso }))} />
               <ClassementRapport titre="Secteurs les plus investis" colonne="Secteur"
                 libelleValeur="Invest." max={10} accent="var(--violet)"
                 rows={(d.secteurs ?? []).map(s => ({ nom: s.nom, nb: s.investisseurs }))} />
-            </div>
-            <div className="rap-duo" style={{ marginTop: 16 }}>
               <ClassementRapport titre="Activités menées" colonne="Activité"
                 libelleValeur="Invest." max={10} accent="var(--vert)"
                 rows={(d.activites ?? []).map(a => ({ nom: a.nom, nb: a.investisseurs }))} />
-              {/* LE RENOUVELLEMENT. Chaque investisseur est compté à l'année de
-                  son PREMIER projet du périmètre : un relevé qui n'accueillerait
-                  plus de noms neufs serait un marché fermé. */}
-              <CarteTableauAnnees titre="Nouveaux investisseurs par année" accent="var(--orange)"
-                libelleValeur="Nouv."
-                rows={(d.nouveaux ?? []).map(n => ({ annee: n.annee, valeur: n.investisseurs }))} />
             </div>
 
-            {/* ── 3. QUE FAIT-ON DEMAIN ─────────────────────────────────────── */}
-            <TableauInvestisseurs titre={`Cibles de prospection — absents du ${PAYS}`}
-              aide={`Des groupes qui investissent en Afrique, à répétition, et dont aucun projet annoncé ne cite le ${PAYS}. C'est une liste de démarchage, pas un palmarès.`}
-              lignes={d.absents_senegal} periode={periode} />
-
-            <TableauInvestisseurs titre={`Déjà présents au ${PAYS}`}
-              aide={`Les investisseurs dont au moins un projet annoncé cite le ${PAYS}. Ceux-là se fidélisent plutôt qu'ils ne se démarchent : une extension coûte moins cher à obtenir qu'une première implantation.`}
-              lignes={d.presents_senegal} periode={periode} />
-
-            <TableauInvestisseurs titre="Les plus actifs du relevé"
-              aide="Tous périmètres confondus, ceux qui ont annoncé le plus de projets en Afrique — qu'ils soient venus ici ou non."
+            {/* ── LE CLASSEMENT NOMMÉ ─────────────────────────────────────────
+                UNE SEULE LISTE, ET UNE COLONNE QUI RÉPOND. Le document séparait
+                les investisseurs déjà venus au Sénégal de ceux qui ne l'étaient
+                pas, en deux tableaux : on lisait deux fois la même chose, et
+                chercher un groupe précis demandait de savoir d'avance dans
+                lequel il se trouvait. La colonne « Présent au Sénégal » le dit
+                sur la ligne même. */}
+            <TableauInvestisseurs titre="Classement des investisseurs"
+              aide={`Ceux qui ont annoncé le plus de projets en ${PERIMETRE}, quel que soit le pays. La dernière colonne dit si le groupe a déjà annoncé un projet au ${PAYS} — un « non » en regard d'un grand nombre de projets désigne une cible de prospection.`}
               lignes={d.actifs} periode={periode} colonneSenegal />
 
             <ARetenir>
@@ -308,19 +200,9 @@ export default function RapportEntreprises() {
                   <strong>{d.kpis.origines} pays</strong> ont annoncé{" "}
                   <strong>{fmtNombre(d.kpis.projets)} projets</strong> en {PERIMETRE}, soit{" "}
                   <strong>{d.kpis.projets_par_investisseur?.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}</strong>{" "}
-                  projets par investisseur.
-                  {d.concentration["10"]?.part != null && (
-                    <> Le relevé est <strong>peu concentré</strong> : les dix premiers n&apos;en portent que{" "}
-                      <strong>{d.concentration["10"].part.toLocaleString("fr-FR")} %</strong>
-                      {d.concentration["100"]?.part != null && (
-                        <>, et les cent premiers <strong>{d.concentration["100"].part.toLocaleString("fr-FR")} %</strong></>
-                      )} — aucune liste courte ne couvre ce marché.</>
-                  )}
-                  {tranchePrincipale && (
-                    <> <strong>{pct(tranchePrincipale.investisseurs, d.kpis.investisseurs)}</strong>{" "}
-                      d&apos;entre eux n&apos;ont investi que dans{" "}
-                      {tranchePrincipale.tranche === "1" ? "un seul pays africain" : `${tranchePrincipale.tranche} pays africains`}.</>
-                  )}
+                  projets par investisseur —{" "}
+                  <strong>{pct(d.kpis.un_seul_projet, d.kpis.investisseurs)}</strong>{" "}
+                  n&apos;en ont annoncé qu&apos;un seul.
                   {" "}Enfin, <strong>{fmtNombre(d.kpis.au_senegal)}</strong> ont déjà annoncé un projet au {PAYS} —{" "}
                   <strong>{pct(d.kpis.au_senegal, d.kpis.investisseurs)}</strong> du relevé : les{" "}
                   <strong>{fmtNombre(d.kpis.investisseurs - d.kpis.au_senegal)}</strong>{" "}autres n&apos;y sont jamais venus.
@@ -345,7 +227,7 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: 
 }) {
   if (!lignes?.length) return null;
   const colonnes = ["Investisseur", "Origine", "Projets", "Pays", "Période",
-    ...(colonneSenegal ? ["Sénégal"] : [])];
+    ...(colonneSenegal ? [`Présent au ${PAYS}`] : [])];
   return (
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
       <Carte titre={titre} tag={periode}>

@@ -833,62 +833,17 @@ async def rapport_entreprises(
 
     total_projets = k.projets or 0
 
-    # ── La concentration ─────────────────────────────────────────────────────
-    # LA QUESTION STRATÉGIQUE DU DOCUMENT. Si les dix premiers investisseurs
-    # portent la moitié des projets, on démarche dix entreprises ; s'ils en
-    # portent 4 %, aucune liste courte ne fera le travail et c'est le volume qui
-    # compte. Rien d'autre dans la plateforme ne répond à cela.
-    paliers = await q("""
-        SELECT palier, sum(projets) AS projets FROM (
-            SELECT projets, CASE
-                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 10  THEN 10
-                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 50  THEN 50
-                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 100 THEN 100
-                ELSE 0 END AS palier
-            FROM g) t
-        WHERE palier > 0 GROUP BY palier ORDER BY palier""")
-    cumul, concentration = 0, {}
-    for r in paliers:
-        cumul += r.projets
-        concentration[str(r.palier)] = {
-            "projets": cumul,
-            "part": round(cumul / total_projets * 100, 1) if total_projets else None}
-
-    # ── L'empreinte géographique ─────────────────────────────────────────────
-    # COMBIEN DE PAYS CHACUN A-T-IL TOUCHÉS. Un investisseur présent dans un
-    # seul pays africain est un prospect d'EXTENSION — il a franchi le pas du
-    # continent, il lui reste à choisir le suivant ; un panafricain à vingt pays
-    # se démarche autrement. Les deux populations ne se comptent nulle part
-    # ailleurs.
-    empreinte = await q("""
-        SELECT tranche, count(*) AS investisseurs, sum(projets) AS projets FROM (
-            SELECT projets, CASE
-                WHEN pays = 1 THEN '1'
-                WHEN pays <= 3 THEN '2-3'
-                WHEN pays <= 9 THEN '4-9'
-                ELSE '10+' END AS tranche
-            FROM g) t GROUP BY tranche""")
-    ordre = {"1": 0, "2-3": 1, "4-9": 2, "10+": 3}
-    empreinte = sorted(({"tranche": r.tranche, "investisseurs": r.investisseurs,
-                         "projets": r.projets} for r in empreinte),
-                       key=lambda x: ordre[x["tranche"]])
-
     async def classement(corps: str, limite: int = 15):
         return [dict(r._mapping) for r in await q(corps + f" LIMIT {limite}")]
 
-    # ── Les plus actifs, et ceux qui manquent au Sénégal ─────────────────────
-    # LA SECONDE LISTE EST LA PLUS UTILE DU DOCUMENT : des groupes qui
-    # investissent en Afrique, à répétition, et qui ne sont jamais venus ici.
-    # C'est une liste de démarchage, pas un palmarès.
+    # ── Le classement des investisseurs ──────────────────────────────────────
+    # `au_senegal` VOYAGE AVEC CHAQUE LIGNE : le document ne sépare plus les
+    # présents des absents en deux listes, c'est une colonne du classement qui
+    # le dit. Une seule liste à lire, et la question « celui-là est-il déjà
+    # venu ? » trouve sa réponse sur la ligne même.
     actifs = await classement("""
         SELECT nom, origine, iso, projets, pays, a0, a1, au_senegal
         FROM g ORDER BY projets DESC, nom""")
-    absents = await classement("""
-        SELECT nom, origine, iso, projets, pays, a0, a1
-        FROM g WHERE NOT au_senegal ORDER BY projets DESC, nom""")
-    presents = await classement("""
-        SELECT nom, origine, iso, projets, pays, a0, a1
-        FROM g WHERE au_senegal ORDER BY projets DESC, nom""")
 
     # ── Les origines, comptées en INVESTISSEURS ──────────────────────────────
     # Et non en projets : la question est « combien d'entreprises françaises
@@ -913,14 +868,6 @@ async def rapport_entreprises(
             FROM base WHERE {colonne} IS NOT NULL
             GROUP BY 1 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
 
-    # ── Le renouvellement ────────────────────────────────────────────────────
-    # LES PRIMO-ARRIVANTS, par l'année de leur PREMIER projet du périmètre. Un
-    # relevé qui n'accueillerait plus de nouveaux noms serait un marché fermé ;
-    # la courbe dit s'il s'en présente encore.
-    nouveaux = await q("""
-        SELECT a0 AS annee, count(*) AS investisseurs
-        FROM g WHERE a0 IS NOT NULL GROUP BY a0 ORDER BY a0""")
-
     return {
         "kpis": {
             "investisseurs": k.investisseurs, "projets": total_projets,
@@ -932,13 +879,8 @@ async def rapport_entreprises(
             "un_seul_projet": k.uniques,
             "un_seul_pays": k.mono_pays,
         },
-        "concentration": concentration,
-        "empreinte": empreinte,
         "actifs": actifs,
-        "absents_senegal": absents,
-        "presents_senegal": presents,
         "origines": origines_top,
         "secteurs": await par("secteur"),
         "activites": await par("activite"),
-        "nouveaux": [{"annee": r.annee, "investisseurs": r.investisseurs} for r in nouveaux],
     }
