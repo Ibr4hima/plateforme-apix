@@ -51,7 +51,7 @@ type Signaux = {
           a_completer: number; plancher: boolean };
   par_annee: { annee: number; nb: number; funding_musd: number | null;
                capex_musd: number | null }[];
-  tops: Record<"origines" | "entreprises" | "secteurs" | "natures"
+  tops: Record<"origines" | "secteurs" | "natures"
              | "destinations" | "activites", Rang[]>;
   zones: Zone[];
   remarquables: { funding: Gros[]; capex: Gros[] };
@@ -267,37 +267,49 @@ export default function RapportSignaux() {
                   rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.funding_musd }))} />
               </div>
 
-              {/* LES CINQ CLASSEMENTS, dans l'ordre des questions : d'où l'on
-                  vient, ce qu'on vise, dans quel secteur, pour y faire quoi, et
-                  qui s'y montre le plus. Les trois premiers tiennent au tiers de
-                  page, les deux derniers à la moitié — les noms d'activités et
-                  d'entreprises sont les plus longs, ils ont la place en plus. */}
+              {/* QUATRE CLASSEMENTS, DEUX PAR DEUX, ET DIX LIGNES CHACUN.
+                  Dans l'ordre des questions : d'où l'on vient, ce qu'on vise,
+                  dans quel secteur, pour y faire quoi.
+
+                  ILS ÉTAIENT CINQ, SUR DEUX RANGÉES INÉGALES — trois au tiers
+                  de page, deux à la moitié. Le découpage ne tenait qu'au nombre
+                  impair, et il donnait des cartes de deux largeurs pour des
+                  listes de même nature. À quatre, la grille tombe juste : deux
+                  colonnes, deux rangées, quatre cartes de même largeur.
+
+                  « ENTREPRISES LES PLUS ACTIVES » EST RETIRÉ D'ICI. Sur tout le
+                  continent, ses valeurs tiennent en un mouchoir — dix signaux
+                  pour la première, huit pour la quatrième : un palmarès qui se
+                  retourne au premier signal relevé, quand les quatre autres
+                  classements séparent nettement leur tête de leur queue. Le
+                  bilan ouest-africain, plus bas, garde le sien : à l'échelle
+                  d'une zone il compare des entreprises réellement présentes sur
+                  le même terrain.
+
+                  DIX LIGNES ET NON HUIT : c'est ce que le service renvoie, et
+                  la largeur gagnée leur laisse la place. Une dixième ligne
+                  affichée coûte un rang de plus à lire, pas une requête. */}
               <div className="rap-grille" style={{ marginTop: 16 }}>
-                <div className="rap-tiers">
-                  <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux
+                <div className="rap-moitie">
+                  <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux max={10}
                     accent="var(--bleu)" rows={d.tops.origines ?? []} />
                 </div>
-                <div className="rap-tiers">
+                <div className="rap-moitie">
                   {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
                       plus bas : le rapport se lit depuis Dakar, et un classement
                       continental où le pays n'apparaît pas laisse sans réponse —
                       onzième, ou dernier des cinquante ? */}
                   <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
-                    colonne="Pays" drapeaux epingle="Sénégal" accent="var(--vert)"
-                    rows={d.tops.destinations ?? []} />
+                    colonne="Pays" drapeaux epingle="Sénégal" max={10}
+                    accent="var(--vert)" rows={d.tops.destinations ?? []} />
                 </div>
-                <div className="rap-tiers">
-                  <ClassementRapport titre="Secteurs visés" colonne="Secteur"
+                <div className="rap-moitie">
+                  <ClassementRapport titre="Secteurs visés" colonne="Secteur" max={10}
                     accent="var(--violet)" rows={d.tops.secteurs ?? []} />
                 </div>
                 <div className="rap-moitie">
-                  <ClassementRapport titre="Activités prévues" colonne="Activité"
+                  <ClassementRapport titre="Activités prévues" colonne="Activité" max={10}
                     accent="var(--bleu)" rows={d.tops.activites ?? []} />
-                </div>
-                <div className="rap-moitie">
-                  <ClassementRapport titre="Entreprises les plus actives"
-                    colonne="Entreprise" accent="var(--orange)"
-                    rows={d.tops.entreprises ?? []} />
                 </div>
               </div>
 

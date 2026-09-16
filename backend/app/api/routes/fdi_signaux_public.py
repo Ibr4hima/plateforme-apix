@@ -289,10 +289,14 @@ async def signaux_publics(
               FROM fdi_signaux_investisseurs s JOIN ref_pays p ON p.id = s.pays_source_id
              WHERE {filtre} GROUP BY p.nom_fr, p.code_iso2
              ORDER BY count(*) DESC, p.nom_fr LIMIT 10"""),
-        "entreprises": await top("""
-            SELECT e.nom AS nom, count(*) AS nb
-              FROM fdi_signaux_investisseurs s JOIN fdi_entreprises e ON e.id = s.entreprise_id
-             WHERE {filtre} GROUP BY e.nom ORDER BY count(*) DESC, e.nom LIMIT 10"""),
+        # PAS DE CLASSEMENT D'ENTREPRISES À L'ÉCHELLE DU CONTINENT. Il existait,
+        # et le rapport ne le montre plus : sur toute l'Afrique ses valeurs
+        # tiennent en un mouchoir — dix signaux pour la première, huit pour la
+        # quatrième —, un palmarès qui se retourne au premier signal relevé. La
+        # requête part avec la carte : plus personne ne la lisait, et elle se
+        # rejouait à chaque chargement de la vue publique comme du rapport. Le
+        # bilan par zone garde le sien, calculé ailleurs (`_zones`), où la
+        # comparaison a un sens.
         "secteurs": await top("""
             SELECT n.libelle_fr AS nom, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
