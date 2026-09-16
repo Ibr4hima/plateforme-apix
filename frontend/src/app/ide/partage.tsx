@@ -389,7 +389,34 @@ export function TopAnneesFlux({ rows, grand, accent = "var(--bleu)" }: { rows: {
 // L'année de pic porte un aplat bleu et une pastille PIC. S'il n'y a pas de
 // pic — une seule année, ou plusieurs ex æquo au sommet — ni l'un ni l'autre :
 // distinguer une ligne qui ne se distingue pas est un mensonge visuel.
-export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { titre: string; rows: { annee: number; valeur: number | null }[]; accent?: string }) {
+export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = fmtNombre,
+  libelleValeur = "Nb", largeurValeur = 34, largeurEcart = 48, barre = true }: {
+  titre: string; rows: { annee: number; valeur: number | null }[]; accent?: string;
+  /** Comment écrire la valeur, la valeur de l'année précédente et l'écart.
+   *
+   *  IL ÉTAIT CODÉ EN DUR SUR `fmtNombre`, ce qui allait tant que le tableau ne
+   *  comptait que des projets et des emplois. Un MONTANT passé tel quel s'y
+   *  serait lu « 2 300 » — deux mille trois cents quoi ? Le tableau des
+   *  investissements annoncés écrit donc ses valeurs en millions de dollars,
+   *  avec `fmtVal`, exactement comme les compteurs du haut de page. */
+  fmt?: (v: number | null) => string;
+  /** L'intitulé de la colonne des valeurs. « Nb » ne convient qu'à un
+   *  dénombrement ; un montant appelle « Montant ». */
+  libelleValeur?: string;
+  /** Les deux colonnes chiffrées s'élargissent pour les valeurs longues :
+   *  « 1,2 Md $ » ne tient pas dans les 34 px d'un nombre de projets. */
+  largeurValeur?: number;
+  largeurEcart?: number;
+  /** La barrette de proportion en fin de ligne.
+   *
+   *  ELLE SE RETIRE QUAND IL N'Y A PLUS DE PLACE POUR ELLE. Sur trois colonnes,
+   *  un tableau de montants dépense ses colonnes chiffrées en « 2,3 Md $ » et
+   *  « +1,9 Md $ » ; il ne restait à la barre qu'une vingtaine de pixels, où
+   *  toutes les années se ressemblent. Une barre qui ne compare plus rien vaut
+   *  moins que la place qu'elle prend. Le PIC, lui, reste : c'est lui qui
+   *  désigne le sommet, et il tient en une pastille. */
+  barre?: boolean;
+}) {
   const [tout, setTout] = useState(false);
   const FENETRE = 8;
 
@@ -426,7 +453,7 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
   const Ecart = ({ e }: { e: number | null }) => (
     <span style={{ fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums",
       color: e === null ? "var(--gris)" : e > 0 ? "var(--vert)" : e < 0 ? "var(--danger)" : "var(--gris)" }}>
-      {e === null ? "—" : e === 0 ? "=" : `${e > 0 ? "+" : "−"}${fmtNombre(Math.abs(e))}`}
+      {e === null ? "—" : e === 0 ? "=" : `${e > 0 ? "+" : "−"}${fmt(Math.abs(e))}`}
     </span>
   );
 
@@ -440,9 +467,9 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
           {/* En-tête du tableau */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px" }}>
             <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, flexShrink: 0 }}>Année</span>
-            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>Nb</span>
-            <span style={{ width: 34, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>N-1</span>
-            <span style={{ width: 48, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
+            <span style={{ width: largeurValeur, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>{libelleValeur}</span>
+            <span style={{ width: largeurValeur, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>N-1</span>
+            <span style={{ width: largeurEcart, fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em", color: "var(--gris)", textTransform: "uppercase" as const, textAlign: "right" as const, flexShrink: 0 }}>vs N-1</span>
             <span style={{ flex: 1 }} />
             <span style={{ width: 34, flexShrink: 0 }} />
           </div>
@@ -454,16 +481,18 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)" }: { ti
                 <div key={r.annee} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 8px", borderRadius: 8,
                   background: pic ? voile(accent, 8) : "transparent" }}>
                   <span style={{ width: 34, fontSize: 11.5, fontWeight: pic ? 800 : 600, color: "var(--encre)", flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{r.annee}</span>
-                  <span style={{ width: 34, fontSize: 11.5, fontWeight: 800, color: accent, textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.valeur)}</span>
+                  <span style={{ width: largeurValeur, fontSize: 11.5, fontWeight: 800, color: accent, textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>{fmt(r.valeur)}</span>
                   {(() => { const prec = precedentDe(r.annee); return (
-                    <span style={{ width: 34, fontSize: 11, fontWeight: 600, color: "var(--gris-fort)", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
-                      {prec === null ? "—" : fmtNombre(prec)}
+                    <span style={{ width: largeurValeur, fontSize: 11, fontWeight: 600, color: "var(--gris-fort)", textAlign: "right" as const, flexShrink: 0, fontVariantNumeric: "tabular-nums" }}>
+                      {prec === null ? "—" : fmt(prec)}
                     </span>
                   ); })()}
-                  <span style={{ width: 48, textAlign: "right" as const, flexShrink: 0 }}><Ecart e={ecartDe(r.annee)} /></span>
-                  <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.max(2, r.valeur / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: pic ? 1 : 0.55 }} />
-                  </div>
+                  <span style={{ width: largeurEcart, textAlign: "right" as const, flexShrink: 0 }}><Ecart e={ecartDe(r.annee)} /></span>
+                  {barre ? (
+                    <div style={{ flex: 1, height: 7, background: "var(--fond)", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.max(2, r.valeur / maxVal * 100)}%`, borderRadius: 99, background: accent, opacity: pic ? 1 : 0.55 }} />
+                    </div>
+                  ) : <span style={{ flex: 1 }} />}
                   {pic
                     ? <span style={{ width: 34, fontSize: 7.5, fontWeight: 800, letterSpacing: "0.08em", color: accent, background: voile(accent, 16), padding: "2px 6px", borderRadius: 999, flexShrink: 0, textAlign: "center" as const, boxSizing: "border-box" as const }}>PIC</span>
                     : <span style={{ width: 34, flexShrink: 0 }} />}

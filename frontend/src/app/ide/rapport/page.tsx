@@ -91,7 +91,10 @@ export default function RapportIde() {
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
+        .rap-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: start; }
+        @media (max-width: 1080px) { .rap-trio { grid-template-columns: repeat(2, minmax(0,1fr)); } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
+        @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         /* À l'impression, la page perd ses commandes et ses cartes cessent de
            se couper en deux entre deux feuilles. */
@@ -147,41 +150,89 @@ export default function RapportIde() {
             </div>
 
             <section style={{ marginTop: 44 }}>
-              {d3Pret && serieCapex[0].data.length > 0 && (
-                <Carte titre="Investissement annoncé par année" tag={periodeFdi}>
-                  <GrapheMultiPays series={serieCapex} height={250} type="line" titre="rap-capex" showDots />
-                </Carte>
-              )}
+              {/* ── LES TROIS SÉRIES ANNUELLES, CHIFFRÉES, EN PREMIER ──────────
+                  LE CHIFFRE AVANT LA COURBE. Les quatre compteurs du haut de
+                  page donnent un total par mesure ; la question qui vient
+                  ensuite est « combien par année », et c'est un tableau qui y
+                  répond — avec, en plus, le millésime précédent et l'écart, que
+                  nulle courbe ne donne à lire sans qu'on la survole.
 
-              {/* Les DÉNOMBREMENTS en tableau annuel, comme sur la page : une
-                  barre par année n'ajoute rien à un nombre, et le tableau donne
-                  en plus l'écart à l'année précédente. */}
-              <div className="rap-duo" style={{ marginTop: 16 }}>
+                  LES TROIS MESURES SONT CELLES DES COMPTEURS, dans le même
+                  ordre : l'argent annoncé, les projets qui le portent, les
+                  emplois qu'ils promettent. Chacune garde sa teinte d'un bout à
+                  l'autre du rapport.
+
+                  L'INVESTISSEMENT S'ÉCRIT EN MONTANTS, non en nombres bruts.
+                  Le tableau reçoit `fmtVal` — celui des compteurs du haut — et
+                  ses colonnes chiffrées s'élargissent en conséquence : « 1,2 Md
+                  $ » ne tient pas dans la place d'un nombre de projets. */}
+              <div className="rap-trio">
+                <CarteTableauAnnees titre="Investissement annoncé par année"
+                  libelleValeur="Montant" fmt={fmtVal} largeurValeur={58} largeurEcart={62} barre={false}
+                  rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.capex_musd }))} />
                 <CarteTableauAnnees titre="Projets annoncés"
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.nb }))} />
                 <CarteTableauAnnees titre="Emplois annoncés" accent="var(--violet)"
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.emplois }))} />
               </div>
 
-              {/* Les quatre classements de la page, dans le même ordre : d'où
-                  vient l'argent, dans quoi il va, ce que l'entreprise vient
-                  faire, et qui bouge le plus. d3 arrive dans un module séparé —
-                  rendre un graphe avant lui lève, et une page de rapport qui
-                  casse à l'ouverture ne se rattrape pas. */}
+              {/* ── PUIS LA COURBE ─────────────────────────────────────────────
+                  ELLE NE RÉPÈTE PAS LE TABLEAU, ELLE EN DIT AUTRE CHOSE : le
+                  tableau donne les valeurs, la courbe donne la FORME — les
+                  creux, les paliers, le pic. Elle vient donc après les chiffres
+                  qu'elle résume, et son titre le dit : c'est l'ÉVOLUTION qu'on
+                  y lit, quand le tableau, lui, porte encore le nom de la mesure.
+                  Deux cartes nommées à l'identique dans une même page auraient
+                  fait croire à un doublon. */}
+              {d3Pret && serieCapex[0].data.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <Carte titre="Évolution des investissements annoncés par année" tag={periodeFdi}>
+                    <GrapheMultiPays series={serieCapex} height={250} type="line" titre="rap-capex" showDots />
+                  </Carte>
+                </div>
+              )}
+
+              {/* Les classements de la page : d'où vient l'argent, dans quoi il
+                  va, et ce que l'entreprise vient faire. d3 arrive dans un
+                  module séparé — rendre un graphe avant lui lève, et une page de
+                  rapport qui casse à l'ouverture ne se rattrape pas.
+
+                  « ENTREPRISES LES PLUS ACTIVES » EST RETIRÉ. Ce classement
+                  comptait des PROJETS par entreprise, et sur un pays il donnait
+                  des colonnes de sept, quatre, trois, trois, trois… — des écarts
+                  trop faibles pour qu'un graphe à barres dise quoi que ce soit,
+                  et un palmarès qui se retourne au premier projet annoncé. Les
+                  entreprises ont leur écran, avec leurs comptes sur tout le
+                  relevé ; c'est là qu'on les classe.
+
+                  « NATURE DES IMPLANTATIONS » DEVIENT « LES ACTIVITÉS LES PLUS
+                  MENÉES ». Le classement lit la colonne des ACTIVITÉS — ce que
+                  l'entreprise vient faire sur place : fabriquer, vendre,
+                  distribuer. « Nature des implantations » nommait une autre
+                  colonne du relevé, celle des TYPES de projet, qui n'est pas
+                  affichée ici. */}
               {d3Pret && (
               <div className="rap-duo" style={{ marginTop: 16 }}>
                 {([
                   { cle: "partenaires" as const, titre: "Origine des projets", couleur: "var(--orange)" },
                   { cle: "secteurs" as const, titre: "Secteurs les plus visés", couleur: "var(--bleu)" },
-                  { cle: "activites" as const, titre: "Nature des implantations", couleur: "var(--vert)" },
-                  { cle: "entreprises" as const, titre: "Entreprises les plus actives", couleur: "var(--violet)" },
-                ]).map(c => {
+                  { cle: "activites" as const, titre: "Les activités les plus menées", couleur: "var(--vert)" },
+                ]).map((c, i) => {
                   const rows = (fdi.tops[c.cle] ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }));
                   if (rows.length === 0) return null;
+                  // LE TROISIÈME PREND TOUTE LA LARGEUR. À quatre classements la
+                  // grille tombait juste ; à trois, le dernier laissait une
+                  // demi-page blanche à sa droite. Il l'occupe — et c'est celui
+                  // qui en profite le plus : ses libellés sont les plus longs
+                  // du rapport (« Logistique, distribution et transport »), et
+                  // une colonne de moitié les serrait contre leurs barres.
+                  const pleineLargeur = i === 2;
                   return (
-                    <Carte key={c.cle} titre={c.titre} tag="nombre de projets">
-                      <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
-                    </Carte>
+                    <div key={c.cle} style={pleineLargeur ? { gridColumn: "1 / -1" } : undefined}>
+                      <Carte titre={c.titre} tag="nombre de projets">
+                        <GrapheBarresH data={rows} couleur={c.couleur} fmt={fmtNombre} exposant={1} />
+                      </Carte>
+                    </div>
                   );
                 })}
               </div>
