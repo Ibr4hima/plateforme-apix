@@ -56,7 +56,6 @@ type Rapport = {
   actifs: Invest[];
   origines: { nom: string; iso: string | null; investisseurs: number;
               projets: number; au_senegal: number }[];
-  secteurs: { nom: string; projets: number; investisseurs: number }[];
   sous_secteurs: { nom: string; parent: string; projets: number; investisseurs: number }[];
   activites: { nom: string; projets: number; investisseurs: number }[];
   senegal: { nom: string; origine: string | null; iso: string | null; projets: number }[];
@@ -150,15 +149,22 @@ export default function RapportEntreprises() {
                 revient ou s'il passe une fois. */}
             <div className="rap-kpis" style={{ marginTop: -46, position: "relative" as const, zIndex: 2 }}>
               <ChiffreCle label="Investisseurs" valeur={fmtNombre(d.kpis.investisseurs)} annee={periode}
-                note={`${fmtNombre(d.kpis.origines)} pays d'origine`} />
+                note={`${pct(d.kpis.un_seul_projet, d.kpis.investisseurs)} n'ont annoncé qu'un seul projet`} />
               <ChiffreCle label="Projets annoncés" valeur={fmtNombre(d.kpis.projets)} annee={periode}
-                note="portés par ces investisseurs" />
-              <ChiffreCle label="Projets par investisseur"
-                valeur={d.kpis.projets_par_investisseur?.toLocaleString("fr-FR", { minimumFractionDigits: 2 }) ?? "—"}
-                annee={periode}
-                note={`${pct(d.kpis.un_seul_projet, d.kpis.investisseurs)} n'en ont annoncé qu'un`} />
-              <ChiffreCle label={`Déjà au ${PAYS}`} valeur={fmtNombre(d.kpis.au_senegal)} annee={periode}
-                note={`soit ${pct(d.kpis.au_senegal, d.kpis.investisseurs)} des investisseurs du relevé`} />
+                note={d.kpis.projets_par_investisseur != null
+                  ? `${d.kpis.projets_par_investisseur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} par investisseur`
+                  : null} />
+              <ChiffreCle label="Pays d'origine" valeur={fmtNombre(d.kpis.origines)} annee={periode}
+                note={d.origines?.[0]
+                  ? `${d.origines[0].nom} en tête, ${fmtNombre(d.origines[0].investisseurs)} investisseurs`
+                  : null} />
+              {/* LA PART, ET NON LE NOMBRE. « 200 » ne dit rien sans son
+                  dénominateur : c'est 200 sur 7 245, et c'est la fraction —
+                  2,8 % — qui porte le constat. Le nombre passe en note, où il
+                  sert de vérification plutôt que de titre. */}
+              <ChiffreCle label={`Part du ${PAYS}`}
+                valeur={pct(d.kpis.au_senegal, d.kpis.investisseurs)} annee={periode}
+                note={`${fmtNombre(d.kpis.au_senegal)} investisseurs sur ${fmtNombre(d.kpis.investisseurs)}`} />
             </div>
 
             {/* ── Les classements, sur trois colonnes ─────────────────────────
@@ -168,20 +174,20 @@ export default function RapportEntreprises() {
                 des classements du rapport des projets annoncés, qui portent les
                 mêmes intitulés et comptent autre chose.
 
-                TROIS AU TIERS DE PAGE, LE QUATRIÈME SUR TOUTE LA LARGEUR. Les
-                trois premiers tiennent un libellé par ligne ; le sous-secteur
-                en tient DEUX — le sien et celui de son secteur —, et deux
-                colonnes de texte ne se logent pas dans un tiers de page. Il
-                prend donc sa propre rangée. */}
-            <div className="rap-trio" style={{ marginTop: 44 }}>
+                DEUX EN HAUT, LE SOUS-SECTEUR SUR TOUTE LA LARGEUR EN DESSOUS.
+
+                « SECTEURS LES PLUS INVESTIS » EST RETIRÉ, et le sous-secteur le
+                remplace avantageusement : il dit la même chose en plus fin, et
+                il porte son secteur dans sa seconde colonne — « Services
+                financiers » s'y lit deux fois, « Logiciels et services
+                informatiques » aussi. Le classement des secteurs seuls était
+                donc contenu dans celui-ci, en moins précis. */}
+            <div className="rap-duo" style={{ marginTop: 44 }}>
               <ClassementRapport titre="Pays d'origine des investisseurs" colonne="Pays"
                 libelleValeur="Invest." drapeaux max={10} accent="var(--bleu)"
                 rows={(d.origines ?? []).map(o => ({ nom: o.nom, nb: o.investisseurs, iso: o.iso }))} />
-              <ClassementRapport titre="Secteurs les plus investis" colonne="Secteur"
-                libelleValeur="Invest." max={10} accent="var(--violet)"
-                rows={(d.secteurs ?? []).map(s => ({ nom: s.nom, nb: s.investisseurs }))} />
-              <ClassementRapport titre="Activités menées" colonne="Activité"
-                libelleValeur="Invest." max={10} accent="var(--vert)"
+              <ClassementRapport titre="Classement des Activités menées" colonne="Activité"
+                libelleValeur="Invest." max={10} accent="var(--orange)"
                 rows={(d.activites ?? []).map(a => ({ nom: a.nom, nb: a.investisseurs }))} />
             </div>
 

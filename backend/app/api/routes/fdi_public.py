@@ -910,7 +910,10 @@ async def rapport_entreprises(
         "actifs": actifs,
         "senegal": senegal,
         "origines": origines_top,
-        "secteurs": await par("secteur"),
+        # PAS DE CLASSEMENT DES SECTEURS SEULS. Celui des SOUS-secteurs le
+        # contient : il dit la même chose en plus fin, et porte le secteur
+        # parent dans sa seconde colonne. Deux classements dont l'un est le
+        # résumé de l'autre font relire deux fois la même information.
         "sous_secteurs": sous_secteurs,
         "activites": await par("activite"),
     }
