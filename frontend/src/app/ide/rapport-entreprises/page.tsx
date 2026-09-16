@@ -102,6 +102,9 @@ export default function RapportEntreprises() {
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
+        .rap-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: start; }
+        @media (max-width: 1080px) { .rap-trio { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+        @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         @media print {
@@ -165,30 +168,42 @@ export default function RapportEntreprises() {
                 des classements du rapport des projets annoncés, qui portent les
                 mêmes intitulés et comptent autre chose.
 
-                DEUX PAR DEUX DEPUIS QU'ILS SONT QUATRE. Sur trois colonnes, les
-                libellés les plus longs — « Logiciels et services informatiques »,
-                « Recherche et développement » — se coupaient à mi-mot ; la
-                demi-page les laisse entiers, et le sous-secteur, qui traîne son
-                secteur derrière lui, en avait plus besoin que les autres. */}
-            <div className="rap-duo" style={{ marginTop: 44 }}>
+                TROIS AU TIERS DE PAGE, LE QUATRIÈME SUR TOUTE LA LARGEUR. Les
+                trois premiers tiennent un libellé par ligne ; le sous-secteur
+                en tient DEUX — le sien et celui de son secteur —, et deux
+                colonnes de texte ne se logent pas dans un tiers de page. Il
+                prend donc sa propre rangée. */}
+            <div className="rap-trio" style={{ marginTop: 44 }}>
               <ClassementRapport titre="Pays d'origine des investisseurs" colonne="Pays"
                 libelleValeur="Invest." drapeaux max={10} accent="var(--bleu)"
                 rows={(d.origines ?? []).map(o => ({ nom: o.nom, nb: o.investisseurs, iso: o.iso }))} />
               <ClassementRapport titre="Secteurs les plus investis" colonne="Secteur"
                 libelleValeur="Invest." max={10} accent="var(--violet)"
                 rows={(d.secteurs ?? []).map(s => ({ nom: s.nom, nb: s.investisseurs }))} />
-              {/* LE SOUS-SECTEUR NE SE LIT PAS SEUL, et son secteur le suit
-                  donc sur la ligne. « Other » vit sous vingt-quatre secteurs
-                  chez fDi, « Software » sous plusieurs autres : sans le parent,
-                  deux postes sans rapport porteraient le même nom, et l'on ne
-                  saurait pas lequel on lit. Le compte lui-même est celui du
-                  COUPLE, pas du seul libellé. */}
-              <ClassementRapport titre="Sous-secteurs les plus investis" colonne="Sous-secteur · Secteur"
-                libelleValeur="Invest." max={10} accent="var(--cyan)"
-                rows={(d.sous_secteurs ?? []).map(x => ({ nom: `${x.nom} · ${x.parent}`, nb: x.investisseurs }))} />
               <ClassementRapport titre="Activités menées" colonne="Activité"
                 libelleValeur="Invest." max={10} accent="var(--vert)"
                 rows={(d.activites ?? []).map(a => ({ nom: a.nom, nb: a.investisseurs }))} />
+            </div>
+
+            {/* ── LE SOUS-SECTEUR, SUR TOUTE LA LARGEUR ET EN DEUX COLONNES ───
+                IL NE SE LIT PAS SEUL. « Other » vit sous vingt-quatre secteurs
+                chez fDi, et d'autres libellés sous plusieurs : sans le parent,
+                deux postes sans rapport porteraient le même nom et l'on ne
+                saurait pas lequel on lit. Le compte lui-même porte sur le
+                COUPLE (sous-secteur, secteur), pas sur le seul libellé.
+
+                MAIS LES DEUX NE SE COLLENT PAS. Écrits à la suite, ils font une
+                phrase où l'œil doit retrouver la coupure à chaque ligne, et la
+                colonne se tronque au plus long des deux. Séparés, ils
+                s'alignent : on lit les sous-secteurs d'un côté, leurs secteurs
+                de l'autre, et les répétitions du second — trois lignes sous
+                « Services financiers » — sautent aux yeux. C'est ce qui vaut la
+                pleine largeur à cette carte. */}
+            <div style={{ marginTop: 16 }}>
+              <ClassementRapport titre="Sous-secteurs les plus investis"
+                colonne="Sous-secteur" colonneDetail="Secteur"
+                libelleValeur="Invest." max={10} accent="var(--cyan)"
+                rows={(d.sous_secteurs ?? []).map(x => ({ nom: x.nom, detail: x.parent, nb: x.investisseurs }))} />
             </div>
 
             {/* ── LE CLASSEMENT NOMMÉ ─────────────────────────────────────────

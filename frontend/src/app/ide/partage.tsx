@@ -1780,7 +1780,10 @@ export function CarteRapport({ titre, tag, children }: { titre: string; tag?: st
 
 /** `rang` est le rang RÉEL au classement, qui ne coïncide pas toujours avec la
  *  position dans la liste : une ligne épinglée venue du fond garde le sien. */
-export type RangClasse = { nom: string; nb: number; iso?: string | null; rang?: number };
+export type RangClasse = { nom: string; nb: number; iso?: string | null; rang?: number;
+  /** Une seconde valeur textuelle, rendue dans sa propre colonne quand la carte
+   *  en déclare une. Sert au sous-secteur, qui ne se lit pas sans son secteur. */
+  detail?: string | null };
 
 /** Bascule segmentée — celle du tableau de bord, au pixel près. */
 export function SegmentRapport<T extends string>({ valeur, options, onChange }: {
@@ -1819,9 +1822,21 @@ export function SegmentRapport<T extends string>({ valeur, options, onChange }: 
  *  et barre à pleine opacité. Le regard doit trouver le podium sans lire.
  */
 export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
-  colonne = "Nom", libelleValeur = "Signaux", epingle, drapeaux, max = 8 }: {
+  colonne = "Nom", colonneDetail, libelleValeur = "Signaux", epingle, drapeaux, max = 8 }: {
   titre: string; tag?: string; rows: RangClasse[]; accent?: string;
   colonne?: string;
+  /** L'intitulé d'une SECONDE colonne de texte, à droite du nom.
+   *
+   *  DEUX COLONNES, ET NON DEUX MOTS COLLÉS. Le sous-secteur ne se lit pas sans
+   *  son secteur, mais les écrire à la suite — « Banque de détail · Services
+   *  financiers » — donne une phrase où l'œil doit retrouver la coupure à
+   *  chaque ligne, et la colonne se tronque au plus long des deux. Séparés, ils
+   *  s'alignent : on lit la liste des sous-secteurs d'un côté, celle de leurs
+   *  secteurs de l'autre, et les répétitions du second sautent aux yeux.
+   *
+   *  Réservé aux cartes qui ont la largeur : sur un tiers de page, deux
+   *  colonnes de texte ne tiennent pas. */
+  colonneDetail?: string;
   /** Le nom de la ligne à mettre en évidence — le Sénégal, sur un rapport lu
    *  depuis Dakar.
    *
@@ -1880,6 +1895,7 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
         <span style={{ ...ENT, width: 22, flexShrink: 0 }}>#</span>
         <span style={{ ...ENT, flex: 1, minWidth: 0 }}>{colonne}</span>
+        {colonneDetail && <span style={{ ...ENT, flex: 1, minWidth: 0 }}>{colonneDetail}</span>}
         <span style={{ ...ENT, width: 40, textAlign: "right" as const, flexShrink: 0 }}>{libelleValeur}</span>
         <span style={{ width: "24%", flexShrink: 0 }} />
       </div>
@@ -1934,6 +1950,11 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
                     {rang}ᵉ DU CLASSEMENT</span>
                 )}
               </span>
+              {colonneDetail && (
+                <span title={r.detail ?? undefined} style={{ flex: 1, minWidth: 0, fontSize: 12,
+                  fontWeight: 600, color: "var(--texte)", overflow: "hidden",
+                  textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.detail ?? "—"}</span>
+              )}
               <span style={{ width: 40, fontSize: 11.5, fontWeight: 800, color: accent,
                 textAlign: "right" as const, flexShrink: 0,
                 fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.nb)}</span>
