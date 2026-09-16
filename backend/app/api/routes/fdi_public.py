@@ -757,3 +757,188 @@ async def entreprises_publiques(
         "pages": max(1, -(-total // par_page)),
         "total": total,
     }
+
+
+# ── Le rapport des investisseurs ─────────────────────────────────────────────
+# CE QU'IL DIT ET QUE LE RAPPORT DES PROJETS NE DIT PAS. Les deux lisent le même
+# relevé, mais pas la même unité : là-bas un PROJET, ici un INVESTISSEUR. La
+# différence n'est pas de présentation, elle change les réponses. « Quarante-six
+# pays d'origine » se lit de la même façon dans les deux ; « les dix premiers
+# investisseurs portent 4 % des projets » n'a de sens que lorsque la ligne est
+# une entreprise, et c'est pourtant ce chiffre-là qui dit s'il faut démarcher
+# quelques grands groupes ou ratisser large.
+#
+# TOUT EST CALCULÉ SOUS LES FILTRES DE LA COLONNE. Le rapport porte sur ce que
+# le lecteur regardait — son secteur, son activité, ses pays d'origine — et non
+# sur le relevé entier : un document qui changerait de périmètre au moment où on
+# l'ouvre ne serait pas citable.
+SENEGAL = "Sénégal"
+
+
+@router.get("/entreprises/rapport")
+async def rapport_entreprises(
+    recherche: str | None = None,
+    secteurs: str | None = None,
+    sous_secteurs: str | None = None,
+    activites: str | None = None,
+    origines: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Tout ce qu'un décideur peut tirer du relevé, l'investisseur pour unité."""
+    where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
+                                         activites, origines)
+    filtre = " AND ".join(where)
+    params = {**params, "senegal": SENEGAL}
+
+    # LA MÊME BASE POUR TOUTES LES QUESTIONS. Une seule expression de projet
+    # filtré, et un seul regroupement par investisseur : deux formulations
+    # finiraient par diverger, et deux chiffres qui se contredisent sur le même
+    # document valent moins que pas de chiffre.
+    #
+    # `au_senegal` est porté par le GROUPE, non par le projet : la question
+    # n'est pas « ce projet est-il au Sénégal » mais « cet investisseur y est-il
+    # déjà venu », et c'est elle qui sépare un prospect d'un installé.
+    SOCLE = f"""
+    WITH base AS (
+        SELECT {NOM_ENTREPRISE} AS nom, {ORIGINE_ENTREPRISE} AS origine,
+               rp.code_iso2 AS origine_iso,
+               COALESCE(rd.nom_fr, p.pays_dest_brut) AS dest,
+               {FACETTES['secteurs']}  AS secteur,
+               {FACETTES['activites']} AS activite,
+               p.annee AS annee
+        {JOINTURES_ENTREPRISE}
+        WHERE {filtre} AND {NOM_ENTREPRISE} IS NOT NULL
+    ), g AS (
+        SELECT nom, origine, min(origine_iso) AS iso,
+               count(*) AS projets,
+               count(DISTINCT dest) AS pays,
+               min(annee) AS a0, max(annee) AS a1,
+               bool_or(dest = :senegal) AS au_senegal
+        FROM base GROUP BY nom, origine
+    )"""
+
+    async def q(corps: str):
+        return (await db.execute(text(SOCLE + corps), params)).fetchall()
+
+    # ── Les compteurs ────────────────────────────────────────────────────────
+    k = (await q("""
+        SELECT count(*) AS investisseurs, sum(projets) AS projets,
+               count(DISTINCT origine) AS origines,
+               count(DISTINCT origine) FILTER (WHERE origine IS NOT NULL) AS origines_nommees,
+               min(a0) AS a0, max(a1) AS a1,
+               count(*) FILTER (WHERE au_senegal) AS au_senegal,
+               count(*) FILTER (WHERE projets = 1) AS uniques,
+               count(*) FILTER (WHERE pays = 1) AS mono_pays
+        FROM g"""))[0]
+
+    total_projets = k.projets or 0
+
+    # ── La concentration ─────────────────────────────────────────────────────
+    # LA QUESTION STRATÉGIQUE DU DOCUMENT. Si les dix premiers investisseurs
+    # portent la moitié des projets, on démarche dix entreprises ; s'ils en
+    # portent 4 %, aucune liste courte ne fera le travail et c'est le volume qui
+    # compte. Rien d'autre dans la plateforme ne répond à cela.
+    paliers = await q("""
+        SELECT palier, sum(projets) AS projets FROM (
+            SELECT projets, CASE
+                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 10  THEN 10
+                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 50  THEN 50
+                WHEN row_number() OVER (ORDER BY projets DESC, nom) <= 100 THEN 100
+                ELSE 0 END AS palier
+            FROM g) t
+        WHERE palier > 0 GROUP BY palier ORDER BY palier""")
+    cumul, concentration = 0, {}
+    for r in paliers:
+        cumul += r.projets
+        concentration[str(r.palier)] = {
+            "projets": cumul,
+            "part": round(cumul / total_projets * 100, 1) if total_projets else None}
+
+    # ── L'empreinte géographique ─────────────────────────────────────────────
+    # COMBIEN DE PAYS CHACUN A-T-IL TOUCHÉS. Un investisseur présent dans un
+    # seul pays africain est un prospect d'EXTENSION — il a franchi le pas du
+    # continent, il lui reste à choisir le suivant ; un panafricain à vingt pays
+    # se démarche autrement. Les deux populations ne se comptent nulle part
+    # ailleurs.
+    empreinte = await q("""
+        SELECT tranche, count(*) AS investisseurs, sum(projets) AS projets FROM (
+            SELECT projets, CASE
+                WHEN pays = 1 THEN '1'
+                WHEN pays <= 3 THEN '2-3'
+                WHEN pays <= 9 THEN '4-9'
+                ELSE '10+' END AS tranche
+            FROM g) t GROUP BY tranche""")
+    ordre = {"1": 0, "2-3": 1, "4-9": 2, "10+": 3}
+    empreinte = sorted(({"tranche": r.tranche, "investisseurs": r.investisseurs,
+                         "projets": r.projets} for r in empreinte),
+                       key=lambda x: ordre[x["tranche"]])
+
+    async def classement(corps: str, limite: int = 15):
+        return [dict(r._mapping) for r in await q(corps + f" LIMIT {limite}")]
+
+    # ── Les plus actifs, et ceux qui manquent au Sénégal ─────────────────────
+    # LA SECONDE LISTE EST LA PLUS UTILE DU DOCUMENT : des groupes qui
+    # investissent en Afrique, à répétition, et qui ne sont jamais venus ici.
+    # C'est une liste de démarchage, pas un palmarès.
+    actifs = await classement("""
+        SELECT nom, origine, iso, projets, pays, a0, a1, au_senegal
+        FROM g ORDER BY projets DESC, nom""")
+    absents = await classement("""
+        SELECT nom, origine, iso, projets, pays, a0, a1
+        FROM g WHERE NOT au_senegal ORDER BY projets DESC, nom""")
+    presents = await classement("""
+        SELECT nom, origine, iso, projets, pays, a0, a1
+        FROM g WHERE au_senegal ORDER BY projets DESC, nom""")
+
+    # ── Les origines, comptées en INVESTISSEURS ──────────────────────────────
+    # Et non en projets : la question est « combien d'entreprises françaises
+    # investissent en Afrique », pas « combien de projets français ». Le nombre
+    # de projets suit, pour dire si ces entreprises reviennent.
+    origines_top = await classement("""
+        SELECT origine AS nom, min(iso) AS iso, count(*) AS investisseurs,
+               sum(projets) AS projets,
+               count(*) FILTER (WHERE au_senegal) AS au_senegal
+        FROM g WHERE origine IS NOT NULL
+        GROUP BY origine ORDER BY count(*) DESC, origine""")
+
+    # ── Secteurs et activités, à deux comptes ────────────────────────────────
+    # LE RAPPORT DES DEUX EST L'INFORMATION. Un secteur à 300 projets pour
+    # 40 investisseurs est tenu par quelques habitués qui reviennent ; le même
+    # volume réparti sur 250 entreprises est un marché ouvert. Le nombre de
+    # projets seul ne distingue pas les deux.
+    async def par(colonne: str):
+        return [dict(r._mapping) for r in await q(f"""
+            SELECT {colonne} AS nom, count(*) AS projets,
+                   count(DISTINCT (nom, origine)) AS investisseurs
+            FROM base WHERE {colonne} IS NOT NULL
+            GROUP BY 1 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
+
+    # ── Le renouvellement ────────────────────────────────────────────────────
+    # LES PRIMO-ARRIVANTS, par l'année de leur PREMIER projet du périmètre. Un
+    # relevé qui n'accueillerait plus de nouveaux noms serait un marché fermé ;
+    # la courbe dit s'il s'en présente encore.
+    nouveaux = await q("""
+        SELECT a0 AS annee, count(*) AS investisseurs
+        FROM g WHERE a0 IS NOT NULL GROUP BY a0 ORDER BY a0""")
+
+    return {
+        "kpis": {
+            "investisseurs": k.investisseurs, "projets": total_projets,
+            "origines": k.origines_nommees,
+            "projets_par_investisseur": round(total_projets / k.investisseurs, 2)
+                if k.investisseurs else None,
+            "annees": [k.a0, k.a1],
+            "au_senegal": k.au_senegal,
+            "un_seul_projet": k.uniques,
+            "un_seul_pays": k.mono_pays,
+        },
+        "concentration": concentration,
+        "empreinte": empreinte,
+        "actifs": actifs,
+        "absents_senegal": absents,
+        "presents_senegal": presents,
+        "origines": origines_top,
+        "secteurs": await par("secteur"),
+        "activites": await par("activite"),
+        "nouveaux": [{"annee": r.annee, "investisseurs": r.investisseurs} for r in nouveaux],
+    }

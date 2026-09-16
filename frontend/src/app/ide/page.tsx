@@ -84,21 +84,26 @@ export default function IdePage() {
                 se lisent pas de la même façon — un fait contre une intention —
                 et un rapport unique aurait menti sur l'un des deux.
 
-                Pas de rapport au-dessus d'Entreprises : cette vue regroupe ce
-                que la vue Projets montre déjà, et son rapport répéterait
-                l'autre. Le proposer promettrait un document qui n'apporte
-                rien. */}
+                LES TROIS VUES ONT LE LEUR, Entreprises comprise. Ce n'était pas
+                le cas : on avait jugé que cette vue regroupait ce que la vue
+                Projets montrait déjà. C'était vrai de la LISTE, pas du rapport.
+                Le rapport des projets compte des projets ; celui-ci compte des
+                INVESTISSEURS, et les questions qu'il répond n'existent pas
+                ailleurs — quelle part du relevé les dix premiers portent-ils,
+                combien n'ont touché qu'un seul pays, et surtout lesquels
+                investissent en Afrique sans jamais être venus ici. */}
             {/* La forme du segment actif des vues : pastille pleine dans son
                 anneau clair. Le rapport est une destination, pas une option —
                 il mérite le poids qu'a l'onglet en cours. */}
-            {section === "projetes" && (vueFdi === "projets" || vueFdi === "signaux") && (
+            {section === "projetes" && (vueFdi === "projets" || vueFdi === "signaux" || vueFdi === "entreprises") && (
               <div style={{ display:"inline-flex", background:"var(--carte)", border:"1px solid var(--bordure)",
                 borderRadius:999, padding:3, boxShadow:"var(--ombre-1)" }}>
                 {/* L'adresse est lue AU CLIC, pas au rendu : les filtres de
                     l'onglet s'écrivent dans l'URL au fil des choix, et un href
                     figé au rendu ramènerait le lecteur à un état périmé. */}
                 <button onClick={()=>router.push(
-                  `/ide/${vueFdi === "signaux" ? "rapport-signaux" : "rapport"}`
+                  `/ide/${vueFdi === "signaux" ? "rapport-signaux"
+                          : vueFdi === "entreprises" ? "rapport-entreprises" : "rapport"}`
                   + `?retour=${encodeURIComponent(window.location.search)}`)}
                   style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"6px 18px", borderRadius:999,
                     border:"none", cursor:"pointer",
