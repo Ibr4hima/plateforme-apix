@@ -45,7 +45,7 @@ export const ROLE_LABELS: Record<string, string> = {
 };
 
 // Pages admin ouvertes au rôle Admin (lecture seule) — pas d'Utilisateurs &
-// accès, pas d'Analyse de données, pas de référentiels.
+// accès, pas de référentiels.
 export const ADMIN_PAGES_LECTURE = ["evenements", "accords", "entreprises", "gestion-zones", "opportunites", "intentions", "prospects"];
 
 // Une page admin est-elle accessible (navigation) pour cette session ?
