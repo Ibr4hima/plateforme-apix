@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { CheckCircle, ChevronDown, Database, Link2, Loader2, Trash2, UploadCloud, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Database, Link2, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { confirmer } from "@/components/shared/Confirmation";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import EnteteAdmin, { IconeModule } from "@/components/admin/EnteteAdmin";
 import { SkeletonRows } from "@/components/shared/Skeleton";
 import {
-  Avis, Carte, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Tableau,
-  IS, NUM, TD, TH, btnDanger, btnPrincipal,
+  Avis, Carte, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Segments, Tableau,
+  IS, NUM, TD, TH, btnPrincipal,
 } from "@/components/admin/UIAdmin";
 
 import { API_BASE as API } from "@/lib/api";
@@ -152,17 +152,27 @@ export default function AdminStatistiquesPage() {
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
 
-      {/* ── Bandeau orange (espace d'administration) ── */}
-      <BarreTitre titre="Données Statistiques" compact ton="orange" pleineLargeur>
-        <BarreTitreSegment
-          options={[
-            { v: "indicateurs",   l: "Indicateurs par pays" },
-            { v: "transactions",  l: "Données transactionnelles" },
-          ]}
-          value={tab} onChange={v => setTab(v)} />
-      </BarreTitre>
+      {/* ══════════════════════════════════════════════════════════════════
+          L'EN-TÊTE COMMUN DE L'ADMINISTRATION, à la place du bandeau orange
+          pleine largeur. Celui-ci venait des pages publiques, où un aplat
+          ouvre un document ; ici on ouvre une console d'import, sur laquelle
+          on revient à chaque livraison de données. Le titre, le compte et la
+          bascule restent collés en haut pendant que les tableaux défilent.
+          ══════════════════════════════════════════════════════════════════ */}
+      <EnteteAdmin titre="Données Statistiques"
+        compteur={tab === "indicateurs" && !loading ? couverture.length : null}>
+        {/* DEUX JEUX DE DONNÉES SANS RAPPORT L'UN AVEC L'AUTRE — des séries
+            annuelles par pays d'un côté, des flux bilatéraux de ressources de
+            l'autre — chacun avec son import, son format de fichier et ses
+            tableaux. La page en réunit deux, elle ne les filtre pas : c'est le
+            cas où la seconde rangée de l'en-tête se justifie. */}
+        <Segments value={tab} onChange={v => setTab(v)} options={[
+          { v: "indicateurs" as const,  l: "Indicateurs par pays" },
+          { v: "transactions" as const, l: "Données transactionnelles" },
+        ]} />
+      </EnteteAdmin>
 
-      <div style={{ padding: "28px 40px 80px", maxWidth: 1400 }}>
+      <div style={{ padding: "20px 32px 80px" }}>
         {tab === "transactions" ? <TransactionsPanel headers={headers} /> : (
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
@@ -170,25 +180,46 @@ export default function AdminStatistiquesPage() {
           <Carte titre="Importer des données"
             aide="Un fichier peut contenir plusieurs pays. Les en-têtes sont détectés automatiquement ; les valeurs existantes sont mises à jour.">
             <div className="ro-w">
-              <div style={{ display: "flex", gap: 14, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
-                <div style={{ flex: "1 1 280px", minWidth: 0 }}>
-                  <label style={{ fontSize: 10.5, fontWeight: 800, color: "var(--gris)", marginBottom: 6, display: "block", textTransform: "uppercase", letterSpacing: "0.12em" }}>Indicateur à importer</label>
-                  <div style={{ position: "relative" }}>
-                    <select value={indicateur} onChange={e => { setIndicateur(e.target.value); setRes(null); }}
-                      style={{ ...IS, appearance: "none", cursor: "pointer", paddingRight: 34, fontWeight: 600 }}>
-                      {importables.map(i => <option key={i.code} value={i.code}>{i.libelle} ({i.unite})</option>)}
-                    </select>
-                    <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--gris)", pointerEvents: "none" }} />
-                  </div>
+              {/* UNE SEULE LIGNE DE RÉGLAGE : l'indicateur qu'on importe, et
+                  l'unité dans laquelle le fichier doit être libellé — la seule
+                  chose qui fasse rater un import une fois le bon fichier
+                  choisi. Elle se lit à la suite du choix, comme sa conséquence,
+                  et non sous une étiquette de colonne à elle. */}
+              <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
+                <div style={{ position: "relative", flex: "1 1 300px", minWidth: 0 }}>
+                  <select value={indicateur} onChange={e => { setIndicateur(e.target.value); setRes(null); }}
+                    aria-label="Indicateur à importer"
+                    style={{ ...IS, appearance: "none", cursor: "pointer", paddingRight: 34, paddingLeft: 14, height: 42, fontWeight: 700 }}>
+                    {importables.map(i => <option key={i.code} value={i.code}>{i.libelle} ({i.unite})</option>)}
+                  </select>
+                  <ChevronDown size={15} style={{ position: "absolute", right: 13, top: "50%", transform: "translateY(-50%)", color: "var(--gris)", pointerEvents: "none" }} />
                 </div>
+
                 {indActuel && (
-                  <div style={{ paddingBottom: 10 }}>
-                    <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--gris)", textTransform: "uppercase", letterSpacing: "0.12em", display: "block", marginBottom: 6 }}>Unité attendue</span>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.07)", padding: "6px 13px", borderRadius: 999, display: "inline-block" }}>{uniteAttendue}</span>
-                  </div>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "var(--gris)", whiteSpace: "nowrap" }}>
+                    attendu en
+                    <span style={{ fontWeight: 700, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.07)", padding: "5px 12px", borderRadius: 999 }}>{uniteAttendue}</span>
+                  </span>
                 )}
-                <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} »`}
-                  style={{ ...btnDanger, marginLeft: "auto", marginBottom: 4, cursor: viding ? "default" : "pointer" }}>
+
+                {/* VIDER UN INDICATEUR EST IRRÉVERSIBLE ET RARE. Le bouton était
+                    peint en rouge en permanence, à l'autre bout de la ligne
+                    d'import : la seule tache de couleur de la carte désignait
+                    l'action qu'on ne veut faire presque jamais. Il reste à sa
+                    place — c'est bien de l'indicateur choisi qu'il parle — mais
+                    muet, et ne prend sa couleur qu'au survol, comme les actions
+                    des cartes du reste de l'administration. */}
+                <button onClick={handleVider} disabled={viding} title={`Vider toutes les données de « ${indActuel?.libelle} » pour tous les pays`}
+                  style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                    border: "1px solid var(--bordure-forte)", color: "var(--gris-fort)", borderRadius: 999, padding: "9px 16px",
+                    fontSize: 12.5, fontWeight: 650, cursor: viding ? "default" : "pointer", whiteSpace: "nowrap",
+                    fontFamily: "var(--font-google-sans)", transition: "color 0.14s, border-color 0.14s, background 0.14s" }}
+                  onMouseEnter={e => { if (viding) return; e.currentTarget.style.color = "var(--danger)";
+                    e.currentTarget.style.borderColor = "rgb(var(--danger-rgb) / 0.35)";
+                    e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.06)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "var(--gris-fort)";
+                    e.currentTarget.style.borderColor = "var(--bordure-forte)";
+                    e.currentTarget.style.background = "transparent"; }}>
                   {viding ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={14} />}
                   Vider l&apos;indicateur
                 </button>
@@ -285,16 +316,21 @@ export default function AdminStatistiquesPage() {
                                 {i.code === "superficie" || s.max === 0 ? "✓" : `${s.min}–${s.max}`}
                                 <span style={{ color: "var(--gris)", fontWeight: 500 }}> ({s.nb})</span>
                               </span>
-                            ) : <span style={{ color: "var(--sur-bleu)" }}>–</span>}
+                            ) : <span style={{ color: "var(--gris)" }}>–</span>}
                           </td>
                         );
                       })}
                       <td style={{ ...TD, borderTop: "1px solid var(--bordure)", textAlign: "center" }} className="ro-w">
-                        <button onClick={() => handleDelete(c.pays_id, c.pays)} disabled={deleting === c.pays_id} title="Supprimer toutes ses données"
-                          style={{ background: "rgb(var(--danger-rgb) / 0.07)", border: "none", cursor: "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.15s" }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.15)")}
-                          onMouseLeave={e => (e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.07)")}>
-                          {deleting === c.pays_id ? <Loader2 size={13} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={13} style={{ color: "var(--danger)" }} />}
+                        {/* MUET AU REPOS, ROUGE AU SURVOL — la règle des actions
+                            de carte, appliquée ici aux lignes. Peint en rouge en
+                            permanence, à raison d'un par pays, il faisait de la
+                            suppression la seule chose colorée d'un tableau dont
+                            le sujet est la COUVERTURE des données. */}
+                        <button onClick={() => handleDelete(c.pays_id, c.pays)} disabled={deleting === c.pays_id} title={`Supprimer toutes les données de ${c.pays}`}
+                          style={{ background: "transparent", border: "none", cursor: "pointer", borderRadius: 999, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--gris)", transition: "background 0.15s, color 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.10)"; e.currentTarget.style.color = "var(--danger)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--gris)"; }}>
+                          {deleting === c.pays_id ? <Loader2 size={13} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={13} />}
                         </button>
                       </td>
                     </Ligne>
@@ -449,9 +485,12 @@ function TransactionsPanel({ headers }: { headers: () => Record<string, string> 
             {couv.map(cc => (
               <span key={cc.annee} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgb(var(--bleu-rgb) / 0.06)", border: "1px solid rgb(var(--bleu-rgb) / 0.14)", borderRadius: 999, padding: "5px 6px 5px 14px", fontSize: 12.5, fontWeight: 700, color: "var(--bleu)", ...NUM }}>
                 {cc.annee} <span style={{ color: "var(--gris)", fontWeight: 500 }}>· {cc.nb_lignes.toLocaleString("fr-FR")} lignes</span>
-                <button onClick={() => delAnnee(cc.annee)} className="ro-w" title="Supprimer cette année"
-                  style={{ background: "rgb(var(--danger-rgb) / 0.08)", border: "none", cursor: "pointer", borderRadius: 999, width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                  {deleting === cc.annee ? <Loader2 size={11} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={11} style={{ color: "var(--danger)" }} />}
+                {/* Muet au repos, rouge au survol — comme partout ailleurs. */}
+                <button onClick={() => delAnnee(cc.annee)} className="ro-w" title={`Supprimer toutes les transactions de ${cc.annee}`}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", borderRadius: 999, width: 22, height: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--gris)", transition: "background 0.15s, color 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgb(var(--danger-rgb) / 0.12)"; e.currentTarget.style.color = "var(--danger)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--gris)"; }}>
+                  {deleting === cc.annee ? <Loader2 size={11} style={{ color: "var(--danger)", animation: "spin 1s linear infinite" }} /> : <Trash2 size={11} />}
                 </button>
               </span>
             ))}
@@ -542,7 +581,7 @@ function TransactionsPanel({ headers }: { headers: () => Record<string, string> 
                   <td style={{ ...TD, borderTop: "1px solid var(--bordure)" }}>
                     {pa.code_iso3
                       ? <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)", background: "rgb(var(--bleu-rgb) / 0.07)", padding: "3px 9px", borderRadius: 999 }}>{pa.code_iso3}</span>
-                      : <span style={{ color: "var(--sur-bleu)" }}>–</span>}
+                      : <span style={{ color: "var(--gris)" }}>–</span>}
                   </td>
                   <td style={{ ...TD, borderTop: "1px solid var(--bordure)", padding: "7px 14px" }}>
                     <input defaultValue={pa.nom_fr || ""} onBlur={e => savePartenaire(pa.id, e.target.value)} style={IS} />

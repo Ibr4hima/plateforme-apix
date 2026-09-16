@@ -9,7 +9,19 @@ import { CheckCircle, Search, UploadCloud, X } from "lucide-react";
 import { voile } from "@/lib/couleurs";
 
 // ── Jetons ────────────────────────────────────────────────────────────────────
-export const CARTE: React.CSSProperties = { background: "var(--carte)", border: "1px solid rgb(var(--encre-rgb) / 0.12)", borderRadius: 16, boxShadow: "none" };
+/** La couleur du filet des cartes, isolée du raccourci `border`.
+ *
+ *  ELLE L'EST À LA SUITE D'UN BOGUE D'AFFICHAGE. `Carte` écrivait
+ *  `borderColor: CARTE.border`, c'est-à-dire le RACCOURCI ENTIER
+ *  (« 1px solid rgb(…) ») dans une propriété qui n'attend qu'une couleur.
+ *  Parce que la valeur contient un `var()`, le navigateur ne peut pas la
+ *  refuser à la lecture : il la substitue d'abord, la trouve invalide ensuite,
+ *  et applique alors la valeur par défaut de `border-color` — `currentColor`,
+ *  donc la couleur du TEXTE. Les cartes n'étaient pas cernées d'un filet à
+ *  12 % d'encre mais d'un trait d'encre PLEINE, presque noir, sur les quatre
+ *  pages qui emploient ce composant. */
+export const FILET_CARTE = "rgb(var(--encre-rgb) / 0.12)";
+export const CARTE: React.CSSProperties = { background: "var(--carte)", border: `1px solid ${FILET_CARTE}`, borderRadius: 16, boxShadow: "none" };
 export const IS: React.CSSProperties = { background: "var(--carte)", border: "1px solid var(--bordure-forte)", borderRadius: 10, padding: "9px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 // Tableaux : en-tête discret sur fond ivoire, lignes séparées par un filet fin
 export const TH: React.CSSProperties = { padding: "11px 14px", fontSize: 9.5, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gris)", background: "var(--carte-douce)", textAlign: "left", whiteSpace: "nowrap", borderBottom: "1px solid var(--bordure)", position: "sticky", top: 0, zIndex: 1 };
@@ -39,10 +51,18 @@ export function Carte({ titre, aide, extra, children, accent, style }: {
 }) {
   const c = accent || "var(--bleu)";
   return (
-    <div style={{ ...CARTE, borderColor: accent ? `${voile(accent, 33)}` : (CARTE.border as string), padding: "22px 26px", ...style }}>
+    <div style={{ ...CARTE, borderColor: accent ? `${voile(accent, 33)}` : FILET_CARTE, padding: "22px 26px", ...style }}>
+      {/* LE TITRE DE SECTION EST UN TITRE, PAS UNE ÉTIQUETTE. Il était écrit en
+          capitales de 10,5 px très espacées et coloré comme un accent — la
+          forme d'une étiquette de champ, employée pour nommer un bloc entier.
+          À côté d'un `<h1>` de 21 px, ces micro-capitales ne se lisaient pas
+          comme le rang immédiatement inférieur mais comme une annotation, et
+          une page qui en empile quatre ressemblait à quatre encadrés sans
+          hiérarchie. Il prend la couleur de l'encre et la casse normale ;
+          l'accent, lui, reste où il sert — sur la bordure de la carte. */}
       {titre && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: aide ? 6 : 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10.5, fontWeight: 800, color: c, letterSpacing: "0.14em", textTransform: "uppercase" }}>{titre}</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: accent ? c : "var(--encre)", letterSpacing: "-0.01em" }}>{titre}</span>
           {extra}
         </div>
       )}

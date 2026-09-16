@@ -14,7 +14,7 @@ export const MODULES_ADMIN: NavItemAdmin[] = [
   { type: "link", label: "Opportunités d'investissement",   href: "/admin/opportunites",       icon: "bookmark_stacks"                   },
   { type: "link", label: "Prospects",                       href: "/admin/prospects",          icon: "frame_inspect"                     },
   { type: "section", label: "Référentiels" },
-  { type: "link", label: "Données Statistiques",            href: "/admin/statistiques",       icon: "public"                            },
+  { type: "link", label: "Données Statistiques",            href: "/admin/statistiques",       icon: "data_table"                        },
   { type: "link", label: "Pays & Groupements",              href: "/admin/ref-pays",           icon: "public",             disabled: true },
   { type: "link", label: "Découpage administratif",         href: "/admin/geo",                icon: "map",                disabled: true },
   { type: "link", label: "Classification NAEMA",            href: "/admin/naema",              icon: "account_tree",       disabled: true },
