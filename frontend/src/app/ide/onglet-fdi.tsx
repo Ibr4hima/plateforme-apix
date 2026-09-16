@@ -360,7 +360,8 @@ export default function OngletFdi({ onVue }: {
       remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
     },
     entreprises: {
-      nb: filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
+      nb: filtresEntreprises.origines.length
+        + filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
         + filtresEntreprises.activites.length
         + (filtresEntreprises.recherche.trim() ? 1 : 0),
       remettre: () => setFiltresEntreprises(FILTRES_ENTREPRISES_VIDES),

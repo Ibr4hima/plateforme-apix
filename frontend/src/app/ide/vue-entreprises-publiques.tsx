@@ -60,10 +60,11 @@ import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
     n'a qu'un secteur — c'est le comportement de la vue Projets, où l'on coche
     deux secteurs pour en voir l'union. */
 export type FiltresEntreprises = {
+  origines: string[];
   secteurs: string[]; sousSecteurs: ChoixSous[]; activites: string[]; recherche: string;
 };
 export const FILTRES_ENTREPRISES_VIDES: FiltresEntreprises = {
-  secteurs: [], sousSecteurs: [], activites: [], recherche: "",
+  origines: [], secteurs: [], sousSecteurs: [], activites: [], recherche: "",
 };
 
 type Entreprise = {
@@ -76,7 +77,7 @@ type Reponse = {
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
 type Perimetre = {
-  secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[];
+  secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[]; origines: Compte[];
 };
 type Fiche = {
   nom: string; origine: string | null; origine_iso: string | null;
@@ -108,6 +109,7 @@ function urlPerimetre(f: FiltresEntreprises, recherche: string): string {
   if (entiers.length) p.set("secteurs", entiers.join("|"));
   if (f.sousSecteurs.length) p.set("sous_secteurs", f.sousSecteurs.map(s => s.nom).join("|"));
   if (f.activites.length) p.set("activites", f.activites.join("|"));
+  if (f.origines.length) p.set("origines", f.origines.join("|"));
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/entreprises/perimetre?${p}`;
 }
@@ -129,6 +131,26 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
   return (
     <>
       <Filet />
+      {/* ── LE PAYS D'ORIGINE, EN PREMIER ────────────────────────────────
+          IL NE QUALIFIE PAS LA MÊME CHOSE QUE LES TROIS AUTRES. Secteur,
+          sous-secteur et activité décrivent des PROJETS : l'entreprise
+          apparaît parce que l'un des siens répond, et ses comptes se
+          réduisent alors à ces projets-là. L'origine, elle, fait partie de
+          la clef qui définit la ligne — cocher « France » ne retient pas les
+          entreprises ayant un projet français, il retient les entreprises
+          FRANÇAISES, avec tous leurs projets.
+
+          C'est donc le filtre qui dit QUI l'on regarde, quand les suivants
+          disent CE QU'ILS FONT. Il ouvre la colonne pour cette raison, et
+          non par ordre d'importance : on choisit d'abord une population,
+          puis on la restreint.
+
+          Il porte un champ de recherche, seul de la colonne : cent
+          quarante-quatre pays rangés par nombre d'investisseurs se
+          parcourent mal quand on en cherche un précis. */}
+      <Facette titre="Pays d'origine" options={per.origines} filtrable
+        choix={filtres.origines}
+        setChoix={v => onChange({ ...filtres, origines: v })} />
       {/* EXACTEMENT LES FILTRES DE LA VUE PROJETS — mêmes composants, même
           emboîtement, même sélection multiple. Les deux vues sont voisines dans
           le même écran ; deux façons de poser les mêmes facettes donneraient

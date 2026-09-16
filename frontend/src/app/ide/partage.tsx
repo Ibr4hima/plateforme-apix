@@ -1096,9 +1096,21 @@ export const Filet = () =>
     La liste défile plutôt que de se déplier : un « Voir les 30 » demandait un
     clic pour révéler une hauteur qu'on ne maîtrisait plus, et la colonne
     sautait sous le curseur. */
-export function Facette({ titre, options, choix, setChoix }: {
+export function Facette({ titre, options, choix, setChoix, filtrable }: {
   titre: string; options: { nom: string; nb: number }[]; choix: string[]; setChoix: (v: string[]) => void;
+  /** Ouvre un champ de recherche au-dessus de la liste.
+   *
+   *  RÉSERVÉ AUX FACETTES QUI SE COMPTENT PAR CENTAINES. Les secteurs sont
+   *  quarante, les activités une vingtaine : on les parcourt. Les pays
+   *  d'origine sont cent quarante-quatre, et la liste est rangée par nombre
+   *  d'investisseurs — l'ordre utile pour découvrir qui investit le plus, le
+   *  pire pour retrouver un pays qu'on a en tête. Sans ce champ il faudrait
+   *  faire défiler cent quarante lignes non alphabétiques à la recherche du
+   *  Sénégal. Les facettes courtes ne le reçoivent pas : un champ de recherche
+   *  au-dessus de six lignes est un meuble de plus. */
+  filtrable?: boolean;
 }) {
+  const [q, setQ] = useState("");
   // Une option cochée reste affichée même si les autres filtres la font
   // tomber à zéro : la retirer de la liste ôterait au lecteur le moyen de la
   // décocher.
@@ -1106,6 +1118,13 @@ export function Facette({ titre, options, choix, setChoix }: {
   for (const c of choix) if (!visibles.some(o => o.nom === c)) visibles.push({ nom: c, nb: 0 });
   if (visibles.length === 0) return null;
   const bascule = (n: string) => setChoix(choix.includes(n) ? choix.filter(x => x !== n) : [...choix, n]);
+  // LA RECHERCHE NE CACHE JAMAIS CE QUI EST COCHÉ. Filtrer sur « fra » ferait
+  // autrement disparaître l'Allemagne retenue un instant plus tôt, et le
+  // compteur du titre annoncerait une sélection introuvable à l'écran.
+  const cherche = q.trim().toLowerCase();
+  const liste = cherche
+    ? visibles.filter(o => choix.includes(o.nom) || o.nom.toLowerCase().includes(cherche))
+    : visibles;
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
@@ -1115,9 +1134,32 @@ export function Facette({ titre, options, choix, setChoix }: {
             background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{choix.length}</span>
         )}
       </div>
+      {filtrable && (
+        <div style={{ position: "relative" as const, marginBottom: 7 }}>
+          <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%",
+            transform: "translateY(-50%)", color: "var(--gris)" }} />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Filtrer la liste"
+            style={{ width: "100%", boxSizing: "border-box" as const, padding: "6px 24px 6px 26px",
+              borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+              fontSize: 11.5, color: "var(--encre)", outline: "none",
+              fontFamily: "var(--font-google-sans)" }} />
+          {q && (
+            <button onClick={() => setQ("")} aria-label="Effacer"
+              style={{ position: "absolute" as const, right: 7, top: "50%", transform: "translateY(-50%)",
+                background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+              <X size={11} style={{ color: "var(--gris)" }} />
+            </button>
+          )}
+        </div>
+      )}
       <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
         paddingRight: 2, marginBottom: 18 }}>
-        {visibles.map(o => {
+        {liste.length === 0 && (
+          <p style={{ fontSize: 11.5, color: "var(--gris)", padding: "10px 8px" }}>
+            Aucun résultat pour « {q.trim()} ».
+          </p>
+        )}
+        {liste.map(o => {
           const sel = choix.includes(o.nom);
           return (
             <button key={o.nom} onClick={() => bascule(o.nom)} title={o.nom}

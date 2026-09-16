@@ -476,7 +476,7 @@ ORIGINE_ENTREPRISE = "COALESCE(rp.nom_fr, p.pays_source_brut)"
 
 
 def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
-                         sauf: str | None = None) -> tuple[list[str], dict]:
+                         origines=None, sauf: str | None = None) -> tuple[list[str], dict]:
     """Les conditions, éventuellement privées d'une facette.
 
     LE FILTRE PORTE SUR LES PROJETS, PUIS L'ON GROUPE. Une entreprise apparaît
@@ -545,6 +545,23 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
     if valeurs and sauf != "activites":
         where.append(f"{FACETTES['activites']} = ANY(:activites)")
         params["activites"] = valeurs
+
+    # LE PAYS D'ORIGINE EST LA SEULE FACETTE QUI QUALIFIE L'ENTREPRISE ELLE-MÊME
+    # et non ce qu'elle a annoncé. Les trois autres décrivent des projets — un
+    # secteur, un sous-secteur, une activité — et l'entreprise n'apparaît que
+    # parce que l'un des siens répond. L'origine, elle, fait partie de la CLEF
+    # de groupement : cocher « France » ne retient pas les entreprises ayant un
+    # projet français, il retient les entreprises FRANÇAISES.
+    #
+    # La conséquence pratique : contrairement aux autres facettes, celle-ci ne
+    # change pas les comptes affichés sur les cartes retenues. Une entreprise
+    # française garde ses 72 projets, qu'on ait coché « France » ou non.
+    #
+    # Plusieurs origines cochées s'ajoutent par un OU, comme partout ailleurs.
+    valeurs = _liste(origines)
+    if valeurs and sauf != "origines":
+        where.append(f"{ORIGINE_ENTREPRISE} = ANY(:origines)")
+        params["origines"] = valeurs
     return where, params
 
 
@@ -554,6 +571,7 @@ async def perimetre_entreprises(
     secteurs: str | None = None,
     sous_secteurs: str | None = None,
     activites: str | None = None,
+    origines: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """De quoi remplir la colonne de filtres.
@@ -568,7 +586,7 @@ async def perimetre_entreprises(
     # disparaître de la colonne.
     async def compter(expr: str, sauf: str, avec_secteur: bool = False):
         where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
-                                             activites, sauf)
+                                             activites, origines, sauf)
         secteur_col = f", {FACETTES['secteurs']} AS secteur" if avec_secteur else ""
         compte = (f"count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE}))"
                   f" FILTER (WHERE {' AND '.join(where)})")
@@ -589,11 +607,16 @@ async def perimetre_entreprises(
     # ferait disparaître de la liste ceux qu'on n'a pas encore cochés.
     lignes_ss = await compter(FACETTES["sous_secteurs"], "secteurs", avec_secteur=True)
     lignes_act = await compter(FACETTES["activites"], "activites")
+    # Les origines comptent des ENTREPRISES, comme les autres facettes : sous
+    # « France · 312 », on lit trois cent douze investisseurs français, non
+    # trois cent douze projets français.
+    lignes_ori = await compter(ORIGINE_ENTREPRISE, "origines")
 
     return {
         "secteurs":      [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
         "sous_secteurs": [{"nom": r.nom, "secteur": r.secteur, "nb": r.nb} for r in lignes_ss],
         "activites":     [{"nom": r.nom, "nb": r.nb} for r in lignes_act],
+        "origines":      [{"nom": r.nom, "nb": r.nb} for r in lignes_ori],
     }
 
 
@@ -676,6 +699,7 @@ async def entreprises_publiques(
     secteurs: str | None = None,
     sous_secteurs: str | None = None,
     activites: str | None = None,
+    origines: str | None = None,
     page: int = 1,
     par_page: int = 24,
     db: AsyncSession = Depends(get_db),
@@ -688,7 +712,7 @@ async def entreprises_publiques(
     déclarés et des projets estimés par l'algorithme du Financial Times, et
     l'écran ne pourrait plus dire lequel il montre.
     """
-    where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites)
+    where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites, origines)
 
     par_page = max(1, min(par_page, 100))
     page = max(1, page)
