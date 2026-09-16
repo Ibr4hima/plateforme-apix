@@ -22,13 +22,29 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
-import { GrapheBarresH } from "@/components/charts/GrapheBarresH";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
          ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
 
 const PAYS = "Sénégal";
+
+/** L'en-tête de colonne des deux tableaux du rapport, écrit une fois : ils se
+    suivent dans la page et doivent se lire de la même façon. */
+const ENT_RAP = { fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
+  letterSpacing: "0.1em", textTransform: "uppercase" as const, padding: "8px 10px",
+  borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const } as const;
+
+/** Le rang d'une ligne de tableau — la pastille des classements en liste, pour
+    que le podium se repère de la même façon dans toute la plateforme.
+    (Nommée `PastilleRang` et non `Rang` : ce dernier est déjà le type d'une
+    ligne de classement dans ce fichier, et deux `Rang` se relisent mal.) */
+const PastilleRang = ({ n }: { n: number }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center",
+    minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10, fontSize: 10, fontWeight: 800,
+    background: n <= 3 ? "var(--bleu)" : "var(--bleu-voile)",
+    color: n <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{n}</span>
+);
 
 // `iso` n'est renseigné que pour le classement des PAYS : c'est lui qui porte
 // le drapeau. Il reste nul quand le pays n'a pas été rapproché du référentiel —
@@ -238,22 +254,56 @@ export default function RapportIde() {
                   libelleValeur="Projets" accent="var(--bleu)" rows={fdi.tops.secteurs ?? []} />
               </div>
 
-              {/* ── ET LE TROISIÈME RESTE UN GRAPHE, SUR TOUTE LA LARGEUR ─────
-                  POURQUOI CELUI-LÀ GARDE SES BARRES. Ses valeurs s'effondrent —
-                  69, 46, 43, puis 13, 11, 11, 11, 10 : deux marches nettes que
-                  la longueur des barres montre d'un coup d'œil, et qu'une
-                  colonne de nombres alignés laisserait à calculer. Les deux
-                  autres classements, eux, décroissent doucement ; c'est leur
-                  rang qui les distingue, pas leur écart.
+              {/* ── LES ACTIVITÉS, EN TABLEAU ───────────────────────────────────
+                  LE GRAPHE NE PORTAIT QU'UN NOMBRE. Il rangeait les activités
+                  par nombre de projets, et c'est tout ce qu'on en tirait. Or le
+                  relevé sait dire, pour chacune, ce qu'elle pèse en ARGENT et en
+                  EMPLOIS — et les trois ne disent pas la même chose : une
+                  activité peut mener le classement des projets et peser peu en
+                  capital, ou l'inverse. Un tableau porte les trois côte à côte
+                  là où une barre n'en portait qu'une.
 
-                  Il prend toute la largeur depuis qu'ils ne sont plus quatre, et
-                  c'est celui qui en profite le plus : ses libellés sont les plus
-                  longs du rapport (« Logistique, distribution et transport »). */}
-              {d3Pret && (fdi.tops.activites ?? []).length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <Carte titre="Les activités les plus menées" tag="nombre de projets">
-                    <GrapheBarresH couleur="var(--vert)" fmt={fmtNombre} exposant={1}
-                      data={(fdi.tops.activites ?? []).slice(0, 8).map(r => ({ label: r.nom, valeur: r.nb }))} />
+                  Il prend le dessin des « plus gros projets annoncés », juste
+                  en dessous : deux tableaux voisins dans une même page doivent
+                  se lire de la même façon. */}
+              {(fdi.tops.activites ?? []).length > 0 && (
+                <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
+                  <Carte titre="Les activités les plus menées" tag={periodeFdi}>
+                    <div style={{ overflowX: "auto" as const }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+                        <thead>
+                          <tr>
+                            <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+                            {["Activité", "Projets", "Montant", "Emplois"].map((t, i) => (
+                              <th key={t} style={{ ...ENT_RAP,
+                                textAlign: i === 0 ? "left" as const : "right" as const }}>{t}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(fdi.tops.activites ?? []).slice(0, 10).map((r, i) => (
+                            <tr key={r.nom}>
+                              <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                              <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={r.nom}>{r.nom}</td>
+                              <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800,
+                                color: "var(--vert)", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.nb)}</td>
+                              <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.capex_musd)}</td>
+                              <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.emplois)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* LES MONTANTS SONT DES SOMMES, et une somme ne porte pas
+                        le signe « ≈ » du tableau voisin : elle mêle des projets
+                        déclarés et des projets estimés par le Financial Times,
+                        sans qu'on puisse dire ligne à ligne lesquels. La part
+                        estimée du relevé entier est au compteur, en haut. */}
+                    <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
+                      Montants et emplois cumulés sur les projets de chaque activité. Ces sommes
+                      mêlent des valeurs déclarées et des valeurs estimées par l&apos;algorithme du
+                      Financial Times, dans la proportion indiquée en tête de rapport.
+                    </p>
                   </Carte>
                 </div>
               )}
@@ -264,17 +314,17 @@ export default function RapportIde() {
                     <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
                       <thead>
                         <tr>
+                          <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
                           {["Entreprise", "Origine", "Secteur", "Période", "Montant", "Emplois"].map((t, i) => (
-                            <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-                              letterSpacing: "0.1em", textTransform: "uppercase" as const,
-                              textAlign: i >= 4 ? "right" as const : "left" as const, padding: "8px 10px",
-                              borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const }}>{t}</th>
+                            <th key={t} style={{ ...ENT_RAP,
+                              textAlign: i >= 4 ? "right" as const : "left" as const }}>{t}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {plusGrands.map(p => (
+                        {plusGrands.map((p, i) => (
                           <tr key={p.id}>
+                            <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
                             <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</td>
                             <td style={CEL}>{p.partenaire ?? "—"}</td>
                             <td style={CEL}>{p.secteur ?? "—"}</td>
@@ -292,10 +342,6 @@ export default function RapportIde() {
                       </tbody>
                     </table>
                   </div>
-                  <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                    Un <span style={{ fontWeight: 800, color: "var(--encre)" }}>≈</span>{" "}signale une valeur
-                    estimée par l&apos;algorithme du Financial Times, et non déclarée par l&apos;entreprise.
-                  </p>
                 </Carte>
               </div>
 
