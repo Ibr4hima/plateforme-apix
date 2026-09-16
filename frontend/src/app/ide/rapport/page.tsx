@@ -274,7 +274,7 @@ export default function RapportIde() {
                         <thead>
                           <tr>
                             <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
-                            {["Activité", "Projets", "Montant", "Emplois"].map((t, i) => (
+                            {["Activité", "Projets", "Montant investi*", "Emplois créés*"].map((t, i) => (
                               <th key={t} style={{ ...ENT_RAP,
                                 textAlign: i === 0 ? "left" as const : "right" as const }}>{t}</th>
                             ))}
@@ -294,15 +294,17 @@ export default function RapportIde() {
                         </tbody>
                       </table>
                     </div>
-                    {/* LES MONTANTS SONT DES SOMMES, et une somme ne porte pas
-                        le signe « ≈ » du tableau voisin : elle mêle des projets
-                        déclarés et des projets estimés par le Financial Times,
-                        sans qu'on puisse dire ligne à ligne lesquels. La part
-                        estimée du relevé entier est au compteur, en haut. */}
+                    {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT.
+                        Ces deux colonnes sont des SOMMES : elles ne peuvent pas
+                        porter le « ≈ » ligne à ligne du tableau voisin, puisque
+                        chacune mêle des projets déclarés et des projets estimés
+                        sans qu'on puisse dire lesquels. « Comprend » et non
+                        « sont » : tout n'y est pas estimé, et écrire le
+                        contraire discréditerait des chiffres en partie
+                        déclarés. */}
                     <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                      Montants et emplois cumulés sur les projets de chaque activité. Ces sommes
-                      mêlent des valeurs déclarées et des valeurs estimées par l&apos;algorithme du
-                      Financial Times, dans la proportion indiquée en tête de rapport.
+                      * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
+                      non déclarées par l&apos;entreprise.
                     </p>
                   </Carte>
                 </div>
