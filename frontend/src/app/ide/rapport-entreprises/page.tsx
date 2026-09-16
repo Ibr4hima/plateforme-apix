@@ -57,6 +57,7 @@ type Rapport = {
   origines: { nom: string; iso: string | null; investisseurs: number;
               projets: number; au_senegal: number }[];
   secteurs: { nom: string; projets: number; investisseurs: number }[];
+  sous_secteurs: { nom: string; parent: string; projets: number; investisseurs: number }[];
   activites: { nom: string; projets: number; investisseurs: number }[];
   senegal: { nom: string; origine: string | null; iso: string | null; projets: number }[];
 };
@@ -101,10 +102,7 @@ export default function RapportEntreprises() {
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
-        .rap-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: start; }
-        @media (max-width: 1080px) { .rap-trio { grid-template-columns: repeat(2, minmax(0,1fr)); } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
-        @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         @media print {
           .rap-sans-impression { display: none !important; }
@@ -167,17 +165,27 @@ export default function RapportEntreprises() {
                 des classements du rapport des projets annoncés, qui portent les
                 mêmes intitulés et comptent autre chose.
 
-                TROIS COLONNES PARCE QU'ILS SONT TROIS. À deux par rangée, le
-                dernier serait resté seul à côté d'une demi-page blanche ; ils
-                sont de même nature et de même longueur, ils tiennent la même
-                largeur. */}
-            <div className="rap-trio" style={{ marginTop: 44 }}>
+                DEUX PAR DEUX DEPUIS QU'ILS SONT QUATRE. Sur trois colonnes, les
+                libellés les plus longs — « Logiciels et services informatiques »,
+                « Recherche et développement » — se coupaient à mi-mot ; la
+                demi-page les laisse entiers, et le sous-secteur, qui traîne son
+                secteur derrière lui, en avait plus besoin que les autres. */}
+            <div className="rap-duo" style={{ marginTop: 44 }}>
               <ClassementRapport titre="Pays d'origine des investisseurs" colonne="Pays"
                 libelleValeur="Invest." drapeaux max={10} accent="var(--bleu)"
                 rows={(d.origines ?? []).map(o => ({ nom: o.nom, nb: o.investisseurs, iso: o.iso }))} />
               <ClassementRapport titre="Secteurs les plus investis" colonne="Secteur"
                 libelleValeur="Invest." max={10} accent="var(--violet)"
                 rows={(d.secteurs ?? []).map(s => ({ nom: s.nom, nb: s.investisseurs }))} />
+              {/* LE SOUS-SECTEUR NE SE LIT PAS SEUL, et son secteur le suit
+                  donc sur la ligne. « Other » vit sous vingt-quatre secteurs
+                  chez fDi, « Software » sous plusieurs autres : sans le parent,
+                  deux postes sans rapport porteraient le même nom, et l'on ne
+                  saurait pas lequel on lit. Le compte lui-même est celui du
+                  COUPLE, pas du seul libellé. */}
+              <ClassementRapport titre="Sous-secteurs les plus investis" colonne="Sous-secteur · Secteur"
+                libelleValeur="Invest." max={10} accent="var(--cyan)"
+                rows={(d.sous_secteurs ?? []).map(x => ({ nom: `${x.nom} · ${x.parent}`, nb: x.investisseurs }))} />
               <ClassementRapport titre="Activités menées" colonne="Activité"
                 libelleValeur="Invest." max={10} accent="var(--vert)"
                 rows={(d.activites ?? []).map(a => ({ nom: a.nom, nb: a.investisseurs }))} />

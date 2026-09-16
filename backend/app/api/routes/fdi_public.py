@@ -803,8 +803,9 @@ async def rapport_entreprises(
         SELECT {NOM_ENTREPRISE} AS nom, {ORIGINE_ENTREPRISE} AS origine,
                rp.code_iso2 AS origine_iso,
                COALESCE(rd.nom_fr, p.pays_dest_brut) AS dest,
-               {FACETTES['secteurs']}  AS secteur,
-               {FACETTES['activites']} AS activite,
+               {FACETTES['secteurs']}      AS secteur,
+               {FACETTES['sous_secteurs']} AS sous_secteur,
+               {FACETTES['activites']}     AS activite,
                p.annee AS annee
         {JOINTURES_ENTREPRISE}
         WHERE {filtre} AND {NOM_ENTREPRISE} IS NOT NULL
@@ -884,6 +885,17 @@ async def rapport_entreprises(
             FROM base WHERE {colonne} IS NOT NULL
             GROUP BY 1 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
 
+    # LE SOUS-SECTEUR NE SE LIT PAS SEUL, et son secteur voyage donc avec lui.
+    # « Other » vit sous vingt-quatre secteurs chez fDi, « Software » sous
+    # plusieurs autres : une liste à plat ferait passer pour un même poste des
+    # lignes qui n'ont en commun qu'un libellé. Le regroupement porte sur le
+    # COUPLE, ce qui les sépare aussi dans le compte.
+    sous_secteurs = [dict(r._mapping) for r in await q("""
+        SELECT sous_secteur AS nom, secteur AS parent, count(*) AS projets,
+               count(DISTINCT (nom, origine)) AS investisseurs
+        FROM base WHERE sous_secteur IS NOT NULL AND secteur IS NOT NULL
+        GROUP BY 1, 2 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
+
     return {
         "kpis": {
             "investisseurs": k.investisseurs, "projets": total_projets,
@@ -899,5 +911,6 @@ async def rapport_entreprises(
         "senegal": senegal,
         "origines": origines_top,
         "secteurs": await par("secteur"),
+        "sous_secteurs": sous_secteurs,
         "activites": await par("activite"),
     }
