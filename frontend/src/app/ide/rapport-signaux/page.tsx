@@ -61,7 +61,7 @@ type Signaux = {
     des groupements, jamais du code : c'est l'administration qui tient la
     composition, et une adhésion corrigée là-bas doit se voir ici. */
 type Zone = {
-  code: string; nom: string; court: string; signaux: number; entreprises: number;
+  code: string; nom: string; court: string;
   secteurs: Rang[]; destinations: Rang[];
 };
 

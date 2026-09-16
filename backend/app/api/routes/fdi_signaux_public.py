@@ -576,16 +576,11 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
     # retourne au premier signal relevé ne classe rien. La requête part avec la
     # carte : elle se rejouait pour les trois zones à chaque chargement.
 
-    # LE NOMBRE DE SIGNAUX DE LA ZONE, séparément : c'est lui qui donne son
-    # poids à un classement. « Premier secteur avec 40 signaux » ne se lit pas
-    # de la même façon selon que la zone en porte 60 ou 600.
-    totaux = {r.zone: {"signaux": r.signaux, "entreprises": r.entreprises}
-              for r in (await db.execute(text(
-                  _APPARTENANCE.replace("{filtre}", filtre) + """
-        SELECT a.zone, count(DISTINCT a.signal_id) AS signaux,
-               count(DISTINCT s.entreprise_id) AS entreprises
-          FROM appart a JOIN fdi_signaux_investisseurs s ON s.id = a.signal_id
-         GROUP BY a.zone"""), {**params, "zones": ZONES_OUEST})).fetchall()}
+    # PAS DE TOTAUX PAR ZONE. Ils ont existé — nombre de signaux et
+    # d'entreprises, « pour donner son poids à un classement » — mais le bilan
+    # ne les a jamais affichés : ils traversaient la réponse jusqu'au type de la
+    # page, où ils étaient déclarés et jamais lus. Une requête de plus à chaque
+    # chargement pour deux nombres que personne ne voit.
 
     noms = {r.code: r.nom_fr for r in (await db.execute(text(
         "SELECT code, nom_fr FROM ref_groupements WHERE code = ANY(:zones)"),
@@ -595,8 +590,6 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
         "code": c,
         "nom": noms.get(c, c),
         "court": _abrege(c, noms.get(c, c)),
-        "signaux": totaux.get(c, {}).get("signaux", 0),
-        "entreprises": totaux.get(c, {}).get("entreprises", 0),
         "secteurs": secteurs[c],
         "destinations": destinations[c],
     } for c in ZONES_OUEST if c in noms]
