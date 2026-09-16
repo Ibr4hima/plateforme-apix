@@ -311,16 +311,27 @@ async def projets(
                sum(p.capex_musd) AS capex, sum(p.emplois) AS emplois
         {base} GROUP BY p.annee ORDER BY p.annee"""), params)).fetchall()
 
-    async def classement(expr: str):
+    async def classement(expr: str, iso: str | None = None):
+        """Un classement, et pour les PAYS le code ISO qui porte leur drapeau.
+
+        `min()` sur le code, et non le code lui-même : on groupe sur le NOM du
+        pays, qui peut venir du référentiel ou du libellé brut du relevé, et
+        deux lignes d'un même nom pourraient porter des codes différents — l'une
+        rapprochée du référentiel, l'autre non. L'agrégat retient alors le code
+        connu plutôt que de faire éclater le pays en deux entrées. Il reste nul
+        quand aucune ligne n'a été rapprochée : le drapeau disparaît, le nom
+        reste.
+        """
+        col_iso = f", min({iso}) AS iso" if iso else ""
         return (await db.execute(text(f"""
             SELECT {expr} AS nom, count(*) AS nb, sum(p.capex_musd) AS capex,
-                   sum(p.emplois) AS emplois
+                   sum(p.emplois) AS emplois{col_iso}
             {base} AND {expr} IS NOT NULL
             GROUP BY 1 ORDER BY count(*) DESC, sum(p.capex_musd) DESC NULLS LAST, 1
             LIMIT 12"""), params)).fetchall()
 
     tops = {
-        "partenaires": await classement(f"COALESCE(rp.nom_fr, p.{partenaire}_brut)"),
+        "partenaires": await classement(f"COALESCE(rp.nom_fr, p.{partenaire}_brut)", "rp.code_iso2"),
         "secteurs":    await classement("COALESCE(s.libelle_fr, p.secteur_brut)"),
         "activites":   await classement("COALESCE(a.libelle_fr, p.activite_brut)"),
         "entreprises": await classement("COALESCE(e.nom, p.entreprise_brut)"),
@@ -382,8 +393,10 @@ async def projets(
         },
         "par_annee": [{"annee": r.annee, "nb": r.nb, "capex_musd": nb(r.capex),
                        "emplois": r.emplois} for r in par_annee],
+        # `iso` n'accompagne que le classement des PAYS ; les autres l'ignorent.
         "tops": {
-            nom: [{"nom": r.nom, "nb": r.nb, "capex_musd": nb(r.capex), "emplois": r.emplois}
+            nom: [{"nom": r.nom, "nb": r.nb, "capex_musd": nb(r.capex), "emplois": r.emplois,
+                   **({"iso": (r.iso or "").strip() or None} if hasattr(r, "iso") else {})}
                   for r in rows]
             for nom, rows in tops.items()
         },

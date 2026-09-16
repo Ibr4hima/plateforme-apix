@@ -30,7 +30,11 @@ import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreC
 
 const PAYS = "Sénégal";
 
-type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
+// `iso` n'est renseigné que pour le classement des PAYS : c'est lui qui porte
+// le drapeau. Il reste nul quand le pays n'a pas été rapproché du référentiel —
+// le drapeau disparaît alors, le nom reste.
+type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null;
+              iso?: string | null };
 type Projet = {
   id: number; periode: string; annee: number; entreprise: string | null;
   partenaire: string | null; secteur: string | null; sous_secteur: string | null;
@@ -225,7 +229,10 @@ export default function RapportIde() {
                   et non « Signaux » : ce sont deux relevés distincts, et le
                   lecteur qui passe de l'un à l'autre doit voir lequel il lit. */}
               <div className="rap-duo" style={{ marginTop: 16 }}>
-                <ClassementRapport titre="Origine des projets" colonne="Pays"
+                {/* LES DRAPEAUX, comme sur le rapport des signaux. Un pays se
+                    reconnaît à son drapeau avant d'être lu, et c'est le seul
+                    classement du rapport dont les lignes en portent un. */}
+                <ClassementRapport titre="Origine des projets" colonne="Pays" drapeaux
                   libelleValeur="Projets" accent="var(--orange)" rows={fdi.tops.partenaires ?? []} />
                 <ClassementRapport titre="Secteurs les plus visés" colonne="Secteur"
                   libelleValeur="Projets" accent="var(--bleu)" rows={fdi.tops.secteurs ?? []} />
