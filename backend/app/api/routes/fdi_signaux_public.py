@@ -486,16 +486,38 @@ def _abrege(code: str, nom: str) -> str:
 async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
     """Secteurs, pays visés et entreprises, pour chacune des trois zones."""
 
-    async def classement(corps: str) -> dict:
+    async def classement(corps: str, epingle: str | None = None) -> dict:
+        """Les dix premiers de chaque zone — et, si on le demande, un onzième.
+
+        CHAQUE LIGNE PORTE SON RANG, et non sa position dans la liste renvoyée.
+        Les deux coïncidaient tant qu'on ne renvoyait que le haut du
+        classement ; dès qu'on y ajoute une ligne venue du fond, le rang doit
+        voyager avec elle, sinon un pays quatorzième s'afficherait onzième.
+
+        `epingle` NOMME LA LIGNE QU'ON GARDE QUOI QU'IL ARRIVE. Un rapport lu
+        depuis Dakar doit dire où se situe le Sénégal, y compris — surtout —
+        quand il n'est pas dans les dix premiers : « absent du haut du
+        classement » et « quatorzième sur seize » ne s'équivalent pas, et seul
+        le second est une information. La ligne épinglée n'est ajoutée que
+        lorsqu'elle manque au haut du classement ; quand elle y figure déjà,
+        rien n'est dupliqué.
+        """
         sql = (_APPARTENANCE.replace("{filtre}", filtre) + corps)
         rangs: dict = {c: [] for c in ZONES_OUEST}
+        vus: dict = {c: 0 for c in ZONES_OUEST}      # le rang atteint dans la zone
+        tenus: dict = {c: False for c in ZONES_OUEST}  # l'épinglé est-il déjà pris ?
         for r in (await db.execute(text(sql), {**params, "zones": ZONES_OUEST})).fetchall():
+            vus[r.zone] += 1
+            rang = vus[r.zone]
+            est_epingle = epingle is not None and r.nom == epingle
             # Dix par zone. Le découpage se fait ici plutôt qu'en SQL : une
             # fenêtre numérotée par zone coûterait un tri de plus pour un
             # volume que la liste des zones borne déjà.
-            if len(rangs[r.zone]) < 10:
-                rangs[r.zone].append({"nom": r.nom, "nb": r.nb,
+            if rang <= 10 or (est_epingle and not tenus[r.zone]):
+                rangs[r.zone].append({"nom": r.nom, "nb": r.nb, "rang": rang,
                                       **({"iso": r.iso} if "iso" in r._mapping else {})})
+                if est_epingle:
+                    tenus[r.zone] = True
         return rangs
 
     secteurs = await classement("""
@@ -515,7 +537,7 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
                count(DISTINCT a.signal_id) AS nb
           FROM appart a JOIN ref_pays p ON p.id = a.pays_id
          GROUP BY a.zone, p.nom_fr, p.code_iso2
-         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, p.nom_fr""")
+         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, p.nom_fr""", epingle="Sénégal")
 
     entreprises = await classement("""
         SELECT a.zone, e.nom AS nom, count(DISTINCT a.signal_id) AS nb

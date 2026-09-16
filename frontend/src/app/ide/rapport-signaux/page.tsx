@@ -232,8 +232,15 @@ export default function RapportSignaux() {
                 d'intentions, qui les porte, ce qu'elles ont levé, ce qu'elles
                 annoncent dépenser. */}
             <div className="rap-kpis" style={{ marginTop: -46, position: "relative", zIndex: 2 }}>
-              <ChiffreCle label="Signaux relevés" valeur={fmtNombre(d.kpis.signaux)} annee={periode}
-                note={`${fmtNombre(d.kpis.entreprises)} entreprises`} />
+              {/* « NB DE PROJETS ANNONCÉS », ET SOUS LUI CE QUE CE NOMBRE EST.
+                  Un signal n'est pas un projet réalisé : c'est une intention
+                  exprimée — une entreprise qui étudie un site, lève des fonds,
+                  nomme un responsable régional. La ligne de note le dit
+                  désormais en toutes lettres, à la place du nombre
+                  d'entreprises, qui comptait autre chose que le compteur
+                  au-dessus de lui et se lisait pour lui. */}
+              <ChiffreCle label="Nb de projets annoncés" valeur={fmtNombre(d.kpis.signaux)} annee={periode}
+                note="Intentions d'invest. exprimées" />
               <ChiffreCle label="Fonds levés" valeur={fmtVal(d.kpis.funding_musd)} annee={periode}
                 note="cumul des levées annoncées" />
               <ChiffreCle label="Investissement prévu" valeur={fmtVal(d.kpis.capex_musd)} annee={periode}
@@ -353,8 +360,18 @@ export default function RapportSignaux() {
                           colonne="Secteur" accent="var(--violet)" rows={z.secteurs} />
                       </div>
                       <div className="rap-tiers">
+                        {/* LE SÉNÉGAL EST TOUJOURS LÀ. Le rapport se lit depuis
+                            Dakar, et le premier réflexe devant un classement
+                            régional est d'y chercher le Sénégal : ne pas l'y
+                            trouver laisse sans réponse — est-il onzième ou
+                            dernier ? Le service le joint au classement avec son
+                            rang réel quand il sort des dix premiers, et la
+                            carte l'y montre après un filet pointillé. Quand il
+                            est dans le haut, il est seulement mis en évidence :
+                            sa pastille de rang suffit à le situer. */}
                         <ClassementRapport titre="Pays les plus visés" tag={z.court}
-                          colonne="Pays" drapeaux accent="var(--vert)" rows={z.destinations} />
+                          colonne="Pays" drapeaux epingle="Sénégal"
+                          accent="var(--vert)" rows={z.destinations} />
                       </div>
                       <div className="rap-tiers">
                         <ClassementRapport titre="Entreprises les plus actives" tag={z.court}
@@ -365,15 +382,21 @@ export default function RapportSignaux() {
                 );
               })()}
 
+              {/* L'INVESTISSEMENT PRÉVU PASSE DEVANT LES FONDS LEVÉS. C'est le
+                  montant que le rapport met en avant — 512 Md $ au compteur
+                  contre 57 Md $ — et celui qui intéresse une agence de
+                  promotion : ce qu'une entreprise compte dépenser sur place,
+                  non ce qu'elle a réuni auprès de ses actionnaires. Les deux
+                  tableaux gardent leur contenu ; seul leur ordre change. */}
               <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
-                <Carte titre="Les plus grosses levées de fonds" tag={periode}>
-                  <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" />
+                <Carte titre="Les plus gros investissements annoncés" tag={periode}>
+                  <TableauGros lignes={d.remarquables.capex} unite="Investissement" />
                 </Carte>
               </div>
 
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-                <Carte titre="Les plus gros investissements annoncés" tag={periode}>
-                  <TableauGros lignes={d.remarquables.capex} unite="Investissement" />
+                <Carte titre="Les plus grosses levées de fonds" tag={periode}>
+                  <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" />
                 </Carte>
               </div>
 

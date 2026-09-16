@@ -1778,7 +1778,9 @@ export function CarteRapport({ titre, tag, children }: { titre: string; tag?: st
 //   * plus de d3 à charger pour un classement, donc rien à attendre à
 //     l'impression — une barre en <div> s'imprime, un SVG monté après coup non.
 
-export type RangClasse = { nom: string; nb: number; iso?: string | null };
+/** `rang` est le rang RÉEL au classement, qui ne coïncide pas toujours avec la
+ *  position dans la liste : une ligne épinglée venue du fond garde le sien. */
+export type RangClasse = { nom: string; nb: number; iso?: string | null; rang?: number };
 
 /** Bascule segmentée — celle du tableau de bord, au pixel près. */
 export function SegmentRapport<T extends string>({ valeur, options, onChange }: {
@@ -1817,9 +1819,20 @@ export function SegmentRapport<T extends string>({ valeur, options, onChange }: 
  *  et barre à pleine opacité. Le regard doit trouver le podium sans lire.
  */
 export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
-  colonne = "Nom", libelleValeur = "Signaux", drapeaux, max = 8 }: {
+  colonne = "Nom", libelleValeur = "Signaux", epingle, drapeaux, max = 8 }: {
   titre: string; tag?: string; rows: RangClasse[]; accent?: string;
   colonne?: string;
+  /** Le nom de la ligne à mettre en évidence — le Sénégal, sur un rapport lu
+   *  depuis Dakar.
+   *
+   *  DEUX CAS, ET LE DESSIN LES DISTINGUE. Quand la ligne figure dans le haut
+   *  du classement, elle est simplement soulignée : pastille de rang pleine,
+   *  nom en bleu, cadre léger. Quand elle vient du fond — le service l'ajoute
+   *  alors à la liste, hors des dix premiers — un filet pointillé marque la
+   *  coupure et une étiquette dit le rang en toutes lettres. « Absent du haut
+   *  du classement » et « quatorzième sur seize » ne s'équivalent pas, et seul
+   *  le second est une information. */
+  epingle?: string;
   /** Ce que la colonne chiffrée dénombre.
    *
    *  IL ÉTAIT ÉCRIT « SIGNAUX » EN DUR, le composant n'ayant d'abord servi
@@ -1830,9 +1843,17 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
   libelleValeur?: string;
   drapeaux?: boolean; max?: number;
 }) {
-  const lignes = rows.slice(0, max);
+  // L'ÉPINGLÉ SURVIT À LA COUPE. Le service le joint à la liste quand il est
+  // hors des dix premiers ; le tronquer à huit ici le ferait disparaître une
+  // seconde fois, et pour rien.
+  const haut = rows.slice(0, max);
+  const epingleHorsHaut = epingle && !haut.some(r => r.nom === epingle)
+    ? rows.find(r => r.nom === epingle) : undefined;
+  const lignes = epingleHorsHaut ? [...haut, epingleHorsHaut] : haut;
   if (lignes.length === 0) return null;
-  const sommet = Math.max(1e-9, ...lignes.map(r => r.nb));
+  // La barre se mesure au PREMIER DU CLASSEMENT, pas au premier des lignes
+  // retenues : une ligne épinglée doit se comparer au sommet, pas à elle-même.
+  const sommet = Math.max(1e-9, ...haut.map(r => r.nb));
   const ENT = { fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em",
     color: "var(--gris)", textTransform: "uppercase" as const };
   return (
@@ -1857,17 +1878,34 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
 
       <div style={{ display: "flex", flexDirection: "column" as const, gap: 2 }}>
         {lignes.map((r, i) => {
-          const rang = i + 1, podium = rang <= 3;
+          // Le rang vient de la donnée quand elle le porte : une ligne épinglée
+          // affichée en neuvième position peut être quatorzième au classement.
+          const rang = r.rang ?? i + 1, podium = rang <= 3;
+          const sen = epingle != null && r.nom === epingle;
+          // La coupure : la ligne ne suit pas celle d'avant au classement.
+          const precedent = i > 0 ? (lignes[i - 1].rang ?? i) : 0;
+          const saut = rang > precedent + 1;
           return (
-            <div key={`${r.nom}-${rang}`} style={{ display: "flex", alignItems: "center",
+            <Fragment key={`${r.nom}-${rang}`}>
+            {saut && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "1px 8px" }}>
+                <span style={{ width: 22, textAlign: "center" as const, color: "var(--gris)",
+                  fontSize: 12, fontWeight: 800, lineHeight: 1, flexShrink: 0 }}>⋮</span>
+                <span style={{ flex: 1, height: 1, background: "var(--champ)" }} />
+              </div>
+            )}
+            <div style={{ display: "flex", alignItems: "center",
               gap: 8, padding: "4px 8px", borderRadius: 8,
-              background: i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
+              background: sen ? `${voile(accent, 7)}`
+                : i % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent",
+              border: sen ? `1px solid ${voile(accent, 30)}` : "1px solid transparent",
+              boxShadow: sen ? "0 1px 6px rgb(var(--ombre-rgb) / 0.10)" : "none" }}>
               <span style={{ width: 22, flexShrink: 0 }}>
                 <span style={{ display: "inline-flex", alignItems: "center",
                   justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
                   borderRadius: 10, fontSize: 10, fontWeight: 800,
-                  background: podium ? accent : "var(--bleu-voile)",
-                  color: podium ? "var(--sur-bleu)" : "var(--texte)" }}>{rang}</span>
+                  background: sen || podium ? accent : "var(--bleu-voile)",
+                  color: sen || podium ? "var(--sur-bleu)" : "var(--texte)" }}>{rang}</span>
               </span>
               <span style={{ flex: 1, minWidth: 0, display: "inline-flex",
                 alignItems: "center", gap: 7 }}>
@@ -1875,20 +1913,39 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
                 {/* Le nom complet reste en infobulle : une colonne d'un tiers de
                     page coupe « Logiciels et services informatiques », et le
                     lecteur doit pouvoir retrouver ce qui a été coupé. */}
-                <span title={r.nom} style={{ fontSize: 12, fontWeight: 650,
-                  color: "var(--encre)", overflow: "hidden",
+                <span title={r.nom} style={{ fontSize: 12, fontWeight: sen ? 800 : 650,
+                  color: sen ? accent : "var(--encre)", overflow: "hidden",
                   textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.nom}</span>
+                {/* L'ÉTIQUETTE NE PARAÎT QU'APRÈS UNE COUPURE. Dans le haut du
+                    classement, la pastille de rang la rend inutile — elle
+                    répéterait un nombre lu deux centimètres à gauche. */}
+                {sen && saut && (
+                  <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.08em",
+                    color: accent, background: `${voile(accent, 10)}`, padding: "2px 7px",
+                    borderRadius: 999, flexShrink: 0, whiteSpace: "nowrap" as const }}>
+                    {rang}ᵉ DU CLASSEMENT</span>
+                )}
               </span>
               <span style={{ width: 40, fontSize: 11.5, fontWeight: 800, color: accent,
                 textAlign: "right" as const, flexShrink: 0,
                 fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.nb)}</span>
-              <div style={{ width: "24%", height: 7, background: "var(--bleu-voile)",
-                borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
-                <div style={{ height: "100%", borderRadius: 99, background: accent,
-                  opacity: podium ? 0.9 : 0.55,
-                  width: `${Math.min(100, Math.max(3, r.nb / sommet * 100))}%` }} />
-              </div>
+              {/* LA BARRE CÈDE SA PLACE À L'ÉTIQUETTE, sur cette ligne-là
+                  seulement. Ces cartes tiennent sur un tiers de page : le nom,
+                  l'étiquette et la barre n'y tiennent pas ensemble, et c'est le
+                  NOM qui se faisait rogner — une ligne épinglée sans pays
+                  lisible ne sert à rien. La barre est ce qu'on sacrifie : à la
+                  treizième place elle ne vaut qu'un trait de trois pixels, que
+                  le nombre à côté dit déjà mieux. */}
+              {!(sen && saut) && (
+                <div style={{ width: "24%", height: 7, background: "var(--bleu-voile)",
+                  borderRadius: 99, overflow: "hidden", flexShrink: 0 }}>
+                  <div style={{ height: "100%", borderRadius: 99, background: accent,
+                    opacity: sen ? 1 : podium ? 0.9 : 0.55,
+                    width: `${Math.min(100, Math.max(3, r.nb / sommet * 100))}%` }} />
+                </div>
+              )}
             </div>
+            </Fragment>
           );
         })}
       </div>
