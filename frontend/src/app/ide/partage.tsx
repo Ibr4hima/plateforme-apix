@@ -1843,12 +1843,20 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
   libelleValeur?: string;
   drapeaux?: boolean; max?: number;
 }) {
-  // L'ÉPINGLÉ SURVIT À LA COUPE. Le service le joint à la liste quand il est
-  // hors des dix premiers ; le tronquer à huit ici le ferait disparaître une
-  // seconde fois, et pour rien.
-  const haut = rows.slice(0, max);
-  const epingleHorsHaut = epingle && !haut.some(r => r.nom === epingle)
+  // L'ÉPINGLÉ SURVIT À LA COUPE, ET LA CARTE GARDE SA HAUTEUR. Le service le
+  // joint à la liste quand il est hors du haut du classement ; le tronquer ici
+  // le ferait disparaître une seconde fois, et pour rien.
+  //
+  // MAIS IL PREND UNE PLACE, IL NE S'AJOUTE PAS. L'ajouter au haut entier
+  // donnait onze lignes là où les cartes voisines en ont dix, et la seule à
+  // porter une épingle dépassait les autres d'une ligne dans la grille. Elle
+  // montre donc les NEUF premiers, puis l'épinglé : dix lignes comme partout,
+  // et c'est le dixième du classement qui cède sa place — celui dont l'absence
+  // se remarque le moins.
+  const dansHaut = epingle != null && rows.slice(0, max).some(r => r.nom === epingle);
+  const epingleHorsHaut = epingle != null && !dansHaut
     ? rows.find(r => r.nom === epingle) : undefined;
+  const haut = rows.slice(0, epingleHorsHaut ? max - 1 : max);
   const lignes = epingleHorsHaut ? [...haut, epingleHorsHaut] : haut;
   if (lignes.length === 0) return null;
   // La barre se mesure au PREMIER DU CLASSEMENT, pas au premier des lignes
