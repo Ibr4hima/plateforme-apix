@@ -201,8 +201,8 @@ export default function RapportEntreprises() {
                 pleine largeur à cette carte. */}
             <div style={{ marginTop: 16 }}>
               <ClassementRapport titre="Sous-secteurs les plus investis"
-                colonne="Sous-secteur" colonneDetail="Secteur"
-                libelleValeur="Invest." max={10} accent="var(--cyan)"
+                colonne="Sous-secteur" colonneDetail="Secteur" retourLigne
+                libelleValeur="Invest." max={10} accent="var(--bleu)"
                 rows={(d.sous_secteurs ?? []).map(x => ({ nom: x.nom, detail: x.parent, nb: x.investisseurs }))} />
             </div>
 

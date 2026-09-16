@@ -1822,7 +1822,8 @@ export function SegmentRapport<T extends string>({ valeur, options, onChange }: 
  *  et barre à pleine opacité. Le regard doit trouver le podium sans lire.
  */
 export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
-  colonne = "Nom", colonneDetail, libelleValeur = "Signaux", epingle, drapeaux, max = 8 }: {
+  colonne = "Nom", colonneDetail, retourLigne, libelleValeur = "Signaux",
+  epingle, drapeaux, max = 8 }: {
   titre: string; tag?: string; rows: RangClasse[]; accent?: string;
   colonne?: string;
   /** L'intitulé d'une SECONDE colonne de texte, à droite du nom.
@@ -1837,6 +1838,19 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
    *  Réservé aux cartes qui ont la largeur : sur un tiers de page, deux
    *  colonnes de texte ne tiennent pas. */
   colonneDetail?: string;
+  /** Laisse les libellés trop longs PASSER À LA LIGNE au lieu d'être coupés.
+   *
+   *  LA COUPURE FAIT PERDRE LA FIN DU LIBELLÉ, et c'est justement la fin qui
+   *  distingue deux postes voisins : « Commerce de détail de vêtements et
+   *  d'accessoires vestime… » ne dit pas s'il s'agit de vêtements, de
+   *  chaussures ou de maroquinerie. Sur une carte étroite il n'y a pas le
+   *  choix ; sur une carte pleine largeur, la deuxième ligne coûte quelques
+   *  pixels de hauteur et rend le libellé entier.
+   *
+   *  La largeur de la colonne ne change pas pour autant : elle reste celle du
+   *  plus long libellé qui tient d'un trait, et seuls ceux qui la dépassent
+   *  se replient. */
+  retourLigne?: boolean;
   /** Le nom de la ligne à mettre en évidence — le Sénégal, sur un rapport lu
    *  depuis Dakar.
    *
@@ -1938,8 +1952,11 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
                     page coupe « Logiciels et services informatiques », et le
                     lecteur doit pouvoir retrouver ce qui a été coupé. */}
                 <span title={r.nom} style={{ fontSize: 12, fontWeight: sen ? 800 : 650,
-                  color: sen ? accent : "var(--encre)", overflow: "hidden",
-                  textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.nom}</span>
+                  color: sen ? accent : "var(--encre)",
+                  ...(retourLigne
+                    ? { lineHeight: 1.35 }
+                    : { overflow: "hidden", textOverflow: "ellipsis",
+                        whiteSpace: "nowrap" as const }) }}>{r.nom}</span>
                 {/* L'ÉTIQUETTE NE PARAÎT QU'APRÈS UNE COUPURE. Dans le haut du
                     classement, la pastille de rang la rend inutile — elle
                     répéterait un nombre lu deux centimètres à gauche. */}
@@ -1952,8 +1969,11 @@ export function ClassementRapport({ titre, tag, rows, accent = "var(--bleu)",
               </span>
               {colonneDetail && (
                 <span title={r.detail ?? undefined} style={{ flex: 1, minWidth: 0, fontSize: 12,
-                  fontWeight: 600, color: "var(--texte)", overflow: "hidden",
-                  textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.detail ?? "—"}</span>
+                  fontWeight: 600, color: "var(--texte)",
+                  ...(retourLigne
+                    ? { lineHeight: 1.35 }
+                    : { overflow: "hidden", textOverflow: "ellipsis",
+                        whiteSpace: "nowrap" as const }) }}>{r.detail ?? "—"}</span>
               )}
               <span style={{ width: 40, fontSize: 11.5, fontWeight: 800, color: accent,
                 textAlign: "right" as const, flexShrink: 0,
