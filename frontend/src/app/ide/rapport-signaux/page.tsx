@@ -62,7 +62,7 @@ type Signaux = {
     composition, et une adhésion corrigée là-bas doit se voir ici. */
 type Zone = {
   code: string; nom: string; court: string; signaux: number; entreprises: number;
-  secteurs: Rang[]; destinations: Rang[]; entreprises_top: Rang[];
+  secteurs: Rang[]; destinations: Rang[];
 };
 
 /** Le périmètre du relevé, tel qu'il a été interrogé chez fDi. Écrit ici comme
@@ -175,11 +175,10 @@ export default function RapportSignaux() {
            première rangée et deux cartes de trois colonnes remplissent la
            seconde : chaque rangée est pleine, et les largeurs restent lisibles. */
         .rap-grille { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 16px; align-items: start; }
-        .rap-tiers  { grid-column: span 2; }
         .rap-moitie { grid-column: span 3; }
         @media (max-width: 1080px) {
           .rap-grille { grid-template-columns: repeat(2, minmax(0,1fr)); }
-          .rap-tiers, .rap-moitie { grid-column: span 1; }
+          .rap-moitie { grid-column: span 1; }
         }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
         @media (max-width: 700px) { .rap-grille { grid-template-columns: 1fr; } }
@@ -360,9 +359,15 @@ export default function RapportSignaux() {
                       color: "var(--encre)", marginBottom: 10 }}
                       className="rap-zone-impression">Zone : {z.nom}</p>
 
-                    {/* TROIS CLASSEMENTS, TROIS TIERS DE PAGE, aucune case vide :
-                        c'est ce que la mise en lignes permet et que les barres
-                        interdisaient.
+                    {/* DEUX CLASSEMENTS, DEUX MOITIÉS DE PAGE.
+
+                        « ENTREPRISES LES PLUS ACTIVES » EST RETIRÉ D'ICI AUSSI.
+                        À l'échelle d'une zone, ses valeurs s'écrasent : trois
+                        signaux pour la première, deux pour les cinq suivantes.
+                        Un palmarès qui se retourne au premier signal relevé ne
+                        classe rien — et il occupait un tiers de page à côté de
+                        deux classements qui, eux, séparent nettement leur tête
+                        de leur queue (195 contre 4 sur les pays).
 
                         LE SIGLE EST DANS LA PASTILLE, PAS DANS LE TITRE. Accolé
                         au titre, il le faisait passer à deux lignes sur une
@@ -371,11 +376,11 @@ export default function RapportSignaux() {
                         la ligne, et une carte découpée ou imprimée reste
                         interprétable. */}
                     <div className="rap-grille">
-                      <div className="rap-tiers">
+                      <div className="rap-moitie">
                         <ClassementRapport titre="Secteurs les plus visés" tag={z.court}
                           colonne="Secteur" accent="var(--violet)" rows={z.secteurs} />
                       </div>
-                      <div className="rap-tiers">
+                      <div className="rap-moitie">
                         {/* LE SÉNÉGAL EST TOUJOURS LÀ. Le rapport se lit depuis
                             Dakar, et le premier réflexe devant un classement
                             régional est d'y chercher le Sénégal : ne pas l'y
@@ -387,11 +392,7 @@ export default function RapportSignaux() {
                             sa pastille de rang suffit à le situer. */}
                         <ClassementRapport titre="Pays les plus visés" tag={z.court}
                           colonne="Pays" drapeaux epingle="Sénégal"
-                          accent="var(--vert)" rows={z.destinations} />
-                      </div>
-                      <div className="rap-tiers">
-                        <ClassementRapport titre="Entreprises les plus actives" tag={z.court}
-                          colonne="Entreprise" accent="var(--orange)" rows={z.entreprises_top} />
+                          accent="var(--orange)" rows={z.destinations} />
                       </div>
                     </div>
                   </div>

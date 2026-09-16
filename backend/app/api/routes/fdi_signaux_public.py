@@ -570,13 +570,11 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
          GROUP BY a.zone, p.nom_fr, p.code_iso2
          ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, p.nom_fr""", epingle="Sénégal")
 
-    entreprises = await classement("""
-        SELECT a.zone, e.nom AS nom, count(DISTINCT a.signal_id) AS nb
-          FROM appart a
-          JOIN fdi_signaux_investisseurs s ON s.id = a.signal_id
-          JOIN fdi_entreprises e ON e.id = s.entreprise_id
-         GROUP BY a.zone, e.nom
-         ORDER BY a.zone, count(DISTINCT a.signal_id) DESC, e.nom""")
+    # PAS DE CLASSEMENT D'ENTREPRISES PAR ZONE. Il existait, et le bilan ne le
+    # montre plus : à cette échelle ses valeurs s'écrasent — trois signaux pour
+    # la première, deux pour les cinq suivantes —, et un palmarès qui se
+    # retourne au premier signal relevé ne classe rien. La requête part avec la
+    # carte : elle se rejouait pour les trois zones à chaque chargement.
 
     # LE NOMBRE DE SIGNAUX DE LA ZONE, séparément : c'est lui qui donne son
     # poids à un classement. « Premier secteur avec 40 signaux » ne se lit pas
@@ -601,5 +599,4 @@ async def _zones(db: AsyncSession, filtre: str, params: dict) -> dict:
         "entreprises": totaux.get(c, {}).get("entreprises", 0),
         "secteurs": secteurs[c],
         "destinations": destinations[c],
-        "entreprises_top": entreprises[c],
     } for c in ZONES_OUEST if c in noms]
