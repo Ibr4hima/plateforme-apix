@@ -254,10 +254,34 @@ async def signaux_publics(
     # reste de la plateforme. Les classements qui ne portent pas sur des pays —
     # secteurs, activités, entreprises — n'ont pas la colonne, et le rendu s'en
     # passe plutôt que d'inventer un drapeau à un secteur.
-    async def top(sql: str):
+    async def top(sql: str, epingle: str | None = None):
+        """Un classement. Avec `epingle`, une ligne y est gardée quoi qu'il arrive.
+
+        LE DÉCOUPAGE CHANGE DE CAMP QUAND ON ÉPINGLE. Sans épingle, le SQL
+        porte son propre `LIMIT` et rien n'est à faire ici. Avec, il faut
+        connaître le rang de la ligne épinglée — que le `LIMIT` aurait
+        justement coupée : l'appelant écrit alors sa requête SANS limite et le
+        découpage se fait ci-dessous, comme dans `_zones`. On ne le fait que
+        pour un classement dont le nombre de lignes est borné par nature — les
+        pays d'un continent —, jamais pour les entreprises, qui se comptent par
+        milliers.
+
+        Chaque ligne porte son rang RÉEL : une ligne venue du fond s'affiche en
+        onzième position mais reste quatorzième au classement, et c'est ce
+        second nombre qui a un sens.
+        """
         lignes = (await db.execute(text(sql.replace("{filtre}", filtre)), params)).fetchall()
-        return [{"nom": r.nom, "nb": r.nb,
-                 **({"iso": r.iso} if "iso" in r._mapping else {})} for r in lignes]
+        sortie, tenu = [], False
+        for i, r in enumerate(lignes):
+            rang = i + 1
+            est_epingle = epingle is not None and r.nom == epingle
+            if epingle is not None and rang > 10 and not (est_epingle and not tenu):
+                continue
+            sortie.append({"nom": r.nom, "nb": r.nb, "rang": rang,
+                           **({"iso": r.iso} if "iso" in r._mapping else {})})
+            if est_epingle:
+                tenu = True
+        return sortie
 
     tops = {
         "origines": await top("""
@@ -291,6 +315,9 @@ async def signaux_publics(
         # contient le pays, elle arriverait mécaniquement en tête et écraserait
         # les destinations réelles. Les pays hors du continent sont écartés pour
         # la même raison de lecture : le rapport porte sur l'Afrique.
+        # SANS `LIMIT` : le découpage se fait dans `top`, qui doit connaître le
+        # rang du Sénégal — que la limite aurait coupé s'il sort des dix
+        # premiers. La requête reste bornée par nature : les pays d'Afrique.
         "destinations": await top("""
             SELECT p.nom_fr AS nom, p.code_iso2 AS iso, count(DISTINCT s.id) AS nb
               FROM fdi_signaux_investisseurs s
@@ -298,7 +325,7 @@ async def signaux_publics(
               JOIN ref_pays p ON p.id = d.pays_id
              WHERE {filtre} AND p.continent = 'Afrique'
              GROUP BY p.nom_fr, p.code_iso2
-             ORDER BY count(DISTINCT s.id) DESC, p.nom_fr LIMIT 10"""),
+             ORDER BY count(DISTINCT s.id) DESC, p.nom_fr""", epingle="Sénégal"),
         # « NON PRÉCISÉE » N'EST PAS UNE ACTIVITÉ, c'est l'absence d'activité :
         # la source n'a rien dit. La laisser au classement reviendrait à
         # présenter le silence comme le premier métier visé en Afrique.

@@ -278,8 +278,12 @@ export default function RapportSignaux() {
                     accent="var(--bleu)" rows={d.tops.origines ?? []} />
                 </div>
                 <div className="rap-tiers">
+                  {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
+                      plus bas : le rapport se lit depuis Dakar, et un classement
+                      continental où le pays n'apparaît pas laisse sans réponse —
+                      onzième, ou dernier des cinquante ? */}
                   <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
-                    colonne="Pays" drapeaux accent="var(--vert)"
+                    colonne="Pays" drapeaux epingle="Sénégal" accent="var(--vert)"
                     rows={d.tops.destinations ?? []} />
                 </div>
                 <div className="rap-tiers">
