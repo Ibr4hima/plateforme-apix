@@ -845,6 +845,22 @@ async def rapport_entreprises(
         SELECT nom, origine, iso, projets, pays, a0, a1, au_senegal
         FROM g ORDER BY projets DESC, nom""")
 
+    # ── Le classement AU SÉNÉGAL ─────────────────────────────────────────────
+    # LE COMPTE N'EST PAS CELUI DU CLASSEMENT AFRICAIN. Il ne retient que les
+    # projets dont la DESTINATION est le Sénégal : Orange en a annoncé
+    # soixante-douze sur le continent, la question posée ici est combien il en a
+    # annoncé ICI. Prendre le total africain ferait lire un chiffre pour un
+    # autre, et classerait les groupes dans le mauvais ordre.
+    #
+    # Le regroupement reste celui de tout l'écran — la maison mère, non la
+    # filiale qui signe : « Orange Sénégal » et « Sonatel » sont le même
+    # investisseur, et les compter à part le ferait paraître deux fois plus
+    # petit qu'il n'est.
+    senegal = await classement("""
+        SELECT nom, origine, min(origine_iso) AS iso, count(*) AS projets
+        FROM base WHERE dest = :senegal
+        GROUP BY nom, origine ORDER BY count(*) DESC, nom""", 10)
+
     # ── Les origines, comptées en INVESTISSEURS ──────────────────────────────
     # Et non en projets : la question est « combien d'entreprises françaises
     # investissent en Afrique », pas « combien de projets français ». Le nombre
@@ -880,6 +896,7 @@ async def rapport_entreprises(
             "un_seul_pays": k.mono_pays,
         },
         "actifs": actifs,
+        "senegal": senegal,
         "origines": origines_top,
         "secteurs": await par("secteur"),
         "activites": await par("activite"),

@@ -58,6 +58,7 @@ type Rapport = {
               projets: number; au_senegal: number }[];
   secteurs: { nom: string; projets: number; investisseurs: number }[];
   activites: { nom: string; projets: number; investisseurs: number }[];
+  senegal: { nom: string; origine: string | null; iso: string | null; projets: number }[];
 };
 
 /** Une part, écrite comme on la lit à voix haute. */
@@ -190,8 +191,24 @@ export default function RapportEntreprises() {
                 lequel il se trouvait. La colonne « Présent au Sénégal » le dit
                 sur la ligne même. */}
             <TableauInvestisseurs titre="Classement des investisseurs"
-              aide={`Ceux qui ont annoncé le plus de projets en ${PERIMETRE}, quel que soit le pays. La dernière colonne dit si le groupe a déjà annoncé un projet au ${PAYS} — un « non » en regard d'un grand nombre de projets désigne une cible de prospection.`}
               lignes={d.actifs} periode={periode} colonneSenegal />
+
+            {/* ── LE MÊME CLASSEMENT, RAMENÉ AU SÉNÉGAL ───────────────────────
+                LE COMPTE N'EST PAS CELUI DU TABLEAU PRÉCÉDENT, et c'est tout
+                l'objet de celui-ci : il ne retient que les projets annoncés
+                ICI. Orange en compte soixante-douze sur le continent et cinq au
+                Sénégal — deux chiffres justes qui répondent à deux questions
+                différentes, et qu'un seul tableau ferait confondre.
+
+                PAR MAISON MÈRE, comme partout sur cet écran. « MicroCred
+                Senegal » remonte sous MicroCred, et les trois enseignes de
+                Dubai World — Dubai World, DP World, Jafza International — ne
+                font qu'un investisseur de six projets au lieu de trois lignes
+                de deux ou trois. C'est le groupe qu'on démarche, pas le bureau
+                qui signe. */}
+            <TableauInvestisseurs titre={`Classement des investisseurs au ${PAYS}`}
+              lignes={(d.senegal ?? []).map(x => ({ ...x, pays: 0, a0: null, a1: null }))}
+              periode={periode} colonnes={["Maison mère", "Origine", "Nb de projets"]} />
 
             <ARetenir>
               {d.kpis.investisseurs > 0 ? (
@@ -222,11 +239,16 @@ export default function RapportEntreprises() {
  *  pas par rang : on y cherche des NOMS à démarcher, et chaque ligne doit dire
  *  d'où vient le groupe, combien il a annoncé, sur combien de pays et depuis
  *  quand. Cinq colonnes qu'aucune barre ne porte. */
-function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: {
-  titre: string; aide: string; lignes: Invest[]; periode: string; colonneSenegal?: boolean;
+function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal, colonnes }: {
+  titre: string; aide?: string; lignes: Invest[]; periode: string;
+  colonneSenegal?: boolean;
+  /** Les intitulés, quand le tableau ne montre que le nom, l'origine et un
+   *  nombre. Absents, ce sont les six colonnes du classement complet. */
+  colonnes?: string[];
 }) {
   if (!lignes?.length) return null;
-  const colonnes = ["Investisseur", "Origine", "Projets", "Pays", "Période",
+  const court = colonnes != null;
+  const entetes = colonnes ?? ["Investisseur", "Origine", "Projets", "Pays", "Période",
     ...(colonneSenegal ? [`Présent au ${PAYS}`] : [])];
   return (
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
@@ -235,7 +257,14 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: 
           <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
             <thead>
               <tr>
-                {colonnes.map((t, i) => (
+                {/* LE RANG A SA COLONNE. Sans lui, « troisième du classement »
+                    se comptait de l'œil, ligne à ligne — et se recomptait à
+                    chaque fois qu'on revenait au tableau. */}
+                <th style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
+                  letterSpacing: "0.1em", textTransform: "uppercase" as const,
+                  textAlign: "left" as const, padding: "8px 10px", width: 34,
+                  borderBottom: "1px solid var(--bordure)" }}>#</th>
+                {entetes.map((t, i) => (
                   <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
                     letterSpacing: "0.1em", textTransform: "uppercase" as const,
                     textAlign: i >= 2 ? "right" as const : "left" as const, padding: "8px 10px",
@@ -246,6 +275,15 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: 
             <tbody>
               {lignes.map((l, i) => (
                 <tr key={`${l.nom}-${l.origine ?? ""}-${i}`}>
+                  {/* Les trois premiers en pastille pleine, comme dans les
+                      classements en liste : le podium se repère avant d'être lu. */}
+                  <td style={{ ...CEL, padding: "8px 10px" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10,
+                      fontSize: 10, fontWeight: 800,
+                      background: i < 3 ? "var(--bleu)" : "var(--bleu-voile)",
+                      color: i < 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{i + 1}</span>
+                  </td>
                   <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={l.nom}>{l.nom}</td>
                   <td style={CEL}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
@@ -254,10 +292,12 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: 
                     </span>
                   </td>
                   <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800, color: "var(--bleu)", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(l.projets)}</td>
-                  <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(l.pays)}</td>
-                  <td style={{ ...CEL, textAlign: "right" as const, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>
-                    {l.a0 === l.a1 ? l.a0 : `${l.a0} — ${l.a1}`}
-                  </td>
+                  {!court && <>
+                    <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(l.pays)}</td>
+                    <td style={{ ...CEL, textAlign: "right" as const, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>
+                      {l.a0 === l.a1 ? l.a0 : `${l.a0} — ${l.a1}`}
+                    </td>
+                  </>}
                   {colonneSenegal && (
                     <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 700,
                       color: l.au_senegal ? "var(--vert)" : "var(--gris)" }}>
@@ -269,7 +309,7 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal }: 
             </tbody>
           </table>
         </div>
-        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>{aide}</p>
+        {aide && <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>{aide}</p>}
       </Carte>
     </div>
   );
