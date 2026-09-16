@@ -146,9 +146,11 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
           puis on la restreint.
 
           Il porte un champ de recherche, seul de la colonne : cent
-          quarante-quatre pays rangés par nombre d'investisseurs se
-          parcourent mal quand on en cherche un précis. */}
-      <Facette titre="Pays d'origine" options={per.origines} filtrable
+          quarante-quatre pays rangés par nombre d'investisseurs se parcourent
+          mal quand on en cherche un précis. C'est celui de la vue Signaux, au
+          pixel et au libellé près — les deux vues se filtrent depuis la même
+          colonne, à deux clics l'une de l'autre. */}
+      <Facette titre="Pays d'origine" options={per.origines} filtrable="Rechercher un pays…"
         choix={filtres.origines}
         setChoix={v => onChange({ ...filtres, origines: v })} />
       {/* EXACTEMENT LES FILTRES DE LA VUE PROJETS — mêmes composants, même

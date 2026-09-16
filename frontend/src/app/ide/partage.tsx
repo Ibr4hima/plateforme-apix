@@ -1098,7 +1098,8 @@ export const Filet = () =>
     sautait sous le curseur. */
 export function Facette({ titre, options, choix, setChoix, filtrable }: {
   titre: string; options: { nom: string; nb: number }[]; choix: string[]; setChoix: (v: string[]) => void;
-  /** Ouvre un champ de recherche au-dessus de la liste.
+  /** Le libellé d'appel d'un champ de recherche ouvert au-dessus de la liste.
+   *  Absent, il n'y a pas de champ.
    *
    *  RÉSERVÉ AUX FACETTES QUI SE COMPTENT PAR CENTAINES. Les secteurs sont
    *  quarante, les activités une vingtaine : on les parcourt. Les pays
@@ -1107,8 +1108,13 @@ export function Facette({ titre, options, choix, setChoix, filtrable }: {
    *  pire pour retrouver un pays qu'on a en tête. Sans ce champ il faudrait
    *  faire défiler cent quarante lignes non alphabétiques à la recherche du
    *  Sénégal. Les facettes courtes ne le reçoivent pas : un champ de recherche
-   *  au-dessus de six lignes est un meuble de plus. */
-  filtrable?: boolean;
+   *  au-dessus de six lignes est un meuble de plus.
+   *
+   *  LE LIBELLÉ EST DEMANDÉ PLUTÔT QUE DÉDUIT parce qu'il doit NOMMER ce qu'on
+   *  cherche — « Rechercher un pays… » —, ce qu'un composant générique ne peut
+   *  pas savoir. Un « Filtrer la liste » universel dirait le mécanisme et non
+   *  la matière. */
+  filtrable?: string;
 }) {
   const [q, setQ] = useState("");
   // Une option cochée reste affichée même si les autres filtres la font
@@ -1134,22 +1140,20 @@ export function Facette({ titre, options, choix, setChoix, filtrable }: {
             background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>{choix.length}</span>
         )}
       </div>
+      {/* EXACTEMENT LE CHAMP DE LA VUE SIGNAUX, où l'on cherche déjà un pays
+          dans une longue liste de facette. Les deux vues sont voisines dans le
+          même écran et se filtrent depuis la même colonne ; deux champs de
+          recherche de formes différentes à deux clics l'un de l'autre se
+          remarquent tout de suite. */}
       {filtrable && (
-        <div style={{ position: "relative" as const, marginBottom: 7 }}>
-          <Search size={12} style={{ position: "absolute" as const, left: 9, top: "50%",
+        <div style={{ position: "relative" as const, marginBottom: 8 }}>
+          <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
             transform: "translateY(-50%)", color: "var(--gris)" }} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Filtrer la liste"
-            style={{ width: "100%", boxSizing: "border-box" as const, padding: "6px 24px 6px 26px",
-              borderRadius: 8, border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-              fontSize: 11.5, color: "var(--encre)", outline: "none",
-              fontFamily: "var(--font-google-sans)" }} />
-          {q && (
-            <button onClick={() => setQ("")} aria-label="Effacer"
-              style={{ position: "absolute" as const, right: 7, top: "50%", transform: "translateY(-50%)",
-                background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
-              <X size={11} style={{ color: "var(--gris)" }} />
-            </button>
-          )}
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder={filtrable}
+            style={{ width: "100%", padding: "8px 8px 8px 30px", borderRadius: 8,
+              border: "1px solid var(--bordure-forte)", background: "var(--carte-douce)",
+              fontSize: 12, color: "var(--encre)", outline: "none",
+              fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
         </div>
       )}
       <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
