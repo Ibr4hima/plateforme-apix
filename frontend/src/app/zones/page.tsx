@@ -213,7 +213,7 @@ export default function ZonesPage() {
     <main style={{ minHeight:"100vh", background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}`}</style>
       {/* ── Hero ── */}
-      <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre={"Zones d'Investissement"} compact actions={<NavActions onDark home flouFond taille={30}/>}>
         <BarreTitreSegment options={[{v:"zones",l:"Zones d'investissement"},{v:"territoire",l:"Pôles territoires"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 

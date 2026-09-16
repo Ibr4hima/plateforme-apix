@@ -153,7 +153,7 @@ export default function EntreprisesPage() {
     <main style={{ height:"100dvh", display:"flex", flexDirection:"column", overflow:"hidden",
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-      <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions onDark home flouFond/>}
+      <BarreTitre titre="Entreprises formalisées" compact actions={<NavActions onDark home flouFond taille={30}/>}
         droite={onglet==="liste" ? (
           <BarreTitreBadge label="Année de création" detail={triDate==="desc"?"Descendante":"Ascendante"}
             icon={triDate==="desc"?<ArrowDownUp size={13} color="var(--sur-bleu)"/>:<ArrowUpDown size={13} color="var(--sur-bleu)"/>}

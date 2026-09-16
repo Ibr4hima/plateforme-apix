@@ -322,7 +322,7 @@ export default function EvenementsPage() {
 @keyframes pulseHalo{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}
 @keyframes pulseHaloVert{0%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0.45)}70%{box-shadow:0 0 0 9px rgb(var(--ombre-rgb) / 0)}100%{box-shadow:0 0 0 0 rgb(var(--ombre-rgb) / 0)}}`}</style>
       {/* Barre de titre */}
-      <BarreTitre titre="Événements" compact actions={<NavActions onDark home flouFond/>}
+      <BarreTitre titre="Événements" compact actions={<NavActions onDark home flouFond taille={30}/>}
         droite={(()=>{
           const prochain = prochainGlobalId!=null ? tous.find(e=>e.id===prochainGlobalId) : null;
           if (!prochain) return null;

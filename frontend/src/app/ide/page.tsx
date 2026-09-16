@@ -51,7 +51,7 @@ export default function IdePage() {
           propre feuille de style ; il ne reste ici que l'animation d'attente. */}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <BarreTitre titre="Investissements Privés" compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre="Investissements Privés" compact actions={<NavActions onDark home flouFond taille={30}/>}>
         <BarreTitreSegment options={[{v:"ide",l:"Investissements Directs Étrangers"},{v:"national",l:"Investissements nationaux"}]} value={ongletPrincipal} onChange={setOngletPrincipal}/>
       </BarreTitre>
 

@@ -143,7 +143,7 @@ export default function AccordsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond taille={30}/>}>
         <BarreTitreSegment options={[
           {v:"tbi",   l:"Traités Bilatéraux d'Investissement", count: accords.length},
           {v:"inter", l:"Traités Internationaux", badge:"Bientôt"},

@@ -56,14 +56,31 @@ export const STYLE_NAV_CMD = `
   background: rgb(var(--bleu-rgb) / 0.07) !important;
 }`;
 
-function boutonStyle(onDark: boolean, actif: boolean): React.CSSProperties {
+function boutonStyle(onDark: boolean, actif: boolean, taille: number): React.CSSProperties {
+  // `border-box` : la bordure d'un pixel est COMPRISE dans la taille demandée.
+  // Sans elle, un bouton de 30 en mesure 32, et c'est lui qui fixe la hauteur
+  // de la bande — on ne peut pas la caler au pixel sur celle d'à côté si le
+  // plus haut de ses éléments dépasse sa cote de deux pixels.
+  const socle: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center",
+    boxSizing: "border-box", width: taille, height: taille, borderRadius: "50%", border: "1px solid",
+    cursor: "pointer", transition: "all 0.18s" };
   if (onDark) {
-    return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: actif ? "rgb(var(--carte-rgb) / 0.55)" : "rgba(255,255,255,0.30)", background: actif ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)", cursor: "pointer", transition: "all 0.18s" };
+    return { ...socle, borderColor: actif ? "rgb(var(--carte-rgb) / 0.55)" : "rgba(255,255,255,0.30)", background: actif ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)" };
   }
-  return { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "1px solid", borderColor: "var(--bordure-forte)", background: "transparent", cursor: "pointer", transition: "all 0.18s" };
+  return { ...socle, borderColor: "var(--bordure-forte)", background: "transparent" };
 }
 
-export default function NavActions({ onDark = false, flouFond = false, flouTotal = false, home = false }: { onDark?: boolean; flouFond?: boolean; flouTotal?: boolean; home?: boolean }) {
+export default function NavActions({ onDark = false, flouFond = false, flouTotal = false, home = false, taille = 36 }: {
+  onDark?: boolean; flouFond?: boolean; flouTotal?: boolean; home?: boolean;
+  /** Le diamètre des trois boutons ronds.
+   *
+   *  IL EST DEMANDÉ PAR L'APPELANT parce que la hauteur de la bande qui les
+   *  porte en dépend : ce sont les plus hauts de leurs voisins, et c'est donc
+   *  eux qui la fixent. La barre de titre des pages les réduit pour se caler
+   *  sur la bande d'onglets du dessous ; les en-têtes de rapport, plus amples,
+   *  gardent la taille pleine. */
+  taille?: number;
+}) {
   const flou = flouFond || flouTotal;
   const { data: session } = useSession();
   const [userOpen, setUserOpen] = useState(false);
@@ -117,21 +134,25 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
   const cmd = onDark ? undefined : CLASSE_CMD;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+    // `line-height: 0` : le conteneur ne garde pas la demi-ligne de texte que
+    // ses boutons en ligne lui laissaient. Elle ne se voyait pas tant que la
+    // bande était haute ; elle la faisait dépasser d'un demi-pixel dès qu'on a
+    // voulu la caler au pixel sur la bande d'onglets.
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, lineHeight: 0 }}>
       {/* Accueil */}
       {home && (
-        <Link href="/" title="Accueil" aria-label="Accueil" className={cmd} style={{ ...boutonStyle(onDark, false), textDecoration: "none" }}
+        <Link href="/" title="Accueil" aria-label="Accueil" className={cmd} style={{ ...boutonStyle(onDark, false, taille), textDecoration: "none" }}
           onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
           onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 18, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
+          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.5), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>home_app_logo</span>
         </Link>
       )}
       {/* Recherche globale (⌘K) */}
       <button onClick={() => window.dispatchEvent(new Event("apix:recherche"))} title="Rechercher (Ctrl+K)" aria-label="Rechercher"
-        className={cmd} style={boutonStyle(onDark, false)}
+        className={cmd} style={boutonStyle(onDark, false, taille)}
         onMouseEnter={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.20)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.55)"; }}
         onMouseLeave={e => { if (!onDark) return; e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.30)"; }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 17, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
+        <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.47), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>search</span>
       </button>
 
       {/* Menu hub (ouverture au survol / au clic). En flou total, le voile
@@ -139,8 +160,8 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
           conteneur (sinon clignotement) — fermeture au clic-voile / Échap. */}
       <div style={{ position: "relative" }} onMouseEnter={openUser} onMouseLeave={flouTotal ? undefined : closeUser}>
         <button ref={btnRef} onClick={() => { majPos(); userOpen ? fermer() : setUserOpen(true); }} title="Menu" aria-label="Menu"
-          className={cmd} data-actif={userOpen ? "1" : undefined} style={boutonStyle(onDark, userOpen)}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20, color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
+          className={cmd} data-actif={userOpen ? "1" : undefined} style={boutonStyle(onDark, userOpen, taille)}>
+          <span className="material-symbols-outlined" style={{ fontSize: Math.round(taille * 0.56), color: icoColor, fontVariationSettings: "'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24", lineHeight: 1 }}>{userOpen ? "menu_open" : "menu"}</span>
         </button>
       </div>
 

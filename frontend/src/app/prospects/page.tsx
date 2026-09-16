@@ -207,7 +207,7 @@ export default function ProspectsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* ── Hero ── */}
-      <BarreTitre titre="Prospects" compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre="Prospects" compact actions={<NavActions onDark home flouFond taille={30}/>}>
         <BarreTitreSegment options={[
           { v:"cibles",     l:"Investisseurs ciblés", count: cibles.length },
           { v:"historique", l: enContact.length > 1 ? "Investisseurs en contact" : "Investisseur en contact", count: enContact.length },

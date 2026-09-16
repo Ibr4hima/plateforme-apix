@@ -134,7 +134,7 @@ export default function OpportunitesPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark home flouFond/>}>
+      <BarreTitre titre={"Opportunités d'investissement"} compact actions={<NavActions onDark home flouFond taille={30}/>}>
         <BarreTitreSegment options={[{v:"projets",l:"Banque de projets",count:projetsFiltres.length},{v:"potentialites",l:"Potentialités par zone"},{v:"avantages",l:"Avantages & incitations"}]} value={onglet} onChange={setOnglet}/>
       </BarreTitre>
 
