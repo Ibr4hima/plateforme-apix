@@ -781,10 +781,11 @@ export default function OngletFdi({ onVue }: {
 
                 <Filet />
 
-                <FacetteSecteurs secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
+                <FacetteSecteurs titre="Secteurs d'activité"
+                  secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
                   choixSec={secteurs} choixSous={sousSecteurs}
                   onChange={(sec, sous) => { setSecteurs(sec); setSousSecteurs(sous); }} />
-                <Facette titre="Activité prévue" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
+                <Facette titre="Activités économiques" options={per?.activites ?? []} choix={activites} setChoix={setActivites} />
                 <Facette titre="Type de projet" options={per?.types ?? []} choix={types} setChoix={setTypes} />
               </>
             )}

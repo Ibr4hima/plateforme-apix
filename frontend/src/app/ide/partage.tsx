@@ -1245,7 +1245,13 @@ export type ChoixSous = { secteur: string; nom: string };
     filtres dans un seul objet, et la seconde écriture, calculée sur la valeur
     d'avant la première, aurait ressuscité le secteur qu'on venait de décocher.
     Un appel unique retire le piège au lieu de le documenter. */
-export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange }: {
+export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange,
+                                 titre = "Secteur" }: {
+  /** L'intitulé de la facette. Les deux vues qui l'emploient ne nomment pas
+      tout à fait la même chose — la vue Projets qualifie des projets, la vue
+      Entreprises des investisseurs — et l'une peut vouloir l'écrire au long
+      sans l'imposer à l'autre. Par défaut, le mot d'origine. */
+  titre?: string;
   secteurs: { nom: string; nb: number }[];
   sousSecteurs: { nom: string; nb: number; secteur: string }[];
   choixSec: string[];
@@ -1274,7 +1280,7 @@ export function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, o
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-        <span style={TITRE_FACETTE}>Secteur</span>
+        <span style={TITRE_FACETTE}>{titre}</span>
         {(choixSec.length > 0 || choixSous.length > 0) && (
           <span style={{ fontSize: 10, fontWeight: 700, color: "var(--bleu)",
             background: "rgb(var(--bleu-rgb) / 0.18)", padding: "1px 6px", borderRadius: 999 }}>
