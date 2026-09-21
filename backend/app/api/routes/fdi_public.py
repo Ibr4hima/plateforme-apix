@@ -385,12 +385,15 @@ async def projets(
             GROUP BY 1 ORDER BY count(*) DESC, sum(p.capex_musd) DESC NULLS LAST, 1{borne}"""),
             params)).fetchall()
 
+    # LES TROIS CLASSEMENTS DU RAPPORT SONT RENDUS EN ENTIER — pays d'origine,
+    # secteurs, activités. Le lecteur les retrie et les déplie, et une liste
+    # tronquée sur le NOMBRE de projets puis retriée sur le MONTANT aurait
+    # perdu des lignes en silence. Les deux autres gardent leur borne : rien ne
+    # les retrie, ils gardent l'ordre du serveur.
     tops = {
-        "partenaires": await classement(f"COALESCE(rp.nom_fr, p.{partenaire}_brut)", "rp.code_iso2"),
-        "secteurs":    await classement("COALESCE(s.libelle_fr, p.secteur_brut)"),
-        # Le seul classement rendu EN ENTIER : le rapport le laisse retrier et
-        # déplier, et il lui faut donc toutes ses lignes. Dix-sept activités au
-        # plus dans la nomenclature fDi — la liste ne peut pas s'emballer.
+        "partenaires": await classement(f"COALESCE(rp.nom_fr, p.{partenaire}_brut)",
+                                        "rp.code_iso2", limite=None),
+        "secteurs":    await classement("COALESCE(s.libelle_fr, p.secteur_brut)", limite=None),
         "activites":   await classement("COALESCE(a.libelle_fr, p.activite_brut)", limite=None),
         "entreprises": await classement("COALESCE(e.nom, p.entreprise_brut)"),
         "types":       await classement("COALESCE(t.libelle_fr, p.type_brut)"),

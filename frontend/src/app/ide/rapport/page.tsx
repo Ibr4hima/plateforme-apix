@@ -21,11 +21,12 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 
+import DrapeauPays from "@/components/shared/DrapeauPays";
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
-         ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
+         dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
 
 const PAYS = "Sénégal";
 
@@ -46,17 +47,21 @@ const PastilleRang = ({ n }: { n: number }) => (
     color: n <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{n}</span>
 );
 
-/** Les trois colonnes chiffrées du classement des activités, et ce qu'on lit
-    dans chacune. L'ordre de la liste EST l'ordre des colonnes : le montant
-    d'abord, parce que c'est par lui que le tableau s'ouvre — un décideur
-    demande d'abord où va l'argent, le nombre de projets vient qualifier
-    ensuite. */
-const COLS_ACTIVITES = [
+/** Les trois colonnes chiffrées des classements, et ce qu'on lit dans chacune.
+    L'ordre de la liste EST l'ordre des colonnes : le montant d'abord, parce que
+    c'est par lui que le tableau s'ouvre — un décideur demande d'abord où va
+    l'argent, le nombre de projets vient qualifier ensuite. */
+const COLS_CLASSEMENT = [
   { cle: "capex_musd", libelle: "Montant investi*" },
   { cle: "nb", libelle: "Projets" },
   { cle: "emplois", libelle: "Emplois créés*" },
 ] as const;
-type CleTri = (typeof COLS_ACTIVITES)[number]["cle"];
+type CleTri = (typeof COLS_CLASSEMENT)[number]["cle"];
+
+/** Le nombre de lignes montrées avant dépliage. Dix : c'est le format d'un
+    classement qu'on cite en réunion, et les trois cartes doivent s'ouvrir à la
+    même hauteur. */
+const FENETRE_CLASSEMENT = 10;
 
 /** L'en-tête cliquable d'une colonne triable.
 
@@ -123,6 +128,146 @@ type Fdi = {
   projets: Projet[];
 };
 
+/** UN CLASSEMENT EN TABLEAU, trié par le lecteur.
+
+    TROIS CARTES DU RAPPORT L'EMPLOIENT — pays d'origine, secteurs, activités —
+    et c'est bien pour cela qu'il existe : trois copies d'un même tableau
+    auraient fini par diverger d'un détail, et le lecteur l'aurait senti sans
+    savoir le nommer.
+
+    IL S'OUVRE SUR LE MONTANT, décroissant. C'est la première question d'un
+    comité — où va l'argent —, et le nombre de projets, qui menait ces
+    classements jusqu'ici, ne la posait pas : la France annonce 56 projets au
+    Sénégal sans être celle qui y engage le plus.
+
+    Chaque carte tient son propre tri et son propre dépliage : on compare un
+    classement à un autre en les triant différemment, pas en les triant
+    ensemble. */
+function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
+  titre: string; colonne: string; rows: Rang[]; tag?: string; drapeaux?: boolean;
+}) {
+  const [triCol, setTriCol] = useState<CleTri>("capex_musd");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+  const [tout, setTout] = useState(false);
+
+  // Cliquer la colonne active RETOURNE le tri ; cliquer une autre colonne s'y
+  // pose en décroissant. Repartir de l'ordre croissant sur une colonne qu'on
+  // vient de choisir montrerait d'abord les plus petites valeurs, ce que
+  // personne ne demande d'un classement.
+  const trierPar = (c: CleTri) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+
+  const lignes = useMemo(() => {
+    const l = [...rows];
+    // LES VALEURS MANQUANTES RESTENT EN QUEUE DANS LES DEUX SENS. Une ligne
+    // dont le relevé ne dit pas le capital n'est pas « la plus petite » : on ne
+    // sait pas. La remonter en tête d'un tri croissant en ferait une réponse.
+    l.sort((a, b) => {
+      const x = a[triCol], y = b[triCol];
+      if (x == null && y == null) return a.nom.localeCompare(b.nom, "fr");
+      if (x == null) return 1;
+      if (y == null) return -1;
+      if (x !== y) return triSens === "desc" ? y - x : x - y;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+    return l;
+  }, [rows, triCol, triSens]);
+
+  if (!lignes.length) return null;
+  const reste = lignes.length - FENETRE_CLASSEMENT;
+
+  return (
+    <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
+      <Carte titre={titre} tag={tag}>
+        <div style={{ overflowX: "auto" as const }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+            <thead>
+              <tr>
+                <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+                <th style={{ ...ENT_RAP, textAlign: "left" as const }}>{colonne}</th>
+                {COLS_CLASSEMENT.map(c => (
+                  <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
+                    actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(tout ? lignes : lignes.slice(0, FENETRE_CLASSEMENT)).map((r, i) => (
+                <tr key={r.nom}>
+                  {/* LE RANG SUIT LE TRI : il dit la place dans le classement
+                      qu'on a sous les yeux, non une place absolue qui
+                      contredirait l'ordre des lignes. */}
+                  <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                  <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={r.nom}>
+                    {/* LE DRAPEAU, pour les pays seulement : un pays se
+                        reconnaît à son drapeau avant d'être lu. Il reste nul
+                        quand la ligne n'a pas été rapprochée du référentiel —
+                        le drapeau disparaît alors, le nom reste. */}
+                    {drapeaux ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <DrapeauPays iso={r.iso ?? null} nom={r.nom} taille={15} sansIso="rien" />
+                        {r.nom}
+                      </span>
+                    ) : r.nom}
+                  </td>
+                  {/* LA COLONNE QUI TRIE PORTE LA COULEUR ET LE GRAS, sans quoi
+                      l'œil serait attiré par une colonne qui ne commande plus
+                      rien. */}
+                  {COLS_CLASSEMENT.map(c => (
+                    <td key={c.cle} style={{ ...CEL, textAlign: "right" as const,
+                      fontVariantNumeric: "tabular-nums" as const,
+                      fontWeight: triCol === c.cle ? 800 : undefined,
+                      color: triCol === c.cle ? "var(--vert)" : undefined }}>
+                      {c.cle === "capex_musd" ? fmtVal(r.capex_musd) : fmtNombre(r[c.cle])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* AU-DELÀ DES DIX. Le service rend ces trois classements ENTIERS — le
+            tableau se retrie, et trier dix lignes choisies sur un autre critère
+            aurait fait disparaître la onzième sans que rien ne le dise. Il
+            s'ouvre tout de même sur les dix premières : c'est un classement, et
+            sa queue n'intéresse qu'après coup.
+
+            LE BOUTON DES SÉRIES ANNUELLES, AU PIXEL PRÈS — d'autres cartes de
+            cette même page en portent un, même pilule, même « Réduire » au
+            retour. Il dit combien de lignes il reste, pour qu'on sache ce qu'on
+            déplie, et ne s'imprime pas : sur papier, plus rien ne se clique. */}
+        {reste > 0 && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
+            className="rap-sans-impression">
+            <button onClick={() => setTout(v => !v)}
+              style={{ padding: "6px 16px", borderRadius: 999,
+                border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+                color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
+                fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+              {tout ? "Réduire" : `Afficher la suite (${reste})`}
+            </button>
+          </div>
+        )}
+        {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT. Ces deux
+            colonnes sont des SOMMES : elles ne peuvent pas porter le « ≈ »
+            ligne à ligne du tableau des projets, puisque chacune mêle des
+            projets déclarés et des projets estimés sans qu'on puisse dire
+            lesquels. « Comprend » et non « sont » : tout n'y est pas estimé, et
+            écrire le contraire discréditerait des chiffres en partie
+            déclarés. */}
+        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
+          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
+          non déclarées par l&apos;entreprise.
+        </p>
+      </Carte>
+    </div>
+  );
+}
+
 export default function RapportIde() {
   const d3Pret = useD3Pret();
 
@@ -160,42 +305,6 @@ export default function RapportIde() {
     .filter(p => p.capex_musd != null)
     .sort((a, b) => (b.capex_musd ?? 0) - (a.capex_musd ?? 0)).slice(0, 8), [fdi]);
 
-  // ── LE CLASSEMENT DES ACTIVITÉS, TRIÉ PAR LE LECTEUR ───────────────────────
-  // IL S'OUVRE SUR LE MONTANT, décroissant. C'est la première question d'un
-  // comité — où va l'argent —, et le nombre de projets, qui menait ce tableau
-  // jusqu'ici, ne la posait pas : « Services aux entreprises » mène de loin en
-  // projets (69) et pèse trois fois moins que « Fabrication » en capital.
-  //
-  // LES TROIS COLONNES SE TRIENT, parce qu'aucune ne résume les deux autres.
-  // Un même relevé se lit différemment selon qu'on cherche des projets, des
-  // capitaux ou des emplois, et trancher pour le lecteur revenait à lui cacher
-  // deux lectures sur trois.
-  const [triCol, setTriCol] = useState<CleTri>("capex_musd");
-  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
-  const [toutesActivites, setToutesActivites] = useState(false);
-  // Cliquer la colonne active RETOURNE le tri ; cliquer une autre colonne s'y
-  // pose en décroissant. Repartir de l'ordre croissant sur une colonne qu'on
-  // vient de choisir montrerait d'abord les plus petites valeurs, ce que
-  // personne ne demande d'un classement.
-  const trierPar = (c: CleTri) => {
-    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
-    else { setTriCol(c); setTriSens("desc"); }
-  };
-  const activites = useMemo(() => {
-    const lignes = [...(fdi?.tops?.activites ?? [])];
-    // LES VALEURS MANQUANTES RESTENT EN QUEUE DANS LES DEUX SENS. Une activité
-    // dont le relevé ne dit pas le capital n'est pas « la plus petite » : on ne
-    // sait pas. La remonter en tête d'un tri croissant en ferait une réponse.
-    lignes.sort((a, b) => {
-      const x = a[triCol], y = b[triCol];
-      if (x == null && y == null) return a.nom.localeCompare(b.nom, "fr");
-      if (x == null) return 1;
-      if (y == null) return -1;
-      if (x !== y) return triSens === "desc" ? y - x : x - y;
-      return a.nom.localeCompare(b.nom, "fr");
-    });
-    return lignes;
-  }, [fdi, triCol, triSens]);
 
   const dateEdition = dateDuJour();
   const periodeFdi = fdi?.kpis?.annees?.[0] != null
@@ -325,128 +434,33 @@ export default function RapportIde() {
                   entreprises ont leur écran, avec leurs comptes sur tout le
                   relevé ; c'est là qu'on les classe.
 
-                  « NATURE DES IMPLANTATIONS » DEVIENT « LES ACTIVITÉS LES PLUS
-                  MENÉES ». Le classement lit la colonne des ACTIVITÉS — ce que
+                  « NATURE DES IMPLANTATIONS » EST DEVENU « CLASSEMENT DES
+                  ACTIVITÉS MENÉES ». Le classement lit la colonne des ACTIVITÉS — ce que
                   l'entreprise vient faire sur place : fabriquer, vendre,
                   distribuer. « Nature des implantations » nommait une autre
                   colonne du relevé, celle des TYPES de projet, qui n'est pas
                   affichée ici. */}
-              {/* ── LES DEUX PREMIERS CLASSEMENTS SONT DES LISTES ORDONNÉES ──
-                  CELLES DU RAPPORT DES SIGNAUX, au composant près. Un graphe à
-                  barres range par longueur ; ces deux classements-là se lisent
-                  par RANG — quel est le premier pays d'origine, le deuxième, le
-                  troisième —, et le rang n'y était écrit nulle part : il fallait
-                  le compter de l'œil. La liste le numérote, met le podium en
-                  pastille pleine, garde la barre pour la proportion, et tient
-                  huit lignes dans la hauteur que le graphe prenait pour six.
+              {/* ── TROIS CLASSEMENTS, UN SEUL TABLEAU ──────────────────────────
+                  LE GRAPHE NE PORTAIT QU'UN NOMBRE. Origines, secteurs et
+                  activités se rangeaient par nombre de projets, et c'est tout
+                  ce qu'on en tirait. Or le relevé sait dire, pour chacun, ce
+                  qu'il pèse en ARGENT et en EMPLOIS — et les trois ne disent
+                  pas la même chose : un pays peut mener le classement des
+                  projets et peser peu en capital, ou l'inverse. La France
+                  annonce 56 projets au Sénégal ; ce n'est pas elle qui y
+                  engage le plus.
 
-                  Les deux rapports de la plateforme se ressemblent désormais là
-                  où ils disent la même chose. La colonne chiffrée dit « Projets »
-                  et non « Signaux » : ce sont deux relevés distincts, et le
-                  lecteur qui passe de l'un à l'autre doit voir lequel il lit. */}
-              <div className="rap-duo" style={{ marginTop: 16 }}>
-                {/* LES DRAPEAUX, comme sur le rapport des signaux. Un pays se
-                    reconnaît à son drapeau avant d'être lu, et c'est le seul
-                    classement du rapport dont les lignes en portent un. */}
-                <ClassementRapport titre="Origine des projets" colonne="Pays" drapeaux
-                  libelleValeur="Projets" accent="var(--orange)" rows={fdi.tops.partenaires ?? []} />
-                <ClassementRapport titre="Secteurs les plus visés" colonne="Secteur"
-                  libelleValeur="Projets" accent="var(--bleu)" rows={fdi.tops.secteurs ?? []} />
-              </div>
-
-              {/* ── LES ACTIVITÉS, EN TABLEAU ───────────────────────────────────
-                  LE GRAPHE NE PORTAIT QU'UN NOMBRE. Il rangeait les activités
-                  par nombre de projets, et c'est tout ce qu'on en tirait. Or le
-                  relevé sait dire, pour chacune, ce qu'elle pèse en ARGENT et en
-                  EMPLOIS — et les trois ne disent pas la même chose : une
-                  activité peut mener le classement des projets et peser peu en
-                  capital, ou l'inverse. Un tableau porte les trois côte à côte
-                  là où une barre n'en portait qu'une.
-
-                  Il prend le dessin des « plus gros projets annoncés », juste
-                  en dessous : deux tableaux voisins dans une même page doivent
-                  se lire de la même façon. */}
-              {activites.length > 0 && (
-                <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-                  <Carte titre="Classement des activités menées" tag={periodeFdi}>
-                    <div style={{ overflowX: "auto" as const }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                        <thead>
-                          <tr>
-                            <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
-                            <th style={{ ...ENT_RAP, textAlign: "left" as const }}>Activité</th>
-                            {COLS_ACTIVITES.map(c => (
-                              <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
-                                actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(toutesActivites ? activites : activites.slice(0, 10)).map((r, i) => (
-                            <tr key={r.nom}>
-                              {/* LE RANG SUIT LE TRI : il dit la place dans le
-                                  classement qu'on a sous les yeux, non une
-                                  place absolue qui contredirait l'ordre des
-                                  lignes. */}
-                              <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
-                              <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={r.nom}>{r.nom}</td>
-                              {/* LA COLONNE QUI TRIE PORTE LA COULEUR ET LE
-                                  GRAS. Le vert était sur les projets quand ils
-                                  menaient le tableau ; il suit maintenant le
-                                  tri, sans quoi l'œil serait attiré par une
-                                  colonne qui ne commande plus rien. */}
-                              {COLS_ACTIVITES.map(c => (
-                                <td key={c.cle} style={{ ...CEL, textAlign: "right" as const,
-                                  fontVariantNumeric: "tabular-nums" as const,
-                                  fontWeight: triCol === c.cle ? 800 : undefined,
-                                  color: triCol === c.cle ? "var(--vert)" : undefined }}>
-                                  {c.cle === "capex_musd" ? fmtVal(r.capex_musd) : fmtNombre(r[c.cle])}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {/* AU-DELÀ DES DIX. Le service rend la nomenclature entière
-                        — dix-sept activités au plus —, et le tableau s'ouvre sur
-                        les dix premières : c'est un classement, et sa queue
-                        n'intéresse qu'après coup. Le bouton dit combien de
-                        lignes il reste, pour qu'on sache ce qu'on déplie. */}
-                    {/* LE BOUTON DES SÉRIES ANNUELLES, AU PIXEL PRÈS. Trois
-                        cartes de cette même page en portent déjà un — même
-                        libellé, même pilule, même « Réduire » au retour. Un
-                        quatrième bouton d'un dessin à soi, sur la même page,
-                        se serait lu comme un autre geste. */}
-                    {activites.length > 10 && (
-                      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
-                        className="rap-sans-impression">
-                        <button onClick={() => setToutesActivites(v => !v)}
-                          style={{ padding: "6px 16px", borderRadius: 999,
-                            border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-                            color: toutesActivites ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
-                            fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
-                          {toutesActivites ? "Réduire" : `Afficher la suite (${activites.length - 10})`}
-                        </button>
-                      </div>
-                    )}
-                    {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT.
-                        Ces deux colonnes sont des SOMMES : elles ne peuvent pas
-                        porter le « ≈ » ligne à ligne du tableau voisin, puisque
-                        chacune mêle des projets déclarés et des projets estimés
-                        sans qu'on puisse dire lesquels. « Comprend » et non
-                        « sont » : tout n'y est pas estimé, et écrire le
-                        contraire discréditerait des chiffres en partie
-                        déclarés. */}
-                    <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                      * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
-                      non déclarées par l&apos;entreprise.
-                    </p>
-                  </Carte>
-                </div>
-              )}
+                  LES TROIS PARTAGENT DONC LE MÊME TABLEAU, dans le dessin des
+                  « plus gros projets annoncés » juste en dessous : quatre
+                  tableaux voisins dans une même page doivent se lire de la
+                  même façon, et trois copies d'un même code auraient fini par
+                  diverger d'un détail. */}
+              <TableauClassement titre="Pays d'origine des projets" colonne="Pays" drapeaux
+                tag={periodeFdi} rows={fdi.tops.partenaires ?? []} />
+              <TableauClassement titre="Classement des sect. d'activité des projets"
+                colonne="Secteur" tag={periodeFdi} rows={fdi.tops.secteurs ?? []} />
+              <TableauClassement titre="Classement des activités menées"
+                colonne="Activité" tag={periodeFdi} rows={fdi.tops.activites ?? []} />
 
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
                 <Carte titre="Les plus gros projets annoncés" tag={periodeFdi}>
