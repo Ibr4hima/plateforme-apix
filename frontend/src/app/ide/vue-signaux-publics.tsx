@@ -33,9 +33,10 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
          badge_violet } from "@/lib/couleurs";
-import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, fmtNombre,
+import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet, fmtNombre,
          LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
-         TitreFiche } from "./partage";
+         TITRE_FACETTE, TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre.
 
@@ -54,10 +55,15 @@ import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, fmtNombre,
     souvent sur elle qu'on repart. */
 export type FiltresSignaux = {
   origine: string; destination: string; secteur: string; activite: string;
+  /** Les bornes d'années retenues. NULLES quand toute la période est prise :
+      la colonne ne compte alors pas ce filtre comme actif, et une remise à
+      zéro les remet à null plutôt qu'aux bornes du relevé. */
+  anneeMin: number | null; anneeMax: number | null;
   recherche: string;
 };
 export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
-  origine: "", destination: "", secteur: "", activite: "", recherche: "",
+  origine: "", destination: "", secteur: "", activite: "",
+  anneeMin: null, anneeMax: null, recherche: "",
 };
 
 type Valeur = { id: number; libelle: string | null; court?: string | null;
@@ -98,8 +104,14 @@ const PERIMETRE = "Afrique";
 /** L'adresse du périmètre. Elle est construite ici et employée par LES DEUX
     composants — la colonne de filtres et la liste : la clé de cache étant
     l'URL, ils partagent le même téléchargement sans se connaître. */
-function urlPerimetre(f: FiltresSignaux, recherche: string): string {
+function urlPerimetre(f: FiltresSignaux, recherche: string,
+                      a0: number | null, a1: number | null): string {
   const p = new URLSearchParams();
+  // LES ANNÉES ARRIVENT DÉJÀ AMORTIES. Un curseur qu'on fait glisser passe par
+  // toutes les valeurs intermédiaires ; sans le délai, chaque pixel parcouru
+  // vaudrait une requête de périmètre et une de liste.
+  if (a0 != null) p.set("annee_min", String(a0));
+  if (a1 != null) p.set("annee_max", String(a1));
   if (f.origine) p.set("origine", f.origine);
   if (f.secteur) p.set("secteurs", f.secteur);
   if (f.activite) p.set("activites", f.activite);
@@ -115,12 +127,46 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
   filtres: FiltresSignaux; onChange: (f: FiltresSignaux) => void;
 }) {
   const recherche = useDebounced(filtres.recherche, 300);
-  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche), { garder: true }).data;
+  const a0 = useDebounced(filtres.anneeMin, 300);
+  const a1 = useDebounced(filtres.anneeMax, 300);
+  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche, a0, a1), { garder: true }).data;
   if (!per) return null;
   const set = (k: keyof FiltresSignaux) => (v: string) => onChange({ ...filtres, [k]: v });
+  const [b0, b1] = per.annees;
   return (
     <>
       <div style={{ height: 1, background: "var(--fond)", marginBottom: 18 }} />
+      {/* QUAND. La période ouvre la colonne, avant même le pays d'origine :
+          c'est le cadre dans lequel tout le reste se lit. « Les intentions
+          américaines » ne veut rien dire sans dire de quand — un signal de 2011
+          et un de 2026 ne se démarchent pas de la même façon.
+
+          LES BORNES VIENNENT DU RELEVÉ ENTIER, non du périmètre filtré : le
+          service les calcule hors de toute condition. Sans cela, réduire la
+          plage rétrécirait le curseur à la sélection qu'on vient de faire, et
+          l'on ne pourrait plus l'élargir.
+
+          TOUTE LA PÉRIODE VAUT « PAS DE FILTRE » : les bornes retombent alors à
+          null, le filtre ne se compte pas parmi les actifs, et l'adresse de la
+          page n'en porte pas la trace. */}
+      {b0 != null && b1 != null && b1 > b0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={TITRE_FACETTE}>Période</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
+              fontVariantNumeric: "tabular-nums" as const }}>
+              {filtres.anneeMin ?? b0} – {filtres.anneeMax ?? b1}
+            </span>
+          </div>
+          <CurseurPlageNace min={b0} max={b1}
+            debut={filtres.anneeMin ?? b0} fin={filtres.anneeMax ?? b1}
+            onChange={(a, b) => onChange({ ...filtres,
+              anneeMin: a === b0 && b === b1 ? null : a,
+              anneeMax: a === b0 && b === b1 ? null : b })} />
+          <div style={{ height: 18 }} />
+          <Filet />
+        </div>
+      )}
       {/* D'OÙ PART L'INTENTION. C'est la première question d'une agence de
           promotion : quels pays regardent l'Afrique, et lesquels regardent le
           Sénégal. Un signal a UNE origine — contrairement à ses destinations,
@@ -167,19 +213,21 @@ export default function VueSignauxPublics({ filtres, onChange }: {
   // une modale enfant d'une carte hériterait de son curseur et de son clic.
   const [ouvert, setOuvert] = useState<number | null>(null);
   const recherche = useDebounced(filtres.recherche, 300);
+  const a0 = useDebounced(filtres.anneeMin, 300);
+  const a1 = useDebounced(filtres.anneeMax, 300);
 
   // Un changement de filtre ramène au premier écran : rester en page 6 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
-  const clef = urlPerimetre(filtres, recherche);
+  const clef = urlPerimetre(filtres, recherche, a0, a1);
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 
   const url = useMemo(() => {
-    const p = new URLSearchParams(urlPerimetre(filtres, recherche).split("?")[1]);
+    const p = new URLSearchParams(urlPerimetre(filtres, recherche, a0, a1).split("?")[1]);
     p.set("page", String(page));
     p.set("par_page", String(PAR_PAGE));
     return `${API}/fdi/public/signaux?${p}`;
-  }, [filtres, recherche, page]);
+  }, [filtres, recherche, a0, a1, page]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;

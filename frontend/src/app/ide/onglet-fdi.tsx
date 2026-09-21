@@ -197,9 +197,11 @@ export default function OngletFdi({ onVue }: {
     const sig = {
       origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
       secteur: p.get("s_sec") ?? "", activite: p.get("s_act") ?? "",
+      anneeMin: p.get("s_a0") ? Number(p.get("s_a0")) : null,
+      anneeMax: p.get("s_a1") ? Number(p.get("s_a1")) : null,
       recherche: p.get("s_q") ?? "",
     };
-    if (Object.values(sig).some(Boolean)) setFiltresSignaux(sig);
+    if (Object.values(sig).some(v => v !== "" && v !== null)) setFiltresSignaux(sig);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -329,6 +331,8 @@ export default function OngletFdi({ onVue }: {
     poser("s_dest", filtresSignaux.destination);
     poser("s_sec", filtresSignaux.secteur);
     poser("s_act", filtresSignaux.activite);
+    poser("s_a0", filtresSignaux.anneeMin != null ? String(filtresSignaux.anneeMin) : null);
+    poser("s_a1", filtresSignaux.anneeMax != null ? String(filtresSignaux.anneeMax) : null);
     poser("s_q", filtresSignaux.recherche.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,
@@ -354,8 +358,13 @@ export default function OngletFdi({ onVue }: {
       remettre: reinitProjets,
     },
     signaux: {
-      nb: (Object.entries(filtresSignaux)
-        .filter(([c, v]) => (c === "recherche" ? v.trim() : v)).length),
+      // LA PÉRIODE COMPTE POUR UN, non pour deux : ses deux bornes sont un
+      // seul geste, et l'afficher « 2 filtres actifs » après un glissement de
+      // curseur ferait chercher le second.
+      nb: (["origine", "destination", "secteur", "activite"] as const)
+            .filter(c => filtresSignaux[c]).length
+          + (filtresSignaux.recherche.trim() ? 1 : 0)
+          + (filtresSignaux.anneeMin != null || filtresSignaux.anneeMax != null ? 1 : 0),
       remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
     },
     entreprises: {
@@ -528,6 +537,30 @@ export default function OngletFdi({ onVue }: {
                   </div>
                 )}
 
+                {/* LA PÉRIODE OUVRE LA COLONNE, avant le pays : c'est le cadre
+                    dans lequel tout le reste se lit. « Ce que le Sénégal
+                    reçoit » ne veut rien dire sans dire de quand — un projet
+                    annoncé en 2005 et un de 2026 ne se lisent pas de la même
+                    façon.
+
+                    Ses bornes viennent de ce que les données couvrent, et le
+                    curseur ne s'affiche pas si le relevé tient sur une seule
+                    année : il n'y aurait rien à y régler. */}
+                {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span style={TITRE_SS}>Période</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
+                        fontVariantNumeric: "tabular-nums" }}>{anneeMin} – {anneeMax}</span>
+                    </div>
+                    <CurseurPlageNace min={bornes[0]} max={bornes[1]}
+                      debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
+                      onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
+                    <div style={{ height: 18 }} />
+                    <Filet />
+                  </div>
+                )}
+
                 {/* Les pays dont le périmètre est complet dans ce sens. La base porte les deux
                     bouts de chaque projet, mais un relevé n'en rend exhaustif
                     qu'un seul : les autres pays n'y figurent que pour ce qu'ils
@@ -609,22 +642,6 @@ export default function OngletFdi({ onVue }: {
                 </div>
 
                 <Filet />
-
-                {/* Période — bornée par ce que les données couvrent */}
-                {bornes[0] != null && bornes[1] != null && bornes[1] > bornes[0] && (
-                  <div style={{ marginBottom: 18 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={TITRE_SS}>Période</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-                        fontVariantNumeric: "tabular-nums" }}>{anneeMin} – {anneeMax}</span>
-                    </div>
-                    <CurseurPlageNace min={bornes[0]} max={bornes[1]}
-                      debut={anneeMin ?? bornes[0]} fin={anneeMax ?? bornes[1]}
-                      onChange={(a, b) => { setAnneeMin(a); setAnneeMax(b); }} />
-                    <div style={{ height: 18 }} />
-                    <Filet />
-                  </div>
-                )}
 
                 <FacetteSecteurs secteurs={per?.secteurs ?? []} sousSecteurs={per?.sous_secteurs ?? []}
                   choixSec={secteurs} choixSous={sousSecteurs}
