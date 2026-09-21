@@ -381,7 +381,15 @@ async def signaux_publics(
              -- aucune obligation de trancher deux lignes égales toujours de la
              -- même façon. Un rapport qu'on cite ne peut pas changer d'ordre
              -- entre le moment où on le lit et celui où on l'imprime.
-             ORDER BY s.{colonne}_musd DESC, s.id LIMIT 8"""), params)).fetchall()]
+             --
+             -- VINGT LIGNES : le rapport en montre dix et déplie les dix
+             -- autres. La borne est posée ICI parce que c'est elle qui définit
+             -- la POPULATION de la carte — « les plus gros » veut dire les
+             -- vingt plus gros, et c'est sur eux que porte le tri du lecteur.
+             -- La requête et la fenêtre de l'écran ne peuvent pas diverger
+             -- sans que la carte se remplisse de lignes qu'aucun titre
+             -- n'annonce.
+             ORDER BY s.{colonne}_musd DESC, s.id LIMIT 20"""), params)).fetchall()]
 
     remarquables = {"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
 

@@ -19,33 +19,17 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
-import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
-         dateDuJour, fmtNombre, fmtVal, GrapheMultiPays } from "../partage";
+import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CarteTableauAnnees, CEL,
+         ChiffreCle, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT, fmtNombre, fmtVal,
+         GrapheMultiPays, PastilleRang } from "../partage";
 
 const PAYS = "Sénégal";
-
-/** L'en-tête de colonne des deux tableaux du rapport, écrit une fois : ils se
-    suivent dans la page et doivent se lire de la même façon. */
-const ENT_RAP = { fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-  letterSpacing: "0.1em", textTransform: "uppercase" as const, padding: "8px 10px",
-  borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const } as const;
-
-/** Le rang d'une ligne de tableau — la pastille des classements en liste, pour
-    que le podium se repère de la même façon dans toute la plateforme.
-    (Nommée `PastilleRang` et non `Rang` : ce dernier est déjà le type d'une
-    ligne de classement dans ce fichier, et deux `Rang` se relisent mal.) */
-const PastilleRang = ({ n }: { n: number }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center",
-    minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10, fontSize: 10, fontWeight: 800,
-    background: n <= 3 ? "var(--bleu)" : "var(--bleu-voile)",
-    color: n <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{n}</span>
-);
 
 /** Les trois colonnes chiffrées des classements, et ce qu'on lit dans chacune.
     L'ordre de la liste EST l'ordre des colonnes : le montant d'abord, parce que
@@ -67,54 +51,7 @@ const COLS_PROJET = [
 ] as const;
 type CleProjet = (typeof COLS_PROJET)[number]["cle"];
 
-/** Le nombre de lignes montrées avant dépliage. Dix : c'est le format d'un
-    classement qu'on cite en réunion, et les trois cartes doivent s'ouvrir à la
-    même hauteur. */
-const FENETRE_CLASSEMENT = 10;
 
-/** L'en-tête cliquable d'une colonne triable.
-
-    TOUTES LES COLONNES PORTENT UNE FLÈCHE, et c'est la seule façon d'annoncer
-    qu'elles se trient. On n'avait d'abord mis le chevron que sur la colonne
-    active, pour ne pas donner à lire trois tris là où il n'y en a qu'un : le
-    résultat est qu'on ne devinait pas les deux autres. Un tableau dont il faut
-    savoir d'avance qu'il se trie ne se trie pour personne.
-
-    LES DEUX ÉTATS SE DISTINGUENT PAR LA FORME, non par la seule couleur. La
-    colonne inactive porte une double flèche grise — « ceci se trie, dans un
-    sens ou dans l'autre » — et la colonne active un chevron unique, bleu, qui
-    pointe le sens en vigueur. La différence tient donc aussi à l'impression et
-    pour qui distingue mal les teintes.
-
-    Le survol colore le titre en bleu : le curseur et la couleur confirment
-    ensemble que la chose se clique. */
-function EnteteTri({ libelle, actif, sens, onClick }: {
-  libelle: string; actif: boolean; sens: "asc" | "desc"; onClick: () => void;
-}) {
-  return (
-    <th style={{ ...ENT_RAP, textAlign: "right" as const, padding: 0 }}
-      aria-sort={actif ? (sens === "asc" ? "ascending" : "descending") : "none"}>
-      <button onClick={onClick}
-        title={actif
-          ? `Trier par ${libelle.replace("*", "")} — ordre ${sens === "desc" ? "croissant" : "décroissant"}`
-          : `Trier par ${libelle.replace("*", "")}`}
-        style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-end", gap: 4,
-          width: "100%", padding: "8px 10px", border: "none", background: "transparent",
-          cursor: "pointer", font: "inherit", letterSpacing: "inherit",
-          textTransform: "inherit" as const, whiteSpace: "nowrap" as const,
-          color: actif ? "var(--bleu)" : "inherit" }}
-        onMouseEnter={e => { if (!actif) e.currentTarget.style.color = "var(--bleu)"; }}
-        onMouseLeave={e => { if (!actif) e.currentTarget.style.color = "inherit"; }}>
-        {libelle}
-        {actif
-          ? (sens === "desc"
-              ? <ChevronDown size={12} style={{ flexShrink: 0 }} />
-              : <ChevronUp size={12} style={{ flexShrink: 0 }} />)
-          : <ChevronsUpDown size={12} style={{ flexShrink: 0 }} />}
-      </button>
-    </th>
-  );
-}
 
 // `iso` n'est renseigné que pour le classement des PAYS : c'est lui qui porte
 // le drapeau. Il reste nul quand le pays n'a pas été rapproché du référentiel —
@@ -190,7 +127,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
   }, [rows, triCol, triSens]);
 
   if (!lignes.length) return null;
-  const reste = lignes.length - FENETRE_CLASSEMENT;
+  const reste = lignes.length - FENETRE_RAPPORT;
 
   return (
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
@@ -208,7 +145,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
               </tr>
             </thead>
             <tbody>
-              {(tout ? lignes : lignes.slice(0, FENETRE_CLASSEMENT)).map((r, i) => (
+              {(tout ? lignes : lignes.slice(0, FENETRE_RAPPORT)).map((r, i) => (
                 <tr key={r.nom}>
                   {/* LE RANG SUIT LE TRI : il dit la place dans le classement
                       qu'on a sous les yeux, non une place absolue qui
@@ -252,20 +189,7 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
             cette même page en portent un, même pilule, même « Réduire » au
             retour. Il dit combien de lignes il reste, pour qu'on sache ce qu'on
             déplie, et ne s'imprime pas : sur papier, plus rien ne se clique. */}
-        {reste > 0 && (
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
-            className="rap-sans-impression">
-            <button onClick={() => setTout(v => !v)}
-              style={{ padding: "6px 16px", borderRadius: 999,
-                border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-                color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
-                fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
-              {tout ? "Réduire" : `Afficher la suite (${reste})`}
-            </button>
-          </div>
-        )}
+        <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
         {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT. Ces deux
             colonnes sont des SOMMES : elles ne peuvent pas porter le « ≈ »
             ligne à ligne du tableau des projets, puisque chacune mêle des
@@ -324,7 +248,7 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
   }, [rows, triCol, triSens]);
 
   if (!lignes.length) return null;
-  const reste = lignes.length - FENETRE_CLASSEMENT;
+  const reste = lignes.length - FENETRE_RAPPORT;
 
   return (
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
@@ -344,7 +268,7 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
               </tr>
             </thead>
             <tbody>
-              {(tout ? lignes : lignes.slice(0, FENETRE_CLASSEMENT)).map((p, i) => {
+              {(tout ? lignes : lignes.slice(0, FENETRE_RAPPORT)).map((p, i) => {
                 const chiffre = (cle: CleProjet) => ({ ...CEL, textAlign: "right" as const,
                   whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" as const,
                   fontWeight: triCol === cle ? 800 : undefined,
@@ -373,20 +297,7 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
             </tbody>
           </table>
         </div>
-        {reste > 0 && (
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
-            className="rap-sans-impression">
-            <button onClick={() => setTout(v => !v)}
-              style={{ padding: "6px 16px", borderRadius: 999,
-                border: "1px solid var(--bordure-forte)", background: "var(--carte)",
-                color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
-                fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
-              {tout ? "Réduire" : `Afficher la suite (${reste})`}
-            </button>
-          </div>
-        )}
+        <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
       </Carte>
     </div>
   );

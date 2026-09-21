@@ -34,9 +34,10 @@ import { ArrowLeft } from "lucide-react";
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
-import { API, ARetenir, CarteRapport as Carte, CarteTableauAnnees, CEL, ChiffreCle,
-         ClassementRapport, dateDuJour, fmtNombre, fmtVal, GrapheMultiPays,
-         moisEnClair, SegmentRapport } from "../partage";
+import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CarteTableauAnnees, CEL,
+         ChiffreCle, ClassementRapport, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT,
+         fmtNombre, fmtVal, GrapheMultiPays, moisEnClair, PastilleRang,
+         SegmentRapport } from "../partage";
 
 type Rang = { nom: string; nb: number; iso?: string | null };
 type Gros = {
@@ -70,44 +71,113 @@ type Zone = {
     qu'il devra venir. */
 const PERIMETRE = "Afrique";
 
+/** Les colonnes triables d'un signal remarquable. Le montant d'abord — c'est
+    lui qui définit la carte —, la période en dernier : elle coupait la ligne
+    entre ce qu'on lit et ce qu'on compare. */
+const COLS_GROS = [
+  { cle: "montant", libelle: "" },
+  { cle: "periode", libelle: "Période" },
+] as const;
+type CleGros = (typeof COLS_GROS)[number]["cle"];
+
 /** Un tableau de signaux remarquables. Les deux montants ont le même gabarit —
     ils se lisent l'un après l'autre — mais jamais la même colonne : voir
-    l'en-tête du fichier. */
+    l'en-tête du fichier.
+
+    LE MÊME TABLEAU QUE LE RAPPORT DES PROJETS : rang en pastille, colonnes
+    triables, dix lignes puis le reste au dépliage. Les deux documents se
+    lisent l'un après l'autre et doivent se manœuvrer de la même façon ; les
+    briques viennent du fichier partagé pour qu'aucune ne puisse dériver d'un
+    rapport à l'autre.
+
+    IL S'OUVRE SUR LE MONTANT, décroissant — c'est le critère qui définit la
+    carte, et la population qu'elle nomme : « les plus gros » veut dire les
+    vingt plus gros. Retrier par période répond à « parmi eux, lesquels sont
+    récents », une question, non un classement chronologique du relevé. */
 function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
+  const [triCol, setTriCol] = useState<CleGros>("montant");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+  const [tout, setTout] = useState(false);
+
+  // Cliquer la colonne active RETOURNE le tri ; cliquer l'autre s'y pose en
+  // décroissant — personne ne demande d'un classement qu'il s'ouvre par le bas.
+  const trierPar = (c: CleGros) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+
+  const rangees = useMemo(() => {
+    const l = [...lignes];
+    l.sort((a, b) => {
+      const x = a[triCol], y = b[triCol];
+      // Un montant manquant n'est pas un petit montant : on ne le connaît pas,
+      // et il reste en queue dans les deux sens.
+      if (x == null && y == null) return 0;
+      if (x == null) return 1;
+      if (y == null) return -1;
+      // La période se compare comme un texte — « 2024-12 » et « 2010-05 » se
+      // rangent d'eux-mêmes —, le montant comme un nombre.
+      const d = typeof x === "string" || typeof y === "string"
+        ? String(x).localeCompare(String(y))
+        : (x as number) - (y as number);
+      return triSens === "desc" ? -d : d;
+    });
+    return l;
+  }, [lignes, triCol, triSens]);
+
   if (lignes.length === 0) {
     return <p style={{ fontSize: 12, color: "var(--gris)" }}>Aucun montant renseigné.</p>;
   }
+  const reste = rangees.length - FENETRE_RAPPORT;
+
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {["Entreprise", "Origine", "Destination", "Stade", "Période", unite].map((t, i) => (
-              <th key={t} style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
-                letterSpacing: "0.1em", textTransform: "uppercase",
-                textAlign: i === 5 ? "right" : "left", padding: "8px 10px",
-                borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" }}>{t}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {lignes.map(l => (
-            <tr key={`${l.id}-${unite}`}>
-              <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{l.entreprise ?? "—"}</td>
-              <td style={CEL}>{l.origine ?? "—"}</td>
-              <td style={CEL}>{l.destination ?? "—"}</td>
-              <td style={CEL}>{l.nature ?? "—"}</td>
-              <td style={{ ...CEL, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                {moisEnClair(l.periode)}
-              </td>
-              <td style={{ ...CEL, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                {l.estime && <span style={{ fontWeight: 800 }}>≈ </span>}{fmtVal(l.montant)}
-              </td>
+    <>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+              {["Entreprise", "Origine", "Destination", "Stade"].map(t => (
+                <th key={t} style={{ ...ENT_RAP, textAlign: "left" as const }}>{t}</th>
+              ))}
+              {/* LA COLONNE DU MONTANT PORTE LE NOM DE CE QU'ELLE COMPTE —
+                  « Investissement » ou « Fonds levés » — et jamais l'autre :
+                  des fonds levés mesurent ce qu'une entreprise a réuni, un
+                  investissement ce qu'elle annonce dépenser. */}
+              {COLS_GROS.map(c => (
+                <EnteteTri key={c.cle} libelle={c.libelle || unite} sens={triSens}
+                  actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {(tout ? rangees : rangees.slice(0, FENETRE_RAPPORT)).map((l, i) => {
+              const chiffre = (cle: CleGros) => ({ ...CEL, textAlign: "right" as const,
+                whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" as const,
+                fontWeight: triCol === cle ? 800 : undefined,
+                color: triCol === cle ? "var(--vert)" : undefined });
+              return (
+                <tr key={`${l.id}-${unite}`}>
+                  {/* LE RANG SUIT LE TRI : il dit la place dans le classement
+                      qu'on a sous les yeux, non une place absolue qui
+                      contredirait l'ordre des lignes. */}
+                  <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                  <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{l.entreprise ?? "—"}</td>
+                  <td style={CEL}>{l.origine ?? "—"}</td>
+                  <td style={CEL}>{l.destination ?? "—"}</td>
+                  <td style={CEL}>{l.nature ?? "—"}</td>
+                  <td style={chiffre("montant")}>
+                    {l.estime && <span style={{ fontWeight: 800 }}>≈ </span>}{fmtVal(l.montant)}
+                  </td>
+                  <td style={chiffre("periode")}>{moisEnClair(l.periode)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
+    </>
   );
 }
 

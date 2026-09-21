@@ -4,7 +4,7 @@ import { useDialogue } from "@/lib/dialogue";
 import GrapheSignature from "@/components/shared/GrapheMultiPays";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { badge_bleu, badge_orange, badge_vert, badge_violet, badge_gris, badgeDe, voile } from "@/lib/couleurs";
-import { X, Plus, Table, ChevronDown, FileSpreadsheet, Search } from "lucide-react";
+import { X, Plus, Table, ChevronDown, ChevronsUpDown, ChevronUp, FileSpreadsheet, Search } from "lucide-react";
 import { fmtKpi, type KpiResult } from "@/lib/ideKpis";
 import { fmtMillionsUSD } from "@/lib/format";
 import { IconeCached } from "@/components/shared/PickerKpi";
@@ -1736,6 +1736,95 @@ export function dateDuJour(): string {
 /** Une cellule de tableau de rapport. */
 export const CEL = { fontSize: 12, color: "var(--texte)", padding: "10px 10px",
   borderBottom: "1px solid var(--bordure)" } as const;
+
+/** L'en-tête de colonne des tableaux de rapport. LES DEUX RAPPORTS L'EMPLOIENT
+    — projets et signaux —, et leurs tableaux se suivent d'un document à
+    l'autre : deux définitions auraient divergé d'un demi-point de corps. */
+export const ENT_RAP = { fontSize: 9.5, fontWeight: 800, color: "var(--gris)",
+  letterSpacing: "0.1em", textTransform: "uppercase" as const, padding: "8px 10px",
+  borderBottom: "1px solid var(--bordure)", whiteSpace: "nowrap" as const } as const;
+
+/** Le nombre de lignes qu'un tableau de rapport montre avant dépliage. Dix :
+    c'est le format d'un classement qu'on cite en réunion, et toutes les cartes
+    doivent s'ouvrir à la même hauteur. */
+export const FENETRE_RAPPORT = 10;
+
+/** Le rang d'une ligne de tableau — la pastille des classements en liste, pour
+    que le podium se repère de la même façon dans toute la plateforme. */
+export const PastilleRang = ({ n }: { n: number }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center",
+    minWidth: 20, height: 20, padding: "0 3px", borderRadius: 10, fontSize: 10, fontWeight: 800,
+    background: n <= 3 ? "var(--bleu)" : "var(--bleu-voile)",
+    color: n <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{n}</span>
+);
+
+/** L'en-tête cliquable d'une colonne triable.
+
+    TOUTES LES COLONNES TRIABLES PORTENT UNE FLÈCHE, et c'est la seule façon
+    d'annoncer qu'elles se trient. N'en mettre que sur la colonne active — ce
+    qu'on avait fait d'abord, pour ne pas donner à lire plusieurs tris à la fois
+    — laissait les autres indevinables : un tableau dont il faut savoir d'avance
+    qu'il se trie ne se trie pour personne.
+
+    LES DEUX ÉTATS SE DISTINGUENT PAR LA FORME, non par la seule couleur. La
+    colonne inactive porte une double flèche grise — « ceci se trie, dans un
+    sens ou dans l'autre » — et la colonne active un chevron unique, bleu, qui
+    pointe le sens en vigueur. La différence tient donc aussi à l'impression et
+    pour qui distingue mal les teintes.
+
+    Le survol colore le titre en bleu : le curseur et la couleur confirment
+    ensemble que la chose se clique. */
+export function EnteteTri({ libelle, actif, sens, onClick }: {
+  libelle: string; actif: boolean; sens: "asc" | "desc"; onClick: () => void;
+}) {
+  return (
+    <th style={{ ...ENT_RAP, textAlign: "right" as const, padding: 0 }}
+      aria-sort={actif ? (sens === "asc" ? "ascending" : "descending") : "none"}>
+      <button onClick={onClick}
+        title={actif
+          ? `Trier par ${libelle.replace("*", "")} — ordre ${sens === "desc" ? "croissant" : "décroissant"}`
+          : `Trier par ${libelle.replace("*", "")}`}
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-end", gap: 4,
+          width: "100%", padding: "8px 10px", border: "none", background: "transparent",
+          cursor: "pointer", font: "inherit", letterSpacing: "inherit",
+          textTransform: "inherit" as const, whiteSpace: "nowrap" as const,
+          color: actif ? "var(--bleu)" : "inherit" }}
+        onMouseEnter={e => { if (!actif) e.currentTarget.style.color = "var(--bleu)"; }}
+        onMouseLeave={e => { if (!actif) e.currentTarget.style.color = "inherit"; }}>
+        {libelle}
+        {actif
+          ? (sens === "desc"
+              ? <ChevronDown size={12} style={{ flexShrink: 0 }} />
+              : <ChevronUp size={12} style={{ flexShrink: 0 }} />)
+          : <ChevronsUpDown size={12} style={{ flexShrink: 0 }} />}
+      </button>
+    </th>
+  );
+}
+
+/** Le bouton « Afficher la suite » d'un tableau de rapport, et son retour.
+    Celui des séries annuelles, au pixel près : plusieurs cartes d'une même page
+    en portent un, et un second dessin se lirait comme un autre geste. Il ne
+    s'imprime pas — sur papier, plus rien ne se clique. */
+export function BoutonSuite({ reste, tout, onBasculer }: {
+  reste: number; tout: boolean; onBasculer: () => void;
+}) {
+  if (reste <= 0) return null;
+  return (
+    <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
+      className="rap-sans-impression">
+      <button onClick={onBasculer}
+        style={{ padding: "6px 16px", borderRadius: 999,
+          border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+          color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
+          fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
+        onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+        {tout ? "Réduire" : `Afficher la suite (${reste})`}
+      </button>
+    </div>
+  );
+}
 
 const MOIS_RAPPORT = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
   "août", "septembre", "octobre", "novembre", "décembre"];
