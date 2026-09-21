@@ -19,7 +19,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
@@ -60,26 +60,43 @@ type CleTri = (typeof COLS_ACTIVITES)[number]["cle"];
 
 /** L'en-tête cliquable d'une colonne triable.
 
-    LE CHEVRON N'APPARAÎT QUE SUR LA COLONNE QUI TRIE. Trois flèches grises en
-    permanence donneraient à lire trois tris là où il n'y en a qu'un ; la
-    colonne active porte le sien, les autres se découvrent au survol par le
-    curseur et la teinte. */
+    TOUTES LES COLONNES PORTENT UNE FLÈCHE, et c'est la seule façon d'annoncer
+    qu'elles se trient. On n'avait d'abord mis le chevron que sur la colonne
+    active, pour ne pas donner à lire trois tris là où il n'y en a qu'un : le
+    résultat est qu'on ne devinait pas les deux autres. Un tableau dont il faut
+    savoir d'avance qu'il se trie ne se trie pour personne.
+
+    LES DEUX ÉTATS SE DISTINGUENT PAR LA FORME, non par la seule couleur. La
+    colonne inactive porte une double flèche grise — « ceci se trie, dans un
+    sens ou dans l'autre » — et la colonne active un chevron unique, bleu, qui
+    pointe le sens en vigueur. La différence tient donc aussi à l'impression et
+    pour qui distingue mal les teintes.
+
+    Le survol colore le titre en bleu : le curseur et la couleur confirment
+    ensemble que la chose se clique. */
 function EnteteTri({ libelle, actif, sens, onClick }: {
   libelle: string; actif: boolean; sens: "asc" | "desc"; onClick: () => void;
 }) {
   return (
     <th style={{ ...ENT_RAP, textAlign: "right" as const, padding: 0 }}
       aria-sort={actif ? (sens === "asc" ? "ascending" : "descending") : "none"}>
-      <button onClick={onClick} title={`Trier par ${libelle.replace("*", "")}`}
+      <button onClick={onClick}
+        title={actif
+          ? `Trier par ${libelle.replace("*", "")} — ordre ${sens === "desc" ? "croissant" : "décroissant"}`
+          : `Trier par ${libelle.replace("*", "")}`}
         style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-end", gap: 4,
           width: "100%", padding: "8px 10px", border: "none", background: "transparent",
           cursor: "pointer", font: "inherit", letterSpacing: "inherit",
           textTransform: "inherit" as const, whiteSpace: "nowrap" as const,
-          color: actif ? "var(--bleu)" : "inherit" }}>
+          color: actif ? "var(--bleu)" : "inherit" }}
+        onMouseEnter={e => { if (!actif) e.currentTarget.style.color = "var(--bleu)"; }}
+        onMouseLeave={e => { if (!actif) e.currentTarget.style.color = "inherit"; }}>
         {libelle}
-        {actif && (sens === "desc"
-          ? <ChevronDown size={11} style={{ flexShrink: 0 }} />
-          : <ChevronUp size={11} style={{ flexShrink: 0 }} />)}
+        {actif
+          ? (sens === "desc"
+              ? <ChevronDown size={12} style={{ flexShrink: 0 }} />
+              : <ChevronUp size={12} style={{ flexShrink: 0 }} />)
+          : <ChevronsUpDown size={12} style={{ flexShrink: 0 }} />}
       </button>
     </th>
   );
@@ -424,6 +441,15 @@ export default function RapportIde() {
                         contraire discréditerait des chiffres en partie
                         déclarés. */}
                     <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
+                      {/* LA PHRASE DIT CE QUE LES FLÈCHES NE DISENT PAS : que
+                          le tri se change, et qu'un second clic le retourne.
+                          Les flèches annoncent la possibilité, elles
+                          n'apprennent pas le geste. Elle ne s'imprime pas —
+                          sur papier, plus rien ne se clique. */}
+                      <span className="rap-sans-impression">
+                        Cliquez un en-tête de colonne pour trier le classement ; un second clic
+                        inverse l&apos;ordre.<br />
+                      </span>
                       * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
                       non déclarées par l&apos;entreprise.
                     </p>
