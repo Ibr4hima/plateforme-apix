@@ -445,12 +445,18 @@ async def projets(
     # part, et le rapport en plaçait un de 168 M $ au troisième rang quand le
     # vrai troisième en pèse 800.
     #
-    # CINQUANTE LIGNES : c'est la POPULATION que la carte nomme — « les plus
+    # VINGT LIGNES : c'est la POPULATION que la carte nomme — « les plus
     # gros » —, et le lecteur peut la retrier à l'écran. La borne est donc
     # posée sur le montant, le critère qui définit la carte, et sur lui seul ;
-    # retrier ces cinquante par emplois ou par date répond à « parmi les plus
-    # gros, lesquels emploient le plus », qui est une question, non un
-    # classement des emplois du relevé entier.
+    # retrier ces vingt par emplois ou par date répond à « parmi les plus gros,
+    # lesquels emploient le plus », qui est une question, non un classement des
+    # emplois du relevé entier.
+    #
+    # L'écran en montre dix, puis les dix autres au dépliage. Le nombre est
+    # donc réglé ICI et non à l'affichage : envoyer cinquante lignes pour en
+    # montrer vingt ferait voyager trente projets que personne ne verrait, et
+    # le jour où l'on changerait la fenêtre de l'écran, la carte se remplirait
+    # de lignes qu'aucun titre n'annonce.
     #
     # Les projets sans montant en sont exclus : un investissement dont on ne
     # connaît pas la taille n'a pas de place dans un classement par taille.
@@ -468,7 +474,7 @@ async def projets(
                p.description_fr, p.description_en
         {base} AND p.capex_musd IS NOT NULL
         ORDER BY p.capex_musd DESC, p.annee DESC, p.mois DESC NULLS LAST, p.id
-        LIMIT 50"""), params)).fetchall()
+        LIMIT 20"""), params)).fetchall()
 
     def nb(v):
         return float(v) if v is not None else None
