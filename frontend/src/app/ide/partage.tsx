@@ -1461,6 +1461,26 @@ export const btnVue = (actif: boolean): React.CSSProperties => ({
   color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
 });
 
+/** Le bouton d'un SÉLECTEUR SEGMENTÉ de colonne de filtres — deux ou trois
+    options côte à côte, dont une seule vaut à la fois.
+
+    À ne pas confondre avec `btnVue`, qui empile des destinations dans une
+    colonne : ici les options sont de même nature et se comparent d'un coup
+    d'œil, là ce sont des pages où l'on va.
+
+    PARTAGÉ ENTRE LES DEUX ONGLETS, pour la raison qui a fait partager
+    `btnVue` : « Comparer par » chez les investissements réalisés et
+    « Destination » chez les projetés posent la même sorte de question au même
+    endroit de la même colonne. Deux définitions auraient fini par diverger
+    d'un demi-point de corps, et cela se voit en passant de l'un à l'autre. */
+export const btnSegment = (actif: boolean): React.CSSProperties => ({
+  flex: 1, padding: "7px 2px", borderRadius: 8,
+  border: `1px solid ${actif ? "var(--bleu)" : "var(--bordure-forte)"}`,
+  cursor: "pointer", fontSize: 11.5, fontWeight: actif ? 700 : 500,
+  background: actif ? "rgb(var(--bleu-rgb) / 0.08)" : "var(--carte-douce)",
+  color: actif ? "var(--bleu)" : "var(--texte)", fontFamily: "var(--font-google-sans)",
+});
+
 // ── La fiche d'une ligne, projet ou signal ───────────────────────────────────
 // Trois primitives partagées : les deux fiches se lisent l'une après l'autre
 // dans le même écran, et doivent se ressembler jusque dans leurs filets.

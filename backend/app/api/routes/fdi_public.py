@@ -90,9 +90,14 @@ def _conditions(observe: str, pays, annee_min, annee_max, secteurs, sous_secteur
     # réduisait au pays retenu une fraction de seconde après le chargement :
     # les autres apparaissaient, puis s'effaçaient, sans plus aucun moyen d'en
     # choisir un.
+    #
+    # `pays` PEUT ÊTRE UNE LISTE, et c'est ainsi qu'une RÉGION se filtre : non
+    # par une condition sur `ro.region_geo`, mais par les pays qui la composent,
+    # nommés un à un. La différence n'est pas cosmétique — voir `_zone_en_pays`.
     if pays and sauf != "pays":
-        contexte.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = :pays")
-        params["pays"] = pays
+        noms = list(pays) if isinstance(pays, (list, tuple, set)) else [pays]
+        contexte.append(f"COALESCE(ro.nom_fr, p.{observe}_brut) = ANY(:pays)")
+        params["pays"] = noms
 
     # LA PÉRIODE EST UNE FACETTE, elle aussi : restreindre 2015-2019 ne doit pas
     # faire disparaître un secteur de la liste, seulement mettre son compte à
@@ -124,6 +129,59 @@ def _conditions(observe: str, pays, annee_min, annee_max, secteurs, sous_secteur
     return contexte, facettes, params
 
 
+async def _pays_complets(db: AsyncSession, sens: str):
+    """Les pays dont le périmètre est COMPLET dans ce sens, avec leur géographie.
+
+    La base porte les deux bouts de chaque projet, mais un relevé n'en rend
+    exhaustif qu'un seul : sous un relevé « Dest = Sénégal », la France
+    apparaît, mais seulement pour ce qu'elle a envoyé au Sénégal. Ces pays-là
+    ne sont pas des périmètres.
+
+    Un périmètre relevé est un PAYS (« Sénégal ») ou une ZONE (« Afrique ») :
+    un lot « Dest = Africa » rend complet chacun des pays africains, pas une
+    ligne « Afrique » qui n'existe dans aucun référentiel. Les deux se
+    résolvent d'une seule requête, sur le nom ou sur le continent.
+    """
+    releves = [r.perimetre for r in (await db.execute(text(
+        # « base = projets » n'est pas décoratif : les signaux d'investisseur
+        # vivent dans les mêmes lots, et un lot de signaux lu ici ferait
+        # déclarer complet un périmètre de projets qui ne l'est pas.
+        "SELECT DISTINCT perimetre FROM fdi_lots_import "
+        " WHERE base = 'projets' AND sens = :s AND perimetre IS NOT NULL"),
+        {"s": sens if sens in COTE else "destination"})).fetchall()]
+    if not releves:
+        return []
+    # Le groupement vient de ref_pays et de nulle part ailleurs : c'est le seul
+    # du produit, pour qu'un même pays ne change pas de région d'un écran à
+    # l'autre.
+    return (await db.execute(text(
+        "SELECT nom_fr, continent, region_geo FROM ref_pays "
+        " WHERE nom_fr = ANY(:p) OR continent = ANY(:p)"),
+        {"p": releves})).fetchall()
+
+
+async def _zone_en_pays(db: AsyncSession, sens: str, region: str) -> list[str]:
+    """Une région rendue en la liste des pays qu'elle couvre DANS CE RELEVÉ.
+
+    POURQUOI PASSER PAR LES PAYS plutôt que filtrer sur `ro.region_geo`. Les
+    deux ne donnent pas le même total. Une condition sur la région ramasserait
+    aussi les projets destinés à des pays de la zone dont le périmètre n'est
+    PAS complet — ceux que la colonne de filtres refuse de proposer justement
+    parce qu'on n'en connaît qu'une part. Le compte de la région dépasserait
+    alors la somme des pays qu'elle affiche, et l'écart serait impossible à
+    expliquer à un lecteur qui additionne.
+
+    En nommant les pays un à un, la région vaut exactement la somme de ses
+    membres visibles : « Afrique australe » est ses cinq pays, ni plus, ni
+    moins. C'est la seule lecture qui se vérifie en additionnant la liste.
+
+    Une région inconnue rend une liste vide, et donc un écran vide plutôt
+    qu'un écran qui montrerait tout : mieux vaut zéro projet qu'un total faux.
+    """
+    return sorted(r.nom_fr for r in await _pays_complets(db, sens)
+                  if r.region_geo == region)
+
+
 def _filtres(*args, **kw) -> tuple[list[str], dict]:
     """Toutes les conditions réunies — ce que la LISTE et les COMPTEURS appliquent.
 
@@ -138,6 +196,7 @@ def _filtres(*args, **kw) -> tuple[list[str], dict]:
 async def perimetre(
     sens: str = "destination",
     pays: str | None = None,
+    region: str | None = None,
     annee_min: int | None = None,
     annee_max: int | None = None,
     secteurs: str | None = None,
@@ -163,9 +222,16 @@ async def perimetre(
     observe, partenaire = _sens(sens)
     joint = JOINTURES.format(observe=observe, partenaire=partenaire)
 
+    # LA DESTINATION SE LIT D'UNE FAÇON OU DE L'AUTRE, jamais des deux : un
+    # pays nommé, ou une région rendue en la liste de ses pays. Le pays
+    # l'emporte s'ils arrivent tous les deux — c'est le choix le plus précis,
+    # et une adresse qui porterait les deux vient forcément d'un lien bricolé.
+    rangs = await _pays_complets(db, sens)
+    cible = pays or ([r.nom_fr for r in rangs if r.region_geo == region] if region else None)
+
     async def compter(expr: str, sauf: str | None):
         contexte, facettes, params = _conditions(
-            observe, pays, annee_min, annee_max,
+            observe, cible, annee_min, annee_max,
             secteurs, sous_secteurs, activites, types, recherche, sauf)
         return (await db.execute(text(f"""
             SELECT {expr} AS nom,
@@ -175,31 +241,10 @@ async def perimetre(
             ORDER BY count(*) FILTER (WHERE {' AND '.join(facettes)}) DESC, 1"""),
             params)).fetchall()
 
-    # LES PAYS PROPOSÉS SONT CEUX DONT LE PÉRIMÈTRE EST COMPLET dans ce sens.
-    # Un relevé « Dest = Sénégal » fait apparaître la France, la Turquie, le
-    # Mali… mais seulement pour ce qu'ils ont envoyé au Sénégal : les proposer
-    # comme périmètres à part entière laisserait croire que la plateforme
-    # connaît tout ce que la France annonce, alors qu'elle n'en connaît que la
-    # part sénégalaise.
-    # Un périmètre est un PAYS (« Sénégal ») ou une ZONE (« Afrique ») : un
-    # relevé « Dest = Africa » rend complet chacun des pays africains, pas une
-    # ligne « Afrique » qui n'existe dans aucun référentiel. Les deux se
-    # résolvent d'une seule requête, sur le nom ou sur le continent.
-    releves = [r.perimetre for r in (await db.execute(text(
-        # « base = projets » n'est pas décoratif : les signaux d'investisseur
-        # vivent dans les mêmes lots, et un lot de signaux lu ici ferait
-        # déclarer complet un périmètre de projets qui ne l'est pas.
-        "SELECT DISTINCT perimetre FROM fdi_lots_import "
-        " WHERE base = 'projets' AND sens = :s AND perimetre IS NOT NULL"),
-        {"s": sens if sens in COTE else "destination"})).fetchall()]
-    # La même requête rend le continent et la région : l'écran range les pays
-    # par zone plutôt qu'en une liste de cinquante-cinq lignes, et le
-    # groupement est celui de ref_pays — le seul du produit, pour qu'un même
-    # pays ne change pas de région d'un écran à l'autre.
-    rangs = (await db.execute(text(
-        "SELECT nom_fr, continent, region_geo FROM ref_pays "
-        " WHERE nom_fr = ANY(:p) OR continent = ANY(:p)"),
-        {"p": releves})).fetchall() if releves else []
+    # LES PAYS PROPOSÉS SONT CEUX DONT LE PÉRIMÈTRE EST COMPLET dans ce sens
+    # (voir `_pays_complets`). L'écran les range par région plutôt qu'en une
+    # liste de cinquante-cinq lignes, et c'est de ce même rattachement que la
+    # lecture par région tire ses membres.
     complets = {r.nom_fr for r in rangs}
     geo = {r.nom_fr: r for r in rangs}
 
@@ -210,7 +255,7 @@ async def perimetre(
     # Les sous-secteurs portent le nom de leur secteur : l'écran les emboîte
     # sous lui, et un même libellé — « Other » vit sous vingt-quatre secteurs
     # chez fDi — ne se confond pas avec son homonyme.
-    ctx_ss, fac_ss, params_ss = _conditions(observe, pays, annee_min, annee_max,
+    ctx_ss, fac_ss, params_ss = _conditions(observe, cible, annee_min, annee_max,
                                             secteurs, sous_secteurs, activites, types,
                                             recherche, "secteurs")
     lignes_ss = (await db.execute(text(f"""
@@ -259,6 +304,7 @@ async def perimetre(
 async def projets(
     sens: str = "destination",
     pays: str | None = None,
+    region: str | None = None,
     annee_min: int | None = None,
     annee_max: int | None = None,
     secteurs: str | None = None,
@@ -288,7 +334,10 @@ async def projets(
     peut pas défendre en réunion.
     """
     observe, partenaire = _sens(sens)
-    where, params = _filtres(observe, pays, annee_min, annee_max,
+    # Un pays nommé, ou une région rendue en la liste de ses pays — jamais les
+    # deux. Voir `_zone_en_pays` pour ce que « la liste de ses pays » écarte.
+    cible = pays or (await _zone_en_pays(db, sens, region) if region else None)
+    where, params = _filtres(observe, cible, annee_min, annee_max,
                              secteurs, sous_secteurs, activites, types, recherche)
 
     # Une seule expression de jointure, réutilisée par toutes les agrégations :

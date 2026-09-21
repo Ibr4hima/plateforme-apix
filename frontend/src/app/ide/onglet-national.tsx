@@ -11,7 +11,7 @@ import { GrapheCard } from "@/components/charts/GrapheCardIde";
 import PickerKpi, { BtnSwapKpi, STYLE_KPI_SWAP, type PickerItem } from "@/components/shared/PickerKpi";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import Variation from "@/components/shared/Variation";
-import { API, BadgePeriode, BadgeSerie, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL, plageAnnees } from "./partage";
+import { API, BadgePeriode, BadgeSerie, btnSegment, GrapheMultiPays, BdefRow, BDEF_NIVEAU_STYLE, BDEF_NIVEAU_LABEL, plageAnnees } from "./partage";
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useQueries } from "@tanstack/react-query";
 import { voile } from "@/lib/couleurs";
@@ -571,7 +571,7 @@ function OngletNational() {
                 <div style={{ display:"flex", gap:6 }}>
                   {([{v:"macro_secteur",l:"Macro-sect."},{v:"groupe",l:"Groupes"},{v:"secteur",l:"Secteurs"}] as const).map(o=>(
                     <button key={o.v} onClick={()=>{ setCompType(o.v); setCompSelec([]); }}
-                      style={{ flex:1, padding:"7px 2px", borderRadius:8, border:`1px solid ${compType===o.v?"var(--bleu)":"var(--bordure-forte)"}`, cursor:"pointer", fontSize:11.5, fontWeight:compType===o.v?700:500, background:compType===o.v?"rgb(var(--bleu-rgb) / 0.08)":"var(--carte-douce)", color:compType===o.v?"var(--bleu)":"var(--texte)", fontFamily:"var(--font-google-sans)" }}>
+                      style={btnSegment(compType===o.v)}>
                       {o.l}
                     </button>
                   ))}

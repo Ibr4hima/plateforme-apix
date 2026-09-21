@@ -75,17 +75,24 @@ export default function RapportIde() {
   // C'est l'onglet qui écrit cet état dans son URL ; on ne fait que le
   // transporter.
   const [retour, setRetour] = useState("?section=projetes");
-  const [pays, setPays] = useState(PAYS);
+  // CE QUE LE RAPPORT PORTE EN TÊTE ET INTERROGE : un pays, ou une RÉGION
+  // entière depuis que l'écran se lit aux deux échelles. Les deux s'écrivent
+  // pareil dans le titre — c'est le périmètre lu, et il se nomme — mais pas
+  // dans l'adresse du service, qui les distingue.
+  const [cible, setCible] = useState<{ cle: "pays" | "region"; nom: string }>(
+    { cle: "pays", nom: PAYS });
   useEffect(() => {
     const brut = new URLSearchParams(window.location.search).get("retour");
     if (!brut) return;
     setRetour(brut.startsWith("?") ? brut : `?${brut}`);
     const p = new URLSearchParams(brut);
-    if (p.get("pays")) setPays(p.get("pays") as string);
+    if (p.get("region")) setCible({ cle: "region", nom: p.get("region") as string });
+    else if (p.get("pays")) setCible({ cle: "pays", nom: p.get("pays") as string });
   }, []);
+  const pays = cible.nom;
 
   const qFdi = useDonnees<Fdi>(
-    `${API}/fdi/public/projets?pays=${encodeURIComponent(pays)}`, { garder: true });
+    `${API}/fdi/public/projets?${cible.cle}=${encodeURIComponent(cible.nom)}`, { garder: true });
   const fdi = qFdi.data;
 
   // Les cinq années les plus riches en annonces.

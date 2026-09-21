@@ -30,7 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
-import { API, BadgePeriode, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
+import { API, BadgePeriode, btnSegment, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
          FacetteSecteurs, Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE,
          moisEnClair, Pagination, Pastille, survolCarte, TEXTE_DESC, TitreFiche } from "./partage";
 import VueSignauxPublics, { FiltresSignauxPanneau, FILTRES_SIGNAUX_VIDES,
@@ -153,6 +153,17 @@ export default function OngletFdi({ onVue }: {
   // avant d'avoir ce relevé n'ouvrirait qu'une liste vide.
   const [sens, setSens] = useState<"destination" | "source">("destination");
   const [pays, setPays] = useState<string | null>(null);
+  // LA DESTINATION SE LIT À DEUX ÉCHELLES. Un pays — « que reçoit le Sénégal » —
+  // ou une région entière — « que reçoit l'Afrique de l'Ouest ». C'est la même
+  // question posée plus haut, et non un filtre de plus : les deux échelles
+  // s'excluent, une seule part dans l'adresse, et l'écran n'affiche jamais les
+  // deux listes à la fois.
+  //
+  // La région retenue vit à côté du pays et non à sa place : revenir à
+  // « Pays » doit rendre le pays qu'on lisait, et non renvoyer au Sénégal
+  // quelqu'un qui lisait le Nigeria.
+  const [echelle, setEchelle] = useState<"pays" | "regions">("pays");
+  const [region, setRegion] = useState<string | null>(null);
   const [secteurs, setSecteurs] = useState<string[]>([]);
   const [sousSecteurs, setSousSecteurs] = useState<ChoixSous[]>([]);
   const [activites, setActivites] = useState<string[]>([]);
@@ -185,6 +196,8 @@ export default function OngletFdi({ onVue }: {
     if (v === "signaux" || v === "entreprises") setVue(v);
     if (p.get("sens") === "source") setSens("source");
     if (p.get("pays")) setPays(p.get("pays"));
+    // La région suffit à dire l'échelle : elle n'existe pas dans l'autre.
+    if (p.get("region")) { setRegion(p.get("region")); setEchelle("regions"); }
     if (p.get("a0")) setAnneeMin(Number(p.get("a0")));
     if (p.get("a1")) setAnneeMax(Number(p.get("a1")));
     if (liste("sec").length) setSecteurs(liste("sec"));
@@ -229,11 +242,19 @@ export default function OngletFdi({ onVue }: {
     };
   }, [secteurs, sousSecteurs]);
 
+  // CE QUI PART DANS L'ADRESSE : un pays OU une région, jamais les deux. Le
+  // service traduit la région en la liste de ses pays ; l'écran n'a donc qu'à
+  // dire laquelle, et les deux échelles ne peuvent pas se contredire.
+  const poserCible = (p: URLSearchParams) => {
+    if (echelle === "regions") { if (region) p.set("region", region); }
+    else if (pays) p.set("pays", pays);
+  };
+
   // Les facettes cascadent : le périmètre est redemandé à chaque changement de
   // filtre, et chaque facette y est comptée sous les AUTRES filtres.
   const urlPerimetre = useMemo(() => {
     const p = new URLSearchParams({ sens });
-    if (pays) p.set("pays", pays);
+    poserCible(p);
     // La PÉRIODE entre dans la cascade au même titre que les facettes :
     // restreindre 2015-2019 doit retirer des listes les secteurs, les
     // activités et les types qui n'ont rien annoncé pendant ces années-là.
@@ -243,7 +264,7 @@ export default function OngletFdi({ onVue }: {
     if (activites.length) p.set("activites", activites.join("|"));
     if (types.length) p.set("types", types.join("|"));
     return `${API}/fdi/public/perimetre?${p}`;
-  }, [sens, pays, anneeMinD, anneeMaxD, selectionSectorielle, activites, types]);
+  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites, types]);
   const qPer = useDonnees<Perimetre>(urlPerimetre, { garder: true });
   const per = qPer.data;
 
@@ -263,12 +284,23 @@ export default function OngletFdi({ onVue }: {
     setPays(per.pays.some(p => p.nom === PAYS_REFERENCE) ? PAYS_REFERENCE : per.pays[0].nom);
   }, [per, pays]);
 
+  // À L'ÉCHELLE DES RÉGIONS, LA MÊME RÈGLE : celle du Sénégal d'abord. Ouvrir
+  // sur l'Afrique du Nord parce qu'elle compte le plus de projets ferait
+  // changer de région avant de commencer à lire. Le cas n'arrive qu'à la
+  // reprise d'une adresse qui dit l'échelle sans dire la région — le clic sur
+  // « Régions », lui, la choisit lui-même à partir du pays qu'on lisait.
+  useEffect(() => {
+    if (echelle !== "regions" || region || !per?.pays?.length) return;
+    const ref = per.pays.find(p => p.nom === PAYS_REFERENCE) ?? per.pays[0];
+    setRegion(ref.region_geo ?? null);
+  }, [echelle, region, per]);
+
   // Changer de sens change de périmètre : le pays retenu n'y existe pas
   // forcément, et l'effet ci-dessus reprendra le mieux fourni.
   const premierRendu = useRef(true);
   useEffect(() => {
     if (premierRendu.current) { premierRendu.current = false; return; }
-    setPays(null);
+    setPays(null); setRegion(null);
   }, [sens]);
 
   useEffect(() => {
@@ -282,7 +314,7 @@ export default function OngletFdi({ onVue }: {
   // n'aurait aucun sens.
   const filtre = useMemo(() => {
     const p = new URLSearchParams({ sens });
-    if (pays) p.set("pays", pays);
+    poserCible(p);
     if (anneeMinD != null) p.set("annee_min", String(anneeMinD));
     if (anneeMaxD != null) p.set("annee_max", String(anneeMaxD));
     for (const [cle, v] of Object.entries(selectionSectorielle)) if (v) p.set(cle, v);
@@ -290,7 +322,7 @@ export default function OngletFdi({ onVue }: {
     if (types.length) p.set("types", types.join("|"));
     if (rechercheD.trim()) p.set("recherche", rechercheD.trim());
     return p.toString();
-  }, [sens, pays, anneeMinD, anneeMaxD, selectionSectorielle, activites, types, rechercheD]);
+  }, [sens, echelle, pays, region, anneeMinD, anneeMaxD, selectionSectorielle, activites, types, rechercheD]);
 
   const [vuFiltre, setVuFiltre] = useState(filtre);
   if (filtre !== vuFiltre) { setVuFiltre(filtre); setPage(1); }
@@ -320,7 +352,8 @@ export default function OngletFdi({ onVue }: {
     };
     poser("vue", vue === "projets" ? null : vue);
     poser("sens", sens === "destination" ? null : sens);
-    poser("pays", pays);
+    poser("pays", echelle === "regions" ? null : pays);
+    poser("region", echelle === "regions" ? region : null);
     poser("a0", anneeMin != null && anneeMin !== bornes[0] ? String(anneeMin) : null);
     poser("a1", anneeMax != null && anneeMax !== bornes[1] ? String(anneeMax) : null);
     poser("sec", secteurs.join("|"));
@@ -359,8 +392,8 @@ export default function OngletFdi({ onVue }: {
     // lien du rapport. On les retire une bonne fois.
     poser("e_a0", null); poser("e_a1", null);
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
-  }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,
-      rechercheD, bornes, filtresSignaux, filtresEntreprises]);
+  }, [vue, sens, echelle, pays, region, anneeMin, anneeMax, secteurs, sousSecteurs,
+      activites, types, rechercheD, bornes, filtresSignaux, filtresEntreprises]);
 
   const reinitProjets = () => {
     setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
@@ -421,12 +454,23 @@ export default function OngletFdi({ onVue }: {
   //
   // La clef garde le continent : deux continents peuvent nommer une région
   // pareil, et un jour où le relevé en couvrira deux, rien ne se confondra.
-  const regions = Object.entries(paysGroupes)
+  const aplatirZones = (liste: ComptePays[]) => Object.entries(groupByContinent(liste))
     .flatMap(([continent, zones]) => Object.entries(zones).map(([zone, dedans]) => ({
       cle: `${continent} · ${zone}`, continent, zone, dedans: dedans as ComptePays[],
+      // Le compte d'une région est la SOMME de ses pays, et il peut l'être :
+      // un projet n'a qu'un pays de destination, donc aucun n'est compté deux
+      // fois. C'est aussi ce que le service renvoie quand on retient la
+      // région — vérifié zone par zone —, et la colonne ne peut donc pas
+      // annoncer un total que la liste dépliée démentirait.
+      nb: (dedans as ComptePays[]).reduce((t, p) => t + p.nb, 0),
     })))
     .sort((a, b) => rangContinent(a.continent) - rangContinent(b.continent)
                  || a.zone.localeCompare(b.zone, "fr"));
+  const regions = aplatirZones(paysFiltres);
+  // LES RÉGIONS À CHOISIR NE SUIVENT PAS LA RECHERCHE DE PAYS : le champ ne
+  // s'affiche pas à cette échelle, et une recherche laissée derrière soi en
+  // passant de « Pays » à « Régions » en ferait disparaître quatre sur cinq.
+  const zones = aplatirZones(per?.pays ?? []);
 
   // TOUT EST REPLIÉ AU DÉPART. Cinq barres tiennent sous les yeux d'un coup ;
   // en ouvrir une d'office rejetterait les autres hors de l'écran et rendrait
@@ -449,9 +493,14 @@ export default function OngletFdi({ onVue }: {
   // avec lui le titre du filtre, le badge de l'en-tête et la colonne du pied
   // de carte : « Pays d'origine » sous un relevé « reçoit », « Pays de
   // destination » sous un relevé « investit ».
+  //
+  // « DESTINATION », ET NON PLUS « PAYS DESTINATAIRE » : le filtre se lit
+  // maintenant à deux échelles, et le titre ne pouvait plus nommer l'une des
+  // deux. Il dit le RÔLE — où va l'investissement —, le sélecteur juste en
+  // dessous dit à quelle maille on le regarde.
   const dansCeSens = sens === "destination"
-    ? { filtre: "Pays destinataire", badge: "Projets reçus", partenaire: "Pays d'origine" }
-    : { filtre: "Pays d'origine", badge: "Projets implantés à l'étranger", partenaire: "Pays de destination" };
+    ? { filtre: "Destination", badge: "Projets reçus", partenaire: "Pays d'origine" }
+    : { filtre: "Origine", badge: "Projets implantés à l'étranger", partenaire: "Pays de destination" };
   const libellePartenaire = dansCeSens.partenaire;
 
   const tag = d?.kpis?.annees?.[0] != null
@@ -592,6 +641,69 @@ export default function OngletFdi({ onVue }: {
                     à une couverture qu'on n'a pas. */}
                 <div style={{ marginBottom: 18 }}>
                   <span style={{ ...TITRE_SS, display: "block", marginBottom: 8 }}>{dansCeSens.filtre}</span>
+                  {/* À QUELLE MAILLE ON REGARDE. « Pays » est la lecture
+                      historique, inchangée ; « Régions » pose la même question
+                      un cran au-dessus — ce que reçoit toute l'Afrique de
+                      l'Ouest, et non ce que reçoit le Sénégal.
+
+                      DEUX BOUTONS PLUTÔT QU'UN NIVEAU DE PLUS DANS LA LISTE.
+                      Rendre les en-têtes de région cliquables aurait mêlé deux
+                      gestes sur un même objet — déplier, et retenir — et l'on
+                      n'aurait plus su ce qu'un clic allait faire.
+
+                      Changer d'échelle EMPORTE LA SÉLECTION D'EN FACE : les
+                      deux ne peuvent pas valoir ensemble, et l'écran ne montre
+                      jamais les deux listes. Mais elle n'est pas oubliée —
+                      revenir à « Pays » rend le pays qu'on lisait. */}
+                  <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+                    {([{ v: "pays", l: "Pays" }, { v: "regions", l: "Régions" }] as const).map(o => (
+                      <button key={o.v} style={btnSegment(echelle === o.v)}
+                        onClick={() => {
+                          setEchelle(o.v);
+                          // La région d'arrivée est celle du pays qu'on lisait :
+                          // on monte d'un cran sans changer de sujet.
+                          if (o.v === "regions" && !region) {
+                            const p = (per?.pays ?? []).find(x => x.nom === (pays ?? PAYS_REFERENCE));
+                            setRegion(p?.region_geo ?? zones[0]?.zone ?? null);
+                          }
+                        }}>{o.l}</button>
+                    ))}
+                  </div>
+                  {echelle === "regions" ? (
+                    /* Les cinq régions, chacune avec le total de ses pays.
+                       Pas de champ de recherche : cinq lignes se lisent d'un
+                       coup d'œil, et un champ au-dessus de cinq lignes se lit
+                       comme l'aveu d'une liste longue. */
+                    <div>
+                      {zones.map(z => {
+                        const sel = region === z.zone;
+                        return (
+                          <button key={z.cle} onClick={() => setRegion(z.zone)}
+                            style={LIGNE_FACETTE}
+                            onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                            <Pastille coche={sel} />
+                            <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
+                            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 10, color: "var(--gris)",
+                                fontVariantNumeric: "tabular-nums" }}>{z.nb}</span>
+                              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
+                                background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>
+                                {z.dedans.length} pays
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                      {zones.length === 0 && (
+                        <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "8px 0" }}>
+                          Aucune région relevée
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                  <>
                   {(per?.pays?.length ?? 0) > 6 && (
                     <div style={{ position: "relative" as const, marginBottom: 8 }}>
                       <Search size={13} style={{ position: "absolute" as const, left: 9, top: "50%",
@@ -663,6 +775,8 @@ export default function OngletFdi({ onVue }: {
                       </p>
                     )}
                   </div>
+                  </>
+                  )}
                 </div>
 
                 <Filet />
@@ -695,7 +809,7 @@ export default function OngletFdi({ onVue }: {
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" as const, marginBottom: 20 }}>
                 <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--bleu-action)", flexShrink: 0 }} />
                 <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--encre)", lineHeight: 1.1 }}>
-                  {pays ?? "—"}
+                  {(echelle === "regions" ? region : pays) ?? "—"}
                 </h2>
                 <span style={{ display: "inline-flex", alignItems: "center", padding: "1px 7px", borderRadius: 5,
                   background: "var(--fond)", border: "1px solid var(--bordure-forte)", fontSize: 9, fontWeight: 700,
