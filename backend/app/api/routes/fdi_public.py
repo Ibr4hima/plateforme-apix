@@ -360,7 +360,7 @@ async def projets(
                sum(p.capex_musd) AS capex, sum(p.emplois) AS emplois
         {base} GROUP BY p.annee ORDER BY p.annee"""), params)).fetchall()
 
-    async def classement(expr: str, iso: str | None = None):
+    async def classement(expr: str, iso: str | None = None, limite: int | None = 12):
         """Un classement, et pour les PAYS le code ISO qui porte leur drapeau.
 
         `min()` sur le code, et non le code lui-même : on groupe sur le NOM du
@@ -372,17 +372,26 @@ async def projets(
         reste.
         """
         col_iso = f", min({iso}) AS iso" if iso else ""
+        # `limite=None` REND LA LISTE ENTIÈRE. Un classement qu'on peut retrier
+        # à l'écran ne doit pas être tronqué ici : trier par montant douze
+        # lignes choisies sur le NOMBRE de projets ferait remonter la treizième
+        # nulle part, et le tableau mentirait sur son propre ordre. Seuls les
+        # classements qui gardent l'ordre du serveur peuvent être coupés.
+        borne = f"\n            LIMIT {limite}" if limite is not None else ""
         return (await db.execute(text(f"""
             SELECT {expr} AS nom, count(*) AS nb, sum(p.capex_musd) AS capex,
                    sum(p.emplois) AS emplois{col_iso}
             {base} AND {expr} IS NOT NULL
-            GROUP BY 1 ORDER BY count(*) DESC, sum(p.capex_musd) DESC NULLS LAST, 1
-            LIMIT 12"""), params)).fetchall()
+            GROUP BY 1 ORDER BY count(*) DESC, sum(p.capex_musd) DESC NULLS LAST, 1{borne}"""),
+            params)).fetchall()
 
     tops = {
         "partenaires": await classement(f"COALESCE(rp.nom_fr, p.{partenaire}_brut)", "rp.code_iso2"),
         "secteurs":    await classement("COALESCE(s.libelle_fr, p.secteur_brut)"),
-        "activites":   await classement("COALESCE(a.libelle_fr, p.activite_brut)"),
+        # Le seul classement rendu EN ENTIER : le rapport le laisse retrier et
+        # déplier, et il lui faut donc toutes ses lignes. Dix-sept activités au
+        # plus dans la nomenclature fDi — la liste ne peut pas s'emballer.
+        "activites":   await classement("COALESCE(a.libelle_fr, p.activite_brut)", limite=None),
         "entreprises": await classement("COALESCE(e.nom, p.entreprise_brut)"),
         "types":       await classement("COALESCE(t.libelle_fr, p.type_brut)"),
     }

@@ -19,7 +19,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 
 import NavActions from "@/components/layout/NavActions";
 import { useDonnees } from "@/lib/donnees";
@@ -45,6 +45,45 @@ const PastilleRang = ({ n }: { n: number }) => (
     background: n <= 3 ? "var(--bleu)" : "var(--bleu-voile)",
     color: n <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>{n}</span>
 );
+
+/** Les trois colonnes chiffrées du classement des activités, et ce qu'on lit
+    dans chacune. L'ordre de la liste EST l'ordre des colonnes : le montant
+    d'abord, parce que c'est par lui que le tableau s'ouvre — un décideur
+    demande d'abord où va l'argent, le nombre de projets vient qualifier
+    ensuite. */
+const COLS_ACTIVITES = [
+  { cle: "capex_musd", libelle: "Montant investi*" },
+  { cle: "nb", libelle: "Projets" },
+  { cle: "emplois", libelle: "Emplois créés*" },
+] as const;
+type CleTri = (typeof COLS_ACTIVITES)[number]["cle"];
+
+/** L'en-tête cliquable d'une colonne triable.
+
+    LE CHEVRON N'APPARAÎT QUE SUR LA COLONNE QUI TRIE. Trois flèches grises en
+    permanence donneraient à lire trois tris là où il n'y en a qu'un ; la
+    colonne active porte le sien, les autres se découvrent au survol par le
+    curseur et la teinte. */
+function EnteteTri({ libelle, actif, sens, onClick }: {
+  libelle: string; actif: boolean; sens: "asc" | "desc"; onClick: () => void;
+}) {
+  return (
+    <th style={{ ...ENT_RAP, textAlign: "right" as const, padding: 0 }}
+      aria-sort={actif ? (sens === "asc" ? "ascending" : "descending") : "none"}>
+      <button onClick={onClick} title={`Trier par ${libelle.replace("*", "")}`}
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: "flex-end", gap: 4,
+          width: "100%", padding: "8px 10px", border: "none", background: "transparent",
+          cursor: "pointer", font: "inherit", letterSpacing: "inherit",
+          textTransform: "inherit" as const, whiteSpace: "nowrap" as const,
+          color: actif ? "var(--bleu)" : "inherit" }}>
+        {libelle}
+        {actif && (sens === "desc"
+          ? <ChevronDown size={11} style={{ flexShrink: 0 }} />
+          : <ChevronUp size={11} style={{ flexShrink: 0 }} />)}
+      </button>
+    </th>
+  );
+}
 
 // `iso` n'est renseigné que pour le classement des PAYS : c'est lui qui porte
 // le drapeau. Il reste nul quand le pays n'a pas été rapproché du référentiel —
@@ -103,6 +142,43 @@ export default function RapportIde() {
   const plusGrands = useMemo(() => [...(fdi?.projets ?? [])]
     .filter(p => p.capex_musd != null)
     .sort((a, b) => (b.capex_musd ?? 0) - (a.capex_musd ?? 0)).slice(0, 8), [fdi]);
+
+  // ── LE CLASSEMENT DES ACTIVITÉS, TRIÉ PAR LE LECTEUR ───────────────────────
+  // IL S'OUVRE SUR LE MONTANT, décroissant. C'est la première question d'un
+  // comité — où va l'argent —, et le nombre de projets, qui menait ce tableau
+  // jusqu'ici, ne la posait pas : « Services aux entreprises » mène de loin en
+  // projets (69) et pèse trois fois moins que « Fabrication » en capital.
+  //
+  // LES TROIS COLONNES SE TRIENT, parce qu'aucune ne résume les deux autres.
+  // Un même relevé se lit différemment selon qu'on cherche des projets, des
+  // capitaux ou des emplois, et trancher pour le lecteur revenait à lui cacher
+  // deux lectures sur trois.
+  const [triCol, setTriCol] = useState<CleTri>("capex_musd");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+  const [toutesActivites, setToutesActivites] = useState(false);
+  // Cliquer la colonne active RETOURNE le tri ; cliquer une autre colonne s'y
+  // pose en décroissant. Repartir de l'ordre croissant sur une colonne qu'on
+  // vient de choisir montrerait d'abord les plus petites valeurs, ce que
+  // personne ne demande d'un classement.
+  const trierPar = (c: CleTri) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+  const activites = useMemo(() => {
+    const lignes = [...(fdi?.tops?.activites ?? [])];
+    // LES VALEURS MANQUANTES RESTENT EN QUEUE DANS LES DEUX SENS. Une activité
+    // dont le relevé ne dit pas le capital n'est pas « la plus petite » : on ne
+    // sait pas. La remonter en tête d'un tri croissant en ferait une réponse.
+    lignes.sort((a, b) => {
+      const x = a[triCol], y = b[triCol];
+      if (x == null && y == null) return a.nom.localeCompare(b.nom, "fr");
+      if (x == null) return 1;
+      if (y == null) return -1;
+      if (x !== y) return triSens === "desc" ? y - x : x - y;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+    return lignes;
+  }, [fdi, triCol, triSens]);
 
   const dateEdition = dateDuJour();
   const periodeFdi = fdi?.kpis?.annees?.[0] != null
@@ -273,34 +349,72 @@ export default function RapportIde() {
                   Il prend le dessin des « plus gros projets annoncés », juste
                   en dessous : deux tableaux voisins dans une même page doivent
                   se lire de la même façon. */}
-              {(fdi.tops.activites ?? []).length > 0 && (
+              {activites.length > 0 && (
                 <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-                  <Carte titre="Les activités les plus menées" tag={periodeFdi}>
+                  <Carte titre="Classement des activités menées" tag={periodeFdi}>
                     <div style={{ overflowX: "auto" as const }}>
                       <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
                         <thead>
                           <tr>
                             <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
-                            {["Activité", "Projets", "Montant investi*", "Emplois créés*"].map((t, i) => (
-                              <th key={t} style={{ ...ENT_RAP,
-                                textAlign: i === 0 ? "left" as const : "right" as const }}>{t}</th>
+                            <th style={{ ...ENT_RAP, textAlign: "left" as const }}>Activité</th>
+                            {COLS_ACTIVITES.map(c => (
+                              <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
+                                actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {(fdi.tops.activites ?? []).slice(0, 10).map((r, i) => (
+                          {(toutesActivites ? activites : activites.slice(0, 10)).map((r, i) => (
                             <tr key={r.nom}>
+                              {/* LE RANG SUIT LE TRI : il dit la place dans le
+                                  classement qu'on a sous les yeux, non une
+                                  place absolue qui contredirait l'ordre des
+                                  lignes. */}
                               <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
                               <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={r.nom}>{r.nom}</td>
-                              <td style={{ ...CEL, textAlign: "right" as const, fontWeight: 800,
-                                color: "var(--vert)", fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.nb)}</td>
-                              <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtVal(r.capex_musd)}</td>
-                              <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(r.emplois)}</td>
+                              {/* LA COLONNE QUI TRIE PORTE LA COULEUR ET LE
+                                  GRAS. Le vert était sur les projets quand ils
+                                  menaient le tableau ; il suit maintenant le
+                                  tri, sans quoi l'œil serait attiré par une
+                                  colonne qui ne commande plus rien. */}
+                              {COLS_ACTIVITES.map(c => (
+                                <td key={c.cle} style={{ ...CEL, textAlign: "right" as const,
+                                  fontVariantNumeric: "tabular-nums" as const,
+                                  fontWeight: triCol === c.cle ? 800 : undefined,
+                                  color: triCol === c.cle ? "var(--vert)" : undefined }}>
+                                  {c.cle === "capex_musd" ? fmtVal(r.capex_musd) : fmtNombre(r[c.cle])}
+                                </td>
+                              ))}
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
+                    {/* AU-DELÀ DES DIX. Le service rend la nomenclature entière
+                        — dix-sept activités au plus —, et le tableau s'ouvre sur
+                        les dix premières : c'est un classement, et sa queue
+                        n'intéresse qu'après coup. Le bouton dit combien de
+                        lignes il reste, pour qu'on sache ce qu'on déplie. */}
+                    {/* LE BOUTON DES SÉRIES ANNUELLES, AU PIXEL PRÈS. Trois
+                        cartes de cette même page en portent déjà un — même
+                        libellé, même pilule, même « Réduire » au retour. Un
+                        quatrième bouton d'un dessin à soi, sur la même page,
+                        se serait lu comme un autre geste. */}
+                    {activites.length > 10 && (
+                      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
+                        className="rap-sans-impression">
+                        <button onClick={() => setToutesActivites(v => !v)}
+                          style={{ padding: "6px 16px", borderRadius: 999,
+                            border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+                            color: toutesActivites ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
+                            fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+                          {toutesActivites ? "Réduire" : `Afficher la suite (${activites.length - 10})`}
+                        </button>
+                      </div>
+                    )}
                     {/* L'ASTÉRISQUE PORTE L'AVERTISSEMENT, ET UNE LIGNE SUFFIT.
                         Ces deux colonnes sont des SOMMES : elles ne peuvent pas
                         porter le « ≈ » ligne à ligne du tableau voisin, puisque
