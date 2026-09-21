@@ -54,10 +54,10 @@ import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, fmtNombre,
     souvent sur elle qu'on repart. */
 export type FiltresSignaux = {
   origine: string; destination: string; secteur: string; activite: string;
-  nature: string; recherche: string;
+  recherche: string;
 };
 export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
-  origine: "", destination: "", secteur: "", activite: "", nature: "", recherche: "",
+  origine: "", destination: "", secteur: "", activite: "", recherche: "",
 };
 
 type Valeur = { id: number; libelle: string | null; court?: string | null;
@@ -75,7 +75,7 @@ type Compte = { nom: string; nb: number; nature?: "pays" | "region" };
 type Perimetre = {
   annees: [number | null, number | null]; total_signaux: number;
   origines: Compte[]; destinations: Compte[];
-  secteurs: Compte[]; activites: Compte[]; natures: Compte[];
+  secteurs: Compte[]; activites: Compte[];
 };
 type Reponse = {
   kpis: { signaux: number; annees: [number | null, number | null];
@@ -104,7 +104,6 @@ function urlPerimetre(f: FiltresSignaux, recherche: string): string {
   if (f.secteur) p.set("secteurs", f.secteur);
   if (f.activite) p.set("activites", f.activite);
   if (f.destination) p.set("destination", f.destination);
-  if (f.nature) p.set("natures", f.nature);
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/signaux/perimetre?${p}`;
 }
@@ -151,11 +150,11 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
           centre d'appels. */}
       <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
         onChange={set("activite")} />
-      {/* CE QUE LE SIGNAL DIT DU MOMENT. Les libellés sont les COURTS, ceux des
-          pastilles de carte : un filtre qui nommerait autrement la même chose
-          obligerait à faire le rapprochement de tête. */}
-      <FacetteUnique titre="Nature du signal" options={per.natures} valeur={filtres.nature}
-        onChange={set("nature")} />
+      {/* PLUS DE FILTRE SUR LA NATURE DU SIGNAL. Les cinq stades — financement
+          levé, stratégie d'investissement, projet à l'étude, nomination
+          régionale, contrat de fourniture — restent lisibles sur la pastille de
+          chaque carte et sur la fiche ; ils ne servent plus à trancher la
+          liste. */}
     </>
   );
 }

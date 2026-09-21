@@ -197,7 +197,7 @@ export default function OngletFdi({ onVue }: {
     const sig = {
       origine: p.get("s_ori") ?? "", destination: p.get("s_dest") ?? "",
       secteur: p.get("s_sec") ?? "", activite: p.get("s_act") ?? "",
-      nature: p.get("s_nat") ?? "", recherche: p.get("s_q") ?? "",
+      recherche: p.get("s_q") ?? "",
     };
     if (Object.values(sig).some(Boolean)) setFiltresSignaux(sig);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -329,7 +329,6 @@ export default function OngletFdi({ onVue }: {
     poser("s_dest", filtresSignaux.destination);
     poser("s_sec", filtresSignaux.secteur);
     poser("s_act", filtresSignaux.activite);
-    poser("s_nat", filtresSignaux.nature);
     poser("s_q", filtresSignaux.recherche.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,

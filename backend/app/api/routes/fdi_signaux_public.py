@@ -204,9 +204,12 @@ async def perimetre_signaux(
                       await facette("fdi_signal_secteurs", "fdi_secteurs", "secteur_id", "secteurs")],
         "activites": [{"nom": r.nom, "nb": r.nb} for r in
                       await facette("fdi_signal_activites", "fdi_activites", "activite_id", "activites")],
-        "natures":   [{"nom": r.nom, "nb": r.nb} for r in
-                      await facette("fdi_signal_natures", "fdi_signaux", "nature_id",
-                                    "natures", "libelle_court_fr")],
+        # PAS DE FACETTE « NATURE DU SIGNAL ». La colonne ne la propose plus :
+        # les cinq stades restent lisibles sur la pastille de chaque carte et
+        # sur la fiche, ils ne servent plus à trancher la liste. Le paramètre
+        # `natures` demeure accepté — la LISTE sait toujours s'y restreindre —
+        # mais plus rien ne l'envoie, et compter ses options n'avait plus de
+        # lecteur.
     }
 
 
