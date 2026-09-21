@@ -441,15 +441,6 @@ export default function RapportIde() {
                         contraire discréditerait des chiffres en partie
                         déclarés. */}
                     <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-                      {/* LA PHRASE DIT CE QUE LES FLÈCHES NE DISENT PAS : que
-                          le tri se change, et qu'un second clic le retourne.
-                          Les flèches annoncent la possibilité, elles
-                          n'apprennent pas le geste. Elle ne s'imprime pas —
-                          sur papier, plus rien ne se clique. */}
-                      <span className="rap-sans-impression">
-                        Cliquez un en-tête de colonne pour trier le classement ; un second clic
-                        inverse l&apos;ordre.<br />
-                      </span>
                       * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
                       non déclarées par l&apos;entreprise.
                     </p>
