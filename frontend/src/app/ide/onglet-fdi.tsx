@@ -202,6 +202,18 @@ export default function OngletFdi({ onVue }: {
       recherche: p.get("s_q") ?? "",
     };
     if (Object.values(sig).some(v => v !== "" && v !== null)) setFiltresSignaux(sig);
+    const ent = {
+      origines: liste("e_ori"), secteurs: liste("e_sec"),
+      sousSecteurs: liste("e_ssec").map(v => v.split("::"))
+        .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom })),
+      activites: liste("e_act"),
+      anneeMin: p.get("e_a0") ? Number(p.get("e_a0")) : null,
+      anneeMax: p.get("e_a1") ? Number(p.get("e_a1")) : null,
+      recherche: p.get("e_q") ?? "",
+    };
+    if (ent.origines.length || ent.secteurs.length || ent.sousSecteurs.length
+        || ent.activites.length || ent.anneeMin != null || ent.anneeMax != null
+        || ent.recherche) setFiltresEntreprises(ent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -334,9 +346,21 @@ export default function OngletFdi({ onVue }: {
     poser("s_a0", filtresSignaux.anneeMin != null ? String(filtresSignaux.anneeMin) : null);
     poser("s_a1", filtresSignaux.anneeMax != null ? String(filtresSignaux.anneeMax) : null);
     poser("s_q", filtresSignaux.recherche.trim());
+    // ET CEUX DES ENTREPRISES, préfixés de la même façon. Ils n'y étaient pas :
+    // la vue n'avait pas de rapport quand ces clefs ont été écrites, et son
+    // état mourait donc au rechargement. Maintenant qu'elle en a un, l'oubli se
+    // voyait — le rapport des investisseurs lisait une adresse où rien n'était
+    // écrit, et sortait invariablement sur tout le relevé.
+    poser("e_ori", filtresEntreprises.origines.join("|"));
+    poser("e_sec", filtresEntreprises.secteurs.join("|"));
+    poser("e_ssec", filtresEntreprises.sousSecteurs.map(s => `${s.secteur}::${s.nom}`).join("|"));
+    poser("e_act", filtresEntreprises.activites.join("|"));
+    poser("e_a0", filtresEntreprises.anneeMin != null ? String(filtresEntreprises.anneeMin) : null);
+    poser("e_a1", filtresEntreprises.anneeMax != null ? String(filtresEntreprises.anneeMax) : null);
+    poser("e_q", filtresEntreprises.recherche.trim());
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,
-      rechercheD, bornes, filtresSignaux]);
+      rechercheD, bornes, filtresSignaux, filtresEntreprises]);
 
   const reinitProjets = () => {
     setSecteurs([]); setSousSecteurs([]); setActivites([]); setTypes([]); setRecherche("");
@@ -368,9 +392,13 @@ export default function OngletFdi({ onVue }: {
       remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
     },
     entreprises: {
+      // LA PÉRIODE COMPTE POUR UN, non pour deux : c'est un seul geste du
+      // lecteur, et ses deux bornes bougent ensemble. Elle ne compte que si
+      // elle restreint — toute la plage vaut null, donc rien.
       nb: filtresEntreprises.origines.length
         + filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
         + filtresEntreprises.activites.length
+        + ((filtresEntreprises.anneeMin != null || filtresEntreprises.anneeMax != null) ? 1 : 0)
         + (filtresEntreprises.recherche.trim() ? 1 : 0),
       remettre: () => setFiltresEntreprises(FILTRES_ENTREPRISES_VIDES),
     },

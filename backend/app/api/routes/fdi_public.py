@@ -489,7 +489,8 @@ ORIGINE_ENTREPRISE = "COALESCE(rp.nom_fr, p.pays_source_brut)"
 
 
 def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
-                         origines=None, sauf: str | None = None) -> tuple[list[str], dict]:
+                         origines=None, annee_min=None, annee_max=None,
+                         sauf: str | None = None) -> tuple[list[str], dict]:
     """Les conditions, éventuellement privées d'une facette.
 
     LE FILTRE PORTE SUR LES PROJETS, PUIS L'ON GROUPE. Une entreprise apparaît
@@ -575,6 +576,24 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
     if valeurs and sauf != "origines":
         where.append(f"{ORIGINE_ENTREPRISE} = ANY(:origines)")
         params["origines"] = valeurs
+
+    # LA PÉRIODE PORTE SUR LES PROJETS, comme tout le reste de cette colonne :
+    # une entreprise reste dans la liste si l'un de ses projets tombe dans la
+    # tranche, et ses comptes ne portent alors que sur ceux-là. « Orange · 12
+    # projets » sous 2020-2022 se lit donc « douze projets annoncés entre 2020
+    # et 2022 », non « douze projets dont certains ».
+    #
+    # ELLE N'EST JAMAIS RETIRÉE PAR `sauf`. Les autres facettes s'excluent de
+    # leur propre comptage pour qu'on puisse en cocher une seconde ; la période
+    # n'est pas une liste de cases à cocher mais le CADRE du relevé qu'on
+    # regarde, et compter une facette hors de ce cadre annoncerait des
+    # entreprises que la liste ne montrerait pas.
+    if annee_min is not None:
+        where.append("p.annee >= :a0")
+        params["a0"] = annee_min
+    if annee_max is not None:
+        where.append("p.annee <= :a1")
+        params["a1"] = annee_max
     return where, params
 
 
@@ -585,6 +604,8 @@ async def perimetre_entreprises(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    annee_min: int | None = None,
+    annee_max: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """De quoi remplir la colonne de filtres.
@@ -599,7 +620,7 @@ async def perimetre_entreprises(
     # disparaître de la colonne.
     async def compter(expr: str, sauf: str, avec_secteur: bool = False):
         where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
-                                             activites, origines, sauf)
+                                             activites, origines, annee_min, annee_max, sauf)
         secteur_col = f", {FACETTES['secteurs']} AS secteur" if avec_secteur else ""
         compte = (f"count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE}))"
                   f" FILTER (WHERE {' AND '.join(where)})")
@@ -625,7 +646,14 @@ async def perimetre_entreprises(
     # trois cent douze projets français.
     lignes_ori = await compter(ORIGINE_ENTREPRISE, "origines")
 
+    # LES BORNES DU CURSEUR VIENNENT DU RELEVÉ ENTIER, hors de toute condition.
+    # Les calculer sous le filtre les rétrécirait à la tranche qu'on vient de
+    # choisir, et l'on ne pourrait plus l'élargir.
+    bornes = (await db.execute(text(
+        "SELECT min(annee) AS a0, max(annee) AS a1 FROM fdi_projets"))).first()
+
     return {
+        "annees":        [bornes.a0, bornes.a1],
         "secteurs":      [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
         "sous_secteurs": [{"nom": r.nom, "secteur": r.secteur, "nb": r.nb} for r in lignes_ss],
         "activites":     [{"nom": r.nom, "nb": r.nb} for r in lignes_act],
@@ -713,6 +741,8 @@ async def entreprises_publiques(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    annee_min: int | None = None,
+    annee_max: int | None = None,
     page: int = 1,
     par_page: int = 24,
     db: AsyncSession = Depends(get_db),
@@ -725,7 +755,8 @@ async def entreprises_publiques(
     déclarés et des projets estimés par l'algorithme du Financial Times, et
     l'écran ne pourrait plus dire lequel il montre.
     """
-    where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites, origines)
+    where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
+                                        origines, annee_min, annee_max)
 
     par_page = max(1, min(par_page, 100))
     page = max(1, page)
@@ -782,11 +813,13 @@ async def rapport_entreprises(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    annee_min: int | None = None,
+    annee_max: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Tout ce qu'un décideur peut tirer du relevé, l'investisseur pour unité."""
     where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
-                                         activites, origines)
+                                         activites, origines, annee_min, annee_max)
     filtre = " AND ".join(where)
     params = {**params, "senegal": SENEGAL}
 

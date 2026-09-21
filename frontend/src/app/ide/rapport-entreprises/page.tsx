@@ -79,11 +79,31 @@ export default function RapportEntreprises() {
     // l'onglet porte aussi son état d'affichage — la vue ouverte, le pays
     // épinglé — qui ne veut rien dire pour le service et ferait un filtre
     // fantôme s'il le recevait.
+    // LES CLEFS DE L'ONGLET SONT PRÉFIXÉES « e_ », celles du service ne le sont
+    // pas : la vue Entreprises partage son adresse avec les vues Projets et
+    // Signaux, où « secteurs » et « activites » voudraient dire autre chose. On
+    // traduit donc ici, une clef pour une.
     const p = new URLSearchParams(brut);
     const g = new URLSearchParams();
-    for (const c of ["secteurs", "sous_secteurs", "activites", "origines", "recherche"]) {
-      const v = p.get(c);
-      if (v) g.set(c, v);
+    for (const [source, cible] of [
+      ["e_ori", "origines"], ["e_sec", "secteurs"], ["e_act", "activites"],
+      ["e_a0", "annee_min"], ["e_a1", "annee_max"], ["e_q", "recherche"],
+    ]) {
+      const v = p.get(source);
+      if (v) g.set(cible, v);
+    }
+    // LE SOUS-SECTEUR VOYAGE ACCOMPAGNÉ DE SON SECTEUR — « Secteur::Sous » —
+    // parce que deux secteurs peuvent porter un sous-secteur de même nom. Le
+    // service, lui, n'attend que le nom : un secteur où l'on est descendu ne
+    // part donc pas en entier, sinon le OU de la requête le ramènerait tout.
+    const sous = (p.get("e_ssec") ?? "").split("|").filter(Boolean)
+      .map(v => v.split("::")).filter(([a, b]) => a && b);
+    if (sous.length) {
+      g.set("sous_secteurs", sous.map(([, nom]) => nom).join("|"));
+      const precises = new Set(sous.map(([secteur]) => secteur));
+      const entiers = (p.get("e_sec") ?? "").split("|")
+        .filter(s => s && !precises.has(s));
+      if (entiers.length) g.set("secteurs", entiers.join("|")); else g.delete("secteurs");
     }
     setFiltres(g.toString());
   }, []);
