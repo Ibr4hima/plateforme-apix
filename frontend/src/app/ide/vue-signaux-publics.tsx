@@ -188,13 +188,13 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
         options={per.destinations.map(d => ({ ...d, groupe: d.nature,
           cherchable: d.nature === "pays" }))}
         onChange={set("destination")} chercher="Rechercher un pays…" />
-      <FacetteUnique titre="Secteur" options={per.secteurs} valeur={filtres.secteur}
+      <FacetteUnique titre="Secteurs d'activité" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :
           « Software & IT services » en R&D n'est pas le même prospect qu'en
           centre d'appels. */}
-      <FacetteUnique titre="Activité prévue" options={per.activites} valeur={filtres.activite}
+      <FacetteUnique titre="Activités économiques" options={per.activites} valeur={filtres.activite}
         onChange={set("activite")} />
       {/* PLUS DE FILTRE SUR LA NATURE DU SIGNAL. Les cinq stades — financement
           levé, stratégie d'investissement, projet à l'étude, nomination

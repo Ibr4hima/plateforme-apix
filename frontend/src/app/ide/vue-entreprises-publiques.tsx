@@ -162,7 +162,8 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
           et le composant s'en charge en une seule écriture : nos deux listes
           tiennent dans le même objet de filtres, et deux appels successifs
           calculés sur la même valeur d'avant se seraient écrasés. */}
-      <FacetteSecteurs secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
+      <FacetteSecteurs titre="Secteurs d'activité"
+        secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
         choixSec={filtres.secteurs} choixSous={filtres.sousSecteurs}
         onChange={(secteurs, sousSecteurs) => onChange({ ...filtres, secteurs, sousSecteurs })} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
@@ -170,11 +171,14 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
           un équipementier télécom qui ouvre un centre de R&D n'est pas le même
           prospect que le même équipementier qui ouvre un entrepôt.
 
-          « MENÉE », non « prévue » comme dans la vue Projets : là-bas on lit un
-          projet, qui est une annonce ; ici on lit une entreprise à travers ce
-          qu'elle a déjà annoncé, et la fiche emploie le même mot. Deux mots
-          pour la même chose dans un seul écran se remarquent. */}
-      <Facette titre="Activité menée" options={per.activites}
+          LE MÊME INTITULÉ QUE DANS LES DEUX AUTRES VUES, désormais. On disait
+          « Activité menée » ici et « Activité prévue » là-bas, pour distinguer
+          ce qu'une entreprise a déjà fait de ce qu'un projet annonce. La
+          distinction était juste, mais elle portait sur la LIGNE qu'on lit, non
+          sur la facette : les trois vues cochent la même nomenclature, et trois
+          noms pour une seule liste de valeurs se remarquent davantage. Le titre
+          nomme donc la nomenclature ; le reste de l'écran dit ce qu'on lit. */}
+      <Facette titre="Activités économiques" options={per.activites}
         choix={filtres.activites}
         setChoix={v => onChange({ ...filtres, activites: v })} />
     </>
