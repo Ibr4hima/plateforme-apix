@@ -685,14 +685,14 @@ export default function OngletFdi({ onVue }: {
                             <Pastille coche={sel} />
                             <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
                               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
-                            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 10, color: "var(--gris)",
-                                fontVariantNumeric: "tabular-nums" }}>{z.nb}</span>
-                              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
-                                background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>
-                                {z.dedans.length} pays
-                              </span>
-                            </span>
+                            {/* LE SEUL NOMBRE EST CELUI DES PROJETS, comme sur
+                                toutes les autres lignes de la colonne. Le
+                                nombre de pays y ajoutait une seconde unité :
+                                deux chiffres côte à côte sur une même ligne se
+                                confondent, et l'on se demandait lequel des deux
+                                le filtre allait retenir. */}
+                            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                              fontVariantNumeric: "tabular-nums" as const }}>{z.nb}</span>
                           </button>
                         );
                       })}
