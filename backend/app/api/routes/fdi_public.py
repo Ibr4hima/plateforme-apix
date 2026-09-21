@@ -435,8 +435,71 @@ async def projets(
         LIMIT :n OFFSET :o"""),
         {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 
+    # ── LES PLUS GROS INVESTISSEMENTS, SUR TOUT LE FILTRE ────────────────────
+    # LE RAPPORT LES TIRAIT DE LA PAGE, et c'était faux. La liste ci-dessus est
+    # rangée du plus RÉCENT au plus ancien et bornée à sa page : y chercher les
+    # plus gros montants revenait à rendre « les plus gros des trente derniers »
+    # sous le titre « les plus gros ». Sur le Sénégal, les deuxième, troisième
+    # et quatrième plus gros investissements du relevé — Jafza International en
+    # 2008, Sota Domus et Tosyali en 2015 et 2019 — n'apparaissaient donc nulle
+    # part, et le rapport en plaçait un de 168 M $ au troisième rang quand le
+    # vrai troisième en pèse 800.
+    #
+    # CINQUANTE LIGNES : c'est la POPULATION que la carte nomme — « les plus
+    # gros » —, et le lecteur peut la retrier à l'écran. La borne est donc
+    # posée sur le montant, le critère qui définit la carte, et sur lui seul ;
+    # retrier ces cinquante par emplois ou par date répond à « parmi les plus
+    # gros, lesquels emploient le plus », qui est une question, non un
+    # classement des emplois du relevé entier.
+    #
+    # Les projets sans montant en sont exclus : un investissement dont on ne
+    # connaît pas la taille n'a pas de place dans un classement par taille.
+    plus_gros = (await db.execute(text(f"""
+        SELECT p.id, p.annee, p.mois,
+               COALESCE(e.nom, p.entreprise_brut) AS entreprise,
+               p.statut_entreprise,
+               COALESCE(ro.nom_fr, p.{observe}_brut) AS pays_observe, ro.code_iso2 AS iso_observe,
+               COALESCE(rp.nom_fr, p.{partenaire}_brut) AS pays_partenaire, rp.code_iso2 AS iso_partenaire,
+               COALESCE(s.libelle_fr, p.secteur_brut) AS secteur,
+               COALESCE(ss.libelle_fr, p.sous_secteur_brut) AS sous_secteur,
+               COALESCE(a.libelle_fr, p.activite_brut) AS activite,
+               COALESCE(t.libelle_fr, p.type_brut) AS type_projet,
+               p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime,
+               p.description_fr, p.description_en
+        {base} AND p.capex_musd IS NOT NULL
+        ORDER BY p.capex_musd DESC, p.annee DESC, p.mois DESC NULLS LAST, p.id
+        LIMIT 50"""), params)).fetchall()
+
     def nb(v):
         return float(v) if v is not None else None
+
+    def projet(r):
+        """Une ligne de projet telle que l'écran la lit.
+
+        ÉCRITE UNE FOIS POUR LES DEUX LISTES — la page et les plus gros. Deux
+        sérialisations d'un même objet finissent par diverger d'un champ, et
+        c'est la fiche qui s'ouvre vide le jour où cela arrive.
+        """
+        return {
+            "id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
+            "annee": r.annee, "entreprise": r.entreprise,
+            "entreprise_a_arbitrer": r.statut_entreprise != "resolu",
+            # Le code ISO accompagne le nom : c'est lui qui porte le drapeau,
+            # partout ailleurs sur la plateforme. Il est nul quand le pays n'a
+            # pas été rapproché — le drapeau disparaît, le nom reste.
+            "pays": r.pays_observe, "pays_iso": (r.iso_observe or "").strip() or None,
+            "partenaire": r.pays_partenaire,
+            "partenaire_iso": (r.iso_partenaire or "").strip() or None,
+            "secteur": r.secteur, "sous_secteur": r.sous_secteur,
+            "activite": r.activite, "type_projet": r.type_projet,
+            "capex_musd": nb(r.capex_musd), "capex_estime": r.capex_estime,
+            "emplois": r.emplois, "emplois_estime": r.emplois_estime,
+            # Les deux langues séparément : la fiche les présente l'une sous
+            # l'autre. Les replier en une seule ferait disparaître l'anglais dès
+            # qu'une traduction existe, alors que c'est la version de la source
+            # — celle qu'on cite.
+            "description_fr": r.description_fr, "description_en": r.description_en,
+        }
 
     return {
         "sens": sens if sens in COTE else "destination",
@@ -461,26 +524,8 @@ async def projets(
                   for r in rows]
             for nom, rows in tops.items()
         },
-        "projets": [
-            {"id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
-             "annee": r.annee, "entreprise": r.entreprise,
-             "entreprise_a_arbitrer": r.statut_entreprise != "resolu",
-             # Le code ISO accompagne le nom : c'est lui qui porte le drapeau,
-             # partout ailleurs sur la plateforme. Il est nul quand le pays
-             # n'a pas été rapproché — le drapeau disparaît, le nom reste.
-             "pays": r.pays_observe, "pays_iso": (r.iso_observe or "").strip() or None,
-             "partenaire": r.pays_partenaire, "partenaire_iso": (r.iso_partenaire or "").strip() or None,
-             "secteur": r.secteur, "sous_secteur": r.sous_secteur,
-             "activite": r.activite, "type_projet": r.type_projet,
-             "capex_musd": nb(r.capex_musd), "capex_estime": r.capex_estime,
-             "emplois": r.emplois, "emplois_estime": r.emplois_estime,
-             # Les deux langues séparément : la fiche les présente l'une sous
-             # l'autre. Les replier en une seule ferait disparaître l'anglais
-             # dès qu'une traduction existe, alors que c'est la version de la
-             # source — celle qu'on cite.
-             "description_fr": r.description_fr, "description_en": r.description_en}
-            for r in lignes
-        ],
+        "projets": [projet(r) for r in lignes],
+        "plus_gros": [projet(r) for r in plus_gros],
     }
 
 

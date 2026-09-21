@@ -58,6 +58,15 @@ const COLS_CLASSEMENT = [
 ] as const;
 type CleTri = (typeof COLS_CLASSEMENT)[number]["cle"];
 
+/** Les colonnes triables d'une ligne de PROJET. La période ferme la ligne :
+    elle coupait les deux colonnes chiffrées, qui se lisent ensemble. */
+const COLS_PROJET = [
+  { cle: "capex_musd", libelle: "Montant" },
+  { cle: "emplois", libelle: "Emplois" },
+  { cle: "periode", libelle: "Période" },
+] as const;
+type CleProjet = (typeof COLS_PROJET)[number]["cle"];
+
 /** Le nombre de lignes montrées avant dépliage. Dix : c'est le format d'un
     classement qu'on cite en réunion, et les trois cartes doivent s'ouvrir à la
     même hauteur. */
@@ -126,6 +135,11 @@ type Fdi = {
   par_annee: { annee: number; nb: number; capex_musd: number | null; emplois: number | null }[];
   tops: Record<"partenaires" | "secteurs" | "activites" | "entreprises" | "types", Rang[]>;
   projets: Projet[];
+  // LES PLUS GROS DU FILTRE ENTIER, et non de la page : `projets` est rangé du
+  // plus récent au plus ancien et borné à trente lignes. Y chercher les plus
+  // gros montants — ce que faisait cette page — rendait « les plus gros des
+  // trente derniers » sous le titre « les plus gros ».
+  plus_gros: Projet[];
 };
 
 /** UN CLASSEMENT EN TABLEAU, trié par le lecteur.
@@ -268,6 +282,116 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
   );
 }
 
+/** LES PLUS GROS INVESTISSEMENTS — le même tableau que les classements, mais
+    ses lignes sont des PROJETS et non des agrégats.
+
+    SA POPULATION EST DÉFINIE PAR LE MONTANT : le service rend les cinquante
+    plus gros investissements du filtre, et c'est ce que la carte nomme. La
+    retrier par emplois ou par date répond à « parmi les plus gros, lesquels
+    emploient le plus, lesquels sont récents » — une question, non un
+    classement des emplois du relevé entier.
+
+    LA PÉRIODE FERME LA LIGNE. Elle était au milieu, entre le secteur et le
+    montant, et coupait les deux colonnes qui se lisent ensemble ; elle se trie
+    comme les deux autres — « AAAA-MM » se compare comme un nombre. */
+function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
+  const [triCol, setTriCol] = useState<CleProjet>("capex_musd");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+  const [tout, setTout] = useState(false);
+
+  const trierPar = (c: CleProjet) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+
+  const lignes = useMemo(() => {
+    const l = [...rows];
+    l.sort((a, b) => {
+      const x = a[triCol], y = b[triCol];
+      // Les valeurs manquantes en queue dans les deux sens : un projet dont on
+      // ignore le nombre d'emplois n'en crée pas zéro, on ne sait pas.
+      if (x == null && y == null) return 0;
+      if (x == null) return 1;
+      if (y == null) return -1;
+      // La période se compare comme un texte — « 2024-12 » et « 2008-01 » se
+      // rangent d'eux-mêmes —, les deux autres comme des nombres.
+      const d = typeof x === "string" || typeof y === "string"
+        ? String(x).localeCompare(String(y))
+        : (x as number) - (y as number);
+      return triSens === "desc" ? -d : d;
+    });
+    return l;
+  }, [rows, triCol, triSens]);
+
+  if (!lignes.length) return null;
+  const reste = lignes.length - FENETRE_CLASSEMENT;
+
+  return (
+    <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
+      <Carte titre="Les plus gros investissements" tag={tag}>
+        <div style={{ overflowX: "auto" as const }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+            <thead>
+              <tr>
+                <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+                {["Entreprise", "Origine", "Secteur"].map(t => (
+                  <th key={t} style={{ ...ENT_RAP, textAlign: "left" as const }}>{t}</th>
+                ))}
+                {COLS_PROJET.map(c => (
+                  <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
+                    actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(tout ? lignes : lignes.slice(0, FENETRE_CLASSEMENT)).map((p, i) => {
+                const chiffre = (cle: CleProjet) => ({ ...CEL, textAlign: "right" as const,
+                  whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" as const,
+                  fontWeight: triCol === cle ? 800 : undefined,
+                  color: triCol === cle ? "var(--vert)" : undefined });
+                return (
+                  <tr key={p.id}>
+                    <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                    <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</td>
+                    <td style={CEL}>{p.partenaire ?? "—"}</td>
+                    <td style={CEL}>{p.secteur ?? "—"}</td>
+                    {/* LE « ≈ » RESTE LIGNE À LIGNE. Ici les valeurs ne sont
+                        pas des sommes : chaque montant est déclaré ou estimé,
+                        et on peut donc le dire pour chacun. */}
+                    <td style={chiffre("capex_musd")}>
+                      {p.capex_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
+                      {fmtVal(p.capex_musd)}
+                    </td>
+                    <td style={chiffre("emplois")}>
+                      {p.emplois_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
+                      {fmtNombre(p.emplois)}
+                    </td>
+                    <td style={chiffre("periode")}>{p.periode}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {reste > 0 && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}
+            className="rap-sans-impression">
+            <button onClick={() => setTout(v => !v)}
+              style={{ padding: "6px 16px", borderRadius: 999,
+                border: "1px solid var(--bordure-forte)", background: "var(--carte)",
+                color: tout ? "var(--texte)" : "var(--bleu)", fontSize: 11.5,
+                fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-google-sans)" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--champ)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "var(--carte)"; }}>
+              {tout ? "Réduire" : `Afficher la suite (${reste})`}
+            </button>
+          </div>
+        )}
+      </Carte>
+    </div>
+  );
+}
+
 export default function RapportIde() {
   const d3Pret = useD3Pret();
 
@@ -300,10 +424,6 @@ export default function RapportIde() {
   const anneesFortes = useMemo(() => [...(fdi?.par_annee ?? [])]
     .filter(a => a.capex_musd)
     .sort((a, b) => (b.capex_musd ?? 0) - (a.capex_musd ?? 0)).slice(0, 5), [fdi]);
-
-  const plusGrands = useMemo(() => [...(fdi?.projets ?? [])]
-    .filter(p => p.capex_musd != null)
-    .sort((a, b) => (b.capex_musd ?? 0) - (a.capex_musd ?? 0)).slice(0, 8), [fdi]);
 
 
   const dateEdition = dateDuJour();
@@ -462,42 +582,7 @@ export default function RapportIde() {
               <TableauClassement titre="Classement des activités menées"
                 colonne="Activité" tag={periodeFdi} rows={fdi.tops.activites ?? []} />
 
-              <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-                <Carte titre="Les plus gros projets annoncés" tag={periodeFdi}>
-                  <div style={{ overflowX: "auto" as const }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
-                      <thead>
-                        <tr>
-                          <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
-                          {["Entreprise", "Origine", "Secteur", "Période", "Montant", "Emplois"].map((t, i) => (
-                            <th key={t} style={{ ...ENT_RAP,
-                              textAlign: i >= 4 ? "right" as const : "left" as const }}>{t}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {plusGrands.map((p, i) => (
-                          <tr key={p.id}>
-                            <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
-                            <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</td>
-                            <td style={CEL}>{p.partenaire ?? "—"}</td>
-                            <td style={CEL}>{p.secteur ?? "—"}</td>
-                            <td style={{ ...CEL, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>{p.periode}</td>
-                            <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>
-                              {p.capex_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
-                              {fmtVal(p.capex_musd)}
-                            </td>
-                            <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>
-                              {p.emplois_estime && <span style={{ fontWeight: 800 }}>≈ </span>}
-                              {fmtNombre(p.emplois)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </Carte>
-              </div>
+              <TableauPlusGros rows={fdi.plus_gros ?? []} tag={periodeFdi} />
 
               <ARetenir>
                 {fdi.tops.partenaires?.[0] && fdi.tops.secteurs?.[0] ? (
