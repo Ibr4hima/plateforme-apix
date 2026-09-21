@@ -87,7 +87,7 @@ export default function RapportEntreprises() {
     const g = new URLSearchParams();
     for (const [source, cible] of [
       ["e_ori", "origines"], ["e_sec", "secteurs"], ["e_act", "activites"],
-      ["e_a0", "annee_min"], ["e_a1", "annee_max"], ["e_q", "recherche"],
+      ["e_q", "recherche"],
     ]) {
       const v = p.get(source);
       if (v) g.set(cible, v);

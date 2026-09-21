@@ -207,13 +207,10 @@ export default function OngletFdi({ onVue }: {
       sousSecteurs: liste("e_ssec").map(v => v.split("::"))
         .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom })),
       activites: liste("e_act"),
-      anneeMin: p.get("e_a0") ? Number(p.get("e_a0")) : null,
-      anneeMax: p.get("e_a1") ? Number(p.get("e_a1")) : null,
       recherche: p.get("e_q") ?? "",
     };
     if (ent.origines.length || ent.secteurs.length || ent.sousSecteurs.length
-        || ent.activites.length || ent.anneeMin != null || ent.anneeMax != null
-        || ent.recherche) setFiltresEntreprises(ent);
+        || ent.activites.length || ent.recherche) setFiltresEntreprises(ent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -355,9 +352,12 @@ export default function OngletFdi({ onVue }: {
     poser("e_sec", filtresEntreprises.secteurs.join("|"));
     poser("e_ssec", filtresEntreprises.sousSecteurs.map(s => `${s.secteur}::${s.nom}`).join("|"));
     poser("e_act", filtresEntreprises.activites.join("|"));
-    poser("e_a0", filtresEntreprises.anneeMin != null ? String(filtresEntreprises.anneeMin) : null);
-    poser("e_a1", filtresEntreprises.anneeMax != null ? String(filtresEntreprises.anneeMax) : null);
     poser("e_q", filtresEntreprises.recherche.trim());
+    // Une adresse partagée du temps où la vue avait une période porte encore
+    // ces deux clefs. Plus personne ne les lit, mais rien ne les effaçait non
+    // plus : elles resteraient indéfiniment dans la barre d'adresse et dans le
+    // lien du rapport. On les retire une bonne fois.
+    poser("e_a0", null); poser("e_a1", null);
     window.history.replaceState(null, "", `${window.location.pathname}?${p}`);
   }, [vue, sens, pays, anneeMin, anneeMax, secteurs, sousSecteurs, activites, types,
       rechercheD, bornes, filtresSignaux, filtresEntreprises]);
@@ -392,13 +392,9 @@ export default function OngletFdi({ onVue }: {
       remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
     },
     entreprises: {
-      // LA PÉRIODE COMPTE POUR UN, non pour deux : c'est un seul geste du
-      // lecteur, et ses deux bornes bougent ensemble. Elle ne compte que si
-      // elle restreint — toute la plage vaut null, donc rien.
       nb: filtresEntreprises.origines.length
         + filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
         + filtresEntreprises.activites.length
-        + ((filtresEntreprises.anneeMin != null || filtresEntreprises.anneeMax != null) ? 1 : 0)
         + (filtresEntreprises.recherche.trim() ? 1 : 0),
       remettre: () => setFiltresEntreprises(FILTRES_ENTREPRISES_VIDES),
     },

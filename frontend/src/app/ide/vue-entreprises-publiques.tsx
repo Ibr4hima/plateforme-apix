@@ -42,8 +42,7 @@ import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
          Filet, fmtNombre, LigneFiche, ListeJetons, Pagination, survolCarte,
-         TITRE_FACETTE, TitreFiche } from "./partage";
-import { CurseurPlageNace } from "@/components/shared/CurseurNace";
+         TitreFiche } from "./partage";
 
 /** Ce que le lecteur peut restreindre — LES MÊMES FACETTES QUE LA VUE PROJETS,
     et de la même façon : sélection multiple, secteurs et sous-secteurs
@@ -61,16 +60,10 @@ import { CurseurPlageNace } from "@/components/shared/CurseurNace";
     n'a qu'un secteur — c'est le comportement de la vue Projets, où l'on coche
     deux secteurs pour en voir l'union. */
 export type FiltresEntreprises = {
-  // La période est le CADRE, non une facette : elle dit sur quelles années on
-  // regarde ces entreprises. null aux deux bornes = tout le relevé, donc pas de
-  // filtre du tout — c'est ce qui permet à l'état vide de rester littéralement
-  // vide, sans avoir à connaître les bornes du relevé pour s'écrire.
-  anneeMin: number | null; anneeMax: number | null;
   origines: string[];
   secteurs: string[]; sousSecteurs: ChoixSous[]; activites: string[]; recherche: string;
 };
 export const FILTRES_ENTREPRISES_VIDES: FiltresEntreprises = {
-  anneeMin: null, anneeMax: null,
   origines: [], secteurs: [], sousSecteurs: [], activites: [], recherche: "",
 };
 
@@ -85,8 +78,6 @@ type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
 type Perimetre = {
   secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[]; origines: Compte[];
-  // Les bornes du relevé ENTIER, hors de toute condition — voir le curseur.
-  annees: [number | null, number | null];
 };
 type Fiche = {
   nom: string; origine: string | null; origine_iso: string | null;
@@ -111,14 +102,8 @@ const PERIMETRE = "Afrique";
     Un secteur où l'on est descendu sort de la première liste — sinon le OU de
     la requête le ramènerait tout entier, et la précision serait sans effet.
     C'est la règle de la vue Projets, mot pour mot. */
-function urlPerimetre(f: FiltresEntreprises, recherche: string,
-                      a0: number | null, a1: number | null): string {
+function urlPerimetre(f: FiltresEntreprises, recherche: string): string {
   const p = new URLSearchParams();
-  // LES ANNÉES ARRIVENT DÉJÀ AMORTIES. Un curseur qu'on fait glisser passe par
-  // toutes les valeurs intermédiaires ; sans le délai, chaque pixel parcouru
-  // vaudrait une requête de périmètre et une de liste.
-  if (a0 != null) p.set("annee_min", String(a0));
-  if (a1 != null) p.set("annee_max", String(a1));
   const precises = new Set(f.sousSecteurs.map(s => s.secteur));
   const entiers = f.secteurs.filter(s => !precises.has(s));
   if (entiers.length) p.set("secteurs", entiers.join("|"));
@@ -140,57 +125,13 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
   filtres: FiltresEntreprises; onChange: (f: FiltresEntreprises) => void;
 }) {
   const recherche = useDebounced(filtres.recherche, 300);
-  const a0 = useDebounced(filtres.anneeMin, 300);
-  const a1 = useDebounced(filtres.anneeMax, 300);
-  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche, a0, a1), { garder: true }).data;
+  const per = useDonnees<Perimetre>(urlPerimetre(filtres, recherche), { garder: true }).data;
   if (!per) return null;
-  const [b0, b1] = per.annees;
 
   return (
     <>
       <Filet />
-      {/* ── QUAND ────────────────────────────────────────────────────────
-          LA PÉRIODE OUVRE LA COLONNE, avant même le pays d'origine, comme
-          dans les vues Projets et Signaux : c'est le cadre dans lequel tout
-          le reste se lit. « Les investisseurs chinois » ne veut rien dire
-          sans dire de quand — une entreprise qui a annoncé en 2011 et une
-          qui annonce en 2026 ne se démarchent pas de la même façon.
-
-          ELLE FILTRE LES PROJETS, PUIS L'ON GROUPE — la règle de toute cette
-          vue. Restreindre à 2020-2024 ne retient donc pas les entreprises
-          « nées » dans ces années : il retient celles qui y ont annoncé au
-          moins un projet, et leurs comptes ne portent que sur ces projets.
-          « 12 projets » se lit « 12 projets sur la période », exactement
-          comme « 12 projets de communications » sous un secteur coché.
-
-          LES BORNES VIENNENT DU RELEVÉ ENTIER, non du périmètre filtré : le
-          service les calcule hors de toute condition. Sans cela, réduire la
-          plage rétrécirait le curseur à la sélection qu'on vient de faire, et
-          l'on ne pourrait plus l'élargir.
-
-          TOUTE LA PÉRIODE VAUT « PAS DE FILTRE » : les bornes retombent alors
-          à null, le filtre ne se compte pas parmi les actifs, et l'adresse de
-          la page n'en porte pas la trace. */}
-      {b0 != null && b1 != null && b1 > b0 && (
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ display: "flex", alignItems: "center",
-            justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={TITRE_FACETTE}>Période</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--bleu)",
-              fontVariantNumeric: "tabular-nums" as const }}>
-              {filtres.anneeMin ?? b0} – {filtres.anneeMax ?? b1}
-            </span>
-          </div>
-          <CurseurPlageNace min={b0} max={b1}
-            debut={filtres.anneeMin ?? b0} fin={filtres.anneeMax ?? b1}
-            onChange={(a, b) => onChange({ ...filtres,
-              anneeMin: a === b0 && b === b1 ? null : a,
-              anneeMax: a === b0 && b === b1 ? null : b })} />
-          <div style={{ height: 18 }} />
-          <Filet />
-        </div>
-      )}
-      {/* ── LE PAYS D'ORIGINE ────────────────────────────────────────────
+      {/* ── LE PAYS D'ORIGINE, EN PREMIER ────────────────────────────────
           IL NE QUALIFIE PAS LA MÊME CHOSE QUE LES TROIS AUTRES. Secteur,
           sous-secteur et activité décrivent des PROJETS : l'entreprise
           apparaît parce que l'un des siens répond, et ses comptes se
@@ -200,9 +141,9 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
           FRANÇAISES, avec tous leurs projets.
 
           C'est donc le filtre qui dit QUI l'on regarde, quand les suivants
-          disent CE QU'ILS FONT. Il vient pour cette raison en tête des
-          facettes, juste après la période : on cadre les années, on choisit
-          une population, puis on la restreint.
+          disent CE QU'ILS FONT. Il ouvre la colonne pour cette raison, et
+          non par ordre d'importance : on choisit d'abord une population,
+          puis on la restreint.
 
           Il porte un champ de recherche, seul de la colonne : cent
           quarante-quatre pays rangés par nombre d'investisseurs se parcourent
@@ -249,24 +190,22 @@ export default function VueEntreprisesPubliques({ filtres, onChange }: {
   // curseur et de son clic.
   const [ouverte, setOuverte] = useState<Entreprise | null>(null);
   const recherche = useDebounced(filtres.recherche, 300);
-  const a0 = useDebounced(filtres.anneeMin, 300);
-  const a1 = useDebounced(filtres.anneeMax, 300);
 
   // Un changement de filtre ramène au premier écran : rester en page 12 d'un
   // résultat qui n'en compte plus qu'une n'aurait aucun sens.
   // L'URL du périmètre porte déjà toute la sélection, réduite à sa forme
   // envoyée : elle fait donc une clef exacte, et une facette cochée puis
   // décochée n'y laisse aucune trace qui remettrait la page à un.
-  const clef = urlPerimetre(filtres, recherche, a0, a1);
+  const clef = urlPerimetre(filtres, recherche);
   const [vue, setVue] = useState(clef);
   if (clef !== vue) { setVue(clef); setPage(1); }
 
   const url = useMemo(() => {
-    const p = new URLSearchParams(urlPerimetre(filtres, recherche, a0, a1).split("?")[1]);
+    const p = new URLSearchParams(urlPerimetre(filtres, recherche).split("?")[1]);
     p.set("page", String(page));
     p.set("par_page", String(PAR_PAGE));
     return `${API}/fdi/public/entreprises?${p}`;
-  }, [filtres, recherche, a0, a1, page]);
+  }, [filtres, recherche, page]);
 
   const q = useDonnees<Reponse>(url, { garder: true });
   if (q.isError) return <ErreurChargement onRetry={() => q.refetch()} />;
