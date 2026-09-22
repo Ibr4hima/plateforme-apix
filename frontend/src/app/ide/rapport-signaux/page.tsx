@@ -335,25 +335,32 @@ export default function RapportSignaux() {
                   levés gardent leur compteur en tête de page et leur tableau
                   nommé plus bas, où ils disent quelque chose : QUI les a levés.
 
-                  LE CLASSEMENT DES ORIGINES PREND SA PLACE, et la rangée reste
-                  pleine. */}
-              <div className="rap-duo" style={{ marginTop: 16 }}>
+                  LES DEUX CLASSEMENTS GÉOGRAPHIQUES PRENNENT SA PLACE, et la
+                  rangée passe à trois colonnes : le compte par année, d'où part
+                  l'intention, où elle va. Les trois se lisent ensemble — un
+                  signal se résume par sa date, son origine et sa cible. */}
+              <div className="rap-trio" style={{ marginTop: 16 }}>
                 <CarteTableauAnnees titre="Signaux relevés"
                   rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.nb }))} />
                 <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux max={10}
                   accent="var(--bleu)" rows={d.tops.origines ?? []} />
+                {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
+                    plus bas : le rapport se lit depuis Dakar, et un classement
+                    continental où le pays n'apparaît pas laisse sans réponse —
+                    onzième, ou dernier des cinquante ? */}
+                <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
+                  colonne="Pays" drapeaux epingle="Sénégal" max={10}
+                  accent="var(--vert)" rows={d.tops.destinations ?? []} />
               </div>
 
-              {/* TROIS CLASSEMENTS SUR UNE SEULE RANGÉE, ET DIX LIGNES CHACUN.
-                  Dans l'ordre des questions : ce qu'on vise, dans quel secteur,
-                  pour y faire quoi — « d'où l'on vient » est remonté d'un cran,
-                  à côté du compte par année.
+              {/* CE QU'ON VISE, DANS QUEL SECTEUR, POUR Y FAIRE QUOI. Les deux
+                  questions géographiques — d'où l'on vient, où l'on va — sont
+                  remontées d'un cran, à côté du compte par année ; restent les
+                  deux qui décrivent le CONTENU de l'intention.
 
-                  ILS ÉTAIENT CINQ, PUIS QUATRE, ET CHAQUE FOIS LA GRILLE A SUIVI
-                  LE NOMBRE plutôt que l'inverse : cinq laissaient une case vide
-                  sur deux colonnes, quatre tombaient juste en deux rangées de
-                  deux. À trois, une rangée de trois est pleine, et c'est la
-                  seule qui le soit.
+                  LA GRILLE SUIT LE NOMBRE DE CARTES, comme à chaque fois dans ce
+                  rapport : ils étaient cinq, puis quatre, puis trois. À deux,
+                  une rangée de deux est pleine — et c'est la seule qui le soit.
 
                   « ENTREPRISES LES PLUS ACTIVES » EST RETIRÉ D'ICI. Sur tout le
                   continent, ses valeurs tiennent en un mouchoir — dix signaux
@@ -367,14 +374,7 @@ export default function RapportSignaux() {
                   DIX LIGNES ET NON HUIT : c'est ce que le service renvoie, et
                   la largeur gagnée leur laisse la place. Une dixième ligne
                   affichée coûte un rang de plus à lire, pas une requête. */}
-              <div className="rap-trio" style={{ marginTop: 16 }}>
-                {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
-                    plus bas : le rapport se lit depuis Dakar, et un classement
-                    continental où le pays n'apparaît pas laisse sans réponse —
-                    onzième, ou dernier des cinquante ? */}
-                <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
-                  colonne="Pays" drapeaux epingle="Sénégal" max={10}
-                  accent="var(--vert)" rows={d.tops.destinations ?? []} />
+              <div className="rap-duo" style={{ marginTop: 16 }}>
                 <ClassementRapport titre="Secteurs visés" colonne="Secteur" max={10}
                   accent="var(--violet)" rows={d.tops.secteurs ?? []} />
                 <ClassementRapport titre="Activités prévues" colonne="Activité" max={10}
