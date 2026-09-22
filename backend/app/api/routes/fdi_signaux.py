@@ -64,6 +64,25 @@ LISTES = """
                 'libelle', coalesce(p.nom_fr, r.libelle_fr, d.brut),
                 'nature', CASE WHEN d.pays_id IS NOT NULL THEN 'pays'
                                WHEN d.region_id IS NOT NULL THEN 'region' END,
+                -- CE QUI MÉRITE D'ÊTRE MONTRÉ EN PREMIER, du plus proche au
+                -- plus lointain. Un signal vise souvent cinq ou six
+                -- destinations et la carte n'en montre qu'une : laisser
+                -- l'ordre de la source décider revenait à afficher « Bahreïn
+                -- +6 » à un lecteur dakarois dont le Sénégal était la
+                -- septième. Le rang de saisie départage à priorité égale, et
+                -- la fiche, elle, les donne toutes.
+                --
+                -- LE CLASSEMENT EST CELUI DU RÉFÉRENTIEL, non d'une liste
+                -- écrite ici : « Afrique de l'Ouest » vient de region_geo et
+                -- « Afrique » de continent. Un pays réaffecté dans
+                -- l'administration change donc de rang sans qu'on touche à ce
+                -- fichier.
+                'priorite', CASE
+                    WHEN p.nom_fr = 'Sénégal'                 THEN 0
+                    WHEN p.region_geo = 'Afrique de l''Ouest' THEN 1
+                    WHEN p.continent = 'Afrique'              THEN 2
+                    WHEN r.code = 'africa'                    THEN 3
+                    ELSE 4 END,
                 'resolu', (d.pays_id IS NOT NULL OR d.region_id IS NOT NULL))
              ORDER BY d.rang), '[]'::json)
        FROM fdi_signal_destinations d
