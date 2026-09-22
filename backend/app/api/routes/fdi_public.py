@@ -161,7 +161,13 @@ async def _pays_complets(db: AsyncSession, sens: str):
 
 
 async def _zone_en_pays(db: AsyncSession, sens: str, region: str) -> list[str]:
-    """Une région rendue en la liste des pays qu'elle couvre DANS CE RELEVÉ.
+    """Une zone rendue en la liste des pays qu'elle couvre DANS CE RELEVÉ.
+
+    UNE ZONE EST UNE RÉGION OU UN CONTINENT — « Afrique de l'Ouest » ou
+    « Afrique » —, et les deux se résolvent de la même façon : par les pays.
+    L'écran propose le continent au-dessus de ses régions pour qu'on puisse
+    raisonner en bloc avant de descendre ; côté service, cela ne fait qu'un
+    niveau de plus dans le même rattachement.
 
     POURQUOI PASSER PAR LES PAYS plutôt que filtrer sur `ro.region_geo`. Les
     deux ne donnent pas le même total. Une condition sur la région ramasserait
@@ -179,7 +185,7 @@ async def _zone_en_pays(db: AsyncSession, sens: str, region: str) -> list[str]:
     qu'un écran qui montrerait tout : mieux vaut zéro projet qu'un total faux.
     """
     return sorted(r.nom_fr for r in await _pays_complets(db, sens)
-                  if r.region_geo == region)
+                  if region in (r.region_geo, r.continent))
 
 
 def _filtres(*args, **kw) -> tuple[list[str], dict]:
@@ -227,7 +233,8 @@ async def perimetre(
     # l'emporte s'ils arrivent tous les deux — c'est le choix le plus précis,
     # et une adresse qui porterait les deux vient forcément d'un lien bricolé.
     rangs = await _pays_complets(db, sens)
-    cible = pays or ([r.nom_fr for r in rangs if r.region_geo == region] if region else None)
+    cible = pays or ([r.nom_fr for r in rangs
+                      if region in (r.region_geo, r.continent)] if region else None)
 
     async def compter(expr: str, sauf: str | None):
         contexte, facettes, params = _conditions(

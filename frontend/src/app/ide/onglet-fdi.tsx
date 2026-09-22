@@ -293,7 +293,7 @@ export default function OngletFdi({ onVue }: {
   useEffect(() => {
     if (echelle !== "regions" || region || !per?.pays?.length) return;
     const ref = per.pays.find(p => p.nom === PAYS_REFERENCE) ?? per.pays[0];
-    setRegion(ref.region_geo ?? null);
+    setRegion(ref.continent ?? ref.region_geo ?? null);
   }, [echelle, region, per]);
 
   // Changer de sens change de périmètre : le pays retenu n'y existe pas
@@ -473,13 +473,39 @@ export default function OngletFdi({ onVue }: {
   // s'affiche pas à cette échelle, et une recherche laissée derrière soi en
   // passant de « Pays » à « Régions » en ferait disparaître quatre sur cinq.
   const zones = aplatirZones(per?.pays ?? []);
+  // LE CONTINENT COIFFE SES RÉGIONS, et se retient comme elles. Son total est
+  // la somme des leurs — un projet n'a qu'une destination, donc aucun n'est
+  // compté deux fois, et c'est bien ce que le service rend quand on le retient.
+  //
+  // Il vient du RÉFÉRENTIEL, jamais d'une constante : le jour où le relevé
+  // couvrira deux continents, deux blocs s'afficheront sans qu'on y touche.
+  // Les pays qu'il n'a pas classés se rangent sous « Autre », comme ailleurs.
+  const continents = ORDRE_CONTINENTS
+    .concat(["Autre"])
+    .map(nom => ({ nom, zones: zones.filter(z => z.continent === nom) }))
+    .filter(c => c.zones.length > 0)
+    .map(c => ({ ...c, nb: c.zones.reduce((t, z) => t + z.nb, 0) }));
 
-  // TOUT EST REPLIÉ AU DÉPART. Cinq barres tiennent sous les yeux d'un coup ;
+  // À L'ÉCHELLE DES RÉGIONS, LE CONTINENT S'OUVRE : ses cinq régions sont ce
+  // qu'on vient y choisir, et les cacher derrière un chevron ferait de
+  // l'échelle « Régions » un écran où il n'y a rien à cliquer.
+  //
+  // À L'ÉCHELLE DES PAYS, TOUT EST REPLIÉ AU DÉPART. Cinq barres tiennent sous les yeux d'un coup ;
   // en ouvrir une d'office rejetterait les autres hors de l'écran et rendrait
   // la liste plus longue à parcourir qu'à parcourir repliée. Le pays retenu par
   // défaut est le Sénégal, épinglé au-dessus : il n'y a rien à aller montrer
   // dans les régions tant que le lecteur n'en ouvre pas une.
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
+  // Les continents REPLIÉS, et non les ouverts : à cette échelle la liste
+  // s'ouvre déployée, et l'ensemble vide est donc le bon état de départ. Deux
+  // états plutôt qu'un seul retourné selon l'échelle — une même structure qui
+  // voudrait dire « ouvert » ici et « fermé » là se relit très mal.
+  const [replies, setReplies] = useState<Set<string>>(new Set());
+  const replier = (cle: string) => setReplies(prev => {
+    const n = new Set(prev);
+    if (n.has(cle)) n.delete(cle); else n.add(cle);
+    return n;
+  });
   // Une recherche déplie tout : chercher « Kenya » pour tomber sur des en-têtes
   // repliés serait une réponse sans réponse.
   const deplies = chercherPays ? new Set(regions.map(r => r.cle)) : ouverts;
@@ -664,41 +690,93 @@ export default function OngletFdi({ onVue }: {
                           setEchelle(o.v);
                           // La région d'arrivée est celle du pays qu'on lisait :
                           // on monte d'un cran sans changer de sujet.
+                          // LE CONTINENT D'ABORD, ET NON LA RÉGION DU PAYS
+                          // QU'ON LISAIT. Monter d'un cran depuis le Sénégal
+                          // donnait l'Afrique de l'Ouest ; c'était déjà
+                          // restreindre. « Régions » ouvre donc sur le plus
+                          // large — tout le relevé — et l'on descend ensuite.
                           if (o.v === "regions" && !region) {
                             const p = (per?.pays ?? []).find(x => x.nom === (pays ?? PAYS_REFERENCE));
-                            setRegion(p?.region_geo ?? zones[0]?.zone ?? null);
+                            setRegion(p?.continent ?? continents[0]?.nom ?? null);
                           }
                         }}>{o.l}</button>
                     ))}
                   </div>
                   {echelle === "regions" ? (
-                    /* Les cinq régions, chacune avec le total de ses pays.
-                       Pas de champ de recherche : cinq lignes se lisent d'un
-                       coup d'œil, et un champ au-dessus de cinq lignes se lit
-                       comme l'aveu d'une liste longue. */
+                    /* ── LE CONTINENT, PUIS SES RÉGIONS ───────────────────
+                       ON RAISONNE EN BLOC AVANT DE DESCENDRE. « Que reçoit
+                       l'Afrique » est la première question ; « que reçoit
+                       l'Afrique de l'Ouest » la seconde. La liste ne portait
+                       que la seconde, et l'on ne pouvait donc pas lire le
+                       relevé entier à cette échelle — il fallait repasser en
+                       « Pays » et n'en choisir aucun, ce que rien n'indiquait.
+
+                       LE CONTINENT EST RETENU PAR DÉFAUT : c'est le plus large,
+                       et l'on restreint depuis le large. Il n'est pas un
+                       en-tête décoratif mais une ligne cliquable comme les
+                       autres, avec son propre total — la somme de ses régions.
+
+                       LA PASTILLE NE CHANGE PAS DE COULEUR D'UN NIVEAU À
+                       L'AUTRE. C'est le retrait et le rail qui disent la
+                       hiérarchie ; teinter les niveaux ferait lire deux
+                       natures de filtre là où il n'y en a qu'une. */
                     <div>
-                      {zones.map(z => {
-                        const sel = region === z.zone;
+                      {continents.map(c => {
+                        const ouvert = !replies.has(c.nom);
+                        const selC = region === c.nom;
                         return (
-                          <button key={z.cle} onClick={() => setRegion(z.zone)}
-                            style={LIGNE_FACETTE}
-                            onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                            <Pastille coche={sel} />
-                            <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
-                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
-                            {/* LE SEUL NOMBRE EST CELUI DES PROJETS, comme sur
-                                toutes les autres lignes de la colonne. Le
-                                nombre de pays y ajoutait une seconde unité :
-                                deux chiffres côte à côte sur une même ligne se
-                                confondent, et l'on se demandait lequel des deux
-                                le filtre allait retenir. */}
-                            <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                              fontVariantNumeric: "tabular-nums" as const }}>{z.nb}</span>
-                          </button>
+                          <div key={c.nom}>
+                            <button onClick={() => setRegion(c.nom)} style={LIGNE_FACETTE}
+                              onMouseEnter={e => { if (!selC) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                              {/* LE CHEVRON REPLIE, IL NE RETIENT PAS. Deux
+                                  gestes sur une même ligne se confondraient ;
+                                  il porte donc son propre bouton, et son clic
+                                  ne remonte pas à la ligne. */}
+                              <span role="button" tabIndex={0} aria-label={ouvert ? "Replier" : "Déplier"}
+                                onClick={e => { e.stopPropagation(); replier(c.nom); }}
+                                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); replier(c.nom); } }}
+                                style={{ display: "inline-flex", cursor: "pointer", flexShrink: 0, marginLeft: -2 }}>
+                                <ChevronDown size={12} style={{ color: "var(--gris)",
+                                  transform: ouvert ? "rotate(0deg)" : "rotate(-90deg)",
+                                  transition: "transform 0.15s" }} />
+                              </span>
+                              <Pastille coche={selC} />
+                              <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: selC ? 700 : 400,
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{c.nom}</span>
+                              <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(c.nb)}</span>
+                            </button>
+                            {/* LE RAIL TIENT LIEU D'INDENTATION : il dit à quoi
+                                les lignes se rattachent, ce qu'un simple retrait
+                                laisse deviner. */}
+                            {ouvert && (
+                              <div style={{ marginLeft: 13, paddingLeft: 9,
+                                borderLeft: "1px solid var(--bordure)" }}>
+                                {c.zones.map(z => {
+                                  const sel = region === z.zone;
+                                  return (
+                                    <button key={z.cle} onClick={() => setRegion(z.zone)}
+                                      style={LIGNE_FACETTE}
+                                      onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLElement).style.background = "var(--carte-douce)"; }}
+                                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
+                                      <Pastille coche={sel} />
+                                      <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
+                                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{z.zone}</span>
+                                      {/* LE SEUL NOMBRE EST CELUI DES PROJETS,
+                                          comme sur toutes les autres lignes de
+                                          la colonne. */}
+                                      <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
+                                        fontVariantNumeric: "tabular-nums" as const }}>{fmtNombre(z.nb)}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
-                      {zones.length === 0 && (
+                      {continents.length === 0 && (
                         <p style={{ fontSize: 12, color: "var(--gris)", textAlign: "center" as const, padding: "8px 0" }}>
                           Aucune région relevée
                         </p>
@@ -732,7 +810,7 @@ export default function OngletFdi({ onVue }: {
                           fontWeight: pays === paysReference.nom ? 700 : 400 }}>{paysReference.nom}</span>
                         <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
                           <span style={{ fontSize: 10, color: "var(--gris)",
-                            fontVariantNumeric: "tabular-nums" }}>{paysReference.nb}</span>
+                            fontVariantNumeric: "tabular-nums" }}>{fmtNombre(paysReference.nb)}</span>
                           <span style={{ fontSize: 9, fontWeight: 600, color: "var(--gris)",
                             background: "var(--fond)", padding: "1px 5px", borderRadius: 4 }}>Réf.</span>
                         </span>
@@ -764,7 +842,7 @@ export default function OngletFdi({ onVue }: {
                                 <span style={{ fontSize: 12, color: "var(--texte)", fontWeight: sel ? 700 : 400,
                                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{p.nom}</span>
                                 <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--gris)",
-                                  fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : p.nb}</span>
+                                  fontVariantNumeric: "tabular-nums" }}>{epingle ? "Réf." : fmtNombre(p.nb)}</span>
                               </button>
                             );
                           })}
