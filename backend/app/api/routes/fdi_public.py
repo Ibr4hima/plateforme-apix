@@ -1000,24 +1000,40 @@ async def rapport_entreprises(
     # Et non en projets : la question est « combien d'entreprises françaises
     # investissent en Afrique », pas « combien de projets français ». Le nombre
     # de projets suit, pour dire si ces entreprises reviennent.
+    #
+    # IL SE RANGE PAR MONTANT, comme les autres tableaux du document, et la
+    # borne est posée sur ce critère : ranger par nombre d'investisseurs puis
+    # laisser retrier par montant aurait écarté en silence un pays qui engage
+    # beaucoup par peu d'entreprises — exactement le profil des pays du Golfe.
     origines_top = await classement("""
         SELECT origine AS nom, min(iso) AS iso, count(*) AS investisseurs,
-               sum(projets) AS projets,
+               sum(projets) AS projets, sum(capex) AS capex,
                count(*) FILTER (WHERE au_senegal) AS au_senegal
         FROM g WHERE origine IS NOT NULL
-        GROUP BY origine ORDER BY count(*) DESC, origine""")
+        GROUP BY origine
+        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, origine""", 20)
 
     # ── Secteurs et activités, à deux comptes ────────────────────────────────
     # LE RAPPORT DES DEUX EST L'INFORMATION. Un secteur à 300 projets pour
     # 40 investisseurs est tenu par quelques habitués qui reviennent ; le même
     # volume réparti sur 250 entreprises est un marché ouvert. Le nombre de
     # projets seul ne distingue pas les deux.
+    #
+    # LE MONTANT S'AJOUTE AUX DEUX COMPTES et commande désormais l'ordre : un
+    # sous-secteur à trois cents projets menés par des entreprises qui engagent
+    # peu ne dit pas la même chose qu'un sous-secteur à dix projets pesant des
+    # milliards, et c'est le second qu'un comité veut voir en tête. La borne
+    # suit le même critère, pour que retrier à l'écran ne fasse disparaître
+    # aucune ligne.
     async def par(colonne: str):
         return [dict(r._mapping) for r in await q(f"""
             SELECT {colonne} AS nom, count(*) AS projets,
-                   count(DISTINCT (nom, origine)) AS investisseurs
+                   count(DISTINCT (nom, origine)) AS investisseurs,
+                   sum(capex) AS capex
             FROM base WHERE {colonne} IS NOT NULL
-            GROUP BY 1 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
+            GROUP BY 1
+            ORDER BY sum(capex) DESC NULLS LAST,
+                     count(DISTINCT (nom, origine)) DESC, 1 LIMIT 20""")]
 
     # LE SOUS-SECTEUR NE SE LIT PAS SEUL, et son secteur voyage donc avec lui.
     # « Other » vit sous vingt-quatre secteurs chez fDi, « Software » sous
@@ -1026,9 +1042,12 @@ async def rapport_entreprises(
     # COUPLE, ce qui les sépare aussi dans le compte.
     sous_secteurs = [dict(r._mapping) for r in await q("""
         SELECT sous_secteur AS nom, secteur AS parent, count(*) AS projets,
-               count(DISTINCT (nom, origine)) AS investisseurs
+               count(DISTINCT (nom, origine)) AS investisseurs,
+               sum(capex) AS capex
         FROM base WHERE sous_secteur IS NOT NULL AND secteur IS NOT NULL
-        GROUP BY 1, 2 ORDER BY count(DISTINCT (nom, origine)) DESC, 1 LIMIT 12""")]
+        GROUP BY 1, 2
+        ORDER BY sum(capex) DESC NULLS LAST,
+                 count(DISTINCT (nom, origine)) DESC, 1 LIMIT 20""")]
 
     return {
         "kpis": {

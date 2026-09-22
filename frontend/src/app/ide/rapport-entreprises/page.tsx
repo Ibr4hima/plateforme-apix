@@ -33,7 +33,7 @@ import NavActions from "@/components/layout/NavActions";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { useDonnees } from "@/lib/donnees";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CEL, ChiffreCle,
-         ClassementRapport, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT,
+         dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT,
          fmtNombre, fmtVal, PastilleRang } from "../partage";
 
 /** Le périmètre du relevé. Il qualifie le document comme « Sénégal » qualifie
@@ -57,9 +57,11 @@ type Rapport = {
   };
   actifs: Invest[];
   origines: { nom: string; iso: string | null; investisseurs: number;
-              projets: number; au_senegal: number }[];
-  sous_secteurs: { nom: string; parent: string; projets: number; investisseurs: number }[];
-  activites: { nom: string; projets: number; investisseurs: number }[];
+              projets: number; capex: number | null; au_senegal: number }[];
+  sous_secteurs: { nom: string; parent: string; projets: number;
+                   investisseurs: number; capex: number | null }[];
+  activites: { nom: string; projets: number; investisseurs: number;
+               capex: number | null }[];
   // Le montant est celui des SEULS projets sénégalais, comme le compte : la
   // somme africaine d'un groupe n'a rien à faire dans un classement qui demande
   // ce qu'il a engagé ici.
@@ -208,14 +210,20 @@ export default function RapportEntreprises() {
                 financiers » s'y lit deux fois, « Logiciels et services
                 informatiques » aussi. Le classement des secteurs seuls était
                 donc contenu dans celui-ci, en moins précis. */}
-            <div className="rap-duo" style={{ marginTop: 44 }}>
-              <ClassementRapport titre="Pays d'origine des investisseurs" colonne="Pays"
-                libelleValeur="Invest." drapeaux max={10} accent="var(--bleu)"
-                rows={(d.origines ?? []).map(o => ({ nom: o.nom, nb: o.investisseurs, iso: o.iso }))} />
-              <ClassementRapport titre="Classement des Activités menées" colonne="Activité"
-                libelleValeur="Invest." max={10} accent="var(--orange)"
-                rows={(d.activites ?? []).map(a => ({ nom: a.nom, nb: a.investisseurs }))} />
+            {/* PLEINE LARGEUR, ET NON PLUS CÔTE À CÔTE. Deux tableaux de cinq
+                colonnes dans une demi-page se seraient lus à l'horizontale, au
+                défilement ; ils s'empilent, comme les tableaux du rapport des
+                projets. */}
+            <div style={{ marginTop: 44 }}>
+              <TableauAgrege titre="Pays d'origine des investisseurs" colonne="Pays" drapeaux
+                colonneInvestisseurs periode={periode}
+                lignes={(d.origines ?? []).map(o => ({ nom: o.nom, iso: o.iso,
+                  capex: o.capex, projets: o.projets, investisseurs: o.investisseurs }))} />
             </div>
+            <TableauAgrege titre="Classement des Activités menées" colonne="Activité"
+              periode={periode}
+              lignes={(d.activites ?? []).map(a => ({ nom: a.nom, capex: a.capex,
+                projets: a.projets }))} />
 
             {/* ── LE SOUS-SECTEUR, SUR TOUTE LA LARGEUR ET EN DEUX COLONNES ───
                 IL NE SE LIT PAS SEUL. « Other » vit sous vingt-quatre secteurs
@@ -231,12 +239,10 @@ export default function RapportEntreprises() {
                 de l'autre, et les répétitions du second — trois lignes sous
                 « Services financiers » — sautent aux yeux. C'est ce qui vaut la
                 pleine largeur à cette carte. */}
-            <div style={{ marginTop: 16 }}>
-              <ClassementRapport titre="Sous-secteurs les plus investis"
-                colonne="Sous-secteur" colonneDetail="Secteur" retourLigne
-                libelleValeur="Invest." max={10} accent="var(--bleu)"
-                rows={(d.sous_secteurs ?? []).map(x => ({ nom: x.nom, detail: x.parent, nb: x.investisseurs }))} />
-            </div>
+            <TableauAgrege titre="Sous-secteurs les plus investis"
+              colonne="Sous-secteur" colonneDetail="Secteur" periode={periode}
+              lignes={(d.sous_secteurs ?? []).map(x => ({ nom: x.nom, detail: x.parent,
+                capex: x.capex, projets: x.projets }))} />
 
             {/* ── LE CLASSEMENT NOMMÉ ─────────────────────────────────────────
                 UNE SEULE LISTE, ET UNE COLONNE QUI RÉPOND. Le document séparait
@@ -288,6 +294,125 @@ export default function RapportEntreprises() {
   );
 }
 
+/** Une ligne de classement agrégé — un pays d'origine, un sous-secteur, une
+    activité. Les trois comptent les mêmes choses, dans des colonnes qui ne
+    valent pas toutes pour les trois. */
+type LigneAgregee = {
+  nom: string; detail?: string | null; iso?: string | null;
+  capex: number | null; projets: number; investisseurs?: number;
+};
+
+/** UN CLASSEMENT AGRÉGÉ EN TABLEAU, trié par le lecteur.
+
+    TROIS CARTES DU DOCUMENT L'EMPLOIENT — pays d'origine, activités menées,
+    sous-secteurs. Elles étaient des listes à barres, qui ne portent qu'UN
+    nombre : on y lisait le nombre d'investisseurs, et rien de ce qu'ils
+    engagent. Or un sous-secteur à trois cents projets menés par des
+    entreprises qui investissent peu ne dit pas la même chose qu'un
+    sous-secteur à dix projets pesant des milliards.
+
+    IL S'OUVRE SUR LE MONTANT INVESTI, décroissant, et le service borne la
+    liste sur ce même critère : retrier à l'écran ne fait donc disparaître
+    aucune ligne du classement qu'on croyait lire. */
+function TableauAgrege({ titre, colonne, colonneDetail, lignes, periode, drapeaux = false,
+                         colonneInvestisseurs = false }: {
+  titre: string; colonne: string; colonneDetail?: string;
+  lignes: LigneAgregee[]; periode: string; drapeaux?: boolean;
+  colonneInvestisseurs?: boolean;
+}) {
+  const colonnes = useMemo(() => [
+    { cle: "capex" as const, libelle: "Montant investi*" },
+    ...(colonneInvestisseurs ? [{ cle: "investisseurs" as const, libelle: "Investisseurs" }] : []),
+    { cle: "projets" as const, libelle: "Projets" },
+  ], [colonneInvestisseurs]);
+  type Cle = (typeof colonnes)[number]["cle"];
+
+  const [triCol, setTriCol] = useState<Cle>("capex");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+  const [tout, setTout] = useState(false);
+
+  const trierPar = (c: Cle) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+
+  const rangees = useMemo(() => {
+    const l = [...(lignes ?? [])];
+    // Une ligne dont la source ne dit pas le montant n'engage pas zéro : on ne
+    // sait pas, et elle reste en queue dans les deux sens.
+    l.sort((a, b) => {
+      const x = a[triCol] ?? null, y = b[triCol] ?? null;
+      if (x == null && y == null) return a.nom.localeCompare(b.nom, "fr");
+      if (x == null) return 1;
+      if (y == null) return -1;
+      if (x !== y) return triSens === "desc" ? y - x : x - y;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+    return l;
+  }, [lignes, triCol, triSens]);
+
+  if (!lignes?.length) return null;
+  const reste = rangees.length - FENETRE_RAPPORT;
+
+  return (
+    <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
+      <Carte titre={titre} tag={periode}>
+        <div style={{ overflowX: "auto" as const }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+            <thead>
+              <tr>
+                <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+                <th style={{ ...ENT_RAP, textAlign: "left" as const }}>{colonne}</th>
+                {colonneDetail && (
+                  <th style={{ ...ENT_RAP, textAlign: "left" as const }}>{colonneDetail}</th>
+                )}
+                {colonnes.map(c => (
+                  <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
+                    actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(tout ? rangees : rangees.slice(0, FENETRE_RAPPORT)).map((l, i) => {
+                const chiffre = (cle: Cle) => ({ ...CEL, textAlign: "right" as const,
+                  whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" as const,
+                  fontWeight: triCol === cle ? 800 : undefined,
+                  color: triCol === cle ? "var(--bleu)" : undefined });
+                return (
+                  <tr key={`${l.nom}-${l.detail ?? ""}`}>
+                    <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
+                    <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }} title={l.nom}>
+                      {/* LE DRAPEAU, pour les pays seulement : un pays se
+                          reconnaît à son drapeau avant d'être lu. */}
+                      {drapeaux ? (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                          <DrapeauPays iso={l.iso ?? null} nom={l.nom} taille={14} sansIso="rien" />
+                          {l.nom}
+                        </span>
+                      ) : l.nom}
+                    </td>
+                    {colonneDetail && <td style={CEL}>{l.detail ?? "—"}</td>}
+                    {colonnes.map(c => (
+                      <td key={c.cle} style={chiffre(c.cle)}>
+                        {c.cle === "capex" ? fmtVal(l.capex) : fmtNombre(l[c.cle] ?? null)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <BoutonSuite reste={reste} tout={tout} onBasculer={() => setTout(v => !v)} />
+        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
+          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
+          non déclarées par l&apos;entreprise.
+        </p>
+      </Carte>
+    </div>
+  );
+}
+
 /** Les deux colonnes triables d'un classement d'investisseurs. Le montant
     d'abord : c'est par lui que le tableau s'ouvre, et le nombre de projets vient
     qualifier ensuite — un groupe qui annonce souvent n'engage pas forcément
@@ -295,6 +420,10 @@ export default function RapportEntreprises() {
 const COLS_INVEST = [
   { cle: "capex", libelle: "Montant investi*" },
   { cle: "projets", libelle: "Projets" },
+  // LE NOMBRE DE PAYS EST UNE RÉPONSE À PART ENTIÈRE : il dit si un groupe
+  // essaime sur le continent ou concentre ses annonces sur un marché, et c'est
+  // un profil de prospect différent à montant égal.
+  { cle: "pays", libelle: "Pays" },
 ] as const;
 type CleInvest = (typeof COLS_INVEST)[number]["cle"];
 
@@ -367,13 +496,13 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal, co
                 {nommees.map(t => (
                   <th key={t} style={{ ...ENT_RAP, textAlign: "left" as const }}>{t}</th>
                 ))}
-                {COLS_INVEST.map(c => (
+                {COLS_INVEST.filter(c => !court || c.cle !== "pays").map(c => (
                   <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
                     actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
                 ))}
-                {!court && ["Pays", "Période"].map(t => (
-                  <th key={t} style={{ ...ENT_RAP, textAlign: "right" as const }}>{t}</th>
-                ))}
+                {!court && (
+                  <th style={{ ...ENT_RAP, textAlign: "right" as const }}>Période</th>
+                )}
                 {colonneSenegal && (
                   <th style={{ ...ENT_RAP, textAlign: "right" as const }}>Présent au {PAYS}</th>
                 )}
@@ -402,7 +531,7 @@ function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal, co
                     <td style={chiffre("capex")}>{fmtVal(l.capex)}</td>
                     <td style={chiffre("projets")}>{fmtNombre(l.projets)}</td>
                     {!court && <>
-                      <td style={{ ...CEL, textAlign: "right" as const, fontVariantNumeric: "tabular-nums" }}>{fmtNombre(l.pays)}</td>
+                      <td style={chiffre("pays")}>{fmtNombre(l.pays)}</td>
                       <td style={{ ...CEL, textAlign: "right" as const, whiteSpace: "nowrap" as const, fontVariantNumeric: "tabular-nums" }}>
                         {l.a0 === l.a1 ? l.a0 : `${l.a0} — ${l.a1}`}
                       </td>
