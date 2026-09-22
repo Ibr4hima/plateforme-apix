@@ -920,12 +920,19 @@ async def rapport_entreprises(
                {FACETTES['secteurs']}      AS secteur,
                {FACETTES['sous_secteurs']} AS sous_secteur,
                {FACETTES['activites']}     AS activite,
-               p.annee AS annee
+               p.annee AS annee,
+               -- LE MONTANT VOYAGE AVEC LE PROJET, et se somme par groupe : le
+               -- classement des investisseurs se lit désormais par ce qu'ils
+               -- ENGAGENT, non par le nombre de fois qu'ils annoncent. Nul
+               -- quand la source ne le dit pas — un investisseur sans montant
+               -- connu n'engage pas zéro, on ne sait pas, et la somme le
+               -- laisse à null plutôt que de l'écrire.
+               p.capex_musd AS capex
         {JOINTURES_ENTREPRISE}
         WHERE {filtre} AND {NOM_ENTREPRISE} IS NOT NULL
     ), g AS (
         SELECT nom, origine, min(origine_iso) AS iso,
-               count(*) AS projets,
+               count(*) AS projets, sum(capex) AS capex,
                count(DISTINCT dest) AS pays,
                min(annee) AS a0, max(annee) AS a1,
                bool_or(dest = :senegal) AS au_senegal
@@ -956,9 +963,16 @@ async def rapport_entreprises(
     # présents des absents en deux listes, c'est une colonne du classement qui
     # le dit. Une seule liste à lire, et la question « celui-là est-il déjà
     # venu ? » trouve sa réponse sur la ligne même.
+    #
+    # IL SE RANGE PAR MONTANT INVESTI, et la borne est posée sur ce critère-là.
+    # Le lecteur peut retrier ces vingt lignes par nombre de projets : il lit
+    # alors « parmi les vingt qui engagent le plus, lesquels reviennent le plus
+    # souvent », une question. Les ranger par projets puis les retrier par
+    # montant aurait, lui, fait disparaître en silence des investisseurs plus
+    # gros mais moins bavards.
     actifs = await classement("""
-        SELECT nom, origine, iso, projets, pays, a0, a1, au_senegal
-        FROM g ORDER BY projets DESC, nom""")
+        SELECT nom, origine, iso, projets, capex, pays, a0, a1, au_senegal
+        FROM g ORDER BY capex DESC NULLS LAST, projets DESC, nom""", 20)
 
     # ── Le classement AU SÉNÉGAL ─────────────────────────────────────────────
     # LE COMPTE N'EST PAS CELUI DU CLASSEMENT AFRICAIN. Il ne retient que les
@@ -971,10 +985,16 @@ async def rapport_entreprises(
     # filiale qui signe : « Orange Sénégal » et « Sonatel » sont le même
     # investisseur, et les compter à part le ferait paraître deux fois plus
     # petit qu'il n'est.
+    #
+    # LE MONTANT EST CELUI DES SEULS PROJETS SÉNÉGALAIS, comme le compte : la
+    # somme africaine d'un groupe n'a rien à faire dans un classement qui
+    # demande ce qu'il a engagé ICI.
     senegal = await classement("""
-        SELECT nom, origine, min(origine_iso) AS iso, count(*) AS projets
+        SELECT nom, origine, min(origine_iso) AS iso, count(*) AS projets,
+               sum(capex) AS capex
         FROM base WHERE dest = :senegal
-        GROUP BY nom, origine ORDER BY count(*) DESC, nom""", 10)
+        GROUP BY nom, origine
+        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, nom""", 20)
 
     # ── Les origines, comptées en INVESTISSEURS ──────────────────────────────
     # Et non en projets : la question est « combien d'entreprises françaises
