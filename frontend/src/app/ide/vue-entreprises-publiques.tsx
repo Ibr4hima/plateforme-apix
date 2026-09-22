@@ -184,7 +184,7 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
           et le composant s'en charge en une seule écriture : nos deux listes
           tiennent dans le même objet de filtres, et deux appels successifs
           calculés sur la même valeur d'avant se seraient écrasés. */}
-      <FacetteSecteurs titre="Secteurs d'activité"
+      <FacetteSecteurs titre="Secteurs économiques"
         secteurs={per.secteurs} sousSecteurs={per.sous_secteurs}
         choixSec={filtres.secteurs} choixSous={filtres.sousSecteurs}
         onChange={(secteurs, sousSecteurs) => onChange({ ...filtres, secteurs, sousSecteurs })} />

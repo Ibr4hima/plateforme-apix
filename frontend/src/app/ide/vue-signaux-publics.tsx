@@ -188,7 +188,7 @@ export function FiltresSignauxPanneau({ filtres, onChange }: {
         options={per.destinations.map(d => ({ ...d, groupe: d.nature,
           cherchable: d.nature === "pays" }))}
         onChange={set("destination")} chercher="Rechercher un pays…" />
-      <FacetteUnique titre="Secteurs d'activité" options={per.secteurs} valeur={filtres.secteur}
+      <FacetteUnique titre="Secteurs économiques" options={per.secteurs} valeur={filtres.secteur}
         onChange={set("secteur")} />
       {/* L'activité dit ce que l'entreprise vient FAIRE — usine, siège,
           logistique — indépendamment de son secteur. Les deux se croisent :

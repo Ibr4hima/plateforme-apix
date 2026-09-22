@@ -410,12 +410,33 @@ export default function RapportIde() {
             </div>
 
             <section style={{ marginTop: 44 }}>
-              {/* ── LES TROIS SÉRIES ANNUELLES, CHIFFRÉES, EN PREMIER ──────────
-                  LE CHIFFRE AVANT LA COURBE. Les quatre compteurs du haut de
-                  page donnent un total par mesure ; la question qui vient
-                  ensuite est « combien par année », et c'est un tableau qui y
-                  répond — avec, en plus, le millésime précédent et l'écart, que
-                  nulle courbe ne donne à lire sans qu'on la survole.
+              {/* ── LA COURBE D'ABORD ──────────────────────────────────────────
+                  ELLE NE RÉPÈTE PAS LES TABLEAUX, ELLE EN DIT AUTRE CHOSE : la
+                  courbe donne la FORME — les creux, les paliers, le pic —, les
+                  tableaux donnent les VALEURS. Elle ouvre la section parce
+                  qu'on regarde la forme avant de lire les nombres : le pic de
+                  2019 se voit d'un coup d'œil, et les trois tableaux qui
+                  suivent disent ensuite de combien.
+
+                  SON TITRE PORTE L'ÉVOLUTION, celui du tableau la mesure —
+                  « Investissements annoncés ». Deux cartes nommées à
+                  l'identique dans une même page auraient fait croire à un
+                  doublon. */}
+              {d3Pret && serieCapex[0].data.length > 0 && (
+                <div>
+                  <Carte titre="Évolution des investissements annoncés par année" tag={periodeFdi}>
+                    <GrapheMultiPays series={serieCapex} height={250} type="line" titre="rap-capex" showDots />
+                  </Carte>
+                </div>
+              )}
+
+              {/* ── PUIS LES TROIS SÉRIES ANNUELLES, CHIFFRÉES ─────────────────
+                  LE CHIFFRE APRÈS LA FORME. Les quatre compteurs du haut de
+                  page donnent un total par mesure, la courbe en donne le
+                  profil ; la question qui vient ensuite est « combien par
+                  année », et c'est un tableau qui y répond — avec, en plus, le
+                  millésime précédent et l'écart, que nulle courbe ne donne à
+                  lire sans qu'on la survole.
 
                   LES TROIS MESURES SONT CELLES DES COMPTEURS, dans le même
                   ordre : l'argent annoncé, les projets qui le portent, les
@@ -426,8 +447,8 @@ export default function RapportIde() {
                   Le tableau reçoit `fmtVal` — celui des compteurs du haut — et
                   ses colonnes chiffrées s'élargissent en conséquence : « 1,2 Md
                   $ » ne tient pas dans la place d'un nombre de projets. */}
-              <div className="rap-trio">
-                <CarteTableauAnnees titre="Valeur des invest. annoncés par année"
+              <div className="rap-trio" style={{ marginTop: 16 }}>
+                <CarteTableauAnnees titre="Investissements annoncés"
                   libelleValeur="Montant" fmt={fmtVal} largeurValeur={58} largeurEcart={62} barre={false}
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.capex_musd }))} />
                 <CarteTableauAnnees titre="Projets annoncés" accent="var(--orange)"
@@ -435,22 +456,6 @@ export default function RapportIde() {
                 <CarteTableauAnnees titre="Emplois annoncés" accent="var(--vert)"
                   rows={fdi.par_annee.map(a => ({ annee: a.annee, valeur: a.emplois }))} />
               </div>
-
-              {/* ── PUIS LA COURBE ─────────────────────────────────────────────
-                  ELLE NE RÉPÈTE PAS LE TABLEAU, ELLE EN DIT AUTRE CHOSE : le
-                  tableau donne les valeurs, la courbe donne la FORME — les
-                  creux, les paliers, le pic. Elle vient donc après les chiffres
-                  qu'elle résume, et son titre le dit : c'est l'ÉVOLUTION qu'on
-                  y lit, quand le tableau, lui, porte encore le nom de la mesure.
-                  Deux cartes nommées à l'identique dans une même page auraient
-                  fait croire à un doublon. */}
-              {d3Pret && serieCapex[0].data.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <Carte titre="Évolution des investissements annoncés par année" tag={periodeFdi}>
-                    <GrapheMultiPays series={serieCapex} height={250} type="line" titre="rap-capex" showDots />
-                  </Carte>
-                </div>
-              )}
 
               {/* Les classements de la page : d'où vient l'argent, dans quoi il
                   va, et ce que l'entreprise vient faire. d3 arrive dans un
