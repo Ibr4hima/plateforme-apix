@@ -239,19 +239,14 @@ export default function RapportSignaux() {
       <style>{`
         .rap-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
         .rap-duo  { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; align-items: start; }
-        /* SIX COLONNES POUR NE JAMAIS LAISSER DE TROU. Cinq classements sur une
-           grille de deux ou de trois laissent forcément une case vide au dernier
-           rang. Sur six colonnes, trois cartes de deux colonnes remplissent la
-           première rangée et deux cartes de trois colonnes remplissent la
-           seconde : chaque rangée est pleine, et les largeurs restent lisibles. */
-        .rap-grille { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 16px; align-items: start; }
-        .rap-moitie { grid-column: span 3; }
-        @media (max-width: 1080px) {
-          .rap-grille { grid-template-columns: repeat(2, minmax(0,1fr)); }
-          .rap-moitie { grid-column: span 1; }
-        }
+        /* TROIS COLONNES, TROIS CLASSEMENTS : la rangée est pleine, et c'est
+           tout ce qu'il faut depuis que le quatrième est remonté à côté du
+           compte par année. La grille à six colonnes qui vivait ici servait à
+           loger cinq cartes sans laisser de trou ; elle n'a plus d'objet. */
+        .rap-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; align-items: start; }
+        @media (max-width: 1080px) { .rap-trio { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+        @media (max-width: 720px) { .rap-trio { grid-template-columns: 1fr; } }
         @media (max-width: 980px) { .rap-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } .rap-duo { grid-template-columns: 1fr; } }
-        @media (max-width: 700px) { .rap-grille { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { .rap-kpis { grid-template-columns: 1fr; } }
         @media print {
           .rap-sans-impression { display: none !important; }
@@ -329,22 +324,36 @@ export default function RapportSignaux() {
                 </Carte>
               )}
 
+              {/* ── LE COMPTE PAR ANNÉE, PUIS D'OÙ ILS VIENNENT ───────────────
+                  « FONDS LEVÉS PAR ANNÉE » EST RETIRÉ. Il doublait le compteur
+                  du haut et la courbe, pour une mesure que ce rapport ne met
+                  pas en avant — 57 Md $ de fonds levés contre 512 Md $
+                  d'investissement prévu —, et sa série annuelle sautait d'un
+                  facteur mille d'un millésime à l'autre : 11 M $ en 2019,
+                  22 141 M $ en 2024. Une série qui bondit ainsi ne se lit pas
+                  comme une tendance, elle se lit comme une anomalie. Les fonds
+                  levés gardent leur compteur en tête de page et leur tableau
+                  nommé plus bas, où ils disent quelque chose : QUI les a levés.
+
+                  LE CLASSEMENT DES ORIGINES PREND SA PLACE, et la rangée reste
+                  pleine. */}
               <div className="rap-duo" style={{ marginTop: 16 }}>
                 <CarteTableauAnnees titre="Signaux relevés"
                   rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.nb }))} />
-                <CarteTableauAnnees titre="Fonds levés (M$)" accent="var(--violet)"
-                  rows={d.par_annee.map(a => ({ annee: a.annee, valeur: a.funding_musd }))} />
+                <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux max={10}
+                  accent="var(--bleu)" rows={d.tops.origines ?? []} />
               </div>
 
-              {/* QUATRE CLASSEMENTS, DEUX PAR DEUX, ET DIX LIGNES CHACUN.
-                  Dans l'ordre des questions : d'où l'on vient, ce qu'on vise,
-                  dans quel secteur, pour y faire quoi.
+              {/* TROIS CLASSEMENTS SUR UNE SEULE RANGÉE, ET DIX LIGNES CHACUN.
+                  Dans l'ordre des questions : ce qu'on vise, dans quel secteur,
+                  pour y faire quoi — « d'où l'on vient » est remonté d'un cran,
+                  à côté du compte par année.
 
-                  ILS ÉTAIENT CINQ, SUR DEUX RANGÉES INÉGALES — trois au tiers
-                  de page, deux à la moitié. Le découpage ne tenait qu'au nombre
-                  impair, et il donnait des cartes de deux largeurs pour des
-                  listes de même nature. À quatre, la grille tombe juste : deux
-                  colonnes, deux rangées, quatre cartes de même largeur.
+                  ILS ÉTAIENT CINQ, PUIS QUATRE, ET CHAQUE FOIS LA GRILLE A SUIVI
+                  LE NOMBRE plutôt que l'inverse : cinq laissaient une case vide
+                  sur deux colonnes, quatre tombaient juste en deux rangées de
+                  deux. À trois, une rangée de trois est pleine, et c'est la
+                  seule qui le soit.
 
                   « ENTREPRISES LES PLUS ACTIVES » EST RETIRÉ D'ICI. Sur tout le
                   continent, ses valeurs tiennent en un mouchoir — dix signaux
@@ -358,28 +367,18 @@ export default function RapportSignaux() {
                   DIX LIGNES ET NON HUIT : c'est ce que le service renvoie, et
                   la largeur gagnée leur laisse la place. Une dixième ligne
                   affichée coûte un rang de plus à lire, pas une requête. */}
-              <div className="rap-grille" style={{ marginTop: 16 }}>
-                <div className="rap-moitie">
-                  <ClassementRapport titre="Pays d'origine" colonne="Pays" drapeaux max={10}
-                    accent="var(--bleu)" rows={d.tops.origines ?? []} />
-                </div>
-                <div className="rap-moitie">
-                  {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
-                      plus bas : le rapport se lit depuis Dakar, et un classement
-                      continental où le pays n'apparaît pas laisse sans réponse —
-                      onzième, ou dernier des cinquante ? */}
-                  <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
-                    colonne="Pays" drapeaux epingle="Sénégal" max={10}
-                    accent="var(--vert)" rows={d.tops.destinations ?? []} />
-                </div>
-                <div className="rap-moitie">
-                  <ClassementRapport titre="Secteurs visés" colonne="Secteur" max={10}
-                    accent="var(--violet)" rows={d.tops.secteurs ?? []} />
-                </div>
-                <div className="rap-moitie">
-                  <ClassementRapport titre="Activités prévues" colonne="Activité" max={10}
-                    accent="var(--bleu)" rows={d.tops.activites ?? []} />
-                </div>
+              <div className="rap-trio" style={{ marginTop: 16 }}>
+                {/* LE SÉNÉGAL Y FIGURE TOUJOURS, comme au bilan ouest-africain
+                    plus bas : le rapport se lit depuis Dakar, et un classement
+                    continental où le pays n'apparaît pas laisse sans réponse —
+                    onzième, ou dernier des cinquante ? */}
+                <ClassementRapport titre="Destinations visées" tag="pays d'Afrique"
+                  colonne="Pays" drapeaux epingle="Sénégal" max={10}
+                  accent="var(--vert)" rows={d.tops.destinations ?? []} />
+                <ClassementRapport titre="Secteurs visés" colonne="Secteur" max={10}
+                  accent="var(--violet)" rows={d.tops.secteurs ?? []} />
+                <ClassementRapport titre="Activités prévues" colonne="Activité" max={10}
+                  accent="var(--bleu)" rows={d.tops.activites ?? []} />
               </div>
 
               {/* ─── L'AFRIQUE DE L'OUEST, LUE DE TROIS FAÇONS ──────────────────
@@ -445,12 +444,9 @@ export default function RapportSignaux() {
                         ne s'alignaient plus. La pastille le porte sans allonger
                         la ligne, et une carte découpée ou imprimée reste
                         interprétable. */}
-                    <div className="rap-grille">
-                      <div className="rap-moitie">
+                    <div className="rap-duo">
                         <ClassementRapport titre="Secteurs les plus visés" tag={z.court}
                           colonne="Secteur" accent="var(--violet)" rows={z.secteurs} />
-                      </div>
-                      <div className="rap-moitie">
                         {/* LE SÉNÉGAL EST TOUJOURS LÀ. Le rapport se lit depuis
                             Dakar, et le premier réflexe devant un classement
                             régional est d'y chercher le Sénégal : ne pas l'y
@@ -463,7 +459,6 @@ export default function RapportSignaux() {
                         <ClassementRapport titre="Pays les plus visés" tag={z.court}
                           colonne="Pays" drapeaux epingle="Sénégal"
                           accent="var(--orange)" rows={z.destinations} />
-                      </div>
                     </div>
                   </div>
                 );
