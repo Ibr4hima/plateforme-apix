@@ -307,6 +307,104 @@ async def perimetre(
     }
 
 
+# ── LE CLASSEMENT OUEST-AFRICAIN DU RAPPORT ──────────────────────────────────
+# LES TROIS ZONES, dans l'ordre du plus large au plus étroit : la région
+# géographique, l'union économique, l'union monétaire. Elles viennent du même
+# référentiel que le bilan des signaux, et portent les mêmes codes.
+ZONES_OUEST = ["AFRIQUE_DE_L_OUEST", "CEDEAO", "UEMOA"]
+
+
+def _sigle(code: str, nom: str) -> str:
+    """Le nom court d'une zone : le sigle quand il y en a un.
+
+    LA RÈGLE PLUTÔT QU'UNE TABLE DE CORRESPONDANCE : un code d'un seul tenant,
+    tout en majuscules, EST le sigle de la zone — c'est ainsi que le référentiel
+    est tenu (CEDEAO, UEMOA). Un code découpé par des soulignés est un
+    identifiant technique — AFRIQUE_DE_L_OUEST — et n'a rien à faire à l'écran :
+    c'est alors le nom français qui s'affiche.
+    """
+    return code if "_" not in code else nom
+
+
+async def _classement_ouest(db: AsyncSession, observe: str, partenaire: str,
+                            pays: str | None, contexte, facettes, params) -> list[dict]:
+    """Ce que reçoivent les voisins, pour un pays d'Afrique de l'Ouest.
+
+    POURQUOI CETTE SECTION N'APPARAÎT PAS TOUJOURS. Elle répond à « où se situe
+    ce pays parmi les siens », et cette question n'a de sens que si le pays a
+    des « siens » ici : un rapport sur l'Afrique du Sud n'a rien à faire d'un
+    classement ouest-africain. La section n'existe donc que pour un pays membre
+    d'au moins une des trois zones, et n'offre que les zones DONT IL EST
+    MEMBRE — le Ghana n'a pas d'onglet UEMOA, dont il ne fait pas partie.
+
+    ELLE NE VAUT QUE POUR UN PAYS, jamais pour une région : « où se situe
+    l'Afrique de l'Ouest dans l'Afrique de l'Ouest » ne veut rien dire, et il
+    n'y aurait aucune ligne à mettre en évidence.
+
+    LE FILTRE PAYS EST RETIRÉ, LES AUTRES RESTENT. C'est tout l'objet du
+    tableau : comparer le pays lu à ses voisins suppose de faire entrer les
+    voisins, que la condition de pays exclut. La période, les secteurs et les
+    activités, eux, continuent de s'appliquer — sans quoi le rapport
+    comparerait une sélection à un total.
+
+    LE PAYS LU EST TOUJOURS RENDU, même hors des dix premiers, avec son rang
+    réel : « absent du haut du classement » et « quatorzième sur seize » ne
+    s'équivalent pas, et seul le second est une information.
+    """
+    if not pays or not isinstance(pays, str):
+        return []
+
+    membres = (await db.execute(text("""
+        SELECT DISTINCT g.code, g.nom_fr
+          FROM ref_groupements g
+          JOIN ref_pays p ON p.id = ANY(g.pays_ids)
+         WHERE g.code = ANY(:zones) AND p.nom_fr = :pays"""),
+        {"zones": ZONES_OUEST, "pays": pays})).fetchall()
+    if not membres:
+        return []
+    noms = {r.code: r.nom_fr for r in membres}
+    codes = [c for c in ZONES_OUEST if c in noms]
+
+    lignes = (await db.execute(text(f"""
+        WITH zones AS (
+            SELECT code, pays_ids FROM ref_groupements WHERE code = ANY(:codes)
+        )
+        SELECT z.code AS zone,
+               COALESCE(ro.nom_fr, p.{observe}_brut) AS nom, min(ro.code_iso2) AS iso,
+               count(*) AS projets, sum(p.capex_musd) AS capex, sum(p.emplois) AS emplois
+        {JOINTURES.format(observe=observe, partenaire=partenaire)}
+        JOIN zones z ON p.{observe}_id = ANY(z.pays_ids)
+        WHERE {' AND '.join(contexte)} AND {' AND '.join(facettes)}
+        GROUP BY z.code, 2
+        -- L'ORDRE EST CELUI DE LA PREMIÈRE COLONNE CHIFFRÉE, le montant reçu :
+        -- c'est la question d'un comité — qui attire le plus d'argent —, et le
+        -- nombre de projets vient qualifier ensuite.
+        ORDER BY z.code, sum(p.capex_musd) DESC NULLS LAST, count(*) DESC, 2"""),
+        {**params, "codes": codes})).fetchall()
+
+    def nb(v):
+        return float(v) if v is not None else None
+
+    zones = []
+    for code in codes:
+        rangs, retenues, tenu = 0, [], False
+        for r in (x for x in lignes if x.zone == code):
+            rangs += 1
+            ici = r.nom == pays
+            # Dix par zone, plus le pays lu s'il est plus bas. Le découpage se
+            # fait ici plutôt qu'en SQL : une fenêtre numérotée par zone
+            # coûterait un tri de plus pour un volume que les zones bornent
+            # déjà — seize pays au plus.
+            if rangs <= 10 or (ici and not tenu):
+                retenues.append({"nom": r.nom, "iso": (r.iso or "").strip() or None,
+                                 "rang": rangs, "projets": r.projets,
+                                 "capex_musd": nb(r.capex), "emplois": r.emplois})
+                tenu = tenu or ici
+        zones.append({"code": code, "nom": noms[code], "court": _sigle(code, noms[code]),
+                      "membres": rangs, "lignes": retenues})
+    return zones
+
+
 @router.get("/projets")
 async def projets(
     sens: str = "destination",
@@ -483,6 +581,14 @@ async def projets(
         ORDER BY p.capex_musd DESC, p.annee DESC, p.mois DESC NULLS LAST, p.id
         LIMIT 20"""), params)).fetchall()
 
+    # ── LE CLASSEMENT OUEST-AFRICAIN ─────────────────────────────────────────
+    # Les conditions REPRISES SANS CELLE DU PAYS : voir `_classement_ouest`.
+    ctx_zone, fac_zone, params_zone = _conditions(
+        observe, cible, annee_min, annee_max, secteurs, sous_secteurs,
+        activites, types, recherche, "pays")
+    zones_ouest = await _classement_ouest(db, observe, partenaire, pays,
+                                          ctx_zone, fac_zone, params_zone)
+
     def nb(v):
         return float(v) if v is not None else None
 
@@ -539,6 +645,7 @@ async def projets(
         },
         "projets": [projet(r) for r in lignes],
         "plus_gros": [projet(r) for r in plus_gros],
+        "zones_ouest": zones_ouest,
     }
 
 

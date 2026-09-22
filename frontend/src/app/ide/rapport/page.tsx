@@ -17,7 +17,7 @@
 //     données affichées, jamais rédigé d'avance : si les données changent, la
 //     phrase change.
 
-import { useMemo, useState, useEffect } from "react";
+import { Fragment, useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -27,7 +27,7 @@ import { useDonnees } from "@/lib/donnees";
 import { useD3Pret } from "@/lib/d3lazy";
 import { API, ARetenir, BoutonSuite, CarteRapport as Carte, CarteTableauAnnees, CEL,
          ChiffreCle, dateDuJour, ENT_RAP, EnteteTri, FENETRE_RAPPORT, fmtNombre, fmtVal,
-         GrapheMultiPays, PastilleRang } from "../partage";
+         GrapheMultiPays, PastilleRang, SegmentRapport } from "../partage";
 
 const PAYS = "Sénégal";
 
@@ -77,7 +77,14 @@ type Fdi = {
   // gros montants — ce que faisait cette page — rendait « les plus gros des
   // trente derniers » sous le titre « les plus gros ».
   plus_gros: Projet[];
+  // Les trois zones ouest-africaines, et SEULEMENT celles dont le pays lu est
+  // membre. Vide pour un pays d'ailleurs, et pour une région : voir la carte.
+  zones_ouest: ZoneOuest[];
 };
+type LigneZone = { nom: string; iso: string | null; rang: number;
+                   projets: number; capex_musd: number | null; emplois: number | null };
+type ZoneOuest = { code: string; nom: string; court: string; membres: number;
+                   lignes: LigneZone[] };
 
 /** UN CLASSEMENT EN TABLEAU, trié par le lecteur.
 
@@ -303,6 +310,124 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
   );
 }
 
+/** LE CLASSEMENT OUEST-AFRICAIN — où se situe le pays lu parmi les siens.
+
+    IL N'APPARAÎT PAS TOUJOURS, et c'est voulu : la question n'a de sens que
+    pour un pays qui a des « siens » ici. Le service ne rend de zones que pour
+    un membre d'au moins une des trois, et seulement celles dont il est membre
+    — le Ghana n'a pas d'onglet UEMOA. Un rapport sur l'Afrique du Sud, ou sur
+    une région entière, n'a pas cette section du tout.
+
+    IL NE SE TRIE PAS, contrairement aux autres tableaux du document. Son objet
+    EST le rang : « le Sénégal est deuxième de l'UEMOA » se lit dans l'ordre du
+    montant reçu, et retrier par emplois ferait afficher un rang qui ne
+    correspondrait plus à rien. Les tableaux qu'on trie sont ceux dont l'ordre
+    n'est qu'un point de départ ; celui-ci est une réponse.
+
+    LE PAYS LU EST MIS EN ÉVIDENCE et toujours présent, même hors des dix
+    premiers, avec son rang réel : « absent du haut du classement » et
+    « quatorzième sur seize » ne s'équivalent pas. */
+function ClassementOuest({ zones, pays, tag }: {
+  zones: ZoneOuest[]; pays: string; tag?: string;
+}) {
+  const [i, setI] = useState(0);
+  if (!zones?.length) return null;
+  const z = zones[Math.min(i, zones.length - 1)];
+  const ACCENT = "var(--orange)";
+
+  return (
+    <section style={{ marginTop: 44 }} className="rap-eviter-coupure">
+      {/* LE TITRE ET LA BASCULE SUR UNE MÊME LIGNE, comme au bilan des
+          signaux : la bascule appartient visiblement au titre — donc à la
+          section — au lieu de flotter au-dessus du tableau. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16,
+        flexWrap: "wrap" as const, marginBottom: 16 }}>
+        <h2 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--encre)",
+          letterSpacing: "-0.015em", margin: 0 }}>
+          Classement ouest-africain des projets reçus
+        </h2>
+        {zones.length > 1 && (
+          <span className="rap-sans-impression">
+            <SegmentRapport valeur={String(i)} onChange={v => setI(Number(v))}
+              options={zones.map((o, k) => ({ v: String(k), l: o.court, titre: o.nom }))} />
+          </span>
+        )}
+      </div>
+      {/* À L'IMPRESSION, LA BASCULE DISPARAÎT ET LA ZONE RESTE : une feuille de
+          papier ne se clique pas, et un classement sans zone nommée ne voudrait
+          rien dire. */}
+      <p style={{ display: "none", fontSize: 12, fontWeight: 700, color: "var(--encre)",
+        marginBottom: 10 }} className="rap-zone-impression">Zone : {z.nom}</p>
+
+      <Carte titre={z.nom} tag={tag}>
+        <div style={{ overflowX: "auto" as const }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+            <thead>
+              <tr>
+                <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
+                <th style={{ ...ENT_RAP, textAlign: "left" as const }}>Pays</th>
+                {["Invest. reçus*", "Projets", "Emplois créés*"].map(t => (
+                  <th key={t} style={{ ...ENT_RAP, textAlign: "right" as const }}>{t}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {z.lignes.map((l, k) => {
+                const ici = l.nom === pays;
+                // LA COUPURE SE VOIT. Quand le pays lu vient du fond du
+                // classement, la ligne qui le précède n'est pas la sienne moins
+                // un : un filet pointillé le dit, sans quoi on lirait « onzième »
+                // là où il est quatorzième.
+                const saut = k > 0 && l.rang !== z.lignes[k - 1].rang + 1;
+                const cel = { ...CEL, textAlign: "right" as const,
+                  fontVariantNumeric: "tabular-nums" as const,
+                  ...(ici ? { fontWeight: 800 as const, color: ACCENT } : {}) };
+                return (
+                  <Fragment key={l.nom}>
+                    {saut && (
+                      <tr><td colSpan={5} style={{ padding: 0 }}>
+                        <div style={{ borderTop: "1px dashed var(--bordure-forte)", height: 0 }} />
+                      </td></tr>
+                    )}
+                    <tr style={ici ? { background: "rgb(var(--orange-rgb) / 0.07)" } : undefined}>
+                      <td style={{ ...CEL, padding: "8px 10px" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center",
+                          justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
+                          borderRadius: 10, fontSize: 10, fontWeight: 800,
+                          background: ici || l.rang <= 3 ? ACCENT : "var(--bleu-voile)",
+                          color: ici || l.rang <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>
+                          {l.rang}
+                        </span>
+                      </td>
+                      <td style={{ ...CEL, fontWeight: ici ? 800 : 600,
+                        color: ici ? ACCENT : "var(--encre)" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                          <DrapeauPays iso={l.iso} nom={l.nom} taille={15} sansIso="rien" />
+                          {l.nom}
+                        </span>
+                      </td>
+                      <td style={cel}>{fmtVal(l.capex_musd)}</td>
+                      <td style={cel}>{fmtNombre(l.projets)}</td>
+                      <td style={cel}>{fmtNombre(l.emplois)}</td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
+          {/* Le nombre de membres dit ce que le rang vaut : deuxième sur huit
+              n'est pas deuxième sur seize. */}
+          {z.membres} pays de la zone ont reçu au moins un projet sur la période.<br />
+          * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
+          non déclarées par l&apos;entreprise.
+        </p>
+      </Carte>
+    </section>
+  );
+}
+
 export default function RapportIde() {
   const d3Pret = useD3Pret();
 
@@ -361,6 +486,10 @@ export default function RapportIde() {
         @media print {
           .rap-sans-impression { display: none !important; }
           .rap-eviter-coupure { break-inside: avoid; }
+          /* La bascule des zones disparaît à l'impression ; la zone lue prend
+             sa place, sans quoi un classement sans zone nommée ne voudrait
+             rien dire sur le papier. */
+          .rap-zone-impression { display: block !important; }
         }
       `}</style>
 
@@ -476,6 +605,8 @@ export default function RapportIde() {
                   distribuer. « Nature des implantations » nommait une autre
                   colonne du relevé, celle des TYPES de projet, qui n'est pas
                   affichée ici. */}
+              <ClassementOuest zones={fdi.zones_ouest ?? []} pays={pays} tag={periodeFdi} />
+
               {/* ── TROIS CLASSEMENTS, UN SEUL TABLEAU ──────────────────────────
                   LE GRAPHE NE PORTAIT QU'UN NOMBRE. Origines, secteurs et
                   activités se rangeaient par nombre de projets, et c'est tout
