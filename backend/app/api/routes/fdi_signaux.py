@@ -89,6 +89,14 @@ LISTES = """
                 -- long tiendrait trois lignes. L'administration, elle, affiche
                 -- le long : la place ne lui manque pas et le sens exact compte.
                 'court', coalesce(nullif(n.libelle_court_fr, ''), n.libelle_fr, v.brut),
+                -- LA DÉFINITION DU STADE, telle que fDi la publie. Elle voyage
+                -- avec le signal parce que c'est là qu'on la lit : « Nouvelle
+                -- stratégie d'investissement » ne dit pas, à qui n'a pas le
+                -- glossaire sous les yeux, qu'il s'agit d'une intention
+                -- générale sans pays encore arrêté. Nulle quand la ligne n'a
+                -- pas été rapprochée du référentiel — la fiche n'affiche alors
+                -- que le libellé brut, ce qui reste vrai.
+                'definition', nullif(n.definition_fr, ''),
                 'resolu', v.nature_id IS NOT NULL) ORDER BY v.rang), '[]'::json)
        FROM fdi_signal_natures v LEFT JOIN fdi_signaux n ON n.id = v.nature_id
       WHERE v.signal_id = s.id) AS natures
