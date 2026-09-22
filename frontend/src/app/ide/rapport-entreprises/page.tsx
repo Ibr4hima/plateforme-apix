@@ -96,7 +96,8 @@ export default function RapportEntreprises() {
     const p = new URLSearchParams(brut);
     const g = new URLSearchParams();
     for (const [source, cible] of [
-      ["e_ori", "origines"], ["e_sec", "secteurs"], ["e_act", "activites"],
+      ["e_ori", "origines"], ["e_dest", "destinations"],
+      ["e_sec", "secteurs"], ["e_act", "activites"],
       ["e_q", "recherche"],
     ]) {
       const v = p.get(source);

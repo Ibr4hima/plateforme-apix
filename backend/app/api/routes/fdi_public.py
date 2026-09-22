@@ -598,10 +598,16 @@ NOM_ENTREPRISE = "COALESCE(pa.nom, p.parent_brut, e.nom, p.entreprise_brut)"
 # doit trouver Orange, et non un écran vide.
 NOM_FILIALE = "COALESCE(e.nom, p.entreprise_brut)"
 ORIGINE_ENTREPRISE = "COALESCE(rp.nom_fr, p.pays_source_brut)"
+# Le pays où le projet ATTERRIT. Il ne qualifie pas l'investisseur mais ce
+# qu'il a annoncé : cocher « Nigeria » ne retient pas les investisseurs
+# nigérians — c'est l'origine qui le dirait — mais ceux qui ont annoncé un
+# projet AU Nigeria, avec leurs seuls projets nigérians en regard.
+DEST_ENTREPRISE = "COALESCE(rd.nom_fr, p.pays_dest_brut)"
 
 
 def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
-                         origines=None, sauf: str | None = None) -> tuple[list[str], dict]:
+                         origines=None, destinations=None,
+                         sauf: str | None = None) -> tuple[list[str], dict]:
     """Les conditions, éventuellement privées d'une facette.
 
     LE FILTRE PORTE SUR LES PROJETS, PUIS L'ON GROUPE. Une entreprise apparaît
@@ -688,6 +694,16 @@ def _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
         where.append(f"{ORIGINE_ENTREPRISE} = ANY(:origines)")
         params["origines"] = valeurs
 
+    # LA DESTINATION QUALIFIE LE PROJET, non l'investisseur — elle se comporte
+    # donc comme le secteur et l'activité, et non comme l'origine : une
+    # entreprise apparaît parce que l'UN de ses projets atterrit là, et ses
+    # comptes se réduisent alors à ces projets-là. « Orange · 12 projets » sous
+    # « Nigeria » se lit « douze projets au Nigeria ».
+    valeurs = _liste(destinations)
+    if valeurs and sauf != "destinations":
+        where.append(f"{DEST_ENTREPRISE} = ANY(:destinations)")
+        params["destinations"] = valeurs
+
     return where, params
 
 
@@ -698,6 +714,7 @@ async def perimetre_entreprises(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    destinations: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """De quoi remplir la colonne de filtres.
@@ -712,7 +729,7 @@ async def perimetre_entreprises(
     # disparaître de la colonne.
     async def compter(expr: str, sauf: str, avec_secteur: bool = False):
         where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
-                                             activites, origines, sauf)
+                                             activites, origines, destinations, sauf)
         secteur_col = f", {FACETTES['secteurs']} AS secteur" if avec_secteur else ""
         compte = (f"count(DISTINCT ({NOM_ENTREPRISE}, {ORIGINE_ENTREPRISE}))"
                   f" FILTER (WHERE {' AND '.join(where)})")
@@ -737,12 +754,16 @@ async def perimetre_entreprises(
     # « France · 312 », on lit trois cent douze investisseurs français, non
     # trois cent douze projets français.
     lignes_ori = await compter(ORIGINE_ENTREPRISE, "origines")
+    # Les destinations aussi comptent des ENTREPRISES : sous « Nigeria · 312 »,
+    # on lit trois cent douze investisseurs y ayant annoncé un projet.
+    lignes_dest = await compter(DEST_ENTREPRISE, "destinations")
 
     return {
         "secteurs":      [{"nom": r.nom, "nb": r.nb} for r in lignes_sec],
         "sous_secteurs": [{"nom": r.nom, "secteur": r.secteur, "nb": r.nb} for r in lignes_ss],
         "activites":     [{"nom": r.nom, "nb": r.nb} for r in lignes_act],
         "origines":      [{"nom": r.nom, "nb": r.nb} for r in lignes_ori],
+        "destinations":  [{"nom": r.nom, "nb": r.nb} for r in lignes_dest],
     }
 
 
@@ -826,6 +847,7 @@ async def entreprises_publiques(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    destinations: str | None = None,
     page: int = 1,
     par_page: int = 24,
     db: AsyncSession = Depends(get_db),
@@ -839,7 +861,7 @@ async def entreprises_publiques(
     l'écran ne pourrait plus dire lequel il montre.
     """
     where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
-                                        origines)
+                                        origines, destinations)
 
     par_page = max(1, min(par_page, 100))
     page = max(1, page)
@@ -896,11 +918,12 @@ async def rapport_entreprises(
     sous_secteurs: str | None = None,
     activites: str | None = None,
     origines: str | None = None,
+    destinations: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Tout ce qu'un décideur peut tirer du relevé, l'investisseur pour unité."""
     where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
-                                         activites, origines)
+                                         activites, origines, destinations)
     filtre = " AND ".join(where)
     params = {**params, "senegal": SENEGAL}
 

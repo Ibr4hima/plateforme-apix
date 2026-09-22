@@ -60,11 +60,11 @@ import { API, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette, FacetteSecteurs,
     n'a qu'un secteur — c'est le comportement de la vue Projets, où l'on coche
     deux secteurs pour en voir l'union. */
 export type FiltresEntreprises = {
-  origines: string[];
+  origines: string[]; destinations: string[];
   secteurs: string[]; sousSecteurs: ChoixSous[]; activites: string[]; recherche: string;
 };
 export const FILTRES_ENTREPRISES_VIDES: FiltresEntreprises = {
-  origines: [], secteurs: [], sousSecteurs: [], activites: [], recherche: "",
+  origines: [], destinations: [], secteurs: [], sousSecteurs: [], activites: [], recherche: "",
 };
 
 type Entreprise = {
@@ -77,7 +77,8 @@ type Reponse = {
 type Compte = { nom: string; nb: number };
 type SousCompte = Compte & { secteur: string };
 type Perimetre = {
-  secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[]; origines: Compte[];
+  secteurs: Compte[]; sous_secteurs: SousCompte[]; activites: Compte[];
+  origines: Compte[]; destinations: Compte[];
 };
 type Fiche = {
   nom: string; origine: string | null; origine_iso: string | null;
@@ -110,6 +111,7 @@ function urlPerimetre(f: FiltresEntreprises, recherche: string): string {
   if (f.sousSecteurs.length) p.set("sous_secteurs", f.sousSecteurs.map(s => s.nom).join("|"));
   if (f.activites.length) p.set("activites", f.activites.join("|"));
   if (f.origines.length) p.set("origines", f.origines.join("|"));
+  if (f.destinations.length) p.set("destinations", f.destinations.join("|"));
   if (recherche.trim()) p.set("recherche", recherche.trim());
   return `${API}/fdi/public/entreprises/perimetre?${p}`;
 }
@@ -153,6 +155,26 @@ export function FiltresEntreprisesPanneau({ filtres, onChange }: {
       <Facette titre="Pays d'origine" options={per.origines} filtrable="Rechercher un pays…"
         choix={filtres.origines}
         setChoix={v => onChange({ ...filtres, origines: v })} />
+      {/* ── OÙ ILS VONT ──────────────────────────────────────────────────
+          LA DESTINATION NE QUALIFIE PAS L'INVESTISSEUR, MAIS SON PROJET.
+          C'est la différence avec la facette du dessus, et elle change ce
+          que la carte affiche ensuite : cocher « Nigeria » ne retient pas
+          les entreprises nigérianes — c'est l'origine qui le dirait — mais
+          celles qui ont annoncé AU Nigeria, avec leurs seuls projets
+          nigérians en regard. « Orange · 12 projets » s'y lit « douze
+          projets au Nigeria ».
+
+          Elle se comporte donc comme le secteur et l'activité, et se place
+          après l'origine comme dans la vue Signaux : d'où part
+          l'investissement, où il arrive, puis ce qu'il y fait.
+
+          À CHOIX MULTIPLE, contrairement à celle des signaux : toute cette
+          colonne l'est, et pouvoir comparer deux marchés voisins — Sénégal
+          et Côte d'Ivoire — est précisément ce qu'on demande d'un filtre de
+          destination. */}
+      <Facette titre="Destination" options={per.destinations} filtrable="Rechercher un pays…"
+        choix={filtres.destinations}
+        setChoix={v => onChange({ ...filtres, destinations: v })} />
       {/* EXACTEMENT LES FILTRES DE LA VUE PROJETS — mêmes composants, même
           emboîtement, même sélection multiple. Les deux vues sont voisines dans
           le même écran ; deux façons de poser les mêmes facettes donneraient

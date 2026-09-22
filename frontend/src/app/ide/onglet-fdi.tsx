@@ -216,14 +216,15 @@ export default function OngletFdi({ onVue }: {
     };
     if (Object.values(sig).some(v => v !== "" && v !== null)) setFiltresSignaux(sig);
     const ent = {
-      origines: liste("e_ori"), secteurs: liste("e_sec"),
+      origines: liste("e_ori"), destinations: liste("e_dest"), secteurs: liste("e_sec"),
       sousSecteurs: liste("e_ssec").map(v => v.split("::"))
         .filter(([a, b]) => a && b).map(([secteur, nom]) => ({ secteur, nom })),
       activites: liste("e_act"),
       recherche: p.get("e_q") ?? "",
     };
-    if (ent.origines.length || ent.secteurs.length || ent.sousSecteurs.length
-        || ent.activites.length || ent.recherche) setFiltresEntreprises(ent);
+    if (ent.origines.length || ent.destinations.length || ent.secteurs.length
+        || ent.sousSecteurs.length || ent.activites.length || ent.recherche)
+      setFiltresEntreprises(ent);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -382,6 +383,7 @@ export default function OngletFdi({ onVue }: {
     // voyait — le rapport des investisseurs lisait une adresse où rien n'était
     // écrit, et sortait invariablement sur tout le relevé.
     poser("e_ori", filtresEntreprises.origines.join("|"));
+    poser("e_dest", filtresEntreprises.destinations.join("|"));
     poser("e_sec", filtresEntreprises.secteurs.join("|"));
     poser("e_ssec", filtresEntreprises.sousSecteurs.map(s => `${s.secteur}::${s.nom}`).join("|"));
     poser("e_act", filtresEntreprises.activites.join("|"));
@@ -425,7 +427,7 @@ export default function OngletFdi({ onVue }: {
       remettre: () => setFiltresSignaux(FILTRES_SIGNAUX_VIDES),
     },
     entreprises: {
-      nb: filtresEntreprises.origines.length
+      nb: filtresEntreprises.origines.length + filtresEntreprises.destinations.length
         + filtresEntreprises.secteurs.length + filtresEntreprises.sousSecteurs.length
         + filtresEntreprises.activites.length
         + (filtresEntreprises.recherche.trim() ? 1 : 0),
