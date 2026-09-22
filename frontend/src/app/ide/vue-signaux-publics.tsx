@@ -32,7 +32,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
-         badge_violet, voile } from "@/lib/couleurs";
+         badge_violet } from "@/lib/couleurs";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
 import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet, fmtNombre,
          LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
@@ -336,27 +336,16 @@ const BADGES: Record<string, React.CSSProperties> = {
     se corrige, plutôt que de casser l'affichage. */
 const teinteDe = (s: Signal) => TEINTES[s.natures[0]?.court ?? ""] ?? "gris";
 
-function PastilleStade({ v, long = false }: { v: Valeur; long?: boolean }) {
+function PastilleStade({ v }: { v: Valeur }) {
   const court = v.court ?? v.libelle ?? "";
   return (
-    <span title={long ? undefined : v.libelle ?? undefined}
+    <span title={v.libelle ?? undefined}
       style={{ ...(BADGES[TEINTES[court]] ?? badge_gris),
-        // LA FICHE PORTE LE LIBELLÉ LONG, la carte le court. Là-bas la place
-        // manque et l'étiquette doit tenir sur une ligne ; ici c'est le sens
-        // exact qu'on vient chercher, et la définition qui suit l'explique.
-        whiteSpace: long ? "normal" as const : "nowrap" as const,
-        flexShrink: 0 }}>
-      {long ? v.libelle ?? court : court}
+        whiteSpace: "nowrap", flexShrink: 0 }}>
+      {court}
     </span>
   );
 }
-
-/** La couleur d'une teinte de stade, pour les usages hors badge — le filet de
-    la définition. Les badges, eux, la portent déjà dans leur style. */
-const TEINTE_CSS: Record<string, string> = {
-  vert: "var(--vert)", bleu: "var(--bleu)", violet: "var(--violet)",
-  orange: "var(--orange)", ambre: "var(--ambre)", gris: "var(--gris)",
-};
 
 /** Une carte : le MÊME gabarit que celle des projets annoncés — période en haut
     à gauche, étiquette en haut à droite, nom en grand, pied en deux colonnes.
@@ -478,45 +467,57 @@ function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
         </span>
       </div>
 
+      {/* ── CE QUE LE STADE VEUT DIRE ────────────────────────────────────
+          « NOUVELLE STRATÉGIE D'INVESTISSEMENT » NE SE DEVINE PAS. Le libellé
+          nomme le stade, il ne le définit pas : qui n'a pas le glossaire de
+          fDi sous les yeux ne peut pas savoir qu'il s'agit d'une intention
+          générale, sans pays encore arrêté, quand « projet à l'étude » désigne
+          au contraire un projet dont les pays visés sont connus. La différence
+          décide pourtant de ce qu'on fait du signal — on démarche l'un, on
+          surveille l'autre.
+
+          UN CADRE À PART, ET NON LA VALEUR D'UNE LIGNE. Les « Détails du
+          signal » sont un tableau de champs courts, lus en diagonale ; un
+          paragraphe de cinq lignes au milieu en casse la lecture. Le cadre le
+          précède, dans le dessin des descriptions de la plateforme — fond
+          doux, filet, coins arrondis.
+
+          SON TITRE NOMME LE STADE, pour que le lecteur sache ce qui est
+          expliqué sans avoir à remonter à la pastille de l'en-tête.
+
+          LE TEXTE VIENT DU RÉFÉRENTIEL, jamais du code : c'est celui de fDi,
+          celui qui fait foi, et l'administration peut le reprendre sans qu'on
+          redéploie. Absent, le cadre ne s'affiche pas du tout — un encadré
+          vide vaut moins que pas d'encadré. */}
+      {s.natures.some(n => n.definition) && (
+        <div>
+          <TitreFiche>
+            {s.natures.length === 1 && s.natures[0].court
+              ? <>Ce que signifie «&nbsp;{s.natures[0].court}&nbsp;»</>
+              : "Ce que signifient ces stades"}
+          </TitreFiche>
+          <div style={{ marginTop: 8, background: "var(--carte-douce)",
+            border: "1px solid var(--bordure)", borderRadius: 12, padding: "13px 15px",
+            display: "flex", flexDirection: "column" as const, gap: 10 }}>
+            {s.natures.filter(n => n.definition).map(n => (
+              <p key={n.id} style={{ fontSize: 13, color: "var(--texte)", lineHeight: 1.7 }}>
+                {/* Le nom du stade n'est répété DEVANT SA DÉFINITION que
+                    lorsqu'il y en a plusieurs : sans lui, on ne saurait plus
+                    laquelle explique laquelle. */}
+                {s.natures.filter(x => x.definition).length > 1 && (
+                  <strong style={{ color: "var(--encre)" }}>{n.libelle} — </strong>
+                )}
+                {n.definition}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <TitreFiche>Détails du signal</TitreFiche>
         <LigneFiche label="Repéré en">{moisEnClair(s.periode)}</LigneFiche>
-        {/* ── LE STADE, ET CE QU'IL VEUT DIRE ──────────────────────────
-            « NOUVELLE STRATÉGIE D'INVESTISSEMENT » NE SE DEVINE PAS. Le
-            libellé nomme le stade, il ne le définit pas : qui n'a pas le
-            glossaire de fDi sous les yeux ne peut pas savoir qu'il s'agit
-            d'une intention générale, sans pays encore arrêté — quand
-            « projet à l'étude » désigne, lui, un projet dont les pays visés
-            sont connus. La différence décide pourtant de ce qu'on fait du
-            signal : on démarche l'un, on surveille l'autre.
-
-            LA DÉFINITION EST DONC LA VALEUR DE LA LIGNE, et le libellé
-            passe en pastille au-dessus — la même que sur la carte, même
-            teinte, même mot. Le lecteur retrouve ainsi sous les yeux
-            l'étiquette qu'il vient de cliquer, puis ce qu'elle recouvre.
-
-            ELLE VIENT DU RÉFÉRENTIEL, jamais du code : c'est le texte de
-            fDi, celui qui fait foi, et l'administration peut le reprendre
-            sans qu'on redéploie. Absente, la ligne retombe sur le libellé
-            seul, ce qui reste vrai. */}
-        <LigneFiche label={"Stade de l'intention"}>
-          {s.natures.length === 0 ? "—" : (
-            <span style={{ display: "flex", flexDirection: "column" as const, gap: 7 }}>
-              {s.natures.map(n => (
-                <span key={n.id} style={{ display: "flex", flexDirection: "column" as const, gap: 6 }}>
-                  <span><PastilleStade v={n} long /></span>
-                  {n.definition && (
-                    <span style={{ fontSize: 12.5, fontWeight: 400, color: "var(--texte)",
-                      lineHeight: 1.65, borderLeft: `2px solid ${voile(TEINTE_CSS[TEINTES[n.court ?? ""] ?? "gris"], 40)}`,
-                      paddingLeft: 11 }}>
-                      {n.definition}
-                    </span>
-                  )}
-                </span>
-              ))}
-            </span>
-          )}
-        </LigneFiche>
+        <LigneFiche label={"Stade de l'intention"}>{liste(s.natures)}</LigneFiche>
         <LigneFiche label="Secteur">{liste(s.secteurs)}</LigneFiche>
         <LigneFiche label="Activité prévue">{liste(s.activites)}</LigneFiche>
       </div>
