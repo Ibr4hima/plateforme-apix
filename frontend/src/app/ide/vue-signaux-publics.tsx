@@ -482,8 +482,10 @@ function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
           précède, dans le dessin des descriptions de la plateforme — fond
           doux, filet, coins arrondis.
 
-          SON TITRE NOMME LE STADE, pour que le lecteur sache ce qui est
-          expliqué sans avoir à remonter à la pastille de l'en-tête.
+          SANS TITRE : la pastille de l'en-tête nomme déjà le stade, à deux
+          centimètres au-dessus, et le premier mot du texte dit de quoi il
+          parle. Un intertitre qui reprend une étiquette encore à l'écran fait
+          lire deux fois la même chose.
 
           LE TEXTE VIENT DU RÉFÉRENTIEL, jamais du code : c'est celui de fDi,
           celui qui fait foi, et l'administration peut le reprendre sans qu'on
@@ -491,12 +493,7 @@ function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
           vide vaut moins que pas d'encadré. */}
       {s.natures.some(n => n.definition) && (
         <div>
-          <TitreFiche>
-            {s.natures.length === 1 && s.natures[0].court
-              ? <>Ce que signifie «&nbsp;{s.natures[0].court}&nbsp;»</>
-              : "Ce que signifient ces stades"}
-          </TitreFiche>
-          <div style={{ marginTop: 8, background: "var(--carte-douce)",
+          <div style={{ background: "var(--carte-douce)",
             border: "1px solid var(--bordure)", borderRadius: 12, padding: "13px 15px",
             display: "flex", flexDirection: "column" as const, gap: 10 }}>
             {s.natures.filter(n => n.definition).map(n => (
