@@ -333,7 +333,16 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
     première de dix sur seize. Tout montrer supprime la question, et le pays lu
     est de toute façon à l'écran, quel que soit son rang.
 
-    LE PAYS LU EST MIS EN ÉVIDENCE, en bleu comme le reste du document. */
+    LE PAYS LU EST MIS EN ÉVIDENCE COMME AU BILAN DES SIGNAUX : fond voilé,
+    filet tout autour, coins arrondis, ombre portée — la ligne se DÉTACHE au
+    lieu d'être seulement teintée. Le bleu remplace l'orange de là-bas, mais le
+    dessin est le même : les deux rapports posent la même question, « où se
+    situe le Sénégal », et doivent y répondre de la même façon.
+
+    LE CADRE SE DESSINE CELLULE PAR CELLULE. Un tableau à bordures fusionnées
+    n'encadre pas une ligne : le filet se pose donc en haut et en bas de chaque
+    cellule, à gauche de la première et à droite de la dernière, et les coins
+    s'arrondissent aux deux extrémités. */
 function ClassementOuest({ zones, pays, tag }: {
   zones: ZoneOuest[]; pays: string; tag?: string;
 }) {
@@ -388,7 +397,14 @@ function ClassementOuest({ zones, pays, tag }: {
 
       <Carte titre={z.nom} tag={tag}>
         <div style={{ overflowX: "auto" as const }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
+          {/* BORDURES SÉPARÉES, ESPACEMENT NUL. Un tableau à bordures
+              fusionnées ne peut pas encadrer une seule ligne — les filets
+              voisins mangent le cadre et les coins ne s'arrondissent pas. La
+              séparation n'écarte rien tant que `border-spacing` reste à zéro :
+              le tableau se dessine exactement comme avant, à ceci près que la
+              ligne épinglée peut porter son propre cadre. */}
+          <table style={{ width: "100%", borderCollapse: "separate" as const,
+            borderSpacing: 0 }}>
             <thead>
               <tr>
                 <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
@@ -402,17 +418,32 @@ function ClassementOuest({ zones, pays, tag }: {
             <tbody>
               {lignes.map((l, k) => {
                 const ici = l.nom === pays;
-                const cel = (cle: CleZone) => ({ ...CEL, textAlign: "right" as const,
+                // Le cadre de la ligne épinglée, posé cellule par cellule.
+                const encadre = (place: "debut" | "milieu" | "fin"): React.CSSProperties =>
+                  !ici ? {} : {
+                    background: "rgb(var(--bleu-rgb) / 0.07)",
+                    borderTop: "1px solid rgb(var(--bleu-rgb) / 0.30)",
+                    borderBottom: "1px solid rgb(var(--bleu-rgb) / 0.30)",
+                    ...(place === "debut" ? {
+                      borderLeft: "1px solid rgb(var(--bleu-rgb) / 0.30)",
+                      borderTopLeftRadius: 8, borderBottomLeftRadius: 8 } : {}),
+                    ...(place === "fin" ? {
+                      borderRight: "1px solid rgb(var(--bleu-rgb) / 0.30)",
+                      borderTopRightRadius: 8, borderBottomRightRadius: 8 } : {}),
+                  };
+                const cel = (cle: CleZone, place: "milieu" | "fin" = "milieu") => ({
+                  ...CEL, textAlign: "right" as const,
                   fontVariantNumeric: "tabular-nums" as const,
                   fontWeight: ici || triCol === cle ? 800 as const : undefined,
-                  color: ici ? "var(--bleu)" : triCol === cle ? "var(--vert)" : undefined });
+                  color: ici ? "var(--bleu)" : triCol === cle ? "var(--vert)" : undefined,
+                  ...encadre(place) });
                 return (
-                  <tr key={l.nom} style={ici ? { background: "rgb(var(--bleu-rgb) / 0.06)" } : undefined}>
+                  <tr key={l.nom}>
                     {/* LE RANG SUIT LE TRI, comme dans tous les tableaux du
                         rapport : il dit la place dans le classement qu'on a
                         sous les yeux. C'est parce que la zone est rendue en
                         entier qu'il reste vrai d'un tri à l'autre. */}
-                    <td style={{ ...CEL, padding: "8px 10px" }}>
+                    <td style={{ ...CEL, padding: "8px 10px", ...encadre("debut") }}>
                       <span style={{ display: "inline-flex", alignItems: "center",
                         justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
                         borderRadius: 10, fontSize: 10, fontWeight: 800,
@@ -422,7 +453,7 @@ function ClassementOuest({ zones, pays, tag }: {
                       </span>
                     </td>
                     <td style={{ ...CEL, fontWeight: ici ? 800 : 600,
-                      color: ici ? "var(--bleu)" : "var(--encre)" }}>
+                      color: ici ? "var(--bleu)" : "var(--encre)", ...encadre("milieu") }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                         <DrapeauPays iso={l.iso} nom={l.nom} taille={15} sansIso="rien" />
                         {l.nom}
@@ -430,7 +461,7 @@ function ClassementOuest({ zones, pays, tag }: {
                     </td>
                     <td style={cel("capex_musd")}>{fmtVal(l.capex_musd)}</td>
                     <td style={cel("projets")}>{fmtNombre(l.projets)}</td>
-                    <td style={cel("emplois")}>{fmtNombre(l.emplois)}</td>
+                    <td style={cel("emplois", "fin")}>{fmtNombre(l.emplois)}</td>
                   </tr>
                 );
               })}
