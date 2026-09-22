@@ -1125,6 +1125,19 @@ export const Filet = () =>
     La liste défile plutôt que de se déplier : un « Voir les 30 » demandait un
     clic pour révéler une hauteur qu'on ne maîtrisait plus, et la colonne
     sautait sous le curseur. */
+/** La clef de comparaison d'une recherche de facette : sans casse ni accents.
+
+    « EGYPTE », « egypte » et « Égypte » doivent se trouver l'un l'autre. Sans
+    cela, il faut taper l'accent pour atteindre le Sénégal, les Émirats ou
+    l'Égypte — c'est-à-dire connaître l'orthographe exacte du libellé pour
+    pouvoir le chercher, ce qui retire au champ à peu près tout son intérêt.
+
+    PARTAGÉE PAR LES DEUX FACETTES. `FacetteUnique` l'avait, `Facette` non :
+    deux champs de recherche identiques à l'œil, à deux clics l'un de l'autre,
+    dont l'un répondait à « senegal » et l'autre pas. */
+const sansAccent = (v: string) =>
+  v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
 export function Facette({ titre, options, choix, setChoix, filtrable }: {
   titre: string; options: { nom: string; nb: number }[]; choix: string[]; setChoix: (v: string[]) => void;
   /** Le libellé d'appel d'un champ de recherche ouvert au-dessus de la liste.
@@ -1156,9 +1169,9 @@ export function Facette({ titre, options, choix, setChoix, filtrable }: {
   // LA RECHERCHE NE CACHE JAMAIS CE QUI EST COCHÉ. Filtrer sur « fra » ferait
   // autrement disparaître l'Allemagne retenue un instant plus tôt, et le
   // compteur du titre annoncerait une sélection introuvable à l'écran.
-  const cherche = q.trim().toLowerCase();
+  const cherche = sansAccent(q.trim());
   const liste = cherche
-    ? visibles.filter(o => choix.includes(o.nom) || o.nom.toLowerCase().includes(cherche))
+    ? visibles.filter(o => choix.includes(o.nom) || sansAccent(o.nom).includes(cherche))
     : visibles;
   return (
     <div>
@@ -1185,7 +1198,10 @@ export function Facette({ titre, options, choix, setChoix, filtrable }: {
               fontFamily: "var(--font-google-sans)", boxSizing: "border-box" as const }} />
         </div>
       )}
-      <div style={{ maxHeight: 208, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
+      {/* LA MÊME HAUTEUR QUE `FacetteUnique`, à qui elle succède dans la même
+          colonne : 220 px contre 208, douze pixels qui ne se voyaient qu'en
+          passant d'une vue à l'autre — et qui s'y voyaient. */}
+      <div style={{ maxHeight: 220, overflowY: "auto" as const, overscrollBehavior: "contain" as const,
         paddingRight: 2, marginBottom: 18 }}>
         {liste.length === 0 && (
           <p style={{ fontSize: 11.5, color: "var(--gris)", padding: "10px 8px" }}>
@@ -1381,9 +1397,6 @@ export function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
   const [q, setQ] = useState("");
   if (options.length === 0) return null;
 
-  // La recherche ignore casse et accents : « egypte » doit trouver « Égypte ».
-  const sansAccent = (v: string) =>
-    v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const cle = sansAccent(q.trim());
   // LA VALEUR RETENUE RESTE VISIBLE même si la recherche l'exclut : sans cela,
   // taper trois lettres ôterait au lecteur le seul moyen de la décocher.
