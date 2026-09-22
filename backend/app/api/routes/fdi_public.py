@@ -347,9 +347,12 @@ async def _classement_ouest(db: AsyncSession, observe: str, partenaire: str,
     activités, eux, continuent de s'appliquer — sans quoi le rapport
     comparerait une sélection à un total.
 
-    LE PAYS LU EST TOUJOURS RENDU, même hors des dix premiers, avec son rang
-    réel : « absent du haut du classement » et « quatorzième sur seize » ne
-    s'équivalent pas, et seul le second est une information.
+    LA ZONE EST RENDUE EN ENTIER, sans troncature. Elle en compte seize au
+    plus — l'Afrique de l'Ouest — et le tableau se retrie à l'écran : couper
+    aux dix premiers par montant, puis laisser retrier par emplois, aurait
+    numéroté « premier » une ligne première de dix sur seize. Tout rendre
+    supprime la question, et fait au passage disparaître l'épinglage du pays lu :
+    il est là de toute façon.
     """
     if not pays or not isinstance(pays, str):
         return []
@@ -385,24 +388,15 @@ async def _classement_ouest(db: AsyncSession, observe: str, partenaire: str,
     def nb(v):
         return float(v) if v is not None else None
 
-    zones = []
-    for code in codes:
-        rangs, retenues, tenu = 0, [], False
-        for r in (x for x in lignes if x.zone == code):
-            rangs += 1
-            ici = r.nom == pays
-            # Dix par zone, plus le pays lu s'il est plus bas. Le découpage se
-            # fait ici plutôt qu'en SQL : une fenêtre numérotée par zone
-            # coûterait un tri de plus pour un volume que les zones bornent
-            # déjà — seize pays au plus.
-            if rangs <= 10 or (ici and not tenu):
-                retenues.append({"nom": r.nom, "iso": (r.iso or "").strip() or None,
-                                 "rang": rangs, "projets": r.projets,
-                                 "capex_musd": nb(r.capex), "emplois": r.emplois})
-                tenu = tenu or ici
-        zones.append({"code": code, "nom": noms[code], "court": _sigle(code, noms[code]),
-                      "membres": rangs, "lignes": retenues})
-    return zones
+    # LE RANG N'EST PAS CALCULÉ ICI : l'écran retrie le tableau et renumérote
+    # en conséquence. Ce que le service garantit, c'est l'ordre de DÉPART —
+    # le montant reçu, décroissant.
+    return [{
+        "code": code, "nom": noms[code], "court": _sigle(code, noms[code]),
+        "lignes": [{"nom": r.nom, "iso": (r.iso or "").strip() or None,
+                    "projets": r.projets, "capex_musd": nb(r.capex), "emplois": r.emplois}
+                   for r in lignes if r.zone == code],
+    } for code in codes]
 
 
 @router.get("/projets")

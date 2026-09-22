@@ -17,7 +17,7 @@
 //     données affichées, jamais rédigé d'avance : si les données changent, la
 //     phrase change.
 
-import { Fragment, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -81,10 +81,19 @@ type Fdi = {
   // membre. Vide pour un pays d'ailleurs, et pour une région : voir la carte.
   zones_ouest: ZoneOuest[];
 };
-type LigneZone = { nom: string; iso: string | null; rang: number;
+type LigneZone = { nom: string; iso: string | null;
                    projets: number; capex_musd: number | null; emplois: number | null };
-type ZoneOuest = { code: string; nom: string; court: string; membres: number;
-                   lignes: LigneZone[] };
+type ZoneOuest = { code: string; nom: string; court: string; lignes: LigneZone[] };
+
+/** Les trois colonnes triables du classement de zone. Les mêmes mesures que
+    partout dans le rapport, nommées du point de vue du PAYS QUI REÇOIT : on ne
+    lit plus ce qu'un investisseur engage, mais ce qu'un pays a capté. */
+const COLS_ZONE = [
+  { cle: "capex_musd", libelle: "Invest. reçus*" },
+  { cle: "projets", libelle: "Projets" },
+  { cle: "emplois", libelle: "Emplois créés*" },
+] as const;
+type CleZone = (typeof COLS_ZONE)[number]["cle"];
 
 /** UN CLASSEMENT EN TABLEAU, trié par le lecteur.
 
@@ -318,22 +327,40 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
     — le Ghana n'a pas d'onglet UEMOA. Un rapport sur l'Afrique du Sud, ou sur
     une région entière, n'a pas cette section du tout.
 
-    IL NE SE TRIE PAS, contrairement aux autres tableaux du document. Son objet
-    EST le rang : « le Sénégal est deuxième de l'UEMOA » se lit dans l'ordre du
-    montant reçu, et retrier par emplois ferait afficher un rang qui ne
-    correspondrait plus à rien. Les tableaux qu'on trie sont ceux dont l'ordre
-    n'est qu'un point de départ ; celui-ci est une réponse.
+    LA ZONE EST RENDUE EN ENTIER — seize pays au plus. Le tableau se retrie
+    comme les autres du rapport, et une liste coupée aux dix premiers par
+    montant puis retriée par emplois aurait numéroté « premier » une ligne
+    première de dix sur seize. Tout montrer supprime la question, et le pays lu
+    est de toute façon à l'écran, quel que soit son rang.
 
-    LE PAYS LU EST MIS EN ÉVIDENCE et toujours présent, même hors des dix
-    premiers, avec son rang réel : « absent du haut du classement » et
-    « quatorzième sur seize » ne s'équivalent pas. */
+    LE PAYS LU EST MIS EN ÉVIDENCE, en bleu comme le reste du document. */
 function ClassementOuest({ zones, pays, tag }: {
   zones: ZoneOuest[]; pays: string; tag?: string;
 }) {
   const [i, setI] = useState(0);
-  if (!zones?.length) return null;
-  const z = zones[Math.min(i, zones.length - 1)];
-  const ACCENT = "var(--orange)";
+  const [triCol, setTriCol] = useState<CleZone>("capex_musd");
+  const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
+
+  const trierPar = (c: CleZone) => {
+    if (c === triCol) setTriSens(s => (s === "desc" ? "asc" : "desc"));
+    else { setTriCol(c); setTriSens("desc"); }
+  };
+
+  const z = zones?.[Math.min(i, (zones?.length ?? 1) - 1)];
+  const lignes = useMemo(() => {
+    const l = [...(z?.lignes ?? [])];
+    l.sort((a, b) => {
+      const x = a[triCol], y = b[triCol];
+      if (x == null && y == null) return a.nom.localeCompare(b.nom, "fr");
+      if (x == null) return 1;
+      if (y == null) return -1;
+      if (x !== y) return triSens === "desc" ? y - x : x - y;
+      return a.nom.localeCompare(b.nom, "fr");
+    });
+    return l;
+  }, [z, triCol, triSens]);
+
+  if (!zones?.length || !z) return null;
 
   return (
     <section style={{ marginTop: 44 }} className="rap-eviter-coupure">
@@ -366,60 +393,51 @@ function ClassementOuest({ zones, pays, tag }: {
               <tr>
                 <th style={{ ...ENT_RAP, width: 34, textAlign: "left" as const }}>#</th>
                 <th style={{ ...ENT_RAP, textAlign: "left" as const }}>Pays</th>
-                {["Invest. reçus*", "Projets", "Emplois créés*"].map(t => (
-                  <th key={t} style={{ ...ENT_RAP, textAlign: "right" as const }}>{t}</th>
+                {COLS_ZONE.map(c => (
+                  <EnteteTri key={c.cle} libelle={c.libelle} sens={triSens}
+                    actif={triCol === c.cle} onClick={() => trierPar(c.cle)} />
                 ))}
               </tr>
             </thead>
             <tbody>
-              {z.lignes.map((l, k) => {
+              {lignes.map((l, k) => {
                 const ici = l.nom === pays;
-                // LA COUPURE SE VOIT. Quand le pays lu vient du fond du
-                // classement, la ligne qui le précède n'est pas la sienne moins
-                // un : un filet pointillé le dit, sans quoi on lirait « onzième »
-                // là où il est quatorzième.
-                const saut = k > 0 && l.rang !== z.lignes[k - 1].rang + 1;
-                const cel = { ...CEL, textAlign: "right" as const,
+                const cel = (cle: CleZone) => ({ ...CEL, textAlign: "right" as const,
                   fontVariantNumeric: "tabular-nums" as const,
-                  ...(ici ? { fontWeight: 800 as const, color: ACCENT } : {}) };
+                  fontWeight: ici || triCol === cle ? 800 as const : undefined,
+                  color: ici ? "var(--bleu)" : triCol === cle ? "var(--vert)" : undefined });
                 return (
-                  <Fragment key={l.nom}>
-                    {saut && (
-                      <tr><td colSpan={5} style={{ padding: 0 }}>
-                        <div style={{ borderTop: "1px dashed var(--bordure-forte)", height: 0 }} />
-                      </td></tr>
-                    )}
-                    <tr style={ici ? { background: "rgb(var(--orange-rgb) / 0.07)" } : undefined}>
-                      <td style={{ ...CEL, padding: "8px 10px" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center",
-                          justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
-                          borderRadius: 10, fontSize: 10, fontWeight: 800,
-                          background: ici || l.rang <= 3 ? ACCENT : "var(--bleu-voile)",
-                          color: ici || l.rang <= 3 ? "var(--sur-bleu)" : "var(--texte)" }}>
-                          {l.rang}
-                        </span>
-                      </td>
-                      <td style={{ ...CEL, fontWeight: ici ? 800 : 600,
-                        color: ici ? ACCENT : "var(--encre)" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                          <DrapeauPays iso={l.iso} nom={l.nom} taille={15} sansIso="rien" />
-                          {l.nom}
-                        </span>
-                      </td>
-                      <td style={cel}>{fmtVal(l.capex_musd)}</td>
-                      <td style={cel}>{fmtNombre(l.projets)}</td>
-                      <td style={cel}>{fmtNombre(l.emplois)}</td>
-                    </tr>
-                  </Fragment>
+                  <tr key={l.nom} style={ici ? { background: "rgb(var(--bleu-rgb) / 0.06)" } : undefined}>
+                    {/* LE RANG SUIT LE TRI, comme dans tous les tableaux du
+                        rapport : il dit la place dans le classement qu'on a
+                        sous les yeux. C'est parce que la zone est rendue en
+                        entier qu'il reste vrai d'un tri à l'autre. */}
+                    <td style={{ ...CEL, padding: "8px 10px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center",
+                        justifyContent: "center", minWidth: 20, height: 20, padding: "0 3px",
+                        borderRadius: 10, fontSize: 10, fontWeight: 800,
+                        background: ici || k < 3 ? "var(--bleu)" : "var(--bleu-voile)",
+                        color: ici || k < 3 ? "var(--sur-bleu)" : "var(--texte)" }}>
+                        {k + 1}
+                      </span>
+                    </td>
+                    <td style={{ ...CEL, fontWeight: ici ? 800 : 600,
+                      color: ici ? "var(--bleu)" : "var(--encre)" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <DrapeauPays iso={l.iso} nom={l.nom} taille={15} sansIso="rien" />
+                        {l.nom}
+                      </span>
+                    </td>
+                    <td style={cel("capex_musd")}>{fmtVal(l.capex_musd)}</td>
+                    <td style={cel("projets")}>{fmtNombre(l.projets)}</td>
+                    <td style={cel("emplois")}>{fmtNombre(l.emplois)}</td>
+                  </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
         <p style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 12, lineHeight: 1.6 }}>
-          {/* Le nombre de membres dit ce que le rang vaut : deuxième sur huit
-              n'est pas deuxième sur seize. */}
-          {z.membres} pays de la zone ont reçu au moins un projet sur la période.<br />
           * Comprend des valeurs estimées par l&apos;algorithme du Financial Times,
           non déclarées par l&apos;entreprise.
         </p>
