@@ -1063,10 +1063,16 @@ async def rapport_entreprises(
         "actifs": actifs,
         "senegal": senegal,
         "origines": origines_top,
-        # PAS DE CLASSEMENT DES SECTEURS SEULS. Celui des SOUS-secteurs le
-        # contient : il dit la même chose en plus fin, et porte le secteur
-        # parent dans sa seconde colonne. Deux classements dont l'un est le
-        # résumé de l'autre font relire deux fois la même information.
+        # LE SECTEUR REVIENT, ET C'EST LE MONTANT QUI LE JUSTIFIE. On l'avait
+        # retiré quand ces cartes ne portaient qu'un nombre d'investisseurs :
+        # celui des SOUS-secteurs disait alors la même chose en plus fin, et
+        # deux classements dont l'un résume l'autre font relire deux fois la
+        # même information. Une SOMME ne se lit pas ainsi — additionner de tête
+        # les dix sous-secteurs visibles d'un même secteur ne donne pas son
+        # total, puisque les autres sont sous la ligne de flottaison. Les deux
+        # niveaux répondent donc à deux questions distinctes, et aucun ne se
+        # déduit de l'autre.
+        "secteurs": await par("secteur"),
         "sous_secteurs": sous_secteurs,
         "activites": await par("activite"),
     }

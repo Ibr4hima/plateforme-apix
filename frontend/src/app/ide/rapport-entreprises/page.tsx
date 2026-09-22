@@ -58,6 +58,8 @@ type Rapport = {
   actifs: Invest[];
   origines: { nom: string; iso: string | null; investisseurs: number;
               projets: number; capex: number | null; au_senegal: number }[];
+  secteurs: { nom: string; projets: number; investisseurs: number;
+              capex: number | null }[];
   sous_secteurs: { nom: string; parent: string; projets: number;
                    investisseurs: number; capex: number | null }[];
   activites: { nom: string; projets: number; investisseurs: number;
@@ -239,6 +241,16 @@ export default function RapportEntreprises() {
                 de l'autre, et les répétitions du second — trois lignes sous
                 « Services financiers » — sautent aux yeux. C'est ce qui vaut la
                 pleine largeur à cette carte. */}
+            {/* LE SECTEUR AU-DESSUS DE SON SOUS-SECTEUR, et les deux : le
+                total d'un secteur ne s'additionne pas de tête à partir des
+                sous-secteurs visibles, puisque les plus petits restent sous la
+                ligne de flottaison. « Énergies renouvelables » pèse ce qu'il
+                pèse, quel que soit le nombre de ses lignes affichées en
+                dessous. */}
+            <TableauAgrege titre="Secteurs les plus investis" colonne="Secteur"
+              periode={periode}
+              lignes={(d.secteurs ?? []).map(x => ({ nom: x.nom, capex: x.capex,
+                projets: x.projets }))} />
             <TableauAgrege titre="Sous-secteurs les plus investis"
               colonne="Sous-secteur" colonneDetail="Secteur" periode={periode}
               lignes={(d.sous_secteurs ?? []).map(x => ({ nom: x.nom, detail: x.parent,
