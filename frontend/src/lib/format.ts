@@ -87,7 +87,10 @@ const PAR_HABITANT = new Set(["pib_hab"]);
 export function fmtUnite(valeur: number | null | undefined, unite: string, code?: string): string {
   if (valeur === null || valeur === undefined || isNaN(valeur)) return "—";
   const v = valeur;
-  if (unite === "%") return `${v > 0 ? "+" : ""}${v.toFixed(1)} %`;
+  // LA VIRGULE DÉCIMALE, et non le point : « +4,3 % ». `toFixed` écrit à
+  // l'anglaise, et le défaut se voyait sur chaque taux de croissance de la
+  // plateforme — fiche pays, statistiques, flux bilatéraux.
+  if (unite === "%") return `${v > 0 ? "+" : ""}${v.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
   if (unite === "USD") {
     if (code && PAR_HABITANT.has(code)) return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} $`;
     return fmtUSD(v);

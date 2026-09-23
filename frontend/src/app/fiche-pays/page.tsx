@@ -5,9 +5,10 @@
 // sans quitter la page), indicateurs comparés, contexte relationnel et
 // échanges bilatéraux. Remplace l'ancienne fiche en modal.
 
-import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Building2, FileText, Landmark, Scale } from "lucide-react";
+import { ArrowRight, Building2, FileText, Landmark, Map as MapIcon, Scale, Ship, TrendingUp,
+         Users } from "lucide-react";
 import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -29,17 +30,227 @@ const TITRE_SEC: React.CSSProperties = { fontSize: 11, fontWeight: 800, color: B
 type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | null; continent: string; region_geo: string | null };
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 
-// La PLUS GRANDE valeur est colorée : vert (favorable) ou rouge (importations)
-const COULEUR_MAX: Record<string, "vert" | "rouge"> = {
-  population: "vert", superficie: "vert",
-  exportations_marchandises: "vert", exportations_services: "vert",
-  importations_marchandises: "rouge", importations_services: "rouge",
-  __ide_entrant: "vert", __ide_sortant: "vert",
+// ── LES QUATRE LIGNES DE L'IDE ──────────────────────────────────────────────
+// Flux et stock, entrant et sortant. Elles ne viennent pas du référentiel des
+// indicateurs mais de la CNUCED, par un service à part : on les déclare donc
+// ici, avec la catégorie qui les regroupe.
+const CAT_IDE = "Investissements directs étrangers";
+const IDE_LIGNES: Indicateur[] = [
+  { code: "__ide_flux_entrant",  libelle: "Flux entrants",  unite: "USD", categorie: CAT_IDE },
+  { code: "__ide_flux_sortant",  libelle: "Flux sortants",  unite: "USD", categorie: CAT_IDE },
+  { code: "__ide_stock_entrant", libelle: "Stock entrant",  unite: "USD", categorie: CAT_IDE },
+  { code: "__ide_stock_sortant", libelle: "Stock sortant",  unite: "USD", categorie: CAT_IDE },
+];
+
+// Ce que chaque ligne IDE veut dire, en une phrase : « flux » et « stock » ne se
+// devinent pas, et la différence décide de la lecture — l'un est une année,
+// l'autre une histoire.
+const AIDE_IDE: Record<string, string> = {
+  __ide_flux_entrant:  "Investissements étrangers reçus dans l'année",
+  __ide_flux_sortant:  "Investissements réalisés à l'étranger dans l'année",
+  __ide_stock_entrant: "Cumul des investissements étrangers détenus dans le pays",
+  __ide_stock_sortant: "Cumul des investissements détenus à l'étranger",
 };
-function couleurMaxPour(code: string, categorie?: string): "vert" | "rouge" | null {
-  if (code in COULEUR_MAX) return COULEUR_MAX[code];
-  if (categorie === "Économie") return "vert";
-  return null;
+
+// L'icône de chaque rubrique : un repère, pas une décoration. Une catégorie
+// inconnue n'en a pas, et la rubrique reste lisible sans.
+const ICONES_CAT: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
+  [CAT_IDE]: TrendingUp,
+  "Démographie": Users,
+  "Géographie": MapIcon,
+  "Économie": Landmark,
+  "Commerce extérieur": Ship,
+};
+
+/** Un rapport de grandeur écrit comme on le dit : « ×21 », « ×2,4 ». */
+const fmtRatio = (r: number) =>
+  `×${r >= 10 ? Math.round(r).toLocaleString("fr-FR") : r.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}`;
+
+type Cellule = { valeur: number | null; annee?: number } | null;
+
+/** LE TABLEAU COMPARATIF — deux pays, ligne à ligne.
+
+    IL NE DONNAIT QUE DEUX NOMBRES PAR LIGNE, et c'était au lecteur de faire la
+    comparaison : 18,2 M hab. contre 68,4 M hab., 1,6 Md $ contre 43 Md $. Or la
+    question qu'on pose à une fiche comparative n'est pas « combien », c'est
+    « combien de fois plus ». Chaque ligne porte donc trois lectures :
+
+      · LES DEUX VALEURS, chacune dans la teinte de son pays — bleu à gauche,
+        orange à droite, comme les sélecteurs du bandeau ;
+      · UNE BARRE EN PAPILLON qui part du centre vers chaque pays : la plus
+        longue est celle du plus grand, et l'écart se voit avant de se lire ;
+      · LE RAPPORT, « ×21 », dans la teinte de celui qui mène.
+
+    LA BARRE ET LE RAPPORT NE S'AFFICHENT QUE LÀ OÙ ILS ONT UN SENS. Un rapport
+    entre deux taux de croissance ne veut rien dire — on lit alors l'écart en
+    POINTS. Un flux d'IDE négatif (un désinvestissement) ne se range pas sur une
+    barre de longueur : la ligne garde ses deux valeurs et rien d'autre. La
+    règle est tirée des valeurs elles-mêmes, pas d'une liste d'indicateurs : un
+    indicateur ajouté demain la suit sans qu'on y touche.
+
+    LE VERT ET LE ROUGE DISPARAISSENT. L'ancienne version colorait en vert la
+    plus grande population et en ROUGE les plus fortes importations — un
+    jugement de valeur que le tableau n'a pas à porter : importer n'est pas une
+    faute, et un comité lit d'abord qui est devant. La teinte dit maintenant QUI,
+    pas si c'est bien. */
+function TableauComparatif({ cols, cats, parCat, getCell }: {
+  cols: any[]; cats: string[]; parCat: Record<string, Indicateur[]>;
+  getCell: (cid: number, code: string) => Cellule;
+}) {
+  const [a, b] = cols;
+  if (!a) return null;
+  const teinte = (i: number) => COULEURS[i % 2];
+
+  return (
+    <div className="fp-comparatif">
+      {/* LA LIGNE SE DÉCRIT PAR ZONES NOMMÉES, et non par numéros de colonne :
+          c'est ce qui lui permet de se replier sur deux étages en petit écran
+          sans toucher au balisage. Sur un téléphone, cinq colonnes côte à côte
+          réclamaient 487 px pour 286 disponibles ; le libellé monte alors au-
+          dessus, les deux valeurs et l'écart se partagent la largeur, et la
+          barre — qui ne tiendrait plus lisiblement — s'efface. */}
+      <style>{`
+        .fp-ligne { display: grid; align-items: center; column-gap: 18px;
+          grid-template-columns: minmax(170px, 1.25fr) minmax(96px, 0.75fr) minmax(150px, 1fr) minmax(96px, 0.75fr) 64px;
+          grid-template-areas: "lib a barre b ecart"; }
+        .fp-lib { grid-area: lib; } .fp-a { grid-area: a; } .fp-barre { grid-area: barre; display: flex; }
+        .fp-b { grid-area: b; } .fp-ratio { grid-area: ecart; display: flex; }
+        @media (max-width: 860px) {
+          .fp-ligne { column-gap: 12px; row-gap: 4px;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+            grid-template-areas: "lib lib lib" "a b ecart"; }
+          .fp-barre { display: none; }
+          .fp-entete .fp-lib { display: none; }
+          .fp-entete { grid-template-areas: "a b ecart"; }
+        }
+      `}</style>
+
+      {/* EN-TÊTE : les deux pays sur les colonnes de leurs valeurs, chacun dans
+          sa teinte — la même que ses barres et que son sélecteur. */}
+      <div className="fp-ligne fp-entete" style={{ padding: "0 12px 12px", borderBottom: "2px solid var(--bleu-voile)" }}>
+        <span className="fp-lib" style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)",
+          textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicateur</span>
+        {[a, b].map((c, i) => c && (
+          <span key={c.id} className={i === 0 ? "fp-a" : "fp-b"} style={{ display: "inline-flex",
+            alignItems: "center", gap: 7, justifyContent: i === 0 ? "flex-end" : "flex-start",
+            fontSize: 12.5, fontWeight: 800, color: teinte(i), minWidth: 0 }}>
+            <Drapeau iso={c.code_iso2} nom={c.nom} taille={15} />
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.nom}</span>
+          </span>
+        ))}
+        <span className="fp-ratio" style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)",
+          textTransform: "uppercase", letterSpacing: "0.08em", justifyContent: "flex-end" }}>Écart</span>
+      </div>
+
+      {cats.map(cat => {
+        const Icone = ICONES_CAT[cat];
+        return (
+          <section key={cat} style={{ marginTop: 18 }}>
+            {/* LA RUBRIQUE A SON PROPRE BANDEAU, et non plus une ligne de
+                tableau déguisée en titre : l'icône la repère, le filet la
+                sépare de la précédente. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 12px 8px" }}>
+              {Icone && (
+                <span style={{ display: "inline-flex", width: 24, height: 24, borderRadius: 7,
+                  alignItems: "center", justifyContent: "center", background: "var(--bleu-voile)",
+                  color: "var(--bleu)", flexShrink: 0 }}>
+                  <Icone size={13} strokeWidth={2.2} />
+                </span>
+              )}
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--bleu)",
+                letterSpacing: "0.12em", textTransform: "uppercase" }}>{cat}</span>
+              <span style={{ flex: 1, height: 1, background: "var(--filet)", marginLeft: 6 }} />
+            </div>
+
+            {parCat[cat].map((ind, ri) => {
+              const ca = getCell(a.id, ind.code), cb = b ? getCell(b.id, ind.code) : null;
+              const va = ca?.valeur ?? null, vb = cb?.valeur ?? null;
+              const deux = va !== null && vb !== null;
+              const taux = ind.unite === "%";
+              // Une barre de LONGUEUR suppose deux grandeurs positives d'une
+              // même nature : ni un taux, ni une valeur négative.
+              const comparable = deux && !taux && va >= 0 && vb >= 0 && (va > 0 || vb > 0);
+              const max = comparable ? Math.max(va, vb) : 0;
+              const mene = deux && va !== vb ? (va > vb ? 0 : 1) : null;
+              // Le rapport, quand il se calcule : deux valeurs strictement
+              // positives. Sous 5 % d'écart, on dit « ≈ » plutôt que « ×1 ».
+              let ecart: string | null = null;
+              if (comparable && va > 0 && vb > 0) {
+                const r = Math.max(va, vb) / Math.min(va, vb);
+                ecart = r < 1.05 ? "≈" : fmtRatio(r);
+              } else if (taux && deux) {
+                const d = Math.abs(va - vb);
+                ecart = d < 0.05 ? "≈" : `${d.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} pt`;
+              }
+              const valeur = (v: number | null, c: Cellule, i: number) => (
+                <span className={i === 0 ? "fp-a" : "fp-b"} style={{ display: "flex", flexDirection: "column",
+                  alignItems: i === 0 ? "flex-end" : "flex-start", minWidth: 0 }}>
+                  <span className="ds-donnee" style={{ fontSize: 13.5, fontVariantNumeric: "tabular-nums",
+                    fontWeight: mene === i ? 800 : 600,
+                    color: v === null ? "var(--gris)" : mene === i ? teinte(i) : ENCRE }}>
+                    {fmt(v, ind.unite, ind.code)}
+                  </span>
+                  {c?.annee && <span style={{ fontSize: 9.5, color: "var(--gris)",
+                    fontVariantNumeric: "tabular-nums" }}>{c.annee}</span>}
+                </span>
+              );
+              return (
+                <div key={ind.code} className="fp-ligne" style={{ padding: "9px 12px",
+                  borderRadius: 9, background: ri % 2 ? "rgb(var(--encre-rgb) / 0.022)" : "transparent" }}>
+                  <span className="fp-lib" style={{ minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 12.5, fontWeight: 650, color: ENCRE }}>{ind.libelle}</span>
+                    {/* LE SOUS-TITRE N'EST PLUS L'UNITÉ : la valeur la porte
+                        déjà — « 31 Md $ », « 18 M hab. » —, et « USD » écrit
+                        sous le libellé ne faisait que la répéter. Il ne reste
+                        que là où il apprend quelque chose : la définition des
+                        quatre lignes de l'IDE, que leur nom ne suffit pas à
+                        distinguer. */}
+                    {AIDE_IDE[ind.code] && (
+                      <span style={{ display: "block", fontSize: 10.5, color: "var(--gris)", lineHeight: 1.4 }}>
+                        {AIDE_IDE[ind.code]}
+                      </span>
+                    )}
+                  </span>
+                  {valeur(va, ca, 0)}
+                  {/* LE PAPILLON : deux barres qui partent du centre, chacune
+                      mesurée au plus grand des deux. Rien quand la ligne ne
+                      s'y prête pas — la place reste, pour que les colonnes ne
+                      bougent pas d'une ligne à l'autre. */}
+                  <span className="fp-barre" style={{ alignItems: "center", gap: 3, height: 10 }}>
+                    {comparable && [va, vb].map((v, i) => (
+                      <span key={i} style={{ flex: 1, height: 8, display: "flex",
+                        justifyContent: i === 0 ? "flex-end" : "flex-start",
+                        background: "rgb(var(--encre-rgb) / 0.05)",
+                        borderRadius: i === 0 ? "999px 2px 2px 999px" : "2px 999px 999px 2px" }}>
+                        <span style={{ width: `${Math.max(v / max * 100, v > 0 ? 2 : 0)}%`, height: "100%",
+                          background: teinte(i), opacity: mene === i ? 1 : 0.45,
+                          borderRadius: i === 0 ? "999px 2px 2px 999px" : "2px 999px 999px 2px",
+                          transition: "width .5s ease" }} />
+                      </span>
+                    ))}
+                  </span>
+                  {valeur(vb, cb, 1)}
+                  <span className="fp-ratio" style={{ justifyContent: "flex-end" }}>
+                    {ecart && (
+                      <span title={mene !== null
+                          ? `${[a, b][mene].nom} ${taux ? "devance de" : "mène d'un facteur"} ${ecart}` : "Valeurs quasi égales"}
+                        style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: "tabular-nums",
+                          padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap",
+                          color: mene === null || ecart === "≈" ? "var(--gris-fort)" : teinte(mene),
+                          background: mene === null || ecart === "≈" ? "var(--fond)"
+                            : `color-mix(in srgb, ${teinte(mene)} 12%, transparent)` }}>
+                        {ecart}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </section>
+        );
+      })}
+    </div>
+  );
 }
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -120,6 +331,14 @@ function ContenuFichePays() {
   const errData = qData.isError;
   const qIdeFlux = useDonnees<any>(ids ? `${API}/statistiques/ide_flux?pays=${ids.join(",")}` : null, { garder: true });
   const ideFlux = ids ? (qIdeFlux.data ?? (qIdeFlux.isError ? {} : null)) : null;
+  // LE STOCK À CÔTÉ DU FLUX. Le service savait le rendre depuis toujours
+  // (`?indicateur=stock`), rien ne le demandait. Or les deux ne disent pas la
+  // même chose : le flux est ce qui est entré CETTE ANNÉE — il peut être
+  // négatif, et varie du simple au décuple d'un millésime à l'autre —, le
+  // stock est tout ce qui a été accumulé. Comparer deux pays sur le seul flux,
+  // c'est comparer deux années ; sur le stock, deux histoires.
+  const qIdeStock = useDonnees<any>(ids ? `${API}/statistiques/ide_flux?pays=${ids.join(",")}&indicateur=stock` : null, { garder: true });
+  const ideStock = ids ? (qIdeStock.data ?? (qIdeStock.isError ? {} : null)) : null;
   const qBilat = useDonnees<any>(ids ? `${API}/statistiques/commerce/bilateral?pays_a=${ids[0]}&pays_b=${ids[1]}` : null, { garder: true });
   const bilat = ids ? qBilat.data ?? null : null;
   const autreId = ids && senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) ?? null : null;
@@ -132,18 +351,23 @@ function ContenuFichePays() {
   };
 
   const cols = data?.pays || [];
+  // L'IDE OUVRE LE TABLEAU. C'est la matière de la plateforme — une agence de
+  // promotion des investissements compare d'abord ce que deux pays attirent —,
+  // et il fermait la liste, sous la superficie et la balance des services.
   const inds: Indicateur[] = [
+    ...IDE_LIGNES,
     ...(data?.indicateurs || []),
-    { code: "__ide_entrant", libelle: "Flux d'IDE entrants", unite: "USD", categorie: "Investissements directs étrangers" },
-    { code: "__ide_sortant", libelle: "Flux d'IDE sortants", unite: "USD", categorie: "Investissements directs étrangers" },
   ];
   const cats: string[] = [];
   const parCat: Record<string, Indicateur[]> = {};
   inds.forEach(ind => { const c = ind.categorie || "Autres"; if (!parCat[c]) { parCat[c] = []; cats.push(c); } parCat[c].push(ind); });
   const getCell = (cid: number, code: string): { valeur: number | null; annee?: number } | null => {
-    if (code === "__ide_entrant") return ideFlux?.[String(cid)]?.entrant || null;
-    if (code === "__ide_sortant") return ideFlux?.[String(cid)]?.sortant || null;
-    return data?.valeurs?.[String(cid)]?.[code] || null;
+    const k = String(cid);
+    if (code === "__ide_flux_entrant")  return ideFlux?.[k]?.entrant || null;
+    if (code === "__ide_flux_sortant")  return ideFlux?.[k]?.sortant || null;
+    if (code === "__ide_stock_entrant") return ideStock?.[k]?.entrant || null;
+    if (code === "__ide_stock_sortant") return ideStock?.[k]?.sortant || null;
+    return data?.valeurs?.[k]?.[code] || null;
   };
 
   const nomDe = (id: number | null) => pays.find(p => p.id === id)?.nom ?? "";
@@ -273,66 +497,16 @@ function ContenuFichePays() {
         )}
 
         {/* ── Indicateurs comparés (absent tant que la liste des pays est en échec) ── */}
-        {!(errPays && !ids) && <div className="ds-carte" style={{ marginTop: 18, padding: "20px 24px" }}>
-          <p style={TITRE_SEC}>Indicateurs comparés</p>
-          {!data ? (
-            errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={10} h={34} />
-          ) : (
-            <table className="charge-in" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: "0 12px 10px", textAlign: "left", fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "2px solid var(--bleu-voile)" }}>Indicateur</th>
-                  {cols.map((c: any, i: number) => (
-                    <th key={c.id} style={{ padding: "0 12px 10px", textAlign: "right", borderBottom: "2px solid var(--bleu-voile)" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 800, color: COULEURS[i % 2] }}>
-                        <Drapeau iso={c.code_iso2} nom={c.nom} taille={15} />{c.nom}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {cats.map(cat => (
-                  <Fragment key={cat}>
-                    <tr>
-                      <td colSpan={cols.length + 1} style={{ padding: "20px 12px 8px", ...TITRE_SEC, display: "table-cell", margin: 0 } as any}>{cat}</td>
-                    </tr>
-                    {parCat[cat].map((ind, ri) => {
-                      const teinte = couleurMaxPour(ind.code, ind.categorie);
-                      let maxVal: number | null = null;
-                      if (teinte && cols.length >= 2) {
-                        const vals = cols.map((c: any) => getCell(c.id, ind.code)?.valeur).filter((x: any) => x !== null && x !== undefined) as number[];
-                        if (vals.length >= 2 && Math.max(...vals) !== Math.min(...vals)) maxVal = Math.max(...vals);
-                      }
-                      return (
-                        <tr key={ind.code} style={{ borderBottom: "1px solid var(--filet)", background: ri % 2 ? "rgb(var(--encre-rgb) / 0.018)" : "transparent" }}>
-                          <td style={{ padding: "10px 12px" }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 650, color: ENCRE }}>{ind.libelle}</div>
-                            <div style={{ fontSize: 10.5, color: "var(--gris)" }}>{ind.unite}</div>
-                          </td>
-                          {cols.map((c: any) => {
-                            const cell = getCell(c.id, ind.code);
-                            const v = cell?.valeur;
-                            const estMax = maxVal !== null && v === maxVal;
-                            const couleur = v === null || v === undefined ? "var(--gris)"
-                              : estMax ? (teinte === "rouge" ? "var(--danger)" : "var(--vert)")
-                              : ENCRE;
-                            return (
-                              <td key={c.id} className="ds-donnee" style={{ padding: "10px 12px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                                <span style={{ fontSize: 13, fontWeight: estMax ? 800 : 650, color: couleur }}>{fmt(v, ind.unite, ind.code)}</span>
-                                {cell?.annee && <span style={{ display: "block", fontSize: 9.5, color: "var(--gris)" }}>{cell.annee}</span>}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>}
+        {!(errPays && !ids) && (
+          <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 14px" }}>
+            <p style={TITRE_SEC}>Indicateurs comparés</p>
+            {!data ? (
+              errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={10} h={34} />
+            ) : (
+              <TableauComparatif cols={cols} cats={cats} parCat={parCat} getCell={getCell} />
+            )}
+          </div>
+        )}
 
         {/* ── Échanges bilatéraux ── */}
         {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (() => {
