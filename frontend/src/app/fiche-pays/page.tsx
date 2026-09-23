@@ -233,11 +233,7 @@ const RESSOURCES_VISIBLES = 6;
     tirait à la racine carrée du premier poste : un produit qui pesait 4 % de
     l'échange s'y dessinait au cinquième de la largeur, et l'œil lisait un
     poids que le chiffre démentait. Ici la longueur EST la part affichée.
-
-    LA PART DE MARCHÉ était calculée par le service et jamais montrée : pour
-    chaque produit, la part du fournisseur dans tout ce que le partenaire en
-    importe. C'est elle qui dit la dépendance — 2 % d'un flux peut peser 60 %
-    des achats du partenaire sur ce produit —, elle a sa ligne. */
+    Rien sous la barre : produit, montant, part — la ligne se lit d'un coup. */
 function ColonneRessources({ de, vers, col, total, res }: {
   de: any; vers: any; col: string; total: number; res: any[];
 }) {
@@ -274,11 +270,6 @@ function ColonneRessources({ de, vers, col, total, res }: {
                 <div style={{ height: 6, background: "rgb(var(--encre-rgb) / 0.05)", borderRadius: 99, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${Math.max(part * 100, 1)}%`, background: col, borderRadius: 99, transition: "width .5s ease" }} />
                 </div>
-                {r.part_dependance != null && r.part_dependance > 0 && (
-                  <div style={{ fontSize: 10, color: "var(--gris)", marginTop: 4 }}>
-                    Part de marché chez {vers.nom} : <strong style={{ color: "var(--gris-fort)", fontVariantNumeric: "tabular-nums" }}>{pct1(r.part_dependance)}</strong>
-                  </div>
-                )}
               </div>
             );
           })}
@@ -294,7 +285,8 @@ function ColonneRessources({ de, vers, col, total, res }: {
     1. LE FACE-À-FACE. Les deux sens en vis-à-vis, chacun dans la teinte de
        son pays, et la balance AU MILIEU, là où elle se lit comme le solde des
        deux. Elle fermait la section, sous deux longues listes : la conclusion
-       venait après le détail.
+       venait après le détail. Pas de barre de répartition dessous : les deux
+       montants et la balance disent déjà qui vend à qui.
     2. LA TRAJECTOIRE. Le service ne rendait qu'un cumul ; or 12 Md $ sur dix
        ans ne disent pas si la relation croît ou s'éteint. Deux courbes par
        année, SUR UNE MÊME ÉCHELLE (pas de double axe : les deux sens sont la
@@ -304,7 +296,6 @@ function ColonneRessources({ de, vers, col, total, res }: {
        ce que chacun vend à l'autre sans faire défiler. */
 function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: any; periode: string }) {
   const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
-  const total = ab + ba;
   const diff = ab - ba;
   const gagnant = diff >= 0 ? a : b, perdant = diff >= 0 ? b : a;
   const colG = diff >= 0 ? BLEU : ORANGE;
@@ -339,7 +330,6 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
           .fp-bi-balance { grid-column: 1 / -1; order: 3; }
           .fp-bi-cols { grid-template-columns: minmax(0,1fr); }
           .fp-bi-montant { font-size: 1.3rem !important; }
-          .fp-bi-milieu, .fp-bi-leg { display: none; }
         }
       `}</style>
       <p style={TITRE_SEC}>Échanges bilatéraux{periode ? <span style={{ color: "var(--gris)", letterSpacing: "0.06em" }}> · {periode}</span> : ""}</p>
@@ -370,22 +360,6 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
         <Sens de={b} vers={a} col={ORANGE} val={ba} dep={bilat.b_vers_a_dependance} droite />
       </div>
 
-      {/* Répartition du commerce bilatéral : la barre dit d'un coup d'œil qui vend à qui */}
-      {total > 0 && (
-        <div style={{ marginTop: 18 }}>
-          <div style={{ display: "flex", height: 10, borderRadius: 99, overflow: "hidden", gap: ab > 0 && ba > 0 ? 3 : 0 }}
-            role="img" aria-label={`${a.nom} : ${pct1(ab / total)} des échanges, ${b.nom} : ${pct1(ba / total)}`}>
-            {ab > 0 && <span style={{ width: `${ab / total * 100}%`, minWidth: 4, background: BLEU, borderRadius: 99 }} />}
-            {ba > 0 && <span style={{ width: `${ba / total * 100}%`, minWidth: 4, background: ORANGE, borderRadius: 99 }} />}
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 6, fontSize: 10.5, color: "var(--gris)" }}>
-            <span><strong style={{ color: BLEU, fontVariantNumeric: "tabular-nums" }}>{pct1(ab / total)}</strong><span className="fp-bi-leg"> du commerce bilatéral</span></span>
-            <span className="fp-bi-milieu" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtUSD(total)} échangés</span>
-            <span style={{ textAlign: "right" }}><strong style={{ color: ORANGE, fontVariantNumeric: "tabular-nums" }}>{pct1(ba / total)}</strong><span className="fp-bi-leg"> du commerce bilatéral</span></span>
-          </div>
-        </div>
-      )}
-
       {/* 2 · Trajectoire — seulement si l'on a au moins deux années */}
       {serie.length >= 2 && (
         <>
@@ -413,10 +387,6 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
             <ColonneRessources de={a} vers={b} col={BLEU} total={ab} res={bilat.a_vers_b_ressources} />
             <ColonneRessources de={b} vers={a} col={ORANGE} total={ba} res={bilat.b_vers_a_ressources} />
           </div>
-          <p style={{ fontSize: 10, color: "var(--gris)", margin: "12px 2px 0", lineHeight: 1.55 }}>
-            Le pourcentage coloré est la part du produit dans les ventes du sens considéré. La part de marché est la part
-            du fournisseur dans tout ce que le pays partenaire importe de ce produit, tous fournisseurs confondus.
-          </p>
         </>
       )}
     </div>
