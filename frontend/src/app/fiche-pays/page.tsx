@@ -42,16 +42,6 @@ const IDE_LIGNES: Indicateur[] = [
   { code: "__ide_stock_sortant", libelle: "Stock sortant",  unite: "USD", categorie: CAT_IDE },
 ];
 
-// Ce que chaque ligne IDE veut dire, en une phrase : « flux » et « stock » ne se
-// devinent pas, et la différence décide de la lecture — l'un est une année,
-// l'autre une histoire.
-const AIDE_IDE: Record<string, string> = {
-  __ide_flux_entrant:  "Investissements étrangers reçus dans l'année",
-  __ide_flux_sortant:  "Investissements réalisés à l'étranger dans l'année",
-  __ide_stock_entrant: "Cumul des investissements étrangers détenus dans le pays",
-  __ide_stock_sortant: "Cumul des investissements détenus à l'étranger",
-};
-
 // L'icône de chaque rubrique : un repère, pas une décoration. Une catégorie
 // inconnue n'en a pas, et la rubrique reste lisible sans.
 const ICONES_CAT: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -62,31 +52,30 @@ const ICONES_CAT: Record<string, React.ComponentType<{ size?: number; strokeWidt
   "Commerce extérieur": Ship,
 };
 
-/** Un rapport de grandeur écrit comme on le dit : « ×21 », « ×2,4 ». */
-const fmtRatio = (r: number) =>
-  `×${r >= 10 ? Math.round(r).toLocaleString("fr-FR") : r.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}`;
-
 type Cellule = { valeur: number | null; annee?: number } | null;
 
 /** LE TABLEAU COMPARATIF — deux pays, ligne à ligne.
 
     IL NE DONNAIT QUE DEUX NOMBRES PAR LIGNE, et c'était au lecteur de faire la
     comparaison : 18,2 M hab. contre 68,4 M hab., 1,6 Md $ contre 43 Md $. Or la
-    question qu'on pose à une fiche comparative n'est pas « combien », c'est
-    « combien de fois plus ». Chaque ligne porte donc trois lectures :
+    question qu'on pose à une fiche comparative n'est pas seulement
+    « combien », c'est « qui mène, et de combien ». Chaque ligne porte donc :
 
       · LES DEUX VALEURS, chacune dans la teinte de son pays — bleu à gauche,
-        orange à droite, comme les sélecteurs du bandeau ;
+        orange à droite, comme les sélecteurs du bandeau —, celle qui mène en
+        gras et teintée ;
       · UNE BARRE EN PAPILLON qui part du centre vers chaque pays : la plus
-        longue est celle du plus grand, et l'écart se voit avant de se lire ;
-      · LE RAPPORT, « ×21 », dans la teinte de celui qui mène.
+        longue est celle du plus grand, et l'écart se voit avant de se lire.
 
-    LA BARRE ET LE RAPPORT NE S'AFFICHENT QUE LÀ OÙ ILS ONT UN SENS. Un rapport
-    entre deux taux de croissance ne veut rien dire — on lit alors l'écart en
-    POINTS. Un flux d'IDE négatif (un désinvestissement) ne se range pas sur une
-    barre de longueur : la ligne garde ses deux valeurs et rien d'autre. La
-    règle est tirée des valeurs elles-mêmes, pas d'une liste d'indicateurs : un
-    indicateur ajouté demain la suit sans qu'on y touche.
+    PAS DE COLONNE D'ÉCART CHIFFRÉ, ni de sous-titre sous les libellés : la
+    barre dit déjà la proportion, et chaque colonne de plus éloignait les deux
+    valeurs l'une de l'autre. Le tableau se lit d'un balayage.
+
+    LA BARRE NE S'AFFICHE QUE LÀ OÙ ELLE A UN SENS. Un taux de croissance, un
+    flux d'IDE négatif (un désinvestissement) ou une balance déficitaire ne se
+    rangent pas sur une barre de longueur : la ligne garde ses deux valeurs et
+    rien d'autre. La règle est tirée des valeurs elles-mêmes, pas d'une liste
+    d'indicateurs : un indicateur ajouté demain la suit sans qu'on y touche.
 
     LE VERT ET LE ROUGE DISPARAISSENT. L'ancienne version colorait en vert la
     plus grande population et en ROUGE les plus fortes importations — un
@@ -105,23 +94,22 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
     <div className="fp-comparatif">
       {/* LA LIGNE SE DÉCRIT PAR ZONES NOMMÉES, et non par numéros de colonne :
           c'est ce qui lui permet de se replier sur deux étages en petit écran
-          sans toucher au balisage. Sur un téléphone, cinq colonnes côte à côte
-          réclamaient 487 px pour 286 disponibles ; le libellé monte alors au-
-          dessus, les deux valeurs et l'écart se partagent la largeur, et la
-          barre — qui ne tiendrait plus lisiblement — s'efface. */}
+          sans toucher au balisage. Sur un téléphone, le libellé monte au-
+          dessus, les deux valeurs se partagent la largeur, et la barre — qui
+          ne tiendrait plus lisiblement — s'efface. */}
       <style>{`
         .fp-ligne { display: grid; align-items: center; column-gap: 18px;
-          grid-template-columns: minmax(170px, 1.25fr) minmax(96px, 0.75fr) minmax(150px, 1fr) minmax(96px, 0.75fr) 64px;
-          grid-template-areas: "lib a barre b ecart"; }
+          grid-template-columns: minmax(170px, 1.2fr) minmax(96px, 0.7fr) minmax(170px, 1.1fr) minmax(96px, 0.7fr);
+          grid-template-areas: "lib a barre b"; }
         .fp-lib { grid-area: lib; } .fp-a { grid-area: a; } .fp-barre { grid-area: barre; display: flex; }
-        .fp-b { grid-area: b; } .fp-ratio { grid-area: ecart; display: flex; }
+        .fp-b { grid-area: b; }
         @media (max-width: 860px) {
           .fp-ligne { column-gap: 12px; row-gap: 4px;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-            grid-template-areas: "lib lib lib" "a b ecart"; }
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-areas: "lib lib" "a b"; }
           .fp-barre { display: none; }
           .fp-entete .fp-lib { display: none; }
-          .fp-entete { grid-template-areas: "a b ecart"; }
+          .fp-entete { grid-template-areas: "a b"; }
         }
       `}</style>
 
@@ -138,8 +126,6 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.nom}</span>
           </span>
         ))}
-        <span className="fp-ratio" style={{ fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)",
-          textTransform: "uppercase", letterSpacing: "0.08em", justifyContent: "flex-end" }}>Écart</span>
       </div>
 
       {cats.map(cat => {
@@ -172,16 +158,6 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
               const comparable = deux && !taux && va >= 0 && vb >= 0 && (va > 0 || vb > 0);
               const max = comparable ? Math.max(va, vb) : 0;
               const mene = deux && va !== vb ? (va > vb ? 0 : 1) : null;
-              // Le rapport, quand il se calcule : deux valeurs strictement
-              // positives. Sous 5 % d'écart, on dit « ≈ » plutôt que « ×1 ».
-              let ecart: string | null = null;
-              if (comparable && va > 0 && vb > 0) {
-                const r = Math.max(va, vb) / Math.min(va, vb);
-                ecart = r < 1.05 ? "≈" : fmtRatio(r);
-              } else if (taux && deux) {
-                const d = Math.abs(va - vb);
-                ecart = d < 0.05 ? "≈" : `${d.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} pt`;
-              }
               const valeur = (v: number | null, c: Cellule, i: number) => (
                 <span className={i === 0 ? "fp-a" : "fp-b"} style={{ display: "flex", flexDirection: "column",
                   alignItems: i === 0 ? "flex-end" : "flex-start", minWidth: 0 }}>
@@ -197,19 +173,8 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
               return (
                 <div key={ind.code} className="fp-ligne" style={{ padding: "9px 12px",
                   borderRadius: 9, background: ri % 2 ? "rgb(var(--encre-rgb) / 0.022)" : "transparent" }}>
-                  <span className="fp-lib" style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 12.5, fontWeight: 650, color: ENCRE }}>{ind.libelle}</span>
-                    {/* LE SOUS-TITRE N'EST PLUS L'UNITÉ : la valeur la porte
-                        déjà — « 31 Md $ », « 18 M hab. » —, et « USD » écrit
-                        sous le libellé ne faisait que la répéter. Il ne reste
-                        que là où il apprend quelque chose : la définition des
-                        quatre lignes de l'IDE, que leur nom ne suffit pas à
-                        distinguer. */}
-                    {AIDE_IDE[ind.code] && (
-                      <span style={{ display: "block", fontSize: 10.5, color: "var(--gris)", lineHeight: 1.4 }}>
-                        {AIDE_IDE[ind.code]}
-                      </span>
-                    )}
+                  <span className="fp-lib" style={{ minWidth: 0, fontSize: 12.5, fontWeight: 650, color: ENCRE }}>
+                    {ind.libelle}
                   </span>
                   {valeur(va, ca, 0)}
                   {/* LE PAPILLON : deux barres qui partent du centre, chacune
@@ -230,19 +195,6 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
                     ))}
                   </span>
                   {valeur(vb, cb, 1)}
-                  <span className="fp-ratio" style={{ justifyContent: "flex-end" }}>
-                    {ecart && (
-                      <span title={mene !== null
-                          ? `${[a, b][mene].nom} ${taux ? "devance de" : "mène d'un facteur"} ${ecart}` : "Valeurs quasi égales"}
-                        style={{ fontSize: 11, fontWeight: 800, fontVariantNumeric: "tabular-nums",
-                          padding: "2px 8px", borderRadius: 999, whiteSpace: "nowrap",
-                          color: mene === null || ecart === "≈" ? "var(--gris-fort)" : teinte(mene),
-                          background: mene === null || ecart === "≈" ? "var(--fond)"
-                            : `color-mix(in srgb, ${teinte(mene)} 12%, transparent)` }}>
-                        {ecart}
-                      </span>
-                    )}
-                  </span>
                 </div>
               );
             })}
