@@ -824,6 +824,21 @@ async def commerce_bilateral(
                 _and(StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a)))
     )).first()
 
+    # Série annuelle des deux sens : montre la trajectoire des échanges, que le
+    # cumul seul masque (une relation peut être en forte hausse ou en déclin).
+    lignes_an = (await db.execute(
+        select(StatTransaction.annee, StatTransaction.exportateur_id, _s.label("v"))
+        .where(_or(_and(StatTransaction.exportateur_id == pays_a, StatTransaction.importateur_id == pays_b),
+                   _and(StatTransaction.exportateur_id == pays_b, StatTransaction.importateur_id == pays_a)))
+        .group_by(StatTransaction.annee, StatTransaction.exportateur_id)
+    )).all()
+    par_annee: dict[int, dict] = {}
+    for r in lignes_an:
+        if r.annee is None:
+            continue
+        d = par_annee.setdefault(int(r.annee), {"annee": int(r.annee), "a_vers_b": 0.0, "b_vers_a": 0.0})
+        d["a_vers_b" if r.exportateur_id == pays_a else "b_vers_a"] += float(r.v or 0)
+
     async def totaux_import(imp_id):
         """Total des importations de imp_id (tous fournisseurs), global et par ressource."""
         rows = (await db.execute(
@@ -906,6 +921,7 @@ async def commerce_bilateral(
         "b_vers_a": float(ba or 0),
         "annee_min": bornes[0] if bornes else None,
         "annee_max": bornes[1] if bornes else None,
+        "par_annee": [par_annee[k] for k in sorted(par_annee)],
         # Dépendance globale : part du fournisseur dans le total des imports de l'importateur
         "a_vers_b_dependance": (float(ab or 0) / b_imp_tot) if b_imp_tot > 0 else None,
         "b_vers_a_dependance": (float(ba or 0) / a_imp_tot) if a_imp_tot > 0 else None,

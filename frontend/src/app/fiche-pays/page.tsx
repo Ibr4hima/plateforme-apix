@@ -7,8 +7,10 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Building2, FileText, Landmark, Map as MapIcon, Scale, Ship, TrendingUp,
+import { ArrowRight, Building2, FileText, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
          Users } from "lucide-react";
+import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
+import { BoutonSuite } from "@/app/ide/partage";
 import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -201,6 +203,222 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
           </section>
         );
       })}
+    </div>
+  );
+}
+
+const pct1 = (v: number) => `${(v * 100).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+
+/** Bandeau de rubrique — même habillage que ceux du tableau comparatif :
+    icône dans un carré voilé, capitales bleues, filet jusqu'au bord. */
+function Rubrique({ Icone, titre, children }: { Icone: any; titre: string; children?: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "26px 0 14px", flexWrap: "wrap" }}>
+      <span style={{ display: "inline-flex", width: 24, height: 24, borderRadius: 7, alignItems: "center",
+        justifyContent: "center", background: "var(--bleu-voile)", color: BLEU, flexShrink: 0 }}>
+        <Icone size={13} strokeWidth={2.2} />
+      </span>
+      <span style={{ fontSize: 10.5, fontWeight: 800, color: BLEU, letterSpacing: "0.12em", textTransform: "uppercase" }}>{titre}</span>
+      <span style={{ flex: 1, height: 1, background: "var(--filet)", marginLeft: 6, minWidth: 20 }} />
+      {children}
+    </div>
+  );
+}
+
+const RESSOURCES_VISIBLES = 6;
+
+/** CE QU'UN PAYS VEND À L'AUTRE — une colonne par sens.
+
+    LA BARRE EST LINÉAIRE, en part du total du sens. L'ancienne version la
+    tirait à la racine carrée du premier poste : un produit qui pesait 4 % de
+    l'échange s'y dessinait au cinquième de la largeur, et l'œil lisait un
+    poids que le chiffre démentait. Ici la longueur EST la part affichée.
+
+    LA PART DE MARCHÉ était calculée par le service et jamais montrée : pour
+    chaque produit, la part du fournisseur dans tout ce que le partenaire en
+    importe. C'est elle qui dit la dépendance — 2 % d'un flux peut peser 60 %
+    des achats du partenaire sur ce produit —, elle a sa ligne. */
+function ColonneRessources({ de, vers, col, total, res }: {
+  de: any; vers: any; col: string; total: number; res: any[];
+}) {
+  const [tout, setTout] = useState(false);
+  const liste = res || [];
+  const vues = tout ? liste : liste.slice(0, RESSOURCES_VISIBLES);
+  return (
+    <div style={{ minWidth: 0, border: "1px solid var(--filet)", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "13px 16px", borderBottom: "1px solid var(--filet)",
+        background: `color-mix(in srgb, ${col} 5%, transparent)` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 800, color: ENCRE, minWidth: 0 }}>
+          <Drapeau iso={de.code_iso2} nom={de.nom} taille={14} />
+          <span style={{ color: col, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{de.nom}</span>
+          <ArrowRight size={12} style={{ color: "var(--gris)", flexShrink: 0 }} />
+          <Drapeau iso={vers.code_iso2} nom={vers.nom} taille={14} />
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vers.nom}</span>
+          <span className="ds-donnee" style={{ marginLeft: "auto", color: col, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(total)}</span>
+        </div>
+      </div>
+      {liste.length === 0 ? (
+        <p style={{ margin: 0, padding: "18px 16px", fontSize: 11.5, color: "var(--gris)" }}>Aucun échange enregistré dans ce sens.</p>
+      ) : (
+        <div style={{ padding: "12px 16px 14px", display: "grid", gap: 13 }}>
+          {vues.map((r: any) => {
+            const part = total > 0 ? r.valeur / total : 0;
+            return (
+              <div key={r.ressource} style={{ minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 5 }}>
+                  <span title={r.ressource} style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: ENCRE,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.ressource}</span>
+                  <span className="ds-donnee" style={{ fontSize: 12, fontWeight: 700, color: ENCRE, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(r.valeur)}</span>
+                  <span style={{ width: 48, textAlign: "right", fontSize: 11, fontWeight: 700, color: col, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{pct1(part)}</span>
+                </div>
+                <div style={{ height: 6, background: "rgb(var(--encre-rgb) / 0.05)", borderRadius: 99, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.max(part * 100, 1)}%`, background: col, borderRadius: 99, transition: "width .5s ease" }} />
+                </div>
+                {r.part_dependance != null && r.part_dependance > 0 && (
+                  <div style={{ fontSize: 10, color: "var(--gris)", marginTop: 4 }}>
+                    Part de marché chez {vers.nom} : <strong style={{ color: "var(--gris-fort)", fontVariantNumeric: "tabular-nums" }}>{pct1(r.part_dependance)}</strong>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <BoutonSuite reste={liste.length - RESSOURCES_VISIBLES} tout={tout} onBasculer={() => setTout(t => !t)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** LES ÉCHANGES BILATÉRAUX — trois temps, du plus synthétique au plus fin.
+
+    1. LE FACE-À-FACE. Les deux sens en vis-à-vis, chacun dans la teinte de
+       son pays, et la balance AU MILIEU, là où elle se lit comme le solde des
+       deux. Elle fermait la section, sous deux longues listes : la conclusion
+       venait après le détail.
+    2. LA TRAJECTOIRE. Le service ne rendait qu'un cumul ; or 12 Md $ sur dix
+       ans ne disent pas si la relation croît ou s'éteint. Deux courbes par
+       année, SUR UNE MÊME ÉCHELLE (pas de double axe : les deux sens sont la
+       même grandeur, et deux axes feraient se croiser des courbes d'ordres de
+       grandeur différents).
+    3. LA COMPOSITION. Les deux sens côte à côte au lieu d'empilés : on compare
+       ce que chacun vend à l'autre sans faire défiler. */
+function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: any; periode: string }) {
+  const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
+  const total = ab + ba;
+  const diff = ab - ba;
+  const gagnant = diff >= 0 ? a : b, perdant = diff >= 0 ? b : a;
+  const colG = diff >= 0 ? BLEU : ORANGE;
+  const serie = (bilat.par_annee || []) as { annee: number; a_vers_b: number; b_vers_a: number }[];
+
+  const Sens = ({ de, vers, col, val, dep, droite }: any) => (
+    <div className="fp-bi-sens" style={{ minWidth: 0, textAlign: droite ? "right" : "left" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: droite ? "flex-end" : "flex-start",
+        fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--gris-fort)" }}>
+        <span style={{ width: 8, height: 8, borderRadius: 99, background: col, flexShrink: 0 }} />
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{de.nom}</span>
+        <ArrowRight size={11} style={{ flexShrink: 0 }} />
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vers.nom}</span>
+      </div>
+      <div className="ds-donnee fp-bi-montant" style={{ fontSize: "1.75rem", fontWeight: 800, color: col, lineHeight: 1.1, margin: "8px 0 4px",
+        fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{fmtUSD(val)}</div>
+      <div style={{ fontSize: 11, color: "var(--gris)" }}>
+        {dep != null && dep > 0
+          ? <>soit <strong style={{ color: "var(--gris-fort)" }}>{pct1(dep)}</strong> des importations de {vers.nom}</>
+          : <>exportés vers {vers.nom}</>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 24px" }}>
+      <style>{`
+        .fp-bi-tete { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 22px; }
+        .fp-bi-cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+        @media (max-width: 760px) {
+          .fp-bi-tete { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+          .fp-bi-balance { grid-column: 1 / -1; order: 3; }
+          .fp-bi-cols { grid-template-columns: minmax(0,1fr); }
+          .fp-bi-montant { font-size: 1.3rem !important; }
+          .fp-bi-milieu, .fp-bi-leg { display: none; }
+        }
+      `}</style>
+      <p style={TITRE_SEC}>Échanges bilatéraux{periode ? <span style={{ color: "var(--gris)", letterSpacing: "0.06em" }}> · {periode}</span> : ""}</p>
+
+      {/* 1 · Face-à-face */}
+      <div className="fp-bi-tete">
+        <Sens de={a} vers={b} col={BLEU} val={ab} dep={bilat.a_vers_b_dependance} />
+        <div className="fp-bi-balance" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+          padding: "12px 20px", borderRadius: 14, minWidth: 190,
+          background: "linear-gradient(180deg,rgb(var(--bleu-rgb) / 0.07),rgb(var(--bleu-rgb) / 0.02))",
+          border: "1px solid rgb(var(--bleu-rgb) / 0.16)" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, color: BLEU,
+            letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            <Scale size={13} /> Balance
+          </span>
+          {diff === 0 ? (
+            <span style={{ fontSize: 15, fontWeight: 800, color: ENCRE, marginTop: 6 }}>Équilibrée</span>
+          ) : (
+            <>
+              <span className="ds-donnee" style={{ fontSize: 19, fontWeight: 800, color: colG, marginTop: 5,
+                fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>+{fmtUSD(Math.abs(diff))}</span>
+              <span style={{ fontSize: 10.5, color: "var(--gris)", marginTop: 3, lineHeight: 1.35 }}>
+                en faveur de <strong style={{ color: colG }}>{gagnant.nom}</strong><br />déficit pour {perdant.nom}
+              </span>
+            </>
+          )}
+        </div>
+        <Sens de={b} vers={a} col={ORANGE} val={ba} dep={bilat.b_vers_a_dependance} droite />
+      </div>
+
+      {/* Répartition du commerce bilatéral : la barre dit d'un coup d'œil qui vend à qui */}
+      {total > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: "flex", height: 10, borderRadius: 99, overflow: "hidden", gap: ab > 0 && ba > 0 ? 3 : 0 }}
+            role="img" aria-label={`${a.nom} : ${pct1(ab / total)} des échanges, ${b.nom} : ${pct1(ba / total)}`}>
+            {ab > 0 && <span style={{ width: `${ab / total * 100}%`, minWidth: 4, background: BLEU, borderRadius: 99 }} />}
+            {ba > 0 && <span style={{ width: `${ba / total * 100}%`, minWidth: 4, background: ORANGE, borderRadius: 99 }} />}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 6, fontSize: 10.5, color: "var(--gris)" }}>
+            <span><strong style={{ color: BLEU, fontVariantNumeric: "tabular-nums" }}>{pct1(ab / total)}</strong><span className="fp-bi-leg"> du commerce bilatéral</span></span>
+            <span className="fp-bi-milieu" style={{ fontVariantNumeric: "tabular-nums" }}>{fmtUSD(total)} échangés</span>
+            <span style={{ textAlign: "right" }}><strong style={{ color: ORANGE, fontVariantNumeric: "tabular-nums" }}>{pct1(ba / total)}</strong><span className="fp-bi-leg"> du commerce bilatéral</span></span>
+          </div>
+        </div>
+      )}
+
+      {/* 2 · Trajectoire — seulement si l'on a au moins deux années */}
+      {serie.length >= 2 && (
+        <>
+          <Rubrique Icone={TrendingUp} titre="Évolution annuelle">
+            {[{ p: a, v: b, c: BLEU }, { p: b, v: a, c: ORANGE }].map(l => (
+              <span key={l.p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "var(--gris-fort)" }}>
+                <span style={{ width: 14, height: 3, borderRadius: 2, background: l.c }} />
+                {l.p.nom} → {l.v.nom}
+              </span>
+            ))}
+          </Rubrique>
+          <GrapheMultiPays height={250} dualAxis={false} fmt={v => fmtUSD(v)}
+            series={[
+              { nom: `${a.nom} → ${b.nom}`, couleur: BLEU, data: serie.map(s => ({ annee: s.annee, valeur: s.a_vers_b })) },
+              { nom: `${b.nom} → ${a.nom}`, couleur: ORANGE, data: serie.map(s => ({ annee: s.annee, valeur: s.b_vers_a })) },
+            ]} />
+        </>
+      )}
+
+      {/* 3 · Composition */}
+      {((bilat.a_vers_b_ressources || []).length > 0 || (bilat.b_vers_a_ressources || []).length > 0) && (
+        <>
+          <Rubrique Icone={Package} titre="Composition des échanges" />
+          <div className="fp-bi-cols">
+            <ColonneRessources de={a} vers={b} col={BLEU} total={ab} res={bilat.a_vers_b_ressources} />
+            <ColonneRessources de={b} vers={a} col={ORANGE} total={ba} res={bilat.b_vers_a_ressources} />
+          </div>
+          <p style={{ fontSize: 10, color: "var(--gris)", margin: "12px 2px 0", lineHeight: 1.55 }}>
+            Le pourcentage coloré est la part du produit dans les ventes du sens considéré. La part de marché est la part
+            du fournisseur dans tout ce que le pays partenaire importe de ce produit, tous fournisseurs confondus.
+          </p>
+        </>
+      )}
     </div>
   );
 }
@@ -461,78 +679,9 @@ function ContenuFichePays() {
         )}
 
         {/* ── Échanges bilatéraux ── */}
-        {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (() => {
-          const ab = bilat.a_vers_b || 0, ba = bilat.b_vers_a || 0;
-          const diff = ab - ba;
-          const gagnant = diff >= 0 ? a : b, perdant = diff >= 0 ? b : a;
-          const BlocDir = ({ de, vers, col, val, res, dep }: any) => {
-            const maxR = res && res.length ? res[0].valeur : 1;
-            const hasRes = res && res.length > 0;
-            return (
-              <div className="ds-carte" style={{ overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "15px 20px", borderBottom: hasRes ? "1px solid var(--filet)" : "none" }}>
-                  <div style={{ minWidth: 0 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: ENCRE }}>
-                      <span style={{ fontWeight: 800, color: col }}>{de}</span>
-                      <ArrowRight size={13} style={{ color: "var(--gris)", flexShrink: 0 }} />
-                      <span>{vers}</span>
-                    </span>
-                    {dep != null && dep > 0 && <span style={{ fontSize: 11, color: "var(--gris)", marginTop: 3, display: "block" }}>soit <strong style={{ color: "var(--gris-fort)" }}>{(dep * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %</strong> des importations de {vers}</span>}
-                  </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div className="ds-donnee" style={{ fontSize: 15, fontWeight: 800, color: col, fontVariantNumeric: "tabular-nums", lineHeight: 1.1 }}>{fmtUSD(val)}</div>
-                    <div style={{ fontSize: 8.5, fontWeight: 700, color: "var(--gris)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 3 }}>Total exporté</div>
-                  </div>
-                </div>
-                {hasRes && (
-                  <div style={{ padding: "14px 20px", display: "grid", gap: 12 }}>
-                    {res.map((r: any) => {
-                      const pct = val > 0 ? r.valeur / val * 100 : 0;
-                      return (
-                        <div key={r.ressource}>
-                          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 5 }}>
-                            <span style={{ fontSize: 11.5, color: "var(--texte)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }} title={r.ressource}>{r.ressource}</span>
-                            <span className="ds-donnee" style={{ fontSize: 11.5, fontWeight: 700, color: "var(--encre)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0 }}>{fmtUSD(r.valeur)} <span style={{ color: "var(--gris)", fontWeight: 600 }}>· {pct.toFixed(0)} %</span></span>
-                          </div>
-                          <div style={{ height: 7, background: "var(--bleu-voile)", borderRadius: 99, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: `${Math.max(4, Math.sqrt(r.valeur / maxR) * 100)}%`, background: col, borderRadius: 99 }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          };
-          return (
-            <div style={{ marginTop: 18 }}>
-              <p style={TITRE_SEC}>Échanges bilatéraux{periodeBilat ? <span style={{ color: "var(--gris)", letterSpacing: "0.06em" }}> · {periodeBilat}</span> : ""}</p>
-              <div style={{ display: "grid", gap: 12 }}>
-                <BlocDir de={a.nom} vers={b.nom} col={BLEU} val={ab} res={bilat.a_vers_b_ressources} dep={bilat.a_vers_b_dependance} />
-                <BlocDir de={b.nom} vers={a.nom} col={ORANGE} val={ba} res={bilat.b_vers_a_ressources} dep={bilat.b_vers_a_dependance} />
-              </div>
-              <div className="ds-carte" style={{ marginTop: 12, padding: "16px 20px", background: "linear-gradient(180deg,rgb(var(--bleu-rgb) / 0.06),rgb(var(--bleu-rgb) / 0.02))", border: "1px solid rgb(var(--bleu-rgb) / 0.16)", display: "flex", alignItems: "center", gap: 14 }}>
-                <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgb(var(--bleu-rgb) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Scale size={19} color={BLEU} />
-                </span>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ ...TITRE_SEC, margin: "0 0 3px", fontSize: 9.5 }}>Balance commerciale</div>
-                  <div style={{ fontSize: 12.5, color: "var(--texte)", lineHeight: 1.45 }}>
-                    {diff === 0
-                      ? <>Échanges <strong style={{ color: ENCRE }}>équilibrés</strong> entre {a.nom} et {b.nom}.</>
-                      : <>Excédentaire en faveur de <strong style={{ color: diff >= 0 ? BLEU : ORANGE }}>{gagnant.nom}</strong>, déficitaire pour {perdant.nom}.</>}
-                  </div>
-                </div>
-                {diff !== 0 && (
-                  <span className="ds-donnee" style={{ fontSize: 17, fontWeight: 800, color: diff >= 0 ? BLEU : ORANGE, fontVariantNumeric: "tabular-nums", flexShrink: 0, whiteSpace: "nowrap" }}>
-                    +{fmtUSD(Math.abs(diff))}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })()}
+        {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (
+          <EchangesBilateraux a={a} b={b} bilat={bilat} periode={periodeBilat} />
+        )}
 
         {/* ── Pied méthodologique ── */}
         <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid var(--bleu-voile)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
