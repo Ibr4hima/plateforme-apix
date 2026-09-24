@@ -2,7 +2,7 @@
 """Saisie contrôlée — NACE édition 2025, continents.
 
 Exportations : tableaux 23 (valeur, millions FCFA) et 24 (poids net,
-tonnes). Années 2021 à 2025, transcrites ligne à ligne. Six modalités
+tonnes). Importations : tableaux 25 (valeur) et 26 (poids). Années 2021 à 2025, transcrites ligne à ligne. Six modalités
 EXHAUSTIVES (Europe, Afrique, Amérique, Asie, Océanie, Divers) : leur somme
 est le total du commerce extérieur. Libellés du rapport (« EUROPE »,
 « AMERIQUE »…) ramenés aux formes courtes des éditions précédentes.
@@ -26,8 +26,22 @@ TOTAL_EXPORT = {
     "valeur": [2884802, 3563359, 3223930, 3909058, 5805626],
     "poids":  [8038328, 6969968, 7428616, 9599905, 14186349],
 }
-IMPORT: dict = {}        # tableaux d'importations — à saisir
-TOTAL_IMPORT: dict = {}
+# Tableaux 25 (valeur) et 26 (poids).
+IMPORT = {
+    "Europe":   ([2635826, 3576586, 3212405, 3083585, 2789773], [6169483, 5620376, 5853755, 5395999, 5266080]),
+    "Afrique":  ([722712, 895862, 1214399, 1086271, 1091356],   [2875299, 3175189, 3651657, 3526197, 3829539]),
+    "Amérique": ([399578, 560634, 457511, 521098, 616096],      [1138845, 1365632, 1178800, 1724162, 2155186]),
+    "Asie":     ([1581546, 2440343, 2197049, 2221881, 2405295], [3796747, 4181713, 4381359, 4782711, 5056654]),
+    "Océanie":  ([17486, 18718, 29786, 33731, 19631],           [12557, 8365, 11805, 41415, 6209]),
+    "Divers":   ([21346, 57222, 96653, 65811, 51707],           [72019, 146000, 92996, 49529, 37200]),
+}
+# Le TOTAL 2022 en valeur est imprimé 7 549 365 dans ce tableau (7 549 364
+# ailleurs) : repris tel quel, comme dans l'édition 2024 qui l'imprimait déjà
+# ainsi — c'est une différence d'arrondi du rapport, non de saisie.
+TOTAL_IMPORT = {
+    "valeur": [5378494, 7549365, 7207803, 7012377, 6973859],
+    "poids":  [14064950, 14497275, 15170373, 15520015, 16350868],
+}
 
 # Écrit à côté de lui-même : les CSV restent dans le dossier du script.
 ici = Path(__file__).parent

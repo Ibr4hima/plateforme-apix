@@ -140,7 +140,23 @@ exhaustives que l'édition 2024 (libellés du rapport « EUROPE »,
   une fois les tableaux par région saisis.
 - Chargement en base de travail vérifié, base remise en l'état ensuite.
 
+## Continents — importations (tableaux 25 et 26) : famille COMPLÈTE
+
+- Somme des 6 continents = TOTAL imprimé : 10/10 conformes, écarts de −2 à
+  0. Le TOTAL 2022 en valeur est imprimé 7 549 365 (7 549 364 dans les
+  autres tableaux) : repris tel quel, comme l'édition 2024 le faisait.
+- **Révisions : 4 couples sur 24, tous en 2024**, somme −149 016 MFCFA et
+  −19 017 t — la même révision du TOTAL que dans les trois familles
+  précédentes (à 1 d'arrondi près). Répartition :
+  - Europe 3 226 226 → 3 083 585 (−142 641 ; poids −15 106) ;
+  - Asie 2 228 256 → 2 221 881 (−6 375 ; poids −3 911) ;
+  - **Afrique +227 264 et Amérique −227 264** (poids ±548 517 t, au
+    chiffre près) : un transfert d'un partenaire américain vers un
+    partenaire africain, sans effet sur le total. À identifier dans les
+    tableaux par pays.
+- Chargement en base de travail vérifié (60 lignes), base remise en l'état.
+
 ## Reste à saisir
 
-- Continents — importations.
-- Régions, pays (et chapitres SH si le rapport les contient encore).
+- Régions et pays (tableaux hiérarchiques ; contrôle Σ régions d'un
+  continent = continent), et chapitres SH si le rapport les contient encore.
