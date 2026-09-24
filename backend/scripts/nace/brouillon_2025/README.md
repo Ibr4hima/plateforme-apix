@@ -344,7 +344,20 @@ l'édition 2024 ; chaque ligne reçoit le libellé normalisé de 2024.
   (−149 017, produits regroupés), cela désigne un navire importé compté à
   tort en 2024 : la révision est désormais expliquée par cinq familles.
 
+## Chapitres SH — importations en poids (tableau 38) : famille COMPLÈTE
+
+`python3 saisie_2025_chapitres.py` écrit edition_2025_chapitres.csv (960
+lignes) et edition_2025_totaux_chapitres.csv.
+
+- Vérificateur : 20/20 TOTAL conformes (−4 à +8), complétude 96 × 2 sens.
+- 2021–2024 : un seul poids révisé sur 384 — 2024, « Navigation maritime
+  ou fluviale », 63 438 → 44 421 t (−19 017 t), la révision du poids import
+  2024 : le navire, de nouveau.
+- Valeur et poids appariés dans les deux sens.
+- Chargement réel en base de travail : 960 lignes édition 2025, base remise
+  en l'état ensuite.
+
 ## Reste à saisir
-- Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
-  confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
-  les contient encore.
+
+- Pays : tableau 32 (exportations en poids) à remplacer, et lignes
+  manquantes du tableau 34 (entre NICARAGUA et CHINE) — signalés à l'ANSD.
