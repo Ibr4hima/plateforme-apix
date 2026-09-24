@@ -7,7 +7,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Building2, FileText, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
+import { ArrowRight, Building2, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
          Users } from "lucide-react";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { BoutonSuite } from "@/app/ide/partage";
@@ -571,45 +571,54 @@ function ContenuFichePays() {
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "10px 0 0", fontWeight: 500 }}>
                 Analyse comparative · Indicateurs économiques · Échanges bilatéraux
               </p>
+            </div>
+            <div className="no-print" style={{ flexShrink: 0 }}>
+              <NavActions onDark home flouTotal />
+            </div>
+          </div>
+          {/* LIGNE DES SÉLECTEURS : les deux pays à gauche, leurs accords à
+              droite — sous les boutons de navigation. En petit écran, les
+              accords passent à la ligne. */}
+          {ids && pays.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
               {/* Sélecteurs : changer les deux pays sans quitter la page */}
-              {ids && pays.length > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-                  {[0, 1].map(pos => (
-                    <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
-                      <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
-                        onChange={id => setIds(prev => {
-                          if (!prev) return prev;
-                          const n: [number, number] = [...prev] as [number, number];
-                          n[pos] = id; return n;
-                        })} />
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                {[0, 1].map(pos => (
+                  <span key={pos} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 9, height: 9, borderRadius: 999, background: pos === 0 ? "var(--bleu-action)" : "var(--orange-action)", flexShrink: 0 }} />
+                    <SelectPays valeur={ids[pos]} pays={pays} exclure={ids[1 - pos]}
+                      onChange={id => setIds(prev => {
+                        if (!prev) return prev;
+                        const n: [number, number] = [...prev] as [number, number];
+                        n[pos] = id; return n;
+                      })} />
+                  </span>
+                ))}
+              </div>
               {/* LES ACCORDS SIGNÉS, DANS LE BANDEAU. Ils avaient leur bloc sous
                   les KPI, pour une ou deux étiquettes : c'est un attribut de la
-                  RELATION entre les deux pays, et il se lit avec leurs noms,
-                  là où l'on choisit le duo. Une pastille de verre par accord,
+                  RELATION entre les deux pays, et il se lit avec leurs noms :
+                  sur la ligne des sélecteurs, calé à droite sous les boutons
+                  de navigation. Une pastille de verre par accord,
                   « TBI · Sénégal × France » — le type, puis les parties dans
                   l'ordre de la fiche ; un accord international garde son titre.
                   Au clic, la fiche de l'accord, comme sur la page Accords. */}
-              {ids && accs.length > 0 && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+              {accs.length > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginLeft: "auto", justifyContent: "flex-end" }}>
                   {accs.map((ac: any) => {
                     const tbi = (ac.type_accord || "tbi") === "tbi";
                     const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
                     return (
                       <button key={ac.id} onClick={() => setAccordOuvert(ac)}
                         title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px",
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 16px",
                           borderRadius: 999, cursor: "pointer", fontFamily: "var(--font-google-sans)",
-                          fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)",
+                          fontSize: 13, fontWeight: 700, color: "var(--sur-bleu)",
                           background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.26)",
                           transition: "background .15s, border-color .15s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.26)"; }}>
-                        <FileText size={14} style={{ flexShrink: 0, opacity: 0.85 }} />
+                        <span className="material-symbols-outlined" aria-hidden style={{ fontSize: 19, flexShrink: 0, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>signature</span>
                         <span style={{ fontWeight: 800, letterSpacing: "0.04em" }}>{tbi ? "TBI" : "Traité"}</span>
                         <span style={{ opacity: 0.55 }}>·</span>
                         <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
@@ -619,10 +628,7 @@ function ContenuFichePays() {
                 </div>
               )}
             </div>
-            <div className="no-print" style={{ flexShrink: 0 }}>
-              <NavActions onDark home flouTotal />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
