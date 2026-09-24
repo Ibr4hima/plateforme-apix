@@ -7,7 +7,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Building2, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
+import { ArrowRight, Landmark, Map as MapIcon, Package, Scale, Ship, TrendingUp,
          Users } from "lucide-react";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { BoutonSuite } from "@/app/ide/partage";
@@ -16,12 +16,9 @@ import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import AccordVueModal from "@/components/shared/AccordVueModal";
-import EntreprisePublicModal from "@/components/shared/EntreprisePublicModal";
 import { fmtUnite as fmt, fmtUSD } from "@/lib/format";
 import { drapeauEmoji } from "@/lib/drapeaux";
-import { fond_bleu, badge_bleu, badgeSurvol } from "@/lib/couleurs";
 import DrapeauPays from "@/components/shared/DrapeauPays";
-import { carteCliquable } from "@/components/shared/PanneauFiltres";
 
 import { API_BASE as API } from "@/lib/api";
 import { useDonnees } from "@/lib/donnees";
@@ -427,7 +424,6 @@ function ContenuFichePays() {
   const params = useSearchParams();
   const [ids, setIds] = useState<[number, number] | null>(null);
   const [accordOuvert, setAccordOuvert] = useState<any>(null);
-  const [entOuverte, setEntOuverte] = useState<any>(null);
 
   // Toute la fiche vient du cache React Query, clé = le duo de pays : revenir
   // sur une comparaison déjà vue raffiche sans squelette. `garder` maintient le
@@ -467,16 +463,9 @@ function ContenuFichePays() {
   const qBilat = useDonnees<any>(ids ? `${API}/statistiques/commerce/bilateral?pays_a=${ids[0]}&pays_b=${ids[1]}` : null, { garder: true });
   const bilat = ids ? qBilat.data ?? null : null;
   const autreId = ids && senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) ?? null : null;
-  const qEntSiege = useDonnees<any>(autreId != null ? `${API}/statistiques/entreprises-siege?pays_id=${autreId}` : null, { garder: true });
-  const entSiege = autreId != null ? qEntSiege.data ?? null : null;
   // fDi Markets : seulement pour une fiche « Sénégal × X » — voir fdi-senegal.
   const qFdi = useDonnees<any>(autreId != null ? `${API}/fdi/public/fiche-pays?partenaire_id=${autreId}` : null, { garder: true });
   const fdi = autreId != null ? qFdi.data ?? null : null;
-
-  const ouvrirEntreprise = (id: number) => {
-    fetch(`${API}/entreprises/${id}`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(setEntOuverte).catch(() => {});
-  };
 
   const cols = data?.pays || [];
   // L'IDE OUVRE LE TABLEAU. C'est la matière de la plateforme — une agence de
@@ -499,15 +488,13 @@ function ContenuFichePays() {
   };
 
   const nomDe = (id: number | null) => pays.find(p => p.id === id)?.nom ?? "";
-  const grps = bilat?.groupements_communs || [];
   const accs = bilat?.accords || [];
-  const ents = (autreId !== null && entSiege?.entreprises) || [];
   const totalBilat = (bilat?.a_vers_b || 0) + (bilat?.b_vers_a || 0);
   const periodeBilat = bilat?.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
 
-  // DEUX KPI TIRÉS DE FDI MARKETS — les projets du partenaire au Sénégal, les
-  // mêmes que le tableau juste en dessous : le chiffre du haut se retrouve
-  // ligne à ligne dans la section. Hors d'une fiche « Sénégal × X », il n'y a
+  // TROIS KPI TIRÉS DE FDI MARKETS — les projets et les signaux du partenaire,
+  // les mêmes que les tableaux juste en dessous : chaque chiffre du haut se
+  // retrouve ligne à ligne dans la section. Hors d'une fiche « Sénégal × X », il n'y a
   // pas de relevé à lire, et la carte le dit au lieu d'afficher un zéro.
   const projetsFdi: any[] = fdi?.projets || [];
   const somme = (cle: string) => projetsFdi.reduce((t, p) => t + (p[cle] ?? 0), 0);
@@ -517,41 +504,15 @@ function ContenuFichePays() {
     { l: "Mont. des investissements",
       txt: fdi ? (capexFdi > 0 ? fmtUSD(capexFdi * 1e6) : "—") : attente,
       note: autreId !== null ? `${nomDe(autreId)} → Sénégal` : "réservé aux fiches incluant le Sénégal" },
-    { l: "Accords signés", txt: bilat ? String(accs.length) : "—", note: "entre les deux pays" },
+    // Les accords ont quitté les KPI pour le bandeau (une pastille par accord).
+    { l: "Signaux d'investissement",
+      txt: fdi ? (fdi.signaux?.length ? `${fdi.signaux.length.toLocaleString("fr-FR")}*` : "—") : attente,
+      note: autreId !== null ? "* vers l'Afrique, l'Af. de l'ouest ou le Sénégal" : "réservé aux fiches incluant le Sénégal" },
     { l: "Emplois créés",
       txt: fdi ? (emploisFdi > 0 ? `${Math.round(emploisFdi).toLocaleString("fr-FR")}*` : "—") : attente,
       note: autreId !== null ? "* Estimation du fDi Markets" : "réservé aux fiches incluant le Sénégal" },
     { l: "Échanges bilatéraux", txt: bilat && totalBilat > 0 ? fmtUSD(totalBilat) : "—", note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
-
-  // Élément listé : badge cliquable (ouvre le détail) ou simple badge
-  type Item = { label: string; suffixe?: string | null; title?: string; onClick?: () => void };
-  // Bloc de contexte au même habillage que la Balance commerciale : fond bleu
-  // voilé, icône dans un carré arrondi, titre en capitales avec le compte
-  // badgé à côté, éléments listés en badges assortis au fond.
-  const BlocContexte = ({ Icone, titre, count, items }: { Icone: any; titre: string; count: number; items: Item[] }) => (
-    <div className="ds-carte" style={{ ...fond_bleu, padding: "16px 20px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-      <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgb(var(--bleu-rgb) / 0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Icone size={19} color={BLEU} />
-      </span>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
-          <span style={{ ...TITRE_SEC, margin: 0, fontSize: 9.5 }}>{titre}</span>
-          <span style={{ fontSize: 10, fontWeight: 800, color: BLEU, background: "rgb(var(--bleu-rgb) / 0.14)", padding: "1px 8px", borderRadius: 999 }}>{count}</span>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {items.map((it, i) => (
-            <span key={i} title={it.title || it.label} {...(it.onClick ? carteCliquable(it.onClick) : {})}
-              style={{ ...badge_bleu, cursor: it.onClick ? "pointer" : "default", transition: "background 0.15s, border-color 0.15s" }}
-              onMouseEnter={ev => { if (it.onClick) { const s = badgeSurvol("bleu"); ev.currentTarget.style.background = s.background; ev.currentTarget.style.borderColor = s.borderColor; } }}
-              onMouseLeave={ev => { if (it.onClick) { ev.currentTarget.style.background = badge_bleu.background as string; ev.currentTarget.style.border = badge_bleu.border as string; } }}>
-              {it.label}{it.suffixe ? <span style={{ color: "var(--gris)", fontWeight: 500 }}>· {it.suffixe}</span> : null}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 
   const a = cols[0], b = cols[1];
 
@@ -660,20 +621,6 @@ function ContenuFichePays() {
           return part && sen ? <FdiSenegal partenaire={part} senegal={sen} donnees={fdi} /> : null;
         })()}
 
-        {/* ── Contexte relationnel ── */}
-        {(grps.length > 0 || ents.length > 0) && (
-          <div style={{ display: "grid", gap: 16, marginTop: 18 }}>
-            {grps.length > 0 && (
-              <BlocContexte Icone={Landmark} titre="Appartenances communes" count={grps.length}
-                items={grps.map((g: any) => ({ label: g.code || g.nom, title: g.nom }))} />
-            )}
-            {ents.length > 0 && (
-              <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${nomDe(autreId)}`} count={entSiege.total}
-                items={ents.map((e: any) => ({ label: e.nom, title: [e.nom, e.forme_juridique, e.region ? `Région : ${e.region}` : null, e.secteurs?.length ? e.secteurs.join(", ") : null].filter(Boolean).join(" · "), onClick: () => ouvrirEntreprise(e.id) }))} />
-            )}
-          </div>
-        )}
-
         {/* ── Indicateurs comparés (absent tant que la liste des pays est en échec) ── */}
         {!(errPays && !ids) && (
           <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 14px" }}>
@@ -704,7 +651,6 @@ function ContenuFichePays() {
 
       {/* Détails ouverts depuis les chips */}
       {accordOuvert && <AccordVueModal accord={accordOuvert} onClose={() => setAccordOuvert(null)} zIndex={800} />}
-      {entOuverte && <EntreprisePublicModal entreprise={entOuverte} onClose={() => setEntOuverte(null)} zIndex={800} />}
     </div>
   );
 }
