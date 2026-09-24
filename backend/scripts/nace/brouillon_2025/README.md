@@ -242,6 +242,42 @@ seront saisis pour les deux sens.
   connus des éditions antérieures et de l'arbitrage) ; MALDIVES sort (aucune
   exportation depuis 2020).
 
+## Pays — exportations en poids (tableau 32) : INUTILISABLE, signalé à l'ANSD
+
+Le tableau 32 de l'édition 2025 est une reprise de l'édition 2023 : colonnes
+« 2020, 2021, 2022, 2023 » identiques à nos données, 5e colonne étiquetée
+« 2022 » qui recopie la colonne 2022, Royaume-Uni imprimé deux fois (UE et
+Autres Europe). Il ne contient ni 2024 ni 2025. Vérifié sur France,
+Pays-Bas, Mali, Inde, Royaume-Uni, États-Unis. L'utilisateur a signalé le
+défaut à l'ANSD ; la famille pays attend le tableau corrigé.
+
+## Pays — importations en valeur (tableau 33) : saisies
+
+~180 fournisseurs dans `donnees_2025_pays.py` (IMPORT_VALEUR).
+
+- **Le tableau 33 range le ROYAUME UNI sous l'Union européenne**, contre
+  les tableaux 21 et 31 (Brexit). Il est rangé sous « Autres pays
+  d'Europe » comme partout ailleurs : 10 régions sur 11 concordent alors
+  avec le tableau 21 à ±4.
+- **DIVERS imprimé surévalué** (2022 : 59 696 au lieu de 57 222), du
+  montant exact manquant au sous-total « Autres pays d'Europe » (Σ pays −
+  sous-total : 2 474 / 979 / 1 483 / 2 474) : même défaut que les éditions
+  2023–2024, même arbitrage (le détail fait foi). Valeur reconstituée =
+  tableau 21.
+- **La révision 2024 des importations, pays par pays** (contre l'édition
+  2024, 696 valeurs comparées, 4 révisées) :
+  - CROATIE 145 502 → 2 861 (−142 641) : erreur de l'ancienne donnée ;
+  - REPUBLIQUE POPULAIRE DE CHINE 848 242 → 841 867 (−6 375) ;
+  - NICARAGUA 229 696 → 12 497 et NIGERIA 314 782 → 531 981 (±217 199) :
+    l'erreur de codage soupçonnée est confirmée.
+- **Point non résolu, 2024 seulement : 10 065 MFCFA** entre Afrique
+  occidentale et Amérique centrale et du Sud. Le tableau 33 (détail, dont
+  les sous-totaux bouclent : Afrique occidentale 666 027) garde 12 497 au
+  Nicaragua ; les tableaux 21 et 25 placent l'Afrique occidentale à 676 091,
+  soit un Nicaragua d'environ 2 432. Contradiction interne du rapport, à
+  soumettre à l'ANSD avec le tableau 32.
+- Nouveau libellé : LESOTHO (2025).
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
