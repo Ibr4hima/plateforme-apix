@@ -312,6 +312,18 @@ corrigée qu'en partie (217 199 au lieu de 227 264 MFCFA). Nigeria 2024 =
 le montant mal codé (227 264). Question transmise à l'ANSD par
 l'utilisateur ; à corriger si sa réponse diffère.
 
+## Chapitres SH — exportations en valeur (tableau 35) : saisies
+
+`saisie_2025_chapitres.py` : 96 chapitres, même ordre et mêmes chapitres que
+l'édition 2024 ; chaque ligne reçoit le libellé normalisé de 2024.
+
+- Σ 96 chapitres = TOTAL imprimé : écarts −2 à +3 (tolérance 12).
+- 2021–2024 : 384 valeurs identiques à l'édition 2024 — ce qui prouve aussi
+  l'alignement ligne à ligne de la saisie.
+- Recoupements 2025 : chapitre 71 (perles, métaux précieux) 978 701 contre
+  or industriel 977 997 ; chapitre 27 (combustibles) 2 504 516 contre huile
+  brute + autres produits pétroliers + GNL 2 504 511.
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
