@@ -2,19 +2,20 @@
 
 // Tableau de bord exécutif — condense l'ensemble de la plateforme en sections
 // résumées (IDE, Flux bilatéraux, Commerce extérieur, Indicateurs socio-
-// économiques, Entreprises installées, Entreprises/prospects). Deux onglets :
-// « Visualisation de données » (KPIs + graphes) et « Tableaux analytiques »
-// (toutes les tables détaillées). Style aligné sur le rapport commerce.
+// économiques, Entreprises installées, Entreprises/prospects) : KPIs et
+// graphes. Style aligné sur le rapport commerce.
+//
+// UNE SEULE VUE. L'onglet « Tableaux analytiques » (les tables détaillées) a
+// été retiré ; avec lui disparaît le sélecteur d'onglets, qui n'aurait plus
+// proposé qu'un seul choix. Une ancienne URL « ?onglet=tables » ouvre donc
+// simplement le tableau de bord.
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BarreTitreSegment } from "@/components/shared/BarreTitre";
 import NavActions from "@/components/layout/NavActions";
 import GrapheMultiPays, { type SerieGraphe } from "@/components/shared/GrapheMultiPays";
-import { AnalyticTable } from "@/components/dashboard/DataTable";
 import { PALETTE_COMPARAISON } from "@/lib/couleurs";
 import { nf, fmtFCFA, fmtMFCFA, fmtUSD, fmtMillionsUSD as fmtMUSD } from "@/lib/format";
 import { CurseurAnneeNace } from "@/components/shared/CurseurNace";
-import { useEtatUrl } from "@/lib/useEtatUrl";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import Variation from "@/components/shared/Variation";
 
@@ -383,55 +384,8 @@ function Carte({ titre, tag, sousTitre, children, style }: { titre?: string; tag
 
 const serie = (nom: string, couleur: string, rows: { annee: number; valeur: number | null }[]): SerieGraphe => ({ nom, couleur, data: rows });
 
-// ── Tables analytiques regroupées (onglet Tableaux) ───────────────────────────
-const GROUPES_TABLES: { titre: string; tables: { id: string; titre: string; description: string }[] }[] = [
-  {
-    titre: "Entreprises installées — territoire & secteurs",
-    tables: [
-      { id: "entreprises-par-region", titre: "Entreprises par région", description: "Répartition avec % du total et classement" },
-      { id: "top-departements", titre: "Top départements", description: "Concentration d'entreprises, % et rang" },
-      { id: "entreprises-par-arrondissement", titre: "Entreprises par arrondissement", description: "Top 20 arrondissements avec % et rang" },
-      { id: "evolution-creations", titre: "Évolution des créations par année", description: "Créations, cumul, variation et évolution %" },
-      { id: "anciennete-entreprises", titre: "Ancienneté des entreprises par région", description: "Âge moyen, min, max et tranches par région" },
-      { id: "avant-apres-pivot", titre: "Entreprises par période de création", description: "Avant 2010 / 2010–2019 / depuis 2020 par région" },
-      { id: "entreprises-multi-secteurs", titre: "Entreprises multi-secteurs", description: "Entreprises déclarées dans plusieurs secteurs" },
-      { id: "secteurs-par-region", titre: "Secteurs dominants par région", description: "Top 3 secteurs dans chaque région" },
-      { id: "concentration-sectorielle", titre: "Concentration sectorielle (HHI)", description: "Indice de diversification par région" },
-      { id: "secteurs-investissement-classement", titre: "Secteurs où on investit le plus", description: "Classement des secteurs par nombre d'entreprises" },
-      { id: "branches-classement", titre: "Branches les plus actives", description: "Rang national et rang dans le secteur" },
-      { id: "activites-classement-national", titre: "Activités les plus représentées", description: "Rang national et rang dans le secteur" },
-      { id: "densite-economique-departements", titre: "Densité économique par département", description: "Secteurs, branches, activités et investisseurs étrangers par dept" },
-      { id: "vue-region", titre: "Vue régionale consolidée", description: "Entreprises + zones + pôles par région" },
-      { id: "score-attractivite", titre: "Score d'attractivité par région", description: "Score composite : entreprises, zones, pôles" },
-    ],
-  },
-  {
-    titre: "Zones & pôles d'investissement",
-    tables: [
-      { id: "zones-detail", titre: "Détail des zones d'investissement", description: "Type, région, superficie, installées, éligibles" },
-      { id: "taux-occupation-zones", titre: "Taux d'occupation des zones", description: "Installées vs éligibles, taux et statut" },
-      { id: "densite-zones", titre: "Densité des zones d'investissement", description: "Entreprises par hectare dans chaque zone" },
-      { id: "poles-detail", titre: "Détail des pôles territoriaux", description: "Pôles avec zones associées et entreprises" },
-    ],
-  },
-  {
-    titre: "Investisseurs étrangers",
-    tables: [
-      { id: "entreprises-par-pays", titre: "Entreprises par pays d'origine", description: "Nationalité du siège avec classement continental" },
-      { id: "entreprises-par-continent", titre: "Entreprises par continent d'origine", description: "Répartition continentale des investisseurs" },
-      { id: "local-vs-etranger", titre: "Entreprises locales vs étrangères", description: "Siège Sénégal vs étranger par région" },
-      { id: "entreprises-etrangeres-localisation", titre: "Localisation des entreprises étrangères", description: "Région, département, arrondissement des entreprises étrangères" },
-      { id: "activites-entreprises-etrangeres", titre: "Activités des entreprises étrangères", description: "Ce que les entreprises étrangères développent le plus" },
-      { id: "secteurs-etrangers-par-continent", titre: "Secteurs des étrangers par continent", description: "Spécialisation sectorielle selon le continent d'origine" },
-    ],
-  },
-];
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TableauDeBordPage() {
-  // Dans l'URL comme partout ailleurs : F5 et lien partagé conservent l'onglet.
-  const [onglet, setOnglet] = useEtatUrl<"viz" | "tables">("onglet", "viz", ["viz", "tables"]);
-
   // ── Données — tout vient du cache React Query ─────────────────────────────
   // Le tableau de bord agrège une dizaine de ressources ; chacune a sa clé-URL
   // et survit à la navigation : rouvrir la page en réunion est instantané.
@@ -713,10 +667,7 @@ export default function TableauDeBordPage() {
         <div style={{ maxWidth: 1240, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 13 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: 0 }}>APIX S.A — DIPE</p>
-                <BarreTitreSegment options={[{ v: "viz", l: "Visualisation de données" }, { v: "tables", l: "Tableaux analytiques" }]} value={onglet} onChange={setOnglet} />
-              </div>
+              <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", margin: "0 0 10px" }}>APIX S.A — DIPE</p>
               <h1 style={{ fontSize: "1.9rem", fontWeight: 800, margin: 0, lineHeight: 1.15, letterSpacing: "-0.01em" }}>Tableau de bord</h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: "9px 0 0", fontWeight: 500 }}>Résumé exécutif des données d&apos;investissement</p>
             </div>
@@ -727,8 +678,7 @@ export default function TableauDeBordPage() {
 
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 40px 90px" }}>
 
-        {onglet === "viz" ? (
-          <>
+        <>
             {/* ── Bandeau de KPIs (chevauche le hero) : les deux sens des flux
                  d'IDE, avec le rang du Sénégal dans un classement dont on
                  change la portée aux flèches, puis les deux sens du commerce
@@ -1029,22 +979,7 @@ export default function TableauDeBordPage() {
               })()}
             </section>
 
-          </>
-        ) : (
-          /* ── Onglet Tableaux analytiques ── */
-          <div style={{ marginTop: 28 }}>
-            {GROUPES_TABLES.map((g) => (
-              <section key={g.titre} style={{ marginBottom: 34 }}>
-                <p style={{ ...TITRE_SEC, fontSize: 12, marginBottom: 16 }}>{g.titre}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {g.tables.map((t) => (
-                    <AnalyticTable key={t.id} tableId={t.id} titre={t.titre} description={t.description} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        )}
+        </>
       </div>
     </main>
   );
