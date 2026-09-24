@@ -91,9 +91,9 @@ type CleGros = (typeof COLS_GROS)[number]["cle"];
     rapport à l'autre.
 
     IL S'OUVRE SUR LE MONTANT, décroissant — c'est le critère qui définit la
-    carte, et la population qu'elle nomme : « les plus gros » veut dire les
-    vingt plus gros. Retrier par période répond à « parmi eux, lesquels sont
-    récents », une question, non un classement chronologique du relevé. */
+    carte. LE CLASSEMENT EST COMPLET : tous les signaux qui portent ce montant,
+    et non plus les vingt plus gros. « Afficher la suite » déplie donc TOUT le
+    reste, et le tri par période porte sur le relevé entier. */
 function TableauGros({ lignes, unite }: { lignes: Gros[]; unite: string }) {
   const [triCol, setTriCol] = useState<CleGros>("montant");
   const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
@@ -216,7 +216,7 @@ export default function RapportSignaux() {
   }, []);
 
   const q = useDonnees<Signaux>(
-    `${API}/fdi/public/signaux?par_page=1${filtres ? `&${filtres}` : ""}`, { garder: true });
+    `${API}/fdi/public/signaux?par_page=1&rapport=1${filtres ? `&${filtres}` : ""}`, { garder: true });
   const d = q.data;
 
   const periode = d?.kpis?.annees?.[0] != null
@@ -471,13 +471,13 @@ export default function RapportSignaux() {
                   non ce qu'elle a réuni auprès de ses actionnaires. Les deux
                   tableaux gardent leur contenu ; seul leur ordre change. */}
               <div style={{ marginTop: 26 }} className="rap-eviter-coupure">
-                <Carte titre="Les plus gros investissements annoncés" tag={periode}>
+                <Carte titre="Classement des signaux d'investissement annoncés" tag={periode}>
                   <TableauGros lignes={d.remarquables.capex} unite="Investissement" />
                 </Carte>
               </div>
 
               <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-                <Carte titre="Les plus grosses levées de fonds" tag={periode}>
+                <Carte titre="Classement des levées de fonds" tag={periode}>
                   <TableauGros lignes={d.remarquables.funding} unite="Fonds levés" />
                 </Carte>
               </div>

@@ -242,9 +242,14 @@ async def signaux_publics(
     recherche: str | None = None,
     page: int = 1,
     par_page: int = 24,
+    rapport: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
-    """Les signaux retenus : compteurs, série annuelle, classements et liste."""
+    """Les signaux retenus : compteurs, série annuelle, classements et liste.
+
+    `rapport=1` ajoute les deux classements COMPLETS par montant
+    (`remarquables`), que seul le rapport lit : la vue Signaux ne les demande
+    pas à chaque changement de filtre."""
     where, params = _filtres(destination, annee_min, annee_max, secteurs,
                              activites, natures, recherche, None, origine)
     filtre = " AND ".join(where)
@@ -372,6 +377,14 @@ async def signaux_publics(
     # même chose : des fonds levés mesurent ce qu'une entreprise a réuni, un
     # investissement prévu ce qu'elle annonce dépenser. Les additionner ferait
     # un total qui ne correspond à rien.
+    #
+    # LES CLASSEMENTS SONT COMPLETS. Ils s'arrêtaient aux vingt premiers : le
+    # rapport en montrait dix puis « Afficher la suite (10) », alors que des
+    # centaines de signaux portaient un montant. Tout signal qui porte le
+    # montant du classement y figure désormais ; ceux qui ne le portent pas
+    # n'y entrent pas — un signal sans fonds levés n'est pas une levée de
+    # fonds, et le mettre en queue d'un classement des levées ferait de
+    # milliers de tirets le gros du tableau.
     async def plus_gros(colonne: str):
         return [{"id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
                  "entreprise": r.entreprise, "origine": r.origine,
@@ -399,16 +412,10 @@ async def signaux_publics(
              -- même façon. Un rapport qu'on cite ne peut pas changer d'ordre
              -- entre le moment où on le lit et celui où on l'imprime.
              --
-             -- VINGT LIGNES : le rapport en montre dix et déplie les dix
-             -- autres. La borne est posée ICI parce que c'est elle qui définit
-             -- la POPULATION de la carte — « les plus gros » veut dire les
-             -- vingt plus gros, et c'est sur eux que porte le tri du lecteur.
-             -- La requête et la fenêtre de l'écran ne peuvent pas diverger
-             -- sans que la carte se remplisse de lignes qu'aucun titre
-             -- n'annonce.
-             ORDER BY s.{colonne}_musd DESC, s.id LIMIT 20"""), params)).fetchall()]
+             ORDER BY s.{colonne}_musd DESC, s.id"""), params)).fetchall()]
 
-    remarquables = {"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
+    remarquables = ({"funding": await plus_gros("funding"), "capex": await plus_gros("capex")}
+                    if rapport else {"funding": [], "capex": []})
 
     zones = await _zones(db, filtre, params)
 
