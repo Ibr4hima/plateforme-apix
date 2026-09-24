@@ -320,10 +320,13 @@ function EchangesBilateraux({ a, b, bilat, periode }: { a: any; b: any; bilat: a
       <div className="fp-bi-tete">
         <Sens de={a} vers={b} col={BLEU} val={ab} dep={bilat.a_vers_b_dependance} />
         <div className="fp-bi-balance" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
-          padding: "12px 20px", borderRadius: 14, minWidth: 190,
-          background: "linear-gradient(180deg,rgb(var(--bleu-rgb) / 0.07),rgb(var(--bleu-rgb) / 0.02))",
-          border: "1px solid rgb(var(--bleu-rgb) / 0.16)" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, color: BLEU,
+          padding: "12px 20px", borderRadius: 12, minWidth: 190,
+          // NEUTRE, comme l'encadré de définition des signaux : fond gris
+          // clair, filet discret. La teinte reste au MONTANT et au pays qui
+          // en profite — c'est là qu'elle dit quelque chose ; un cadre bleu
+          // autour d'un solde orange mêlait deux pays dans la même carte.
+          background: "var(--carte-douce)", border: "1px solid var(--bordure)" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, color: "var(--gris-fort)",
             letterSpacing: "0.12em", textTransform: "uppercase" }}>
             <Scale size={13} /> Balance
           </span>
