@@ -333,6 +333,17 @@ l'édition 2024 ; chaque ligne reçoit le libellé normalisé de 2024.
 - Recoupement 2025 : chapitre 27 = 7 497 215 t (huile brute + autres
   produits pétroliers + GNL = 7 497 210 t).
 
+## Chapitres SH — importations en valeur (tableau 37) : saisies
+
+- Σ 96 chapitres = TOTAL imprimé : écarts −4 à +8 (tolérance 12 ; l'écart
+  +8 de 2023 porte sur des valeurs identiques à l'édition 2024).
+- 2021–2024 : une seule valeur révisée sur 384 — 2024, chapitre 89
+  « Navigation maritime ou fluviale », 200 838 → 51 821 MFCFA
+  (**−149 017**), exactement la révision du TOTAL import 2024. Avec la
+  CROATIE (−142 641, tableau 33) et « Autres matériels de transport »
+  (−149 017, produits regroupés), cela désigne un navire importé compté à
+  tort en 2024 : la révision est désormais expliquée par cinq familles.
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
