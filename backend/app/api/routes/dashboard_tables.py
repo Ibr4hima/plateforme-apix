@@ -1,3 +1,13 @@
+"""Tableaux d'analyse prêts à l'emploi (/dashboard/tables/<nom>).
+
+QUI LES LIT. Ils alimentaient l'onglet « Tableaux analytiques » du Tableau de
+bord, supprimé depuis. Ils restent parce que l'ASSISTANT IA s'en sert :
+services/ai_assistant.py les liste dans son catalogue et les interroge en
+interne (httpx.ASGITransport) pour répondre aux questions de dénombrement et
+de classement — c'est même ce qu'il doit préférer à une liste paginée. Aucun
+écran de la plateforme ne les appelle plus : avant de supprimer une route
+d'ici, la retirer aussi du catalogue de l'assistant.
+"""
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
