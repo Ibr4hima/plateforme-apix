@@ -66,12 +66,12 @@ export const FILTRES_SIGNAUX_VIDES: FiltresSignaux = {
   anneeMin: null, anneeMax: null, recherche: "",
 };
 
-type Valeur = { id: number; libelle: string | null; court?: string | null;
+export type Valeur = { id: number; libelle: string | null; court?: string | null;
                 /** La définition publiée par fDi, pour les STADES seulement.
                     Nulle quand la ligne n'a pas été rapprochée du référentiel. */
                 definition?: string | null;
                 nature?: "pays" | "region" | null };
-type Signal = {
+export type Signal = {
   id: number; periode: string;
   entreprise: string | null; parent: string | null;
   origine: string | null; origine_iso: string | null;
@@ -336,7 +336,7 @@ const BADGES: Record<string, React.CSSProperties> = {
     se corrige, plutôt que de casser l'affichage. */
 const teinteDe = (s: Signal) => TEINTES[s.natures[0]?.court ?? ""] ?? "gris";
 
-function PastilleStade({ v }: { v: Valeur }) {
+export function PastilleStade({ v }: { v: Valeur }) {
   const court = v.court ?? v.libelle ?? "";
   return (
     <span title={v.libelle ?? undefined}
@@ -424,7 +424,7 @@ function CarteSignal({ s, onOuvrir }: { s: Signal; onOuvrir: () => void }) {
 
     Rien n'est retéléchargé : la liste porte déjà toutes ces valeurs. Ouvrir une
     fiche ne doit pas faire attendre. */
-function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
+export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) {
   const liste = (v: Valeur[]) => v.length === 0 ? "—" : v.map(x => x.libelle).join(" · ");
   return (
     <FicheModal maxWidth={620} onClose={onClose}

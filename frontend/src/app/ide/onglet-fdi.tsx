@@ -52,7 +52,7 @@ type Perimetre = {
   activites: Compte[]; types: Compte[];
 };
 type Rang = { nom: string; nb: number; capex_musd: number | null; emplois: number | null };
-type Projet = {
+export type Projet = {
   id: number; periode: string; annee: number; entreprise: string | null;
   entreprise_a_arbitrer: boolean;
   pays: string | null; pays_iso: string | null;
@@ -992,7 +992,7 @@ const BADGES_TYPE: Record<string, React.CSSProperties> = {
   vert: badge_vert, violet: badge_violet, bleu: badge_bleu,
 };
 
-function PastilleType({ type }: { type: string | null }) {
+export function PastilleType({ type }: { type: string | null }) {
   if (!type) return null;
   return <span style={{ ...BADGES_TYPE[teinteType(type)],
     whiteSpace: "nowrap" as const, flexShrink: 0 }}>{type}</span>;
@@ -1071,7 +1071,7 @@ function CarteProjet({ p, onOuvrir, libellePartenaire }: {
     suit sur une ligne ; le détail vient ensuite en liste, séparé par des
     filets ; la description ferme. Aucun encadré gris — les fonds empilés
     faisaient trois boîtes dans une boîte, et rien ne ressortait. */
-function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
+export function FicheProjet({ p, onClose }: { p: Projet; onClose: () => void }) {
   return (
     <FicheModal maxWidth={620} onClose={onClose}
       titre={

@@ -11,6 +11,7 @@ import { ArrowRight, Building2, FileText, Landmark, Map as MapIcon, Package, Sca
          Users } from "lucide-react";
 import GrapheMultiPays from "@/components/shared/GrapheMultiPays";
 import { BoutonSuite } from "@/app/ide/partage";
+import FdiSenegal, { Rubrique } from "./fdi-senegal";
 import NavActions from "@/components/layout/NavActions";
 import { SkeletonKPIs, SkeletonRows } from "@/components/shared/Skeleton";
 import ErreurChargement from "@/components/shared/ErreurChargement";
@@ -208,22 +209,6 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
 }
 
 const pct1 = (v: number) => `${(v * 100).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
-
-/** Bandeau de rubrique — même habillage que ceux du tableau comparatif :
-    icône dans un carré voilé, capitales bleues, filet jusqu'au bord. */
-function Rubrique({ Icone, titre, children }: { Icone: any; titre: string; children?: React.ReactNode }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "26px 0 14px", flexWrap: "wrap" }}>
-      <span style={{ display: "inline-flex", width: 24, height: 24, borderRadius: 7, alignItems: "center",
-        justifyContent: "center", background: "var(--bleu-voile)", color: BLEU, flexShrink: 0 }}>
-        <Icone size={13} strokeWidth={2.2} />
-      </span>
-      <span style={{ fontSize: 10.5, fontWeight: 800, color: BLEU, letterSpacing: "0.12em", textTransform: "uppercase" }}>{titre}</span>
-      <span style={{ flex: 1, height: 1, background: "var(--filet)", marginLeft: 6, minWidth: 20 }} />
-      {children}
-    </div>
-  );
-}
 
 const RESSOURCES_VISIBLES = 6;
 
@@ -484,6 +469,9 @@ function ContenuFichePays() {
   const autreId = ids && senId !== null && ids.includes(senId) ? ids.find(i => i !== senId) ?? null : null;
   const qEntSiege = useDonnees<any>(autreId != null ? `${API}/statistiques/entreprises-siege?pays_id=${autreId}` : null, { garder: true });
   const entSiege = autreId != null ? qEntSiege.data ?? null : null;
+  // fDi Markets : seulement pour une fiche « Sénégal × X » — voir fdi-senegal.
+  const qFdi = useDonnees<any>(autreId != null ? `${API}/fdi/public/fiche-pays?partenaire_id=${autreId}` : null, { garder: true });
+  const fdi = autreId != null ? qFdi.data ?? null : null;
 
   const ouvrirEntreprise = (id: number) => {
     fetch(`${API}/entreprises/${id}`).then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -617,6 +605,12 @@ function ContenuFichePays() {
             ))}
           </div>
         )}
+
+        {/* ── Investissements fDi du partenaire au Sénégal, juste sous les KPIs ── */}
+        {fdi && autreId !== null && senId !== null && cols.length === 2 && (() => {
+          const part = cols.find((c: any) => c.id === autreId), sen = cols.find((c: any) => c.id === senId);
+          return part && sen ? <FdiSenegal partenaire={part} senegal={sen} donnees={fdi} /> : null;
+        })()}
 
         {/* ── Contexte relationnel ── */}
         {(grps.length > 0 || accs.length > 0 || ents.length > 0) && (

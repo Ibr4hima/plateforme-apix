@@ -119,6 +119,23 @@ def _filtres(destination: str | None, annee_min: int | None, annee_max: int | No
     return where, params
 
 
+def destinations_publiques(liste):
+    """Les destinations rangées pour la LECTURE PUBLIQUE, non pour la saisie.
+
+    LA CARTE N'EN MONTRE QU'UNE. Un signal vise souvent cinq ou six pays, et
+    l'écran affiche le premier suivi du nombre des autres — « Bahreïn +6 ».
+    Dans l'ordre de la source, ce premier est celui que fDi a saisi en tête,
+    c'est-à-dire n'importe lequel : un lecteur dakarois pouvait donc voir
+    « Bahreïn » d'un signal qui vise aussi le Sénégal.
+
+    L'ORDRE DE SAISIE N'EST PAS PERDU, il cède seulement le pas : `rang`
+    départage à priorité égale, et l'administration continue de lire les
+    destinations dans l'ordre où elles ont été enregistrées — c'est la même
+    requête, triée ici et pas là-bas.
+    """
+    return sorted(liste or [], key=lambda d: (d.get("priorite", 9), d.get("rang", 0)))
+
+
 @router.get("/signaux/perimetre")
 async def perimetre_signaux(
     origine: str | None = None,
@@ -422,22 +439,6 @@ async def signaux_publics(
     def _mois(r) -> str:
         return f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee)
 
-    def _destinations(liste):
-        """Les destinations rangées pour la LECTURE PUBLIQUE, non pour la saisie.
-
-        LA CARTE N'EN MONTRE QU'UNE. Un signal vise souvent cinq ou six pays, et
-        l'écran affiche le premier suivi du nombre des autres — « Bahreïn +6 ».
-        Dans l'ordre de la source, ce premier est celui que fDi a saisi en tête,
-        c'est-à-dire n'importe lequel : un lecteur dakarois pouvait donc voir
-        « Bahreïn » d'un signal qui vise aussi le Sénégal.
-
-        L'ORDRE DE SAISIE N'EST PAS PERDU, il cède seulement le pas : `rang`
-        départage à priorité égale, et l'administration continue de lire les
-        destinations dans l'ordre où elles ont été enregistrées — c'est la même
-        requête, triée ici et pas là-bas.
-        """
-        return sorted(liste or [], key=lambda d: (d.get("priorite", 9), d.get("rang", 0)))
-
     return {
         "kpis": {
             "signaux": kpis.signaux,
@@ -471,7 +472,7 @@ async def signaux_publics(
             "funding_musd": float(r.funding_musd) if r.funding_musd is not None else None,
             "funding_estime": r.funding_estime,
             "description_fr": r.description_fr, "description_en": r.description_en,
-            "destinations": _destinations(r.destinations), "secteurs": r.secteurs,
+            "destinations": destinations_publiques(r.destinations), "secteurs": r.secteurs,
             "activites": r.activites, "natures": r.natures,
         } for r in lignes],
     }
