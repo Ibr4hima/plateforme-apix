@@ -1,0 +1,1821 @@
+pays,region,sens,annee,valeur,poids,edition
+FRANCE,Union européenne,export,2021,49565,99683,2025
+FRANCE,Union européenne,export,2022,47854,115236,2025
+FRANCE,Union européenne,export,2023,51397,120329,2025
+FRANCE,Union européenne,export,2024,54576,111983,2025
+FRANCE,Union européenne,export,2025,137438,,2025
+BELGIQUE,Union européenne,export,2021,12055,30298,2025
+BELGIQUE,Union européenne,export,2022,31490,57998,2025
+BELGIQUE,Union européenne,export,2023,20809,137287,2025
+BELGIQUE,Union européenne,export,2024,9565,4464,2025
+BELGIQUE,Union européenne,export,2025,26744,,2025
+PAYS BAS,Union européenne,export,2021,66199,209845,2025
+PAYS BAS,Union européenne,export,2022,40907,72569,2025
+PAYS BAS,Union européenne,export,2023,45221,182415,2025
+PAYS BAS,Union européenne,export,2024,80183,185564,2025
+PAYS BAS,Union européenne,export,2025,531778,,2025
+ALLEMAGNE,Union européenne,export,2021,1978,1989,2025
+ALLEMAGNE,Union européenne,export,2022,2143,2663,2025
+ALLEMAGNE,Union européenne,export,2023,3204,2414,2025
+ALLEMAGNE,Union européenne,export,2024,17539,199091,2025
+ALLEMAGNE,Union européenne,export,2025,5268,,2025
+ITALIE,Union européenne,export,2021,60659,26905,2025
+ITALIE,Union européenne,export,2022,62840,24519,2025
+ITALIE,Union européenne,export,2023,44823,17589,2025
+ITALIE,Union européenne,export,2024,118546,235799,2025
+ITALIE,Union européenne,export,2025,362943,,2025
+IRLANDE,Union européenne,export,2021,,,2025
+IRLANDE,Union européenne,export,2022,0,0,2025
+IRLANDE,Union européenne,export,2023,22,5,2025
+IRLANDE,Union européenne,export,2024,6,2,2025
+IRLANDE,Union européenne,export,2025,,,2025
+DANEMARK,Union européenne,export,2021,206,105,2025
+DANEMARK,Union européenne,export,2022,434,373,2025
+DANEMARK,Union européenne,export,2023,993,1424,2025
+DANEMARK,Union européenne,export,2024,1137,946,2025
+DANEMARK,Union européenne,export,2025,629,,2025
+GRECE,Union européenne,export,2021,7832,1312,2025
+GRECE,Union européenne,export,2022,13438,1164,2025
+GRECE,Union européenne,export,2023,9942,1749,2025
+GRECE,Union européenne,export,2024,9347,1455,2025
+GRECE,Union européenne,export,2025,8976,,2025
+LUXEMBOURG,Union européenne,export,2021,,,2025
+LUXEMBOURG,Union européenne,export,2022,,,2025
+LUXEMBOURG,Union européenne,export,2023,125,20,2025
+LUXEMBOURG,Union européenne,export,2024,41,0,2025
+LUXEMBOURG,Union européenne,export,2025,2,,2025
+SUEDE,Union européenne,export,2021,4744,18,2025
+SUEDE,Union européenne,export,2022,201,205,2025
+SUEDE,Union européenne,export,2023,91,136,2025
+SUEDE,Union européenne,export,2024,9,8,2025
+SUEDE,Union européenne,export,2025,28,,2025
+FINLANDE,Union européenne,export,2021,12,11,2025
+FINLANDE,Union européenne,export,2022,12,10,2025
+FINLANDE,Union européenne,export,2023,60,7,2025
+FINLANDE,Union européenne,export,2024,18,1,2025
+FINLANDE,Union européenne,export,2025,33951,,2025
+AUTRICHE,Union européenne,export,2021,104,37,2025
+AUTRICHE,Union européenne,export,2022,117,31,2025
+AUTRICHE,Union européenne,export,2023,75,25,2025
+AUTRICHE,Union européenne,export,2024,621,94,2025
+AUTRICHE,Union européenne,export,2025,90,,2025
+PORTUGAL,Union européenne,export,2021,4561,1706,2025
+PORTUGAL,Union européenne,export,2022,8989,2729,2025
+PORTUGAL,Union européenne,export,2023,10845,3650,2025
+PORTUGAL,Union européenne,export,2024,10355,3891,2025
+PORTUGAL,Union européenne,export,2025,7112,,2025
+ESPAGNE,Union européenne,export,2021,108600,157690,2025
+ESPAGNE,Union européenne,export,2022,126676,108345,2025
+ESPAGNE,Union européenne,export,2023,99469,90650,2025
+ESPAGNE,Union européenne,export,2024,154051,247159,2025
+ESPAGNE,Union européenne,export,2025,388614,,2025
+MALTE,Union européenne,export,2021,77,35,2025
+MALTE,Union européenne,export,2022,80,77,2025
+MALTE,Union européenne,export,2023,650,14,2025
+MALTE,Union européenne,export,2024,1070,108,2025
+MALTE,Union européenne,export,2025,296,,2025
+POLOGNE,Union européenne,export,2021,775,23841,2025
+POLOGNE,Union européenne,export,2022,15864,166196,2025
+POLOGNE,Union européenne,export,2023,5442,42561,2025
+POLOGNE,Union européenne,export,2024,119,120,2025
+POLOGNE,Union européenne,export,2025,8100,,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2021,,,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2022,7,1,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2023,2,0,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2024,60,2,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,export,2025,4,,2025
+REPUBLIQUE TCHEQUE,Union européenne,export,2021,9,2,2025
+REPUBLIQUE TCHEQUE,Union européenne,export,2022,25,5,2025
+REPUBLIQUE TCHEQUE,Union européenne,export,2023,13,1,2025
+REPUBLIQUE TCHEQUE,Union européenne,export,2024,45,15,2025
+REPUBLIQUE TCHEQUE,Union européenne,export,2025,42,,2025
+REPUBLIQUE DE LETTONIE,Union européenne,export,2021,,,2025
+REPUBLIQUE DE LETTONIE,Union européenne,export,2022,8,0,2025
+REPUBLIQUE DE LETTONIE,Union européenne,export,2023,,,2025
+REPUBLIQUE DE LETTONIE,Union européenne,export,2024,,,2025
+REPUBLIQUE DE LETTONIE,Union européenne,export,2025,,,2025
+HONGRIE,Union européenne,export,2021,8980,15,2025
+HONGRIE,Union européenne,export,2022,1,1,2025
+HONGRIE,Union européenne,export,2023,75,3,2025
+HONGRIE,Union européenne,export,2024,,,2025
+HONGRIE,Union européenne,export,2025,0,,2025
+REPUBLIQUE DE LITUANIE,Union européenne,export,2021,85,180,2025
+REPUBLIQUE DE LITUANIE,Union européenne,export,2022,197,146,2025
+REPUBLIQUE DE LITUANIE,Union européenne,export,2023,2668,22152,2025
+REPUBLIQUE DE LITUANIE,Union européenne,export,2024,,,2025
+REPUBLIQUE DE LITUANIE,Union européenne,export,2025,19756,,2025
+ROUMANIE,Union européenne,export,2021,32,41,2025
+ROUMANIE,Union européenne,export,2022,105,95,2025
+ROUMANIE,Union européenne,export,2023,53,130,2025
+ROUMANIE,Union européenne,export,2024,266,49,2025
+ROUMANIE,Union européenne,export,2025,528,,2025
+REPUBLIQUE D'ESTONIE,Union européenne,export,2021,,,2025
+REPUBLIQUE D'ESTONIE,Union européenne,export,2022,,,2025
+REPUBLIQUE D'ESTONIE,Union européenne,export,2023,,,2025
+REPUBLIQUE D'ESTONIE,Union européenne,export,2024,13,10,2025
+REPUBLIQUE D'ESTONIE,Union européenne,export,2025,238,,2025
+BULGARIE,Union européenne,export,2021,418,254,2025
+BULGARIE,Union européenne,export,2022,382,284,2025
+BULGARIE,Union européenne,export,2023,308,143,2025
+BULGARIE,Union européenne,export,2024,1325,1045,2025
+BULGARIE,Union européenne,export,2025,9767,,2025
+CROATIE,Union européenne,export,2021,21,7,2025
+CROATIE,Union européenne,export,2022,38,19,2025
+CROATIE,Union européenne,export,2023,17,12,2025
+CROATIE,Union européenne,export,2024,49,61,2025
+CROATIE,Union européenne,export,2025,14,,2025
+SLOVENIE,Union européenne,export,2021,,,2025
+SLOVENIE,Union européenne,export,2022,39,57,2025
+SLOVENIE,Union européenne,export,2023,34,22,2025
+SLOVENIE,Union européenne,export,2024,,,2025
+SLOVENIE,Union européenne,export,2025,5987,,2025
+CHYPRE,Union européenne,export,2021,154,19,2025
+CHYPRE,Union européenne,export,2022,2694,48,2025
+CHYPRE,Union européenne,export,2023,753,134,2025
+CHYPRE,Union européenne,export,2024,530,100,2025
+CHYPRE,Union européenne,export,2025,777,,2025
+ROYAUME UNI,Autres pays d'Europe,export,2021,40863,108991,2025
+ROYAUME UNI,Autres pays d'Europe,export,2022,45762,128514,2025
+ROYAUME UNI,Autres pays d'Europe,export,2023,58614,137071,2025
+ROYAUME UNI,Autres pays d'Europe,export,2024,59021,132028,2025
+ROYAUME UNI,Autres pays d'Europe,export,2025,159366,,2025
+ISLANDE,Autres pays d'Europe,export,2021,531,80,2025
+ISLANDE,Autres pays d'Europe,export,2022,503,70,2025
+ISLANDE,Autres pays d'Europe,export,2023,1980,286,2025
+ISLANDE,Autres pays d'Europe,export,2024,1601,153,2025
+ISLANDE,Autres pays d'Europe,export,2025,840,,2025
+NORVEGE,Autres pays d'Europe,export,2021,42127,344141,2025
+NORVEGE,Autres pays d'Europe,export,2022,61213,297922,2025
+NORVEGE,Autres pays d'Europe,export,2023,31776,159008,2025
+NORVEGE,Autres pays d'Europe,export,2024,50777,320595,2025
+NORVEGE,Autres pays d'Europe,export,2025,39332,,2025
+SUISSE,Autres pays d'Europe,export,2021,414789,164586,2025
+SUISSE,Autres pays d'Europe,export,2022,414439,18684,2025
+SUISSE,Autres pays d'Europe,export,2023,391549,87579,2025
+SUISSE,Autres pays d'Europe,export,2024,473387,166960,2025
+SUISSE,Autres pays d'Europe,export,2025,649301,,2025
+ANDORRE,Autres pays d'Europe,export,2021,,,2025
+ANDORRE,Autres pays d'Europe,export,2022,17,20,2025
+ANDORRE,Autres pays d'Europe,export,2023,,,2025
+ANDORRE,Autres pays d'Europe,export,2024,,,2025
+ANDORRE,Autres pays d'Europe,export,2025,0,,2025
+GIBRALTAR,Autres pays d'Europe,export,2021,,,2025
+GIBRALTAR,Autres pays d'Europe,export,2022,,,2025
+GIBRALTAR,Autres pays d'Europe,export,2023,,,2025
+GIBRALTAR,Autres pays d'Europe,export,2024,8161,16872,2025
+GIBRALTAR,Autres pays d'Europe,export,2025,219,,2025
+MONTENEGRO,Autres pays d'Europe,export,2021,42,108,2025
+MONTENEGRO,Autres pays d'Europe,export,2022,383,310,2025
+MONTENEGRO,Autres pays d'Europe,export,2023,179,52,2025
+MONTENEGRO,Autres pays d'Europe,export,2024,3,0,2025
+MONTENEGRO,Autres pays d'Europe,export,2025,4161,,2025
+TURQUIE,Autres pays d'Europe,export,2021,2835,5309,2025
+TURQUIE,Autres pays d'Europe,export,2022,9233,10063,2025
+TURQUIE,Autres pays d'Europe,export,2023,9261,8032,2025
+TURQUIE,Autres pays d'Europe,export,2024,10176,11022,2025
+TURQUIE,Autres pays d'Europe,export,2025,21202,,2025
+RUSSIE,Autres pays d'Europe,export,2021,269,616,2025
+RUSSIE,Autres pays d'Europe,export,2022,1,0,2025
+RUSSIE,Autres pays d'Europe,export,2023,16,19,2025
+RUSSIE,Autres pays d'Europe,export,2024,7,23,2025
+RUSSIE,Autres pays d'Europe,export,2025,0,,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2021,2784,6304,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2022,3960,14219,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2023,2013,6440,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2024,610,1915,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,export,2025,252,,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2021,,,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2022,,,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2023,161,203,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2024,113,143,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,export,2025,,,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2021,,,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2022,46,4,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2023,7,2,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2024,,,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,export,2025,2,,2025
+ALBANIE,Autres pays d'Europe,export,2021,202,183,2025
+ALBANIE,Autres pays d'Europe,export,2022,34,26,2025
+ALBANIE,Autres pays d'Europe,export,2023,775,661,2025
+ALBANIE,Autres pays d'Europe,export,2024,606,414,2025
+ALBANIE,Autres pays d'Europe,export,2025,691,,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2021,0,0,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2022,,,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2023,5,2,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2024,,,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,export,2025,,,2025
+TRIESTE,Autres pays d'Europe,export,2021,127,206,2025
+TRIESTE,Autres pays d'Europe,export,2022,570,541,2025
+TRIESTE,Autres pays d'Europe,export,2023,,,2025
+TRIESTE,Autres pays d'Europe,export,2024,,,2025
+TRIESTE,Autres pays d'Europe,export,2025,,,2025
+ARMENIE,Autres pays d'Europe,export,2021,,,2025
+ARMENIE,Autres pays d'Europe,export,2022,374,1955,2025
+ARMENIE,Autres pays d'Europe,export,2023,3,1,2025
+ARMENIE,Autres pays d'Europe,export,2024,1,0,2025
+ARMENIE,Autres pays d'Europe,export,2025,4,,2025
+HELGOLAND,Autres pays d'Europe,export,2021,,,2025
+HELGOLAND,Autres pays d'Europe,export,2022,15,0,2025
+HELGOLAND,Autres pays d'Europe,export,2023,,,2025
+HELGOLAND,Autres pays d'Europe,export,2024,,,2025
+HELGOLAND,Autres pays d'Europe,export,2025,,,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2021,262,116,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2022,321,76,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2023,185,61,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2024,384,278,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,export,2025,362,,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2021,,,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2022,,,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2023,24,22,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2024,,,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,export,2025,,,2025
+TCHAD,Afrique centrale,export,2021,4794,3274,2025
+TCHAD,Afrique centrale,export,2022,1803,1290,2025
+TCHAD,Afrique centrale,export,2023,3882,2869,2025
+TCHAD,Afrique centrale,export,2024,3132,1681,2025
+TCHAD,Afrique centrale,export,2025,3854,,2025
+CAMEROUN,Afrique centrale,export,2021,15049,22723,2025
+CAMEROUN,Afrique centrale,export,2022,18793,21773,2025
+CAMEROUN,Afrique centrale,export,2023,20547,23336,2025
+CAMEROUN,Afrique centrale,export,2024,16361,17876,2025
+CAMEROUN,Afrique centrale,export,2025,18963,,2025
+CENTRE AFRIQUE,Afrique centrale,export,2021,2269,795,2025
+CENTRE AFRIQUE,Afrique centrale,export,2022,1088,762,2025
+CENTRE AFRIQUE,Afrique centrale,export,2023,3115,31,2025
+CENTRE AFRIQUE,Afrique centrale,export,2024,243,18,2025
+CENTRE AFRIQUE,Afrique centrale,export,2025,89,,2025
+GUINEE EQUATORIALE,Afrique centrale,export,2021,2501,933,2025
+GUINEE EQUATORIALE,Afrique centrale,export,2022,2424,1126,2025
+GUINEE EQUATORIALE,Afrique centrale,export,2023,2626,1143,2025
+GUINEE EQUATORIALE,Afrique centrale,export,2024,1194,822,2025
+GUINEE EQUATORIALE,Afrique centrale,export,2025,13068,,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2021,,,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2022,21,3,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2023,71,9,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2024,63,8,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,export,2025,,,2025
+GABON,Afrique centrale,export,2021,8932,6753,2025
+GABON,Afrique centrale,export,2022,9950,6688,2025
+GABON,Afrique centrale,export,2023,9530,6238,2025
+GABON,Afrique centrale,export,2024,6783,4431,2025
+GABON,Afrique centrale,export,2025,10830,,2025
+CONGO,Afrique centrale,export,2021,20733,11523,2025
+CONGO,Afrique centrale,export,2022,10780,11122,2025
+CONGO,Afrique centrale,export,2023,10209,9104,2025
+CONGO,Afrique centrale,export,2024,12757,10919,2025
+CONGO,Afrique centrale,export,2025,11493,,2025
+CONGO DEMOCRATIQUE,Afrique centrale,export,2021,1704,950,2025
+CONGO DEMOCRATIQUE,Afrique centrale,export,2022,2139,3754,2025
+CONGO DEMOCRATIQUE,Afrique centrale,export,2023,3108,1451,2025
+CONGO DEMOCRATIQUE,Afrique centrale,export,2024,2084,1516,2025
+CONGO DEMOCRATIQUE,Afrique centrale,export,2025,1970,,2025
+RWANDA,Afrique centrale,export,2021,6,2,2025
+RWANDA,Afrique centrale,export,2022,171,61,2025
+RWANDA,Afrique centrale,export,2023,121,15,2025
+RWANDA,Afrique centrale,export,2024,36,2,2025
+RWANDA,Afrique centrale,export,2025,94,,2025
+BURUNDI,Afrique centrale,export,2021,148,138,2025
+BURUNDI,Afrique centrale,export,2022,93,156,2025
+BURUNDI,Afrique centrale,export,2023,195,181,2025
+BURUNDI,Afrique centrale,export,2024,395,73,2025
+BURUNDI,Afrique centrale,export,2025,317,,2025
+ILES CANARIES,Afrique du Nord,export,2021,,,2025
+ILES CANARIES,Afrique du Nord,export,2022,,,2025
+ILES CANARIES,Afrique du Nord,export,2023,,,2025
+ILES CANARIES,Afrique du Nord,export,2024,,,2025
+ILES CANARIES,Afrique du Nord,export,2025,31,,2025
+MAROC,Afrique du Nord,export,2021,6814,5029,2025
+MAROC,Afrique du Nord,export,2022,11300,9500,2025
+MAROC,Afrique du Nord,export,2023,19550,13891,2025
+MAROC,Afrique du Nord,export,2024,24662,22050,2025
+MAROC,Afrique du Nord,export,2025,34708,,2025
+ALGERIE,Afrique du Nord,export,2021,403,112,2025
+ALGERIE,Afrique du Nord,export,2022,362,454,2025
+ALGERIE,Afrique du Nord,export,2023,677,849,2025
+ALGERIE,Afrique du Nord,export,2024,685,770,2025
+ALGERIE,Afrique du Nord,export,2025,56,,2025
+TUNISIE,Afrique du Nord,export,2021,1588,2710,2025
+TUNISIE,Afrique du Nord,export,2022,6849,6841,2025
+TUNISIE,Afrique du Nord,export,2023,5204,4838,2025
+TUNISIE,Afrique du Nord,export,2024,2320,2842,2025
+TUNISIE,Afrique du Nord,export,2025,5356,,2025
+LIBYE,Afrique du Nord,export,2021,,,2025
+LIBYE,Afrique du Nord,export,2022,,,2025
+LIBYE,Afrique du Nord,export,2023,,,2025
+LIBYE,Afrique du Nord,export,2024,4,0,2025
+LIBYE,Afrique du Nord,export,2025,154,,2025
+EGYPTE,Afrique du Nord,export,2021,847,1208,2025
+EGYPTE,Afrique du Nord,export,2022,617,2603,2025
+EGYPTE,Afrique du Nord,export,2023,526,2805,2025
+EGYPTE,Afrique du Nord,export,2024,10073,3253,2025
+EGYPTE,Afrique du Nord,export,2025,42716,,2025
+SOUDAN,Afrique du Nord,export,2021,523,548,2025
+SOUDAN,Afrique du Nord,export,2022,563,430,2025
+SOUDAN,Afrique du Nord,export,2023,619,340,2025
+SOUDAN,Afrique du Nord,export,2024,259,106,2025
+SOUDAN,Afrique du Nord,export,2025,928,,2025
+MAURITANIE,Afrique occidentale,export,2021,51482,83581,2025
+MAURITANIE,Afrique occidentale,export,2022,59286,114922,2025
+MAURITANIE,Afrique occidentale,export,2023,50342,92296,2025
+MAURITANIE,Afrique occidentale,export,2024,48606,187014,2025
+MAURITANIE,Afrique occidentale,export,2025,75393,,2025
+MALI,Afrique occidentale,export,2021,582550,3047680,2025
+MALI,Afrique occidentale,export,2022,708794,2200547,2025
+MALI,Afrique occidentale,export,2023,739014,2711636,2025
+MALI,Afrique occidentale,export,2024,802751,3209012,2025
+MALI,Afrique occidentale,export,2025,931072,,2025
+BURKINA FASO,Afrique occidentale,export,2021,36813,94370,2025
+BURKINA FASO,Afrique occidentale,export,2022,35338,104062,2025
+BURKINA FASO,Afrique occidentale,export,2023,36594,105110,2025
+BURKINA FASO,Afrique occidentale,export,2024,38251,96316,2025
+BURKINA FASO,Afrique occidentale,export,2025,40031,,2025
+NIGER,Afrique occidentale,export,2021,12968,15137,2025
+NIGER,Afrique occidentale,export,2022,13602,16512,2025
+NIGER,Afrique occidentale,export,2023,10687,22297,2025
+NIGER,Afrique occidentale,export,2024,6968,7526,2025
+NIGER,Afrique occidentale,export,2025,5284,,2025
+ILES DU CAP VERT,Afrique occidentale,export,2021,1237,768,2025
+ILES DU CAP VERT,Afrique occidentale,export,2022,2508,1647,2025
+ILES DU CAP VERT,Afrique occidentale,export,2023,2384,1548,2025
+ILES DU CAP VERT,Afrique occidentale,export,2024,5872,10411,2025
+ILES DU CAP VERT,Afrique occidentale,export,2025,5584,,2025
+GAMBIE,Afrique occidentale,export,2021,88257,893419,2025
+GAMBIE,Afrique occidentale,export,2022,110719,967383,2025
+GAMBIE,Afrique occidentale,export,2023,112810,1045255,2025
+GAMBIE,Afrique occidentale,export,2024,106786,849461,2025
+GAMBIE,Afrique occidentale,export,2025,93582,,2025
+GUINEE BISSAU,Afrique occidentale,export,2021,41356,95056,2025
+GUINEE BISSAU,Afrique occidentale,export,2022,55201,108257,2025
+GUINEE BISSAU,Afrique occidentale,export,2023,95442,80523,2025
+GUINEE BISSAU,Afrique occidentale,export,2024,59543,100515,2025
+GUINEE BISSAU,Afrique occidentale,export,2025,64247,,2025
+GUINEE REPUBLIQUE,Afrique occidentale,export,2021,80474,139127,2025
+GUINEE REPUBLIQUE,Afrique occidentale,export,2022,113782,210469,2025
+GUINEE REPUBLIQUE,Afrique occidentale,export,2023,93498,151295,2025
+GUINEE REPUBLIQUE,Afrique occidentale,export,2024,117856,227239,2025
+GUINEE REPUBLIQUE,Afrique occidentale,export,2025,125130,,2025
+SIERRA LEONE,Afrique occidentale,export,2021,4459,10025,2025
+SIERRA LEONE,Afrique occidentale,export,2022,7884,17706,2025
+SIERRA LEONE,Afrique occidentale,export,2023,5861,32821,2025
+SIERRA LEONE,Afrique occidentale,export,2024,3695,10215,2025
+SIERRA LEONE,Afrique occidentale,export,2025,3471,,2025
+LIBERIA,Afrique occidentale,export,2021,2302,2222,2025
+LIBERIA,Afrique occidentale,export,2022,1675,1270,2025
+LIBERIA,Afrique occidentale,export,2023,1661,1490,2025
+LIBERIA,Afrique occidentale,export,2024,2064,1573,2025
+LIBERIA,Afrique occidentale,export,2025,1824,,2025
+COTE D'IVOIRE,Afrique occidentale,export,2021,120570,317948,2025
+COTE D'IVOIRE,Afrique occidentale,export,2022,114383,292657,2025
+COTE D'IVOIRE,Afrique occidentale,export,2023,105740,239140,2025
+COTE D'IVOIRE,Afrique occidentale,export,2024,106481,201035,2025
+COTE D'IVOIRE,Afrique occidentale,export,2025,111447,,2025
+GHANA,Afrique occidentale,export,2021,14098,14727,2025
+GHANA,Afrique occidentale,export,2022,21275,18781,2025
+GHANA,Afrique occidentale,export,2023,10440,15489,2025
+GHANA,Afrique occidentale,export,2024,11651,15319,2025
+GHANA,Afrique occidentale,export,2025,21878,,2025
+TOGO,Afrique occidentale,export,2021,14821,12509,2025
+TOGO,Afrique occidentale,export,2022,52358,16056,2025
+TOGO,Afrique occidentale,export,2023,16814,11896,2025
+TOGO,Afrique occidentale,export,2024,19807,10366,2025
+TOGO,Afrique occidentale,export,2025,17663,,2025
+BENIN,Afrique occidentale,export,2021,14981,28004,2025
+BENIN,Afrique occidentale,export,2022,16944,47033,2025
+BENIN,Afrique occidentale,export,2023,18789,38863,2025
+BENIN,Afrique occidentale,export,2024,16564,25163,2025
+BENIN,Afrique occidentale,export,2025,24074,,2025
+NIGERIA,Afrique occidentale,export,2021,12211,13597,2025
+NIGERIA,Afrique occidentale,export,2022,16396,20692,2025
+NIGERIA,Afrique occidentale,export,2023,22484,19174,2025
+NIGERIA,Afrique occidentale,export,2024,6411,4939,2025
+NIGERIA,Afrique occidentale,export,2025,6273,,2025
+ILE STE HELENE,Afrique orientale et du Sud,export,2021,,,2025
+ILE STE HELENE,Afrique orientale et du Sud,export,2022,,,2025
+ILE STE HELENE,Afrique orientale et du Sud,export,2023,,,2025
+ILE STE HELENE,Afrique orientale et du Sud,export,2024,8,75,2025
+ILE STE HELENE,Afrique orientale et du Sud,export,2025,,,2025
+ANGOLA,Afrique orientale et du Sud,export,2021,467,428,2025
+ANGOLA,Afrique orientale et du Sud,export,2022,1232,576,2025
+ANGOLA,Afrique orientale et du Sud,export,2023,1613,579,2025
+ANGOLA,Afrique orientale et du Sud,export,2024,5143,24785,2025
+ANGOLA,Afrique orientale et du Sud,export,2025,4069,,2025
+ETHIOPIE,Afrique orientale et du Sud,export,2021,84,96,2025
+ETHIOPIE,Afrique orientale et du Sud,export,2022,57,41,2025
+ETHIOPIE,Afrique orientale et du Sud,export,2023,110,1,2025
+ETHIOPIE,Afrique orientale et du Sud,export,2024,6,0,2025
+ETHIOPIE,Afrique orientale et du Sud,export,2025,54,,2025
+DJIBOUTI,Afrique orientale et du Sud,export,2021,21,58,2025
+DJIBOUTI,Afrique orientale et du Sud,export,2022,1,1,2025
+DJIBOUTI,Afrique orientale et du Sud,export,2023,3,1,2025
+DJIBOUTI,Afrique orientale et du Sud,export,2024,1,1,2025
+DJIBOUTI,Afrique orientale et du Sud,export,2025,1,,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2021,,,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2022,,,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2023,,,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2024,106,22,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,export,2025,8,,2025
+KENYA,Afrique orientale et du Sud,export,2021,12,3,2025
+KENYA,Afrique orientale et du Sud,export,2022,22,41,2025
+KENYA,Afrique orientale et du Sud,export,2023,45,3,2025
+KENYA,Afrique orientale et du Sud,export,2024,147,28,2025
+KENYA,Afrique orientale et du Sud,export,2025,71,,2025
+OUGANDA,Afrique orientale et du Sud,export,2021,687,355,2025
+OUGANDA,Afrique orientale et du Sud,export,2022,737,399,2025
+OUGANDA,Afrique orientale et du Sud,export,2023,1152,566,2025
+OUGANDA,Afrique orientale et du Sud,export,2024,1045,723,2025
+OUGANDA,Afrique orientale et du Sud,export,2025,1045,,2025
+TANZANIE,Afrique orientale et du Sud,export,2021,1189,692,2025
+TANZANIE,Afrique orientale et du Sud,export,2022,494,414,2025
+TANZANIE,Afrique orientale et du Sud,export,2023,894,442,2025
+TANZANIE,Afrique orientale et du Sud,export,2024,648,393,2025
+TANZANIE,Afrique orientale et du Sud,export,2025,618,,2025
+SEYCHELLES,Afrique orientale et du Sud,export,2021,71,1488,2025
+SEYCHELLES,Afrique orientale et du Sud,export,2022,33,265,2025
+SEYCHELLES,Afrique orientale et du Sud,export,2023,,,2025
+SEYCHELLES,Afrique orientale et du Sud,export,2024,,,2025
+SEYCHELLES,Afrique orientale et du Sud,export,2025,,,2025
+MOZAMBIQUE,Afrique orientale et du Sud,export,2021,490,236,2025
+MOZAMBIQUE,Afrique orientale et du Sud,export,2022,533,393,2025
+MOZAMBIQUE,Afrique orientale et du Sud,export,2023,654,1135,2025
+MOZAMBIQUE,Afrique orientale et du Sud,export,2024,191,73,2025
+MOZAMBIQUE,Afrique orientale et du Sud,export,2025,210,,2025
+MADAGASCAR,Afrique orientale et du Sud,export,2021,302,414,2025
+MADAGASCAR,Afrique orientale et du Sud,export,2022,33,4,2025
+MADAGASCAR,Afrique orientale et du Sud,export,2023,176,34,2025
+MADAGASCAR,Afrique orientale et du Sud,export,2024,339,90,2025
+MADAGASCAR,Afrique orientale et du Sud,export,2025,318,,2025
+REUNION,Afrique orientale et du Sud,export,2021,,,2025
+REUNION,Afrique orientale et du Sud,export,2022,,,2025
+REUNION,Afrique orientale et du Sud,export,2023,,,2025
+REUNION,Afrique orientale et du Sud,export,2024,,,2025
+REUNION,Afrique orientale et du Sud,export,2025,10,,2025
+ILES MAURICE,Afrique orientale et du Sud,export,2021,163,593,2025
+ILES MAURICE,Afrique orientale et du Sud,export,2022,923,499,2025
+ILES MAURICE,Afrique orientale et du Sud,export,2023,4,0,2025
+ILES MAURICE,Afrique orientale et du Sud,export,2024,170,51,2025
+ILES MAURICE,Afrique orientale et du Sud,export,2025,6,,2025
+COMORES ILE,Afrique orientale et du Sud,export,2021,7,1,2025
+COMORES ILE,Afrique orientale et du Sud,export,2022,1,0,2025
+COMORES ILE,Afrique orientale et du Sud,export,2023,62,19,2025
+COMORES ILE,Afrique orientale et du Sud,export,2024,23,4,2025
+COMORES ILE,Afrique orientale et du Sud,export,2025,8,,2025
+ZAMBIE,Afrique orientale et du Sud,export,2021,1048,461,2025
+ZAMBIE,Afrique orientale et du Sud,export,2022,2283,785,2025
+ZAMBIE,Afrique orientale et du Sud,export,2023,1282,417,2025
+ZAMBIE,Afrique orientale et du Sud,export,2024,333,131,2025
+ZAMBIE,Afrique orientale et du Sud,export,2025,42,,2025
+ZIMBABWE,Afrique orientale et du Sud,export,2021,,,2025
+ZIMBABWE,Afrique orientale et du Sud,export,2022,5,17,2025
+ZIMBABWE,Afrique orientale et du Sud,export,2023,,,2025
+ZIMBABWE,Afrique orientale et du Sud,export,2024,4,0,2025
+ZIMBABWE,Afrique orientale et du Sud,export,2025,8,,2025
+MALAWI,Afrique orientale et du Sud,export,2021,,,2025
+MALAWI,Afrique orientale et du Sud,export,2022,1,0,2025
+MALAWI,Afrique orientale et du Sud,export,2023,,,2025
+MALAWI,Afrique orientale et du Sud,export,2024,,,2025
+MALAWI,Afrique orientale et du Sud,export,2025,0,,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2021,504,635,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2022,324,344,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2023,270,154,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2024,418,143,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,export,2025,127,,2025
+BOTSWANA,Afrique orientale et du Sud,export,2021,153,307,2025
+BOTSWANA,Afrique orientale et du Sud,export,2022,127,234,2025
+BOTSWANA,Afrique orientale et du Sud,export,2023,74,1,2025
+BOTSWANA,Afrique orientale et du Sud,export,2024,3,0,2025
+BOTSWANA,Afrique orientale et du Sud,export,2025,1223,,2025
+NAMIBIE,Afrique orientale et du Sud,export,2021,44,6,2025
+NAMIBIE,Afrique orientale et du Sud,export,2022,332,16,2025
+NAMIBIE,Afrique orientale et du Sud,export,2023,356,38,2025
+NAMIBIE,Afrique orientale et du Sud,export,2024,3224,674,2025
+NAMIBIE,Afrique orientale et du Sud,export,2025,581,,2025
+SWAZILAND,Afrique orientale et du Sud,export,2021,1990,58386,2025
+SWAZILAND,Afrique orientale et du Sud,export,2022,216,158,2025
+SWAZILAND,Afrique orientale et du Sud,export,2023,5,0,2025
+SWAZILAND,Afrique orientale et du Sud,export,2024,,,2025
+SWAZILAND,Afrique orientale et du Sud,export,2025,,,2025
+MEXIQUE,Amérique centrale et du Sud,export,2021,30486,76409,2025
+MEXIQUE,Amérique centrale et du Sud,export,2022,14114,55285,2025
+MEXIQUE,Amérique centrale et du Sud,export,2023,17391,111826,2025
+MEXIQUE,Amérique centrale et du Sud,export,2024,13290,100638,2025
+MEXIQUE,Amérique centrale et du Sud,export,2025,13047,,2025
+GUATEMALA,Amérique centrale et du Sud,export,2021,,,2025
+GUATEMALA,Amérique centrale et du Sud,export,2022,7,1,2025
+GUATEMALA,Amérique centrale et du Sud,export,2023,,,2025
+GUATEMALA,Amérique centrale et du Sud,export,2024,,,2025
+GUATEMALA,Amérique centrale et du Sud,export,2025,463,,2025
+HONDURAS,Amérique centrale et du Sud,export,2021,,,2025
+HONDURAS,Amérique centrale et du Sud,export,2022,9,12,2025
+HONDURAS,Amérique centrale et du Sud,export,2023,30,27,2025
+HONDURAS,Amérique centrale et du Sud,export,2024,,,2025
+HONDURAS,Amérique centrale et du Sud,export,2025,,,2025
+NICARAGUA,Amérique centrale et du Sud,export,2021,,,2025
+NICARAGUA,Amérique centrale et du Sud,export,2022,,,2025
+NICARAGUA,Amérique centrale et du Sud,export,2023,7,4,2025
+NICARAGUA,Amérique centrale et du Sud,export,2024,98,72,2025
+NICARAGUA,Amérique centrale et du Sud,export,2025,1,,2025
+COSTA RICA,Amérique centrale et du Sud,export,2021,100,13,2025
+COSTA RICA,Amérique centrale et du Sud,export,2022,4,21,2025
+COSTA RICA,Amérique centrale et du Sud,export,2023,17,19,2025
+COSTA RICA,Amérique centrale et du Sud,export,2024,,,2025
+COSTA RICA,Amérique centrale et du Sud,export,2025,49,,2025
+PANAMA,Amérique centrale et du Sud,export,2021,601,417,2025
+PANAMA,Amérique centrale et du Sud,export,2022,483,293,2025
+PANAMA,Amérique centrale et du Sud,export,2023,1026,536,2025
+PANAMA,Amérique centrale et du Sud,export,2024,18,8,2025
+PANAMA,Amérique centrale et du Sud,export,2025,29,,2025
+CUBA,Amérique centrale et du Sud,export,2021,,,2025
+CUBA,Amérique centrale et du Sud,export,2022,,,2025
+CUBA,Amérique centrale et du Sud,export,2023,,,2025
+CUBA,Amérique centrale et du Sud,export,2024,4,7,2025
+CUBA,Amérique centrale et du Sud,export,2025,,,2025
+HAITI,Amérique centrale et du Sud,export,2021,1958,1419,2025
+HAITI,Amérique centrale et du Sud,export,2022,2073,1237,2025
+HAITI,Amérique centrale et du Sud,export,2023,3198,1740,2025
+HAITI,Amérique centrale et du Sud,export,2024,2842,1641,2025
+HAITI,Amérique centrale et du Sud,export,2025,5062,,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2021,,,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2022,,,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2023,,,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2024,1,0,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,export,2025,40,,2025
+ILES CALQUES,Amérique centrale et du Sud,export,2021,,,2025
+ILES CALQUES,Amérique centrale et du Sud,export,2022,,,2025
+ILES CALQUES,Amérique centrale et du Sud,export,2023,,,2025
+ILES CALQUES,Amérique centrale et du Sud,export,2024,6,1,2025
+ILES CALQUES,Amérique centrale et du Sud,export,2025,1,,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2021,8,17,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2022,10,15,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2023,,,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2024,,,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,export,2025,9,,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2021,,,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2022,202,104,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2023,556,524,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2024,,,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,export,2025,,,2025
+GUADELOUPE,Amérique centrale et du Sud,export,2021,14,10,2025
+GUADELOUPE,Amérique centrale et du Sud,export,2022,19,9,2025
+GUADELOUPE,Amérique centrale et du Sud,export,2023,9,5,2025
+GUADELOUPE,Amérique centrale et du Sud,export,2024,9,7,2025
+GUADELOUPE,Amérique centrale et du Sud,export,2025,12,,2025
+MARTINIQUE,Amérique centrale et du Sud,export,2021,1,0,2025
+MARTINIQUE,Amérique centrale et du Sud,export,2022,1,0,2025
+MARTINIQUE,Amérique centrale et du Sud,export,2023,88,30,2025
+MARTINIQUE,Amérique centrale et du Sud,export,2024,4,2,2025
+MARTINIQUE,Amérique centrale et du Sud,export,2025,45,,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2021,417,20,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2022,795,472,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2023,171,8,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2024,69,70,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,export,2025,416,,2025
+JAMAIQUE,Amérique centrale et du Sud,export,2021,,,2025
+JAMAIQUE,Amérique centrale et du Sud,export,2022,,,2025
+JAMAIQUE,Amérique centrale et du Sud,export,2023,,,2025
+JAMAIQUE,Amérique centrale et du Sud,export,2024,,,2025
+JAMAIQUE,Amérique centrale et du Sud,export,2025,0,,2025
+LA BARBADE,Amérique centrale et du Sud,export,2021,,,2025
+LA BARBADE,Amérique centrale et du Sud,export,2022,,,2025
+LA BARBADE,Amérique centrale et du Sud,export,2023,1,0,2025
+LA BARBADE,Amérique centrale et du Sud,export,2024,,,2025
+LA BARBADE,Amérique centrale et du Sud,export,2025,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2021,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2022,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2023,81,1,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2024,20,0,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,export,2025,,,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,export,2021,,,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,export,2022,,,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,export,2023,85,19,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,export,2024,22,0,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,export,2025,75,,2025
+CURUCAO,Amérique centrale et du Sud,export,2021,,,2025
+CURUCAO,Amérique centrale et du Sud,export,2022,1,0,2025
+CURUCAO,Amérique centrale et du Sud,export,2023,,,2025
+CURUCAO,Amérique centrale et du Sud,export,2024,1,1,2025
+CURUCAO,Amérique centrale et du Sud,export,2025,1,,2025
+COLOMBIE,Amérique centrale et du Sud,export,2021,309,457,2025
+COLOMBIE,Amérique centrale et du Sud,export,2022,195,227,2025
+COLOMBIE,Amérique centrale et du Sud,export,2023,291,64,2025
+COLOMBIE,Amérique centrale et du Sud,export,2024,1043,942,2025
+COLOMBIE,Amérique centrale et du Sud,export,2025,2568,,2025
+VENEZUELA,Amérique centrale et du Sud,export,2021,110,117,2025
+VENEZUELA,Amérique centrale et du Sud,export,2022,86,91,2025
+VENEZUELA,Amérique centrale et du Sud,export,2023,211,410,2025
+VENEZUELA,Amérique centrale et du Sud,export,2024,119,105,2025
+VENEZUELA,Amérique centrale et du Sud,export,2025,133,,2025
+GUYANA,Amérique centrale et du Sud,export,2021,,,2025
+GUYANA,Amérique centrale et du Sud,export,2022,,,2025
+GUYANA,Amérique centrale et du Sud,export,2023,90,20,2025
+GUYANA,Amérique centrale et du Sud,export,2024,272,63,2025
+GUYANA,Amérique centrale et du Sud,export,2025,317,,2025
+SURINAM,Amérique centrale et du Sud,export,2021,,,2025
+SURINAM,Amérique centrale et du Sud,export,2022,6,100,2025
+SURINAM,Amérique centrale et du Sud,export,2023,,,2025
+SURINAM,Amérique centrale et du Sud,export,2024,42,38,2025
+SURINAM,Amérique centrale et du Sud,export,2025,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2021,2,1,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2022,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2023,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2024,9,12,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,export,2025,11,,2025
+EQUATEUR,Amérique centrale et du Sud,export,2021,1663,2053,2025
+EQUATEUR,Amérique centrale et du Sud,export,2022,283,347,2025
+EQUATEUR,Amérique centrale et du Sud,export,2023,13,0,2025
+EQUATEUR,Amérique centrale et du Sud,export,2024,34,5,2025
+EQUATEUR,Amérique centrale et du Sud,export,2025,3160,,2025
+PEROU,Amérique centrale et du Sud,export,2021,411,609,2025
+PEROU,Amérique centrale et du Sud,export,2022,,,2025
+PEROU,Amérique centrale et du Sud,export,2023,,,2025
+PEROU,Amérique centrale et du Sud,export,2024,,,2025
+PEROU,Amérique centrale et du Sud,export,2025,589,,2025
+BRESIL,Amérique centrale et du Sud,export,2021,7047,21204,2025
+BRESIL,Amérique centrale et du Sud,export,2022,959,779,2025
+BRESIL,Amérique centrale et du Sud,export,2023,1343,1020,2025
+BRESIL,Amérique centrale et du Sud,export,2024,2411,26057,2025
+BRESIL,Amérique centrale et du Sud,export,2025,8684,,2025
+CHILI,Amérique centrale et du Sud,export,2021,285,435,2025
+CHILI,Amérique centrale et du Sud,export,2022,329,392,2025
+CHILI,Amérique centrale et du Sud,export,2023,933,697,2025
+CHILI,Amérique centrale et du Sud,export,2024,198,192,2025
+CHILI,Amérique centrale et du Sud,export,2025,530,,2025
+BOLIVIE,Amérique centrale et du Sud,export,2021,,,2025
+BOLIVIE,Amérique centrale et du Sud,export,2022,,,2025
+BOLIVIE,Amérique centrale et du Sud,export,2023,,,2025
+BOLIVIE,Amérique centrale et du Sud,export,2024,1,0,2025
+BOLIVIE,Amérique centrale et du Sud,export,2025,2,,2025
+ARGENTINE,Amérique centrale et du Sud,export,2021,,,2025
+ARGENTINE,Amérique centrale et du Sud,export,2022,15,4,2025
+ARGENTINE,Amérique centrale et du Sud,export,2023,4,0,2025
+ARGENTINE,Amérique centrale et du Sud,export,2024,1,0,2025
+ARGENTINE,Amérique centrale et du Sud,export,2025,0,,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2021,69439,144673,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2022,102667,106676,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2023,94340,68724,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2024,133866,72814,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,export,2025,217064,,2025
+CANADA,Amérique du Nord,export,2021,1302,983,2025
+CANADA,Amérique du Nord,export,2022,2177,1855,2025
+CANADA,Amérique du Nord,export,2023,2369,1865,2025
+CANADA,Amérique du Nord,export,2024,2350,642,2025
+CANADA,Amérique du Nord,export,2025,1278,,2025
+GROENLAND,Amérique du Nord,export,2021,,,2025
+GROENLAND,Amérique du Nord,export,2022,,,2025
+GROENLAND,Amérique du Nord,export,2023,,,2025
+GROENLAND,Amérique du Nord,export,2024,,,2025
+GROENLAND,Amérique du Nord,export,2025,7606,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2021,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2022,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2023,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2024,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,export,2025,4,,2025
+LIBAN,Asie occidentale,export,2021,7678,178668,2025
+LIBAN,Asie occidentale,export,2022,21628,183155,2025
+LIBAN,Asie occidentale,export,2023,1286,643,2025
+LIBAN,Asie occidentale,export,2024,333,224,2025
+LIBAN,Asie occidentale,export,2025,233,,2025
+SYRIE,Asie occidentale,export,2021,,,2025
+SYRIE,Asie occidentale,export,2022,,,2025
+SYRIE,Asie occidentale,export,2023,,,2025
+SYRIE,Asie occidentale,export,2024,,,2025
+SYRIE,Asie occidentale,export,2025,19,,2025
+IRAK,Asie occidentale,export,2021,7,0,2025
+IRAK,Asie occidentale,export,2022,14,0,2025
+IRAK,Asie occidentale,export,2023,167,27,2025
+IRAK,Asie occidentale,export,2024,35,2,2025
+IRAK,Asie occidentale,export,2025,30,,2025
+IRAN,Asie occidentale,export,2021,126,25,2025
+IRAN,Asie occidentale,export,2022,42,69,2025
+IRAN,Asie occidentale,export,2023,,,2025
+IRAN,Asie occidentale,export,2024,402,48,2025
+IRAN,Asie occidentale,export,2025,311,,2025
+ISRAEL,Asie occidentale,export,2021,820,120,2025
+ISRAEL,Asie occidentale,export,2022,1980,302,2025
+ISRAEL,Asie occidentale,export,2023,1711,227,2025
+ISRAEL,Asie occidentale,export,2024,628,86,2025
+ISRAEL,Asie occidentale,export,2025,490,,2025
+JORDANIE,Asie occidentale,export,2021,5,3,2025
+JORDANIE,Asie occidentale,export,2022,2,5,2025
+JORDANIE,Asie occidentale,export,2023,10,10,2025
+JORDANIE,Asie occidentale,export,2024,70,11,2025
+JORDANIE,Asie occidentale,export,2025,34,,2025
+ARABIE SEOUDITE,Asie occidentale,export,2021,548,131,2025
+ARABIE SEOUDITE,Asie occidentale,export,2022,581,339,2025
+ARABIE SEOUDITE,Asie occidentale,export,2023,455,337,2025
+ARABIE SEOUDITE,Asie occidentale,export,2024,388,83,2025
+ARABIE SEOUDITE,Asie occidentale,export,2025,755,,2025
+KOWEIT,Asie occidentale,export,2021,1,0,2025
+KOWEIT,Asie occidentale,export,2022,1,0,2025
+KOWEIT,Asie occidentale,export,2023,9,1,2025
+KOWEIT,Asie occidentale,export,2024,187,15,2025
+KOWEIT,Asie occidentale,export,2025,15,,2025
+BAHREIN,Asie occidentale,export,2021,,,2025
+BAHREIN,Asie occidentale,export,2022,34,42,2025
+BAHREIN,Asie occidentale,export,2023,4,0,2025
+BAHREIN,Asie occidentale,export,2024,,,2025
+BAHREIN,Asie occidentale,export,2025,444,,2025
+QATAR,Asie occidentale,export,2021,14,0,2025
+QATAR,Asie occidentale,export,2022,95,4,2025
+QATAR,Asie occidentale,export,2023,29,44,2025
+QATAR,Asie occidentale,export,2024,178,114,2025
+QATAR,Asie occidentale,export,2025,11,,2025
+EMIRATS ARABES UNIS,Asie occidentale,export,2021,34390,7214,2025
+EMIRATS ARABES UNIS,Asie occidentale,export,2022,44129,5635,2025
+EMIRATS ARABES UNIS,Asie occidentale,export,2023,54824,5372,2025
+EMIRATS ARABES UNIS,Asie occidentale,export,2024,54261,3100,2025
+EMIRATS ARABES UNIS,Asie occidentale,export,2025,64635,,2025
+OMAN,Asie occidentale,export,2021,2,0,2025
+OMAN,Asie occidentale,export,2022,,,2025
+OMAN,Asie occidentale,export,2023,198,107,2025
+OMAN,Asie occidentale,export,2024,297,215,2025
+OMAN,Asie occidentale,export,2025,40856,,2025
+AFGANISTAN,Autres pays d'Asie,export,2021,1,1,2025
+AFGANISTAN,Autres pays d'Asie,export,2022,,,2025
+AFGANISTAN,Autres pays d'Asie,export,2023,128,39,2025
+AFGANISTAN,Autres pays d'Asie,export,2024,,,2025
+AFGANISTAN,Autres pays d'Asie,export,2025,4,,2025
+PAKISTAN,Autres pays d'Asie,export,2021,20,57,2025
+PAKISTAN,Autres pays d'Asie,export,2022,93,239,2025
+PAKISTAN,Autres pays d'Asie,export,2023,499,201,2025
+PAKISTAN,Autres pays d'Asie,export,2024,8943,528,2025
+PAKISTAN,Autres pays d'Asie,export,2025,27,,2025
+INDE,Autres pays d'Asie,export,2021,282398,633713,2025
+INDE,Autres pays d'Asie,export,2022,540086,739272,2025
+INDE,Autres pays d'Asie,export,2023,330106,843864,2025
+INDE,Autres pays d'Asie,export,2024,353663,879409,2025
+INDE,Autres pays d'Asie,export,2025,396117,,2025
+BENGLADESH,Autres pays d'Asie,export,2021,8287,8297,2025
+BENGLADESH,Autres pays d'Asie,export,2022,9837,6872,2025
+BENGLADESH,Autres pays d'Asie,export,2023,7039,4700,2025
+BENGLADESH,Autres pays d'Asie,export,2024,6027,4413,2025
+BENGLADESH,Autres pays d'Asie,export,2025,3239,,2025
+NEPAL,Autres pays d'Asie,export,2021,,,2025
+NEPAL,Autres pays d'Asie,export,2022,8,2,2025
+NEPAL,Autres pays d'Asie,export,2023,,,2025
+NEPAL,Autres pays d'Asie,export,2024,,,2025
+NEPAL,Autres pays d'Asie,export,2025,2,,2025
+UNION BIRMANE,Autres pays d'Asie,export,2021,,,2025
+UNION BIRMANE,Autres pays d'Asie,export,2022,,,2025
+UNION BIRMANE,Autres pays d'Asie,export,2023,,,2025
+UNION BIRMANE,Autres pays d'Asie,export,2024,9,0,2025
+UNION BIRMANE,Autres pays d'Asie,export,2025,,,2025
+THAILANDE,Autres pays d'Asie,export,2021,233,71,2025
+THAILANDE,Autres pays d'Asie,export,2022,965,1177,2025
+THAILANDE,Autres pays d'Asie,export,2023,260,419,2025
+THAILANDE,Autres pays d'Asie,export,2024,362,1362,2025
+THAILANDE,Autres pays d'Asie,export,2025,1680,,2025
+LAOS,Autres pays d'Asie,export,2021,,,2025
+LAOS,Autres pays d'Asie,export,2022,2,0,2025
+LAOS,Autres pays d'Asie,export,2023,0,0,2025
+LAOS,Autres pays d'Asie,export,2024,54,84,2025
+LAOS,Autres pays d'Asie,export,2025,96,,2025
+VIETNAM,Autres pays d'Asie,export,2021,21859,39145,2025
+VIETNAM,Autres pays d'Asie,export,2022,21388,33792,2025
+VIETNAM,Autres pays d'Asie,export,2023,42246,85898,2025
+VIETNAM,Autres pays d'Asie,export,2024,16952,25966,2025
+VIETNAM,Autres pays d'Asie,export,2025,18676,,2025
+CAMBODGE,Autres pays d'Asie,export,2021,2,1,2025
+CAMBODGE,Autres pays d'Asie,export,2022,,,2025
+CAMBODGE,Autres pays d'Asie,export,2023,,,2025
+CAMBODGE,Autres pays d'Asie,export,2024,18,60,2025
+CAMBODGE,Autres pays d'Asie,export,2025,,,2025
+INDONESIE,Autres pays d'Asie,export,2021,480,962,2025
+INDONESIE,Autres pays d'Asie,export,2022,576,1070,2025
+INDONESIE,Autres pays d'Asie,export,2023,149,571,2025
+INDONESIE,Autres pays d'Asie,export,2024,286,961,2025
+INDONESIE,Autres pays d'Asie,export,2025,181,,2025
+MALAISIE,Autres pays d'Asie,export,2021,755,3104,2025
+MALAISIE,Autres pays d'Asie,export,2022,1249,2370,2025
+MALAISIE,Autres pays d'Asie,export,2023,2353,3688,2025
+MALAISIE,Autres pays d'Asie,export,2024,3332,1977,2025
+MALAISIE,Autres pays d'Asie,export,2025,1634,,2025
+BRUNEI,Autres pays d'Asie,export,2021,807,1574,2025
+BRUNEI,Autres pays d'Asie,export,2022,724,849,2025
+BRUNEI,Autres pays d'Asie,export,2023,650,328,2025
+BRUNEI,Autres pays d'Asie,export,2024,1103,500,2025
+BRUNEI,Autres pays d'Asie,export,2025,858,,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,export,2021,,,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,export,2022,,,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,export,2023,,,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,export,2024,4,0,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,export,2025,,,2025
+SINGAPOUR,Autres pays d'Asie,export,2021,1336,7025,2025
+SINGAPOUR,Autres pays d'Asie,export,2022,3371,14615,2025
+SINGAPOUR,Autres pays d'Asie,export,2023,1563,3176,2025
+SINGAPOUR,Autres pays d'Asie,export,2024,6210,11292,2025
+SINGAPOUR,Autres pays d'Asie,export,2025,7089,,2025
+PHILIPPINE,Autres pays d'Asie,export,2021,,,2025
+PHILIPPINE,Autres pays d'Asie,export,2022,,,2025
+PHILIPPINE,Autres pays d'Asie,export,2023,,,2025
+PHILIPPINE,Autres pays d'Asie,export,2024,2157,35034,2025
+PHILIPPINE,Autres pays d'Asie,export,2025,43,,2025
+MONGOLIE,Autres pays d'Asie,export,2021,,,2025
+MONGOLIE,Autres pays d'Asie,export,2022,,,2025
+MONGOLIE,Autres pays d'Asie,export,2023,2,1,2025
+MONGOLIE,Autres pays d'Asie,export,2024,,,2025
+MONGOLIE,Autres pays d'Asie,export,2025,,,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2021,189768,489792,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2022,142372,348621,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2023,135694,332592,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2024,436471,1301097,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,export,2025,492339,,2025
+COREE DU NORD,Autres pays d'Asie,export,2021,180,40166,2025
+COREE DU NORD,Autres pays d'Asie,export,2022,71,291,2025
+COREE DU NORD,Autres pays d'Asie,export,2023,31,163,2025
+COREE DU NORD,Autres pays d'Asie,export,2024,0,0,2025
+COREE DU NORD,Autres pays d'Asie,export,2025,,,2025
+COREE DU SUD,Autres pays d'Asie,export,2021,17515,12753,2025
+COREE DU SUD,Autres pays d'Asie,export,2022,65528,12923,2025
+COREE DU SUD,Autres pays d'Asie,export,2023,31309,8247,2025
+COREE DU SUD,Autres pays d'Asie,export,2024,14178,8946,2025
+COREE DU SUD,Autres pays d'Asie,export,2025,11189,,2025
+JAPON,Autres pays d'Asie,export,2021,9245,7280,2025
+JAPON,Autres pays d'Asie,export,2022,9582,6930,2025
+JAPON,Autres pays d'Asie,export,2023,13667,17981,2025
+JAPON,Autres pays d'Asie,export,2024,12160,8686,2025
+JAPON,Autres pays d'Asie,export,2025,13178,,2025
+TAIWAN,Autres pays d'Asie,export,2021,498,403,2025
+TAIWAN,Autres pays d'Asie,export,2022,1072,676,2025
+TAIWAN,Autres pays d'Asie,export,2023,1670,1056,2025
+TAIWAN,Autres pays d'Asie,export,2024,1870,1382,2025
+TAIWAN,Autres pays d'Asie,export,2025,1183,,2025
+HONG-KONG,Autres pays d'Asie,export,2021,476,310,2025
+HONG-KONG,Autres pays d'Asie,export,2022,1163,868,2025
+HONG-KONG,Autres pays d'Asie,export,2023,731,212,2025
+HONG-KONG,Autres pays d'Asie,export,2024,1912,334,2025
+HONG-KONG,Autres pays d'Asie,export,2025,1265,,2025
+MACAO,Autres pays d'Asie,export,2021,,,2025
+MACAO,Autres pays d'Asie,export,2022,8,0,2025
+MACAO,Autres pays d'Asie,export,2023,,,2025
+MACAO,Autres pays d'Asie,export,2024,20,0,2025
+MACAO,Autres pays d'Asie,export,2025,,,2025
+AUSTRALIE,Océanie,export,2021,120370,2002,2025
+AUSTRALIE,Océanie,export,2022,140279,2294,2025
+AUSTRALIE,Océanie,export,2023,104072,1436,2025
+AUSTRALIE,Océanie,export,2024,88438,2359,2025
+AUSTRALIE,Océanie,export,2025,205221,,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2021,44,6,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2022,103,24,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2023,,,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2024,,,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,export,2025,172,,2025
+NAURU,Océanie,export,2021,,,2025
+NAURU,Océanie,export,2022,212,237,2025
+NAURU,Océanie,export,2023,3639,19710,2025
+NAURU,Océanie,export,2024,,,2025
+NAURU,Océanie,export,2025,1,,2025
+NOUVELLE ZELANDE,Océanie,export,2021,1819,253,2025
+NOUVELLE ZELANDE,Océanie,export,2022,1837,287,2025
+NOUVELLE ZELANDE,Océanie,export,2023,728,93,2025
+NOUVELLE ZELANDE,Océanie,export,2024,1595,222,2025
+NOUVELLE ZELANDE,Océanie,export,2025,742,,2025
+TONGA,Océanie,export,2021,115,32,2025
+TONGA,Océanie,export,2022,,,2025
+TONGA,Océanie,export,2023,3,0,2025
+TONGA,Océanie,export,2024,28,2,2025
+TONGA,Océanie,export,2025,,,2025
+SAMOA OCCIDENTAL,Océanie,export,2021,,,2025
+SAMOA OCCIDENTAL,Océanie,export,2022,543,353,2025
+SAMOA OCCIDENTAL,Océanie,export,2023,669,550,2025
+SAMOA OCCIDENTAL,Océanie,export,2024,49,60,2025
+SAMOA OCCIDENTAL,Océanie,export,2025,,,2025
+ILES COOK,Océanie,export,2021,,,2025
+ILES COOK,Océanie,export,2022,,,2025
+ILES COOK,Océanie,export,2023,,,2025
+ILES COOK,Océanie,export,2024,1,0,2025
+ILES COOK,Océanie,export,2025,5,,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,export,2021,86830,282723,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,export,2022,133485,204812,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,export,2023,162901,247750,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,export,2024,229230,415986,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,export,2025,176863,286645,2025
+FRANCE,Union européenne,import,2021,632774,500814,2025
+FRANCE,Union européenne,import,2022,691127,562205,2025
+FRANCE,Union européenne,import,2023,868495,715755,2025
+FRANCE,Union européenne,import,2024,725186,634935,2025
+FRANCE,Union européenne,import,2025,678829,718719,2025
+BELGIQUE,Union européenne,import,2021,254487,551390,2025
+BELGIQUE,Union européenne,import,2022,473784,644418,2025
+BELGIQUE,Union européenne,import,2023,417778,644739,2025
+BELGIQUE,Union européenne,import,2024,397632,661874,2025
+BELGIQUE,Union européenne,import,2025,146254,110655,2025
+PAYS BAS,Union européenne,import,2021,259995,896064,2025
+PAYS BAS,Union européenne,import,2022,389292,883594,2025
+PAYS BAS,Union européenne,import,2023,205054,487152,2025
+PAYS BAS,Union européenne,import,2024,176482,473350,2025
+PAYS BAS,Union européenne,import,2025,170378,406578,2025
+ALLEMAGNE,Union européenne,import,2021,96479,70584,2025
+ALLEMAGNE,Union européenne,import,2022,166205,90404,2025
+ALLEMAGNE,Union européenne,import,2023,158051,83448,2025
+ALLEMAGNE,Union européenne,import,2024,118673,75872,2025
+ALLEMAGNE,Union européenne,import,2025,115917,107156,2025
+ITALIE,Union européenne,import,2021,112834,198530,2025
+ITALIE,Union européenne,import,2022,121732,174728,2025
+ITALIE,Union européenne,import,2023,112471,157908,2025
+ITALIE,Union européenne,import,2024,118311,148374,2025
+ITALIE,Union européenne,import,2025,145203,218621,2025
+ROYAUME UNI,Autres pays d'Europe,import,2021,69035,118695,2025
+ROYAUME UNI,Autres pays d'Europe,import,2022,97455,75398,2025
+ROYAUME UNI,Autres pays d'Europe,import,2023,108231,99793,2025
+ROYAUME UNI,Autres pays d'Europe,import,2024,59556,48987,2025
+ROYAUME UNI,Autres pays d'Europe,import,2025,56435,72090,2025
+IRLANDE,Union européenne,import,2021,20217,15491,2025
+IRLANDE,Union européenne,import,2022,26813,19888,2025
+IRLANDE,Union européenne,import,2023,13870,9900,2025
+IRLANDE,Union européenne,import,2024,21652,18409,2025
+IRLANDE,Union européenne,import,2025,23814,19871,2025
+DANEMARK,Union européenne,import,2021,14658,6842,2025
+DANEMARK,Union européenne,import,2022,16344,9204,2025
+DANEMARK,Union européenne,import,2023,48186,10364,2025
+DANEMARK,Union européenne,import,2024,17347,13662,2025
+DANEMARK,Union européenne,import,2025,13700,10637,2025
+GRECE,Union européenne,import,2021,8391,27612,2025
+GRECE,Union européenne,import,2022,29378,60026,2025
+GRECE,Union européenne,import,2023,19006,40757,2025
+GRECE,Union européenne,import,2024,21748,45502,2025
+GRECE,Union européenne,import,2025,29659,66026,2025
+LUXEMBOURG,Union européenne,import,2021,,,2025
+LUXEMBOURG,Union européenne,import,2022,,,2025
+LUXEMBOURG,Union européenne,import,2023,2347,766,2025
+LUXEMBOURG,Union européenne,import,2024,1911,938,2025
+LUXEMBOURG,Union européenne,import,2025,3189,1679,2025
+SUEDE,Union européenne,import,2021,27041,22447,2025
+SUEDE,Union européenne,import,2022,26303,17983,2025
+SUEDE,Union européenne,import,2023,23236,26217,2025
+SUEDE,Union européenne,import,2024,25539,21280,2025
+SUEDE,Union européenne,import,2025,28339,34089,2025
+FINLANDE,Union européenne,import,2021,34671,47140,2025
+FINLANDE,Union européenne,import,2022,12149,3864,2025
+FINLANDE,Union européenne,import,2023,24591,6224,2025
+FINLANDE,Union européenne,import,2024,11746,10007,2025
+FINLANDE,Union européenne,import,2025,28456,52757,2025
+AUTRICHE,Union européenne,import,2021,3484,2921,2025
+AUTRICHE,Union européenne,import,2022,4546,1960,2025
+AUTRICHE,Union européenne,import,2023,5600,2727,2025
+AUTRICHE,Union européenne,import,2024,4540,2854,2025
+AUTRICHE,Union européenne,import,2025,12176,6019,2025
+PORTUGAL,Union européenne,import,2021,23905,27847,2025
+PORTUGAL,Union européenne,import,2022,28936,36967,2025
+PORTUGAL,Union européenne,import,2023,27098,68415,2025
+PORTUGAL,Union européenne,import,2024,27275,38759,2025
+PORTUGAL,Union européenne,import,2025,21185,40496,2025
+ESPAGNE,Union européenne,import,2021,252985,806611,2025
+ESPAGNE,Union européenne,import,2022,457499,971982,2025
+ESPAGNE,Union européenne,import,2023,180846,479016,2025
+ESPAGNE,Union européenne,import,2024,194886,407120,2025
+ESPAGNE,Union européenne,import,2025,315352,673462,2025
+MALTE,Union européenne,import,2021,1561,588,2025
+MALTE,Union européenne,import,2022,13729,25824,2025
+MALTE,Union européenne,import,2023,2478,580,2025
+MALTE,Union européenne,import,2024,2445,881,2025
+MALTE,Union européenne,import,2025,1200,524,2025
+POLOGNE,Union européenne,import,2021,53866,28171,2025
+POLOGNE,Union européenne,import,2022,73765,50525,2025
+POLOGNE,Union européenne,import,2023,76747,93342,2025
+POLOGNE,Union européenne,import,2024,91511,163917,2025
+POLOGNE,Union européenne,import,2025,78631,92995,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2021,2102,426,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2022,2804,1015,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2023,3255,1097,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2024,4219,1735,2025
+REPUBLIQUE DE SLOVAQUIE,Union européenne,import,2025,3536,1048,2025
+REPUBLIQUE TCHEQUE,Union européenne,import,2021,9181,37748,2025
+REPUBLIQUE TCHEQUE,Union européenne,import,2022,8420,2540,2025
+REPUBLIQUE TCHEQUE,Union européenne,import,2023,9146,61020,2025
+REPUBLIQUE TCHEQUE,Union européenne,import,2024,10567,2804,2025
+REPUBLIQUE TCHEQUE,Union européenne,import,2025,4349,2385,2025
+REPUBLIQUE DE LETTONIE,Union européenne,import,2021,17,50,2025
+REPUBLIQUE DE LETTONIE,Union européenne,import,2022,3351,1883,2025
+REPUBLIQUE DE LETTONIE,Union européenne,import,2023,9735,34802,2025
+REPUBLIQUE DE LETTONIE,Union européenne,import,2024,2659,13989,2025
+REPUBLIQUE DE LETTONIE,Union européenne,import,2025,1523,8038,2025
+HONGRIE,Union européenne,import,2021,4786,2390,2025
+HONGRIE,Union européenne,import,2022,3003,1278,2025
+HONGRIE,Union européenne,import,2023,3329,1086,2025
+HONGRIE,Union européenne,import,2024,1461,528,2025
+HONGRIE,Union européenne,import,2025,1763,1433,2025
+REPUBLIQUE DE LITUANIE,Union européenne,import,2021,6544,31696,2025
+REPUBLIQUE DE LITUANIE,Union européenne,import,2022,25592,81013,2025
+REPUBLIQUE DE LITUANIE,Union européenne,import,2023,32033,147153,2025
+REPUBLIQUE DE LITUANIE,Union européenne,import,2024,20917,105886,2025
+REPUBLIQUE DE LITUANIE,Union européenne,import,2025,38367,189551,2025
+ROUMANIE,Union européenne,import,2021,4670,4086,2025
+ROUMANIE,Union européenne,import,2022,5376,3344,2025
+ROUMANIE,Union européenne,import,2023,4950,4100,2025
+ROUMANIE,Union européenne,import,2024,4321,3449,2025
+ROUMANIE,Union européenne,import,2025,8658,13107,2025
+REPUBLIQUE D'ESTONIE,Union européenne,import,2021,92,71,2025
+REPUBLIQUE D'ESTONIE,Union européenne,import,2022,68,12,2025
+REPUBLIQUE D'ESTONIE,Union européenne,import,2023,2912,14013,2025
+REPUBLIQUE D'ESTONIE,Union européenne,import,2024,7806,41730,2025
+REPUBLIQUE D'ESTONIE,Union européenne,import,2025,1686,8283,2025
+BULGARIE,Union européenne,import,2021,5754,15111,2025
+BULGARIE,Union européenne,import,2022,2771,1820,2025
+BULGARIE,Union européenne,import,2023,35773,55952,2025
+BULGARIE,Union européenne,import,2024,63769,121587,2025
+BULGARIE,Union européenne,import,2025,4462,8338,2025
+CROATIE,Union européenne,import,2021,488,842,2025
+CROATIE,Union européenne,import,2022,1482,2590,2025
+CROATIE,Union européenne,import,2023,1048,3275,2025
+CROATIE,Union européenne,import,2024,2861,7394,2025
+CROATIE,Union européenne,import,2025,1413,2957,2025
+SLOVENIE,Union européenne,import,2021,877,2206,2025
+SLOVENIE,Union européenne,import,2022,1190,3444,2025
+SLOVENIE,Union européenne,import,2023,868,3317,2025
+SLOVENIE,Union européenne,import,2024,1085,4013,2025
+SLOVENIE,Union européenne,import,2025,1239,5145,2025
+CHYPRE,Union européenne,import,2021,64,152,2025
+CHYPRE,Union européenne,import,2022,117,265,2025
+CHYPRE,Union européenne,import,2023,60,62,2025
+CHYPRE,Union européenne,import,2024,213,96,2025
+CHYPRE,Union européenne,import,2025,9236,21159,2025
+ISLANDE,Autres pays d'Europe,import,2021,8709,1172,2025
+ISLANDE,Autres pays d'Europe,import,2022,9414,3015,2025
+ISLANDE,Autres pays d'Europe,import,2023,9339,7493,2025
+ISLANDE,Autres pays d'Europe,import,2024,8530,992,2025
+ISLANDE,Autres pays d'Europe,import,2025,1091,664,2025
+NORVEGE,Autres pays d'Europe,import,2021,29838,67639,2025
+NORVEGE,Autres pays d'Europe,import,2022,54692,72840,2025
+NORVEGE,Autres pays d'Europe,import,2023,46924,276195,2025
+NORVEGE,Autres pays d'Europe,import,2024,35026,83489,2025
+NORVEGE,Autres pays d'Europe,import,2025,65089,30072,2025
+SUISSE,Autres pays d'Europe,import,2021,40068,65611,2025
+SUISSE,Autres pays d'Europe,import,2022,68469,123531,2025
+SUISSE,Autres pays d'Europe,import,2023,43249,59907,2025
+SUISSE,Autres pays d'Europe,import,2024,40590,42768,2025
+SUISSE,Autres pays d'Europe,import,2025,41191,59068,2025
+ANDORRE,Autres pays d'Europe,import,2021,7,19,2025
+ANDORRE,Autres pays d'Europe,import,2022,5,3,2025
+ANDORRE,Autres pays d'Europe,import,2023,2,14,2025
+ANDORRE,Autres pays d'Europe,import,2024,11,7,2025
+ANDORRE,Autres pays d'Europe,import,2025,18,2,2025
+GIBRALTAR,Autres pays d'Europe,import,2021,,,2025
+GIBRALTAR,Autres pays d'Europe,import,2022,15,41,2025
+GIBRALTAR,Autres pays d'Europe,import,2023,23,74,2025
+GIBRALTAR,Autres pays d'Europe,import,2024,17,86,2025
+GIBRALTAR,Autres pays d'Europe,import,2025,16,41,2025
+CITE DU VATICAN,Autres pays d'Europe,import,2021,2,1,2025
+CITE DU VATICAN,Autres pays d'Europe,import,2022,25,124,2025
+CITE DU VATICAN,Autres pays d'Europe,import,2023,43,47,2025
+CITE DU VATICAN,Autres pays d'Europe,import,2024,5,3,2025
+CITE DU VATICAN,Autres pays d'Europe,import,2025,2,2,2025
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2021,61,73,2025
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2022,67,308,2025
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2023,47,268,2025
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2024,104,160,2025
+EX-YOUGOSLAVIE,Autres pays d'Europe,import,2025,26,51,2025
+MONTENEGRO,Autres pays d'Europe,import,2021,64,58,2025
+MONTENEGRO,Autres pays d'Europe,import,2022,148,18,2025
+MONTENEGRO,Autres pays d'Europe,import,2023,55,30,2025
+MONTENEGRO,Autres pays d'Europe,import,2024,1001,277,2025
+MONTENEGRO,Autres pays d'Europe,import,2025,638,57,2025
+TURQUIE,Autres pays d'Europe,import,2021,229431,430235,2025
+TURQUIE,Autres pays d'Europe,import,2022,251834,500441,2025
+TURQUIE,Autres pays d'Europe,import,2023,176062,287210,2025
+TURQUIE,Autres pays d'Europe,import,2024,238935,336391,2025
+TURQUIE,Autres pays d'Europe,import,2025,175309,282009,2025
+RUSSIE,Autres pays d'Europe,import,2021,307647,1519027,2025
+RUSSIE,Autres pays d'Europe,import,2022,439903,1021834,2025
+RUSSIE,Autres pays d'Europe,import,2023,502279,1688374,2025
+RUSSIE,Autres pays d'Europe,import,2024,578966,1697373,2025
+RUSSIE,Autres pays d'Europe,import,2025,494460,1669814,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2021,72667,198648,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2022,31451,73200,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2023,10004,25714,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2024,12131,71859,2025
+REPUBLIQUE D'UKRAINE,Autres pays d'Europe,import,2025,32740,162346,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2021,6106,27420,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2022,144,204,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2023,133,37,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2024,372,911,2025
+REPUBLIQUE DE BIELORUSSIE,Autres pays d'Europe,import,2025,183,194,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2021,576,553,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2022,86,675,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2023,736,957,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2024,1381,324,2025
+REPUBLIQUE D'AZERBADJAN,Autres pays d'Europe,import,2025,400,267,2025
+ALBANIE,Autres pays d'Europe,import,2021,10532,168431,2025
+ALBANIE,Autres pays d'Europe,import,2022,5236,7843,2025
+ALBANIE,Autres pays d'Europe,import,2023,9075,14425,2025
+ALBANIE,Autres pays d'Europe,import,2024,9044,6540,2025
+ALBANIE,Autres pays d'Europe,import,2025,4832,4742,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2021,28598,273744,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2022,29318,82956,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2023,15833,238871,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2024,19521,83467,2025
+REPUBLIQUE DE KAZAKSTAN,Autres pays d'Europe,import,2025,26353,161643,2025
+TRIESTE,Autres pays d'Europe,import,2021,23,56,2025
+TRIESTE,Autres pays d'Europe,import,2022,52,91,2025
+TRIESTE,Autres pays d'Europe,import,2023,397,349,2025
+TRIESTE,Autres pays d'Europe,import,2024,23,137,2025
+TRIESTE,Autres pays d'Europe,import,2025,,,2025
+ARMENIE,Autres pays d'Europe,import,2021,16,14,2025
+ARMENIE,Autres pays d'Europe,import,2022,22,0,2025
+ARMENIE,Autres pays d'Europe,import,2023,31,9,2025
+ARMENIE,Autres pays d'Europe,import,2024,129,95,2025
+ARMENIE,Autres pays d'Europe,import,2025,1,1,2025
+HELGOLAND,Autres pays d'Europe,import,2021,231,124,2025
+HELGOLAND,Autres pays d'Europe,import,2022,226,129,2025
+HELGOLAND,Autres pays d'Europe,import,2023,245,263,2025
+HELGOLAND,Autres pays d'Europe,import,2024,281,322,2025
+HELGOLAND,Autres pays d'Europe,import,2025,557,381,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2021,268,123,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2022,329,873,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2023,723,540,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2024,1174,862,2025
+REPUBLIQUE DE GEORGIE,Autres pays d'Europe,import,2025,1239,711,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2021,23,12,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2022,1918,4073,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2023,11,1,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2024,29,2,2025
+BOSNIE-HERZEGOVINE,Autres pays d'Europe,import,2025,678,198,2025
+TCHAD,Afrique centrale,import,2021,2,0,2025
+TCHAD,Afrique centrale,import,2022,1,5,2025
+TCHAD,Afrique centrale,import,2023,,,2025
+TCHAD,Afrique centrale,import,2024,3,2,2025
+TCHAD,Afrique centrale,import,2025,1,0,2025
+CAMEROUN,Afrique centrale,import,2021,14302,64484,2025
+CAMEROUN,Afrique centrale,import,2022,14018,64612,2025
+CAMEROUN,Afrique centrale,import,2023,15070,69182,2025
+CAMEROUN,Afrique centrale,import,2024,13196,64615,2025
+CAMEROUN,Afrique centrale,import,2025,12407,63953,2025
+CENTRE AFRIQUE,Afrique centrale,import,2021,353,70,2025
+CENTRE AFRIQUE,Afrique centrale,import,2022,36,127,2025
+CENTRE AFRIQUE,Afrique centrale,import,2023,11,120,2025
+CENTRE AFRIQUE,Afrique centrale,import,2024,0,0,2025
+CENTRE AFRIQUE,Afrique centrale,import,2025,27,173,2025
+GUINEE EQUATORIALE,Afrique centrale,import,2021,2,20,2025
+GUINEE EQUATORIALE,Afrique centrale,import,2022,,,2025
+GUINEE EQUATORIALE,Afrique centrale,import,2023,26,224,2025
+GUINEE EQUATORIALE,Afrique centrale,import,2024,2042,5988,2025
+GUINEE EQUATORIALE,Afrique centrale,import,2025,7,24,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,import,2021,588,113,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,import,2022,11,29,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,import,2023,,,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,import,2024,,,2025
+SAINT THOMAS ILE DU PRINCE,Afrique centrale,import,2025,,,2025
+GABON,Afrique centrale,import,2021,2078,5376,2025
+GABON,Afrique centrale,import,2022,2778,5708,2025
+GABON,Afrique centrale,import,2023,3795,10821,2025
+GABON,Afrique centrale,import,2024,4119,6880,2025
+GABON,Afrique centrale,import,2025,2491,7643,2025
+CONGO,Afrique centrale,import,2021,1219,3905,2025
+CONGO,Afrique centrale,import,2022,2326,4021,2025
+CONGO,Afrique centrale,import,2023,621,4145,2025
+CONGO,Afrique centrale,import,2024,169,1060,2025
+CONGO,Afrique centrale,import,2025,361,3307,2025
+CONGO DEMOCRATIQUE,Afrique centrale,import,2021,715,4219,2025
+CONGO DEMOCRATIQUE,Afrique centrale,import,2022,850,7179,2025
+CONGO DEMOCRATIQUE,Afrique centrale,import,2023,61,827,2025
+CONGO DEMOCRATIQUE,Afrique centrale,import,2024,303,604,2025
+CONGO DEMOCRATIQUE,Afrique centrale,import,2025,5,3,2025
+RWANDA,Afrique centrale,import,2021,130,20,2025
+RWANDA,Afrique centrale,import,2022,,,2025
+RWANDA,Afrique centrale,import,2023,4,2,2025
+RWANDA,Afrique centrale,import,2024,,,2025
+RWANDA,Afrique centrale,import,2025,37,6,2025
+BURUNDI,Afrique centrale,import,2021,21,2,2025
+BURUNDI,Afrique centrale,import,2022,,,2025
+BURUNDI,Afrique centrale,import,2023,13,1,2025
+BURUNDI,Afrique centrale,import,2024,25,2,2025
+BURUNDI,Afrique centrale,import,2025,,,2025
+ILES CANARIES,Afrique du Nord,import,2021,3,28,2025
+ILES CANARIES,Afrique du Nord,import,2022,,,2025
+ILES CANARIES,Afrique du Nord,import,2023,,,2025
+ILES CANARIES,Afrique du Nord,import,2024,,,2025
+ILES CANARIES,Afrique du Nord,import,2025,,,2025
+MAROC,Afrique du Nord,import,2021,91500,166530,2025
+MAROC,Afrique du Nord,import,2022,92360,208905,2025
+MAROC,Afrique du Nord,import,2023,123362,247214,2025
+MAROC,Afrique du Nord,import,2024,147040,283724,2025
+MAROC,Afrique du Nord,import,2025,149988,314813,2025
+ALGERIE,Afrique du Nord,import,2021,21678,347548,2025
+ALGERIE,Afrique du Nord,import,2022,36621,625545,2025
+ALGERIE,Afrique du Nord,import,2023,41693,293852,2025
+ALGERIE,Afrique du Nord,import,2024,8508,22393,2025
+ALGERIE,Afrique du Nord,import,2025,3265,28981,2025
+TUNISIE,Afrique du Nord,import,2021,26989,123743,2025
+TUNISIE,Afrique du Nord,import,2022,28385,130444,2025
+TUNISIE,Afrique du Nord,import,2023,39222,126982,2025
+TUNISIE,Afrique du Nord,import,2024,23358,68441,2025
+TUNISIE,Afrique du Nord,import,2025,22091,79800,2025
+LIBYE,Afrique du Nord,import,2021,181,662,2025
+LIBYE,Afrique du Nord,import,2022,1581,2238,2025
+LIBYE,Afrique du Nord,import,2023,19,44,2025
+LIBYE,Afrique du Nord,import,2024,4,36,2025
+LIBYE,Afrique du Nord,import,2025,66,1368,2025
+EGYPTE,Afrique du Nord,import,2021,36182,353600,2025
+EGYPTE,Afrique du Nord,import,2022,52967,401323,2025
+EGYPTE,Afrique du Nord,import,2023,74737,337280,2025
+EGYPTE,Afrique du Nord,import,2024,62550,399244,2025
+EGYPTE,Afrique du Nord,import,2025,68507,451102,2025
+SOUDAN,Afrique du Nord,import,2021,6610,788,2025
+SOUDAN,Afrique du Nord,import,2022,482,302,2025
+SOUDAN,Afrique du Nord,import,2023,326,390,2025
+SOUDAN,Afrique du Nord,import,2024,100,130,2025
+SOUDAN,Afrique du Nord,import,2025,4,9,2025
+MAURITANIE,Afrique occidentale,import,2021,2295,3548,2025
+MAURITANIE,Afrique occidentale,import,2022,6611,12157,2025
+MAURITANIE,Afrique occidentale,import,2023,17045,31351,2025
+MAURITANIE,Afrique occidentale,import,2024,16668,83703,2025
+MAURITANIE,Afrique occidentale,import,2025,15140,97700,2025
+MALI,Afrique occidentale,import,2021,2270,5369,2025
+MALI,Afrique occidentale,import,2022,891,1057,2025
+MALI,Afrique occidentale,import,2023,21606,6024,2025
+MALI,Afrique occidentale,import,2024,4372,1483,2025
+MALI,Afrique occidentale,import,2025,5712,36206,2025
+BURKINA FASO,Afrique occidentale,import,2021,387,581,2025
+BURKINA FASO,Afrique occidentale,import,2022,884,69,2025
+BURKINA FASO,Afrique occidentale,import,2023,340,152,2025
+BURKINA FASO,Afrique occidentale,import,2024,476,585,2025
+BURKINA FASO,Afrique occidentale,import,2025,707,6204,2025
+NIGER,Afrique occidentale,import,2021,460,155,2025
+NIGER,Afrique occidentale,import,2022,50,100,2025
+NIGER,Afrique occidentale,import,2023,338,212,2025
+NIGER,Afrique occidentale,import,2024,407,424,2025
+NIGER,Afrique occidentale,import,2025,176,78,2025
+ILES DU CAP VERT,Afrique occidentale,import,2021,1770,4275,2025
+ILES DU CAP VERT,Afrique occidentale,import,2022,2592,3999,2025
+ILES DU CAP VERT,Afrique occidentale,import,2023,9,10,2025
+ILES DU CAP VERT,Afrique occidentale,import,2024,37,49,2025
+ILES DU CAP VERT,Afrique occidentale,import,2025,1633,4499,2025
+GAMBIE,Afrique occidentale,import,2021,3882,6103,2025
+GAMBIE,Afrique occidentale,import,2022,2219,3592,2025
+GAMBIE,Afrique occidentale,import,2023,4562,7343,2025
+GAMBIE,Afrique occidentale,import,2024,983,1370,2025
+GAMBIE,Afrique occidentale,import,2025,1990,3306,2025
+GUINEE BISSAU,Afrique occidentale,import,2021,212,397,2025
+GUINEE BISSAU,Afrique occidentale,import,2022,139,261,2025
+GUINEE BISSAU,Afrique occidentale,import,2023,132,308,2025
+GUINEE BISSAU,Afrique occidentale,import,2024,57,433,2025
+GUINEE BISSAU,Afrique occidentale,import,2025,85,338,2025
+GUINEE REPUBLIQUE,Afrique occidentale,import,2021,1915,14179,2025
+GUINEE REPUBLIQUE,Afrique occidentale,import,2022,7797,26164,2025
+GUINEE REPUBLIQUE,Afrique occidentale,import,2023,6104,20625,2025
+GUINEE REPUBLIQUE,Afrique occidentale,import,2024,1647,4350,2025
+GUINEE REPUBLIQUE,Afrique occidentale,import,2025,3495,10371,2025
+SIERRA LEONE,Afrique occidentale,import,2021,9496,18522,2025
+SIERRA LEONE,Afrique occidentale,import,2022,9801,16358,2025
+SIERRA LEONE,Afrique occidentale,import,2023,2910,4514,2025
+SIERRA LEONE,Afrique occidentale,import,2024,3084,4746,2025
+SIERRA LEONE,Afrique occidentale,import,2025,2685,4078,2025
+LIBERIA,Afrique occidentale,import,2021,1598,5253,2025
+LIBERIA,Afrique occidentale,import,2022,759,1430,2025
+LIBERIA,Afrique occidentale,import,2023,207,203,2025
+LIBERIA,Afrique occidentale,import,2024,,,2025
+LIBERIA,Afrique occidentale,import,2025,3,2,2025
+COTE D'IVOIRE,Afrique occidentale,import,2021,58199,127975,2025
+COTE D'IVOIRE,Afrique occidentale,import,2022,72860,114595,2025
+COTE D'IVOIRE,Afrique occidentale,import,2023,54040,87867,2025
+COTE D'IVOIRE,Afrique occidentale,import,2024,64412,95226,2025
+COTE D'IVOIRE,Afrique occidentale,import,2025,62981,102098,2025
+GHANA,Afrique occidentale,import,2021,41477,67257,2025
+GHANA,Afrique occidentale,import,2022,43571,73357,2025
+GHANA,Afrique occidentale,import,2023,20930,43242,2025
+GHANA,Afrique occidentale,import,2024,33769,90932,2025
+GHANA,Afrique occidentale,import,2025,26914,58464,2025
+TOGO,Afrique occidentale,import,2021,17419,43796,2025
+TOGO,Afrique occidentale,import,2022,8997,8971,2025
+TOGO,Afrique occidentale,import,2023,9342,16121,2025
+TOGO,Afrique occidentale,import,2024,6470,20092,2025
+TOGO,Afrique occidentale,import,2025,15655,19511,2025
+BENIN,Afrique occidentale,import,2021,1221,3775,2025
+BENIN,Afrique occidentale,import,2022,384,369,2025
+BENIN,Afrique occidentale,import,2023,1763,5087,2025
+BENIN,Afrique occidentale,import,2024,1664,3773,2025
+BENIN,Afrique occidentale,import,2025,2625,21299,2025
+NIGERIA,Afrique occidentale,import,2021,287563,1040221,2025
+NIGERIA,Afrique occidentale,import,2022,331199,655773,2025
+NIGERIA,Afrique occidentale,import,2023,617385,1457901,2025
+NIGERIA,Afrique occidentale,import,2024,542046,1350894,2025
+NIGERIA,Afrique occidentale,import,2025,560824,1621699,2025
+ILE STE HELENE,Afrique orientale et du Sud,import,2021,2,1,2025
+ILE STE HELENE,Afrique orientale et du Sud,import,2022,652,4869,2025
+ILE STE HELENE,Afrique orientale et du Sud,import,2023,1865,5261,2025
+ILE STE HELENE,Afrique orientale et du Sud,import,2024,17,18,2025
+ILE STE HELENE,Afrique orientale et du Sud,import,2025,22,2,2025
+ANGOLA,Afrique orientale et du Sud,import,2021,2471,10028,2025
+ANGOLA,Afrique orientale et du Sud,import,2022,2466,9417,2025
+ANGOLA,Afrique orientale et du Sud,import,2023,3758,13028,2025
+ANGOLA,Afrique orientale et du Sud,import,2024,30,326,2025
+ANGOLA,Afrique orientale et du Sud,import,2025,137,1622,2025
+ETHIOPIE,Afrique orientale et du Sud,import,2021,59,14,2025
+ETHIOPIE,Afrique orientale et du Sud,import,2022,46,17,2025
+ETHIOPIE,Afrique orientale et du Sud,import,2023,787,4005,2025
+ETHIOPIE,Afrique orientale et du Sud,import,2024,22,5,2025
+ETHIOPIE,Afrique orientale et du Sud,import,2025,36,108,2025
+DJIBOUTI,Afrique orientale et du Sud,import,2021,22,29,2025
+DJIBOUTI,Afrique orientale et du Sud,import,2022,5,4,2025
+DJIBOUTI,Afrique orientale et du Sud,import,2023,8,2,2025
+DJIBOUTI,Afrique orientale et du Sud,import,2024,6,60,2025
+DJIBOUTI,Afrique orientale et du Sud,import,2025,108,48,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2021,2105,2318,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2022,2014,2120,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2023,1284,1372,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2024,1027,1172,2025
+REPUBLIQUE DE SOMALIE,Afrique orientale et du Sud,import,2025,992,1069,2025
+KENYA,Afrique orientale et du Sud,import,2021,2117,516,2025
+KENYA,Afrique orientale et du Sud,import,2022,334,341,2025
+KENYA,Afrique orientale et du Sud,import,2023,488,761,2025
+KENYA,Afrique orientale et du Sud,import,2024,526,766,2025
+KENYA,Afrique orientale et du Sud,import,2025,2923,1865,2025
+OUGANDA,Afrique orientale et du Sud,import,2021,143,198,2025
+OUGANDA,Afrique orientale et du Sud,import,2022,369,230,2025
+OUGANDA,Afrique orientale et du Sud,import,2023,81,57,2025
+OUGANDA,Afrique orientale et du Sud,import,2024,279,286,2025
+OUGANDA,Afrique orientale et du Sud,import,2025,87,124,2025
+TANZANIE,Afrique orientale et du Sud,import,2021,167,155,2025
+TANZANIE,Afrique orientale et du Sud,import,2022,12658,84226,2025
+TANZANIE,Afrique orientale et du Sud,import,2023,156,268,2025
+TANZANIE,Afrique orientale et du Sud,import,2024,513,810,2025
+TANZANIE,Afrique orientale et du Sud,import,2025,2089,1818,2025
+SEYCHELLES,Afrique orientale et du Sud,import,2021,237,13,2025
+SEYCHELLES,Afrique orientale et du Sud,import,2022,896,51,2025
+SEYCHELLES,Afrique orientale et du Sud,import,2023,479,3,2025
+SEYCHELLES,Afrique orientale et du Sud,import,2024,15,59,2025
+SEYCHELLES,Afrique orientale et du Sud,import,2025,0,0,2025
+MOZAMBIQUE,Afrique orientale et du Sud,import,2021,4310,80189,2025
+MOZAMBIQUE,Afrique orientale et du Sud,import,2022,26249,205554,2025
+MOZAMBIQUE,Afrique orientale et du Sud,import,2023,23201,247734,2025
+MOZAMBIQUE,Afrique orientale et du Sud,import,2024,15106,233203,2025
+MOZAMBIQUE,Afrique orientale et du Sud,import,2025,3636,64649,2025
+MADAGASCAR,Afrique orientale et du Sud,import,2021,74,13,2025
+MADAGASCAR,Afrique orientale et du Sud,import,2022,32,153,2025
+MADAGASCAR,Afrique orientale et du Sud,import,2023,27,134,2025
+MADAGASCAR,Afrique orientale et du Sud,import,2024,35,217,2025
+MADAGASCAR,Afrique orientale et du Sud,import,2025,327,194,2025
+REUNION,Afrique orientale et du Sud,import,2021,81,58,2025
+REUNION,Afrique orientale et du Sud,import,2022,16,2,2025
+REUNION,Afrique orientale et du Sud,import,2023,3,8,2025
+REUNION,Afrique orientale et du Sud,import,2024,13,14,2025
+REUNION,Afrique orientale et du Sud,import,2025,18,3,2025
+ILES MAURICE,Afrique orientale et du Sud,import,2021,721,598,2025
+ILES MAURICE,Afrique orientale et du Sud,import,2022,650,187,2025
+ILES MAURICE,Afrique orientale et du Sud,import,2023,4588,485,2025
+ILES MAURICE,Afrique orientale et du Sud,import,2024,14289,1406,2025
+ILES MAURICE,Afrique orientale et du Sud,import,2025,1722,373,2025
+ZAMBIE,Afrique orientale et du Sud,import,2021,,,2025
+ZAMBIE,Afrique orientale et du Sud,import,2022,84,26,2025
+ZAMBIE,Afrique orientale et du Sud,import,2023,8,2,2025
+ZAMBIE,Afrique orientale et du Sud,import,2024,96,37,2025
+ZAMBIE,Afrique orientale et du Sud,import,2025,99,38,2025
+ZIMBABWE,Afrique orientale et du Sud,import,2021,,,2025
+ZIMBABWE,Afrique orientale et du Sud,import,2022,6,3,2025
+ZIMBABWE,Afrique orientale et du Sud,import,2023,0,0,2025
+ZIMBABWE,Afrique orientale et du Sud,import,2024,10,16,2025
+ZIMBABWE,Afrique orientale et du Sud,import,2025,32,0,2025
+MALAWI,Afrique orientale et du Sud,import,2021,182,306,2025
+MALAWI,Afrique orientale et du Sud,import,2022,177,174,2025
+MALAWI,Afrique orientale et du Sud,import,2023,315,198,2025
+MALAWI,Afrique orientale et du Sud,import,2024,291,220,2025
+MALAWI,Afrique orientale et du Sud,import,2025,601,207,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2021,77200,368282,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2022,111772,479473,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2023,119219,600906,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2024,108901,689082,2025
+AFRIQUE DU SUD,Afrique orientale et du Sud,import,2025,106094,792953,2025
+BOTSWANA,Afrique orientale et du Sud,import,2021,,,2025
+BOTSWANA,Afrique orientale et du Sud,import,2022,,,2025
+BOTSWANA,Afrique orientale et du Sud,import,2023,0,1,2025
+BOTSWANA,Afrique orientale et du Sud,import,2024,,,2025
+BOTSWANA,Afrique orientale et du Sud,import,2025,,,2025
+NAMIBIE,Afrique orientale et du Sud,import,2021,,,2025
+NAMIBIE,Afrique orientale et du Sud,import,2022,15811,19170,2025
+NAMIBIE,Afrique orientale et du Sud,import,2023,32,248,2025
+NAMIBIE,Afrique orientale et du Sud,import,2024,45,23,2025
+NAMIBIE,Afrique orientale et du Sud,import,2025,12300,27120,2025
+SWAZILAND,Afrique orientale et du Sud,import,2021,106,67,2025
+SWAZILAND,Afrique orientale et du Sud,import,2022,456,483,2025
+SWAZILAND,Afrique orientale et du Sud,import,2023,2428,5139,2025
+SWAZILAND,Afrique orientale et du Sud,import,2024,7540,87301,2025
+SWAZILAND,Afrique orientale et du Sud,import,2025,235,289,2025
+LESOTHO,Afrique orientale et du Sud,import,2021,,,2025
+LESOTHO,Afrique orientale et du Sud,import,2022,,,2025
+LESOTHO,Afrique orientale et du Sud,import,2023,,,2025
+LESOTHO,Afrique orientale et du Sud,import,2024,,,2025
+LESOTHO,Afrique orientale et du Sud,import,2025,14,22,2025
+MEXIQUE,Amérique centrale et du Sud,import,2021,3141,1265,2025
+MEXIQUE,Amérique centrale et du Sud,import,2022,8156,6621,2025
+MEXIQUE,Amérique centrale et du Sud,import,2023,3908,701,2025
+MEXIQUE,Amérique centrale et du Sud,import,2024,4151,743,2025
+MEXIQUE,Amérique centrale et du Sud,import,2025,3805,962,2025
+GUATEMALA,Amérique centrale et du Sud,import,2021,4,0,2025
+GUATEMALA,Amérique centrale et du Sud,import,2022,3,0,2025
+GUATEMALA,Amérique centrale et du Sud,import,2023,4,0,2025
+GUATEMALA,Amérique centrale et du Sud,import,2024,5,0,2025
+GUATEMALA,Amérique centrale et du Sud,import,2025,2529,11236,2025
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2021,461,1287,2025
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2022,45,104,2025
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2023,1871,6320,2025
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2024,3251,9701,2025
+HONDURAS BRITANIQUE,Amérique centrale et du Sud,import,2025,557,1041,2025
+HONDURAS,Amérique centrale et du Sud,import,2021,25,94,2025
+HONDURAS,Amérique centrale et du Sud,import,2022,164,90,2025
+HONDURAS,Amérique centrale et du Sud,import,2023,33,209,2025
+HONDURAS,Amérique centrale et du Sud,import,2024,69,241,2025
+HONDURAS,Amérique centrale et du Sud,import,2025,13,2,2025
+NICARAGUA,Amérique centrale et du Sud,import,2021,114,425,2025
+NICARAGUA,Amérique centrale et du Sud,import,2022,,,2025
+NICARAGUA,Amérique centrale et du Sud,import,2023,2223,9070,2025
+NICARAGUA,Amérique centrale et du Sud,import,2024,2432,9951,2025
+NICARAGUA,Amérique centrale et du Sud,import,2025,993,2273,2025
+COSTA RICA,Amérique centrale et du Sud,import,2021,249,217,2025
+COSTA RICA,Amérique centrale et du Sud,import,2022,1213,1318,2025
+COSTA RICA,Amérique centrale et du Sud,import,2023,1486,1581,2025
+COSTA RICA,Amérique centrale et du Sud,import,2024,1245,1012,2025
+COSTA RICA,Amérique centrale et du Sud,import,2025,360,,2025
+PANAMA,Amérique centrale et du Sud,import,2021,219,383,2025
+PANAMA,Amérique centrale et du Sud,import,2022,38,140,2025
+PANAMA,Amérique centrale et du Sud,import,2023,169,438,2025
+PANAMA,Amérique centrale et du Sud,import,2024,710,1052,2025
+PANAMA,Amérique centrale et du Sud,import,2025,257,,2025
+CUBA,Amérique centrale et du Sud,import,2021,80,1,2025
+CUBA,Amérique centrale et du Sud,import,2022,37,0,2025
+CUBA,Amérique centrale et du Sud,import,2023,10,0,2025
+CUBA,Amérique centrale et du Sud,import,2024,11,0,2025
+CUBA,Amérique centrale et du Sud,import,2025,,,2025
+HAITI,Amérique centrale et du Sud,import,2021,17,51,2025
+HAITI,Amérique centrale et du Sud,import,2022,14,51,2025
+HAITI,Amérique centrale et du Sud,import,2023,9,1,2025
+HAITI,Amérique centrale et du Sud,import,2024,,,2025
+HAITI,Amérique centrale et du Sud,import,2025,,,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2021,1,2,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2022,10,0,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2023,423,245,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2024,22,6,2025
+ILES BRAHAMAS,Amérique centrale et du Sud,import,2025,74,,2025
+ILES CALQUES,Amérique centrale et du Sud,import,2021,32,18,2025
+ILES CALQUES,Amérique centrale et du Sud,import,2022,20,7,2025
+ILES CALQUES,Amérique centrale et du Sud,import,2023,97,84,2025
+ILES CALQUES,Amérique centrale et du Sud,import,2024,71,172,2025
+ILES CALQUES,Amérique centrale et du Sud,import,2025,555,,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2021,86,7,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2022,1196,140,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2023,43,31,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2024,341,269,2025
+SAINT DOMINGUE,Amérique centrale et du Sud,import,2025,231,,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2021,1927,6716,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2022,257,550,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2023,453,940,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2024,198,381,2025
+ILES VIERGES DES USA,Amérique centrale et du Sud,import,2025,63,,2025
+GUADELOUPE,Amérique centrale et du Sud,import,2021,1,0,2025
+GUADELOUPE,Amérique centrale et du Sud,import,2022,7,0,2025
+GUADELOUPE,Amérique centrale et du Sud,import,2023,6,3,2025
+GUADELOUPE,Amérique centrale et du Sud,import,2024,1,0,2025
+GUADELOUPE,Amérique centrale et du Sud,import,2025,31,,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2021,2187,5923,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2022,415,2145,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2023,3309,10089,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2024,1000,5254,2025
+ANTIGUA-BARBUDA,Amérique centrale et du Sud,import,2025,530,,2025
+JAMAIQUE,Amérique centrale et du Sud,import,2021,,,2025
+JAMAIQUE,Amérique centrale et du Sud,import,2022,,,2025
+JAMAIQUE,Amérique centrale et du Sud,import,2023,,,2025
+JAMAIQUE,Amérique centrale et du Sud,import,2024,29,680,2025
+JAMAIQUE,Amérique centrale et du Sud,import,2025,476,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2021,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2022,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2023,,,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2024,10,11,2025
+ST VINCENT-ILES GRENADINES,Amérique centrale et du Sud,import,2025,5259,,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2021,2761,10293,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2022,6483,12325,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2023,1343,5001,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2024,1950,4950,2025
+TRINIDAD ET TOBAGO,Amérique centrale et du Sud,import,2025,16333,,2025
+CURUCAO,Amérique centrale et du Sud,import,2021,,,2025
+CURUCAO,Amérique centrale et du Sud,import,2022,,,2025
+CURUCAO,Amérique centrale et du Sud,import,2023,3,17,2025
+CURUCAO,Amérique centrale et du Sud,import,2024,,,2025
+CURUCAO,Amérique centrale et du Sud,import,2025,,,2025
+COLOMBIE,Amérique centrale et du Sud,import,2021,3457,531,2025
+COLOMBIE,Amérique centrale et du Sud,import,2022,5472,879,2025
+COLOMBIE,Amérique centrale et du Sud,import,2023,8001,1388,2025
+COLOMBIE,Amérique centrale et du Sud,import,2024,8839,40944,2025
+COLOMBIE,Amérique centrale et du Sud,import,2025,4322,,2025
+VENEZUELA,Amérique centrale et du Sud,import,2021,1329,61,2025
+VENEZUELA,Amérique centrale et du Sud,import,2022,591,79,2025
+VENEZUELA,Amérique centrale et du Sud,import,2023,97,145,2025
+VENEZUELA,Amérique centrale et du Sud,import,2024,3194,53025,2025
+VENEZUELA,Amérique centrale et du Sud,import,2025,2762,,2025
+GUYANA,Amérique centrale et du Sud,import,2021,0,0,2025
+GUYANA,Amérique centrale et du Sud,import,2022,,,2025
+GUYANA,Amérique centrale et du Sud,import,2023,15,24,2025
+GUYANA,Amérique centrale et du Sud,import,2024,,,2025
+GUYANA,Amérique centrale et du Sud,import,2025,49,,2025
+SURINAM,Amérique centrale et du Sud,import,2021,26,4,2025
+SURINAM,Amérique centrale et du Sud,import,2022,62,135,2025
+SURINAM,Amérique centrale et du Sud,import,2023,357,312,2025
+SURINAM,Amérique centrale et du Sud,import,2024,35,50,2025
+SURINAM,Amérique centrale et du Sud,import,2025,185,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2021,21,36,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2022,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2023,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2024,,,2025
+GUYANE FRANCAISE,Amérique centrale et du Sud,import,2025,,,2025
+EQUATEUR,Amérique centrale et du Sud,import,2021,,,2025
+EQUATEUR,Amérique centrale et du Sud,import,2022,550,335,2025
+EQUATEUR,Amérique centrale et du Sud,import,2023,15,23,2025
+EQUATEUR,Amérique centrale et du Sud,import,2024,130,102,2025
+EQUATEUR,Amérique centrale et du Sud,import,2025,25,,2025
+PEROU,Amérique centrale et du Sud,import,2021,79,119,2025
+PEROU,Amérique centrale et du Sud,import,2022,89,166,2025
+PEROU,Amérique centrale et du Sud,import,2023,149,109,2025
+PEROU,Amérique centrale et du Sud,import,2024,22,1,2025
+PEROU,Amérique centrale et du Sud,import,2025,318,,2025
+BRESIL,Amérique centrale et du Sud,import,2021,88817,243319,2025
+BRESIL,Amérique centrale et du Sud,import,2022,114178,330594,2025
+BRESIL,Amérique centrale et du Sud,import,2023,122285,443410,2025
+BRESIL,Amérique centrale et du Sud,import,2024,133228,488029,2025
+BRESIL,Amérique centrale et du Sud,import,2025,128304,,2025
+CHILI,Amérique centrale et du Sud,import,2021,398,503,2025
+CHILI,Amérique centrale et du Sud,import,2022,346,237,2025
+CHILI,Amérique centrale et du Sud,import,2023,1183,407,2025
+CHILI,Amérique centrale et du Sud,import,2024,1051,2071,2025
+CHILI,Amérique centrale et du Sud,import,2025,530,,2025
+BOLIVIE,Amérique centrale et du Sud,import,2021,,,2025
+BOLIVIE,Amérique centrale et du Sud,import,2022,6,0,2025
+BOLIVIE,Amérique centrale et du Sud,import,2023,2033,6325,2025
+BOLIVIE,Amérique centrale et du Sud,import,2024,75,205,2025
+BOLIVIE,Amérique centrale et du Sud,import,2025,,,2025
+PARAGUAY,Amérique centrale et du Sud,import,2021,5780,32787,2025
+PARAGUAY,Amérique centrale et du Sud,import,2022,2341,10064,2025
+PARAGUAY,Amérique centrale et du Sud,import,2023,1553,7368,2025
+PARAGUAY,Amérique centrale et du Sud,import,2024,609,2545,2025
+PARAGUAY,Amérique centrale et du Sud,import,2025,6550,,2025
+URUGUAY,Amérique centrale et du Sud,import,2021,6473,24353,2025
+URUGUAY,Amérique centrale et du Sud,import,2022,850,631,2025
+URUGUAY,Amérique centrale et du Sud,import,2023,5022,23105,2025
+URUGUAY,Amérique centrale et du Sud,import,2024,3847,15170,2025
+URUGUAY,Amérique centrale et du Sud,import,2025,6540,,2025
+ARGENTINE,Amérique centrale et du Sud,import,2021,102790,542237,2025
+ARGENTINE,Amérique centrale et du Sud,import,2022,189434,698606,2025
+ARGENTINE,Amérique centrale et du Sud,import,2023,101465,432374,2025
+ARGENTINE,Amérique centrale et du Sud,import,2024,130524,699638,2025
+ARGENTINE,Amérique centrale et du Sud,import,2025,142601,,2025
+ILES FALKLAND (ILES MALVINAS),Amérique centrale et du Sud,import,2021,922,435,2025
+ILES FALKLAND (ILES MALVINAS),Amérique centrale et du Sud,import,2022,1454,596,2025
+ILES FALKLAND (ILES MALVINAS),Amérique centrale et du Sud,import,2023,1295,516,2025
+ILES FALKLAND (ILES MALVINAS),Amérique centrale et du Sud,import,2024,439,216,2025
+ILES FALKLAND (ILES MALVINAS),Amérique centrale et du Sud,import,2025,,,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2021,150365,225576,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2022,206447,274653,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2023,173828,189287,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2024,198243,367768,2025
+ETATS UNIS D'AMERIQUE,Amérique du Nord,import,2025,266112,,2025
+CANADA,Amérique du Nord,import,2021,27818,42202,2025
+CANADA,Amérique du Nord,import,2022,20753,25162,2025
+CANADA,Amérique du Nord,import,2023,24812,39262,2025
+CANADA,Amérique du Nord,import,2024,25357,19947,2025
+CANADA,Amérique du Nord,import,2025,25726,,2025
+GROENLAND,Amérique du Nord,import,2021,,,2025
+GROENLAND,Amérique du Nord,import,2022,,,2025
+GROENLAND,Amérique du Nord,import,2023,9,13,2025
+GROENLAND,Amérique du Nord,import,2024,8,26,2025
+GROENLAND,Amérique du Nord,import,2025,7,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2021,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2022,3,1,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2023,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2024,,,2025
+SAINT PIERRE ET MIQUELON,Amérique du Nord,import,2025,,,2025
+LIBAN,Asie occidentale,import,2021,8621,4405,2025
+LIBAN,Asie occidentale,import,2022,4922,4192,2025
+LIBAN,Asie occidentale,import,2023,9527,21184,2025
+LIBAN,Asie occidentale,import,2024,6616,6250,2025
+LIBAN,Asie occidentale,import,2025,5777,,2025
+SYRIE,Asie occidentale,import,2021,15,115,2025
+SYRIE,Asie occidentale,import,2022,23,94,2025
+SYRIE,Asie occidentale,import,2023,113,433,2025
+SYRIE,Asie occidentale,import,2024,95,641,2025
+SYRIE,Asie occidentale,import,2025,67,,2025
+IRAK,Asie occidentale,import,2021,84,546,2025
+IRAK,Asie occidentale,import,2022,290,1744,2025
+IRAK,Asie occidentale,import,2023,68,383,2025
+IRAK,Asie occidentale,import,2024,1431,3930,2025
+IRAK,Asie occidentale,import,2025,268,,2025
+IRAN,Asie occidentale,import,2021,9813,9892,2025
+IRAN,Asie occidentale,import,2022,11685,9379,2025
+IRAN,Asie occidentale,import,2023,9923,9935,2025
+IRAN,Asie occidentale,import,2024,16016,8672,2025
+IRAN,Asie occidentale,import,2025,7686,,2025
+ISRAEL,Asie occidentale,import,2021,5820,8748,2025
+ISRAEL,Asie occidentale,import,2022,4084,1920,2025
+ISRAEL,Asie occidentale,import,2023,16818,2988,2025
+ISRAEL,Asie occidentale,import,2024,6233,955,2025
+ISRAEL,Asie occidentale,import,2025,6066,,2025
+JORDANIE,Asie occidentale,import,2021,568,390,2025
+JORDANIE,Asie occidentale,import,2022,1501,1427,2025
+JORDANIE,Asie occidentale,import,2023,6275,15445,2025
+JORDANIE,Asie occidentale,import,2024,1551,1567,2025
+JORDANIE,Asie occidentale,import,2025,3783,,2025
+ARABIE SEOUDITE,Asie occidentale,import,2021,34446,142019,2025
+ARABIE SEOUDITE,Asie occidentale,import,2022,59519,127458,2025
+ARABIE SEOUDITE,Asie occidentale,import,2023,24981,47481,2025
+ARABIE SEOUDITE,Asie occidentale,import,2024,55215,158361,2025
+ARABIE SEOUDITE,Asie occidentale,import,2025,43059,,2025
+KOWEIT,Asie occidentale,import,2021,8125,23442,2025
+KOWEIT,Asie occidentale,import,2022,15406,18194,2025
+KOWEIT,Asie occidentale,import,2023,1449,2403,2025
+KOWEIT,Asie occidentale,import,2024,11371,23469,2025
+KOWEIT,Asie occidentale,import,2025,2555,,2025
+BAHREIN,Asie occidentale,import,2021,1641,1040,2025
+BAHREIN,Asie occidentale,import,2022,7280,10783,2025
+BAHREIN,Asie occidentale,import,2023,2575,1035,2025
+BAHREIN,Asie occidentale,import,2024,6086,3316,2025
+BAHREIN,Asie occidentale,import,2025,2267,,2025
+QATAR,Asie occidentale,import,2021,7242,8594,2025
+QATAR,Asie occidentale,import,2022,28596,79899,2025
+QATAR,Asie occidentale,import,2023,7888,10364,2025
+QATAR,Asie occidentale,import,2024,8042,14547,2025
+QATAR,Asie occidentale,import,2025,12614,,2025
+EMIRATS ARABES UNIS,Asie occidentale,import,2021,213597,954546,2025
+EMIRATS ARABES UNIS,Asie occidentale,import,2022,363737,998530,2025
+EMIRATS ARABES UNIS,Asie occidentale,import,2023,373252,1192902,2025
+EMIRATS ARABES UNIS,Asie occidentale,import,2024,408962,1367548,2025
+EMIRATS ARABES UNIS,Asie occidentale,import,2025,323014,,2025
+OMAN,Asie occidentale,import,2021,3092,43175,2025
+OMAN,Asie occidentale,import,2022,1691,2936,2025
+OMAN,Asie occidentale,import,2023,4114,6884,2025
+OMAN,Asie occidentale,import,2024,3473,5905,2025
+OMAN,Asie occidentale,import,2025,4154,,2025
+YEMEN,Asie occidentale,import,2021,53,21,2025
+YEMEN,Asie occidentale,import,2022,,,2025
+YEMEN,Asie occidentale,import,2023,132,218,2025
+YEMEN,Asie occidentale,import,2024,13,52,2025
+YEMEN,Asie occidentale,import,2025,95,,2025
+AFGANISTAN,Autres pays d'Asie,import,2021,890,634,2025
+AFGANISTAN,Autres pays d'Asie,import,2022,916,827,2025
+AFGANISTAN,Autres pays d'Asie,import,2023,3195,10119,2025
+AFGANISTAN,Autres pays d'Asie,import,2024,511,385,2025
+AFGANISTAN,Autres pays d'Asie,import,2025,261,,2025
+PAKISTAN,Autres pays d'Asie,import,2021,12809,44274,2025
+PAKISTAN,Autres pays d'Asie,import,2022,41098,170599,2025
+PAKISTAN,Autres pays d'Asie,import,2023,18706,63993,2025
+PAKISTAN,Autres pays d'Asie,import,2024,62836,325057,2025
+PAKISTAN,Autres pays d'Asie,import,2025,49209,,2025
+INDE,Autres pays d'Asie,import,2021,383729,1223945,2025
+INDE,Autres pays d'Asie,import,2022,568176,1219875,2025
+INDE,Autres pays d'Asie,import,2023,483697,1239281,2025
+INDE,Autres pays d'Asie,import,2024,329816,703559,2025
+INDE,Autres pays d'Asie,import,2025,421228,,2025
+BENGLADESH,Autres pays d'Asie,import,2021,281,109,2025
+BENGLADESH,Autres pays d'Asie,import,2022,333,86,2025
+BENGLADESH,Autres pays d'Asie,import,2023,442,169,2025
+BENGLADESH,Autres pays d'Asie,import,2024,426,252,2025
+BENGLADESH,Autres pays d'Asie,import,2025,1351,,2025
+MALDIVES,Autres pays d'Asie,import,2021,1,0,2025
+MALDIVES,Autres pays d'Asie,import,2022,,,2025
+MALDIVES,Autres pays d'Asie,import,2023,196,82,2025
+MALDIVES,Autres pays d'Asie,import,2024,0,0,2025
+MALDIVES,Autres pays d'Asie,import,2025,,,2025
+SRI-LANKA,Autres pays d'Asie,import,2021,209,268,2025
+SRI-LANKA,Autres pays d'Asie,import,2022,408,152,2025
+SRI-LANKA,Autres pays d'Asie,import,2023,156,128,2025
+SRI-LANKA,Autres pays d'Asie,import,2024,1159,375,2025
+SRI-LANKA,Autres pays d'Asie,import,2025,312,,2025
+UNION BIRMANE,Autres pays d'Asie,import,2021,41,576,2025
+UNION BIRMANE,Autres pays d'Asie,import,2022,0,0,2025
+UNION BIRMANE,Autres pays d'Asie,import,2023,,,2025
+UNION BIRMANE,Autres pays d'Asie,import,2024,9519,44424,2025
+UNION BIRMANE,Autres pays d'Asie,import,2025,13270,,2025
+THAILANDE,Autres pays d'Asie,import,2021,46714,123554,2025
+THAILANDE,Autres pays d'Asie,import,2022,87843,230175,2025
+THAILANDE,Autres pays d'Asie,import,2023,89866,213661,2025
+THAILANDE,Autres pays d'Asie,import,2024,133490,410619,2025
+THAILANDE,Autres pays d'Asie,import,2025,115821,,2025
+LAOS,Autres pays d'Asie,import,2021,3,2,2025
+LAOS,Autres pays d'Asie,import,2022,782,867,2025
+LAOS,Autres pays d'Asie,import,2023,,,2025
+LAOS,Autres pays d'Asie,import,2024,,,2025
+LAOS,Autres pays d'Asie,import,2025,4,,2025
+VIETNAM,Autres pays d'Asie,import,2021,6938,6822,2025
+VIETNAM,Autres pays d'Asie,import,2022,8470,6841,2025
+VIETNAM,Autres pays d'Asie,import,2023,5460,15188,2025
+VIETNAM,Autres pays d'Asie,import,2024,3238,4973,2025
+VIETNAM,Autres pays d'Asie,import,2025,29076,,2025
+CAMBODGE,Autres pays d'Asie,import,2021,469,288,2025
+CAMBODGE,Autres pays d'Asie,import,2022,561,526,2025
+CAMBODGE,Autres pays d'Asie,import,2023,65,8,2025
+CAMBODGE,Autres pays d'Asie,import,2024,125,84,2025
+CAMBODGE,Autres pays d'Asie,import,2025,220,,2025
+INDONESIE,Autres pays d'Asie,import,2021,17404,33051,2025
+INDONESIE,Autres pays d'Asie,import,2022,110915,56457,2025
+INDONESIE,Autres pays d'Asie,import,2023,90213,76580,2025
+INDONESIE,Autres pays d'Asie,import,2024,36807,84108,2025
+INDONESIE,Autres pays d'Asie,import,2025,33087,,2025
+MALAISIE,Autres pays d'Asie,import,2021,90391,155110,2025
+MALAISIE,Autres pays d'Asie,import,2022,93894,83609,2025
+MALAISIE,Autres pays d'Asie,import,2023,73570,115030,2025
+MALAISIE,Autres pays d'Asie,import,2024,76415,175328,2025
+MALAISIE,Autres pays d'Asie,import,2025,65031,,2025
+BRUNEI,Autres pays d'Asie,import,2021,12,26,2025
+BRUNEI,Autres pays d'Asie,import,2022,63,192,2025
+BRUNEI,Autres pays d'Asie,import,2023,401,372,2025
+BRUNEI,Autres pays d'Asie,import,2024,164,206,2025
+BRUNEI,Autres pays d'Asie,import,2025,22,,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2021,163,154,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2022,129,192,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2023,298,1493,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2024,535,2048,2025
+TIMOR PORTUGAIS,Autres pays d'Asie,import,2025,126,,2025
+SINGAPOUR,Autres pays d'Asie,import,2021,24008,29025,2025
+SINGAPOUR,Autres pays d'Asie,import,2022,52897,35505,2025
+SINGAPOUR,Autres pays d'Asie,import,2023,19229,21415,2025
+SINGAPOUR,Autres pays d'Asie,import,2024,7580,3047,2025
+SINGAPOUR,Autres pays d'Asie,import,2025,102019,,2025
+PHILIPPINE,Autres pays d'Asie,import,2021,311,147,2025
+PHILIPPINE,Autres pays d'Asie,import,2022,145,22,2025
+PHILIPPINE,Autres pays d'Asie,import,2023,256,102,2025
+PHILIPPINE,Autres pays d'Asie,import,2024,600,118,2025
+PHILIPPINE,Autres pays d'Asie,import,2025,439,,2025
+MONGOLIE,Autres pays d'Asie,import,2021,,,2025
+MONGOLIE,Autres pays d'Asie,import,2022,1,0,2025
+MONGOLIE,Autres pays d'Asie,import,2023,0,0,2025
+MONGOLIE,Autres pays d'Asie,import,2024,19,23,2025
+MONGOLIE,Autres pays d'Asie,import,2025,9,,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2021,520384,840898,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2022,756959,1027998,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2023,783267,1180389,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2024,841867,1368965,2025
+REPUBLIQUE POPULAIRE DE CHINE,Autres pays d'Asie,import,2025,988716,1930695,2025
+COREE DU NORD,Autres pays d'Asie,import,2021,22965,62675,2025
+COREE DU NORD,Autres pays d'Asie,import,2022,19030,24846,2025
+COREE DU NORD,Autres pays d'Asie,import,2023,6233,8860,2025
+COREE DU NORD,Autres pays d'Asie,import,2024,1048,340,2025
+COREE DU NORD,Autres pays d'Asie,import,2025,326,291,2025
+COREE DU SUD,Autres pays d'Asie,import,2021,47753,45516,2025
+COREE DU SUD,Autres pays d'Asie,import,2022,54376,32059,2025
+COREE DU SUD,Autres pays d'Asie,import,2023,50849,47698,2025
+COREE DU SUD,Autres pays d'Asie,import,2024,82541,34942,2025
+COREE DU SUD,Autres pays d'Asie,import,2025,70513,40160,2025
+JAPON,Autres pays d'Asie,import,2021,91646,29109,2025
+JAPON,Autres pays d'Asie,import,2022,108781,29429,2025
+JAPON,Autres pays d'Asie,import,2023,83635,27667,2025
+JAPON,Autres pays d'Asie,import,2024,84187,24140,2025
+JAPON,Autres pays d'Asie,import,2025,76612,28802,2025
+TAIWAN,Autres pays d'Asie,import,2021,2618,1496,2025
+TAIWAN,Autres pays d'Asie,import,2022,5598,2498,2025
+TAIWAN,Autres pays d'Asie,import,2023,3275,1392,2025
+TAIWAN,Autres pays d'Asie,import,2024,4412,1793,2025
+TAIWAN,Autres pays d'Asie,import,2025,3150,1551,2025
+HONG-KONG,Autres pays d'Asie,import,2021,18638,2086,2025
+HONG-KONG,Autres pays d'Asie,import,2022,21274,1709,2025
+HONG-KONG,Autres pays d'Asie,import,2023,26653,45867,2025
+HONG-KONG,Autres pays d'Asie,import,2024,19015,2452,2025
+HONG-KONG,Autres pays d'Asie,import,2025,22869,3031,2025
+MACAO,Autres pays d'Asie,import,2021,51,49,2025
+MACAO,Autres pays d'Asie,import,2022,8961,695,2025
+MACAO,Autres pays d'Asie,import,2023,273,211,2025
+MACAO,Autres pays d'Asie,import,2024,464,258,2025
+MACAO,Autres pays d'Asie,import,2025,216,312,2025
+AUSTRALIE,Océanie,import,2021,16347,11797,2025
+AUSTRALIE,Océanie,import,2022,14746,5380,2025
+AUSTRALIE,Océanie,import,2023,25609,6156,2025
+AUSTRALIE,Océanie,import,2024,22280,3381,2025
+AUSTRALIE,Océanie,import,2025,15711,3235,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2021,34,71,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2022,74,47,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2023,537,2891,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2024,181,567,2025
+NOUVELLE GUINEE ET PAPOUASIE,Océanie,import,2025,352,498,2025
+NAURU,Océanie,import,2021,1,0,2025
+NAURU,Océanie,import,2022,74,28,2025
+NAURU,Océanie,import,2023,3,0,2025
+NAURU,Océanie,import,2024,5805,32155,2025
+NAURU,Océanie,import,2025,540,1132,2025
+NOUVELLE ZELANDE,Océanie,import,2021,793,215,2025
+NOUVELLE ZELANDE,Océanie,import,2022,3161,2051,2025
+NOUVELLE ZELANDE,Océanie,import,2023,2932,1505,2025
+NOUVELLE ZELANDE,Océanie,import,2024,2099,1534,2025
+NOUVELLE ZELANDE,Océanie,import,2025,1069,415,2025
+NOUVELLE CALEDONIE,Océanie,import,2021,,,2025
+NOUVELLE CALEDONIE,Océanie,import,2022,4,24,2025
+NOUVELLE CALEDONIE,Océanie,import,2023,0,1,2025
+NOUVELLE CALEDONIE,Océanie,import,2024,13,12,2025
+NOUVELLE CALEDONIE,Océanie,import,2025,32,101,2025
+TONGA,Océanie,import,2021,,,2025
+TONGA,Océanie,import,2022,6,0,2025
+TONGA,Océanie,import,2023,3,0,2025
+TONGA,Océanie,import,2024,,,2025
+TONGA,Océanie,import,2025,,,2025
+SAMOA OCCIDENTAL,Océanie,import,2021,311,474,2025
+SAMOA OCCIDENTAL,Océanie,import,2022,652,835,2025
+SAMOA OCCIDENTAL,Océanie,import,2023,696,1247,2025
+SAMOA OCCIDENTAL,Océanie,import,2024,3344,3761,2025
+SAMOA OCCIDENTAL,Océanie,import,2025,1924,825,2025
+ILES COOK,Océanie,import,2021,,,2025
+ILES COOK,Océanie,import,2022,,,2025
+ILES COOK,Océanie,import,2023,2,2,2025
+ILES COOK,Océanie,import,2024,,,2025
+ILES COOK,Océanie,import,2025,2,2,2025
+POLYNESIE FRANCAISE,Océanie,import,2021,,,2025
+POLYNESIE FRANCAISE,Océanie,import,2022,,,2025
+POLYNESIE FRANCAISE,Océanie,import,2023,5,3,2025
+POLYNESIE FRANCAISE,Océanie,import,2024,10,5,2025
+POLYNESIE FRANCAISE,Océanie,import,2025,,,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,import,2021,21346,72019,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,import,2022,57222,146000,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,import,2023,96653,92996,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,import,2024,65811,49529,2025
+"DIVERS (PBE,PBF,OM,nda..; etc)",Divers,import,2025,51707,37200,2025

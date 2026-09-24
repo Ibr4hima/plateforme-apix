@@ -1,7 +1,7 @@
 # Commerce extérieur du Sénégal — Note d'Analyse du Commerce Extérieur
 # (NACE, ANSD, rapport annuel). Principaux produits exportés/importés en
 # valeur (millions FCFA) et poids net (tonnes), extraits des annexes des
-# éditions 2019 à 2024 (CSV vérifiés dans backend/scripts/nace).
+# éditions 2019 à 2025 (CSV vérifiés dans backend/scripts/nace).
 #
 # Chaque édition N couvre les années N-4..N : les fenêtres se chevauchent
 # et une année peut être révisée d'une édition à l'autre. À la lecture,
@@ -106,6 +106,21 @@ FICHIER_ARBITRAGE = DOSSIER_CSV / "alias_pays_nace.json"
 # d'une région que le rapport ne ventile pas (cf. scripts/nace/extraire_pays.py).
 # Reconnues à leur préfixe, elles n'ont pas à être énumérées dans l'arbitrage.
 PREFIXE_NON_VENTILE = "NON VENTILE —"
+
+
+def _poids_manquants() -> dict[int, set]:
+    """{édition: {(pays, sens, année)}} des poids que le rapport NE DONNE PAS.
+
+    Déclarés dans edition_XXXX_poids_manquants.csv (édition 2025 : tableau 32
+    inutilisable, lignes absentes du tableau 34). Une case poids vide non
+    déclarée reste un « - » du rapport, c'est-à-dire une absence de flux :
+    c'est ce fichier qui distingue « inconnu » de « nul ».
+    """
+    out: dict[int, set] = {}
+    for fic in DOSSIER_CSV.glob("edition_[0-9][0-9][0-9][0-9]_poids_manquants.csv"):
+        ed = int(fic.name[8:12])
+        out[ed] = {(r["pays"], r["sens"], int(r["annee"])) for r in csv.DictReader(open(fic, encoding="utf-8"))}
+    return out
 
 
 def _arbitrage_pays() -> tuple[dict, set]:
@@ -468,13 +483,18 @@ async def _pays_resolus(db: AsyncSession) -> dict:
             retenue[cle] = r.edition
 
     agreg: dict = defaultdict(lambda: {"valeur": 0.0, "poids": 0.0, "v": False,
-                                       "p": False, "iso2": None, "membres": 0})
+                                       "p": False, "iso2": None, "membres": 0, "pm": False})
+    manquants = _poids_manquants()
+    incomplets: dict = defaultdict(set)
     for r, nom_fr, iso2 in lignes:
         if retenue[(r.sens, r.annee)] != r.edition:
             continue
         nom = nom_fr or AUTRES_PAYS
         a = agreg[(r.sens, r.annee, r.region, nom)]
         a["membres"] += 1
+        if (r.pays, r.sens, r.annee) in manquants.get(r.edition, ()):
+            a["pm"] = True
+            incomplets[r.sens].add(r.annee)
         if nom_fr:
             a["iso2"] = iso2
         if r.valeur is not None:
@@ -496,6 +516,9 @@ async def _pays_resolus(db: AsyncSession) -> dict:
             # et pour les pays que plusieurs graphies désignent (Yémen).
             "libelles": a["membres"],
             "edition": retenue[(sens, annee)],
+            # Poids inconnu (non publié par le rapport), et non nul : l'écran
+            # ne doit pas le lire comme une absence de flux.
+            "poids_manquant": a["pm"],
         })
     return {
         "disponible": True,
@@ -503,5 +526,8 @@ async def _pays_resolus(db: AsyncSession) -> dict:
         "editions": sorted({r.edition for r, _, _ in lignes}),
         "ordre": REGIONS_ORDRE,
         "continents": REGION_CONTINENT,
+        # Années dont le POIDS par pays est incomplet, par sens : l'écran y
+        # grise la mesure « Volume » des vues par pays (valeurs complètes).
+        "poids_incomplets": {s: sorted(a) for s, a in incomplets.items()},
         "donnees": donnees,
     }

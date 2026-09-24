@@ -72,8 +72,9 @@ TOTAL_IMPORT = {
     "poids":  [14064950, 14497275, 15170373, 15520015, 16350868],
 }
 
-# Écrit à côté de lui-même : les CSV restent dans le dossier du script.
-ici = Path(__file__).parent
+# Les CSV s'écrivent dans scripts/nace, où l'import de déploiement les lit ;
+# ce dossier ne garde que les scripts de saisie et leurs notes.
+ici = Path(__file__).parent.parent
 with open(ici / f"edition_{EDITION}_regions.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f)
     w.writerow(["region", "sens", "annee", "valeur", "poids", "edition"])

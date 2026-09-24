@@ -15,7 +15,7 @@ import Variation from "@/components/shared/Variation";
 
 // ── Panneau Commerce extérieur (Sénégal uniquement) ──────────────────────────
 // Refonte en cours : ce module sera alimenté par les Notes d'Analyse du
-// Commerce Extérieur (NACE) de l'ANSD — rapports annuels (2019 à 2024).
+// Commerce Extérieur (NACE) de l'ANSD — rapports annuels (2019 à 2025).
 // L'ancienne version (Bulletin mensuel / API /bmce) a été retirée.
 
 // État d'attente : affiché tant qu'aucune donnée NACE n'a été importée.
@@ -469,7 +469,28 @@ function TableauClassementNace({ lignes, agregeSous, sens, mesure, colonne, drap
 type NacePaysLigne = { pays: string; code_iso2: string | null; region: string; annee: number;
   valeur: number | null; poids: number | null; libelles: number; edition: number };
 type NaceDataPays = { disponible: boolean; annees: number[]; editions: number[]; ordre: string[];
-  continents: Record<string, string>; donnees: { export: NacePaysLigne[]; import: NacePaysLigne[] } };
+  continents: Record<string, string>; donnees: { export: NacePaysLigne[]; import: NacePaysLigne[] };
+  /** Années dont le POIDS par pays est incomplet, par sens (non publié par
+      l'ANSD — édition 2025). Les valeurs, elles, sont complètes. */
+  poids_incomplets?: Partial<Record<ZoneSens, number[]>> };
+
+/** Le poids par pays est-il incomplet sur la période lue, pour l'un des sens ?
+    Une seule année trouée suffit : un classement en volume la sous-estimerait
+    en silence — le pays sans poids publié tomberait à zéro. */
+function poidsPaysIncomplet(pys: NaceDataPays | null, per: Periode, sens: ZoneSens[]): boolean {
+  if (!pys?.poids_incomplets) return false;
+  const debut = estIntervalle(per) ? per.debut : per.fin;
+  return sens.some(s => (pys.poids_incomplets?.[s] ?? []).some(a => a >= debut && a <= per.fin));
+}
+const RAISON_POIDS = "Poids par pays non publié par l'ANSD pour cette année (rapport 2025) — seule la valeur est disponible";
+
+/** La bascule Valeur / Volume d'une vue par pays : « Volume » y est visible
+    mais GRISÉE, et non cliquable, quand le poids manque sur la période. La
+    mesure effective retombe alors sur la valeur, sans perdre le choix de
+    l'utilisateur : il revient dès qu'on quitte l'année trouée. */
+function mesureEffective(mesure: NaceMesure, bloque: boolean): NaceMesure {
+  return bloque ? "valeur" : mesure;
+}
 type NaceDataReg = { disponible: boolean; annees: number[]; editions: number[]; ordre: string[];
   continents: Record<string, string>;
   donnees: { export: (NaceLigneCle & { region: string })[]; import: (NaceLigneCle & { region: string })[] } };
@@ -501,17 +522,24 @@ function CurseurPeriodeNace({ min, max, periode, onChange, largeur = 150 }: {
 
 // Bascule segmentée compacte, teintée du sens affiché (bleu à l'export,
 // orange à l'import) pour que les commandes s'accordent aux valeurs.
-function SegmentNace<T extends string>({ options, valeur, onChange, accent }: {
+function SegmentNace<T extends string>({ options, valeur, onChange, accent, desactives }: {
   options: { v: T; l: string }[]; valeur: T; onChange: (v: T) => void; accent?: string;
+  /** Options visibles mais grisées et non cliquables, avec leur raison
+      (infobulle). */
+  desactives?: Partial<Record<T, string>>;
 }) {
   return (
     <div style={{ display: "inline-flex", background: "var(--fond)", borderRadius: 999, padding: 2, gap: 2, flexShrink: 0 }}>
       {options.map(o => {
-        const actif = o.v === valeur;
+        const raison = desactives?.[o.v];
+        const actif = o.v === valeur && !raison;
         return (
-          <button key={o.v} onClick={() => onChange(o.v)} style={{
-            border: "none", cursor: "pointer", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
-            background: actif ? "var(--carte)" : "transparent", color: actif ? (accent ?? "var(--bleu)") : "var(--gris-fort)",
+          <button key={o.v} onClick={() => { if (!raison) onChange(o.v); }} disabled={!!raison}
+            title={raison} aria-disabled={!!raison} style={{
+            border: "none", cursor: raison ? "not-allowed" : "pointer", padding: "4px 13px", borderRadius: 999, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
+            background: actif ? "var(--carte)" : "transparent",
+            color: raison ? "var(--gris)" : actif ? (accent ?? "var(--bleu)") : "var(--gris-fort)",
+            opacity: raison ? 0.45 : 1,
             boxShadow: actif ? "var(--ombre-1)" : "none", transition: "color .15s, background .15s", fontFamily: "var(--font-google-sans)" }}>{o.l}</button>
         );
       })}
@@ -596,12 +624,17 @@ function indexerZone<T extends { annee: number; valeur: number | null; poids: nu
 // sur le même état.
 type ZonePortee = { niveau: ZoneNiveau; cont: string | null; reg: string | null };
 
-function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, mesure, setMesure }: {
+function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, mesure: mesureChoisie, setMesure }: {
   periode: Periode; cont: NaceDataCont | null; reg: NaceDataReg | null; pys: NaceDataPays | null;
   portee: ZonePortee; setPortee: (p: ZonePortee) => void;
   sens: ZoneSens; mesure: NaceMesure; setMesure: (m: NaceMesure) => void;
 }) {
   const { niveau, cont: zoomCont, reg: zoomReg } = portee;
+  // Continents et régions ont leurs poids complets (tableaux à part) : seul le
+  // niveau pays grise « Volume » sur une année où le poids par pays manque.
+  const poidsTroue = poidsPaysIncomplet(pys, periode, [sens]);
+  const bloque = niveau === "pays" && poidsTroue;
+  const mesure = mesureEffective(mesureChoisie, bloque);
   const autre: ZoneSens = sens === "export" ? "import" : "export";
   const ratt = reg?.continents ?? pys?.continents ?? {};
   const badgeSens = sens === "export" ? badge_bleu : badge_orange;
@@ -698,7 +731,10 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
         titreParent: "Région (continent)" }));
     await ecrireClasseurNace(
       `NACE_Zones-geographiques_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
-      contexteNace(mesure, periode), feuilles);
+      [...contexteNace(mesure, periode),
+        ...(mesure === "poids" && poidsTroue
+          ? ["Feuille Pays partenaires : poids non publié par l'ANSD pour certaines années de la période (rapport 2025), cases vides"] : [])],
+      feuilles);
   };
 
   const nomPortee = zoomReg ?? zoomCont ?? "Monde";
@@ -736,7 +772,8 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       }
       uniteBascule={
         <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
-          valeur={mesure} onChange={setMesure} accent={couleur} />
+          valeur={mesure} onChange={setMesure} accent={couleur}
+          desactives={bloque ? { poids: RAISON_POIDS } : undefined} />
       }
       actions={<BoutonExcel construire={exporter}
         titre={`Télécharger continents, régions et pays — ${sens === "export" ? "exportations" : "importations"}, ${mesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(periode)}`} />}
@@ -1527,15 +1564,18 @@ function CommerceExterieurPanel() {
         // alors sur le premier disponible plutôt que d'afficher une carte vide.
         const c = presents.includes(contSel) ? contSel : presents[0];
         const dansC = (r: NacePaysLigne) => ratt[r.region] === c;
-        const clients = classerPartenaires(pys, "export", p, 10, contMesure, dansC);
-        const fourn = classerPartenaires(pys, "import", p, 10, contMesure, dansC);
+        // Clients ET fournisseurs sont montrés : un sens troué suffit à griser.
+        const contBloque = poidsPaysIncomplet(pys, p, ["export", "import"]);
+        const contMes = mesureEffective(contMesure, contBloque);
+        const clients = classerPartenaires(pys, "export", p, 10, contMes, dansC);
+        const fourn = classerPartenaires(pys, "import", p, 10, contMes, dansC);
         // Tous les continents, pas seulement celui affiché : la bascule sert à
         // regarder, pas à décider de ce qu'on emporte.
         const exporterCont = () => ecrireClasseurNace(
-          `NACE_Partenaires-par-continent_${suffixeFichier(contMesure, p)}.xlsx`,
-          contexteNace(contMesure, p),
+          `NACE_Partenaires-par-continent_${suffixeFichier(contMes, p)}.xlsx`,
+          contexteNace(contMes, p),
           feuillesPortees(pys, presents.map(x => ({ nom: x, garde: (r: NacePaysLigne) => ratt[r.region] === x })),
-                          contMesure, p, true));
+                          contMes, p, true));
         return (
           <>
             <EnTeteSectionNace n={3} titre="Partenaires par continent" commandes={
@@ -1553,9 +1593,10 @@ function CommerceExterieurPanel() {
                     : `Parts calculées sur l'ensemble des échanges ${AVEC_CONTINENT(c)}`}
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
-                  valeur={contMesure} onChange={setContMesure} />
+                  valeur={contMes} onChange={setContMesure}
+                  desactives={contBloque ? { poids: RAISON_POIDS } : undefined} />
                 <BoutonExcel construire={exporterCont}
-                  titre={`Télécharger les ${presents.length} continents, clients et fournisseurs — ${contMesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
+                  titre={`Télécharger les ${presents.length} continents, clients et fournisseurs — ${contMes === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Le rattachement régional est montré ici : dans un continent
@@ -1563,9 +1604,9 @@ function CommerceExterieurPanel() {
                     et le Royaume-Uni relèvent des « autres pays », l'Espagne et
                     l'Italie de l'Union européenne. */}
                 <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total}
-                  couleur={NACE_BLEU} montrerRegion intervalle={inter} mesure={contMesure} />
+                  couleur={NACE_BLEU} montrerRegion intervalle={inter} mesure={contMes} />
                 <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total}
-                  couleur={NACE_ORANGE} montrerRegion intervalle={inter} mesure={contMesure} />
+                  couleur={NACE_ORANGE} montrerRegion intervalle={inter} mesure={contMes} />
               </div>
             </div>
           </>
@@ -1591,17 +1632,19 @@ function CommerceExterieurPanel() {
         // resté hors référentiel (code nul) ne peut appartenir à aucun
         // groupement, et « Autres pays » est déjà écarté du classement.
         const membre = (r: NacePaysLigne) => r.code_iso2 != null && membres.has(r.code_iso2);
-        const clients = classerPartenaires(pys, "export", p, 20, grpMesure, membre);
-        const fourn = classerPartenaires(pys, "import", p, 20, grpMesure, membre);
+        const grpBloque = poidsPaysIncomplet(pys, p, ["export", "import"]);
+        const grpMes = mesureEffective(grpMesure, grpBloque);
+        const clients = classerPartenaires(pys, "export", p, 20, grpMes, membre);
+        const fourn = classerPartenaires(pys, "import", p, 20, grpMes, membre);
         // Tous les groupements du référentiel, pas seulement celui affiché.
         const exporterGrp = () => ecrireClasseurNace(
-          `NACE_Partenaires-par-groupement_${suffixeFichier(grpMesure, p)}.xlsx`,
-          [...contexteNace(grpMesure, p),
+          `NACE_Partenaires-par-groupement_${suffixeFichier(grpMes, p)}.xlsx`,
+          [...contexteNace(grpMes, p),
            `Composition des groupements : référentiel APIX — ${groupements.map(x => `${x.code} (${x.membres.length} membres)`).join(", ")}`],
           feuillesPortees(pys, groupements.map(x => {
             const m = new Set(x.membres);
             return { nom: x.code, garde: (r: NacePaysLigne) => r.code_iso2 != null && m.has(r.code_iso2) };
-          }), grpMesure, p, false));
+          }), grpMes, p, false));
         if (!clients.lignes.length && !fourn.lignes.length) return null;
         return (
           <>
@@ -1620,18 +1663,19 @@ function CommerceExterieurPanel() {
                     : `Parts calculées sur l'ensemble des échanges avec les pays membres · ${g.nom_fr}`}
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
-                  valeur={grpMesure} onChange={setGrpMesure} />
+                  valeur={grpMes} onChange={setGrpMesure}
+                  desactives={grpBloque ? { poids: RAISON_POIDS } : undefined} />
                 <BoutonExcel construire={exporterGrp}
-                  titre={`Télécharger les ${groupements.length} groupements, clients et fournisseurs — ${grpMesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
+                  titre={`Télécharger les ${groupements.length} groupements, clients et fournisseurs — ${grpMes === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: inter ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 22 }}>
                 {/* Pas de rattachement régional ici : tous les membres de la
                     CEDEAO comme de l'UEMOA relèvent de l'Afrique occidentale,
                     la colonne répéterait la même mention à chaque ligne. */}
                 <TopPartenaires titre="Clients" lignes={clients.lignes} total={clients.total}
-                  couleur={NACE_BLEU} intervalle={inter} mesure={grpMesure} />
+                  couleur={NACE_BLEU} intervalle={inter} mesure={grpMes} />
                 <TopPartenaires titre="Fournisseurs" lignes={fourn.lignes} total={fourn.total}
-                  couleur={NACE_ORANGE} intervalle={inter} mesure={grpMesure} />
+                  couleur={NACE_ORANGE} intervalle={inter} mesure={grpMes} />
               </div>
             </div>
           </>

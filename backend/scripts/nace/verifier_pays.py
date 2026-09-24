@@ -26,7 +26,8 @@ import re
 import sys
 from pathlib import Path
 
-ICI = Path(__file__).parent
+# Dossier vérifié : celui du script, ou celui passé en argument (brouillon).
+ICI = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent
 # Tolérances d'arrondi, calibrées sur les mesures des éditions 2019 à 2023 :
 # écart maximum observé de 5 sur un sous-total de région, 3 sur un TOTAL et 4
 # sur le contrôle inter-familles. Ce dernier ne dépasse 1 que sur l'édition
@@ -68,6 +69,18 @@ def verifier(edition: int) -> list[str]:
     totaux = lire(ICI / f"edition_{edition}_totaux_pays.csv")
     fic_cont = ICI / f"edition_{edition}_continents.csv"
     continents = lire(fic_cont) if fic_cont.exists() else None
+    # POIDS DÉCLARÉS MANQUANTS (édition 2025 : tableau 32 inutilisable, lignes
+    # absentes du tableau 34). Une région qui en contient ne peut pas boucler
+    # en poids : elle est sautée au contrôle 1 — et SEULEMENT celle-là, pour
+    # cette mesure et cette année. Une case vide non déclarée reste un « - ».
+    fic_manq = ICI / f"edition_{edition}_poids_manquants.csv"
+    manquants = {(m["pays"], m["sens"], m["annee"]) for m in lire(fic_manq)} if fic_manq.exists() else set()
+    region_de = {(r["pays"], r["sens"], r["annee"]): r["region"] for r in pays}
+    trouees = {(region_de[k], k[1], k[2]) for k in manquants}
+    for (p, s_, a) in manquants:
+        r = next((x for x in pays if (x["pays"], x["sens"], x["annee"]) == (p, s_, a)), None)
+        if r is None or r["poids"] or not r["valeur"]:
+            anomalies.append(f"poids déclaré manquant incohérent · {p} · {s_} · {a}")
 
     for mesure in MESURES:
         # 1. Σ pays d'une région = sous-total imprimé
@@ -75,6 +88,8 @@ def verifier(edition: int) -> list[str]:
         for r in pays:
             somme[(r["region"], r["sens"], r["annee"])] += n(r[mesure])
         for r in regions:
+            if mesure == "poids" and (r["region"], r["sens"], r["annee"]) in trouees:
+                continue
             ecart = abs(somme[(r["region"], r["sens"], r["annee"])] - n(r[mesure]))
             if ecart > TOL_REGION:
                 anomalies.append(f"Σ pays ≠ sous-total · {r['region']} · {r['sens']} · "
@@ -135,6 +150,9 @@ def principal() -> int:
         anomalies = verifier(edition)
         total += len(anomalies)
         etat = "CONFORME" if not anomalies else f"{len(anomalies)} ANOMALIE(S)"
+        fic_manq = ICI / f"edition_{edition}_poids_manquants.csv"
+        if fic_manq.exists():
+            etat += f" · {len(lire(fic_manq))} poids déclarés manquants (régions sautées en poids)"
         print(f"── édition {edition} : {etat}")
         for a in anomalies:
             print(f"   · {a}")

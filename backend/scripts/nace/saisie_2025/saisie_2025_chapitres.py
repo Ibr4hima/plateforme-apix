@@ -14,11 +14,11 @@ from pathlib import Path
 ANNEES = [2021, 2022, 2023, 2024, 2025]
 EDITION = 2025
 _ = None
-ici = Path(__file__).parent
+ici = Path(__file__).parent.parent  # CSV dans scripts/nace
 
 def libelles_2024(sens: str) -> list[str]:
     ordre: list[str] = []
-    for r in csv.DictReader(open(ici.parent / "edition_2024_chapitres.csv", encoding="utf-8")):
+    for r in csv.DictReader(open(ici / "edition_2024_chapitres.csv", encoding="utf-8")):
         if r["sens"] == sens and r["chapitre"] not in ordre:
             ordre.append(r["chapitre"])
     return ordre

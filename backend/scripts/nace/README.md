@@ -1,5 +1,12 @@
 # Extractions NACE — annexes des rapports annuels
 
+> **Édition 2025** : saisie à la main depuis le rapport (tableaux par
+> tableau), scripts et notes dans `saisie_2025/`. Particularités : poids par
+> pays 2025 non publiés (fichier `edition_2025_poids_manquants.csv`),
+> révision de l'import 2024 (−149 017 MFCFA, un navire compté à tort),
+> Royaume-Uni hors UE, étiquettes Amérique interverties dans les tableaux
+> régions. Détail dans `saisie_2025/README.md`.
+
 Cinq familles extraites, mêmes règles et même vérification :
 - **principaux produits** (`edition_XXXX_principaux_produits.csv`,
   totaux dans `edition_XXXX_totaux.csv`) ;

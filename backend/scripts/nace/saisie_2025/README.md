@@ -1,22 +1,30 @@
-# Édition 2025 — saisie en cours
+# Édition 2025 — saisie (années 2021–2025)
 
-Ce dossier reçoit les fichiers de l'édition 2025 (années 2021–2025) au fil de
-leur saisie, famille par famille. **L'import de déploiement ne le lit pas** :
-`importer_csv` ne cherche que `edition_XXXX_*.csv` à la racine de
-`scripts/nace`.
+Ce dossier garde les SCRIPTS de saisie de l'édition 2025 et leurs notes ; les
+CSV qu'ils produisent sont à la racine de `scripts/nace`, où l'import de
+déploiement les lit (`python3 saisie_2025_<famille>.py` les régénère). Le
+rapport n'a pas pu être extrait du PDF : chaque tableau a été saisi ligne à
+ligne depuis des captures, puis contrôlé (sommes contre TOTAL imprimé,
+recoupements entre familles, comparaison 2021–2024 avec l'édition 2024).
 
-**Tout passe à la racine EN MÊME TEMPS, une fois toutes les familles
-saisies et vérifiées.** Une famille seule ne suffit pas : essayé en base de
-travail avec les principaux produits complets, la page prend 2025 comme
-année par défaut (le curseur va jusqu'à la dernière année disponible) et
-les sections Zone géographique, Partenaires par continent et Partenaires
-par groupement restent vides à 2025, faute de données ; « À retenir » perd
-ses lignes premier client / premier fournisseur. Publier famille par
-famille donnerait cette page en production.
+Vérification :
 
-Vérification d'une famille, dans ce dossier :
+    python3 ../verifier_principaux_produits.py
+    python3 ../verifier_pays.py
 
-    python3 ../verifier_principaux_produits.py .
+## POIDS PAR PAYS 2025 : NON PUBLIÉS, DÉCLARÉS
+
+Le tableau 32 (exportations par pays en poids) est une reprise de l'édition
+2023 sans 2024 ni 2025 ; le tableau 34 (importations) a perdu à la mise en
+page les lignes entre NICARAGUA et CHINE. Signalés à l'ANSD. Les 207 poids
+2025 inconnus sont laissés vides et DÉCLARÉS dans
+`edition_2025_poids_manquants.csv` : le vérificateur en tient compte, l'API
+les expose (`poids_incomplets`, `poids_manquant`) et la page Commerce
+extérieur grise « Volume » dans les vues par pays sur 2025. Les poids
+2021–2024 viennent de l'édition 2024 (non révisés par 2025, hors Croatie,
+Chine, Nicaragua et Nigeria, lus au tableau 34). À la réception des tableaux
+corrigés : les saisir dans donnees_2025_pays.py, relancer
+saisie_2025_pays.py — le fichier des manquants se vide de lui-même.
 
 ## Principaux produits (tableaux 6 à 9) — COMPLET
 
