@@ -100,7 +100,20 @@ famille, export compris).
   7 012 373, soit le nouveau TOTAL à l'arrondi près), base remise en
   l'état ensuite.
 
+## Groupes d'utilisation — exportations (tableaux 14 et 15) : saisies
+
+Saisie ligne à ligne : `saisie_2025_groupes_utilisation.py`. Mêmes 9 groupes
+exhaustifs que l'édition 2024 (leur somme est le total des exportations).
+
+- Somme des 9 groupes = TOTAL imprimé : 10/10 conformes, écarts de −2 à +2.
+- Aucune révision de 2021–2024 : 36 couples identiques à l'édition 2024.
+- « Or industriel » identique à la ligne des tableaux 6–7, valeur et poids,
+  2021–2025 (recoupement indépendant).
+- Chargement en base de travail vérifié (45 lignes, sommes conformes), base
+  remise en l'état ensuite.
+
 ## Reste à saisir
 
-- Groupes d'utilisation, continents, régions, pays (et chapitres SH si le
-  rapport les contient encore).
+- Groupes d'utilisation — importations.
+- Continents, régions, pays (et chapitres SH si le rapport les contient
+  encore).
