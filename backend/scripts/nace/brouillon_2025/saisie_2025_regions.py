@@ -2,7 +2,7 @@
 """Saisie contrôlée — NACE édition 2025, régions.
 
 Exportations : tableaux 19 (valeur, millions FCFA) et 20 (poids net,
-tonnes). Années 2021 à 2025. L'édition 2025 publie les régions dans des
+tonnes). Importations : tableaux 21 (valeur) et 22 (poids). Années 2021 à 2025. L'édition 2025 publie les régions dans des
 tableaux à part (jusqu'en 2024, elles n'existaient que comme sous-totaux des
 tableaux par pays). Libellés ramenés aux 12 régions stables des éditions
 précédentes (cf. REGIONS_ORDRE dans app/api/routes/nace.py).
@@ -49,8 +49,28 @@ TOTAL_EXPORT = {
     "valeur": [2884802, 3563359, 3223930, 3909058, 5805626],
     "poids":  [8038328, 6969968, 7428616, 9599905, 14186349],
 }
-IMPORT: dict = {}        # tableaux 21 et 22 — à saisir
-TOTAL_IMPORT: dict = {}
+# Tableaux 21 (valeur) et 22 (poids) — même interversion des deux lignes
+# d'Amérique qu'à l'export (vérifiée de même contre l'édition 2024).
+IMPORT = {
+    "Union européenne":            ([1831925, 2585777, 2288963, 2076758, 1888516], [3297827, 3652777, 3153186, 3020946, 2821726]),
+    "Autres pays d'Europe":        ([803902, 990809, 923442, 1006827, 901257],     [2871655, 1967599, 2700569, 2375054, 2444354]),
+    "Afrique centrale":            ([19410, 20020, 19600, 19859, 15337],           [78209, 81681, 85322, 79151, 75110]),
+    "Afrique du Nord":             ([183143, 212397, 279360, 241560, 243920],      [992899, 1368756, 1005761, 773967, 876073]),
+    "Afrique occidentale":         ([430163, 488753, 756711, 676091, 700625],      [1341406, 918251, 1680962, 1658059, 1985852]),
+    "Afrique orientale et du Sud": ([89996, 174692, 158727, 148760, 131474],       [462785, 806501, 879612, 1015020, 892504]),
+    # Imprimé sur la ligne « LES PAYS DE L'AMERIQUE CENTRALE ET DU SUD ».
+    "Amérique du Nord":            ([178182, 227203, 198649, 223609, 291845],      [267779, 299816, 228562, 387742, 715335]),
+    # Imprimé sur la ligne « LES PAYS DE L'AMERIQUE DU NORD ».
+    "Amérique centrale et du Sud": ([221396, 333430, 258862, 297489, 324251],      [871067, 1065816, 950238, 1336420, 1439851]),
+    "Asie occidentale":            ([293117, 498735, 457115, 525104, 411407],      [1196933, 1256556, 1311655, 1595213, 1253038]),
+    "Autres pays d'Asie":          ([1288429, 1941608, 1739934, 1696777, 1993889], [2599814, 2925157, 3069704, 3187498, 3803616]),
+    "Océanie":                     ([17486, 18718, 29786, 33731, 19631],           [12557, 8365, 11805, 41415, 6209]),
+    "Divers":                      ([21346, 57222, 96653, 65811, 51707],           [72019, 146000, 92996, 49529, 37200]),
+}
+TOTAL_IMPORT = {
+    "valeur": [5378494, 7549365, 7207803, 7012377, 6973859],
+    "poids":  [14064950, 14497275, 15170373, 15520015, 16350868],
+}
 
 # Écrit à côté de lui-même : les CSV restent dans le dossier du script.
 ici = Path(__file__).parent

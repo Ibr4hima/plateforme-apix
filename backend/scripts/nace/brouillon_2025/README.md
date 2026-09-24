@@ -191,9 +191,31 @@ Contrôles :
 - Chargement en base de travail vérifié (60 lignes ; Amérique du Nord 2021
   = 70 741), base remise en l'état ensuite.
 
-## Reste à saisir
+## Régions — importations (tableaux 21 et 22) : famille COMPLÈTE
 
-- Régions — importations (tableaux 21 et 22).
+Même interversion des deux lignes d'Amérique qu'à l'export (2021–2023 :
+égalités exactes avec l'édition 2024 une fois remises ; États-Unis + Canada
+2021 = 178 183, sur la ligne imprimée « Centre et Sud » 178 182).
+
+- Σ 12 régions = TOTAL imprimé : 10/10 conformes, écarts ±1.
+- Σ régions d'un continent = tableaux 25–26 : 60/60 concordances.
+- Contre l'édition 2024 :
+  - 2021–2024 : Royaume-Uni transféré de l'UE vers « Autres pays d'Europe »,
+    au chiffre près (2024 : 59 556 MFCFA / 48 987 t) ;
+  - « Divers » : écarts de 1 à 3 unités (arrondis déjà arbitrés en 2024) ;
+  - **2024, la révision du TOTAL import (−149 017 MFCFA, −19 017 t)
+    s'explique entièrement** : UE −142 641 (hors Royaume-Uni) et Autres pays
+    d'Asie −6 376, qui sont les baisses Europe et Asie des tableaux 25–26 ;
+    plus un transfert Amérique centrale et du Sud → Afrique occidentale de
+    227 264 MFCFA / 548 517 t, sans effet sur le total.
+  - **Ce transfert est très probablement le NICARAGUA** : l'édition 2024 lui
+    attribuait 229 696 MFCFA / 558 469 t d'importations en 2024 (contre 2 223
+    en 2023), montant invraisemblable pour ce partenaire. Erreur de codage
+    corrigée par l'ANSD (le Nigeria serait le candidat naturel) — à
+    confirmer avec les tableaux par pays 2025.
+- Chargement en base de travail vérifié (120 lignes), base remise en l'état.
+
+## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
   les contient encore.
