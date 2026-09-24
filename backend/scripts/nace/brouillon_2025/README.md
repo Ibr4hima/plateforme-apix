@@ -324,6 +324,15 @@ l'édition 2024 ; chaque ligne reçoit le libellé normalisé de 2024.
   or industriel 977 997 ; chapitre 27 (combustibles) 2 504 516 contre huile
   brute + autres produits pétroliers + GNL 2 504 511.
 
+## Chapitres SH — exportations en poids (tableau 36) : saisies
+
+- Σ 96 chapitres = TOTAL imprimé : écarts −2 à +3.
+- 2021–2024 : 384 poids identiques à l'édition 2024.
+- Valeur et poids appariés : aucun chapitre renseigné d'un côté et vide de
+  l'autre.
+- Recoupement 2025 : chapitre 27 = 7 497 215 t (huile brute + autres
+  produits pétroliers + GNL = 7 497 210 t).
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
