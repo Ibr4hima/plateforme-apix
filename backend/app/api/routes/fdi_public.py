@@ -1097,8 +1097,14 @@ async def rapport_entreprises(
 
     total_projets = k.projets or 0
 
-    async def classement(corps: str, limite: int = 15):
-        return [dict(r._mapping) for r in await q(corps + f" LIMIT {limite}")]
+    # LES CLASSEMENTS SONT RENDUS EN ENTIER. Ils s'arrêtaient à vingt lignes :
+    # le rapport en montrait dix puis « Afficher la suite (10) », alors que le
+    # relevé en comptait bien plus — le bouton promettait la suite et n'en
+    # donnait qu'un morceau. Tout est rendu, et l'écran déplie tout le reste ;
+    # le tri du lecteur porte donc sur la liste entière, et plus aucune borne
+    # n'a à être posée « sur le bon critère » pour ne rien perdre au retri.
+    async def classement(corps: str):
+        return [dict(r._mapping) for r in await q(corps)]
 
     # ── Le classement des investisseurs ──────────────────────────────────────
     # `au_senegal` VOYAGE AVEC CHAQUE LIGNE : le document ne sépare plus les
@@ -1106,15 +1112,11 @@ async def rapport_entreprises(
     # le dit. Une seule liste à lire, et la question « celui-là est-il déjà
     # venu ? » trouve sa réponse sur la ligne même.
     #
-    # IL SE RANGE PAR MONTANT INVESTI, et la borne est posée sur ce critère-là.
-    # Le lecteur peut retrier ces vingt lignes par nombre de projets : il lit
-    # alors « parmi les vingt qui engagent le plus, lesquels reviennent le plus
-    # souvent », une question. Les ranger par projets puis les retrier par
-    # montant aurait, lui, fait disparaître en silence des investisseurs plus
-    # gros mais moins bavards.
+    # IL S'OUVRE SUR LE MONTANT INVESTI : c'est par lui qu'on classe ceux qui
+    # engagent le plus, avant ceux qui annoncent le plus souvent.
     actifs = await classement("""
         SELECT nom, origine, iso, projets, capex, pays, a0, a1, au_senegal
-        FROM g ORDER BY capex DESC NULLS LAST, projets DESC, nom""", 20)
+        FROM g ORDER BY capex DESC NULLS LAST, projets DESC, nom""")
 
     # ── Le classement AU SÉNÉGAL ─────────────────────────────────────────────
     # LE COMPTE N'EST PAS CELUI DU CLASSEMENT AFRICAIN. Il ne retient que les
@@ -1136,24 +1138,23 @@ async def rapport_entreprises(
                sum(capex) AS capex
         FROM base WHERE dest = :senegal
         GROUP BY nom, origine
-        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, nom""", 20)
+        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, nom""")
 
     # ── Les origines, comptées en INVESTISSEURS ──────────────────────────────
     # Et non en projets : la question est « combien d'entreprises françaises
     # investissent en Afrique », pas « combien de projets français ». Le nombre
     # de projets suit, pour dire si ces entreprises reviennent.
     #
-    # IL SE RANGE PAR MONTANT, comme les autres tableaux du document, et la
-    # borne est posée sur ce critère : ranger par nombre d'investisseurs puis
-    # laisser retrier par montant aurait écarté en silence un pays qui engage
-    # beaucoup par peu d'entreprises — exactement le profil des pays du Golfe.
+    # IL S'OUVRE SUR LE MONTANT, comme les autres tableaux du document : un
+    # pays qui engage beaucoup par peu d'entreprises — le profil des pays du
+    # Golfe — passe devant un pays aux nombreuses petites annonces.
     origines_top = await classement("""
         SELECT origine AS nom, min(iso) AS iso, count(*) AS investisseurs,
                sum(projets) AS projets, sum(capex) AS capex,
                count(*) FILTER (WHERE au_senegal) AS au_senegal
         FROM g WHERE origine IS NOT NULL
         GROUP BY origine
-        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, origine""", 20)
+        ORDER BY sum(capex) DESC NULLS LAST, count(*) DESC, origine""")
 
     # ── Secteurs et activités, à deux comptes ────────────────────────────────
     # LE RAPPORT DES DEUX EST L'INFORMATION. Un secteur à 300 projets pour
@@ -1164,9 +1165,7 @@ async def rapport_entreprises(
     # LE MONTANT S'AJOUTE AUX DEUX COMPTES et commande désormais l'ordre : un
     # sous-secteur à trois cents projets menés par des entreprises qui engagent
     # peu ne dit pas la même chose qu'un sous-secteur à dix projets pesant des
-    # milliards, et c'est le second qu'un comité veut voir en tête. La borne
-    # suit le même critère, pour que retrier à l'écran ne fasse disparaître
-    # aucune ligne.
+    # milliards, et c'est le second qu'un comité veut voir en tête.
     async def par(colonne: str):
         return [dict(r._mapping) for r in await q(f"""
             SELECT {colonne} AS nom, count(*) AS projets,
@@ -1175,7 +1174,7 @@ async def rapport_entreprises(
             FROM base WHERE {colonne} IS NOT NULL
             GROUP BY 1
             ORDER BY sum(capex) DESC NULLS LAST,
-                     count(DISTINCT (nom, origine)) DESC, 1 LIMIT 20""")]
+                     count(DISTINCT (nom, origine)) DESC, 1""")]
 
     # LE SOUS-SECTEUR NE SE LIT PAS SEUL, et son secteur voyage donc avec lui.
     # « Other » vit sous vingt-quatre secteurs chez fDi, « Software » sous
@@ -1189,7 +1188,7 @@ async def rapport_entreprises(
         FROM base WHERE sous_secteur IS NOT NULL AND secteur IS NOT NULL
         GROUP BY 1, 2
         ORDER BY sum(capex) DESC NULLS LAST,
-                 count(DISTINCT (nom, origine)) DESC, 1 LIMIT 20""")]
+                 count(DISTINCT (nom, origine)) DESC, 1""")]
 
     return {
         "kpis": {

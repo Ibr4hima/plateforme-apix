@@ -453,12 +453,10 @@ type CleInvest = (typeof COLS_INVEST)[number]["cle"];
     implantations remontait devant celui qui engage un milliard en une fois —
     or c'est le second qu'un comité veut voir en tête.
 
-    LES DEUX COLONNES SE TRIENT, parce qu'aucune ne résume l'autre, et le
-    service borne la liste sur le MONTANT : retrier ces vingt lignes par
-    projets répond à « parmi les vingt qui engagent le plus, lesquels
-    reviennent le plus souvent », une question. L'inverse — borner sur les
-    projets puis retrier par montant — aurait fait disparaître en silence des
-    investisseurs plus gros mais moins bavards. */
+    LES COLONNES SE TRIENT, parce qu'aucune ne résume l'autre, et la liste
+    est COMPLÈTE : le service ne la borne plus à vingt lignes. Dix s'affichent,
+    « Afficher la suite » déplie TOUT le reste, et le tri porte sur le relevé
+    entier — aucun investisseur ne peut disparaître d'un retri. */
 function TableauInvestisseurs({ titre, aide, lignes, periode, colonneSenegal, colonnes }: {
   titre: string; aide?: string; lignes: Invest[]; periode: string;
   colonneSenegal?: boolean;
