@@ -2,7 +2,7 @@
 """Saisie contrôlée — NACE édition 2025, groupes d'utilisation.
 
 Exportations : tableaux 14 (valeur, millions FCFA) et 15 (poids net,
-tonnes). Années 2021 à 2025, transcrites ligne à ligne. Les 9 groupes sont
+tonnes). Importations : tableaux 16 (valeur) et 17 (poids). Années 2021 à 2025, transcrites ligne à ligne. Les 9 groupes sont
 EXHAUSTIFS : leur somme est le total du commerce extérieur. Libellés du
 rapport (capitales, « ALIMENTATION - BOISSONS - TABACS ») ramenés à ceux,
 normalisés, des éditions précédentes.
@@ -29,8 +29,22 @@ TOTAL_EXPORT = {
     "valeur": [2884802, 3563359, 3223930, 3909058, 5805626],
     "poids":  [8038328, 6969968, 7428616, 9599905, 14186349],
 }
-IMPORT: dict = {}        # tableaux d'importations — à saisir
-TOTAL_IMPORT: dict = {}
+# Tableaux 16 (valeur) et 17 (poids) — mêmes 9 groupes.
+IMPORT = {
+    "Alimentation, boissons et tabacs":          ([1098832, 1371667, 1282275, 1288469, 1344540], [3565834, 4050731, 4151577, 4414749, 4764538]),
+    "Énergie et lubrifiants":                    ([1358956, 2389906, 2140360, 2186990, 1953086], [5076918, 5039603, 5888338, 6341760, 6440895]),
+    "Matières premières animales et végétales":  ([81893, 108883, 93909, 94909, 90525],          [173170, 254400, 302578, 227331, 226531]),
+    "Matières premières minérales":              ([110055, 186649, 94450, 90629, 140484],        [979093, 910592, 1073333, 960863, 931662]),
+    "Autres demi-produits":                      ([1168732, 1543340, 1379389, 1229328, 1279100], [3364208, 3226693, 2673074, 2393684, 2740557]),
+    "Produits finis destinés à l'agriculture":   ([14619, 12283, 16154, 13144, 13621],           [6723, 5756, 7657, 7119, 8222]),
+    "Produits finis destinés à l'industrie":     ([854435, 1192982, 1374060, 1236153, 1310472],  [293568, 368362, 378126, 382075, 408716]),
+    "Produits finis destinés à la consommation": ([690971, 743526, 825934, 872146, 842008],      [605435, 641138, 695688, 792434, 829747]),
+    "Or industriel":                             ([1, 128, 1274, 609, 24],                       [0, 0, 0, 0, 0]),
+}
+TOTAL_IMPORT = {
+    "valeur": [5378494, 7549364, 7207803, 7012377, 6973859],
+    "poids":  [14064950, 14497275, 15170373, 15520015, 16350868],
+}
 
 # Écrit à côté de lui-même : les CSV restent dans le dossier du script.
 ici = Path(__file__).parent

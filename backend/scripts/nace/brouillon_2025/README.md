@@ -112,8 +112,22 @@ exhaustifs que l'édition 2024 (leur somme est le total des exportations).
 - Chargement en base de travail vérifié (45 lignes, sommes conformes), base
   remise en l'état ensuite.
 
+## Groupes d'utilisation — importations (tableaux 16 et 17) : famille COMPLÈTE
+
+- Somme des 9 groupes = TOTAL imprimé : 10/10 conformes, écarts de −2 à +2
+  (import valeur et poids 2024 : exacts, 7 012 377 et 15 520 015).
+- **Une seule révision sur 36 couples** : 2024, « Produits finis destinés à
+  l'industrie », 1 385 170 → 1 236 153 MFCFA (**−149 017**) et 401 092 →
+  382 075 t (**−19 017**). Ce sont exactement les deux baisses du TOTAL
+  import 2024 relevées dans les principaux produits et les produits
+  regroupés : **la révision 2024 est confirmée par trois familles
+  distinctes**, et localisée (matériels de transport, qui relèvent des
+  produits finis destinés à l'industrie). Les réaffectations entre produits
+  de 2021–2023 ne se voient pas ici : elles restent dans les mêmes groupes.
+- Chargement en base de travail vérifié (90 lignes, sommes conformes), base
+  remise en l'état ensuite.
+
 ## Reste à saisir
 
-- Groupes d'utilisation — importations.
 - Continents, régions, pays (et chapitres SH si le rapport les contient
   encore).
