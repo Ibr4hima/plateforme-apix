@@ -127,7 +127,20 @@ exhaustifs que l'édition 2024 (leur somme est le total des exportations).
 - Chargement en base de travail vérifié (90 lignes, sommes conformes), base
   remise en l'état ensuite.
 
+## Continents — exportations (tableaux 23 et 24) : saisies
+
+Saisie ligne à ligne : `saisie_2025_continents.py`. Mêmes 6 modalités
+exhaustives que l'édition 2024 (libellés du rapport « EUROPE »,
+« AMERIQUE »… ramenés aux formes courtes).
+
+- Somme des 6 continents = TOTAL imprimé : 10/10 conformes, écarts de −1 à
+  +1 (2025 exact en valeur et en poids).
+- Aucune révision de 2021–2024 : 24 couples identiques à l'édition 2024.
+- Contrôle indépendant à venir : Σ régions d'un continent = continent,
+  une fois les tableaux par région saisis.
+- Chargement en base de travail vérifié, base remise en l'état ensuite.
+
 ## Reste à saisir
 
-- Continents, régions, pays (et chapitres SH si le rapport les contient
-  encore).
+- Continents — importations.
+- Régions, pays (et chapitres SH si le rapport les contient encore).
