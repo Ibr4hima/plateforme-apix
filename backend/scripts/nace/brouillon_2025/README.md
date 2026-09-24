@@ -70,8 +70,37 @@ précédentes, dans l'ordre du rapport.
 - Chargement en base de travail et lecture API vérifiés, base remise en
   l'état ensuite.
 
+## Produits regroupés — importations (tableaux 12 et 13) : famille COMPLÈTE
+
+Mêmes 56 postes, même ordre que l'édition 2024 (440 lignes au total pour la
+famille, export compris).
+
+- Somme des lignes = TOTAL imprimé : 10/10 conformes, écarts de −5 à +3
+  (56 lignes arrondies une à une, tolérance ±6).
+- **Recoupement indépendant avec les tableaux 8–9** : 9 correspondances
+  sur 10 concordent à l'arrondi près sur les 10 valeurs (valeur et poids,
+  2021–2025), dont trois par sommes de plusieurs postes :
+  Froment + Maïs + Riz + Mil + Autres céréales = « Produits céréaliers » ;
+  les 5 postes machines = « Machines et appareils » ; Automobiles +
+  Camions + Pièces + Autres véhicules + Autres matériels = « Matériels de
+  transport et pièces détachées ». La dixième (« Métaux communs et
+  ouvrages » contre les 6 postes métalliques) ne concorde pas — mais
+  l'écart est le même dans l'édition 2024 déjà validée (2021 : 409 217
+  contre 485 040) : c'est une différence de périmètre entre les deux
+  nomenclatures, non une erreur de saisie.
+- **Révisions 2021–2024 : 107 couples sur 224**, dans la continuité des
+  principaux produits :
+  - 2021, 2022, 2023 : les révisions se compensent (somme ±2) — le
+    rapport répartit autrement, les totaux ne bougent pas ;
+  - 2024 : −149 020 MFCFA et −19 017 t au total, dont **« Autres
+    matériels de transport » 210 980 → 61 963 (−149 017)** — exactement la
+    baisse du TOTAL import 2024 constatée dans les tableaux 8–9 : la
+    révision est confirmée par deux tableaux distincts.
+- Chargement en base de travail et lecture API vérifiés (import 2024 =
+  7 012 373, soit le nouveau TOTAL à l'arrondi près), base remise en
+  l'état ensuite.
+
 ## Reste à saisir
 
-- Produits regroupés — importations (tableaux 12 et 13).
 - Groupes d'utilisation, continents, régions, pays (et chapitres SH si le
   rapport les contient encore).
