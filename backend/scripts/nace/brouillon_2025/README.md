@@ -46,7 +46,32 @@ précédentes (« Machines et Appareils » → « Machines et appareils », etc.
 - Chargement réel en base de travail (importer.py) puis lecture API et page
   vérifiés, base remise en l'état ensuite.
 
+## Produits regroupés — exportations (tableaux 10 et 11) : saisies
+
+Saisie ligne à ligne : `saisie_2025_produits_regroupes.py`. Libellés du
+rapport (capitales sans accents) ramenés à ceux, normalisés, des éditions
+précédentes, dans l'ordre du rapport.
+
+- Somme des lignes = TOTAL imprimé : 10/10 conformes, écarts de −2 à +3
+  (32 lignes arrondies une à une, tolérance ±6).
+- Aucune révision de 2021–2024 : 124 couples produit × année identiques à
+  l'édition 2024, aucun poste disparu.
+- Nouveau poste : **« Gaz liquéfiés naturels »** (libellé du rapport
+  « GAZ LIQUEFIES NATURELS »), « - » de 2021 à 2024 : 32 postes export au
+  lieu de 31. Même montant que « Gaz naturel liquéfié » des principaux
+  produits.
+- « 0 » et « - » distingués comme imprimés : farine de froment 2024 = 0,
+  2025 = « - » (vide) ; huile raffinée d'arachide 2023 = 0, 2025 = « - ».
+- **Recoupement indépendant avec les tableaux 6–7** (saisis séparément) :
+  110 concordances, 0 écart, sur 11 postes présents dans les deux
+  nomenclatures, valeur et poids, 2021–2025 — dont les sommes Titane +
+  Zirconium = « Titane et zircon » et Coton en masse + Tissus en coton =
+  « Cotons et tissus en coton ».
+- Chargement en base de travail et lecture API vérifiés, base remise en
+  l'état ensuite.
+
 ## Reste à saisir
 
-- Produits regroupés, groupes d'utilisation, continents, régions, pays
-  (et chapitres SH si le rapport les contient encore).
+- Produits regroupés — importations (tableaux 12 et 13).
+- Groupes d'utilisation, continents, régions, pays (et chapitres SH si le
+  rapport les contient encore).

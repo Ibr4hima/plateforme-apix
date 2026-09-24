@@ -1,0 +1,161 @@
+produit,sens,annee,valeur,poids,edition
+Animaux vivants,export,2021,45,3,2025
+Animaux vivants,export,2022,25,1,2025
+Animaux vivants,export,2023,57,6,2025
+Animaux vivants,export,2024,159,18,2025
+Animaux vivants,export,2025,429,67,2025
+Poisson frais de mer,export,2021,192498,280058,2025
+Poisson frais de mer,export,2022,211364,260177,2025
+Poisson frais de mer,export,2023,192025,238307,2025
+Poisson frais de mer,export,2024,183510,210371,2025
+Poisson frais de mer,export,2025,182834,210128,2025
+"Crustacés, mollusques et coquillages",export,2021,106966,25253,2025
+"Crustacés, mollusques et coquillages",export,2022,163614,24125,2025
+"Crustacés, mollusques et coquillages",export,2023,104674,21064,2025
+"Crustacés, mollusques et coquillages",export,2024,88827,20104,2025
+"Crustacés, mollusques et coquillages",export,2025,125990,27195,2025
+Légumes frais,export,2021,41470,46506,2025
+Légumes frais,export,2022,35222,38670,2025
+Légumes frais,export,2023,44127,42069,2025
+Légumes frais,export,2024,36898,45083,2025
+Légumes frais,export,2025,41253,59660,2025
+Farine de froment,export,2021,7719,29249,2025
+Farine de froment,export,2022,4661,14003,2025
+Farine de froment,export,2023,98,280,2025
+Farine de froment,export,2024,0,0,2025
+Farine de froment,export,2025,,,2025
+Arachides non grillées,export,2021,154789,336002,2025
+Arachides non grillées,export,2022,84789,177917,2025
+Arachides non grillées,export,2023,66406,119412,2025
+Arachides non grillées,export,2024,65308,121798,2025
+Arachides non grillées,export,2025,1393,2519,2025
+Gomme arabique,export,2021,561,875,2025
+Gomme arabique,export,2022,12724,4038,2025
+Gomme arabique,export,2023,986,3307,2025
+Gomme arabique,export,2024,680,390,2025
+Gomme arabique,export,2025,3848,4057,2025
+Huile brute d'arachide,export,2021,13732,12629,2025
+Huile brute d'arachide,export,2022,15913,13615,2025
+Huile brute d'arachide,export,2023,3817,1827,2025
+Huile brute d'arachide,export,2024,6892,5997,2025
+Huile brute d'arachide,export,2025,20522,22441,2025
+Huile raffinée d'arachide,export,2021,38,35,2025
+Huile raffinée d'arachide,export,2022,114,87,2025
+Huile raffinée d'arachide,export,2023,0,0,2025
+Huile raffinée d'arachide,export,2024,75,88,2025
+Huile raffinée d'arachide,export,2025,,,2025
+Conserves de poisson,export,2021,11749,5062,2025
+Conserves de poisson,export,2022,46682,13880,2025
+Conserves de poisson,export,2023,47411,13576,2025
+Conserves de poisson,export,2024,67131,19550,2025
+Conserves de poisson,export,2025,37588,11557,2025
+Produits sucrés,export,2021,3451,3776,2025
+Produits sucrés,export,2022,3270,2822,2025
+Produits sucrés,export,2023,2572,1628,2025
+Produits sucrés,export,2024,2510,1861,2025
+Produits sucrés,export,2025,2936,2749,2025
+Tourteaux d'arachide,export,2021,13,150,2025
+Tourteaux d'arachide,export,2022,23,300,2025
+Tourteaux d'arachide,export,2023,,,2025
+Tourteaux d'arachide,export,2024,,,2025
+Tourteaux d'arachide,export,2025,,,2025
+Cigarettes,export,2021,30646,2379,2025
+Cigarettes,export,2022,20968,1788,2025
+Cigarettes,export,2023,33827,2487,2025
+Cigarettes,export,2024,36123,2576,2025
+Cigarettes,export,2025,47497,3117,2025
+Sel brut,export,2021,10269,318954,2025
+Sel brut,export,2022,13378,398337,2025
+Sel brut,export,2023,13546,349850,2025
+Sel brut,export,2024,10983,323233,2025
+Sel brut,export,2025,10187,252809,2025
+Phosphates,export,2021,22050,553448,2025
+Phosphates,export,2022,47732,486545,2025
+Phosphates,export,2023,49886,569208,2025
+Phosphates,export,2024,55433,717942,2025
+Phosphates,export,2025,47141,619911,2025
+Ciment hydraulique,export,2021,86231,2123572,2025
+Ciment hydraulique,export,2022,75747,1631621,2025
+Ciment hydraulique,export,2023,106480,2149919,2025
+Ciment hydraulique,export,2024,108838,2282279,2025
+Ciment hydraulique,export,2025,113629,2527722,2025
+Huiles brutes de pétrole,export,2021,11017,73045,2025
+Huiles brutes de pétrole,export,2022,1545,6928,2025
+Huiles brutes de pétrole,export,2023,15959,63690,2025
+Huiles brutes de pétrole,export,2024,464555,1427941,2025
+Huiles brutes de pétrole,export,2025,1527997,5119888,2025
+Produits pétroliers,export,2021,436885,1303545,2025
+Produits pétroliers,export,2022,648822,1072595,2025
+Produits pétroliers,export,2023,676438,1192516,2025
+Produits pétroliers,export,2024,791942,1412012,2025
+Produits pétroliers,export,2025,860646,1783976,2025
+Gaz liquéfiés naturels,export,2021,,,2025
+Gaz liquéfiés naturels,export,2022,,,2025
+Gaz liquéfiés naturels,export,2023,,,2025
+Gaz liquéfiés naturels,export,2024,,,2025
+Gaz liquéfiés naturels,export,2025,115868,593346,2025
+Engrais minéraux et chimiques,export,2021,33057,121978,2025
+Engrais minéraux et chimiques,export,2022,9318,30411,2025
+Engrais minéraux et chimiques,export,2023,37787,130511,2025
+Engrais minéraux et chimiques,export,2024,28830,67768,2025
+Engrais minéraux et chimiques,export,2025,61251,156716,2025
+Cuirs et peaux,export,2021,1964,1301,2025
+Cuirs et peaux,export,2022,1572,1364,2025
+Cuirs et peaux,export,2023,356,561,2025
+Cuirs et peaux,export,2024,68,151,2025
+Cuirs et peaux,export,2025,166,976,2025
+Coton en masse,export,2021,8966,9140,2025
+Coton en masse,export,2022,12528,8920,2025
+Coton en masse,export,2023,8422,5986,2025
+Coton en masse,export,2024,6611,5612,2025
+Coton en masse,export,2025,6318,6139,2025
+Tissus en coton,export,2021,39,20,2025
+Tissus en coton,export,2022,23,10,2025
+Tissus en coton,export,2023,6,4,2025
+Tissus en coton,export,2024,29,31,2025
+Tissus en coton,export,2025,78,180,2025
+Chaussures,export,2021,6157,5859,2025
+Chaussures,export,2022,7203,6017,2025
+Chaussures,export,2023,5407,5018,2025
+Chaussures,export,2024,4144,3700,2025
+Chaussures,export,2025,2998,2893,2025
+"Récipients en tôle, fer et acier",export,2021,99,62,2025
+"Récipients en tôle, fer et acier",export,2022,703,296,2025
+"Récipients en tôle, fer et acier",export,2023,293,109,2025
+"Récipients en tôle, fer et acier",export,2024,298,106,2025
+"Récipients en tôle, fer et acier",export,2025,20,5,2025
+Acide phosphorique,export,2021,265348,478435,2025
+Acide phosphorique,export,2022,471868,558409,2025
+Acide phosphorique,export,2023,264686,492886,2025
+Acide phosphorique,export,2024,264417,499185,2025
+Acide phosphorique,export,2025,264696,415328,2025
+"Poissons séchés, salés ou en saumure",export,2021,1768,1743,2025
+"Poissons séchés, salés ou en saumure",export,2022,1710,1522,2025
+"Poissons séchés, salés ou en saumure",export,2023,1167,1036,2025
+"Poissons séchés, salés ou en saumure",export,2024,1041,1321,2025
+"Poissons séchés, salés ou en saumure",export,2025,1898,2309,2025
+Or non monétaire,export,2021,539778,19,2025
+Or non monétaire,export,2022,580607,18,2025
+Or non monétaire,export,2023,530410,17,2025
+Or non monétaire,export,2024,588502,16,2025
+Or non monétaire,export,2025,977997,19,2025
+Zirconium,export,2021,62464,91558,2025
+Zirconium,export,2022,87623,89085,2025
+Zirconium,export,2023,61478,74529,2025
+Zirconium,export,2024,77459,98626,2025
+Zirconium,export,2025,68389,119777,2025
+Titane,export,2021,87840,587818,2025
+Titane,export,2022,115805,508265,2025
+Titane,export,2023,85127,402352,2025
+Titane,export,2024,98113,569804,2025
+Titane,export,2025,85754,581631,2025
+"Préparations pour soupes, potages, bouillons",export,2021,84285,79593,2025
+"Préparations pour soupes, potages, bouillons",export,2022,102989,81083,2025
+"Préparations pour soupes, potages, bouillons",export,2023,90341,66034,2025
+"Préparations pour soupes, potages, bouillons",export,2024,93465,67475,2025
+"Préparations pour soupes, potages, bouillons",export,2025,20765,15234,2025
+Autres produits,export,2021,662907,1546261,2025
+Autres produits,export,2022,784820,1537117,2025
+Autres produits,export,2023,780143,1480430,2025
+Autres produits,export,2024,826218,1694868,2025
+Autres produits,export,2025,1175536,1644001,2025
