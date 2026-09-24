@@ -215,6 +215,33 @@ Même interversion des deux lignes d'Amérique qu'à l'export (2021–2023 :
     confirmer avec les tableaux par pays 2025.
 - Chargement en base de travail vérifié (120 lignes), base remise en l'état.
 
+## Pays — exportations en valeur (tableau 31) : saisies
+
+177 partenaires dans `donnees_2025_pays.py` (libellés BRUTS en capitales,
+clés du rapprochement avec le référentiel ; régions ramenées aux 12 libellés
+stables). Le CSV `edition_2025_pays.csv` sera écrit quand valeur et poids
+seront saisis pour les deux sens.
+
+- **Les tableaux par pays confirment l'interversion des tableaux 19–22** :
+  ici « AMERIQUE DU NORD » (70 741 en 2021) détaille bien États-Unis +
+  Canada, et « AMERIQUE CENTRALE ET DU SUD » (43 412) le Mexique, le Brésil…
+- **Royaume-Uni sous « Autres pays de l'Europe »** : seul changement de
+  région par rapport à l'édition 2024 (Brexit).
+- Σ pays d'une région = sous-total imprimé : 30 exacts sur 55, les 25
+  autres à 1–3 unités (arrondis ; tolérance 6 comme verifier_pays.py).
+- **Sous-total « DIVERS » fautif dans ce tableau** : 76 655 / 113 794 /
+  136 327 / 191 227 / 92 915, soit chaque année exactement le sous-total
+  « Afrique du Nord » de moins que la vraie valeur (86 830 / 133 485 /
+  162 901 / 229 230 / 176 863). La vraie valeur est attestée trois fois :
+  tableau 19 (régions), tableau 23 (continents) et TOTAL du tableau 31
+  lui-même (Σ sous-totaux + écart = TOTAL). « Divers » étant imprimé sans
+  détail, la règle d'arbitrage déjà en place (une seule région sans
+  ventilation porte l'écart au TOTAL) donne la même correction.
+- **Aucune révision** : 692 valeurs 2021–2024 identiques à l'édition 2024.
+- Libellés : GROENLAND, ILES CANARIES, JAMAIQUE, REUNION reviennent (déjà
+  connus des éditions antérieures et de l'arbitrage) ; MALDIVES sort (aucune
+  exportation depuis 2020).
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
