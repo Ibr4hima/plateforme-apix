@@ -902,6 +902,10 @@ async def commerce_bilateral(
     # Objet complet : la Fiche Pays ouvre le même modal que la page Accords
     accords = [{
         "id": a.id,
+        # Le type commande l'étiquette du bandeau de la Fiche Pays (« TBI ») et
+        # ce que la fiche de l'accord affiche : un TBI n'y répète pas ses
+        # parties, déjà nommées par son titre.
+        "type_accord": a.type_accord,
         "titre": a.titre,
         "reference": a.reference,
         "commentaires": a.commentaires,

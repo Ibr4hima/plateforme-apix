@@ -587,6 +587,37 @@ function ContenuFichePays() {
                   ))}
                 </div>
               )}
+              {/* LES ACCORDS SIGNÉS, DANS LE BANDEAU. Ils avaient leur bloc sous
+                  les KPI, pour une ou deux étiquettes : c'est un attribut de la
+                  RELATION entre les deux pays, et il se lit avec leurs noms,
+                  là où l'on choisit le duo. Une pastille de verre par accord,
+                  « TBI · Sénégal × France » — le type, puis les parties dans
+                  l'ordre de la fiche ; un accord international garde son titre.
+                  Au clic, la fiche de l'accord, comme sur la page Accords. */}
+              {ids && accs.length > 0 && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+                  {accs.map((ac: any) => {
+                    const tbi = (ac.type_accord || "tbi") === "tbi";
+                    const annee = ac.date_signature ? ac.date_signature.slice(0, 4) : null;
+                    return (
+                      <button key={ac.id} onClick={() => setAccordOuvert(ac)}
+                        title={[ac.titre, ac.reference, annee ? `signé en ${annee}` : null].filter(Boolean).join(" · ")}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px",
+                          borderRadius: 999, cursor: "pointer", fontFamily: "var(--font-google-sans)",
+                          fontSize: 12.5, fontWeight: 700, color: "var(--sur-bleu)",
+                          background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.26)",
+                          transition: "background .15s, border-color .15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.18)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.45)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.26)"; }}>
+                        <FileText size={14} style={{ flexShrink: 0, opacity: 0.85 }} />
+                        <span style={{ fontWeight: 800, letterSpacing: "0.04em" }}>{tbi ? "TBI" : "Traité"}</span>
+                        <span style={{ opacity: 0.55 }}>·</span>
+                        <span>{tbi ? `${nomDe(ids[0])} × ${nomDe(ids[1])}` : ac.titre}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="no-print" style={{ flexShrink: 0 }}>
               <NavActions onDark home flouTotal />
@@ -624,15 +655,11 @@ function ContenuFichePays() {
         })()}
 
         {/* ── Contexte relationnel ── */}
-        {(grps.length > 0 || accs.length > 0 || ents.length > 0) && (
+        {(grps.length > 0 || ents.length > 0) && (
           <div style={{ display: "grid", gap: 16, marginTop: 18 }}>
             {grps.length > 0 && (
               <BlocContexte Icone={Landmark} titre="Appartenances communes" count={grps.length}
                 items={grps.map((g: any) => ({ label: g.code || g.nom, title: g.nom }))} />
-            )}
-            {accs.length > 0 && (
-              <BlocContexte Icone={FileText} titre={accs.length > 1 ? "Accords signés" : "Accord signé"} count={accs.length}
-                items={accs.map((ac: any) => ({ label: ac.titre, suffixe: ac.date_signature ? ac.date_signature.slice(0, 4) : null, title: ac.reference || ac.titre, onClick: ac.id ? () => setAccordOuvert(ac) : undefined }))} />
             )}
             {ents.length > 0 && (
               <BlocContexte Icone={Building2} titre={`Entreprises installées au Sénégal · siège ${nomDe(autreId)}`} count={entSiege.total}
