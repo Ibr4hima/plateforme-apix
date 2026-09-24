@@ -156,7 +156,44 @@ exhaustives que l'édition 2024 (libellés du rapport « EUROPE »,
     tableaux par pays.
 - Chargement en base de travail vérifié (60 lignes), base remise en l'état.
 
+## Régions — exportations (tableaux 19 et 20) : saisies
+
+Nouveauté de l'édition 2025 : les régions ont leurs propres tableaux (jusqu'en
+2024, elles n'existaient que comme sous-totaux des tableaux par pays). Saisie
+ligne à ligne : `saisie_2025_regions.py`, libellés ramenés aux 12 régions
+stables (REGIONS_ORDRE de app/api/routes/nace.py).
+
+**Deux particularités, établies contre le détail par pays de l'édition 2024 :**
+
+1. **Étiquettes des deux régions d'Amérique interverties dans le rapport.**
+   Les montants de la ligne « AMERIQUE DU NORD » sont exactement ceux de
+   l'Amérique centrale et du Sud de l'édition 2024, et inversement : 16
+   égalités sur 16 (4 années × 2 régions × valeur et poids). L'Amérique du
+   Nord, c'est États-Unis + Canada — 69 439 + 1 302 = 70 741 MFCFA en 2021 —
+   alors que la ligne ainsi étiquetée porte 43 412. Chaque montant est saisi
+   sous sa vraie région. À reconfirmer avec les tableaux par pays 2025.
+2. **Le Royaume-Uni sort de l'Union européenne (Brexit).** La région perd
+   chaque année exactement les exportations britanniques de l'édition 2024,
+   à 1 près (2021 : 40 863 ; 2022 : 45 762 ; 2023 : 58 614 ; 2024 : 59 021),
+   et « Autres pays d'Europe » gagne le même montant. Changement réel,
+   conservé. Conséquence : la série « Union européenne » de la page change de
+   périmètre en 2021 (Royaume-Uni compris jusqu'en 2020, lu sur les éditions
+   antérieures).
+
+Contrôles :
+- Σ 12 régions = TOTAL imprimé : 10/10 conformes, écarts de −1 à +2.
+- **Σ régions d'un continent = tableaux 23–24** (saisis séparément) :
+  60/60 concordances.
+- Contre l'édition 2024 : hors Royaume-Uni, seuls écarts de 1 à 3 unités sur
+  « Divers » (sous-totaux que l'extraction 2024 avait recalculés sur le
+  détail par pays). **Aucune révision à l'export** une fois les étiquettes
+  remises en place.
+- Chargement en base de travail vérifié (60 lignes ; Amérique du Nord 2021
+  = 70 741), base remise en l'état ensuite.
+
 ## Reste à saisir
 
-- Régions et pays (tableaux hiérarchiques ; contrôle Σ régions d'un
-  continent = continent), et chapitres SH si le rapport les contient encore.
+- Régions — importations (tableaux 21 et 22).
+- Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
+  confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
+  les contient encore.
