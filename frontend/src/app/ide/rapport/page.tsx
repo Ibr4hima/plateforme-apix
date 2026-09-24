@@ -65,6 +65,14 @@ type Projet = {
   capex_musd: number | null; capex_estime: boolean | null;
   emplois: number | null; emplois_estime: boolean | null;
 };
+/** Une ligne du classement des investissements — allégée : le tableau ne lit
+    ni description ni sous-secteur, et une région en rend des milliers. */
+type Investissement = {
+  id: number; periode: string; entreprise: string | null;
+  partenaire: string | null; partenaire_iso: string | null; secteur: string | null;
+  capex_musd: number | null; capex_estime: boolean | null;
+  emplois: number | null; emplois_estime: boolean | null;
+};
 type Fdi = {
   kpis: { projets: number; capex_musd: number | null; emplois: number | null;
           capex_moyen: number | null; entreprises: number; partenaires: number;
@@ -72,11 +80,11 @@ type Fdi = {
   par_annee: { annee: number; nb: number; capex_musd: number | null; emplois: number | null }[];
   tops: Record<"partenaires" | "secteurs" | "activites" | "entreprises" | "types", Rang[]>;
   projets: Projet[];
-  // LES PLUS GROS DU FILTRE ENTIER, et non de la page : `projets` est rangé du
-  // plus récent au plus ancien et borné à trente lignes. Y chercher les plus
-  // gros montants — ce que faisait cette page — rendait « les plus gros des
-  // trente derniers » sous le titre « les plus gros ».
-  plus_gros: Projet[];
+  // LE CLASSEMENT COMPLET DU FILTRE, et non de la page : `projets` est rangé
+  // du plus récent au plus ancien et borné à trente lignes. Rendu seulement à
+  // la demande (`rapport=1`), du plus gros au plus petit, les projets sans
+  // montant en queue.
+  investissements: Investissement[];
   // Les trois zones ouest-africaines, et SEULEMENT celles dont le pays lu est
   // membre. Vide pour un pays d'ailleurs, et pour une région : voir la carte.
   zones_ouest: ZoneOuest[];
@@ -222,19 +230,22 @@ function TableauClassement({ titre, colonne, rows, tag, drapeaux = false }: {
   );
 }
 
-/** LES PLUS GROS INVESTISSEMENTS — le même tableau que les classements, mais
-    ses lignes sont des PROJETS et non des agrégats.
+/** LE CLASSEMENT DES INVESTISSEMENTS ANNONCÉS — le même tableau que les
+    classements, mais ses lignes sont des PROJETS et non des agrégats.
 
-    SA POPULATION EST DÉFINIE PAR LE MONTANT : le service rend les cinquante
-    plus gros investissements du filtre, et c'est ce que la carte nomme. La
-    retrier par emplois ou par date répond à « parmi les plus gros, lesquels
-    emploient le plus, lesquels sont récents » — une question, non un
-    classement des emplois du relevé entier.
+    IL EST COMPLET. La carte s'appelait « Les plus gros investissements » et
+    le service n'en rendait que vingt : dix affichés, puis « Afficher la suite
+    (10) » — alors que le filtre en comptait des centaines. Le bouton
+    promettait la suite et n'en donnait qu'un morceau. Tous les projets du
+    filtre sont désormais rendus, et « Afficher la suite » les déplie TOUS ;
+    le tri, par montant, emplois ou période, porte donc sur le relevé entier.
+    Les projets sans montant (ou sans emplois) restent en queue dans les deux
+    sens : on ne sait pas, ce n'est pas zéro.
 
     LA PÉRIODE FERME LA LIGNE. Elle était au milieu, entre le secteur et le
     montant, et coupait les deux colonnes qui se lisent ensemble ; elle se trie
     comme les deux autres — « AAAA-MM » se compare comme un nombre. */
-function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
+function TableauInvestissements({ rows, tag }: { rows: Investissement[]; tag?: string }) {
   const [triCol, setTriCol] = useState<CleProjet>("capex_musd");
   const [triSens, setTriSens] = useState<"asc" | "desc">("desc");
   const [tout, setTout] = useState(false);
@@ -268,7 +279,7 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
 
   return (
     <div style={{ marginTop: 16 }} className="rap-eviter-coupure">
-      <Carte titre="Les plus gros investissements" tag={tag}>
+      <Carte titre="Classement des investissements annoncés" tag={tag}>
         <div style={{ overflowX: "auto" as const }}>
           <table style={{ width: "100%", borderCollapse: "collapse" as const }}>
             <thead>
@@ -293,7 +304,12 @@ function TableauPlusGros({ rows, tag }: { rows: Projet[]; tag?: string }) {
                   <tr key={p.id}>
                     <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
                     <td style={{ ...CEL, fontWeight: 600, color: "var(--encre)" }}>{p.entreprise ?? "—"}</td>
-                    <td style={CEL}>{p.partenaire ?? "—"}</td>
+                    <td style={CEL}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <DrapeauPays iso={p.partenaire_iso} nom={p.partenaire ?? ""} taille={15} sansIso="rien" />
+                        {p.partenaire ?? "—"}
+                      </span>
+                    </td>
                     <td style={CEL}>{p.secteur ?? "—"}</td>
                     {/* LE « ≈ » RESTE LIGNE À LIGNE. Ici les valeurs ne sont
                         pas des sommes : chaque montant est déclaré ou estimé,
@@ -502,7 +518,7 @@ export default function RapportIde() {
   const pays = cible.nom;
 
   const qFdi = useDonnees<Fdi>(
-    `${API}/fdi/public/projets?${cible.cle}=${encodeURIComponent(cible.nom)}`, { garder: true });
+    `${API}/fdi/public/projets?${cible.cle}=${encodeURIComponent(cible.nom)}&rapport=1`, { garder: true });
   const fdi = qFdi.data;
 
   // Les cinq années les plus riches en annonces.
@@ -667,7 +683,7 @@ export default function RapportIde() {
                   engage le plus.
 
                   LES TROIS PARTAGENT DONC LE MÊME TABLEAU, dans le dessin des
-                  « plus gros projets annoncés » juste en dessous : quatre
+                  « classement des investissements annoncés » juste en dessous : quatre
                   tableaux voisins dans une même page doivent se lire de la
                   même façon, et trois copies d'un même code auraient fini par
                   diverger d'un détail. */}
@@ -678,7 +694,7 @@ export default function RapportIde() {
               <TableauClassement titre="Classement des activités menées"
                 colonne="Activité" tag={periodeFdi} rows={fdi.tops.activites ?? []} />
 
-              <TableauPlusGros rows={fdi.plus_gros ?? []} tag={periodeFdi} />
+              <TableauInvestissements rows={fdi.investissements ?? []} tag={periodeFdi} />
 
               <ARetenir>
                 {fdi.tops.partenaires?.[0] && fdi.tops.secteurs?.[0] ? (

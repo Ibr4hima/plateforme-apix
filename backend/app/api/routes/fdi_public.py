@@ -464,9 +464,15 @@ async def projets(
     recherche: str | None = None,
     page: int = 1,
     par_page: int = 30,
+    rapport: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
     """Les projets du périmètre demandé, leurs agrégats et leurs classements.
+
+    `rapport=1` ajoute `investissements` : TOUS les projets du filtre, du plus
+    gros au plus petit — le classement complet que le rapport déplie. La vue
+    Projets ne le demande pas : elle n'en a pas l'usage, et la liste se
+    compte en milliers sur une région.
 
     LA PAGINATION NE PORTE QUE SUR LA LISTE. Compteurs, séries annuelles et
     classements restent calculés sur TOUT le filtre — c'est la règle de cet
@@ -575,36 +581,41 @@ async def projets(
         LIMIT :n OFFSET :o"""),
         {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 
-    # ── LES PLUS GROS INVESTISSEMENTS, SUR TOUT LE FILTRE ────────────────────
-    # LE RAPPORT LES TIRAIT DE LA PAGE, et c'était faux. La liste ci-dessus est
-    # rangée du plus RÉCENT au plus ancien et bornée à sa page : y chercher les
-    # plus gros montants revenait à rendre « les plus gros des trente derniers »
-    # sous le titre « les plus gros ». Sur le Sénégal, les deuxième, troisième
-    # et quatrième plus gros investissements du relevé — Jafza International en
-    # 2008, Sota Domus et Tosyali en 2015 et 2019 — n'apparaissaient donc nulle
-    # part, et le rapport en plaçait un de 168 M $ au troisième rang quand le
-    # vrai troisième en pèse 800.
+    # ── LE CLASSEMENT DES INVESTISSEMENTS ANNONCÉS, SUR TOUT LE FILTRE ───────
+    # IL NE RENDAIT QUE LES VINGT PLUS GROS. Le rapport en montrait dix, puis
+    # « Afficher la suite (10) » — alors que le filtre en comptait des
+    # centaines : le bouton promettait « la suite » et n'en donnait qu'un
+    # morceau. Le classement est désormais COMPLET, et le bouton déplie
+    # vraiment tout ce qui reste.
     #
-    # VINGT LIGNES : c'est la POPULATION que la carte nomme — « les plus
-    # gros » —, et le lecteur peut la retrier à l'écran. La borne est donc
-    # posée sur le montant, le critère qui définit la carte, et sur lui seul ;
-    # retrier ces vingt par emplois ou par date répond à « parmi les plus gros,
-    # lesquels emploient le plus », qui est une question, non un classement des
-    # emplois du relevé entier.
+    # LES PROJETS SANS MONTANT Y SONT, EN QUEUE. Un classement des
+    # investissements annoncés qui les écarterait aurait moins de lignes que
+    # le compteur « projets » du même rapport ; ils ferment la liste, et
+    # l'écran les garde derrière dans les deux sens de tri.
     #
-    # L'écran en montre dix, puis les dix autres au dépliage. Le nombre est
-    # donc réglé ICI et non à l'affichage : envoyer cinquante lignes pour en
-    # montrer vingt ferait voyager trente projets que personne ne verrait, et
-    # le jour où l'on changerait la fenêtre de l'écran, la carte se remplirait
-    # de lignes qu'aucun titre n'annonce.
-    #
-    # Les projets sans montant en sont exclus : un investissement dont on ne
-    # connaît pas la taille n'a pas de place dans un classement par taille.
-    plus_gros = (await db.execute(text(f"""
-        SELECT {COLONNES_PROJET.format(observe=observe, partenaire=partenaire)}
-        {base} AND p.capex_musd IS NOT NULL
-        ORDER BY p.capex_musd DESC, p.annee DESC, p.mois DESC NULLS LAST, p.id
-        LIMIT 20"""), params)).fetchall()
+    # DES LIGNES LÉGÈRES : le tableau ne lit ni description ni sous-secteur,
+    # et une région rend des milliers de projets. Le tri de départ est le
+    # montant, l'identifiant départage les ex æquo — un rapport qu'on cite ne
+    # peut pas changer d'ordre d'un chargement à l'autre.
+    investissements = []
+    if rapport:
+        investissements = [{
+            "id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
+            "entreprise": r.entreprise, "partenaire": r.partenaire,
+            "partenaire_iso": (r.partenaire_iso or "").strip() or None,
+            "secteur": r.secteur,
+            "capex_musd": _nb(r.capex_musd), "capex_estime": r.capex_estime,
+            "emplois": r.emplois, "emplois_estime": r.emplois_estime,
+        } for r in (await db.execute(text(f"""
+            SELECT p.id, p.annee, p.mois,
+                   COALESCE(e.nom, p.entreprise_brut) AS entreprise,
+                   COALESCE(rp.nom_fr, p.{partenaire}_brut) AS partenaire,
+                   rp.code_iso2 AS partenaire_iso,
+                   COALESCE(s.libelle_fr, p.secteur_brut) AS secteur,
+                   p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime
+            {base}
+            ORDER BY p.capex_musd DESC NULLS LAST, p.annee DESC, p.mois DESC NULLS LAST, p.id"""),
+            params)).fetchall()]
 
     # ── LE CLASSEMENT OUEST-AFRICAIN ─────────────────────────────────────────
     # Les conditions REPRISES SANS CELLE DU PAYS : voir `_classement_ouest`.
@@ -638,7 +649,7 @@ async def projets(
             for nom, rows in tops.items()
         },
         "projets": [serialiser_projet(r) for r in lignes],
-        "plus_gros": [serialiser_projet(r) for r in plus_gros],
+        "investissements": investissements,
         "zones_ouest": zones_ouest,
     }
 
