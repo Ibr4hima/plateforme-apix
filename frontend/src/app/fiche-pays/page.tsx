@@ -54,6 +54,16 @@ const ICONES_CAT: Record<string, React.ComponentType<{ size?: number; strokeWidt
 
 type Cellule = { valeur: number | null; annee?: number } | null;
 
+/** Les indicateurs dont on n'affiche pas l'année : ils ne varient pas. */
+const SANS_ANNEE = new Set(["superficie"]);
+
+/** Les indicateurs que la Fiche Pays n'affiche pas — ils restent sur la page
+    Statistiques. La croissance du PIB est un taux d'une seule année, qui
+    varie du simple au triple d'un millésime à l'autre (Mali 2020 : −1,2 %,
+    2021 : +3,1 %) : placée à côté de grandeurs de stock, elle comparait deux
+    conjonctures plutôt que deux pays. */
+const EXCLUS_FICHE = new Set(["croissance_pib"]);
+
 /** LE TABLEAU COMPARATIF — deux pays, ligne à ligne.
 
     IL NE DONNAIT QUE DEUX NOMBRES PAR LIGNE, et c'était au lecteur de faire la
@@ -166,7 +176,11 @@ function TableauComparatif({ cols, cats, parCat, getCell }: {
                     color: v === null ? "var(--gris)" : mene === i ? teinte(i) : ENCRE }}>
                     {fmt(v, ind.unite, ind.code)}
                   </span>
-                  {c?.annee && <span style={{ fontSize: 9.5, color: "var(--gris)",
+                  {/* PAS DE MILLÉSIME POUR UNE GRANDEUR QUI NE BOUGE PAS. La
+                      superficie d'un pays n'a pas d'« année » : l'écrire sous
+                      196 722 km² laissait croire qu'elle changerait l'an
+                      prochain. */}
+                  {c?.annee && !SANS_ANNEE.has(ind.code) && <span style={{ fontSize: 9.5, color: "var(--gris)",
                     fontVariantNumeric: "tabular-nums" }}>{c.annee}</span>}
                 </span>
               );
@@ -476,7 +490,7 @@ function ContenuFichePays() {
   // et il fermait la liste, sous la superficie et la balance des services.
   const inds: Indicateur[] = [
     ...IDE_LIGNES,
-    ...(data?.indicateurs || []),
+    ...(data?.indicateurs || []).filter((i: Indicateur) => !EXCLUS_FICHE.has(i.code)),
   ];
   const cats: string[] = [];
   const parCat: Record<string, Indicateur[]> = {};
