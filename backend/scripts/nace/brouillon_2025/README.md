@@ -278,6 +278,40 @@ défaut à l'ANSD ; la famille pays attend le tableau corrigé.
   soumettre à l'ANSD avec le tableau 32.
 - Nouveau libellé : LESOTHO (2025).
 
+## Pays — importations en poids (tableau 34) : saisie PARTIELLE
+
+Captures reçues jusqu'à NICARAGUA, puis à partir de CHINE : manquent la fin
+d'« Amérique centrale et du Sud », « Amérique du Nord », « Asie
+occidentale » et le début d'« Autres pays d'Asie ».
+
+- Régions complètes (UE, Afrique centrale, du Nord, occidentale, orientale
+  et du Sud, Océanie) : sous-totaux = tableau 22 exactement, Σ pays =
+  sous-total à ±2.
+- « Autres pays d'Europe » : sous-total imprimé amputé du Royaume-Uni (et
+  du transfert récurrent vers Divers) ; DIVERS surévalué du même montant.
+  Reconstitués sur le détail, les deux égalent le tableau 22.
+- Révisions contre l'édition 2024 (484 poids comparés, 4 révisés), les
+  mêmes qu'en valeur : CROATIE −15 106 t, CHINE −3 911 t, NICARAGUA →
+  NIGERIA 548 518 t (le transfert COMPLET, comme les tableaux 21, 22, 25).
+
+### Décision : Nicaragua 2024 = 2 432 MFCFA, Nigeria 2024 = 542 046 MFCFA
+
+Retenue avec l'utilisateur, contre la valeur imprimée au tableau 33 :
+
+| Nicaragua | valeur | poids | prix moyen |
+|---|---|---|---|
+| 2021 | 114 | 425 | 268 FCFA/kg |
+| 2023 | 2 223 | 9 070 | 245 FCFA/kg |
+| 2024 selon le tableau 33 | 12 497 | 9 951 | 1 256 FCFA/kg |
+| **2024 selon les tableaux 21/25** | **2 432** | **9 951** | **244 FCFA/kg** |
+
+Le poids 2024 (9 951 t, tableau 34) et les tableaux 21, 22, 25 et 34
+décrivent tous un transfert complet ; seule la valeur du tableau 33 n'a été
+corrigée qu'en partie (217 199 au lieu de 227 264 MFCFA). Nigeria 2024 =
+531 981 + 10 065 = 542 046, soit exactement l'ancienne valeur (314 782) plus
+le montant mal codé (227 264). Question transmise à l'ANSD par
+l'utilisateur ; à corriger si sa réponse diffère.
+
 ## Reste à saisir
 - Pays (tableaux hiérarchiques : Σ pays d'une région = sous-total ; à
   confronter aux tableaux régions ci-dessus), et chapitres SH si le rapport
