@@ -618,16 +618,10 @@ function ContenuFichePays() {
           </div>
         )}
 
-        {/* ── Investissements fDi du partenaire au Sénégal, juste sous les KPIs ── */}
-        {fdi && autreId !== null && senId !== null && cols.length === 2 && (() => {
-          const part = cols.find((c: any) => c.id === autreId), sen = cols.find((c: any) => c.id === senId);
-          return part && sen ? <FdiSenegal partenaire={part} senegal={sen} donnees={fdi} /> : null;
-        })()}
-
-        {/* ── Indicateurs comparés (absent tant que la liste des pays est en échec) ── */}
+        {/* ── Indicateurs socio-économiques (absent tant que la liste des pays est en échec) ── */}
         {!(errPays && !ids) && (
           <div className="ds-carte" style={{ marginTop: 18, padding: "22px 26px 14px" }}>
-            <p style={TITRE_SEC}>Indicateurs comparés</p>
+            <p style={TITRE_SEC}>Indicateurs socio-économiques</p>
             {!data ? (
               errData ? <ErreurChargement compact onRetry={() => qData.refetch()} /> : <SkeletonRows n={10} h={34} />
             ) : (
@@ -640,6 +634,12 @@ function ContenuFichePays() {
         {cols.length === 2 && bilat && (bilat.a_vers_b > 0 || bilat.b_vers_a > 0) && (
           <EchangesBilateraux a={a} b={b} bilat={bilat} periode={periodeBilat} />
         )}
+
+        {/* ── Investissements fDi du partenaire au Sénégal, après les échanges bilatéraux ── */}
+        {fdi && autreId !== null && senId !== null && cols.length === 2 && (() => {
+          const part = cols.find((c: any) => c.id === autreId), sen = cols.find((c: any) => c.id === senId);
+          return part && sen ? <FdiSenegal partenaire={part} senegal={sen} donnees={fdi} /> : null;
+        })()}
 
         {/* ── Pied méthodologique ── */}
         <div style={{ marginTop: 22, padding: "14px 4px 0", borderTop: "1px solid var(--bleu-voile)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
