@@ -505,11 +505,22 @@ function ContenuFichePays() {
   const totalBilat = (bilat?.a_vers_b || 0) + (bilat?.b_vers_a || 0);
   const periodeBilat = bilat?.annee_min ? `${bilat.annee_min}–${bilat.annee_max}` : "";
 
+  // DEUX KPI TIRÉS DE FDI MARKETS — les projets du partenaire au Sénégal, les
+  // mêmes que le tableau juste en dessous : le chiffre du haut se retrouve
+  // ligne à ligne dans la section. Hors d'une fiche « Sénégal × X », il n'y a
+  // pas de relevé à lire, et la carte le dit au lieu d'afficher un zéro.
+  const projetsFdi: any[] = fdi?.projets || [];
+  const somme = (cle: string) => projetsFdi.reduce((t, p) => t + (p[cle] ?? 0), 0);
+  const capexFdi = somme("capex_musd"), emploisFdi = somme("emplois");
+  const attente = autreId === null || qFdi.isError ? "—" : "…";
   const kpis = [
-    { l: "Appartenances communes", txt: bilat ? String(grps.length) : "—", note: "organisations et groupements" },
+    { l: "Mont. des investissements",
+      txt: fdi ? (capexFdi > 0 ? fmtUSD(capexFdi * 1e6) : "—") : attente,
+      note: autreId !== null ? `${nomDe(autreId)} → Sénégal` : "réservé aux fiches incluant le Sénégal" },
     { l: "Accords signés", txt: bilat ? String(accs.length) : "—", note: "entre les deux pays" },
-    { l: "Entreprises installées", txt: entSiege ? String(entSiege.total ?? ents.length) : autreId === null ? "—" : "…",
-      note: autreId !== null ? `siège ${nomDe(autreId)} · au Sénégal` : "réservé aux fiches incluant le Sénégal" },
+    { l: "Emplois créés",
+      txt: fdi ? (emploisFdi > 0 ? `${Math.round(emploisFdi).toLocaleString("fr-FR")}*` : "—") : attente,
+      note: autreId !== null ? "* Estimation du fDi Markets" : "réservé aux fiches incluant le Sénégal" },
     { l: "Échanges bilatéraux", txt: bilat && totalBilat > 0 ? fmtUSD(totalBilat) : "—", note: periodeBilat ? `cumul ${periodeBilat}` : "cumul des flux connus" },
   ];
 

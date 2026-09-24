@@ -14,8 +14,8 @@ import { ArrowRight, Building2, Radar } from "lucide-react";
 import DrapeauPays from "@/components/shared/DrapeauPays";
 import { BoutonSuite, CEL, ENT_RAP, EnteteTri, FENETRE_RAPPORT, fmtNombre, fmtVal,
          PastilleRang } from "@/app/ide/partage";
-import { FicheProjet, PastilleType, type Projet } from "@/app/ide/onglet-fdi";
-import { FicheSignal, PastilleStade, type Signal } from "@/app/ide/vue-signaux-publics";
+import { FicheProjet, type Projet } from "@/app/ide/onglet-fdi";
+import { FicheSignal, type Signal } from "@/app/ide/vue-signaux-publics";
 import { fmtUSD } from "@/lib/format";
 
 const BLEU = "var(--bleu)";
@@ -116,7 +116,7 @@ function TableauProjets({ rows, onOuvrir }: { rows: Projet[]; onOuvrir: (p: Proj
           <thead>
             <tr>
               <th style={{ ...ENT_RAP, width: 34, textAlign: "left" }}>#</th>
-              {["Entreprise", "Type", "Secteur", "Activité"].map(t => (
+              {["Entreprise", "Secteur", "Activité"].map(t => (
                 <th key={t} style={{ ...ENT_RAP, textAlign: "left" }}>{t}</th>
               ))}
               {COLS_PROJET.map(c => (
@@ -132,7 +132,6 @@ function TableauProjets({ rows, onOuvrir }: { rows: Projet[]; onOuvrir: (p: Proj
                     sous les yeux. */}
                 <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
                 <td style={{ ...NOM, fontWeight: 600, color: "var(--encre)" }} title={p.entreprise ?? undefined}>{p.entreprise ?? "—"}</td>
-                <td style={CEL}><PastilleType type={p.type_projet} /></td>
                 <td style={TEXTE}>{p.secteur ?? "—"}</td>
                 <td style={TEXTE}>{p.activite ?? "—"}</td>
                 <td style={chiffre(col === "capex_musd")}><Approx si={p.capex_estime} />{fmtVal(p.capex_musd)}</td>
@@ -166,7 +165,7 @@ function TableauSignaux({ rows, onOuvrir }: { rows: Signal[]; onOuvrir: (s: Sign
           <thead>
             <tr>
               <th style={{ ...ENT_RAP, width: 34, textAlign: "left" }}>#</th>
-              {["Entreprise", "Stade", "Destination"].map(t => (
+              {["Entreprise", "Destination"].map(t => (
                 <th key={t} style={{ ...ENT_RAP, textAlign: "left" }}>{t}</th>
               ))}
               {COLS_SIGNAL.map(c => (
@@ -182,7 +181,6 @@ function TableauSignaux({ rows, onOuvrir }: { rows: Signal[]; onOuvrir: (s: Sign
                 <tr key={s.id} {...survolLigne(() => onOuvrir(s))}>
                   <td style={{ ...CEL, padding: "8px 10px" }}><PastilleRang n={i + 1} /></td>
                   <td style={{ ...NOM, fontWeight: 600, color: "var(--encre)" }} title={s.entreprise ?? undefined}>{s.entreprise ?? "—"}</td>
-                  <td style={CEL}>{s.natures[0] ? <PastilleStade v={s.natures[0]} /> : "—"}</td>
                   {/* LA DESTINATION LA PLUS PROCHE D'ABORD — le Sénégal, puis
                       l'Afrique de l'Ouest, puis le continent : le service les
                       range ainsi. Les autres restent comptées, et l'infobulle
