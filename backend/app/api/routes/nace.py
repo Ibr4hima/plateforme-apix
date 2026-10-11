@@ -112,7 +112,7 @@ def _poids_manquants() -> dict[int, set]:
     """{édition: {(pays, sens, année)}} des poids que le rapport NE DONNE PAS.
 
     Déclarés dans edition_XXXX_poids_manquants.csv (édition 2025 : tableau 32
-    inutilisable, lignes absentes du tableau 34). Une case poids vide non
+    inutilisable ; le tableau 34, d'abord tronqué, a été reçu complet). Une case poids vide non
     déclarée reste un « - » du rapport, c'est-à-dire une absence de flux :
     c'est ce fichier qui distingue « inconnu » de « nul ».
     """

@@ -478,11 +478,25 @@ type NaceDataPays = { disponible: boolean; annees: number[]; editions: number[];
     Une seule année trouée suffit : un classement en volume la sous-estimerait
     en silence — le pays sans poids publié tomberait à zéro. */
 function poidsPaysIncomplet(pys: NaceDataPays | null, per: Periode, sens: ZoneSens[]): boolean {
-  if (!pys?.poids_incomplets) return false;
-  const debut = estIntervalle(per) ? per.debut : per.fin;
-  return sens.some(s => (pys.poids_incomplets?.[s] ?? []).some(a => a >= debut && a <= per.fin));
+  return raisonPoidsPays(pys, per, sens) !== undefined;
 }
-const RAISON_POIDS = "Poids par pays non publié par l'ANSD pour cette année (rapport 2025) — seule la valeur est disponible";
+
+/** L'infobulle de la bascule grisée : QUELS poids manquent, et pour quelles
+    années de la période — et non un message générique. Une vue qui montre
+    clients et fournisseurs côte à côte (une seule bascule pour les deux) se
+    grise dès qu'un des deux sens est troué ; l'infobulle dit lequel. */
+function raisonPoidsPays(pys: NaceDataPays | null, per: Periode, sens: ZoneSens[]): string | undefined {
+  if (!pys?.poids_incomplets) return undefined;
+  const debut = estIntervalle(per) ? per.debut : per.fin;
+  const troues = sens.map(s => ({
+    s, annees: (pys.poids_incomplets?.[s] ?? []).filter(a => a >= debut && a <= per.fin),
+  })).filter(x => x.annees.length);
+  if (!troues.length) return undefined;
+  const annees = [...new Set(troues.flatMap(x => x.annees))].sort().join(", ");
+  const quoi = troues.length === 2 ? "Poids par pays"
+    : troues[0].s === "export" ? "Poids par pays des exportations" : "Poids par pays des importations";
+  return `${quoi} non publié par l'ANSD pour ${annees} — seule la valeur est disponible`;
+}
 
 /** La bascule Valeur / Volume d'une vue par pays : « Volume » y est visible
     mais GRISÉE, et non cliquable, quand le poids manque sur la période. La
@@ -636,6 +650,13 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
   const bloque = niveau === "pays" && poidsTroue;
   const mesure = mesureEffective(mesureChoisie, bloque);
   const autre: ZoneSens = sens === "export" ? "import" : "export";
+  // LA BALANCE EN VOLUME SOUSTRAIT LE POIDS DE L'AUTRE SENS. Au niveau pays,
+  // quand celui-ci manque sur la période (exportations 2025), la colonne
+  // présentait tout le volume importé comme un déficit — « −1,93 Mt » pour
+  // la Chine. Elle s'efface donc, comme en lecture d'intervalle ; continents
+  // et régions, aux poids complets, la gardent.
+  const poidsUnSensTroue = poidsPaysIncomplet(pys, periode, ["export", "import"]);
+  const balancePays = !(mesure === "poids" && poidsUnSensTroue);
   const ratt = reg?.continents ?? pys?.continents ?? {};
   const badgeSens = sens === "export" ? badge_bleu : badge_orange;
   const couleur = sens === "export" ? NACE_BLEU : NACE_ORANGE;
@@ -726,14 +747,18 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       // Clé région·pays, comme le tableau : « Autres pays » existe dans chaque
       // région et n'est pas le même reste de l'une à l'autre.
       "Pays partenaires", "Partenaire", pys.donnees, r => `${r.region}·${r.pays}`, sens, mesure, periode,
-      { unite, balance: true, agregeSous: AUTRES_PAYS, libelle: k => k.split("·")[1] ?? k,
+      { unite, balance: balancePays, agregeSous: AUTRES_PAYS, libelle: k => k.split("·")[1] ?? k,
         parent: k => { const r = k.split("·")[0]; return ratt[r] ? `${r} (${ratt[r]})` : r; },
         titreParent: "Région (continent)" }));
     await ecrireClasseurNace(
       `NACE_Zones-geographiques_${sens === "export" ? "exportations" : "importations"}_${suffixeFichier(mesure, periode)}.xlsx`,
       [...contexteNace(mesure, periode),
-        ...(mesure === "poids" && poidsTroue
-          ? ["Feuille Pays partenaires : poids non publié par l'ANSD pour certaines années de la période (rapport 2025), cases vides"] : [])],
+        // Note exacte : QUEL poids manque (raisonPoidsPays), « cases vides »
+        // seulement si c'est celui du sens exporté — sinon seule la balance,
+        // qui lit l'autre sens, est en cause.
+        ...(mesure === "poids" && poidsUnSensTroue
+          ? [`Feuille Pays partenaires : ${raisonPoidsPays(pys, periode, ["export", "import"])!
+              .replace(" — seule la valeur est disponible", "")}${poidsTroue ? " — cases vides" : ""} ; colonne Balance omise`] : [])],
       feuilles);
   };
 
@@ -754,6 +779,7 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
     <TableauClassementNace
       lignes={lignes} agregeSous={AUTRES_PAYS} sens={sens} mesure={mesure}
       periode={periode} totalPeriode={totalPeriode}
+      balance={niveau !== "pays" || balancePays}
       colonne={niveau === "pays" ? "Partenaire" : niveau === "region" ? "Région" : "Continent"}
       drapeaux={niveau === "pays"} top={niveau === "pays" ? 15 : 20}
       nomPortee={nomPortee} totalLibelle={nomPortee === "Monde" ? "Ensemble" : nomPortee}
@@ -773,7 +799,7 @@ function ZoneGeographique({ periode, cont, reg, pys, portee, setPortee, sens, me
       uniteBascule={
         <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
           valeur={mesure} onChange={setMesure} accent={couleur}
-          desactives={bloque ? { poids: RAISON_POIDS } : undefined} />
+          desactives={bloque ? { poids: raisonPoidsPays(pys, periode, [sens])! } : undefined} />
       }
       actions={<BoutonExcel construire={exporter}
         titre={`Télécharger continents, régions et pays — ${sens === "export" ? "exportations" : "importations"}, ${mesure === "valeur" ? "valeur" : "volume"}, ${libellePeriode(periode)}`} />}
@@ -1594,7 +1620,7 @@ function CommerceExterieurPanel() {
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={contMes} onChange={setContMesure}
-                  desactives={contBloque ? { poids: RAISON_POIDS } : undefined} />
+                  desactives={contBloque ? { poids: raisonPoidsPays(pys, p, ["export", "import"])! } : undefined} />
                 <BoutonExcel construire={exporterCont}
                   titre={`Télécharger les ${presents.length} continents, clients et fournisseurs — ${contMes === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>
@@ -1664,7 +1690,7 @@ function CommerceExterieurPanel() {
                 </p>
                 <SegmentNace options={[{ v: "valeur" as NaceMesure, l: "Valeur" }, { v: "poids" as NaceMesure, l: "Volume" }]}
                   valeur={grpMes} onChange={setGrpMesure}
-                  desactives={grpBloque ? { poids: RAISON_POIDS } : undefined} />
+                  desactives={grpBloque ? { poids: raisonPoidsPays(pys, p, ["export", "import"])! } : undefined} />
                 <BoutonExcel construire={exporterGrp}
                   titre={`Télécharger les ${groupements.length} groupements, clients et fournisseurs — ${grpMes === "valeur" ? "valeur" : "volume"}, ${libellePeriode(p)}`} />
               </div>

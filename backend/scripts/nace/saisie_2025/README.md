@@ -12,19 +12,27 @@ Vérification :
     python3 ../verifier_principaux_produits.py
     python3 ../verifier_pays.py
 
-## POIDS PAR PAYS 2025 : NON PUBLIÉS, DÉCLARÉS
+## POIDS PAR PAYS 2025 : EXPORTATIONS NON PUBLIÉES, DÉCLARÉES
 
-Le tableau 32 (exportations par pays en poids) est une reprise de l'édition
-2023 sans 2024 ni 2025 ; le tableau 34 (importations) a perdu à la mise en
-page les lignes entre NICARAGUA et CHINE. Signalés à l'ANSD. Les 207 poids
-2025 inconnus sont laissés vides et DÉCLARÉS dans
-`edition_2025_poids_manquants.csv` : le vérificateur en tient compte, l'API
-les expose (`poids_incomplets`, `poids_manquant`) et la page Commerce
-extérieur grise « Volume » dans les vues par pays sur 2025. Les poids
-2021–2024 viennent de l'édition 2024 (non révisés par 2025, hors Croatie,
-Chine, Nicaragua et Nigeria, lus au tableau 34). À la réception des tableaux
-corrigés : les saisir dans donnees_2025_pays.py, relancer
-saisie_2025_pays.py — le fichier des manquants se vide de lui-même.
+- **Importations (tableau 34) : COMPLÈTES** depuis le 11/10/2026 — l'ANSD a
+  transmis le tableau en Excel (voir plus bas).
+- **Exportations (tableau 32) : en attente.** Le tableau 32 du PDF est une
+  reprise de l'édition 2023, sans 2024 ni 2025 ; signalé à l'ANSD. Les 152
+  poids 2025 inconnus sont laissés vides et DÉCLARÉS dans
+  `edition_2025_poids_manquants.csv` : le vérificateur en tient compte, l'API
+  les expose (`poids_incomplets`, `poids_manquant`) et la page Commerce
+  extérieur grise « Volume » là où il serait lu — vue par pays des
+  exportations, et vues clients / fournisseurs côte à côte — avec une
+  infobulle qui dit quel poids manque. La colonne Balance, qui soustrait
+  l'autre sens, s'efface en volume par pays tant qu'un sens est troué. Les
+  poids export 2021–2024 viennent de l'édition 2024 (non révisés).
+
+À la réception du tableau 32 corrigé : s'il est en Excel,
+`python3 -I xlsx_vers_donnees.py <fichier> EXPORT_POIDS` donne le bloc à
+coller dans donnees_2025_pays.py (et saisie_2025_pays.py doit alors le lire
+pour l'export, comme IMPORT_POIDS pour l'import) ; relancer
+saisie_2025_pays.py — le fichier des manquants se vide de lui-même, et la
+page réactive « Volume » sans autre changement.
 
 ## Principaux produits (tableaux 6 à 9) — COMPLET
 
@@ -286,21 +294,45 @@ défaut à l'ANSD ; la famille pays attend le tableau corrigé.
   soumettre à l'ANSD avec le tableau 32.
 - Nouveau libellé : LESOTHO (2025).
 
-## Pays — importations en poids (tableau 34) : saisie PARTIELLE
+## Pays — importations en poids (tableau 34) : COMPLET (Excel de l'ANSD)
 
-Captures reçues jusqu'à NICARAGUA, puis à partir de CHINE : manquent la fin
-d'« Amérique centrale et du Sud », « Amérique du Nord », « Asie
-occidentale » et le début d'« Autres pays d'Asie ».
+Le PDF avait perdu à la mise en page les lignes entre NICARAGUA et CHINE.
+L'ANSD a transmis le tableau complet en Excel (Tableau_34.xlsx, sha256
+0039edb8e7fb60f7210b80938b3235d79478fc8cbf36f830bedd4b0079a1d1df) : une
+feuille, chiffres NON ARRONDIS, sans formule ni ligne masquée. Converti par
+`xlsx_vers_donnees.py` à la règle du PDF — 0 exact → « - », sinon arrondi au
+plus proche, demi vers le haut (0,5 → 1 ; 0,151 → « 0 ») — et collé dans
+donnees_2025_pays.py (IMPORT_POIDS). 30 lignes nulles sur les cinq années,
+que le PDF n'imprime pas, sont écartées (dont un AFGANISTAN vide sous l'Asie
+occidentale, doublon du vrai, sous les autres pays d'Asie).
 
-- Régions complètes (UE, Afrique centrale, du Nord, occidentale, orientale
-  et du Sud, Océanie) : sous-totaux = tableau 22 exactement, Σ pays =
-  sous-total à ±2.
-- « Autres pays d'Europe » : sous-total imprimé amputé du Royaume-Uni (et
-  du transfert récurrent vers Divers) ; DIVERS surévalué du même montant.
-  Reconstitués sur le détail, les deux égalent le tableau 22.
-- Révisions contre l'édition 2024 (484 poids comparés, 4 révisés), les
-  mêmes qu'en valeur : CROATIE −15 106 t, CHINE −3 911 t, NICARAGUA →
-  NIGERIA 548 518 t (le transfert COMPLET, comme les tableaux 21, 22, 25).
+Contrôles :
+- **les 610 poids saisis auparavant depuis les captures du PDF sont
+  retrouvés sans écart** : la saisie comme la règle d'arrondi sont validées ;
+- chaque sous-total de l'Excel = somme exacte de ses pays, au millième, sauf
+  « Autres pays d'Europe » (ci-dessous) ; Σ sous-totaux + DIVERS = TOTAL ;
+- Σ pays arrondis = tableau 22 pour les 11 régions et les 5 années, à ±3 ;
+  Σ par continent = tableau 26 à ±3 ; Σ général 2025 = 16 350 870 t pour un
+  TOTAL de 16 350 868 ;
+- libellés identiques à ceux du tableau 33 (valeurs), et appariement
+  parfait : aucun pays avec une valeur sans poids, ni l'inverse ;
+- 2021–2024 contre l'édition 2024 : 4 poids révisés seulement, en 2024 —
+  CROATIE −15 106 t, CHINE −3 911 t, NICARAGUA → NIGERIA 548 518 t (le
+  transfert complet, comme aux tableaux 21, 22, 25) ;
+- prix moyen à l'import (FCFA/kg) : sept partenaires de plus de 5 000 t
+  changent de plus d'un facteur 3 sur 2024 (Mali, Burkina Faso, Bénin,
+  Algérie, Chypre, Namibie, Norvège) — changements de nature des produits
+  (Mali : 36 206 t en 2025 contre 1 483 t), cohérents avec les totaux de
+  région ; aucun indice d'erreur.
+
+**Le défaut récurrent « Autres pays d'Europe » / « Divers » enfin expliqué.**
+L'Excel montre, au millième de tonne, que le sous-total imprimé d'« Autres
+pays d'Europe » omet le ROYAUME UNI (toutes années) et HELGOLAND +
+REPUBLIQUE DE GEORGIE + BOSNIE-HERZEGOVINE (2022–2025) — des lignes hors de
+la plage de somme du tableur de l'ANSD — et que DIVERS, calculé par
+différence au TOTAL, absorbe exactement ces montants. C'est l'origine du
+« transfert vers Divers » arbitré depuis l'édition 2023 : l'arbitrage (le
+détail fait foi, Divers repris du tableau régions) est confirmé.
 
 ### Décision : Nicaragua 2024 = 2 432 MFCFA, Nigeria 2024 = 542 046 MFCFA
 
@@ -367,5 +399,5 @@ lignes) et edition_2025_totaux_chapitres.csv.
 
 ## Reste à saisir
 
-- Pays : tableau 32 (exportations en poids) à remplacer, et lignes
-  manquantes du tableau 34 (entre NICARAGUA et CHINE) — signalés à l'ANSD.
+- Pays : tableau 32 (exportations en poids) à remplacer — signalé à l'ANSD.
+  Le tableau 34 a été reçu complet le 11/10/2026.

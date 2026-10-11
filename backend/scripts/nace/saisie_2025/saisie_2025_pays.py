@@ -5,13 +5,15 @@
 
 Sources (cf. README de ce dossier) :
   · valeurs : tableaux 31 (export) et 33 (import), dans donnees_2025_pays.py ;
-  · poids import : tableau 34, dont une partie manque au PDF ;
+  · poids import : tableau 34, COMPLET (Excel transmis par l'ANSD, cf.
+    donnees_2025_pays.py) — tout pays importateur doit y figurer ;
   · poids export : tableau 32 inutilisable (reprise de l'édition 2023).
 
-LES POIDS QUE LE RAPPORT NE DONNE PAS NE SONT PAS INVENTÉS.
+LES POIDS QUE LE RAPPORT NE DONNE PAS NE SONT PAS INVENTÉS (exportations,
+tant que le tableau 32 corrigé n'est pas reçu) :
   · 2021–2024 : repris de l'édition 2024 pour chaque libellé. Le rapport 2025
-    ne les révise pas (vérifié sur tout ce qu'il imprime : seuls Croatie,
-    Chine, Nicaragua et Nigeria bougent, et ils figurent au tableau 34) ;
+    ne les révise pas (à l'import, le tableau 34 complet le confirme : seuls
+    Croatie, Chine, Nicaragua et Nigeria bougent, en 2024) ;
   · 2025 : laissés vides ET DÉCLARÉS dans edition_2025_poids_manquants.csv,
     que le vérificateur et l'API lisent. Une case vide non déclarée reste un
     « - » du rapport (absence de flux).
@@ -68,6 +70,8 @@ def construire():
                     v = ARBITRAGE_VALEUR_IMPORT.get((p, an), vals[i]) if sens == "import" else vals[i]
                     if p in tab_poids:
                         w = tab_poids[p][i]
+                    elif sens == "import":
+                        raise SystemExit(f"{p} : importateur absent du tableau 34 (poids)")
                     elif an <= 2024:
                         w = ancien.get((p, an))
                         if v is not None and w is None and (p, an) not in ancien:

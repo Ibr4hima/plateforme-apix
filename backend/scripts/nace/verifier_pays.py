@@ -69,8 +69,8 @@ def verifier(edition: int) -> list[str]:
     totaux = lire(ICI / f"edition_{edition}_totaux_pays.csv")
     fic_cont = ICI / f"edition_{edition}_continents.csv"
     continents = lire(fic_cont) if fic_cont.exists() else None
-    # POIDS DÉCLARÉS MANQUANTS (édition 2025 : tableau 32 inutilisable, lignes
-    # absentes du tableau 34). Une région qui en contient ne peut pas boucler
+    # POIDS DÉCLARÉS MANQUANTS (édition 2025 : tableau 32 inutilisable ; le
+    # tableau 34, d'abord tronqué, a été reçu complet). Une région qui en contient ne peut pas boucler
     # en poids : elle est sautée au contrôle 1 — et SEULEMENT celle-là, pour
     # cette mesure et cette année. Une case vide non déclarée reste un « - ».
     fic_manq = ICI / f"edition_{edition}_poids_manquants.csv"
