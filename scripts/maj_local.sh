@@ -7,14 +7,15 @@
 #     bash scripts/maj_local.sh
 #
 # Elle RÉCUPÈRE d'abord les nouveautés du dépôt, puis applique les migrations
-# qui manquent, puis rejoue les imports de référentiels et de projets fDi. Tout
-# y est IDEMPOTENT : la relancer deux fois de suite ne fait rien la seconde
-# fois. Il n'y a donc jamais à se demander « est-ce que j'ai déjà passé
-# celle-là ? » — c'est précisément ce que ce script sait.
+# qui manquent, puis rejoue les imports : commerce extérieur (NACE), puis
+# référentiels et projets fDi. Tout y est IDEMPOTENT : la relancer deux fois de
+# suite ne fait rien la seconde fois. Il n'y a donc jamais à se demander
+# « est-ce que j'ai déjà passé celle-là ? » — c'est précisément ce que ce
+# script sait.
 #
-# LE « git pull » EN FAIT PARTIE, et c'est délibéré. Les pages de projets sont
-# versionnées dans le dépôt, mais l'écran, lui, lit la BASE : entre les deux, il
-# faut un import. Tant que les deux gestes étaient séparés, en oublier un
+# LE « git pull » EN FAIT PARTIE, et c'est délibéré. Les pages de projets et
+# les CSV de la NACE sont versionnés dans le dépôt, mais l'écran, lui, lit la
+# BASE : entre les deux, il faut un import. Tant que les deux gestes étaient séparés, en oublier un
 # donnait exactement la mauvaise conclusion — « les nouvelles pages ne sont pas
 # arrivées » — alors qu'elles n'avaient simplement pas été chargées. Un geste
 # qu'on peut oublier finit par être oublié : on le supprime.
@@ -96,7 +97,19 @@ for f in $(ls database/migrations/*.sql | sort); do
 done
 [ "$applique" = "0" ] && gris "  aucune migration à appliquer."
 
-# ── 2. Référentiels et projets fDi ───────────────────────────────────────────
+# ── 2. Commerce extérieur (NACE) ─────────────────────────────────────────────
+# Les CSV vérifiés de la NACE sont versionnés dans le dépôt et deploy.sh les
+# recharge à chaque mise en ligne. Sans ce rejeu, l'onglet Commerce extérieur
+# local gardait les données d'avant le dernier « git pull » — l'édition 2025
+# en ligne, pas en local. Upsert idempotent, comme en production.
+#
+# APRÈS les migrations, et c'est voulu : un pays qu'une migration fait entrer
+# au référentiel (Hong Kong et Macao, 154) n'est rattaché qu'au rejeu qui suit.
+# L'import signale les libellés pays qu'il n'a pu ni rattacher ni arbitrer.
+echo "▸ Commerce extérieur (NACE)"
+( cd backend && python scripts/nace/importer.py )
+
+# ── 3. Référentiels et projets fDi ───────────────────────────────────────────
 # Les deux dans cet ordre : la résolution des secteurs, activités et types
 # s'appuie sur la nomenclature. Les saisies faites en administration —
 # descriptions, entreprises arbitrées — survivent au rejeu.
@@ -111,7 +124,7 @@ echo "▸ Projets fDi"
 echo "▸ Signaux fDi"
 ( cd backend && python scripts/fdi/importer_signaux.py )
 
-# ── 3. Ce que l'écran proposera ──────────────────────────────────────────────
+# ── 4. Ce que l'écran proposera ──────────────────────────────────────────────
 # Le même calcul que la route publique : un pays n'est offert au filtre que si
 # un lot rend son périmètre exhaustif — directement (« Dest = Sénégal ») ou par
 # sa zone (« Dest = Africa » via ref_pays.continent). L'afficher ici évite de
@@ -137,4 +150,5 @@ vert "✅ Base à jour."
 echo
 gris "À relancer vous-même si le back ou le front tournaient déjà :"
 gris "   • back  : Ctrl-C puis  cd backend && uvicorn app.main:app --reload"
+gris "             (il garde 10 min en mémoire les données du commerce extérieur)"
 gris "   • front : rien à faire, Next recharge tout seul."
