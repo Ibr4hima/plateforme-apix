@@ -33,6 +33,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 vert() { printf "\033[0;32m%s\033[0m\n" "$1"; }
+jaune() { printf "\033[0;33m%s\033[0m\n" "$1"; }
 gris() { printf "\033[0;90m%s\033[0m\n" "$1"; }
 
 PULL=1
@@ -106,8 +107,19 @@ done
 # APRÈS les migrations, et c'est voulu : un pays qu'une migration fait entrer
 # au référentiel (Hong Kong et Macao, 154) n'est rattaché qu'au rejeu qui suit.
 # L'import signale les libellés pays qu'il n'a pu ni rattacher ni arbitrer.
+#
+# UN ÉCHEC ICI N'ARRÊTE PAS LE SCRIPT. Ce rejeu ne sert que la base locale :
+# la mise en ligne recharge les mêmes CSV de son côté (deploy.sh). S'arrêter
+# bloquait aussi « publier.sh », qu'on enchaîne avec « && » — c'est arrivé à
+# la première version de cette étape, dont l'import exigeait FastAPI. L'échec
+# est signalé, et le bilan final le rappelle au lieu d'annoncer une base à
+# jour.
 echo "▸ Commerce extérieur (NACE)"
-( cd backend && python scripts/nace/importer.py )
+NACE_OK=1
+if ! ( cd backend && python scripts/nace/importer.py ); then
+  NACE_OK=0
+  jaune "  ⚠ import en échec (voir ci-dessus) : le commerce extérieur local n'est pas à jour. La suite continue."
+fi
 
 # ── 3. Référentiels et projets fDi ───────────────────────────────────────────
 # Les deux dans cet ordre : la résolution des secteurs, activités et types
@@ -146,7 +158,11 @@ psql_c -tA -F ' · ' -c "
     JOIN complets c ON c.nom_fr = p.nom_fr AND c.sens = l.sens
    GROUP BY 1, 2 ORDER BY 3 DESC;" | sed 's/^/  /'
 
-vert "✅ Base à jour."
+if [ "$NACE_OK" = "1" ]; then
+  vert "✅ Base à jour."
+else
+  jaune "⚠ Base à jour, SAUF le commerce extérieur : son import a échoué (voir plus haut)."
+fi
 echo
 gris "À relancer vous-même si le back ou le front tournaient déjà :"
 gris "   • back  : Ctrl-C puis  cd backend && uvicorn app.main:app --reload"

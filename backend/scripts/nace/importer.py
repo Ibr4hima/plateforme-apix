@@ -7,6 +7,10 @@ là où aucun jeton d'administrateur n'est disponible.
 
     docker compose exec -T backend python scripts/nace/importer.py
 
+scripts/maj_local.sh le lance aussi, avec le Python du poste. D'où l'import
+depuis app/services, sans FastAPI, comme les imports fDi : passer par la
+route exigeait FastAPI, qu'un Python de scripts n'a pas forcément.
+
 L'import est idempotent (upsert sur la clé naturelle), donc rejouable à
 chaque déploiement : les données suivent les CSV du dépôt.
 """
@@ -18,8 +22,8 @@ from pathlib import Path
 # le paquet `app`) est ajoutée au chemin d'import.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from app.api.routes.nace import importer_csv  # noqa: E402
 from app.core.database import AsyncSessionLocal, engine  # noqa: E402
+from app.services.nace_import import importer_csv  # noqa: E402
 
 
 async def main() -> int:
