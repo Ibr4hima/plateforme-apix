@@ -12,27 +12,24 @@ Vérification :
     python3 ../verifier_principaux_produits.py
     python3 ../verifier_pays.py
 
-## POIDS PAR PAYS 2025 : EXPORTATIONS NON PUBLIÉES, DÉCLARÉES
+## POIDS PAR PAYS 2025 : COMPLETS (tableaux 32 et 34 reçus en Excel)
 
-- **Importations (tableau 34) : COMPLÈTES** depuis le 11/10/2026 — l'ANSD a
-  transmis le tableau en Excel (voir plus bas).
-- **Exportations (tableau 32) : en attente.** Le tableau 32 du PDF est une
-  reprise de l'édition 2023, sans 2024 ni 2025 ; signalé à l'ANSD. Les 152
-  poids 2025 inconnus sont laissés vides et DÉCLARÉS dans
-  `edition_2025_poids_manquants.csv` : le vérificateur en tient compte, l'API
-  les expose (`poids_incomplets`, `poids_manquant`) et la page Commerce
-  extérieur grise « Volume » là où il serait lu — vue par pays des
-  exportations, et vues clients / fournisseurs côte à côte — avec une
-  infobulle qui dit quel poids manque. La colonne Balance, qui soustrait
-  l'autre sens, s'efface en volume par pays tant qu'un sens est troué. Les
-  poids export 2021–2024 viennent de l'édition 2024 (non révisés).
+Les deux tableaux de poids par pays étaient défectueux dans le PDF : le 32
+(exportations), une reprise de l'édition 2023 ; le 34 (importations), tronqué
+à la mise en page. L'ANSD les a transmis en Excel le 11/10/2026. Ils sont
+convertis par `xlsx_vers_donnees.py` (blocs EXPORT_POIDS et IMPORT_POIDS de
+donnees_2025_pays.py) et assemblés par `saisie_2025_pays.py`, qui s'arrête
+sur toute case portant une valeur sans poids, ou l'inverse.
 
-À la réception du tableau 32 corrigé : s'il est en Excel,
-`python3 -I xlsx_vers_donnees.py <fichier> EXPORT_POIDS` donne le bloc à
-coller dans donnees_2025_pays.py (et saisie_2025_pays.py doit alors le lire
-pour l'export, comme IMPORT_POIDS pour l'import) ; relancer
-saisie_2025_pays.py — le fichier des manquants se vide de lui-même, et la
-page réactive « Volume » sans autre changement.
+    python3 -I xlsx_vers_donnees.py <fichier.xlsx> EXPORT_POIDS > bloc.py
+
+En attendant le tableau 32, les 152 poids export 2025 inconnus avaient été
+DÉCLARÉS dans `edition_2025_poids_manquants.csv`, et la page grisait
+« Volume » là où il aurait été lu. Ce fichier a disparu avec le tableau 32
+complet (saisie_2025_pays.py efface celui d'une génération antérieure). Le
+mécanisme reste en place pour une édition future : le vérificateur saute la
+région trouée, l'API expose `poids_incomplets` et `poids_manquant`, la page
+grise la bascule avec une infobulle et retire la colonne Balance.
 
 ## Principaux produits (tableaux 6 à 9) — COMPLET
 
@@ -235,8 +232,8 @@ Même interversion des deux lignes d'Amérique qu'à l'export (2021–2023 :
 
 177 partenaires dans `donnees_2025_pays.py` (libellés BRUTS en capitales,
 clés du rapprochement avec le référentiel ; régions ramenées aux 12 libellés
-stables). Le CSV `edition_2025_pays.csv` sera écrit quand valeur et poids
-seront saisis pour les deux sens.
+stables). Le CSV `edition_2025_pays.csv` est écrit par saisie_2025_pays.py,
+avec les poids des tableaux 32 et 34.
 
 - **Les tableaux par pays confirment l'interversion des tableaux 19–22** :
   ici « AMERIQUE DU NORD » (70 741 en 2021) détaille bien États-Unis +
@@ -258,14 +255,69 @@ seront saisis pour les deux sens.
   connus des éditions antérieures et de l'arbitrage) ; MALDIVES sort (aucune
   exportation depuis 2020).
 
-## Pays — exportations en poids (tableau 32) : INUTILISABLE, signalé à l'ANSD
+## Pays — exportations en poids (tableau 32) : COMPLET (Excel de l'ANSD)
 
-Le tableau 32 de l'édition 2025 est une reprise de l'édition 2023 : colonnes
-« 2020, 2021, 2022, 2023 » identiques à nos données, 5e colonne étiquetée
-« 2022 » qui recopie la colonne 2022, Royaume-Uni imprimé deux fois (UE et
-Autres Europe). Il ne contient ni 2024 ni 2025. Vérifié sur France,
-Pays-Bas, Mali, Inde, Royaume-Uni, États-Unis. L'utilisateur a signalé le
-défaut à l'ANSD ; la famille pays attend le tableau corrigé.
+Le tableau 32 du PDF était inutilisable, une reprise de l'édition 2023 :
+colonnes « 2020, 2021, 2022, 2023 » identiques à nos données, 5e colonne
+étiquetée « 2022 » qui recopie la colonne 2022, Royaume-Uni imprimé deux fois
+(UE et Autres Europe), ni 2024 ni 2025. Signalé à l'ANSD par l'utilisateur.
+L'ANSD a transmis le tableau en Excel (32.xlsx, sha256
+87e84bc9138a275cd8519bb915d74143163618bf0e46134686a321d057676692) : une
+feuille, chiffres NON ARRONDIS, sans formule ni ligne masquée. Converti par
+`xlsx_vers_donnees.py` à la règle du tableau 34 et collé dans
+donnees_2025_pays.py (EXPORT_POIDS).
+
+**Deux défauts du fichier, sans effet sur les données :**
+
+1. **Colonnes 2020, 2021, 2022, 2023, 2025 : pas de 2024.** Le convertisseur
+   lit désormais les colonnes PAR ANNÉE sur l'en-tête (il refusait tout
+   en-tête autre que 2021–2025). 2020, hors édition, est ignoré ; le bloc
+   nomme les quatre années qu'il porte (EXPORT_POIDS_ANNEES). Les poids 2024
+   sont repris de l'édition 2024, que le rapport 2025 ne révise pas :
+   - les colonnes 2020–2023 de l'Excel y sont identiques au poids près
+     (688 poids, 0 écart) ;
+   - les valeurs 2024 du tableau 31 aussi ;
+   - les poids 2024 repris bouclent sur le tableau 20.
+2. **DIVERS trop bas, chaque année, exactement du sous-total « Afrique du
+   Nord »** (2025 : 25 772 t au lieu de 286 645). C'est le défaut du
+   tableau 31. TOTAL − Σ pays redonne le Divers du tableau 20 à l'arrondi
+   près (282 723 / 204 812 / 247 750 / 286 645), et c'est lui qui est
+   retenu.
+
+Contrôles :
+- **Sous-totaux et TOTAL.** Chaque sous-total de l'Excel = somme exacte de
+  ses pays, au millième. Le défaut « Autres pays d'Europe » du tableau 34
+  n'est pas présent ici : le Royaume-Uni y figure, une seule fois. TOTAL =
+  tableau 20.
+- **Régions.** Σ pays arrondis = tableau 20 pour les 11 régions et les
+  4 années, à ±2.
+- **Libellés et appariement.** Les 173 pays non nuls portent les libellés
+  et les régions du tableau 31 (valeurs). L'appariement est parfait sur
+  2021–2025 : aucune valeur sans poids, ni l'inverse.
+- **Lignes nulles.** 42 lignes nulles sur 2021–2023 et 2025 sont écartées.
+  - MALDIVES, CUBA et ILE STE HELENE n'ont de poids qu'en 2020, hors
+    édition. MALDIVES est d'ailleurs absente du tableau 31.
+  - CUBA, ILE STE HELENE, UNION BIRMANE et TIMOR PORTUGAIS n'exportent
+    qu'en 2024 ; leur poids vient de l'édition 2024.
+- **Prix moyen à l'export (FCFA/kg).**
+  - Les grands acheteurs 2025 (Mali 244, Pays-Bas 287, Chine 318, Inde
+    423, Italie 428, Espagne 461) sont dans la fourchette des vracs
+    exportés en 2025 (tableaux 6–7) : huile brute de pétrole 298, autres
+    produits pétroliers 482, engrais minéraux 391, titane et zircon 220,
+    ciment 45.
+  - Neuf partenaires de plus de 15 000 t changent de prix moyen de plus
+    d'un facteur 3 sur 2024 : États-Unis, Égypte, Finlande, Oman, Bénin,
+    Pologne, Belgique, Sierra Leone, Suisse (or). Ce sont des changements
+    de produits, cohérents avec les totaux de région, et aucun indice
+    d'erreur.
+- **Effet sur le CSV.** Dans edition_2025_pays.csv, seuls changent les
+  152 poids export 2025 jusque-là déclarés manquants (vides → renseignés).
+  Σ = 14 186 347 t pour un TOTAL de 14 186 349. Le vérificateur contrôle
+  désormais toutes les régions en poids : 7 éditions conformes.
+- **Chargement réel en base de travail.** 153 poids pour 153 valeurs
+  export 2025 (152 pays + Divers) et `poids_incomplets` vide côté API.
+  Sur la page, « Volume » est actif partout et la colonne Balance revient
+  (Mali +3,78 Mt) ; l'export Excel est complet. Base supprimée ensuite.
 
 ## Pays — importations en valeur (tableau 33) : saisies
 
@@ -399,5 +451,6 @@ lignes) et edition_2025_totaux_chapitres.csv.
 
 ## Reste à saisir
 
-- Pays : tableau 32 (exportations en poids) à remplacer — signalé à l'ANSD.
-  Le tableau 34 a été reçu complet le 11/10/2026.
+Rien : l'édition 2025 est complète depuis la réception des tableaux 32 et
+34 en Excel (11/10/2026). Seule question ouverte : Nicaragua / Nigeria 2024
+(décision ci-dessus), à corriger si la réponse de l'ANSD diffère.

@@ -111,10 +111,11 @@ PREFIXE_NON_VENTILE = "NON VENTILE —"
 def _poids_manquants() -> dict[int, set]:
     """{édition: {(pays, sens, année)}} des poids que le rapport NE DONNE PAS.
 
-    Déclarés dans edition_XXXX_poids_manquants.csv (édition 2025 : tableau 32
-    inutilisable ; le tableau 34, d'abord tronqué, a été reçu complet). Une case poids vide non
-    déclarée reste un « - » du rapport, c'est-à-dire une absence de flux :
-    c'est ce fichier qui distingue « inconnu » de « nul ».
+    Déclarés dans edition_XXXX_poids_manquants.csv. Aucune édition n'en
+    déclare aujourd'hui : l'édition 2025 l'a fait pour ses poids export 2025
+    jusqu'à ce que l'ANSD transmette le tableau 32 complet. Une case poids
+    vide non déclarée reste un « - » du rapport, c'est-à-dire une absence de
+    flux : c'est ce fichier qui distingue « inconnu » de « nul ».
     """
     out: dict[int, set] = {}
     for fic in DOSSIER_CSV.glob("edition_[0-9][0-9][0-9][0-9]_poids_manquants.csv"):

@@ -1,13 +1,25 @@
 # Extractions NACE — annexes des rapports annuels
 
 > **Édition 2025** : saisie à la main depuis le rapport (tableaux par
-> tableau), scripts et notes dans `saisie_2025/`. Particularités : poids 2025
-> des exportations par pays non publiés (fichier
-> `edition_2025_poids_manquants.csv` ; ceux des importations, d'abord
-> incomplets, sont arrivés en Excel — `saisie_2025/xlsx_vers_donnees.py`),
-> révision de l'import 2024 (−149 017 MFCFA, un navire compté à tort),
-> Royaume-Uni hors UE, étiquettes Amérique interverties dans les tableaux
-> régions. Détail dans `saisie_2025/README.md`.
+> tableau), scripts et notes dans `saisie_2025/`. Particularités :
+> - poids par pays (tableaux 32 et 34, inutilisable et tronqué dans le
+>   PDF) reçus en Excel de l'ANSD et convertis par
+>   `saisie_2025/xlsx_vers_donnees.py` ; l'Excel du 32 n'a pas de colonne
+>   2024, reprise de l'édition 2024 ;
+> - révision de l'import 2024 (−149 017 MFCFA, un navire compté à tort) ;
+> - Royaume-Uni hors UE ;
+> - étiquettes Amérique interverties dans les tableaux régions.
+>
+> Détail dans `saisie_2025/README.md`.
+>
+> Un poids que le rapport ne publie pas se déclare dans
+> `edition_XXXX_poids_manquants.csv` (pays, sens, annee) :
+> - le vérificateur saute alors la région en poids ;
+> - l'API l'expose (`poids_incomplets`) ;
+> - la page grise « Volume ».
+>
+> Aucune édition n'en déclare aujourd'hui : l'édition 2025 l'a fait pour
+> ses poids export 2025, jusqu'au tableau 32 complet.
 
 Cinq familles extraites, mêmes règles et même vérification :
 - **principaux produits** (`edition_XXXX_principaux_produits.csv`,

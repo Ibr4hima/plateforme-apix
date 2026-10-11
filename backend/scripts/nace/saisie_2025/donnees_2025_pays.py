@@ -8,7 +8,9 @@ qu'imprimés : ce sont les clés du rapprochement avec le référentiel
 ramenées aux 12 libellés stables. « - » = None (absence de flux), « 0 » = 0.
 
 Ce module ne fait que porter les chiffres ; saisie_2025_pays.py les contrôle
-et écrit les CSV quand valeur ET poids sont saisis pour les deux sens.
+et écrit les CSV. Les blocs de poids, convertis des Excel de l'ANSD
+(xlsx_vers_donnees.py), nomment leurs années dans <BLOC>_ANNEES : le
+tableau 32 n'a pas de colonne 2024.
 """
 _ = None
 ANNEES = [2021, 2022, 2023, 2024, 2025]
@@ -221,6 +223,229 @@ EXPORT_VALEUR = {
     "Divers": ([76655, 113794, 136327, 191227, 92915], {}),
 }
 EXPORT_VALEUR_TOTAL = [2884802, 3563359, 3223930, 3909058, 5805626]
+
+# ── Tableau 32 : pays clients du Sénégal en poids net (tonnes) ───────────────
+# Le tableau 32 du PDF était inutilisable (reprise de l'édition 2023, sans 2024
+# ni 2025). L'ANSD l'a transmis en Excel (32.xlsx, sha256
+# 87e84bc9138a275cd8519bb915d74143163618bf0e46134686a321d057676692, reçu le
+# 11/10/2026) : une feuille, chiffres NON ARRONDIS, sans formule ni ligne
+# masquée. Bloc produit par xlsx_vers_donnees.py, à la règle du tableau 34.
+#
+# DEUX DÉFAUTS DU FICHIER, SANS EFFET SUR LES DONNÉES :
+#   · colonnes 2020, 2021, 2022, 2023, 2025 — PAS DE 2024. 2020 sort de
+#     l'édition ; EXPORT_POIDS_ANNEES nomme les quatre années portées, et
+#     saisie_2025_pays.py prend 2024 dans l'édition 2024. Rien n'indique une
+#     révision : 2020–2023 y sont identiques au poids près (688 poids, 0
+#     écart), et les poids 2024 de l'édition 2024 bouclent sur le tableau 20 ;
+#   · DIVERS imprimé trop bas, chaque année, du sous-total « Afrique du Nord »
+#     exactement (2025 : 25 772 t au lieu de 286 645) — le défaut du tableau
+#     31. TOTAL − Σ pays redonne, à l'arrondi près, le Divers du tableau 20,
+#     que saisie_2025_pays.py retient.
+# Ailleurs, le fichier est sain : chaque sous-total = Σ exacte de ses pays,
+# TOTAL = tableau 20, Σ pays arrondis = tableau 20 à ±2 par région.
+#
+# 42 lignes nulles sur les années 2021, 2022, 2023, 2025, écartées : ILES FEROE (Autres pays d'Europe), CITE DU VATICAN (Autres pays d'Europe), EX-YOUGOSLAVIE (Autres pays d'Europe), KOSOVO (Autres pays d'Europe), R.D.A. (Autres pays d'Europe), CEUTA ET MELILLA (Autres pays d'Europe), SAHARA OCCIDENTAL (Afrique du Nord), ILE STE HELENE (Afrique orientale et du Sud), ERYTHREE (Afrique orientale et du Sud), TERRITOIRES BRITANIQUES OCEAN. (Afrique orientale et du Sud), LESOTHO (Afrique orientale et du Sud), ILES BERMUDES (Amérique centrale et du Sud), HONDURAS BRITANIQUE (Amérique centrale et du Sud), SALVADOR (Amérique centrale et du Sud), PANAMA CANAL (Amérique centrale et du Sud), CUBA (Amérique centrale et du Sud), ARUBA (Amérique centrale et du Sud), PARAGUAY (Amérique centrale et du Sud), URUGUAY (Amérique centrale et du Sud), ILES FALKLAND (ILES MALVINAS) (Amérique centrale et du Sud), AFGANISTAN (Asie occidentale), DUBAI (Asie occidentale), ABU DHABI (Asie occidentale), YEMEN (Asie occidentale), YEMEN DEMOCRATIQUE (Asie occidentale), MALDIVES (Autres pays d'Asie), SRI-LANKA (Autres pays d'Asie), SIKKIM (Autres pays d'Asie), BHOUTAN (Autres pays d'Asie), UNION BIRMANE (Autres pays d'Asie), VIETNAM SUD (Autres pays d'Asie), TIMOR PORTUGAIS (Autres pays d'Asie), HAWAII (Autres pays d'Asie), GUINEE NOUVELLE (Océanie), ILES PACIFIQUES US (Océanie), NOUVELLE CALEDONIE (Océanie), ILES WALLIS ET FUTUNA (Océanie), KIRIBATI (Océanie britanique) (Océanie), ILES NIOUE, ILES TOKELOU (Océanie), ILES FIDJI (Océanie), VANUATU (NOUVELLES HEBRIDES) (Océanie), POLYNESIE FRANCAISE (Océanie)
+EXPORT_POIDS_ANNEES = [2021, 2022, 2023, 2025]
+EXPORT_POIDS = {
+    "Union européenne": ([553995, 552770, 622871, 4152963], {
+        "FRANCE": [99683, 115236, 120329, 106909],
+        "BELGIQUE": [30298, 57998, 137287, 43684],
+        "PAYS BAS": [209845, 72569, 182415, 1852873],
+        "ALLEMAGNE": [1989, 2663, 2414, 47376],
+        "ITALIE": [26905, 24519, 17589, 847467],
+        "IRLANDE": [_, 0, 5, _],
+        "DANEMARK": [105, 373, 1424, 412],
+        "GRECE": [1312, 1164, 1749, 1251],
+        "LUXEMBOURG": [_, _, 20, 0],
+        "SUEDE": [18, 205, 136, 22],
+        "FINLANDE": [11, 10, 7, 133688],
+        "AUTRICHE": [37, 31, 25, 23],
+        "PORTUGAL": [1706, 2729, 3650, 1972],
+        "ESPAGNE": [157690, 108345, 90650, 842433],
+        "MALTE": [35, 77, 14, 66],
+        "POLOGNE": [23841, 166196, 42561, 51651],
+        "REPUBLIQUE DE SLOVAQUIE": [_, 1, 0, 0],
+        "REPUBLIQUE TCHEQUE": [2, 5, 1, 20],
+        "REPUBLIQUE DE LETTONIE": [_, 0, _, _],
+        "HONGRIE": [15, 1, 3, 0],
+        "REPUBLIQUE DE LITUANIE": [180, 146, 22152, 187011],
+        "ROUMANIE": [41, 95, 130, 100],
+        "REPUBLIQUE D'ESTONIE": [_, _, _, 189],
+        "BULGARIE": [254, 284, 143, 19272],
+        "CROATIE": [7, 19, 12, 12],
+        "SLOVENIE": [_, 57, 22, 15594],
+        "CHYPRE": [19, 48, 134, 937],
+    }),
+    "Autres pays d'Europe": ([630639, 472402, 399437, 618375], {
+        "ROYAUME UNI": [108991, 128514, 137071, 278004],
+        "ISLANDE": [80, 70, 286, 74],
+        "NORVEGE": [344141, 297922, 159008, 240376],
+        "SUISSE": [164586, 18684, 87579, 15786],
+        "ANDORRE": [_, 20, _, 0],
+        "GIBRALTAR": [_, _, _, 654],
+        "MONTENEGRO": [108, 310, 52, 24683],
+        "TURQUIE": [5309, 10063, 8032, 58044],
+        "RUSSIE": [616, 0, 19, 0],
+        "REPUBLIQUE D'UKRAINE": [6304, 14219, 6440, 349],
+        "REPUBLIQUE DE BIELORUSSIE": [_, _, 203, _],
+        "REPUBLIQUE D'AZERBADJAN": [_, 4, 2, 1],
+        "ALBANIE": [183, 26, 661, 319],
+        "REPUBLIQUE DE KAZAKSTAN": [0, _, 2, _],
+        "TRIESTE": [206, 541, _, _],
+        "ARMENIE": [_, 1955, 1, 0],
+        "HELGOLAND": [_, 0, _, _],
+        "REPUBLIQUE DE GEORGIE": [116, 76, 61, 87],
+        "BOSNIE-HERZEGOVINE": [_, _, 22, _],
+    }),
+    "Afrique centrale": ([47090, 46736, 44378, 39385], {
+        "TCHAD": [3274, 1290, 2869, 1814],
+        "CAMEROUN": [22723, 21773, 23336, 18660],
+        "CENTRE AFRIQUE": [795, 762, 31, 13],
+        "GUINEE EQUATORIALE": [933, 1126, 1143, 548],
+        "SAINT THOMAS ILE DU PRINCE": [_, 3, 9, _],
+        "GABON": [6753, 6688, 6238, 7254],
+        "CONGO": [11523, 11122, 9104, 9428],
+        "CONGO DEMOCRATIQUE": [950, 3754, 1451, 1307],
+        "RWANDA": [2, 61, 15, 6],
+        "BURUNDI": [138, 156, 181, 355],
+    }),
+    "Afrique du Nord": ([9607, 19828, 22723, 260873], {
+        "ILES CANARIES": [_, _, _, 54],
+        "MAROC": [5029, 9500, 13891, 29688],
+        "ALGERIE": [112, 454, 849, 61],
+        "TUNISIE": [2710, 6841, 4838, 5588],
+        "LIBYE": [_, _, _, 119],
+        "EGYPTE": [1208, 2603, 2805, 224488],
+        "SOUDAN": [548, 430, 340, 875],
+    }),
+    "Afrique occidentale": ([4768169, 4137996, 4568833, 5458050], {
+        "MAURITANIE": [83581, 114922, 92296, 120225],
+        "MALI": [3047680, 2200547, 2711636, 3813106],
+        "BURKINA FASO": [94370, 104062, 105110, 80380],
+        "NIGER": [15137, 16512, 22297, 6060],
+        "ILES DU CAP VERT": [768, 1647, 1548, 25705],
+        "GAMBIE": [893419, 967383, 1045255, 541056],
+        "GUINEE BISSAU": [95056, 108257, 80523, 201581],
+        "GUINEE REPUBLIQUE": [139127, 210469, 151295, 248258],
+        "SIERRA LEONE": [10025, 17706, 32821, 35433],
+        "LIBERIA": [2222, 1270, 1490, 1195],
+        "COTE D'IVOIRE": [317948, 292657, 239140, 228765],
+        "GHANA": [14727, 18781, 15489, 15553],
+        "TOGO": [12509, 16056, 11896, 10780],
+        "BENIN": [28004, 47033, 38863, 125530],
+        "NIGERIA": [13597, 20692, 19174, 4421],
+    }),
+    "Afrique orientale et du Sud": ([64160, 4187, 3391, 3121], {
+        "ANGOLA": [428, 576, 579, 589],
+        "ETHIOPIE": [96, 41, 1, 12],
+        "DJIBOUTI": [58, 1, 1, 0],
+        "REPUBLIQUE DE SOMALIE": [_, _, _, 0],
+        "KENYA": [3, 41, 3, 116],
+        "OUGANDA": [355, 399, 566, 689],
+        "TANZANIE": [692, 414, 442, 411],
+        "SEYCHELLES": [1488, 265, _, _],
+        "MOZAMBIQUE": [236, 393, 1135, 759],
+        "MADAGASCAR": [414, 4, 34, 75],
+        "REUNION": [_, _, _, 3],
+        "ILES MAURICE": [593, 499, 0, 0],
+        "COMORES ILE": [1, 0, 19, 9],
+        "ZAMBIE": [461, 785, 417, 49],
+        "ZIMBABWE": [_, 17, _, 10],
+        "MALAWI": [_, 0, _, 0],
+        "AFRIQUE DU SUD": [635, 344, 154, 65],
+        "BOTSWANA": [307, 234, 1, 274],
+        "NAMIBIE": [6, 16, 38, 59],
+        "SWAZILAND": [58386, 158, 0, _],
+    }),
+    "Amérique centrale et du Sud": ([103182, 59390, 116950, 130208], {
+        "MEXIQUE": [76409, 55285, 111826, 80397],
+        "GUATEMALA": [_, 1, _, 336],
+        "HONDURAS": [_, 12, 27, _],
+        "NICARAGUA": [_, _, 4, 0],
+        "COSTA RICA": [13, 21, 19, 12],
+        "PANAMA": [417, 293, 536, 7],
+        "HAITI": [1419, 1237, 1740, 3203],
+        "ILES BRAHAMAS": [_, _, _, 9],
+        "ILES CALQUES": [_, _, _, 1],
+        "SAINT DOMINGUE": [17, 15, _, 1],
+        "ILES VIERGES DES USA": [_, 104, 524, _],
+        "GUADELOUPE": [10, 9, 5, 8],
+        "MARTINIQUE": [0, 0, 30, 10],
+        "ANTIGUA-BARBUDA": [20, 472, 8, 105],
+        "JAMAIQUE": [_, _, _, 0],
+        "LA BARBADE": [_, _, 0, _],
+        "ST VINCENT-ILES GRENADINES": [_, _, 1, _],
+        "TRINIDAD ET TOBAGO": [_, _, 19, 19],
+        "CURUCAO": [_, 0, _, 2],
+        "COLOMBIE": [457, 227, 64, 2680],
+        "VENEZUELA": [117, 91, 410, 133],
+        "GUYANA": [_, _, 20, 90],
+        "SURINAM": [_, 100, _, _],
+        "GUYANE FRANCAISE": [1, _, _, 3],
+        "EQUATEUR": [2053, 347, 0, 3517],
+        "PEROU": [609, _, _, 750],
+        "BRESIL": [21204, 779, 1020, 38239],
+        "CHILI": [435, 392, 697, 684],
+        "BOLIVIE": [_, _, _, 0],
+        "ARGENTINE": [_, 4, 0, 1],
+    }),
+    "Amérique du Nord": ([145656, 108531, 70589, 516430], {
+        "ETATS UNIS D'AMERIQUE": [144673, 106676, 68724, 497963],
+        "CANADA": [983, 1855, 1865, 744],
+        "GROENLAND": [_, _, _, 17707],
+        "SAINT PIERRE ET MIQUELON": [_, _, _, 16],
+    }),
+    "Asie occidentale": ([186163, 189552, 6770, 142654], {
+        "LIBAN": [178668, 183155, 643, 262],
+        "SYRIE": [_, _, _, 25],
+        "IRAK": [0, 0, 27, 1],
+        "IRAN": [25, 69, _, 36],
+        "ISRAEL": [120, 302, 227, 161],
+        "JORDANIE": [3, 5, 10, 7],
+        "ARABIE SEOUDITE": [131, 339, 337, 257],
+        "KOWEIT": [0, 0, 1, 10],
+        "BAHREIN": [_, 42, 0, 6],
+        "QATAR": [0, 4, 44, 1],
+        "EMIRATS ARABES UNIS": [7214, 5635, 5372, 11857],
+        "OMAN": [0, _, 107, 130030],
+    }),
+    "Autres pays d'Asie": ([1244653, 1170568, 1303136, 2575690], {
+        "AFGANISTAN": [1, _, 39, 0],
+        "PAKISTAN": [57, 239, 201, 70],
+        "INDE": [633713, 739272, 843864, 935884],
+        "BENGLADESH": [8297, 6872, 4700, 3187],
+        "NEPAL": [_, 2, _, 2],
+        "THAILANDE": [71, 1177, 419, 2428],
+        "LAOS": [_, 0, 0, 140],
+        "VIETNAM": [39145, 33792, 85898, 30387],
+        "CAMBODGE": [1, _, _, _],
+        "INDONESIE": [962, 1070, 571, 1458],
+        "MALAISIE": [3104, 2370, 3688, 1181],
+        "BRUNEI": [1574, 849, 328, 751],
+        "SINGAPOUR": [7025, 14615, 3176, 33330],
+        "PHILIPPINE": [_, _, _, 31],
+        "MONGOLIE": [_, _, 1, _],
+        "REPUBLIQUE POPULAIRE DE CHINE": [489792, 348621, 332592, 1549765],
+        "COREE DU NORD": [40166, 291, 163, _],
+        "COREE DU SUD": [12753, 12923, 8247, 6640],
+        "JAPON": [7280, 6930, 17981, 9160],
+        "TAIWAN": [403, 676, 1056, 1026],
+        "HONG-KONG": [310, 868, 212, 251],
+        "MACAO": [_, 0, _, _],
+    }),
+    "Océanie": ([2292, 3195, 21789, 1955], {
+        "AUSTRALIE": [2002, 2294, 1436, 1817],
+        "NOUVELLE GUINEE ET PAPOUASIE": [6, 24, _, 27],
+        "NAURU": [_, 237, 19710, 0],
+        "NOUVELLE ZELANDE": [253, 287, 93, 111],
+        "TONGA": [32, _, 0, _],
+        "SAMOA OCCIDENTAL": [_, 353, 550, _],
+        "ILES COOK": [_, _, _, 1],
+    }),
+    # Imprimé sans détail. Valeur IMPRIMÉE, arbitrée par saisie_2025_pays.py.
+    "Divers": ([273115, 184984, 225027, 25772], {}),
+}
+EXPORT_POIDS_TOTAL = [8038328, 6969968, 7428616, 14186349]
 
 # ── Tableau 33 : pays fournisseurs en valeur CAF (millions FCFA) ─────────────
 IMPORT_VALEUR = {
@@ -456,6 +681,7 @@ IMPORT_VALEUR_TOTAL = [5378494, 7549365, 7207803, 7012377, 6973859]
 # l'autre : pays au détail, Divers repris du tableau 22.
 #
 # 30 lignes nulles sur les cinq années, écartées : ILES FEROE (Autres pays d'Europe), KOSOVO (Autres pays d'Europe), R.D.A. (Autres pays d'Europe), CEUTA ET MELILLA (Autres pays d'Europe), SAHARA OCCIDENTAL (Afrique du Nord), ERYTHREE (Afrique orientale et du Sud), TERRITOIRES BRITANIQUES OCEAN. (Afrique orientale et du Sud), COMORES ILE (Afrique orientale et du Sud), ILES BERMUDES (Amérique centrale et du Sud), SALVADOR (Amérique centrale et du Sud), PANAMA CANAL (Amérique centrale et du Sud), MARTINIQUE (Amérique centrale et du Sud), LA BARBADE (Amérique centrale et du Sud), ARUBA (Amérique centrale et du Sud), AFGANISTAN (Asie occidentale), DUBAI (Asie occidentale), ABU DHABI (Asie occidentale), YEMEN DEMOCRATIQUE (Asie occidentale), NEPAL (Autres pays d'Asie), SIKKIM (Autres pays d'Asie), BHOUTAN (Autres pays d'Asie), VIETNAM SUD (Autres pays d'Asie), HAWAII (Autres pays d'Asie), GUINEE NOUVELLE (Océanie), ILES PACIFIQUES US (Océanie), ILES WALLIS ET FUTUNA (Océanie), KIRIBATI (Océanie britanique) (Océanie), ILES NIOUE, ILES TOKELOU (Océanie), ILES FIDJI (Océanie), VANUATU (NOUVELLES HEBRIDES) (Océanie)
+IMPORT_POIDS_ANNEES = [2021, 2022, 2023, 2024, 2025]
 IMPORT_POIDS = {
     "Union européenne": ([3297827, 3652777, 3153186, 3020946, 2821726], {
         "FRANCE": [500814, 562205, 715755, 634935, 718719],

@@ -471,7 +471,9 @@ type NacePaysLigne = { pays: string; code_iso2: string | null; region: string; a
 type NaceDataPays = { disponible: boolean; annees: number[]; editions: number[]; ordre: string[];
   continents: Record<string, string>; donnees: { export: NacePaysLigne[]; import: NacePaysLigne[] };
   /** Années dont le POIDS par pays est incomplet, par sens (non publié par
-      l'ANSD — édition 2025). Les valeurs, elles, sont complètes. */
+      l'ANSD, déclaré dans edition_XXXX_poids_manquants.csv). Les valeurs,
+      elles, sont complètes. Vide aujourd'hui : les poids export 2025, d'abord
+      manquants, ont été reçus avec le tableau 32 complet. */
   poids_incomplets?: Partial<Record<ZoneSens, number[]>> };
 
 /** Le poids par pays est-il incomplet sur la période lue, pour l'un des sens ?
