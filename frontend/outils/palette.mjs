@@ -154,12 +154,21 @@ export const JETONS = {
   grille:       { clair: "#F0EEEB", sombre: "#243044" },
   grilleZero:   { clair: "#DDD9D4", sombre: "#33415A" },
 
+  // ── La barre de titre des pages (BarreTitre) ──
+  // Un APLAT dans les deux schémas, comme à l'origine : le bleu APIX (l'orange
+  // pour l'administration) le jour, le minuit du hero de l'application la
+  // nuit. Elle ne prend plus --degrade-hero, qui reste le fond des grands
+  // en-têtes : accueil, rapports, Fiche Pays, tableau de bord.
+  barreTitre:       { clair: "#004f91", sombre: "#16213A" },
+  barreTitreOrange: { clair: "#ca631f", sombre: "#6B3D18" },
+
   // ── Les halos des bandeaux ──
-  // Deux grands cercles flous posés sur le bandeau, qui lui donnent son relief
-  // de jour. De NUIT ils valent « transparent » : sur un aplat de minuit, un
-  // halo à 45 % recrée exactement le dégradé qu'on a retiré. Les éteindre par
-  // la couleur plutôt que par le rendu conditionnel garde le balisage
-  // identique dans les deux schémas.
+  // Deux grands cercles flous posés sur les bandeaux de l'accueil, qui leur
+  // donnent leur relief de jour. La barre de titre des pages n'en porte plus :
+  // sur son aplat, ils recréaient un dégradé. De NUIT ils valent
+  // « transparent » : sur un aplat de minuit, un halo à 45 % recrée exactement
+  // le dégradé qu'on a retiré. Les éteindre par la couleur plutôt que par le
+  // rendu conditionnel garde le balisage identique dans les deux schémas.
   haloClair:    { clair: "rgba(255,255,255,0.07)", sombre: "transparent" },
   haloBleu:     { clair: "rgba(0,79,145,0.50)", sombre: "transparent" },
   haloOrange:   { clair: "rgba(202,99,31,0.45)", sombre: "transparent" },

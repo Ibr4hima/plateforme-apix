@@ -76,9 +76,9 @@ export default function NavActions({ onDark = false, flouFond = false, flouTotal
    *
    *  IL EST DEMANDÉ PAR L'APPELANT parce que la hauteur de la bande qui les
    *  porte en dépend : ce sont les plus hauts de leurs voisins, et c'est donc
-   *  eux qui la fixent. La barre de titre des pages les réduit pour se caler
-   *  sur la bande d'onglets du dessous ; les en-têtes de rapport, plus amples,
-   *  gardent la taille pleine. */
+   *  eux qui la fixent. La barre de titre des pages les a un temps réduits à
+   *  30 pour se caler sur la bande d'onglets du dessous ; elle est revenue à
+   *  la taille pleine, comme les en-têtes de rapport. */
   taille?: number;
 }) {
   const flou = flouFond || flouTotal;

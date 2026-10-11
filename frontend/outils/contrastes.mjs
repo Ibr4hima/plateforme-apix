@@ -73,6 +73,10 @@ const PAIRES = [
   ["sur-bleu", "alerte-action", 4.5, "libellé sur aplat ambre"],
   ["sur-bleu", "violet-action", 4.5, "libellé sur aplat violet"],
   ["bleu-fixe", "sur-bleu", 4.5, "libellé bleu sur pastille blanche"],
+  // La barre de titre des pages porte un titre, une bascule et des boutons
+  // blancs ; celle de l'administration, un titre seul, en gros caractères.
+  ["sur-bleu", "barre-titre", 4.5, "titre et commandes de la barre de titre"],
+  ["sur-bleu", "barre-titre-orange", 3, "titre de la barre d'administration (gros caractères)"],
 
   // ── Séries de graphes : éléments graphiques ──
   ["emeraude", "carte", 3, "série émeraude"],

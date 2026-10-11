@@ -7,17 +7,18 @@ import React from "react";
 // l'administration —, une trame très fine, un liseré lumineux en bas, un point
 // pulsant blanc, et de la place pour des contrôles et des actions.
 //
-// De JOUR, le dégradé historique et ses deux halos. De NUIT, un aplat et des
-// halos éteints : entre #16213A et #22406A l'écart est trop faible pour se lire
-// comme une matière, et les halos ne faisaient qu'y remettre un dégradé.
-// Le halo teinté du bandeau, par espace. Il vaut « transparent » de nuit :
-// sur l'aplat de minuit, un halo à 45 % recréerait le dégradé qu'on en a
-// retiré.
-const HALOS = { bleu: "var(--halo-bleu)", orange: "var(--halo-orange)" };
-
+// UN APLAT DE JOUR COMME DE NUIT, comme à l'origine de la barre : #004f91 (ou
+// #ca631f) le jour, le minuit du hero de l'application la nuit. Après un
+// passage au dégradé, la couleur unique a été rétablie à la demande. Pas de
+// halos non plus : à 45 % d'opacité sur 500 pixels, ils recréaient sur
+// l'aplat le dégradé qu'on en retirait. Restent la trame à 4 % et le liseré,
+// qui sont une texture et un séparateur, pas un effet de couleur.
+//
+// Les grands en-têtes (accueil, rapports, Fiche Pays, tableau de bord)
+// gardent leur dégradé, --degrade-hero : la barre ne le partage plus.
 const FONDS = {
-  bleu:   "var(--degrade-hero)",
-  orange: "var(--degrade-hero-orange)",
+  bleu:   "var(--barre-titre)",
+  orange: "var(--barre-titre-orange)",
 };
 
 export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
@@ -30,26 +31,21 @@ export default function BarreTitre({ titre, children, droite, actions, compact, 
   pleineLargeur?: boolean;     // aligne le contenu sur une page pleine largeur (sans colonne de filtres)
 }) {
   return (
-    // LA BANDE FAIT LA HAUTEUR DE CELLE DES ONGLETS, en dessous. Les deux se
-    // touchent sur toutes les pages, et l'aplat bleu en prenait quatorze pixels
-    // de plus : deux bandeaux inégaux collés l'un à l'autre se lisent comme un
-    // défaut d'alignement. Le rembourrage descend de 20/18 à 15/15, et ce qu'il
-    // entoure se réduit dans la même proportion — titre, bascule et boutons —
-    // pour que la bande reste équilibrée au lieu d'être seulement rognée.
-    <section style={{ padding: compact ? "15px 40px" : "82px 40px 15px", background: FONDS[ton], position: "relative", overflow: "hidden", flexShrink: 0 }}>
+    // 74 PX, LA HAUTEUR D'ORIGINE : rembourrage 20/18, titre de 1,3 rem,
+    // boutons ronds de 36. Une version à 60 px, calée sur la bande d'onglets
+    // du dessous, a été essayée puis abandonnée à la demande. La barre garde
+    // donc sa hauteur, même là où elle touche une bande plus basse.
+    <section style={{ padding: compact ? "20px 40px 18px" : "82px 40px 18px", background: FONDS[ton], position: "relative", overflow: "hidden", flexShrink: 0 }}>
       <style>{`@keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(255,255,255,0.55)}70%{box-shadow:0 0 0 6px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 @keyframes pulseDotC{0%{box-shadow:0 0 0 0 var(--pc)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}`}</style>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0.5 }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)", WebkitMaskImage: "radial-gradient(ellipse at 75% 0%,rgb(var(--ombre-rgb) / 0.9) 0%,transparent 72%)" }} />
-        {/* Halos lumineux */}
-        <div style={{ position: "absolute", top: "-140%", right: "-6%", width: 580, height: 580, borderRadius: "50%", background: "radial-gradient(circle,var(--halo-clair) 0%,transparent 60%)" }} />
-        <div style={{ position: "absolute", bottom: "-160%", left: "-8%", width: 460, height: 460, borderRadius: "50%", background: `radial-gradient(circle,${HALOS[ton]} 0%,transparent 65%)` }} />
         {/* Liseré lumineux en bas */}
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 1, background: "linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.30) 50%,transparent 100%)" }} />
       </div>
-      <div style={{ maxWidth: pleineLargeur ? "none" : 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
-        <h1 style={{ fontWeight: 800, fontSize: "1.05rem", color: "var(--sur-bleu)", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
+      <div style={{ maxWidth: pleineLargeur ? "none" : 1280, margin: "0 auto", position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+        <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />
+        <h1 style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--sur-bleu)", lineHeight: 1.2, margin: 0, whiteSpace: "nowrap", letterSpacing: "-0.01em" }}>{titre}</h1>
         {children}
         {(droite || actions) && (
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -67,12 +63,12 @@ export function BarreTitreSegment<T extends string>({ options, value, onChange }
   options: { v: T; l: string; count?: number; badge?: string }[]; value: T; onChange: (v: T) => void;
 }) {
   return (
-    <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: 2, gap: 3 }}>
+    <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: 999, padding: 3, gap: 3 }}>
       {options.map(o => {
         const actif = value === o.v;
         return (
           <button key={o.v} onClick={() => onChange(o.v)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 13px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 11.5, fontWeight: 700, background: actif ? "var(--sur-bleu)" : "transparent", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 15px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: actif ? "var(--sur-bleu)" : "transparent", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", fontFamily: "var(--font-google-sans)", transition: "all 0.15s", whiteSpace: "nowrap" }}>
             {o.l}
             {o.count != null && o.count > 0 && (
               <span style={{ fontSize: 10.5, fontWeight: 700, lineHeight: 1, padding: "2px 7px", borderRadius: 999, background: actif ? "rgb(var(--bleu-fixe-rgb) / 0.10)" : "rgba(255,255,255,0.16)", color: actif ? "var(--bleu-fixe)" : "rgba(255,255,255,0.85)", transition: "all 0.15s" }}>{o.count}</span>
@@ -94,14 +90,14 @@ export function BarreTitreBadge({ label, detail, onClick, icon }: {
 }) {
   return (
     <button onClick={onClick}
-      style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.10)", cursor: onClick ? "pointer" : "default", minWidth: 0, maxWidth: 440, transition: "background 0.15s", fontFamily: "var(--font-google-sans)" }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 999, border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.10)", cursor: onClick ? "pointer" : "default", minWidth: 0, maxWidth: 440, transition: "background 0.15s", fontFamily: "var(--font-google-sans)" }}
       onMouseEnter={e => { if (onClick) e.currentTarget.style.background = "rgba(255,255,255,0.18)"; }}
       onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}>
       {icon
         ? <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
         : <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--sur-bleu)", animation: "pulseDot 1.6s ease-out infinite", flexShrink: 0 }} />}
-      <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--sur-bleu)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
-      {detail && <span style={{ fontSize: 11.5, fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
+      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--sur-bleu)", whiteSpace: "nowrap", flexShrink: 0 }}>{label}</span>
+      {detail && <span style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{detail}</span>}
     </button>
   );
 }

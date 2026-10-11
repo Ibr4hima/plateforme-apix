@@ -88,6 +88,8 @@
   --pole-sud-est: #E6AC9D;
   --grille: #F0EEEB;
   --grille-zero: #DDD9D4;
+  --barre-titre: #004f91;
+  --barre-titre-orange: #ca631f;
   --halo-clair: rgba(255,255,255,0.07);
   --halo-bleu: rgba(0,79,145,0.50);
   --halo-orange: rgba(202,99,31,0.45);
@@ -215,6 +217,8 @@
     --pole-sud-est: #F09571;
     --grille: #243044;
     --grille-zero: #33415A;
+    --barre-titre: #16213A;
+    --barre-titre-orange: #6B3D18;
     --halo-clair: transparent;
     --halo-bleu: transparent;
     --halo-orange: transparent;
@@ -340,6 +344,8 @@
   --pole-sud-est: #F09571;
   --grille: #243044;
   --grille-zero: #33415A;
+  --barre-titre: #16213A;
+  --barre-titre-orange: #6B3D18;
   --halo-clair: transparent;
   --halo-bleu: transparent;
   --halo-orange: transparent;
