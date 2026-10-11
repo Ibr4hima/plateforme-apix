@@ -2,7 +2,7 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Kit de formulaire APIX — design unique pour tous les modals de saisie du site.
-// Palette : #004f91 (principal) · #ca631f (accent) · #188038 (succès) · #6A1B9A.
+// Palette : #004f91 (principal) · #E0802F (accent) · #188038 (succès) · #6A1B9A.
 // Principe : le corps du modal est un fond doux, chaque FSection est une carte
 // blanche à filet fin — les groupes de champs sont bornés, pas d'espaces morts.
 // Usage :

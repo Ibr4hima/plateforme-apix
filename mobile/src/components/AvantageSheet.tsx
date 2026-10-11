@@ -17,7 +17,7 @@ import { creerStyles } from "@/lib/apparence";
 const couleurSecteur = (nom?: string, teinte: (c: string) => string = c => c): string => {
   const n = (nom || "").toLowerCase();
   if (n.includes("primaire")) return teinte("#004f91");
-  if (n.includes("secondaire")) return teinte("#ca631f");
+  if (n.includes("secondaire")) return teinte("#E0802F");
   if (n.includes("tertiaire")) return teinte("#188038");
   return T.gris as string;
 };

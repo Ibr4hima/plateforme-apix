@@ -17,7 +17,7 @@
 // déclarations.
 //
 // ── Ce qui n'est pas touché ──────────────────────────────────────────────────
-// Les tableaux de couleurs (`["#004f91", "#ca631f", …]`) sont des palettes de
+// Les tableaux de couleurs (`["#004f91", "#E0802F", …]`) sont des palettes de
 // séries, lues par d3 et par le canevas d'export. `var(--bleu)` n'y a aucun
 // sens : une fonction JavaScript ne résout pas une variable CSS. Elles sont
 // protégées ici et traitées ailleurs, par la table de traduction de nuit

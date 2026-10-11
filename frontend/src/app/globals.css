@@ -28,8 +28,8 @@
   --bleu-clair: #1a6ab0;
   --bleu-profond: #002a52;
   --bleu-voile: #EEF1F6;
-  --orange: #ca631f;
-  --orange-action: #ca631f;
+  --orange: #E0802F;
+  --orange-action: #E0802F;
   --orange-fonce: #a84e18;
   --orange-profond: #4d2206;
   --orange-voile: #FFF6EF;
@@ -89,7 +89,7 @@
   --grille: #F0EEEB;
   --grille-zero: #DDD9D4;
   --aplat-hero: #004f91;
-  --aplat-hero-orange: #ca631f;
+  --aplat-hero-orange: #E0802F;
   --pouce: #FFFFFF;
   --verre: rgba(255,255,255,0.65);
   --verre-fort: rgba(242,240,239,0.92);
@@ -100,7 +100,7 @@
 
   --bleu-rgb: 0 79 145;
   --bleu-fixe-rgb: 0 79 145;
-  --orange-rgb: 202 99 31;
+  --orange-rgb: 224 128 47;
   --vert-rgb: 24 128 56;
   --violet-rgb: 106 27 154;
   --danger-rgb: 220 38 38;
@@ -118,13 +118,13 @@
   --gris-rgb: 122 138 164;
 
   --degrade-hero: linear-gradient(155deg,#002a52 0%,#003a6e 35%,#004f91 70%,#1a6ab0 100%);
-  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%);
+  --degrade-hero-orange: linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#E0802F 70%,#e28f46 100%);
   --degrade-filet: linear-gradient(90deg,#002a52 0%,#004f91 55%,#1a6ab0 100%);
   --degrade-bleu: linear-gradient(135deg, #004f91 0%, #003a6e 100%);
-  --degrade-orange: linear-gradient(135deg, #ca631f 0%, #a84e18 100%);
+  --degrade-orange: linear-gradient(135deg, #E0802F 0%, #a84e18 100%);
   --degrade-pastille: linear-gradient(135deg,#004f91,#1a6ab0);
-  --degrade-texte: linear-gradient(135deg,#ca631f 0%,#e8935a 100%);
-  --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%);
+  --degrade-texte: linear-gradient(135deg,#E0802F 0%,#e8935a 100%);
+  --degrade-chat: linear-gradient(155deg,#8a4212 0%,#a85117 38%,#E0802F 72%,#e0803c 100%);
 }
 
 /* Sans choix explicite de l'utilisateur, on suit le système. Le sélecteur

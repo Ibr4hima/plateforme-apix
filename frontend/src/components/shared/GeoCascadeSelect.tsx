@@ -4,7 +4,7 @@
  * GeoCascadeSelect — localisation Région → Département → Arrondissement.
  * Même présentation que NaemaSelect (colonnes repliables, chips de résumé),
  * mais en sélection SIMPLE à chaque niveau.
- * Couleurs cascade du site : Région #004f91 · Département #ca631f · Arrondissement #188038.
+ * Couleurs cascade du site : Région #004f91 · Département #E0802F · Arrondissement #188038.
  *
  * Même contrat de props que LocalisationSelect (swap direct).
  */

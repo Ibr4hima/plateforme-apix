@@ -15,7 +15,7 @@ import { creerStyles } from "@/lib/apparence";
 
 // Couleurs des niveaux territoriaux (palette du site)
 export const NIVEAU_COULEURS: Record<string, string> = {
-  pole: "#004f91", region: "#ca631f", departement: "#188038", arrondissement: "#6A1B9A",
+  pole: "#004f91", region: "#E0802F", departement: "#188038", arrondissement: "#6A1B9A",
 };
 
 const NIVEAU_LABELS: Record<string, string> = {

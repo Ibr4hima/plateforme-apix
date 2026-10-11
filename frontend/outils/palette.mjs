@@ -68,8 +68,8 @@ export const JETONS = {
   bleuProfond:  { clair: "#002a52", sombre: "#101A2C" },
   bleuVoile:    { clair: "#EEF1F6", sombre: "rgba(133,185,236,0.10)" },
 
-  orange:       { clair: "#ca631f", sombre: "#FFA45C" },
-  orangeAction: { clair: "#ca631f", sombre: "#B35A18" },
+  orange:       { clair: "#E0802F", sombre: "#FFA45C" },
+  orangeAction: { clair: "#E0802F", sombre: "#B35A18" },
   orangeFonce:  { clair: "#a84e18", sombre: "#8A4212" },
   orangeProfond:{ clair: "#4d2206", sombre: "#2A1A0C" },
   orangeVoile:  { clair: "#FFF6EF", sombre: "rgba(255,164,92,0.11)" },
@@ -165,7 +165,7 @@ export const JETONS = {
   // retirés avec le dégradé, et leurs jetons avec eux : à 45 % d'opacité, ils
   // recréaient sur l'aplat le dégradé qu'on en retirait.
   aplatHero:       { clair: "#004f91", sombre: "#16213A" },
-  aplatHeroOrange: { clair: "#ca631f", sombre: "#6B3D18" },
+  aplatHeroOrange: { clair: "#E0802F", sombre: "#6B3D18" },
 
   // ── Divers ──
   // Le pouce d'un curseur doit se détacher de sa piste : blanc le jour, blanc
@@ -198,7 +198,7 @@ export const JETONS = {
 export const TRIPLETS = {
   bleu:   { clair: "0 79 145",   sombre: "133 185 236" },
   bleuFixe: { clair: "0 79 145", sombre: "0 79 145" },
-  orange: { clair: "202 99 31",  sombre: "255 164 92" },
+  orange: { clair: "224 128 47",  sombre: "255 164 92" },
   vert:   { clair: "24 128 56",  sombre: "72 201 176" },
   violet: { clair: "106 27 154", sombre: "199 155 235" },
   danger: { clair: "220 38 38",  sombre: "240 138 138" },
@@ -227,7 +227,7 @@ export const TRIPLETS = {
 // Les bases rgba() rencontrées dans le code, rattachées à leur triplet.
 export const BASES_RGBA = {
   "0,79,145": "bleu", "0,60,112": "bleu", "15,82,186": "bleu", "26,106,176": "bleu",
-  "202,99,31": "orange", "227,83,54": "orange", "183,65,14": "orange", "226,143,70": "orange",
+  "224,128,47": "orange", "227,83,54": "orange", "183,65,14": "orange", "226,143,70": "orange",
   "74,40,12": "orange", "251,188,4": "alerte", "161,98,7": "alerte", "180,83,9": "alerte",
   "24,128,56": "vert", "21,128,61": "vert", "13,101,45": "vert", "5,150,105": "vert",
   "106,27,154": "violet", "124,58,237": "violet", "107,79,161": "violet",
@@ -265,7 +265,7 @@ export const DEGRADES = {
     sombre: "#16213A",
   },
   degradeHeroOrange: {
-    clair: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#ca631f 70%,#e28f46 100%)",
+    clair: "linear-gradient(155deg,#4d2206 0%,#8a400f 35%,#E0802F 70%,#e28f46 100%)",
     sombre: "#6B3D18",
   },
   degradeFilet: {
@@ -277,7 +277,7 @@ export const DEGRADES = {
     sombre: "linear-gradient(135deg, #22406A 0%, #16213A 100%)",
   },
   degradeOrange: {
-    clair: "linear-gradient(135deg, #ca631f 0%, #a84e18 100%)",
+    clair: "linear-gradient(135deg, #E0802F 0%, #a84e18 100%)",
     sombre: "linear-gradient(135deg, #B35A18 0%, #8A4212 100%)",
   },
   degradePastille: {
@@ -293,11 +293,11 @@ export const DEGRADES = {
   // --orange : sa seconde borne en est un éclaircissement, ce qui évite d'avoir
   // à maintenir un abricot de nuit à côté de l'orange de nuit.
   degradeTexte: {
-    clair: "linear-gradient(135deg,#ca631f 0%,#e8935a 100%)",
+    clair: "linear-gradient(135deg,#E0802F 0%,#e8935a 100%)",
     sombre: "linear-gradient(135deg,var(--orange) 0%,color-mix(in srgb, var(--orange) 62%, white) 100%)",
   },
   degradeChat: {
-    clair: "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#ca631f 72%,#e0803c 100%)",
+    clair: "linear-gradient(155deg,#8a4212 0%,#a85117 38%,#E0802F 72%,#e0803c 100%)",
     sombre: "linear-gradient(155deg,#2A1A0C 0%,#43260F 38%,#6B3D18 72%,#8A5426 100%)",
   },
 };
@@ -379,7 +379,7 @@ const EXPLICITES = {
   "#003a6e": { encre: "bleuNuit", fond: "bleuNuit", bordure: "bleuNuit" },
   "#002a52": { encre: "bleuProfond", fond: "bleuProfond", bordure: "bleuProfond" },
   "#1a6ab0": { encre: "bleuClair", fond: "bleuClair", bordure: "bleuClair" },
-  "#ca631f": { encre: "orange", fond: "orangeAction", bordure: "orange" },
+  "#e0802f": { encre: "orange", fond: "orangeAction", bordure: "orange" },
   "#a84e18": { encre: "orangeFonce", fond: "orangeFonce", bordure: "orangeFonce" },
   "#188038": { encre: "vert", fond: "vertAction", bordure: "vert" },
   "#6a1b9a": { encre: "violet", fond: "violetAction", bordure: "violet" },

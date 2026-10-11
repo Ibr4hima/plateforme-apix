@@ -548,7 +548,7 @@ const s = creerStyles(() => ({
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu },
   badgeProduit: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)",
+    borderWidth: 1, borderColor: "rgba(224,128,47,0.28)",
   },
   badgeProduitTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   deplier: { justifyContent: "center" },

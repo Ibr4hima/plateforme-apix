@@ -3,7 +3,7 @@
 // Assistant IA de la plateforme — lanceur (logo Claude) + panneau de chat,
 // monté globalement (voir Providers.tsx) donc présent sur toutes les pages.
 // Répond en streaming ; connaît le contexte de la page courante.
-// Charte : orange APIX (#ca631f) en couleur principale.
+// Charte : orange APIX (#E0802F) en couleur principale.
 
 import { useEffect, useRef, useState } from "react";
 

@@ -46,7 +46,7 @@ const JETONS = {
   // La nuit, l'orange s'éclaircit et se réchauffe ; le vert quitte le vert —
   // sur un fond de minuit bleuté, un vert franc jure, là où le teal appartient
   // à la même famille froide que le bleu de la maison
-  orange:      dyn("#ca631f", "#FFA45C"),
+  orange:      dyn("#E0802F", "#FFA45C"),
   vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
@@ -95,7 +95,7 @@ const JETONS = {
   grilleZero:  dyn("#DDD9D4", "#33415A"),
   // Voiles bleus (blocs d'information, chips)
   bleuVoile:   dyn("rgba(0,79,145,0.07)", "rgba(133,185,236,0.13)"),
-  orangeVoile: dyn("rgba(202,99,31,0.09)", "rgba(255,164,92,0.14)"),
+  orangeVoile: dyn("rgba(224,128,47,0.09)", "rgba(255,164,92,0.14)"),
   vertVoile:   dyn("rgba(24,128,56,0.09)", "rgba(72,201,176,0.14)"),
   blocFond:    dyn("rgba(0,79,145,0.04)", "rgba(133,185,236,0.07)"),
   // Le pouce du curseur : une commande doit se détacher de sa piste. Blanc
@@ -199,7 +199,7 @@ export const DEGRADE_EVENEMENT = {
 export const BADGE = {
   en_vigueur: { label: "En vigueur",            c: "#188038", bg: "rgba(24,128,56,0.08)" },
   signe:      { label: "Signé non en vigueur",  c: "#004f91", bg: "rgba(0,79,145,0.07)" },
-  expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(202,99,31,0.10)" },
+  expire:     { label: "Expiré",                c: "#b45309", bg: "rgba(224,128,47,0.10)" },
 } as const;
 
 // Les 8 modules de la plateforme. `titre` est la forme courte des tuiles de

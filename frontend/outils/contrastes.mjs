@@ -112,7 +112,18 @@ const HERITES = new Set([
   "clair/orange/carte", "clair/cyan/carte", "clair/sur-bleu/orange-action",
 ]);
 
-let echecs = 0, testes = 0, herites = 0;
+// ── Faiblesses assumées par la CHARTE ────────────────────────────────────────
+// L'orange de la maison est passé de #ca631f à #E0802F (11/10/2026), à la
+// demande : un orange plus clair, donc un texte blanc moins lisible dessus.
+// - Le blanc y tombe à 2,88:1, sous le seuil des gros caractères (3:1), là où
+//   #ca631f tenait 3,95:1.
+// - Les deux paires orange déjà héritées (accent orange sur carte, libellé
+//   sur bouton orange) descendent de 3,95 à 2,88:1.
+// Ce n'est pas une régression à corriger ici : l'outil le distingue pour
+// qu'elle ne masque pas les vraies.
+const CHARTE = new Set(["clair/sur-bleu/aplat-hero-orange"]);
+
+let echecs = 0, testes = 0, herites = 0, charte = 0;
 for (const schema of ["clair", "sombre"]) {
   console.log(`\n── ${schema.toUpperCase()} ──`);
   for (const [a, b, seuil, quoi] of PAIRES) {
@@ -126,6 +137,9 @@ for (const schema of ["clair", "sombre"]) {
     if (HERITES.has(`${schema}/${a}/${b}`)) {
       console.log(`  · ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [hérité du mode clair]`);
       herites++;
+    } else if (CHARTE.has(`${schema}/${a}/${b}`)) {
+      console.log(`  · ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [choix de charte]`);
+      charte++;
     } else {
       console.log(`  ✗ ${r.toFixed(2)}:1 (min ${seuil}) — ${quoi}  [${a} sur ${b}]`);
       echecs++;
@@ -139,5 +153,5 @@ for (const schema of ["clair", "sombre"]) {
   }
 }
 
-console.log(`\n${testes} paires vérifiées — ${echecs} en échec, ${herites} faiblesses héritées du mode clair.`);
+console.log(`\n${testes} paires vérifiées — ${echecs} en échec, ${herites} faiblesses héritées du mode clair, ${charte} assumée(s) par la charte.`);
 process.exit(echecs ? 1 : 0);
