@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import { useSombre } from "@/lib/apparence";
 
 // Palette des vues comparatives (jusqu'à 4 séries : IDE, BDEF, opportunités…)
-export const COMP_PALETTE = ["#004f91", "#E0802F", "#188038", "#6A1B9A"] as const;
+export const COMP_PALETTE = ["#004f91", "#ca631f", "#188038", "#6A1B9A"] as const;
 
 // Palette longue des comparaisons multi-pays (fiche pays, statistiques)
-export const PALETTE_COMPARAISON = ["#004f91", "#E0802F", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"] as const;
+export const PALETTE_COMPARAISON = ["#004f91", "#ca631f", "#188038", "#6A1B9A", "#0891b2", "#b91c1c", "#a16207", "#4338ca"] as const;
 
 // Couleurs des pôles territoriaux (par nom normalisé) — alignées sur la carte
 export const POLE_COULEURS: Record<string, string> = {
@@ -77,7 +77,7 @@ export const normPole = (s: string) =>
 // contrepartie exacte des jetons T.bleu / T.orange / T.vert.
 const NUIT: Record<string, string> = {
   "#004f91": "#85B9EC", // bleu APIX
-  "#E0802F": "#FFA45C", // orange — réchauffé et éclairci
+  "#ca631f": "#FFA45C", // orange — réchauffé et éclairci
   "#188038": "#48C9B0", // vert → teal : la famille froide du bleu de nuit
   "#6A1B9A": "#C79BEB", // violet
   "#0891b2": "#5FC7DE", // cyan

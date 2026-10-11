@@ -214,7 +214,7 @@ const s = creerStyles(() => ({
   etiquette: { ...TYPO.micro, color: T.gris, flexShrink: 1 },
   badgePays: {
     backgroundColor: T.carte, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 3.5,
-    borderWidth: 1, borderColor: "rgba(224,128,47,0.28)", maxWidth: 150,
+    borderWidth: 1, borderColor: "rgba(202,99,31,0.28)", maxWidth: 150,
   },
   badgePaysTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.orange },
   nombreLigne: { flexDirection: "row", alignItems: "baseline", gap: 10, flexWrap: "wrap" },

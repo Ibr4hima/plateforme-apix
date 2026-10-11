@@ -202,7 +202,7 @@ const s = creerStyles(() => ({
   focalEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
   focalNom: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   focalPoste: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  focalPrincipal: { backgroundColor: "rgba(224,128,47,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  focalPrincipal: { backgroundColor: "rgba(202,99,31,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   focalPrincipalTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.orange },
   focalChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
 }));

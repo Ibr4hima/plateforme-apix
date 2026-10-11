@@ -8,7 +8,7 @@ import React from "react";
 // pulsant blanc, et de la place pour des contrôles et des actions.
 //
 // UN APLAT DE JOUR COMME DE NUIT, comme à l'origine de la barre : #004f91 (ou
-// #E0802F) le jour, le minuit du hero de l'application la nuit. Après un
+// #ca631f) le jour, le minuit du hero de l'application la nuit. Après un
 // passage au dégradé, la couleur unique a été rétablie à la demande. Pas de
 // halos non plus : à 45 % d'opacité sur 500 pixels, ils recréaient sur
 // l'aplat le dégradé qu'on en retirait. Restent la trame à 4 % et le liseré,

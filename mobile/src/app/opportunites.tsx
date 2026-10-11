@@ -45,7 +45,7 @@ const NIVEAUX = [
 // Secteurs économiques des avantages & incitations (couleurs du site)
 const SECTEURS_AVGS = [
   { cle: "primaire",   label: "Secteur Primaire",   couleur: "#004f91" },
-  { cle: "secondaire", label: "Secteur Secondaire", couleur: "#E0802F" },
+  { cle: "secondaire", label: "Secteur Secondaire", couleur: "#ca631f" },
   { cle: "tertiaire",  label: "Secteur Tertiaire",  couleur: "#188038" },
 ] as const;
 

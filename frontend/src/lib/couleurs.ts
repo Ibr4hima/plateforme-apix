@@ -46,7 +46,7 @@ export const COMP_PALETTE: readonly string[] = PALETTE_COMPARAISON.slice(0, 4);
 // de l'application mobile.
 const NUIT: Record<string, string> = {
   "#004f91": "#85B9EC", // bleu APIX
-  "#e0802f": "#FFA45C", // orange — réchauffé et éclairci
+  "#ca631f": "#FFA45C", // orange — réchauffé et éclairci
   "#188038": "#48C9B0", // vert → teal : la famille froide du bleu de nuit
   "#6a1b9a": "#C79BEB", // violet
   "#0891b2": "#5FC7DE", // cyan
