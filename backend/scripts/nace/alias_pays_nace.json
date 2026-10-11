@@ -92,7 +92,7 @@
     "POLYNESIE FRANCAISE": "collectivité française du Pacifique"
   },
   "_notes_referentiel": {
-    "HONG-KONG": "Ajouté à ref_pays [HK] par la migration 129 : partenaire de 19,2 Md FCFA en 2019, il représentait à lui seul 90 % du commerce de pays réels qui finissait anonyme dans « Autres pays ». Rattaché depuis par simple rapprochement exact.",
-    "MACAO": "Ajouté à ref_pays [MO] par la migration 129, avec Hong Kong. Poids modeste (263 M FCFA) mais même statut de région administrative spéciale : les traiter différemment aurait été incohérent."
+    "HONG-KONG": "Ajouté à ref_pays [HK] par la migration 129 : partenaire de 19,2 Md FCFA en 2019, il représentait à lui seul 90 % du commerce de pays réels qui finissait anonyme dans « Autres pays ». Rattaché depuis par simple rapprochement exact. En production, 129 s'était effacée devant une ligne HKG déjà présente mais inutilisable (très probablement créée inactive par l'import des transactions) : la migration 154 la remet en état (active, nommée en français).",
+    "MACAO": "Ajouté à ref_pays [MO] par la migration 129, avec Hong Kong. Poids modeste (263 M FCFA) mais même statut de région administrative spéciale : les traiter différemment aurait été incohérent. Remis en état en production par la migration 154, comme Hong Kong."
   }
 }
