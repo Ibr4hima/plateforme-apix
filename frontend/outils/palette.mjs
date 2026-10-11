@@ -154,24 +154,18 @@ export const JETONS = {
   grille:       { clair: "#F0EEEB", sombre: "#243044" },
   grilleZero:   { clair: "#DDD9D4", sombre: "#33415A" },
 
-  // ── La barre de titre des pages (BarreTitre) ──
-  // Un APLAT dans les deux schémas, comme à l'origine : le bleu APIX (l'orange
-  // pour l'administration) le jour, le minuit du hero de l'application la
-  // nuit. Elle ne prend plus --degrade-hero, qui reste le fond des grands
-  // en-têtes : accueil, rapports, Fiche Pays, tableau de bord.
-  barreTitre:       { clair: "#004f91", sombre: "#16213A" },
-  barreTitreOrange: { clair: "#ca631f", sombre: "#6B3D18" },
-
-  // ── Les halos des bandeaux ──
-  // Deux grands cercles flous posés sur les bandeaux de l'accueil, qui leur
-  // donnent leur relief de jour. La barre de titre des pages n'en porte plus :
-  // sur son aplat, ils recréaient un dégradé. De NUIT ils valent
-  // « transparent » : sur un aplat de minuit, un halo à 45 % recrée exactement
-  // le dégradé qu'on a retiré. Les éteindre par la couleur plutôt que par le
-  // rendu conditionnel garde le balisage identique dans les deux schémas.
-  haloClair:    { clair: "rgba(255,255,255,0.07)", sombre: "transparent" },
-  haloBleu:     { clair: "rgba(0,79,145,0.50)", sombre: "transparent" },
-  haloOrange:   { clair: "rgba(202,99,31,0.45)", sombre: "transparent" },
+  // ── Les aplats de bandeau ──
+  // La barre de titre des pages (BarreTitre) et les bandeaux bleus de
+  // l'accueil : une COULEUR UNIQUE dans les deux schémas, sans dégradé ni
+  // halos. Le bleu APIX (l'orange pour l'administration) le jour, le minuit
+  // du hero de l'application la nuit. --degrade-hero reste le fond des grands
+  // en-têtes : rapports, Fiche Pays, tableau de bord.
+  //
+  // Les halos — deux grands cercles flous posés sur ces bandeaux — sont
+  // retirés avec le dégradé, et leurs jetons avec eux : à 45 % d'opacité, ils
+  // recréaient sur l'aplat le dégradé qu'on en retirait.
+  aplatHero:       { clair: "#004f91", sombre: "#16213A" },
+  aplatHeroOrange: { clair: "#ca631f", sombre: "#6B3D18" },
 
   // ── Divers ──
   // Le pouce d'un curseur doit se détacher de sa piste : blanc le jour, blanc
@@ -254,11 +248,13 @@ export const GRIS_ALPHA = "122 138 164";
 // (#16213A → #22406A) : une marche d'élévation au-dessus des cartes, la
 // couleur restant au contenu.
 export const DEGRADES = {
-  // ── Les bandeaux de hero ────────────────────────────────────────────────────
-  // Deux traitements, un par schéma, et c'est voulu.
+  // ── Les grands en-têtes (rapports, Fiche Pays, tableau de bord) ────────────
+  // La barre de titre des pages et l'accueil n'en sont plus : ils portent un
+  // aplat (JETONS.aplatHero). Ici, deux traitements, un par schéma, et c'est
+  // voulu.
   //
   // De JOUR, le dégradé historique du site : il porte la profondeur du bleu
-  // APIX et c'est l'image que la plateforme donne d'elle-même.
+  // APIX.
   //
   // De NUIT, un aplat. Le dégradé n'y apportait rien — entre #16213A et
   // #22406A, l'écart est trop faible pour se lire comme une matière, et les

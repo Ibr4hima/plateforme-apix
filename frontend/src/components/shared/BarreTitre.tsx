@@ -14,11 +14,12 @@ import React from "react";
 // l'aplat le dégradé qu'on en retirait. Restent la trame à 4 % et le liseré,
 // qui sont une texture et un séparateur, pas un effet de couleur.
 //
-// Les grands en-têtes (accueil, rapports, Fiche Pays, tableau de bord)
-// gardent leur dégradé, --degrade-hero : la barre ne le partage plus.
+// Le jeton --aplat-hero est partagé avec les bandeaux bleus de l'accueil. Les
+// grands en-têtes (rapports, Fiche Pays, tableau de bord) gardent leur
+// dégradé, --degrade-hero.
 const FONDS = {
-  bleu:   "var(--barre-titre)",
-  orange: "var(--barre-titre-orange)",
+  bleu:   "var(--aplat-hero)",
+  orange: "var(--aplat-hero-orange)",
 };
 
 export default function BarreTitre({ titre, children, droite, actions, compact, ton = "bleu", pleineLargeur }: {
