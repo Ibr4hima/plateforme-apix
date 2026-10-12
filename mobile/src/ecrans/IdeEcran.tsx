@@ -1,18 +1,18 @@
 // Investissements privés — repensé sur la grammaire des Échanges
-// commerciaux : le bandeau bleu d'EnTetePage, deux familles en chips bleues
-// (Investissements Directs Étrangers · Investissements nationaux), puis des
-// SECTIONS vedettes empilées.
+// commerciaux : le bandeau bleu d'EnTetePage, trois familles en chips bleues
+// (Investissements Directs Étrangers · Investissements projetés ·
+// Investissements nationaux), puis des SECTIONS vedettes empilées.
 //
 // L'onglet IDE se lit en trois sections — Flux & Stocks, Greenfield,
 // Fusion & Acquisition — chacune une carte vedette à curseur d'années.
 // L'analyse comparative a quitté l'app : un pays, une lecture au pouce.
 //
-// RÉALISÉS ET PROJETÉS, comme sur le site. Sous l'onglet IDE, une bascule
-// sépare ce que la CNUCED mesure — l'argent ENTRÉ — de ce que fDi Markets
-// relève — les projets ANNONCÉS et les intentions. Les deux ne se
-// contredisent pas : ils regardent deux moments de la même décision.
-// « Projetés » est un tableau de bord en trois sections, qui mène aux listes
-// et aux rapports (components/fdi/TableauProjetes).
+// LES INVESTISSEMENTS PROJETÉS ONT LEUR PROPRE ONGLET, au même rang que les
+// deux autres. L'IDE dit ce que la CNUCED mesure — l'argent ENTRÉ ; les
+// projetés, ce que fDi Markets relève — les projets ANNONCÉS et les
+// intentions. Les deux ne se contredisent pas : ils regardent deux moments de
+// la même décision. L'onglet est un tableau de bord en trois sections, qui
+// mène aux listes et aux rapports (components/fdi/TableauProjetes).
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
@@ -25,7 +25,6 @@ import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
 import DestinationSheet from "@/components/fdi/DestinationSheet";
-import { Segments } from "@/components/fdi/FiltresFdi";
 import TableauProjetes from "@/components/fdi/TableauProjetes";
 import SourceIdeSheet from "@/components/SourceIdeSheet";
 import SourceNationalSheet, { SelNational } from "@/components/SourceNationalSheet";
@@ -36,9 +35,10 @@ import { T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
-// Les deux familles — chips bleues, la teinte unique du module
+// Les trois familles — chips bleues, la teinte unique du module
 const ONGLETS = [
   { cle: "ide",       label: "Investissements Directs Étrangers", couleur: "bleu" },
+  { cle: "projetes",  label: "Investissements projetés",          couleur: "bleu" },
   { cle: "nationaux", label: "Investissements nationaux",         couleur: "bleu" },
 ] as const;
 
@@ -46,13 +46,12 @@ export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const cap = useCap();
   const [onglet, setOnglet] = useState("ide");
-  const [section, setSection] = useState<"realises" | "projetes">("realises");
   const [sourceOuverte, setSourceOuverte] = useState(false);
   // Le pays lu par les Investissements projetés — le Sénégal par défaut
   const [paysFdi, setPaysFdi] = useState(PAYS_REFERENCE);
-  const projetes = onglet === "ide" && section === "projetes";
+  const projetes = onglet === "projetes";
   // Les pays proposés : ceux dont le relevé fDi est complet. La liste n'est
-  // demandée qu'une fois la section ouverte
+  // demandée qu'une fois l'onglet ouvert
   const { data: destinations } = useQuery({
     queryKey: CLE_DESTINATIONS, queryFn: chargerDestinations, staleTime: 30 * 60 * 1000, enabled: projetes,
   });
@@ -99,7 +98,7 @@ export default function IdeEcran() {
       <EnTetePage titre="Investissements privés" bouton={boutonHero} />
       <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
 
-      {/* Les deux familles en chips */}
+      {/* Les trois familles en chips */}
       <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}
         style={{ flexGrow: 0 }} contentContainerStyle={s.ongletsRangee}>
         {ONGLETS.map(o => {
@@ -115,14 +114,6 @@ export default function IdeEcran() {
           );
         })}
       </ScrollView>
-
-      {/* Réalisés ou projetés : la bascule de niveau 1 du site */}
-      {onglet === "ide" && (
-        <View style={s.bascule}>
-          <Segments valeur={section} onChange={v => setSection(v as "realises" | "projetes")}
-            options={[{ cle: "realises", label: "Investissements réalisés" }, { cle: "projetes", label: "Investissements projetés" }]} />
-        </View>
-      )}
 
       {onglet === "nationaux" ? (
         <NationalPanel sel={selNat} onOuvrirSource={() => setSourceOuverte(true)} />
@@ -164,5 +155,4 @@ export default function IdeEcran() {
 
 const s = creerStyles(() => ({
   ongletsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
-  bascule: { paddingHorizontal: 16, paddingTop: 12 },
 }));
