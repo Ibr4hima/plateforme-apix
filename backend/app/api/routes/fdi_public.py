@@ -450,6 +450,25 @@ async def _classement_ouest(db: AsyncSession, observe: str, partenaire: str,
     } for code in codes]
 
 
+# ── LES TRIS DU CLASSEMENT DES INVESTISSEMENTS, POUR L'APPLICATION MOBILE ────
+# LE TRI SE FAIT AU SERVEUR DÈS QU'ON NE REND PAS TOUT. Retrier à l'écran les
+# cent premiers PAR MONTANT pour lire « les plus créateurs d'emplois » donnerait
+# un faux classement, dont le vrai premier pourrait manquer : c'est exactement
+# le piège que le site évite en recevant la liste entière. Le téléphone, qui ne
+# la reçoit pas, demande donc au serveur de trier sur la colonne qu'il affiche.
+#
+# Les valeurs manquantes restent en queue — un projet dont on ignore le montant
+# n'est pas le plus petit, on ne sait pas — et l'identifiant ferme chaque tri :
+# un classement qu'on cite ne change pas d'ordre d'un chargement à l'autre.
+TRIS_INVESTISSEMENTS = {
+    "capex":   "p.capex_musd DESC NULLS LAST, p.annee DESC, p.mois DESC NULLS LAST, p.id",
+    "emplois": "p.emplois DESC NULLS LAST, p.capex_musd DESC NULLS LAST, p.id",
+    "periode": "p.annee DESC, p.mois DESC NULLS LAST, p.capex_musd DESC NULLS LAST, p.id",
+}
+# Au-delà, un classement ne se lit plus sur un écran de téléphone.
+LIMITE_CLASSEMENT = 500
+
+
 @router.get("/projets")
 async def projets(
     sens: str = "destination",
@@ -465,6 +484,8 @@ async def projets(
     page: int = 1,
     par_page: int = 30,
     rapport: bool = False,
+    classement_tri: str = "capex",
+    classement_limite: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     """Les projets du périmètre demandé, leurs agrégats et leurs classements.
@@ -473,6 +494,13 @@ async def projets(
     gros au plus petit — le classement complet que le rapport déplie. La vue
     Projets ne le demande pas : elle n'en a pas l'usage, et la liste se
     compte en milliers sur une région.
+
+    `classement_limite` et `classement_tri` servent l'application mobile. Le
+    site ne les envoie pas : il reçoit le classement entier et le retrie
+    lui-même. Un téléphone ne peut pas recevoir seize mille lignes pour en
+    montrer dix — 3,7 Mo sur l'Afrique entière. Il demande donc le HAUT du
+    classement, trié par le serveur sur la colonne qu'il affiche (voir
+    `TRIS_INVESTISSEMENTS`).
 
     LA PAGINATION NE PORTE QUE SUR LA LISTE. Compteurs, séries annuelles et
     classements restent calculés sur TOUT le filtre — c'est la règle de cet
@@ -606,6 +634,8 @@ async def projets(
     # peut pas changer d'ordre d'un chargement à l'autre.
     investissements = []
     if rapport:
+        borne = (f"\n            LIMIT {max(1, min(classement_limite, LIMITE_CLASSEMENT))}"
+                 if classement_limite is not None else "")
         investissements = [{
             "id": r.id, "periode": f"{r.annee}-{r.mois:02d}" if r.mois else str(r.annee),
             "entreprise": r.entreprise, "partenaire": r.partenaire,
@@ -621,7 +651,7 @@ async def projets(
                    COALESCE(s.libelle_fr, p.secteur_brut) AS secteur,
                    p.capex_musd, p.capex_estime, p.emplois, p.emplois_estime
             {base}
-            ORDER BY p.capex_musd DESC NULLS LAST, p.annee DESC, p.mois DESC NULLS LAST, p.id"""),
+            ORDER BY {TRIS_INVESTISSEMENTS.get(classement_tri, TRIS_INVESTISSEMENTS["capex"])}{borne}"""),
             params)).fetchall()]
 
     # ── LE CLASSEMENT OUEST-AFRICAIN ─────────────────────────────────────────
@@ -985,6 +1015,12 @@ async def entreprises_publiques(
     montants n'y figurent pas — un total par entreprise mêlerait des projets
     déclarés et des projets estimés par l'algorithme du Financial Times, et
     l'écran ne pourrait plus dire lequel il montre.
+
+    Elle porte aussi la PREMIÈRE ET LA DERNIÈRE ANNÉE d'annonce dans le
+    périmètre lu : un investisseur dont la dernière annonce remonte à 2011 ne se
+    prospecte pas comme celui qui a annoncé cette année. Un secteur
+    « principal », lui, n'y figure pas, pour la raison que donne la fiche :
+    sans son compte, il ferait d'un projet isolé une activité dominante.
     """
     where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs, activites,
                                         origines, destinations)
@@ -998,7 +1034,9 @@ async def entreprises_publiques(
                {ORIGINE_ENTREPRISE} AS origine,
                min(rp.code_iso2)    AS origine_iso,
                count(*)             AS projets,
-               count(DISTINCT COALESCE(rd.nom_fr, p.pays_dest_brut)) AS pays
+               count(DISTINCT COALESCE(rd.nom_fr, p.pays_dest_brut)) AS pays,
+               min(p.annee)         AS a0,
+               max(p.annee)         AS a1
         {JOINTURES_ENTREPRISE}
         WHERE {filtre} AND {NOM_ENTREPRISE} IS NOT NULL
         GROUP BY 1, 2"""
@@ -1014,7 +1052,8 @@ async def entreprises_publiques(
 
     return {
         "entreprises": [{"nom": r.nom, "origine": r.origine, "origine_iso": r.origine_iso,
-                         "projets": r.projets, "pays": r.pays} for r in lignes],
+                         "projets": r.projets, "pays": r.pays,
+                         "annees": [r.a0, r.a1]} for r in lignes],
         "page": page,
         "pages": max(1, -(-total // par_page)),
         "total": total,
@@ -1036,6 +1075,15 @@ async def entreprises_publiques(
 # l'ouvre ne serait pas citable.
 SENEGAL = "Sénégal"
 
+# Les tris du classement des investisseurs, quand l'application mobile n'en
+# demande que le haut — même raison que TRIS_INVESTISSEMENTS. Le montant
+# manquant reste en queue, le nom départage.
+TRIS_INVESTISSEURS = {
+    "capex":   "capex DESC NULLS LAST, projets DESC, nom",
+    "projets": "projets DESC, capex DESC NULLS LAST, nom",
+    "pays":    "pays DESC, projets DESC, nom",
+}
+
 
 @router.get("/entreprises/rapport")
 async def rapport_entreprises(
@@ -1045,9 +1093,16 @@ async def rapport_entreprises(
     activites: str | None = None,
     origines: str | None = None,
     destinations: str | None = None,
+    classement_tri: str = "capex",
+    classement_limite: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """Tout ce qu'un décideur peut tirer du relevé, l'investisseur pour unité."""
+    """Tout ce qu'un décideur peut tirer du relevé, l'investisseur pour unité.
+
+    `classement_limite` et `classement_tri` servent l'application mobile, comme
+    pour les projets : le classement des investisseurs compte sept mille lignes
+    (1 Mo), et le téléphone n'en demande que le haut, trié par le serveur sur la
+    colonne qu'il affiche. Le site, qui ne les envoie pas, reçoit tout."""
     where, params = _filtres_entreprises(recherche, secteurs, sous_secteurs,
                                          activites, origines, destinations)
     filtre = " AND ".join(where)
@@ -1121,9 +1176,11 @@ async def rapport_entreprises(
     #
     # IL S'OUVRE SUR LE MONTANT INVESTI : c'est par lui qu'on classe ceux qui
     # engagent le plus, avant ceux qui annoncent le plus souvent.
-    actifs = await classement("""
+    borne = (f" LIMIT {max(1, min(classement_limite, LIMITE_CLASSEMENT))}"
+             if classement_limite is not None else "")
+    actifs = await classement(f"""
         SELECT nom, origine, iso, projets, capex, pays, a0, a1, au_senegal
-        FROM g ORDER BY capex DESC NULLS LAST, projets DESC, nom""")
+        FROM g ORDER BY {TRIS_INVESTISSEURS.get(classement_tri, TRIS_INVESTISSEURS["capex"])}{borne}""")
 
     # ── Le classement AU SÉNÉGAL ─────────────────────────────────────────────
     # LE COMPTE N'EST PAS CELUI DU CLASSEMENT AFRICAIN. Il ne retient que les
