@@ -3,10 +3,13 @@
 //
 // CE QUE CE MODULE PORTE. Les types des réponses, la traduction des filtres en
 // adresses, les libellés partagés et les requêtes. Les écrans n'écrivent
-// aucune URL eux-mêmes : la règle de la plateforme est que la colonne de
-// filtres, la liste et le rapport décrivent EXACTEMENT la même sélection, et
-// une adresse construite à trois endroits finirait par diverger d'un
-// paramètre.
+// aucune URL eux-mêmes : la feuille de filtres et la liste doivent décrire
+// EXACTEMENT la même sélection, et une adresse construite à deux endroits
+// finirait par diverger d'un paramètre.
+//
+// PAS DE RAPPORT DANS L'APP. Ils vivent sur le site ; l'app lit un tableau de
+// bord, des listes et des fiches. Les types ci-dessous ne décrivent donc que
+// ce que ces écrans affichent, non tout ce que l'API rend.
 //
 // LES RÈGLES DU SITE, REPRISES TELLES QUELLES (app/ide/onglet-fdi.tsx et ses
 // deux voisines) :
@@ -33,11 +36,8 @@ export const PERIMETRE_AFRIQUE = "Afrique";
 /** Trente lignes par page, comme les trois vues du site. */
 export const PAR_PAGE = 30;
 
-/** Les rapports n'emportent que le haut de leurs classements : sept mille
-    investisseurs ou seize mille projets ne se lisent pas sur un téléphone, et
-    ne s'y téléchargent pas non plus (1 à 3,7 Mo). Cent lignes, triées par le
-    serveur sur la colonne affichée. */
-export const LIMITE_CLASSEMENT = 100;
+/** Les derniers venus montrés sous chaque carte du tableau de bord. */
+export const DERNIERS = 3;
 
 /** Les trois vues de l'écran — les trois bases de fDi Markets. */
 export type Vue = "projets" | "signaux" | "entreprises";
@@ -74,22 +74,6 @@ export type ProjetFdi = {
   description_fr: string | null; description_en: string | null;
 };
 
-export type RangProjets = {
-  nom: string; nb: number; capex_musd: number | null; emplois: number | null; iso?: string | null;
-};
-
-export type Investissement = {
-  id: number; periode: string; entreprise: string | null;
-  partenaire: string | null; partenaire_iso: string | null; secteur: string | null;
-  capex_musd: number | null; capex_estime: boolean | null;
-  emplois: number | null; emplois_estime: boolean | null;
-};
-
-export type LigneZone = {
-  nom: string; iso: string | null; projets: number; capex_musd: number | null; emplois: number | null;
-};
-export type ZoneOuest = { code: string; nom: string; court: string; lignes: LigneZone[] };
-
 export type KpisProjets = {
   projets: number; capex_musd: number | null; emplois: number | null;
   capex_moyen: number | null; entreprises: number; partenaires: number;
@@ -100,10 +84,7 @@ export type ReponseProjets = {
   sens: string; page: number; pages: number;
   kpis: KpisProjets;
   par_annee: { annee: number; nb: number; capex_musd: number | null; emplois: number | null }[];
-  tops: Record<"partenaires" | "secteurs" | "activites" | "entreprises" | "types", RangProjets[]>;
   projets: ProjetFdi[];
-  investissements: Investissement[];
-  zones_ouest: ZoneOuest[];
 };
 
 /** Une valeur rattachée à un signal : destination, secteur, activité ou stade. */
@@ -129,17 +110,6 @@ export type Signal = {
 
 export type RangSignaux = { nom: string; nb: number; rang?: number; iso?: string | null };
 
-export type SignalRemarquable = {
-  id: number; periode: string; entreprise: string | null; origine: string | null;
-  montant: number | null; estime: boolean | null;
-  nature: string | null; destination: string | null;
-};
-
-export type ZoneSignaux = {
-  code: string; nom: string; court: string;
-  secteurs: RangSignaux[]; destinations: RangSignaux[];
-};
-
 export type ReponseSignaux = {
   kpis: {
     signaux: number; funding_musd: number | null; capex_musd: number | null;
@@ -148,9 +118,9 @@ export type ReponseSignaux = {
     a_completer: number; plancher: boolean;
   };
   par_annee: { annee: number; nb: number; funding_musd: number | null; capex_musd: number | null }[];
-  tops: Record<"origines" | "secteurs" | "natures" | "destinations" | "activites", RangSignaux[]>;
-  zones: ZoneSignaux[];
-  remarquables: { funding: SignalRemarquable[]; capex: SignalRemarquable[] };
+  /** Des classements de l'API, l'app ne lit que celui des destinations : le
+      rang d'un pays parmi les destinations africaines. */
+  tops: { destinations?: RangSignaux[] };
   page: number; pages: number;
   signaux: Signal[];
 };
@@ -170,6 +140,9 @@ export type Investisseur = {
   /** Première et dernière année d'annonce dans le périmètre lu. Absentes
       d'une API plus ancienne, ou d'une page restée dans le cache hors ligne. */
   annees?: [number | null, number | null];
+  /** Le mois de la dernière annonce (« 2026-08 », ou l'année seule quand fDi
+      ne date qu'à l'année). Même réserve. */
+  dernier?: string | null;
 };
 
 export type ReponseEntreprises = {
@@ -186,27 +159,6 @@ export type FicheInvestisseur = {
   projets: number; pays: number; annees: [number | null, number | null];
   filiales: Compte[]; destinations: Compte[]; secteurs: Compte[];
   sous_secteurs: Compte[]; activites: Compte[];
-};
-
-export type InvestisseurClasse = {
-  nom: string; origine: string | null; iso: string | null;
-  projets: number; capex: number | null; pays: number;
-  a0: number | null; a1: number | null; au_senegal?: boolean;
-};
-
-export type RapportEntreprises = {
-  kpis: {
-    investisseurs: number; projets: number; origines: number;
-    projets_par_investisseur: number | null;
-    annees: [number | null, number | null];
-    au_senegal: number; un_seul_projet: number; un_seul_pays: number;
-  };
-  actifs: InvestisseurClasse[];
-  senegal: { nom: string; origine: string | null; iso: string | null; projets: number; capex: number | null }[];
-  origines: { nom: string; iso: string | null; investisseurs: number; projets: number; capex: number | null; au_senegal: number }[];
-  secteurs: { nom: string; projets: number; investisseurs: number; capex: number | null }[];
-  sous_secteurs: { nom: string; parent: string; projets: number; investisseurs: number; capex: number | null }[];
-  activites: { nom: string; projets: number; investisseurs: number; capex: number | null }[];
 };
 
 // ── Les filtres de chaque vue ────────────────────────────────────────────────
@@ -266,7 +218,7 @@ function poserSecteurs(p: URLSearchParams, secteurs: string[], sous: ChoixSous[]
 }
 
 /** La cible des projets : un pays OU une région, jamais les deux. */
-export function poserCible(p: URLSearchParams, f: FiltresProjets) {
+function poserCible(p: URLSearchParams, f: FiltresProjets) {
   if (f.echelle === "regions") { if (f.region) p.set("region", f.region); }
   else if (f.pays) p.set("pays", f.pays);
 }
@@ -380,18 +332,16 @@ export const plier = (x: string) =>
   (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 // ── Requêtes ─────────────────────────────────────────────────────────────────
-// LES LISTES NE GARDENT EN CACHE QUE CE QU'ELLES AFFICHENT. Chaque page de la
-// liste des projets ou des signaux rapporte aussi les compteurs, les séries et
-// les classements du filtre ; ils sont utiles une fois, pas trente. Les pages
-// suivantes n'en gardent que leurs lignes : le cache persisté sur l'appareil
-// ne gonfle pas de 25 Ko à chaque page tournée.
-//
-// LES RAPPORTS NE SONT PAS PERSISTÉS (meta.persister = false). Ils pèsent
-// jusqu'à 80 Ko et se demandent à la volée ; les écrire sur l'appareil ferait
-// enfler le cache de l'app entière pour des pages qu'on ouvre rarement.
+// CHAQUE REQUÊTE NE GARDE QUE CE QUE SON ÉCRAN AFFICHE. Une page de la liste
+// des projets ou des signaux rapporte aussi les séries et les classements du
+// filtre — l'API sert le site, qui en fait ses rapports. L'app n'en a pas
+// l'usage : chaque page n'en garde que ses lignes et ses compteurs, et le
+// cache persisté sur l'appareil ne gonfle pas de 25 Ko à chaque page tournée.
 
 const MINUTE = 60 * 1000;
-export const SANS_PERSISTANCE = { persister: false } as const;
+
+type PageProjets = Pick<ReponseProjets, "page" | "pages" | "kpis" | "projets">;
+type PageSignaux = Pick<ReponseSignaux, "page" | "pages" | "kpis" | "signaux">;
 
 export function usePerimetreProjets(f: FiltresProjets) {
   // Le périmètre est compté SOUS LA CIBLE et sous les facettes, comme sur le
@@ -408,9 +358,9 @@ export function useProjetsInfinis(f: FiltresProjets, actif = true) {
   const p = paramsProjets(f);
   return useInfiniteQuery({
     queryKey: ["fdi", "projets", p.toString()],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<PageProjets> => {
       const r = await getJson<ReponseProjets>(`/fdi/public/projets?${p}&page=${pageParam}&par_page=${PAR_PAGE}`);
-      return pageParam === 1 ? r : { ...r, tops: {} as ReponseProjets["tops"], par_annee: [], zones_ouest: [] };
+      return { page: r.page, pages: r.pages, kpis: r.kpis, projets: r.projets };
     },
     initialPageParam: 1,
     getNextPageParam: last => (last.page < last.pages ? last.page + 1 : undefined),
@@ -433,9 +383,9 @@ export function useSignauxInfinis(f: FiltresSignaux, actif = true) {
   const p = paramsSignaux(f);
   return useInfiniteQuery({
     queryKey: ["fdi", "signaux", p.toString()],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<PageSignaux> => {
       const r = await getJson<ReponseSignaux>(`/fdi/public/signaux?${p}&page=${pageParam}&par_page=${PAR_PAGE}`);
-      return pageParam === 1 ? r : { ...r, tops: {} as ReponseSignaux["tops"], par_annee: [], zones: [] };
+      return { page: r.page, pages: r.pages, kpis: r.kpis, signaux: r.signaux };
     },
     initialPageParam: 1,
     getNextPageParam: last => (last.page < last.pages ? last.page + 1 : undefined),
@@ -476,80 +426,52 @@ export function useFicheInvestisseur(nom: string, origine: string | null) {
   });
 }
 
-// ── Rapports ─────────────────────────────────────────────────────────────────
-
-export type TriInvestissements = "capex" | "emplois" | "periode";
-export type TriInvestisseurs = "capex" | "projets" | "pays";
-
-/** Le rapport des projets : sur la CIBLE seule, comme celui du site — le pays
-    ou la région lus —, sans les facettes de la liste. Le classement des
-    investissements n'en rend que le haut, trié par le serveur. */
-export function useRapportProjets(f: Pick<FiltresProjets, "echelle" | "pays" | "region" | "sens">,
-                                  tri: TriInvestissements) {
-  const p = new URLSearchParams({ sens: f.sens });
-  poserCible(p, f as FiltresProjets);
-  p.set("rapport", "1");
-  p.set("par_page", "1");
-  p.set("classement_limite", String(LIMITE_CLASSEMENT));
-  p.set("classement_tri", tri);
-  return useQuery({
-    queryKey: ["fdi", "rapport-projets", p.toString()],
-    queryFn: () => getJson<ReponseProjets>(`/fdi/public/projets?${p}`),
-    staleTime: 10 * MINUTE, gcTime: 30 * MINUTE, meta: SANS_PERSISTANCE,
-    placeholderData: prev => prev,
-  });
-}
-
-/** Le rapport des signaux : il porte les filtres de la vue, comme sur le site
-    — un document tiré d'une sélection doit porter cette sélection. */
-export function useRapportSignaux(f: FiltresSignaux) {
-  const p = paramsSignaux(f);
-  p.set("par_page", "1");
-  p.set("rapport", "1");
-  return useQuery({
-    queryKey: ["fdi", "rapport-signaux", p.toString()],
-    queryFn: () => getJson<ReponseSignaux>(`/fdi/public/signaux?${p}`),
-    staleTime: 10 * MINUTE, gcTime: 30 * MINUTE, meta: SANS_PERSISTANCE,
-  });
-}
-
-export function useRapportEntreprises(f: FiltresEntreprises, tri: TriInvestisseurs) {
-  const p = paramsEntreprises(f);
-  p.set("classement_limite", String(LIMITE_CLASSEMENT));
-  p.set("classement_tri", tri);
-  return useQuery({
-    queryKey: ["fdi", "rapport-entreprises", p.toString()],
-    queryFn: () => getJson<RapportEntreprises>(`/fdi/public/entreprises/rapport?${p}`),
-    staleTime: 10 * MINUTE, gcTime: 30 * MINUTE, meta: SANS_PERSISTANCE,
-    placeholderData: prev => prev,
-  });
-}
-
 // ── Le tableau de bord de l'onglet Investissements ───────────────────────────
-// QUATRE REQUÊTES LÉGÈRES, une par question, plutôt qu'un rapport entier :
-// ce que le pays reçoit (11 Ko), les signaux qui le visent (3 Ko), ceux de
-// toute l'Afrique pour situer son rang (40 Ko), et les investisseurs qui y ont
-// annoncé un projet (moins d'1 Ko). Le préchargement les met en cache au
-// lancement : l'onglet s'ouvre aussi hors ligne.
+// CINQ REQUÊTES LÉGÈRES, une par chose montrée : ce que le pays reçoit et ses
+// trois derniers projets, les intentions qui le visent et les trois
+// dernières, son rang parmi les destinations africaines, ses trois derniers
+// investisseurs, et le nombre d'investisseurs de toute l'Afrique pour en
+// donner la part. Chacune ne garde que ce que la carte affiche, et le
+// préchargement les met en cache au lancement : l'onglet s'ouvre aussi hors
+// ligne.
+//
+// Les clés portent « tableau » et non plus « tdb » : les données qu'elles
+// rangent ont changé de forme, et une réponse de l'ancienne forme restée dans
+// le cache persisté ne doit jamais être lue avec la nouvelle.
 
-export const cleTableauProjets = (pays: string) => ["fdi", "tdb", "projets", pays] as const;
-export const cleTableauSignaux = (pays: string) => ["fdi", "tdb", "signaux", pays] as const;
-export const CLE_SIGNAUX_AFRIQUE = ["fdi", "tdb", "signaux-afrique"] as const;
-export const cleTableauInvestisseurs = (pays: string) => ["fdi", "tdb", "investisseurs", pays] as const;
-export const CLE_INVESTISSEURS_AFRIQUE = ["fdi", "tdb", "investisseurs-afrique"] as const;
+export type TableauProjets = Pick<ReponseProjets, "kpis" | "par_annee" | "projets">;
+export type TableauSignaux = Pick<ReponseSignaux, "kpis" | "par_annee" | "signaux">;
+
+export const cleTableauProjets = (pays: string) => ["fdi", "tableau", "projets", pays] as const;
+export const cleTableauSignaux = (pays: string) => ["fdi", "tableau", "signaux", pays] as const;
+export const CLE_RANGS_AFRIQUE = ["fdi", "tableau", "rangs-afrique"] as const;
+export const cleTableauInvestisseurs = (pays: string) => ["fdi", "tableau", "investisseurs", pays] as const;
+export const CLE_INVESTISSEURS_AFRIQUE = ["fdi", "tableau", "investisseurs-afrique"] as const;
 
 const enc = encodeURIComponent;
 
-export const chargerTableauProjets = (pays: string) =>
-  getJson<ReponseProjets>(`/fdi/public/projets?pays=${enc(pays)}&par_page=1`);
-export const chargerTableauSignaux = (pays: string) =>
-  getJson<ReponseSignaux>(`/fdi/public/signaux?destination=${enc(pays)}&par_page=1`);
-export const chargerSignauxAfrique = () =>
-  getJson<ReponseSignaux>(`/fdi/public/signaux?par_page=1`);
+/** Les chiffres du pays, sa série annuelle et ses trois derniers projets —
+    la liste publique est rangée du plus récent au plus ancien. */
+export const chargerTableauProjets = async (pays: string): Promise<TableauProjets> => {
+  const r = await getJson<ReponseProjets>(`/fdi/public/projets?pays=${enc(pays)}&par_page=${DERNIERS}`);
+  return { kpis: r.kpis, par_annee: r.par_annee, projets: r.projets };
+};
+export const chargerTableauSignaux = async (pays: string): Promise<TableauSignaux> => {
+  const r = await getJson<ReponseSignaux>(`/fdi/public/signaux?destination=${enc(pays)}&par_page=${DERNIERS}`);
+  return { kpis: r.kpis, par_annee: r.par_annee, signaux: r.signaux };
+};
+/** Le classement des destinations africaines — le Sénégal y est toujours,
+    épinglé par le serveur. De l'Afrique entière, la carte ne prend que lui. */
+export const chargerRangsAfrique = async (): Promise<RangSignaux[]> => {
+  const r = await getJson<ReponseSignaux>(`/fdi/public/signaux?par_page=1`);
+  return r.tops.destinations ?? [];
+};
+/** Les trois groupes dont la dernière annonce dans le pays est la plus récente. */
 export const chargerTableauInvestisseurs = (pays: string) =>
-  getJson<ReponseEntreprises>(`/fdi/public/entreprises?destinations=${enc(pays)}&par_page=5`);
-export const chargerInvestisseursAfrique = () =>
-  getJson<ReponseEntreprises>(`/fdi/public/entreprises?par_page=1`);
+  getJson<ReponseEntreprises>(`/fdi/public/entreprises?destinations=${enc(pays)}&par_page=${DERNIERS}&tri=recent`);
+/** Le nombre d'investisseurs de toute l'Afrique : le dénominateur de la part. */
+export const chargerInvestisseursAfrique = async (): Promise<number> =>
+  (await getJson<ReponseEntreprises>(`/fdi/public/entreprises?par_page=1`)).total;
 
 /** Les pays proposés comme destination : ceux dont le relevé est complet. */
 export const CLE_DESTINATIONS = ["fdi", "destinations"] as const;

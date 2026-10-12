@@ -1,4 +1,4 @@
-// La grille des listes et des rapports sur grand écran.
+// La grille des listes sur grand écran.
 //
 // Une colonne au téléphone ; deux sur une tablette en portrait, trois en
 // paysage. Le contenu se plafonne et se centre : une carte de 1 000 pt ne se

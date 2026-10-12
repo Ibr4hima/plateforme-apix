@@ -4,7 +4,7 @@ import {
 } from "@expo-google-fonts/google-sans";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import { QueryClient, defaultShouldDehydrateQuery, onlineManager } from "@tanstack/react-query";
+import { QueryClient, onlineManager } from "@tanstack/react-query";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { Stack } from "expo-router";
@@ -65,14 +65,8 @@ export default function RacineLayout() {
   if (!polices) return null;
 
   return (
-    // Une requête qui se déclare « sans persistance » (meta.persister) reste
-    // en mémoire : les rapports pèsent jusqu'à 80 Ko et s'ouvrent à la volée,
-    // les écrire sur l'appareil ferait enfler le cache de toute l'app.
     <PersistQueryClientProvider client={queryClient}
-      persistOptions={{
-        persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API,
-        dehydrateOptions: { shouldDehydrateQuery: q => defaultShouldDehydrateQuery(q) && q.meta?.persister !== false },
-      }}>
+      persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}>
       <StatusBar style="light" />
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
@@ -99,7 +93,6 @@ export default function RacineLayout() {
         <Stack.Screen name="code/index" options={{ headerShown: false }} />
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
         <Stack.Screen name="investissements-projetes/index" options={{ headerShown: false }} />
-        <Stack.Screen name="investissements-projetes/rapport" options={{ headerShown: false }} />
       </Stack>
       <BandeauHorsLigne />
       {lancement && <LancementAnime onFini={() => setLancement(false)} />}

@@ -23,7 +23,7 @@
 // mêmes objets, et un secteur retenu sur l'une n'a aucune raison de se
 // reporter sur l'autre. Une vue déjà ouverte reste montée : y revenir rend
 // la liste là où on l'avait laissée.
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
@@ -71,7 +71,6 @@ const lireListe = (v?: string | string[]) =>
   (Array.isArray(v) ? v.join("|") : v ?? "").split("|").filter(Boolean);
 
 export default function InvestissementsProjetes() {
-  const router = useRouter();
   const params = useLocalSearchParams<{
     vue?: string; pays?: string; region?: string; destination?: string; destinations?: string;
   }>();
@@ -135,14 +134,6 @@ export default function InvestissementsProjetes() {
 
   const ouvrirFiltres = () => { tick(); setFeuille("filtres"); };
 
-  const ouvrirRapport = () => {
-    tick();
-    const f = vue === "projets"
-      ? { echelle: fp.echelle, pays: fp.pays, region: fp.region, sens: fp.sens }
-      : vue === "signaux" ? fsR : feR;
-    router.push({ pathname: "/investissements-projetes/rapport", params: { vue, f: JSON.stringify(f) } } as any);
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       <EnTetePage titre="Investissements projetés"
@@ -173,7 +164,7 @@ export default function InvestissementsProjetes() {
                 totaux.projets != null ? `${fmtEntier(totaux.projets)} ${totaux.projets > 1 ? "projets" : "projet"} ${fp.sens === "source" ? "implantés à l'étranger" : accordRecu(totaux.projets)}` : null,
                 periodeEnClair(qP.data?.pages[0]?.kpis.annees)]}
               nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              onRapport={ouvrirRapport} chargement={qP.isPlaceholderData}
+              chargement={qP.isPlaceholderData}
               puces={pucesProjets(fp, bornesProjets, setFp)} />
           }
           vide={
@@ -196,7 +187,7 @@ export default function InvestissementsProjetes() {
                 totaux.signaux != null ? `${fmtEntier(totaux.signaux)} ${totaux.signaux > 1 ? "signaux" : "signal"} d'investissement` : null,
                 periodeEnClair(qS.data?.pages[0]?.kpis.annees)]}
               nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              onRapport={ouvrirRapport} chargement={qS.isPlaceholderData}
+              chargement={qS.isPlaceholderData}
               puces={pucesSignaux(fs, setFs)} />
           }
           vide={
@@ -218,7 +209,7 @@ export default function InvestissementsProjetes() {
                 totaux.entreprises != null ? `${fmtEntier(totaux.entreprises)} ${totaux.entreprises > 1 ? "investisseurs" : "investisseur"}` : null,
                 "groupés par maison mère"]}
               nbFiltres={nbFiltres} onFiltres={ouvrirFiltres}
-              onRapport={ouvrirRapport} chargement={qE.isPlaceholderData}
+              chargement={qE.isPlaceholderData}
               puces={pucesEntreprises(fe, setFe)} />
           }
           vide={
@@ -338,9 +329,9 @@ function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colon
 
 // ── Le contexte de la liste : de quoi elle parle, et ce qui la filtre ────────
 
-function Contexte({ principal, description, nbFiltres, onFiltres, onRapport, chargement, puces }: {
+function Contexte({ principal, description, nbFiltres, onFiltres, chargement, puces }: {
   principal: React.ReactNode; description: (string | null | undefined)[];
-  nbFiltres: number; onFiltres: () => void; onRapport: () => void;
+  nbFiltres: number; onFiltres: () => void;
   chargement?: boolean; puces: { cle: string; label: string; retirer: () => void }[];
 }) {
   return (
@@ -356,11 +347,6 @@ function Contexte({ principal, description, nbFiltres, onFiltres, onRapport, cha
           <Text style={s.boutonTexte} maxFontSizeMultiplier={ECHELLE.compact}>
             {nbFiltres > 0 ? `Filtres · ${nbFiltres}` : "Filtres"}
           </Text>
-        </Tapable>
-        <Tapable onPress={onRapport} echelle={0.95} style={s.bouton}
-          accessibilityRole="button" accessibilityLabel="Ouvrir le rapport">
-          <Icone sf="doc.text" materiel="description" taille={15} couleur={T.bleu} />
-          <Text style={s.boutonTexte} maxFontSizeMultiplier={ECHELLE.compact}>Rapport</Text>
         </Tapable>
       </View>
       <View style={s.descriptionLigne}>

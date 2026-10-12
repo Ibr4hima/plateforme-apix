@@ -12,7 +12,7 @@
 // projetés, ce que fDi Markets relève — les projets ANNONCÉS et les
 // intentions. Les deux ne se contredisent pas : ils regardent deux moments de
 // la même décision. L'onglet est un tableau de bord en trois sections, qui
-// mène aux listes et aux rapports (components/fdi/TableauProjetes).
+// mène aux listes et aux fiches (components/fdi/TableauProjetes).
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
