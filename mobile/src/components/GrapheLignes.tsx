@@ -117,6 +117,14 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
   const series = useMemo(
     () => seriesBrutes.map(sr => ({ ...sr, couleur: resoudre(sr.couleur, sombre) })),
     [seriesBrutes, sombre]);
+  // Les jetons du thème que le CANEVAS emploie passent par la même porte. Sur
+  // iOS, un jeton est un objet DynamicColorIOS, et Skia lève « Invalid color
+  // type: object » sur le fil UI : l'app se ferme net dès que le point
+  // terminal se dessine. L'aperçu web, où les jetons sont des chaînes, ne
+  // pouvait pas le montrer.
+  const carte = resoudre(T.carte, sombre) as string;
+  const grille = resoudre(T.grille, sombre) as string;
+  const grilleZero = resoudre(T.grilleZero, sombre) as string;
   const [largeur, setLargeur] = useState(0);
   const [curseur, setCurseur] = useState<number | null>(null);
 
@@ -287,7 +295,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
           {/* Grille */}
           {!epure && ticksGauche.map(t => (
             <LigneSkia key={`g${t}`} p1={vec(M.gauche, geo.yDe(0)(t))} p2={vec(largeur - M.droite, geo.yDe(0)(t))}
-              color={t === 0 ? (T.grilleZero as string) : (T.grille as string)} strokeWidth={1} />
+              color={t === 0 ? grilleZero : grille} strokeWidth={1} />
           ))}
 
           {/* Séries : aire riche + ombre + glow + ligne */}
@@ -321,7 +329,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
                   <BlurMask blur={4} style="normal" />
                 </Circle>
                 <Circle cx={fin.x} cy={fin.y} r={3.6} color={sr.couleur} />
-                <Circle cx={fin.x} cy={fin.y} r={3.6} color={T.carte as string} style="stroke" strokeWidth={1.6} />
+                <Circle cx={fin.x} cy={fin.y} r={3.6} color={carte} style="stroke" strokeWidth={1.6} />
               </Group>
             );
           })}
@@ -338,7 +346,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
                     <BlurMask blur={3.5} style="normal" />
                   </Circle>
                   <Circle cx={curseurX} cy={geo.yDe(l.i)(l.valeur)} r={4.2} color={l.couleur} />
-                  <Circle cx={curseurX} cy={geo.yDe(l.i)(l.valeur)} r={4.2} color={T.carte as string} style="stroke" strokeWidth={1.8} />
+                  <Circle cx={curseurX} cy={geo.yDe(l.i)(l.valeur)} r={4.2} color={carte} style="stroke" strokeWidth={1.8} />
                 </Group>
               ))}
             </Group>
