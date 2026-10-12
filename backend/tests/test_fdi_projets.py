@@ -415,6 +415,102 @@ def test_les_pages_afrique_sont_lisibles():
                 f"dans fdi_pages_absentes.csv")
 
 
+def test_le_nom_d_une_page_dit_son_lot():
+    """Le libellé du lot est la clé d'idempotence : deux pages qui le
+    partageraient s'écraseraient l'une l'autre au réimport. Une page de mise à
+    jour ne doit donc jamais porter le nom d'une page du relevé."""
+    from pathlib import Path
+    from app.services.fdi_projets import decrire_page, cle_page, LigneInvalide
+    assert decrire_page(Path("senegal_p01.csv")) == ("Sénégal reçoit · page 01", "Sénégal", "destination")
+    assert decrire_page(Path("senegal_source_p01.csv")) == ("Sénégal investit · page 01", "Sénégal", "source")
+    assert decrire_page(Path("afrique_p1126.csv")) == ("Afrique reçoit · page 1126", "Afrique", "destination")
+    assert decrire_page(Path("afrique_maj20261012_p01.csv")) == (
+        "Afrique reçoit · relevé du 12/10/2026 · page 01", "Afrique", "destination")
+    assert decrire_page(Path("senegal_maj20261012_source_p02.csv")) == (
+        "Sénégal investit · relevé du 12/10/2026 · page 02", "Sénégal", "source")
+    for nom in ("afrique_maj20261332_p01.csv", "releve.csv", "afrique_p.csv"):
+        with pytest.raises(LigneInvalide):
+            decrire_page(Path(nom))
+    # Le relevé d'origine avant ses mises à jour ; « p10 » après « p2 ».
+    noms = ["afrique_maj20261012_p02.csv", "afrique_p10.csv", "afrique_maj20261012_p01.csv",
+            "afrique_p2.csv"]
+    assert [n for n in sorted(noms, key=lambda n: cle_page(Path(n)))] == [
+        "afrique_p2.csv", "afrique_p10.csv", "afrique_maj20261012_p01.csv",
+        "afrique_maj20261012_p02.csv"]
+
+
+def test_les_series_de_mise_a_jour_ne_relevent_que_la_nouveaute():
+    """Une série de mise à jour reprend la liste fDi triée par DATE, depuis la
+    première page jusqu'à la première ligne déjà relevée, exclue.
+
+    D'où ce qu'elle doit montrer : des pages numérotées sans trou depuis 1, des
+    rangs continus depuis 1, quinze lignes par page sauf la dernière, des dates
+    qui ne remontent jamais — et aucune ligne plus ancienne que la plus récente
+    du relevé qu'elle complète. Une ligne plus ancienne voudrait dire qu'on a
+    dépassé la frontière et repris ce qui était déjà en base."""
+    from collections import defaultdict
+    from app.services.fdi_projets import (DOSSIER_PROJETS, NOM_PAGE, LIGNES_PAR_PAGE,
+                                          lire_lot_csv, lire_date)
+    colonnes = ("date", "parent", "entreprise", "source", "dest", "secteur", "sous_secteur",
+                "activite", "capex", "emplois", "type")
+    series: dict = defaultdict(dict)
+    releves: dict = defaultdict(list)
+    deja: dict = defaultdict(set)
+    for chemin in DOSSIER_PROJETS.glob("*.csv"):
+        m = NOM_PAGE.match(chemin.stem)
+        assert m, chemin.name
+        cle = (m["perimetre"], bool(m["sens"]))
+        if m["maj"]:
+            series[cle + (m["maj"],)][int(m["page"])] = lire_lot_csv(chemin)
+        else:
+            for l in lire_lot_csv(chemin):
+                releves[cle].append(lire_date(l["date"]))
+                deja[cle].add(tuple(l[c] for c in colonnes))
+    assert series, "aucune série de mise à jour"
+    for (perimetre, source, maj), pages in sorted(series.items()):
+        nom = f"{perimetre}_maj{maj}"
+        assert sorted(pages) == list(range(1, len(pages) + 1)), f"{nom} : pages {sorted(pages)}"
+        tailles = [len(pages[n]) for n in sorted(pages)]
+        assert set(tailles[:-1]) <= {LIGNES_PAR_PAGE} and 1 <= tailles[-1] <= LIGNES_PAR_PAGE, nom
+        dates = []
+        for n in sorted(pages):
+            assert [l["ligne"] for l in pages[n]] == list(range(1, len(pages[n]) + 1)), f"{nom} p{n}"
+            dates += [lire_date(l["date"]) for l in pages[n]]
+        assert dates == sorted(dates, reverse=True), f"{nom} : les dates remontent"
+        assert min(dates) >= max(releves[(perimetre, source)]), (
+            f"{nom} : une ligne est plus ancienne que le relevé — la série a dépassé "
+            "la première ligne déjà relevée")
+        # Le mois ne suffit pas à fixer la frontière : la première ligne déjà
+        # relevée peut être du même mois que la dernière ligne neuve. Aucune
+        # ligne de la série ne doit donc être, à l'identique, déjà au relevé.
+        reprises = [(n, l["ligne"]) for n in sorted(pages) for l in pages[n]
+                    if tuple(l[c] for c in colonnes) in deja[(perimetre, source)]]
+        assert not reprises, f"{nom} : lignes déjà relevées {reprises}"
+
+
+def test_la_serie_du_12_octobre_2026():
+    """Ce que fDi montrait le 12/10/2026, liste « Dest = Africa » triée par date :
+    cinquante projets d'août 2026 au-dessus d'Axian/Yas → Sénégal (juillet
+    2026), la première ligne déjà relevée. Trois pages pleines et cinq lignes.
+
+    Une seule va au Sénégal — Yassir/Kawarizmi. Elle reste dans la page
+    Afrique, qui l'affichait, mais n'entre que dans le relevé du Sénégal :
+    237 + 1 = 238, le compte que fDi doit montrer pour « Dest = Senegal »."""
+    from app.services.fdi_projets import DOSSIER_PROJETS, lire_lot_csv, ecarter_deja_releves
+    afrique = [l for n in range(1, 5)
+               for l in lire_lot_csv(DOSSIER_PROJETS / f"afrique_maj20261012_p{n:02d}.csv")]
+    assert len(afrique) == 50
+    assert {l["date"] for l in afrique} == {"Aug 2026"}
+    gardees, ecartees = ecarter_deja_releves(afrique, "Afrique", "destination")
+    assert len(gardees) == 49 and [l["entreprise"] for l in ecartees] == ["Kawarizmi"]
+    senegal = lire_lot_csv(DOSSIER_PROJETS / "senegal_maj20261012_p01.csv")
+    cles = ("date", "parent", "entreprise", "source", "dest", "secteur", "sous_secteur",
+            "activite", "capex", "emplois", "type")
+    assert [tuple(l[c] for c in cles) for l in senegal] == [tuple(ecartees[0][c] for c in cles)]
+    base = sum(len(lire_lot_csv(p)) for p in DOSSIER_PROJETS.glob("senegal_p*.csv"))
+    assert base + len(senegal) == 238
+
+
 def test_le_senegal_ne_peut_pas_entrer_deux_fois_dans_les_totaux():
     """Le Sénégal est relevé pays par pays. S'il revenait par le relevé
     continental, ses projets seraient comptés deux fois — et le faux total ne
@@ -483,7 +579,9 @@ def test_les_pays_du_releve_afrique_menent_tous_a_un_seul_pays():
     plus rien pour le signaler."""
     from app.services.fdi_projets import lire_lot_csv, lire_pays_csv, DOSSIER_PROJETS, normaliser
     connus = lire_pays_csv()
-    for chemin in sorted(DOSSIER_PROJETS.glob("afrique_p*.csv")):
+    # Le relevé et ses séries de mise à jour : une ligne neuve se rattache par
+    # la même règle que les autres.
+    for chemin in sorted(DOSSIER_PROJETS.glob("afrique_*.csv")):
         for ligne in lire_lot_csv(chemin):
             for cote in ("source", "dest"):
                 cle = normaliser(ligne[cote])

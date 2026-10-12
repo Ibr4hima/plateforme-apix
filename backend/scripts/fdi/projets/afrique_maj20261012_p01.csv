@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2026,ASP Isotopes,Tetra4,United States,South Africa,"Coal, oil & gas","Natural, liquefied an…",Manufacturing,* $1.41bn,* 213,Expansion
+2,Aug 2026,ATOMIC (ATOMIC …,ATOMIC (ATOMIC …,UAE,Egypt,Software & IT services,Custom computer pr…,Research & Develop…,* $32.40m,* 140,New
+3,Aug 2026,Aya Gold & Silver …,Aya Gold & Silver …,Canada,Morocco,Metals,"Copper, nickel, lead, …",Extraction,* $410.90m,* 717,Expansion
+4,Aug 2026,Aya Gold & Silver …,Aya Gold & Silver …,Canada,Morocco,Metals,"Copper, nickel, lead, …",Extraction,* $410.90m,* 717,Expansion
+5,Aug 2026,Aya Gold & Silver …,Aya Gold & Silver …,Canada,Morocco,Metals,Other metal ore mini…,Extraction,* $410.90m,* 717,Expansion
+6,Aug 2026,Burnt,Burnt,South Africa,Namibia,Textiles,Clothing & clothing a…,Retail,* $4.40m,* 50,New
+7,Aug 2026,Continental Reins…,Continental Reins…,Nigeria,Rwanda,Financial services,Insurance,"Sales, Marketing & S…",* $10.80m,* 78,New
+8,Aug 2026,Cybastion,Cybastion,United States,Cameroon,Communications,Computing infrastruc…,ICT & Internet Infras…,$75.00m,* 11,New
+9,Aug 2026,Delivery Hero,Talabat,Germany,Egypt,Food and Beverages,Food services,"Sales, Marketing & S…",* $4.50m,* 18,Expansion
+10,Aug 2026,Diarough,Diarough,Belgium,Angola,Minerals,Other non-metallic …,Manufacturing,* $16.00m,130,New
+11,Aug 2026,Dubai World,DP World,UAE,Tanzania,Transportation & Wa…,Warehousing & stora…,"Logistics, Distributio…",* $167.70m,* 111,Expansion
+12,Aug 2026,Dubai World,DP World,UAE,Kenya,Real estate,Industrial building co…,Construction,* $92.50m,* 578,New
+13,Aug 2026,Fenese Otomotiv,Fenese Otomotiv,Turkey,Morocco,Automotive compon…,Other motor vehicle …,Manufacturing,* $27.80m,* 595,New
+14,Aug 2026,Froch,Froch,Taiwan,Morocco,Metals,Steel products,Manufacturing,* $112.20m,* 413,New
+15,Aug 2026,Genser Energy,Genser Energy,United States,Ghana,"Coal, oil & gas","Natural, liquefied an…","Logistics, Distributio…",* $63.40m,* 85,New

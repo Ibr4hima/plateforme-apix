@@ -23,6 +23,7 @@ import csv
 import hashlib
 import re
 import unicodedata
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -164,6 +165,83 @@ COLONNES = ["ligne", "date", "parent", "entreprise", "source", "dest",
 # La pagination de la source. Elle borne les rangs d'une page et sert à
 # reconstruire une page dont on n'a pas toutes les lignes.
 LIGNES_PAR_PAGE = 15
+
+
+# ── Le nom d'un fichier de page, et ce qu'il désigne ─────────────────────────
+#
+#   senegal_p01.csv              relevé « Dest = Senegal », page 1
+#   senegal_source_p01.csv       relevé « Source = Senegal », page 1
+#   afrique_maj20261012_p01.csv  MISE À JOUR du relevé « Dest = Africa », faite
+#                                le 12/10/2026 : page 1 de la liste fDi triée
+#                                par DATE ce jour-là
+#
+# POURQUOI DES SÉRIES DE MISE À JOUR plutôt qu'une insertion en tête suivie
+# d'une renumérotation. fDi place ses nouveaux projets en tête de sa liste ;
+# les insérer chez nous décalerait d'autant chaque ligne déjà relevée :
+#   · le rang est la clé des saisies humaines — descriptions, corrections,
+#     arbitrages d'entreprise partiels — et un décalage les ferait perdre au
+#     réimport (cf. importer_lot) ;
+#   · fdi_arbitrages.csv et fdi_pages_absentes.csv désignent des lignes par
+#     leur page et leur rang ;
+#   · le relevé Afrique est trié par PAYS de destination : un projet d'août
+#     vers l'Afrique du Sud n'aurait même pas sa place en tête.
+# La nouveauté se relève donc à part, dans la liste triée par date, jusqu'à la
+# première ligne déjà connue, exclue. Chaque série porte la date de sa capture
+# et ses pages sont celles de la source ce jour-là ; rien de ce qui est déjà
+# relevé ne bouge.
+NOM_PAGE = re.compile(
+    r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?:_maj(?P<maj>\d{8}))?"
+    r"(?P<sens>_source)?_p(?P<page>\d+)$")
+
+# Le périmètre écrit dans le nom du fichier, et son libellé en base. Il peut
+# désigner un PAYS ou une ZONE : « Dest = Africa » rend complet chacun des pays
+# africains, et la route publique le résout sur le continent de ref_pays.
+PERIMETRES = {"senegal": "Sénégal", "afrique": "Afrique"}
+
+# Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
+# rapports d'import et dans l'administration.
+VERBE = {"destination": "reçoit", "source": "investit"}
+
+
+def decrire_page(chemin: Path) -> tuple[str, str, str]:
+    """(libellé du lot, périmètre, sens) — le libellé est la clé d'idempotence.
+
+    Le sens entre dans le libellé : sans lui, la page 1 des projets reçus et
+    la page 1 des projets émis porteraient le même nom, et le second import
+    écraserait le premier. La série de mise à jour y entre pour la même
+    raison : sa page 1 n'est pas celle du relevé.
+    """
+    m = NOM_PAGE.match(chemin.stem)
+    if not m:
+        raise LigneInvalide(
+            f"{chemin.name} : nom de fichier attendu « perimetre_pNN.csv », "
+            "« perimetre_source_pNN.csv » ou « perimetre_majAAAAMMJJ_pNN.csv ». "
+            "Le libellé du lot en dépend, et avec lui la préservation des saisies.")
+    perimetre = PERIMETRES.get(m["perimetre"], m["perimetre"].replace("_", " ").title())
+    sens = "source" if m["sens"] else "destination"
+    serie = ""
+    if m["maj"]:
+        try:
+            jour = date(int(m["maj"][:4]), int(m["maj"][4:6]), int(m["maj"][6:]))
+        except ValueError:
+            raise LigneInvalide(f"{chemin.name} : date de mise à jour impossible « {m['maj']} »")
+        serie = f" · relevé du {jour:%d/%m/%Y}"
+    return f"{perimetre} {VERBE[sens]}{serie} · page {int(m['page']):02d}", perimetre, sens
+
+
+def cle_page(chemin: Path) -> tuple[str, str, int]:
+    """(périmètre, série, numéro de page) — la clef de tri des fichiers.
+
+    Trier sur le NOM rangerait « p100 » entre « p10 » et « p11 », et le
+    journal d'import annoncerait les pages dans le désordre. Sans importance
+    pour ce qui est écrit, mais un relevé qu'on ne peut pas suivre à l'œil est
+    un relevé qu'on ne vérifie plus. Le relevé d'origine vient avant ses mises
+    à jour, celles-ci dans l'ordre de leurs dates.
+    """
+    m = NOM_PAGE.match(chemin.stem)
+    if not m:
+        return (chemin.stem, "", 0)
+    return (m["perimetre"], m["maj"] or "", int(m["page"]))
 
 
 def lire_lot_csv(chemin: Path) -> list[dict]:

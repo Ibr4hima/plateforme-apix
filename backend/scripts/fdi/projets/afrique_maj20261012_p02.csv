@@ -1,0 +1,16 @@
+ligne,date,parent,entreprise,source,dest,secteur,sous_secteur,activite,capex,emplois,type
+1,Aug 2026,GoodWe,GoodWe,China,Kenya,Electronic components,All other electrical e…,Headquarters,* $21.90m,* 55,New
+2,Aug 2026,GoodWe,GoodWe,China,Nigeria,Electronic components,All other electrical e…,"Sales, Marketing & S…",* $1.80m,* 13,New
+3,Aug 2026,Groupe DESLOG,Debeaux Transit,France,South Africa,Transportation & Wa…,Freight/Distribution …,"Sales, Marketing & S…",* $6.30m,* 9,New
+4,Aug 2026,Guangdong Haid …,Guangdong Haid …,China,Tanzania,Food and Beverages,Animal food,Manufacturing,* $26.40m,* 263,New
+5,Aug 2026,HMT (Xiamen) Ne…,HMT (Xiamen) Ne…,China,Morocco,Textiles,Textile product mills,Manufacturing,* $89.50m,"* 2,306",New
+6,Aug 2026,HR Path,HR Path,France,South Africa,Software & IT services,Custom computer pr…,Business Services,* $5.90m,* 63,New
+7,Aug 2026,Hydro Industries,Hydro Industries,United Kingdom,Morocco,Industrial equipment,All other industrial m…,"Sales, Marketing & S…",* $2.90m,* 11,New
+8,Aug 2026,InnoVent SAS,InnoVent SAS,France,Eswatini,Renewable energy,Solar electric power,Electricity,$12.33m,10,New
+9,Aug 2026,International Wor…,International Wor…,Switzerland,Morocco,Real estate,Rental & leasing ser…,Business Services,* $1.90m,* 8,New
+10,Aug 2026,Kaleidofin,Kaleidofin,India,Zambia,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+11,Aug 2026,Kaleidofin,Kaleidofin,India,Tanzania,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+12,Aug 2026,Kaleidofin,Kaleidofin,India,Rwanda,Financial services,Corporate & investm…,Business Services,* $9.60m,* 18,New
+13,Aug 2026,Kaleidofin,Kaleidofin,India,Uganda,Financial services,Corporate & investm…,Business Services,* $9.60m,* 27,New
+14,Aug 2026,Kanadevia (Hitach…,Kanadevia Inova (…,Japan,Morocco,Renewable energy,Biomass power,Electricity,* $451.60m,140,New
+15,Aug 2026,Kazanci Holding,Aksa Enerji Ureti…,Turkey,Ghana,"Coal, oil & gas",Fossil fuel electric po…,Electricity,* $679.20m,* 101,New

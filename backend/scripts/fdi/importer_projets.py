@@ -3,9 +3,11 @@
 
     docker compose exec -T backend python scripts/fdi/importer_projets.py
 
-Un fichier `projets/<perimetre>[_source]_pNN.csv` = un lot. Le découpage suit
-celui de la source : fDi pagine, nous relevons page par page, et chaque page se
-rejoue seule. Rejouable à chaque déploiement — les descriptions saisies à
+Un fichier `projets/<perimetre>[_majAAAAMMJJ][_source]_pNN.csv` = un lot. Le
+découpage suit celui de la source : fDi pagine, nous relevons page par page, et
+chaque page se rejoue seule. Les séries `_majAAAAMMJJ` sont les MISES À JOUR :
+la nouveauté relevée dans la liste fDi triée par date, à la date dite, sans
+toucher aux pages déjà relevées (cf. `decrire_page`). Rejouable à chaque déploiement — les descriptions saisies à
 l'écran et les entreprises arbitrées à la main sont conservées quand la ligne
 décrit toujours le même projet (cf. `importer_lot`).
 
@@ -21,7 +23,6 @@ comme des périmètres à part entière donnerait une image fausse (cf. migratio
 activités et types s'appuie sur la nomenclature.
 """
 import asyncio
-import re
 import sys
 from pathlib import Path
 
@@ -34,6 +35,8 @@ from app.services.fdi_projets import (  # noqa: E402
     DOSSIER_PROJETS,
     LigneInvalide,
     appliquer_alias_entreprises,
+    cle_page,
+    decrire_page,
     ecarter_deja_releves,
     empreinte_contexte,
     empreinte_lot,
@@ -42,53 +45,9 @@ from app.services.fdi_projets import (  # noqa: E402
     lire_lot_csv,
 )
 
-# senegal_p01.csv        → Sénégal, destination, page 1
-# senegal_source_p01.csv → Sénégal, source, page 1
-NOM = re.compile(r"^(?P<perimetre>[a-z0-9]+(?:_[a-z0-9]+)*?)(?P<sens>_source)?_p(?P<page>\d+)$")
-
-# Le périmètre écrit dans le nom du fichier, et son libellé en base. Il peut
-# désigner un PAYS ou une ZONE : « Dest = Africa » rend complet chacun des pays
-# africains, et la route publique le résout sur le continent de ref_pays.
-PERIMETRES = {"senegal": "Sénégal", "afrique": "Afrique"}
-
-
-# Ce que le libellé du lot annonce, en clair : il apparaît tel quel dans les
-# rapports d'import et dans l'administration.
-VERBE = {"destination": "reçoit", "source": "investit"}
-
-
-def decrire(chemin: Path) -> tuple[str, str, str]:
-    """(libellé du lot, périmètre, sens) — le libellé est la clé d'idempotence.
-
-    Le sens entre dans le libellé : sans lui, la page 1 des projets reçus et
-    la page 1 des projets émis porteraient le même nom, et le second import
-    écraserait le premier.
-    """
-    m = NOM.match(chemin.stem)
-    if not m:
-        raise LigneInvalide(
-            f"{chemin.name} : nom de fichier attendu « perimetre_pNN.csv » ou "
-            "« perimetre_source_pNN.csv ». Le libellé du lot en dépend, et avec "
-            "lui la préservation des saisies.")
-    perimetre = PERIMETRES.get(m["perimetre"], m["perimetre"].replace("_", " ").title())
-    sens = "source" if m["sens"] else "destination"
-    return f"{perimetre} {VERBE[sens]} · page {int(m['page']):02d}", perimetre, sens
-
-
-def numero(chemin: Path) -> tuple[str, int]:
-    """(périmètre, numéro de page) — la clef de tri des fichiers.
-
-    Trier sur le NOM rangerait « p100 » entre « p10 » et « p11 », et le
-    journal d'import annoncerait les pages dans le désordre. Sans importance
-    pour ce qui est écrit, mais un relevé qu'on ne peut pas suivre à l'œil est
-    un relevé qu'on ne vérifie plus.
-    """
-    m = NOM.match(chemin.stem)
-    return (chemin.stem if not m else m["perimetre"], 0 if not m else int(m["page"]))
-
 
 async def main() -> int:
-    fichiers = sorted(DOSSIER_PROJETS.glob("*.csv"), key=numero)
+    fichiers = sorted(DOSSIER_PROJETS.glob("*.csv"), key=cle_page)
     if not fichiers:
         print("  aucune page de projets à importer.")
         return 0
@@ -118,7 +77,7 @@ async def main() -> int:
                 print(f"  {fusions} entreprise(s) fusionnée(s) (fdi_entreprises_alias.csv)")
 
             for chemin in fichiers:
-                libelle, perimetre, sens = decrire(chemin)
+                libelle, perimetre, sens = decrire_page(chemin)
                 lignes = lire_lot_csv(chemin)
 
                 lignes, mis_de_cote = ecarter_deja_releves(lignes, perimetre, sens)

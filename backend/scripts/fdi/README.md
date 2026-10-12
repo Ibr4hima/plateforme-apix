@@ -294,3 +294,40 @@ Ce que le relevé N'EST PAS ENCORE :
 Ce qui est acquis, en revanche : chaque pays, chaque secteur, chaque
 sous-secteur, chaque activité et chaque type de projet est rattaché à la
 nomenclature. L'import ne signale plus aucun champ non résolu.
+
+### Les mises à jour : une série par capture
+
+fDi place ses nouveaux projets EN TÊTE de sa liste triée par date. Les insérer
+en tête du relevé et tout renuméroter, comme on l'a fait une fois pour deux
+projets sénégalais (7 septembre 2026), n'est plus possible sans dommage :
+
+  · le rang est la clé des saisies humaines — descriptions, corrections,
+    arbitrages d'entreprise partiels — et un décalage les ferait perdre au
+    réimport ;
+  · `fdi_arbitrages.csv` et `fdi_pages_absentes.csv` désignent des lignes par
+    leur page et leur rang ;
+  · le relevé Afrique est trié par PAYS de destination (Algérie d'abord) : un
+    projet d'août vers l'Afrique du Sud n'aurait pas sa place en tête.
+
+La nouveauté se relève donc à part, en **série de mise à jour** :
+`<perimetre>_majAAAAMMJJ_pNN.csv`, lot « Afrique reçoit · relevé du
+12/10/2026 · page 01 ». La capture se fait dans la liste fDi triée par DATE,
+depuis la première page jusqu'à la première ligne déjà relevée, exclue ; les
+pages et les rangs sont ceux de la source ce jour-là. Rien de ce qui est déjà
+relevé ne bouge, et chaque page déjà en base est reconnue inchangée au
+déploiement.
+
+Les règles du relevé valent pour les séries : verbatim, une ligne sénégalaise
+reste dans la page Afrique qui l'affichait mais n'entre que dans le relevé du
+Sénégal — elle y est reprise dans sa propre série. Les tests vérifient qu'une
+série commence en page 1 au rang 1, ne saute ni page ni rang, ne remonte
+jamais dans le temps, et ne reprend aucune ligne déjà relevée.
+
+**Série du 12 octobre 2026.** « Dest = Africa », 1 129 pages ce jour-là :
+cinquante projets d'août 2026 au-dessus de la première ligne connue (Axian/Yas
+→ Sénégal, juillet 2026) — trois pages pleines et cinq lignes. Les dix lignes de
+juillet visibles sous la frontière sont toutes au relevé, à l'identique. Une
+seule va au Sénégal (Yassir/Kawarizmi) : 49 lignes entrent dans le relevé
+Afrique, 1 dans celui du Sénégal (237 → 238). Contrôle attendu chez fDi :
+« Dest = Senegal » à 238 lignes, et « Dest = Africa » à 16 876 + 50 = 16 926
+lignes (dernière page de six lignes).
