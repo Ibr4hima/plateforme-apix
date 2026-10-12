@@ -593,6 +593,87 @@ def test_les_pays_du_releve_afrique_menent_tous_a_un_seul_pays():
                 assert len(codes) == 1, f"{chemin.name} L{ligne['ligne']} · {ligne[cote]} → {codes or 'aucun'}"
 
 
+# ── Page publique : l'ordre de la liste fDi ───────────────────────────────────
+
+# Les trois lignes que fDi range lui-même hors de l'alphabet : chacune ouvre son
+# mois avant que l'ordre reprenne à « A » (voir CLE_SOCIETE_MERE).
+HORS_ALPHABET_CHEZ_FDI = {("afrique_p159", 12), ("afrique_p375", 15), ("afrique_p783", 8)}
+
+
+def test_dans_un_mois_fdi_range_par_societe_mere():
+    """La règle de CLE_SOCIETE_MERE, confrontée à tout le relevé : sur plus de
+    onze mille paires de lignes voisines dans un même mois, seules trois la
+    contredisent — toujours les mêmes, que fDi place lui-même hors de
+    l'alphabet. Un écart de plus voudrait dire que la règle a dérivé, ou
+    qu'une page a été mal transcrite.
+
+    Le relevé Afrique est trié par pays de destination : un mois s'y lit donc
+    pays par pays. Le relevé du Sénégal n'a qu'un pays."""
+    import re
+    from collections import defaultdict
+    from app.api.routes.fdi_projets import cle_societe_mere
+    from app.services.fdi_projets import DOSSIER_PROJETS, lire_lot_csv
+    groupes = defaultdict(list)
+    for motif, par_pays in (("afrique_p*.csv", True), ("senegal_p*.csv", False)):
+        pages = sorted(DOSSIER_PROJETS.glob(motif),
+                       key=lambda c: int(re.search(r"_p(\d+)$", c.stem).group(1)))
+        for chemin in pages:
+            for l in lire_lot_csv(chemin):
+                groupe = (motif, l["dest"] if par_pays else "", l["date"])
+                groupes[groupe].append((chemin.stem, l["ligne"], l["parent"]))
+    paires = [(a, b) for g in groupes.values() for a, b in zip(g, g[1:])]
+    assert len(paires) > 11_000
+    a_contre_sens = {a[:2] for a, b in paires if cle_societe_mere(a[2]) > cle_societe_mere(b[2])}
+    assert a_contre_sens == HORS_ALPHABET_CHEZ_FDI
+
+
+def test_la_cle_ignore_casse_accents_et_traits_d_union_mais_pas_les_espaces():
+    """Chaque cas départage la règle d'une voisine, et chacun est une paire de
+    lignes voisines telle que fDi la range dans le relevé (page indiquée)."""
+    from app.api.routes.fdi_projets import cle_societe_mere as cle
+    assert cle("Blam Bank") < cle("BNP Paribas")                       # casse, p. 27
+    assert cle("Génitech") < cle("Groupe Industriel …")                # accent, p. 1049
+    assert cle("M4Markets") < cle("M-KOPA")                            # trait d'union, p. 803
+    assert cle("Indorama") < cle("Indo-Rama Synth…")                   # trait d'union, p. 702
+    assert cle("CH International …") < cle("China Communica…")         # espace, p. 293
+    # L'apostrophe typographique sort de la clé avec tout ce qui n'est pas
+    # ASCII ; la droite doit faire de même, ou les deux graphies d'un même nom
+    # se rangeraient à deux endroits.
+    assert cle("Plac’Force") == cle("Plac'Force") == "placforce"
+    assert cle(None) == ""
+
+
+def test_une_serie_de_mise_a_jour_suit_l_ordre_de_fdi():
+    """Une série de mise à jour EST la liste fDi triée par date, tous pays
+    confondus : la règle doit en rendre l'ordre exact, ligne pour ligne. C'est
+    celui que la vue Projets montre — août 2026 s'y ouvre sur Tetra4, puis
+    ATOMIC, comme chez fDi, et non plus sur Qatari Diar, le plus gros projet
+    du mois, qui n'arrive qu'en trente-huitième position."""
+    from collections import defaultdict
+    from app.api.routes.fdi_projets import cle_societe_mere
+    from app.services.fdi_projets import DOSSIER_PROJETS, NOM_PAGE, cle_page, lire_date, lire_lot_csv
+    series = defaultdict(list)
+    for chemin in sorted(DOSSIER_PROJETS.glob("*_maj*.csv"), key=cle_page):
+        m = NOM_PAGE.match(chemin.stem)
+        series[(m["perimetre"], m["maj"], bool(m["sens"]))] += [
+            (chemin.stem, l) for l in lire_lot_csv(chemin)]
+    assert series
+
+    def mois(x):
+        an, m = lire_date(x[1]["date"])
+        return an, m or 0
+
+    for nom, lignes in series.items():
+        # Deux tris STABLES, le second l'emportant : date décroissante, puis
+        # société mère, puis l'ordre des pages — que la vue reprend par
+        # (lot, rang).
+        attendu = sorted(lignes, key=lambda x: cle_societe_mere(x[1]["parent"]))
+        attendu = sorted(attendu, key=mois, reverse=True)
+        assert [(p, l["ligne"]) for p, l in lignes] == [(p, l["ligne"]) for p, l in attendu], nom
+    aout = [l["entreprise"] for _, l in series[("afrique", "20261012", False)]]
+    assert aout[:2] == ["Tetra4", "ATOMIC (ATOMIC …"] and aout.index("Qatari Diar") == 37
+
+
 # ── Cascade des facettes : aucune ne se filtre elle-même ─────────────────────
 
 def _where(**kw):

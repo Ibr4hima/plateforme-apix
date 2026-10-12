@@ -17,7 +17,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.api.routes.fdi_projets import SAISIE_EN_TETE
+from app.api.routes.fdi_projets import CLE_SOCIETE_MERE, SAISIE_EN_TETE
 from app.services.fdi_projets import COTE, filtres_multiples as _liste, sens_de_lecture as _sens
 
 router = APIRouter(prefix="/fdi/public", tags=["fdi"])
@@ -563,21 +563,28 @@ async def projets(
     lignes = (await db.execute(text(f"""
         SELECT {COLONNES_PROJET.format(observe=observe, partenaire=partenaire)}
         {base}
-        -- LE PLUS RÉCEMMENT CONNU D'ABORD, PUIS LE PLUS GROS. À l'intérieur
-        -- d'un mois, cet écran range par montant — c'est le classement voulu,
-        -- et il ne change pas. Mais un projet saisi à la main se rangeait à son
-        -- montant comme n'importe quelle ligne du relevé, donc disparaissait au
-        -- milieu de la page alors qu'on vient de l'ajouter. Il passe désormais
-        -- en tête de son mois, la dernière saisie d'abord, exactement comme sur
-        -- les signaux et sur le tableau d'administration.
+        -- L'ORDRE DE LA LISTE fDi : le plus récent d'abord, puis, dans un mois,
+        -- la société mère par ordre alphabétique. Cette vue se lit à côté de
+        -- la source, et rangée par montant elle ne s'y retrouvait pas : août
+        -- 2026 s'ouvrait sur Qatari Diar quand fDi l'ouvre sur Tetra4, puis
+        -- ATOMIC. La règle, et sa mesure, sont décrites avec CLE_SOCIETE_MERE.
         --
-        -- L'IDENTIFIANT FERME LE TRI, et ce n'est pas décoratif : deux projets
-        -- du même mois au même montant n'avaient aucun départage, si bien que
-        -- Postgres pouvait les rendre dans un ordre différent d'une page à
-        -- l'autre — donc en montrer un deux fois et en sauter un autre à la
-        -- frontière des pages.
+        -- UN PROJET SAISI À LA MAIN OUVRE TOUJOURS SON MOIS, la dernière
+        -- saisie d'abord, comme sur les signaux et sur le tableau
+        -- d'administration : fDi ne le connaît pas, il n'a donc pas de place
+        -- dans son ordre, et on le saisit parce qu'il vient d'apparaître.
+        --
+        -- DEUX PROJETS DE LA MÊME SOCIÉTÉ MÈRE dans un même mois se suivent
+        -- dans l'ordre du relevé (lot, rang), qui est celui de fDi. Le montant
+        -- ne les départage pas : mesuré sur 520 paires, il ne tombe juste
+        -- qu'une fois sur deux.
+        --
+        -- L'IDENTIFIANT FERME LE TRI, et ce n'est pas décoratif : sans
+        -- départage complet, Postgres peut rendre deux lignes dans un ordre
+        -- différent d'une page à l'autre — donc en montrer une deux fois et en
+        -- sauter une autre à la frontière des pages.
         ORDER BY p.annee DESC, p.mois DESC NULLS LAST, {SAISIE_EN_TETE},
-                 p.capex_musd DESC NULLS LAST, p.id
+                 {CLE_SOCIETE_MERE}, p.lot_id, p.ligne, p.id
         LIMIT :n OFFSET :o"""),
         {**params, "n": par_page, "o": (page - 1) * par_page})).fetchall()
 

@@ -71,9 +71,10 @@ CLE_DEST = "lower(regexp_replace(normalize(coalesce({c}, ''), NFKD), '[^ -~]', '
 #
 # La règle est isolée de l'ordre complet parce que les deux écrans ne rangent
 # PAS pareil ce qui suit : l'administration enchaîne sur l'ordre du relevé, la
-# vue publique sur le montant. Ce qu'ils partagent, c'est exactement ceci — une
-# saisie passe en tête de son mois, la dernière d'abord — et le partager
-# littéralement évite que l'un des deux dérive le jour où la règle changera.
+# vue publique sur celui de la liste fDi, par société mère (CLE_SOCIETE_MERE).
+# Ce qu'ils partagent, c'est exactement ceci — une saisie passe en tête de son
+# mois, la dernière d'abord — et le partager littéralement évite que l'un des
+# deux dérive le jour où la règle changera.
 SAISIE_EN_TETE = ("(p.origine = 'saisie') DESC, "
                   "CASE WHEN p.origine = 'saisie' THEN p.created_at END DESC")
 
@@ -86,6 +87,52 @@ def _reduire(v: str) -> str:
     des deux côtés, sinon « cote d ivoire » ne trouverait jamais la Côte
     d'Ivoire."""
     return "".join(c for c in unicodedata.normalize("NFKD", v) if " " <= c <= "~").lower()
+
+
+# ── L'ORDRE DE LA LISTE fDi À L'INTÉRIEUR D'UN MOIS ──────────────────────────
+# fDi range sa liste par date, puis par SOCIÉTÉ MÈRE, dans l'ordre alphabétique.
+# La société mère, et non l'entreprise qui signe : août 2026 s'ouvre sur Tetra4
+# parce que sa mère s'appelle ASP Isotopes.
+#
+# LA RÈGLE A ÉTÉ MESURÉE, PAS SUPPOSÉE, sur les 11 350 paires de lignes qui se
+# suivent dans un même mois — pays par pays dans le relevé Afrique, plus le
+# relevé du Sénégal. fDi y ignore la casse (« Blam Bank » avant « BNP
+# Paribas »), les accents (« Génitech » avant « Groupe Industriel ») et les
+# TRAITS D'UNION (« M4Markets » avant « M-KOPA »), mais il compte les espaces
+# (« CH International » avant « China Communications ») et le reste de la
+# ponctuation. Les règles voisines font moins bien :
+#   - la réduction de CLE_DEST seule, traits d'union gardés : 9 paires à
+#     contre-sens ;
+#   - celle-ci : 3 ;
+#   - sans aucune ponctuation : 14 ; lettres et chiffres seuls : 22.
+# L'apostrophe suit le trait d'union. Le relevé ne la départage pas, mais sa
+# forme typographique, hors ASCII, sort déjà de la clé : garder la droite
+# rangerait « Plac'Force » et « Plac’Force » à deux endroits.
+#
+# Les trois écarts restants viennent de la source : chaque fois, une ou deux
+# lignes ouvrent leur mois hors de l'alphabet, avant que l'ordre reprenne à
+# « A » — « Qabas Consulting » avant « Altice NV », Égypte, avril 2025 —, comme
+# si fDi les datait plus finement que le mois qu'il affiche. Rien de ce qu'il
+# montre ne permet de les reproduire. La série du 12/10/2026, cinquante lignes
+# tous pays confondus, est reproduite sans un écart.
+#
+# COLLATE "C" FAIT PARTIE DE LA RÈGLE : la clé est de l'ASCII comparé octet
+# par octet, comme elle a été mesurée et comme le test la vérifie. Sans lui,
+# l'ordre dépendrait de la collation de la base, qui range la ponctuation à sa
+# façon — l'anglais d'ICU met « e.on » avant « e& (etisalat group) », les
+# octets font l'inverse —, et deux installations pourraient ranger
+# différemment les mêmes lignes.
+#
+# Une ligne sans société mère se range à son propre nom : fDi écrit d'ailleurs
+# deux fois le même nom quand une entreprise est sa propre mère.
+CLE_SOCIETE_MERE = "translate({}, '-''', '') COLLATE \"C\"".format(
+    CLE_DEST.format(c="COALESCE(NULLIF(p.parent_brut, ''), p.entreprise_brut)"))
+
+
+def cle_societe_mere(nom: str | None) -> str:
+    """La même clé, côté Python : c'est elle que les tests confrontent à
+    l'ordre des pages relevées."""
+    return _reduire(nom or "").replace("-", "").replace("'", "")
 
 
 # La même lecture sert le tableau et la fiche : une seule requête à maintenir,
