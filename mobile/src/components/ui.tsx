@@ -313,9 +313,13 @@ export function RangeeStats({ items }: {
 // (pilules…), corps défilant. `pied` fixe optionnel (boutons de filtres).
 // Transition contextuelle : la feuille « pousse » depuis la card touchée
 // (origine capturée à la racine) au lieu de glisser génériquement.
-export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, children }: {
+export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, largeurMax, children }: {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
   hauteur?: `${number}%`; ecart?: number; pied?: React.ReactNode; sansDefilement?: boolean;
+  /** Sur tablette, la feuille se plafonne et se centre au lieu de s'étirer
+   *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
+   *  effet sur téléphone, plus étroit que le plafond. */
+  largeurMax?: number;
   children: React.ReactNode;
 }) {
   const H = Dimensions.get("window").height;
@@ -389,7 +393,8 @@ export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 2
         <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       )}
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
-      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, styleFeuille]}>
+      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur },
+        largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
             poignée (~20 pt) était trop étroite pour être trouvée au pouce.
             Le Pan ne s'arme qu'après 4 pt de glissement vertical : les

@@ -220,11 +220,14 @@ export function PlageAnnees({ titre, min, max, debut, fin, onChange }: {
 }
 
 // ── La feuille : filtres appliqués en direct, pied Réinitialiser / Terminé ───
-export function FeuilleFiltres({ onClose, onReinitialiser, children }: {
-  onClose: () => void; onReinitialiser: () => void; children: React.ReactNode;
+export function FeuilleFiltres({ onClose, onReinitialiser, largeurMax, children }: {
+  onClose: () => void; onReinitialiser: () => void;
+  /** Plafond de largeur sur tablette (voir Feuille). */
+  largeurMax?: number;
+  children: React.ReactNode;
 }) {
   return (
-    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
+    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22} largeurMax={largeurMax}
       pied={
         <View style={s.pied}>
           <Tapable onPress={() => { tick(); onReinitialiser(); }} style={s.boutonSecondaire}>

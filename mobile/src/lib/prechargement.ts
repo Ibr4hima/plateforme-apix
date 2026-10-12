@@ -28,6 +28,11 @@ import { useEffect } from "react";
 import { InteractionManager } from "react-native";
 import { onlineManager, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { fetchTous, getJson } from "@/lib/api";
+import {
+  CLE_DESTINATIONS, CLE_INVESTISSEURS_AFRIQUE, CLE_SIGNAUX_AFRIQUE, PAYS_REFERENCE, chargerDestinations,
+  chargerInvestisseursAfrique, chargerSignauxAfrique, chargerTableauInvestisseurs, chargerTableauProjets,
+  chargerTableauSignaux, cleTableauInvestisseurs, cleTableauProjets, cleTableauSignaux,
+} from "@/lib/fdi";
 
 const MINUTE = 60 * 1000;
 
@@ -54,6 +59,15 @@ const TACHES: Tache[] = [
   { cle: ["prospects", "cibles"], fn: () => fetchTous("/prospects?conclu=false&contactes=false") },
   { cle: ["prospects", "contact"], fn: () => fetchTous("/prospects?conclu=false&contactes=true") },
   { cle: ["prospects", "termines"], fn: () => fetchTous("/prospects?conclu=true") },
+
+  // ── Les Investissements projetés : le tableau de bord du Sénégal ──
+  // Six requêtes légères (de 0,1 à 31 Ko) : la section s'ouvre hors ligne
+  { cle: cleTableauProjets(PAYS_REFERENCE), fn: () => chargerTableauProjets(PAYS_REFERENCE), frais: 10 * MINUTE },
+  { cle: cleTableauSignaux(PAYS_REFERENCE), fn: () => chargerTableauSignaux(PAYS_REFERENCE), frais: 10 * MINUTE },
+  { cle: CLE_SIGNAUX_AFRIQUE, fn: chargerSignauxAfrique, frais: 10 * MINUTE },
+  { cle: cleTableauInvestisseurs(PAYS_REFERENCE), fn: () => chargerTableauInvestisseurs(PAYS_REFERENCE), frais: 10 * MINUTE },
+  { cle: CLE_INVESTISSEURS_AFRIQUE, fn: chargerInvestisseursAfrique, frais: 10 * MINUTE },
+  { cle: CLE_DESTINATIONS, fn: chargerDestinations, frais: 30 * MINUTE },
 
   // ── Les textes du code ──
   { cle: ["code", "code-investissement"], fn: () => getJson<any[]>("/code-investissement"), frais: 30 * MINUTE },

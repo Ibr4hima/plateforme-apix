@@ -6,6 +6,13 @@
 // L'onglet IDE se lit en trois sections — Flux & Stocks, Greenfield,
 // Fusion & Acquisition — chacune une carte vedette à curseur d'années.
 // L'analyse comparative a quitté l'app : un pays, une lecture au pouce.
+//
+// RÉALISÉS ET PROJETÉS, comme sur le site. Sous l'onglet IDE, une bascule
+// sépare ce que la CNUCED mesure — l'argent ENTRÉ — de ce que fDi Markets
+// relève — les projets ANNONCÉS et les intentions. Les deux ne se
+// contredisent pas : ils regardent deux moments de la même décision.
+// « Projetés » est un tableau de bord en trois sections, qui mène aux listes
+// et aux rapports (components/fdi/TableauProjetes).
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
@@ -17,10 +24,14 @@ import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
 import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
 import NationalPanel from "@/components/NationalPanel";
+import DestinationSheet from "@/components/fdi/DestinationSheet";
+import { Segments } from "@/components/fdi/FiltresFdi";
+import TableauProjetes from "@/components/fdi/TableauProjetes";
 import SourceIdeSheet from "@/components/SourceIdeSheet";
 import SourceNationalSheet, { SelNational } from "@/components/SourceNationalSheet";
 import { getJson } from "@/lib/api";
 import type { SourceIde } from "@/lib/ideSource";
+import { CLE_DESTINATIONS, PAYS_REFERENCE, chargerDestinations } from "@/lib/fdi";
 import { T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
@@ -35,7 +46,16 @@ export default function IdeEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const cap = useCap();
   const [onglet, setOnglet] = useState("ide");
+  const [section, setSection] = useState<"realises" | "projetes">("realises");
   const [sourceOuverte, setSourceOuverte] = useState(false);
+  // Le pays lu par les Investissements projetés — le Sénégal par défaut
+  const [paysFdi, setPaysFdi] = useState(PAYS_REFERENCE);
+  const projetes = onglet === "ide" && section === "projetes";
+  // Les pays proposés : ceux dont le relevé fDi est complet. La liste n'est
+  // demandée qu'une fois la section ouverte
+  const { data: destinations } = useQuery({
+    queryKey: CLE_DESTINATIONS, queryFn: chargerDestinations, staleTime: 30 * 60 * 1000, enabled: projetes,
+  });
   const ongletsRef = useRef<ScrollView>(null);
   // Retoucher l'onglet déjà actif remonte la page en haut
   const defilement = useRef<ScrollView>(null);
@@ -96,8 +116,18 @@ export default function IdeEcran() {
         })}
       </ScrollView>
 
+      {/* Réalisés ou projetés : la bascule de niveau 1 du site */}
+      {onglet === "ide" && (
+        <View style={s.bascule}>
+          <Segments valeur={section} onChange={v => setSection(v as "realises" | "projetes")}
+            options={[{ cle: "realises", label: "Investissements réalisés" }, { cle: "projetes", label: "Investissements projetés" }]} />
+        </View>
+      )}
+
       {onglet === "nationaux" ? (
         <NationalPanel sel={selNat} onOuvrirSource={() => setSourceOuverte(true)} />
+      ) : projetes ? (
+        <TableauProjetes pays={paysFdi} onChoisirPays={() => setSourceOuverte(true)} />
       ) : (
         <>
           {/* ── Section 1 : Flux & Stocks (pas en vue Secteurs) ── */}
@@ -118,6 +148,12 @@ export default function IdeEcran() {
     {sourceOuverte && (onglet === "nationaux" ? (
       <SourceNationalSheet refs={refsBdef} sel={selNat}
         onChoisir={setSelNat} onClose={() => setSourceOuverte(false)} />
+    ) : projetes ? (
+      // Au tableau de bord, la maille est le PAYS : les trois questions —
+      // ce qu'il reçoit, qui le vise, qui y est venu — se posent à un pays
+      <DestinationSheet pays={destinations?.pays ?? []} regionsPermises={false}
+        valeur={{ echelle: "pays", pays: paysFdi, region: null }}
+        onChoisir={d => setPaysFdi(d.pays)} onClose={() => setSourceOuverte(false)} />
     ) : (
       <SourceIdeSheet pays={paysListe} groupements={groupements || []} secteurs={secteurs || []}
         source={source} onChoisir={setSource} onClose={() => setSourceOuverte(false)} />
@@ -128,4 +164,5 @@ export default function IdeEcran() {
 
 const s = creerStyles(() => ({
   ongletsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
+  bascule: { paddingHorizontal: 16, paddingTop: 12 },
 }));
