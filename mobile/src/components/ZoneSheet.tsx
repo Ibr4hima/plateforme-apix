@@ -13,7 +13,10 @@ import ArbreNaema from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
+import Icone from "@/components/Icone";
+import { Bloc, Chevron, EnTeteSection, Groupe, Ligne, LigneValeur } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
@@ -35,7 +38,15 @@ export function htmlEnTexte(html: string): string {
     .trim();
 }
 
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+// SUR iOS, la fiche se lit en listes groupées : les trois chiffres dans un
+// bloc blanc, les informations en lignes, la description et les activités
+// chacune dans son bloc, les entreprises et les documents en listes qui mènent
+// à leur fiche ou à leur fichier.
+
+/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
+    contenu libre (un bloc sur iOS). */
+function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -46,6 +57,7 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 
 function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
+  if (IOS) return <LigneValeur label={label} valeur={valeur} />;
   return (
     <View style={s.rangee}>
       <Text style={s.rangeeLabel}>{label}</Text>
@@ -56,6 +68,10 @@ function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
 
 // Une ligne d'entreprise — plate, filet entre les lignes, la fiche au tap
 function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress: () => void }) {
+  if (IOS) return (
+    <Ligne label={ze.entreprise?.nom ?? "—"} legende={ze.entreprise?.forme_juridique || undefined}
+      lignes={1} onPress={onPress} accessoire={<Chevron />} />
+  );
   return (
     <Tapable onPress={onPress} echelle={0.99} style={[s.ent, !premier && s.entBord]}>
       <View style={{ flex: 1, minWidth: 0 }}>
@@ -90,7 +106,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
   };
 
   return (
-    <Feuille onClose={onClose} ecart={22}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{zone.nom_zone}</Text>}
       sousEntete={
         <Text style={s.meta} numberOfLines={1}>
@@ -104,7 +120,8 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       <View style={s.faits}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.faitLabel}>SUPERFICIE</Text>
-          <Text style={[s.faitVal, !zone.superficie && { color: T.grisClair }]} numberOfLines={1}>{zone.superficie ? `${Number(zone.superficie).toLocaleString("fr-FR")} ha` : "—"}</Text>
+          <Text style={[s.faitVal, !zone.superficie && { color: T.grisClair }]} numberOfLines={1}
+            adjustsFontSizeToFit minimumFontScale={0.8}>{zone.superficie ? `${Number(zone.superficie).toLocaleString("fr-FR")} ha` : "—"}</Text>
         </View>
         <View style={s.faitSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -114,16 +131,18 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
         <View style={s.faitSep} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.faitLabel}>CRÉATION</Text>
-          <Text style={[s.faitVal, !zone.date_creation && { color: T.grisClair }]} numberOfLines={1}>{zone.date_creation ? fmtDate(zone.date_creation) : "—"}</Text>
+          {/* Trois chiffres sur la largeur d'un téléphone : la date se resserre plutôt que de se couper */}
+          <Text style={[s.faitVal, !zone.date_creation && { color: T.grisClair }]} numberOfLines={1}
+            adjustsFontSizeToFit minimumFontScale={0.8}>{zone.date_creation ? fmtDate(zone.date_creation) : "—"}</Text>
         </View>
       </View>
 
       {/* ── Informations complémentaires ── */}
       {zone.decret_creation ? (
-        <Section titre="Informations">
-          <View style={s.rangees}>
-            <Rangee label="Décret" valeur={zone.decret_creation} />
-          </View>
+        <Section titre="Informations" liste>
+          {IOS
+            ? <Groupe><Rangee label="Décret" valeur={zone.decret_creation} /></Groupe>
+            : <View style={s.rangees}><Rangee label="Décret" valeur={zone.decret_creation} /></View>}
         </Section>
       ) : null}
 
@@ -143,29 +162,57 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 
       {/* ── Entreprises — chaque ligne ouvre la fiche ── */}
       {installes.length > 0 ? (
-        <Section titre={`Entreprises installées (${installes.length})`}>
-          <View>
-            {installes.map((ze: any, i: number) => (
-              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-            ))}
-          </View>
+        <Section titre={`Entreprises installées (${installes.length})`} liste>
+          {IOS ? (
+            <Groupe>
+              {installes.map((ze: any, i: number) => (
+                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
+                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              ))}
+            </Groupe>
+          ) : (
+            <View>
+              {installes.map((ze: any, i: number) => (
+                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
+                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              ))}
+            </View>
+          )}
         </Section>
       ) : null}
       {eligibles.length > 0 ? (
-        <Section titre={`Entreprises éligibles (${eligibles.length})`}>
-          <View>
-            {eligibles.map((ze: any, i: number) => (
-              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-            ))}
-          </View>
+        <Section titre={`Entreprises éligibles (${eligibles.length})`} liste>
+          {IOS ? (
+            <Groupe>
+              {eligibles.map((ze: any, i: number) => (
+                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
+                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              ))}
+            </Groupe>
+          ) : (
+            <View>
+              {eligibles.map((ze: any, i: number) => (
+                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
+                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+              ))}
+            </View>
+          )}
         </Section>
       ) : null}
 
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
-        <Section titre={fichiers.length > 1 ? "Documents" : "Document"}>
+        <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
+          {IOS ? (
+            <Groupe>
+              {fichiers.map((f: any) => (
+                <Ligne key={f.id} label={f.titre || f.nom} lignes={1}
+                  avant={<Icone sf="doc.text" materiel="description" taille={17} couleur={T.bleu} />}
+                  accessoire={<Chevron />}
+                  onPress={() => Linking.openURL(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`).catch(() => {})} />
+              ))}
+            </Groupe>
+          ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
@@ -175,6 +222,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
               </Tapable>
             ))}
           </View>
+          )}
         </Section>
       ) : null}
     </Feuille>
@@ -185,12 +233,16 @@ const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
-  faits: {
+  // iOS : les trois chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
+  faits: IOS ? {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 14,
+  } : {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: T.bordure,
   },
-  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
+  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: IOS ? 11 : 14 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
 

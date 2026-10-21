@@ -7,7 +7,9 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
+import { Bloc, EnTeteSection, GroupeDocuments } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
 import { POLICE, T, TYPO } from "@/theme";
@@ -22,7 +24,13 @@ const NIVEAU_LABELS: Record<string, string> = {
   pole: "PÔLE TERRITOIRE", region: "RÉGION", departement: "DÉPARTEMENT", arrondissement: "ARRONDISSEMENT",
 };
 
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+// SUR iOS, la fiche se lit en listes groupées : chaque section dans son bloc
+// blanc sur le fond gris, les documents en liste.
+
+/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
+    contenu libre (un bloc sur iOS). */
+function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -57,7 +65,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
   }
 
   return (
-    <Feuille onClose={onClose} ecart={22}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{p.titre}</Text>}
       sousEntete={zoneNom ? (
         <Text style={s.meta} numberOfLines={1}>
@@ -105,7 +113,11 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
 
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
-        <Section titre={fichiers.length > 1 ? "Documents" : "Document"}>
+        <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
+          {IOS ? (
+            <GroupeDocuments fichiers={fichiers}
+              ouvrir={f => Linking.openURL(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`).catch(() => {})} />
+          ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
@@ -115,6 +127,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
               </Tapable>
             ))}
           </View>
+          )}
         </Section>
       ) : null}
     </Feuille>

@@ -10,7 +10,9 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
+import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
@@ -29,7 +31,14 @@ const secteursRepartition = () => [
   { label: "Secteur tertiaire",  cle: "tertiaire",  couleur: T.vert },
 ] as const;
 
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+// SUR iOS, la fiche se lit en listes groupées : les chiffres du pôle dans un
+// bloc blanc, ses zones en liste (la pastille de leur type en tête), la
+// répartition sectorielle dans son bloc, les documents en liste.
+
+/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
+    contenu libre (un bloc sur iOS). */
+function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -61,7 +70,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
   const totalSect = compte.primaire + compte.secondaire + compte.tertiaire;
 
   return (
-    <Feuille onClose={onClose} ecart={22}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={
         <View style={s.entete}>
           {/* La forme du territoire d'abord — la même tuile que la liste */}
@@ -99,7 +108,20 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 
       {/* ── Zones du pôle — chaque ligne ouvre la fiche zone ── */}
       {poleZones.length > 0 && (
-        <Section titre="Zones d'investissement">
+        <Section titre="Zones d'investissement" liste>
+          {IOS ? (
+            <Groupe>
+              {poleZones.map((z: any) => {
+                const nbEnts = (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length;
+                return (
+                  <Ligne key={z.id} label={z.nom_zone} lignes={1} onPress={() => setZoneOuverte(z)}
+                    legende={`${z.type_zone}   ·   ${nbEnts} entreprise${nbEnts > 1 ? "s" : ""} installée${nbEnts > 1 ? "s" : ""}`}
+                    avant={<View style={[s.pastilleType, { backgroundColor: teinte(zoneTypeMeta(z.type_zone).color) }]} />}
+                    accessoire={<Chevron />} />
+                );
+              })}
+            </Groupe>
+          ) : (
           <View>
             {poleZones.map((z: any, i: number) => {
               const tc = teinte(zoneTypeMeta(z.type_zone).color);
@@ -119,6 +141,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
               );
             })}
           </View>
+          )}
         </Section>
       )}
 
@@ -146,7 +169,11 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 
       {/* ── Documents ── */}
       {fichiers.length > 0 && (
-        <Section titre={fichiers.length > 1 ? "Documents" : "Document"}>
+        <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
+          {IOS ? (
+            <GroupeDocuments fichiers={fichiers}
+              ouvrir={f => Linking.openURL(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`).catch(() => {})} />
+          ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
@@ -156,6 +183,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
               </Tapable>
             ))}
           </View>
+          )}
         </Section>
       )}
     </Feuille>
@@ -169,11 +197,16 @@ const s = creerStyles(() => ({
   titre: { fontSize: 20, fontFamily: POLICE.gras, color: T.encre, lineHeight: 26, letterSpacing: -0.4 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 8 },
 
-  faits: {
+  // iOS : les chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
+  faits: IOS ? {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
+  } : {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: T.bordure,
   },
+  pastilleType: { width: 9, height: 9, borderRadius: 5 },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },

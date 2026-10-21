@@ -11,14 +11,22 @@
 import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/components/MenuContextuel";
 import { Feuille, Tapable } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
+// SUR iOS, la fiche prend la grammaire de la fiche Contacts : les tuiles
+// d'action blanches sur le fond gris, les informations en lignes groupées
+// (la valeur bleue quand elle appelle, écrit ou ouvre), un groupe par point
+// focal.
+
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{children}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -29,6 +37,7 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 
 function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | null; onPress?: () => void }) {
   if (!valeur) return null;
+  if (IOS) return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
   const contenu = (
     <View style={s.rangee}>
       <Text style={s.rangeeLabel}>{label}</Text>
@@ -56,6 +65,14 @@ function ChipContact({ texte, couleur, fond, onPress }: { texte: string; couleur
     </Tapable>
   );
 }
+
+/** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
+function Rangees({ children }: { children: React.ReactNode }) {
+  if (IOS) return <Groupe>{children}</Groupe>;
+  return <View style={s.rangees}>{children}</View>;
+}
+
+const decouper = (v: string | null | undefined) => (v || "").split(",").map(x => x.trim()).filter(Boolean);
 
 const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
 const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
@@ -99,12 +116,20 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
   ].filter(Boolean).join("   ·   ");
 
   return (
-    <Feuille onClose={onClose} ecart={22}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{e.nom}</Text>}
       sousEntete={meta ? <Text style={s.meta} numberOfLines={1}>{meta}</Text> : undefined}>
 
       {/* ── Agir : appeler, écrire, visiter — l'atout du téléphone ── */}
-      {(telephones.length > 0 || mails.length > 0 || e.siteweb) && (
+      {IOS ? (
+        <TuilesActions actions={[
+          telephones.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
+            onPress: () => proposer("Appeler", telephones.map(fmtPhone), i => ouvrirTel(telephones[i])) },
+          mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
+            onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
+          !!e.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => ouvrirSite(e.siteweb) },
+        ]} />
+      ) : (telephones.length > 0 || mails.length > 0 || e.siteweb) && (
         <View style={s.actions}>
           {telephones.length > 0 && (
             <Action sf="phone" materiel="call" label="Appeler"
@@ -122,7 +147,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
 
       {/* ── Informations ── */}
       <Section titre="Informations">
-        <View style={s.rangees}>
+        <Rangees>
           <Rangee label="Création" valeur={e.date_creation ? fmtDateLong(e.date_creation) : null} />
           <Rangee label="Pays du siège" valeur={paysStr} />
           <Rangee label="Localisation" valeur={locStr || null} />
@@ -136,19 +161,40 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
               valeur={m} onPress={() => ouvrirMail(m)} />
           ))}
           <Rangee label="Site web" valeur={e.siteweb} onPress={e.siteweb ? () => ouvrirSite(e.siteweb) : undefined} />
-        </View>
+        </Rangees>
       </Section>
 
       {/* ── Activités (hiérarchie NAEMA existante) ── */}
       {hasNaema && secteurs.length > 0 ? (
         <Section titre="Activités de l'entreprise">
-          <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />
+          {IOS
+            ? <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
+            : <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />}
         </Section>
       ) : null}
 
       {/* ── Points focaux : les personnes, avec leurs actions ── */}
       {focaux.length > 0 ? (
         <Section titre="Points focaux">
+          {IOS ? (
+            // iOS : un groupe par personne — son nom et son poste, puis ses
+            // numéros et adresses, chacun d'un toucher
+            <View style={{ gap: 12 }}>
+              {focaux.map((pf: any, i: number) => (
+                <Groupe key={i}>
+                  <Ligne gras label={[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}
+                    legende={pf.poste || undefined}
+                    accessoire={pf.est_principal ? <Text style={s.principalIOS}>Principal</Text> : undefined} />
+                  {decouper(pf.telephone).map((t, ti) => (
+                    <LigneValeur key={`t${ti}`} label="Téléphone" valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
+                  ))}
+                  {decouper(pf.mail).map((m, mi) => (
+                    <LigneValeur key={`m${mi}`} label="E-mail" valeur={m} onPress={() => ouvrirMail(m)} />
+                  ))}
+                </Groupe>
+              ))}
+            </View>
+          ) : (
           <View style={{ gap: 8 }}>
             {focaux.map((pf: any, i: number) => (
               <View key={i} style={s.focal}>
@@ -174,6 +220,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
               </View>
             ))}
           </View>
+          )}
         </Section>
       ) : null}
     </Feuille>
@@ -207,4 +254,5 @@ const s = creerStyles(() => ({
   focalPrincipal: { backgroundColor: "rgba(202,99,31,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   focalPrincipalTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.orange },
   focalChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  principalIOS: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.orange },
 }));

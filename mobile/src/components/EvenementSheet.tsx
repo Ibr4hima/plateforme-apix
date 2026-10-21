@@ -10,7 +10,9 @@
 //   3. le reste en sections plates — rangées clé-valeur, description,
 //      thématiques en hiérarchie monochrome, invités en chips.
 import { StyleSheet, Text, View } from "react-native";
+import { Bloc, EnTeteSection, Groupe, LigneValeur } from "@/components/ListeIOS";
 import { Feuille } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
@@ -85,7 +87,14 @@ function plageComplete(e: any): string | null {
 }
 
 // ── Briques de la fiche ──────────────────────────────────────────────────────
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+// SUR iOS, la fiche se lit en listes groupées : l'essentiel (date, lieu,
+// échéance) dans un bloc blanc, l'organisation en lignes séparées d'un filet,
+// la description, les thématiques et les invités chacun dans son bloc.
+
+/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
+    contenu libre (un bloc sur iOS). */
+function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -96,6 +105,7 @@ function Section({ titre, children }: { titre: string; children: React.ReactNode
 
 function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
+  if (IOS) return <LigneValeur label={label} valeur={valeur} />;
   return (
     <View style={s.rangee}>
       <Text style={s.rangeeLabel}>{label}</Text>
@@ -127,7 +137,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
     : null;
 
   return (
-    <Feuille onClose={onClose} hauteur="78%" ecart={22}
+    <Feuille onClose={onClose} hauteur="78%" ecart={22} fondGroupe
       titre={<Text style={s.titre}>{e.nom_event}</Text>}
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX
@@ -167,11 +177,18 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
 
       {/* ── Organisation ── */}
       {(e.organisateur || recurrence) && (
-        <Section titre="Organisation">
-          <View style={s.rangees}>
-            <Rangee label="Organisateur" valeur={e.organisateur} />
-            <Rangee label="Récurrence" valeur={recurrence} />
-          </View>
+        <Section titre="Organisation" liste>
+          {IOS ? (
+            <Groupe>
+              <Rangee label="Organisateur" valeur={e.organisateur} />
+              <Rangee label="Récurrence" valeur={recurrence} />
+            </Groupe>
+          ) : (
+            <View style={s.rangees}>
+              <Rangee label="Organisateur" valeur={e.organisateur} />
+              <Rangee label="Récurrence" valeur={recurrence} />
+            </View>
+          )}
         </Section>
       )}
 
@@ -212,9 +229,10 @@ const s = creerStyles(() => ({
   titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
+  // iOS : l'essentiel est un bloc blanc du groupe ; ailleurs, un voile bleu
   essentiel: {
     flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: T.blocFond, borderRadius: 18, padding: 14,
+    backgroundColor: IOS ? T.carte : T.blocFond, borderRadius: IOS ? 16 : 18, padding: 14,
   },
   bloc: {
     width: 50, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
@@ -234,7 +252,7 @@ const s = creerStyles(() => ({
   description: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: { backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { backgroundColor: IOS ? T.voile : T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   chipVoile: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipVoileTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.bleu },

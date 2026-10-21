@@ -10,6 +10,7 @@ import { useState } from "react";
 import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsIOS, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/components/MenuContextuel";
 import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
@@ -17,6 +18,7 @@ import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
+import { IOS } from "@/lib/plateforme";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -107,13 +109,20 @@ const CANAL_ICONES: Record<string, string> = {
   "LinkedIn": "logo-linkedin", "Courrier postal": "send-outline",
 };
 
+// SUR iOS, la fiche prend la grammaire de la fiche Contacts : tuiles d'action
+// blanches sur le fond gris, coordonnées en lignes groupées, la bascule
+// Échanges ⇄ Infos en contrôle segmenté, les échanges et les cycles en blocs
+// blancs du groupe.
+
 function SecTitle({ children }: { children: string }) {
+  if (IOS) return <EnTeteSection titre={children} />;
   return <Text style={s.secTitle}>{children.toUpperCase()}</Text>;
 }
 
 // Rangée clé-valeur, tappable quand la valeur agit (tel:, mailto:, https:)
 function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | null; onPress?: () => void }) {
   if (!valeur) return null;
+  if (IOS) return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
   const contenu = (
     <View style={s.rangee}>
       <Text style={s.rangeeLabel}>{label}</Text>
@@ -121,6 +130,12 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
     </View>
   );
   return onPress ? <Tapable onPress={onPress} echelle={0.99}>{contenu}</Tapable> : contenu;
+}
+
+/** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
+function Rangees({ children }: { children: React.ReactNode }) {
+  if (IOS) return <Groupe>{children}</Groupe>;
+  return <View style={s.rangees}>{children}</View>;
 }
 
 // Bouton de la rangée d'actions — n'apparaît que si la donnée existe
@@ -288,7 +303,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
   ].filter(Boolean);
 
   return (
-    <Feuille onClose={onClose} hauteur="84%" ecart={22}
+    <Feuille onClose={onClose} hauteur="84%" ecart={22} fondGroupe
       titre={<Text style={s.titreFiche}>{p.nom}</Text>}
       sousEntete={
         <>
@@ -303,7 +318,13 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           )}
 
           {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
-          {onglet !== "cibles" && (
+          {onglet !== "cibles" && IOS && (
+            <View style={{ marginTop: 14 }}>
+              <SegmentsIOS valeur={vue} onChange={v => setVue(v as "echanges" | "infos")}
+                options={[{ cle: "echanges", label: "Échanges" }, { cle: "infos", label: "Infos investisseur" }]} />
+            </View>
+          )}
+          {onglet !== "cibles" && !IOS && (
             <View style={s.bascule}>
               {([["echanges", "Échanges"], ["infos", "Infos investisseur"]] as const).map(([cle, label]) => (
                 <Pressable key={cle} onPress={() => setVue(cle)} style={[s.basculeBouton, vue === cle && s.basculeActif]}>
@@ -318,7 +339,15 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {vue === "infos" && (
             <>
               {/* Agir : appeler, écrire, visiter — l'atout du téléphone */}
-              {(tels.length > 0 || mails.length > 0 || p.siteweb) && (
+              {IOS ? (
+                <TuilesActions actions={[
+                  tels.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
+                    onPress: () => proposer("Appeler", tels.map(fmtPhone), i => ouvrirTel(tels[i])) },
+                  mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
+                    onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
+                  !!p.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => lien(p.siteweb) },
+                ]} />
+              ) : (tels.length > 0 || mails.length > 0 || p.siteweb) && (
                 <View style={s.actions}>
                   {tels.length > 0 && (
                     <Action sf="phone" materiel="call" label="Appeler"
@@ -337,7 +366,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
               {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) ? (
                 <View>
                   <SecTitle>Contact</SecTitle>
-                  <View style={s.rangees}>
+                  <Rangees>
                     {tels.map((t, i) => (
                       <Rangee key={`t${i}`} label={i === 0 ? (tels.length > 1 ? "Téléphones" : "Téléphone") : ""}
                         valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
@@ -348,14 +377,16 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
                     ))}
                     <Rangee label="Site web" valeur={p.siteweb} onPress={p.siteweb ? () => lien(p.siteweb) : undefined} />
                     <Rangee label="LinkedIn" valeur={p.linkedin} onPress={p.linkedin ? () => lien(p.linkedin) : undefined} />
-                  </View>
+                  </Rangees>
                 </View>
               ) : null}
 
               {(secIds.length > 0 || braIds.length > 0 || actIds.length > 0) ? (
                 <View>
                   <SecTitle>Activités spécialisées</SecTitle>
-                  <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />
+                  {IOS
+                    ? <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
+                    : <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />}
                 </View>
               ) : null}
 
@@ -444,7 +475,10 @@ const s = creerStyles(() => ({
     position: "absolute", left: 0, top: 15, width: 10, height: 10, borderRadius: 5,
     backgroundColor: T.bleu, borderWidth: 2, borderColor: "rgba(122,138,164,0.26)",
   },
-  echange: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  // iOS : chaque échange est un bloc blanc posé sur le fond gris, sans liseré
+  echange: IOS
+    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 }
+    : { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
   canalChip: {
@@ -453,7 +487,9 @@ const s = creerStyles(() => ({
   },
   canalChipTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.texte, flexShrink: 1 },
   echangeQui: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-  echangeCommentaire: { backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
+  echangeCommentaire: IOS
+    ? { backgroundColor: T.fond, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 }
+    : { backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
   echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19 },
   fichiers: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   fichierChip: {
@@ -466,13 +502,18 @@ const s = creerStyles(() => ({
   contrainte: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
   contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
-  cycle: { borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, overflow: "hidden" },
+  cycle: IOS
+    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" }
+    : { borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   cycleNum: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   cycleIssue: { fontSize: 11, fontFamily: POLICE.gras },
   cycleDate: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
-  cycleCorps: { borderTopWidth: 1, borderTopColor: T.bordureDouce, paddingHorizontal: 15, paddingVertical: 14, gap: 14 },
+  cycleCorps: {
+    borderTopWidth: IOS ? StyleSheet.hairlineWidth : 1, borderTopColor: IOS ? T.voileFort : T.bordureDouce,
+    paddingHorizontal: 15, paddingVertical: 14, gap: 14,
+  },
   cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },
   videTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", marginTop: 12 },
 }));

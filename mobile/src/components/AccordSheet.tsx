@@ -10,7 +10,9 @@
 // partagée, commentaires en paragraphe.
 import { useQuery } from "@tanstack/react-query";
 import { StyleSheet, Text, View } from "react-native";
+import { Bloc, EnTeteSection } from "@/components/ListeIOS";
 import { Feuille } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
 import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -69,7 +71,12 @@ function anciennete(a: any): string | null {
 }
 
 // ── Briques ──────────────────────────────────────────────────────────────────
+// SUR iOS, la fiche se lit en blocs blancs sur le fond gris des listes
+// groupées : la frise du traité, les signataires, les thématiques et les
+// commentaires ont chacun le leur, sous leur en-tête de section.
+
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} /><Bloc>{children}</Bloc></View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -156,7 +163,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   const duree = anciennete(a);
 
   return (
-    <Feuille onClose={onClose} hauteur="78%" ecart={22}
+    <Feuille onClose={onClose} hauteur="78%" ecart={22} fondGroupe
       titre={<Text style={s.titre}>{identite}</Text>}
       sousEntete={
         <View>
@@ -223,7 +230,10 @@ const s = creerStyles(() => ({
   legende: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 5 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 6 },
 
-  frise: { backgroundColor: T.blocFond, borderRadius: 18, paddingVertical: 16, paddingHorizontal: 10 },
+  // iOS : la frise est un bloc blanc du groupe ; ailleurs, un voile bleu
+  frise: IOS
+    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 }
+    : { backgroundColor: T.blocFond, borderRadius: 18, paddingVertical: 16, paddingHorizontal: 10 },
   etapes: { flexDirection: "row" },
   etape: { flex: 1, alignItems: "center", gap: 5 },
   connecteur: {
@@ -238,7 +248,7 @@ const s = creerStyles(() => ({
 
   sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: IOS ? T.voile : T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipDrapeau: { fontSize: 13 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   commentaires: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },

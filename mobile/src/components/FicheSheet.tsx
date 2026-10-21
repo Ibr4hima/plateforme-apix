@@ -1,12 +1,14 @@
 // Fiche de détail générique — feuille montante affichant l'essentiel d'un
 // résultat de recherche (accord, événement, entreprise, zone, pays).
 import { StyleSheet, Text, View } from "react-native";
+import { Groupe, LigneValeur, LigneVide } from "@/components/ListeIOS";
 import { Feuille } from "@/components/ui";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord, computeStatutEvenement } from "@/lib/statuts";
 import type { Resultat } from "@/lib/indexRecherche";
 import { BADGE, T, POLICE } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { IOS } from "@/lib/plateforme";
 
 function Champ({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
@@ -70,7 +72,7 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
   }
 
   return (
-    <Feuille onClose={onClose} hauteur="72%" ecart={10}
+    <Feuille onClose={onClose} hauteur="72%" ecart={10} fondGroupe
       titre={<Text style={s.type}>{r.type === "pays" ? "PAYS" : r.type.toUpperCase()}</Text>}
       sousEntete={
         <>
@@ -82,8 +84,18 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
           )}
         </>
       }>
-      {champs.filter(c => c.valeur).map(c => <Champ key={c.label} {...c} />)}
-      {champs.every(c => !c.valeur) && <Text style={s.vide}>Détails non renseignés.</Text>}
+      {IOS ? (
+        // iOS : les champs en lignes d'un même groupe, sur le fond gris
+        <Groupe>
+          {champs.filter(c => c.valeur).map(c => <LigneValeur key={c.label} label={c.label} valeur={c.valeur} />)}
+          {champs.every(c => !c.valeur) && <LigneVide texte="Détails non renseignés." />}
+        </Groupe>
+      ) : (
+        <>
+          {champs.filter(c => c.valeur).map(c => <Champ key={c.label} {...c} />)}
+          {champs.every(c => !c.valeur) && <Text style={s.vide}>Détails non renseignés.</Text>}
+        </>
+      )}
     </Feuille>
   );
 }

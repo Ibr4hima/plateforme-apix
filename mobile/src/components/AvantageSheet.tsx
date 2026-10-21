@@ -7,7 +7,10 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { useTeinte } from "@/lib/couleurs";
+import Icone from "@/components/Icone";
+import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 import { API, getJson } from "@/lib/api";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -22,7 +25,14 @@ const couleurSecteur = (nom?: string, teinte: (c: string) => string = c => c): s
   return T.gris as string;
 };
 
-function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
+// SUR iOS, la fiche se lit en listes groupées : les avantages accordés en
+// liste (la coche verte en tête, le commentaire en légende), la description
+// dans son bloc, les documents en liste.
+
+/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
+    contenu libre (un bloc sur iOS). */
+function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
+  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
   return (
     <View>
       <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
@@ -43,7 +53,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
   const fichiers: any[] = Array.isArray(d.fichiers) ? d.fichiers : [];
 
   return (
-    <Feuille onClose={onClose} ecart={22}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{d.activite_nom}</Text>}
       sousEntete={(d.secteur_nom || d.branche_nom) ? (
         <Text style={s.meta} numberOfLines={2}>
@@ -57,7 +67,15 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
 
       {/* ── Les avantages accordés — lignes à filets, le fond de la fiche ── */}
       {selections.length > 0 ? (
-        <Section titre="Avantages & incitations">
+        <Section titre="Avantages & incitations" liste>
+          {IOS ? (
+            <Groupe>
+              {selections.map((sel: any) => (
+                <Ligne key={sel.id} label={sel.type_libelle} legende={sel.commentaire || undefined}
+                  avant={<Icone sf="checkmark.circle.fill" materiel="check_circle" taille={17} couleur={T.vert} />} />
+              ))}
+            </Groupe>
+          ) : (
           <View>
             {selections.map((sel: any, i: number) => (
               <View key={sel.id} style={[s.selection, i > 0 && s.selectionBord]}>
@@ -69,6 +87,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
               </View>
             ))}
           </View>
+          )}
         </Section>
       ) : null}
 
@@ -81,7 +100,11 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
 
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
-        <Section titre={fichiers.length > 1 ? "Documents" : "Document"}>
+        <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
+          {IOS ? (
+            <GroupeDocuments fichiers={fichiers}
+              ouvrir={f => Linking.openURL(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`).catch(() => {})} />
+          ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
               <Tapable key={f.id} echelle={0.98} style={s.doc}
@@ -91,6 +114,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
               </Tapable>
             ))}
           </View>
+          )}
         </Section>
       ) : null}
     </Feuille>
