@@ -95,7 +95,7 @@ export default function Recherche() {
   return (
     <View style={s.page}>
       <View style={[s.champ, cap]}>
-        <ChampRecherche valeur={q} onChange={setQ} placeholder="Pays, accords, entreprises, zones" refChamp={champ} />
+        <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher…" refChamp={champ} />
       </View>
       <FlatList {...DEFILEMENT}
         data={sections}
@@ -124,7 +124,7 @@ export default function Recherche() {
             // Avant la saisie : ce que couvre la recherche, en une phrase
             <View style={s.invite}>
               <Icone sf="magnifyingglass" materiel="search" taille={30} couleur={T.grisClair} />
-              <Text style={s.inviteTitre}>Toute la plateforme</Text>
+              <Text style={s.inviteTitre}>Rechercher</Text>
               <Text style={s.inviteTexte}>{"Pays, accords, événements, entreprises installées et zones d'investissement."}</Text>
             </View>
           ) : null
