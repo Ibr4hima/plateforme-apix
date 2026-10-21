@@ -61,6 +61,9 @@ const JETONS = {
   vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
+  // Le rouge des pastilles d'alerte (nombre de filtres actifs) — celui des
+  // baisses dans l'app ; la nuit, un ton plus vif
+  rouge:       dyn("#DC2626", "#EF4444"),
   // La tuile « Événement à venir » de l'accueil : le bleu de la maison le
   // jour ; la nuit, le bleu du chiffre vedette (T.bleu) d'un cran plus foncé
   // — un bleu clair, sur lequel le texte passe à l'encre de nuit

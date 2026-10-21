@@ -305,7 +305,7 @@ const s = creerStyles(() => ({
   // Le compte posé sur l'épaule du symbole, détouré de la couleur de la barre
   badgeIOS: {
     position: "absolute", top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3.5,
-    backgroundColor: T.orange, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.rouge, alignItems: "center", justifyContent: "center",
     borderWidth: 1.5, borderColor: T.fond,
   },
   badgeTexteIOS: { fontSize: 9.5, lineHeight: 12, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
@@ -323,7 +323,7 @@ const s = creerStyles(() => ({
   flancDroit: { justifyContent: "flex-end" },
   badge: {
     position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9,
-    backgroundColor: T.orange, alignItems: "center", justifyContent: "center", paddingHorizontal: 4,
+    backgroundColor: T.rouge, alignItems: "center", justifyContent: "center", paddingHorizontal: 4,
   },
   badgeTexte: { fontSize: 10, fontFamily: POLICE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
   // Titre de navigation : centré entre les boutons, il s'ajuste à la place

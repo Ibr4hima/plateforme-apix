@@ -49,7 +49,6 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
   const [actif, setActif] = useState<string>(VEDETTE_DEFAUT);
   const [anneeSel, setAnneeSel] = useState<number | null>(null);
   const [largeurTendance, setLargeurTendance] = useState(0);
-  const [listeDepliee, setListeDepliee] = useState(false);
 
   const qs = sel.niveau === "global" ? "niveau=global" : `niveau=${sel.niveau}&cible_id=${sel.cible_id}`;
   const { data, isLoading, isError, refetch } = useQuery({
@@ -60,7 +59,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
     (data?.annees || []).slice().sort((a: number, b: number) => a - b), [data]);
 
   // La vedette repart sur le chiffre d'affaires quand la vue change
-  useEffect(() => { setActif(VEDETTE_DEFAUT); setListeDepliee(false); }, [sel.niveau, sel.cible_id]);
+  useEffect(() => { setActif(VEDETTE_DEFAUT); }, [sel.niveau, sel.cible_id]);
   useEffect(() => {
     if (anneeSel != null && !annees.includes(anneeSel)) setAnneeSel(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,8 +89,8 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
     ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
   const hausse = (delta ?? 0) >= 0;
 
+  // TOUS les indicateurs, d'emblée : la liste n'a plus à se déplier
   const autres = indicateurs.filter(i => i.code !== indActif.code);
-  const visibles = listeDepliee ? autres : autres.slice(0, 5);
 
   return (
     <View style={s.rangee}>
@@ -149,10 +148,10 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
         </Permutation>
         </View>
 
-        {/* Les autres indicateurs, un par ligne — ils glissent quand l'un
-            d'eux monte en vedette ; cinq d'abord, tous à la demande */}
+        {/* Les autres indicateurs, un par ligne, tous affichés — ils glissent
+            quand l'un d'eux monte en vedette */}
         <View style={s.pied}>
-          {visibles.map((ind, i) => {
+          {autres.map((ind, i) => {
             const sx = serieDe(ind);
             const d = sx.at(-1) ?? null;
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
@@ -171,17 +170,6 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
               </RangeeMouvante>
             );
           })}
-          {autres.length > 5 && (
-            <Tapable echelle={0.98} onPress={() => { tick(); setListeDepliee(v => !v); }}
-              style={[s.repere, s.repereBord, { justifyContent: "center" }]}>
-              <Text style={s.deplierTexte}>
-                {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres indicateurs`}
-              </Text>
-              <Icone sf={listeDepliee ? "chevron.up" : "chevron.down"}
-                materiel={listeDepliee ? "expand_less" : "expand_more"}
-                taille={14} couleur={T.bleu} />
-            </Tapable>
-          )}
         </View>
       </View>
     </View>
@@ -218,5 +206,4 @@ const s = creerStyles(() => ({
   repereBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   repereLabel: { flex: 1, minWidth: 0, fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8, lineHeight: 13 },
   repereValeur: { ...TYPO.sousTitre, color: T.encre, flexShrink: 1, fontVariant: ["tabular-nums"] },
-  deplierTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu },
 }));

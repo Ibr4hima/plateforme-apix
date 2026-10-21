@@ -23,7 +23,7 @@
 //   · la liste : défilement continu, fiche en feuille, grille sur tablette.
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import { SqueletteListe } from "@/components/Squelette";
@@ -38,7 +38,7 @@ import {
   FILTRES_ENTREPRISES_VIDES, FILTRES_SIGNAUX_VIDES, type FiltresEntreprises, type FiltresProjets,
   type FiltresSignaux, type Investisseur, PERIMETRE_AFRIQUE, type ProjetFdi, type Signal, type Vue,
   filtresProjetsInitiaux, fmtEntier, nbFiltresEntreprises, nbFiltresProjets, nbFiltresSignaux,
-  paramsEntreprises, paramsProjets, paramsSignaux, periodeEnClair, titreListeFdi, useEntreprisesInfinies,
+  paramsEntreprises, paramsProjets, paramsSignaux, titreListeFdi, useEntreprisesInfinies,
   usePerimetreProjets, useProjetsInfinis, useSignauxInfinis,
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
@@ -65,8 +65,6 @@ function useDifere<V>(valeur: V, delai = 300): V {
   }, [valeur, delai]);
   return v;
 }
-
-const accordRecu = (n: number) => (n > 1 ? "reçus" : "reçu");
 
 const lireListe = (v?: string | string[]) =>
   (Array.isArray(v) ? v.join("|") : v ?? "").split("|").filter(Boolean);
@@ -150,9 +148,7 @@ export default function InvestissementsProjetes() {
                 <PuceDestination libelle={(fp.echelle === "regions" ? fp.region : fp.pays) ?? "—"}
                   onPress={() => { tick(); setFeuille("destination"); }} />
               }
-              description={[
-                totalProjets != null ? `${fmtEntier(totalProjets)} ${totalProjets > 1 ? "projets" : "projet"} ${fp.sens === "source" ? "implantés à l'étranger" : accordRecu(totalProjets)}` : null,
-                periodeEnClair(qP.data?.pages[0]?.kpis.annees)]}
+              compte={totalProjets != null ? `${fmtEntier(totalProjets)} ${totalProjets > 1 ? "projets" : "projet"}` : null}
               chargement={qP.isPlaceholderData} />
           }
           vide={
@@ -171,9 +167,7 @@ export default function InvestissementsProjetes() {
           rendre={(x: Signal) => <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
-              description={[
-                totalSignaux != null ? `${fmtEntier(totalSignaux)} ${totalSignaux > 1 ? "signaux" : "signal"} d'investissement` : null,
-                periodeEnClair(qS.data?.pages[0]?.kpis.annees)]}
+              compte={totalSignaux != null ? `${fmtEntier(totalSignaux)} ${totalSignaux > 1 ? "signaux" : "signal"}` : null}
               chargement={qS.isPlaceholderData} />
           }
           vide={
@@ -191,9 +185,7 @@ export default function InvestissementsProjetes() {
           rendre={(e: Investisseur) => <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
-              description={[
-                totalInvestisseurs != null ? `${fmtEntier(totalInvestisseurs)} ${totalInvestisseurs > 1 ? "investisseurs" : "investisseur"}` : null,
-                "groupés par maison mère"]}
+              compte={totalInvestisseurs != null ? `${fmtEntier(totalInvestisseurs)} ${totalInvestisseurs > 1 ? "investisseurs" : "investisseur"}` : null}
               chargement={qE.isPlaceholderData} />
           }
           vide={
@@ -314,16 +306,20 @@ function Liste<E>({ requete, elements, cle, rendre, entete, vide, colonnes, cap,
 // filtres vivent dans leur feuille, ouverte depuis la barre, dont le bouton
 // se remplit et porte le compte quand un filtre est appliqué.
 
-function Contexte({ principal, description, chargement }: {
-  principal: React.ReactNode; description: (string | null | undefined)[]; chargement?: boolean;
+function Contexte({ principal, compte, chargement }: {
+  principal: React.ReactNode; compte: string | null; chargement?: boolean;
 }) {
   return (
     <View style={s.contexte}>
+      {/* Le lieu, puis le compte de la liste dans sa pastille — le style des
+          onglets des Investissements privés : blanche, le nombre en bleu */}
       <View style={s.contexteLigne}>
         <View style={s.contexteGauche}>{principal}</View>
-      </View>
-      <View style={s.descriptionLigne}>
-        <Text style={s.description} numberOfLines={2}>{description.filter(Boolean).join(" · ")}</Text>
+        {compte ? (
+          <View style={s.compte}>
+            <Text style={s.compteTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text>
+          </View>
+        ) : null}
         {chargement && <ActivityIndicator size="small" color={T.gris as any} />}
       </View>
     </View>
@@ -336,7 +332,9 @@ function PuceDestination({ libelle, onPress }: { libelle: string; onPress: () =>
     <Tapable onPress={onPress} echelle={0.97} style={s.destination}
       accessibilityRole="button" accessibilityLabel={`Destination : ${libelle}. Changer`}>
       <Text style={s.contexteTitre} numberOfLines={1}>{libelle}</Text>
-      <Icone sf="chevron.down" materiel="expand_more" taille={22} couleur={T.bleu} />
+      {/* Un chevron discret, détaché du nom : il dit qu'on peut changer de
+          pays sans lui disputer le regard */}
+      <Icone sf="chevron.down" materiel="expand_more" taille={13} couleur={T.bleu} poids="semibold" />
     </Tapable>
   );
 }
@@ -345,14 +343,22 @@ const s = creerStyles(() => ({
   cellule: { paddingHorizontal: MARGE, marginBottom: 10 },
   rangeeGrille: { gap: GOUTTIERE, paddingHorizontal: MARGE },
 
-  contexte: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 8 },
-  contexteLigne: { flexDirection: "row", alignItems: "center", gap: 8 },
-  contexteGauche: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center" },
+  contexte: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14 },
+  // Le lieu et son compte côte à côte : la pastille suit le nom, elle ne file
+  // pas au bord de l'écran
+  contexteLigne: { flexDirection: "row", alignItems: "center", gap: 10 },
+  contexteGauche: { flexShrink: 1, minWidth: 0, flexDirection: "row", alignItems: "center" },
   contexteTitre: { flexShrink: 1, fontSize: 21, lineHeight: 27, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.5 },
-  descriptionLigne: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 18 },
-  description: { flexShrink: 1, fontSize: 12.5, lineHeight: 18, fontFamily: POLICE.demi, color: T.gris },
+  // La pastille du compte — le style des onglets des Investissements privés
+  compte: {
+    flexShrink: 0, backgroundColor: T.carte, borderRadius: 999, borderCurve: "continuous",
+    borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+    paddingHorizontal: 11, paddingVertical: 4.5,
+    shadowColor: "#0B1220", shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 }, elevation: 1,
+  },
+  compteTexte: { fontSize: 13, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
 
-  destination: { flexDirection: "row", alignItems: "center", gap: 2, flexShrink: 1 },
+  destination: { flexDirection: "row", alignItems: "center", gap: 7, flexShrink: 1 },
 
 
   pied: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 18, paddingHorizontal: 40 },
