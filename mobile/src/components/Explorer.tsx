@@ -7,7 +7,7 @@
 // ligne entière ondule et ouvre) — rangées à filets hairline dans une seule
 // carte à coins continus. Simple, dense, scannable d'un pouce.
 import { useRouter } from "expo-router";
-import { routeDepuisAccueil } from "@/lib/navigation";
+import { ouvrirModule } from "@/lib/navigation";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Chevron } from "@/components/ListeIOS";
@@ -39,7 +39,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
 
 export default function Explorer() {
   const router = useRouter();
-  const ouvrir = (href: string) => router.push(routeDepuisAccueil(href) as any);
+  const ouvrir = (href: string) => ouvrirModule(router, href);
 
   return (
     <View style={s.bloc}>

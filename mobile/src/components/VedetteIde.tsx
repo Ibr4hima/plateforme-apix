@@ -12,7 +12,7 @@
 // en cache — et réciproquement.
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { routeDepuisAccueil } from "@/lib/navigation";
+import { ouvrirModule } from "@/lib/navigation";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
@@ -153,7 +153,7 @@ export default function VedetteIde() {
     <Apparition index={0} cle="accueil-vedette">
       <View style={s.carte}>
         {/* En-tête : la série vedette, la flèche mène à son module */}
-        <Tapable onPress={() => router.push(routeDepuisAccueil(LABELS[actif].route) as any)} surbrillance={false}
+        <Tapable onPress={() => ouvrirModule(router, LABELS[actif].route)} surbrillance={false}
           style={s.enTete}>
           <Text style={s.etiquette} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}

@@ -17,7 +17,7 @@
 // PAS DE RAPPORT : ils vivent sur le site. Le pays se choisit une seule fois,
 // en tête — les trois questions portent sur le même.
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
-import { useRouter, useSegments } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
@@ -62,9 +62,6 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
   pays: string; onChoisirPays: () => void;
 }) {
   const router = useRouter();
-  // La liste s'ouvre dans la pile où l'on est : celle de l'onglet
-  // Investissements, ou celle de l'Accueil quand on vient de lui (iOS)
-  const depuisAccueil = useSegments().includes("(accueil)" as never);
   const [ouvert, setOuvert] = useState<Ouvert | null>(null);
   const projets = useQuery({ queryKey: cleTableauProjets(pays), queryFn: () => chargerTableauProjets(pays), staleTime: 10 * MINUTE });
   const signaux = useQuery({ queryKey: cleTableauSignaux(pays), queryFn: () => chargerTableauSignaux(pays), staleTime: 10 * MINUTE });
@@ -73,7 +70,7 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
   const totalAfrique = useQuery({ queryKey: CLE_INVESTISSEURS_AFRIQUE, queryFn: chargerInvestisseursAfrique, staleTime: 10 * MINUTE });
 
   const ouvrirListe = (params: Record<string, string>) => {
-    router.push({ pathname: depuisAccueil ? "/projetes" : "/investissements/projetes", params } as any);
+    router.push({ pathname: "/investissements/projetes", params } as any);
   };
 
   return (

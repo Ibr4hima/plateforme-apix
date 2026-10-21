@@ -51,12 +51,17 @@ export function useOptionsPile(): NativeStackNavigationOptions {
 export const ecran = (titre: string): NativeStackNavigationOptions =>
   ({ headerShown: true, title: titre });
 
-/** La route d'un module ouvert DEPUIS L'ACCUEIL. Les deux modules qui ont
-    leur onglet (Investissements, Économie) s'empilent sur l'Accueil au lieu
-    de basculer d'onglet : la page ouverte a son retour, comme toutes les
-    autres — le chevron d'iOS, la flèche d'Android. */
-export function routeDepuisAccueil(href: string): string {
-  if (href === "/investissements") return "/ide";
-  if (href === "/flux") return "/economie";
-  return href;
+/** Les modules qui ont leur onglet. Ouverts depuis l'Accueil, ils ne
+    s'empilent pas sur lui : on BASCULE vers leur onglet, et la barre du bas
+    dit où l'on est — Investissements, Économie. Les autres modules vivent
+    dans la pile de l'Accueil : Accueil reste allumé, comme le veulent iOS et
+    Material (un onglet est toujours choisi, il dit la section), et le
+    retoucher ramène à la page d'accueil. */
+const MODULES_A_ONGLET = new Set(["/investissements", "/flux"]);
+
+/** Ouvre un module depuis l'Accueil : son onglet s'il en a un, sinon sa page
+    dans la pile de l'Accueil. */
+export function ouvrirModule(router: { navigate: (href: any) => void; push: (href: any) => void }, href: string) {
+  if (MODULES_A_ONGLET.has(href)) router.navigate(href);
+  else router.push(href);
 }
