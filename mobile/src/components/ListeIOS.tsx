@@ -27,7 +27,7 @@ import { Ondulable } from "@/components/ui";
 import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { RESSORT } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, POLICE, T } from "@/theme";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
 const MARGE = 16;
@@ -481,7 +481,7 @@ const s = creerStyles(() => ({
   // Les surfaces blanches portent un liseré fin : sur le fond très clair de
   // l'app, c'est lui qui les détache
   groupe: {
-    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden",
+    backgroundColor: T.carte, borderRadius: coin(16), borderCurve: "continuous", overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   interieur: { marginTop: -StyleSheet.hairlineWidth },
@@ -540,7 +540,7 @@ const s = creerStyles(() => ({
   tuiles: { flexDirection: "row", gap: 8 },
   tuile: {
     flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
-    backgroundColor: T.carte, borderRadius: 14, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(14), borderCurve: "continuous",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   tuileLabel: { fontSize: 11.5, fontFamily: POLICE.moyen, color: T.bleu },
@@ -548,7 +548,7 @@ const s = creerStyles(() => ({
   // les actions en pilules tonales
   ligneValeurAndroid: { minHeight: 56, paddingVertical: 10, paddingHorizontal: MARGE, justifyContent: "center" },
   valeurAndroid: { fontSize: 16, lineHeight: 24, fontFamily: POLICE.normal, color: T.encre },
-  tuileAndroid: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 6, borderRadius: 16 },
+  tuileAndroid: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 6, borderRadius: coin(16) },
   pastilleAction: {
     width: 64, height: 40, borderRadius: 20, backgroundColor: T.selection,
     alignItems: "center", justifyContent: "center",

@@ -4,7 +4,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
-import { RAYON, T } from "@/theme";
+import { coin, RAYON, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const LARGEUR = Dimensions.get("window").width;
@@ -101,11 +101,11 @@ export function SqueletteDonnees() {
 const s = creerStyles(() => ({
   os: { backgroundColor: T.filet, borderRadius: 6, overflow: "hidden" },
   carte: {
-    backgroundColor: T.carte, borderRadius: RAYON.moyen, borderWidth: 1, borderColor: T.bordure,
+    backgroundColor: T.carte, borderRadius: coin(RAYON.moyen), borderWidth: 1, borderColor: T.bordure,
     paddingHorizontal: 16, paddingVertical: 15,
   },
   kpi: {
-    backgroundColor: T.carte, borderRadius: 18, paddingHorizontal: 15, paddingVertical: 13,
+    backgroundColor: T.carte, borderRadius: coin(18), paddingHorizontal: 15, paddingVertical: 13,
     borderWidth: 1, borderColor: T.bordure,
   },
   filet: { height: 1, backgroundColor: T.filet, marginVertical: 12 },

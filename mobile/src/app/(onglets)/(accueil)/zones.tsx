@@ -24,7 +24,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const pastelPole = (nom?: string | null) =>
@@ -235,7 +235,7 @@ const s = creerStyles(() => ({
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
 
   carte: {
-    backgroundColor: T.carte, borderRadius: 18,
+    backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
@@ -247,7 +247,7 @@ const s = creerStyles(() => ({
   faitVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
   pole: { flexDirection: "row", alignItems: "center", gap: 13, paddingHorizontal: 13, paddingVertical: 11 },
-  poleTuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  poleTuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
   poleNom: { fontSize: 14.5, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.2 },
   poleSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
 }));

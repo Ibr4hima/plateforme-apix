@@ -4,7 +4,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type KpiCarrousel = { cle: string; label: string; valeur: string; note?: string | null; negatif?: boolean };
@@ -67,7 +67,7 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
 const s = creerStyles(() => ({
   page: { flexDirection: "row", flexWrap: "wrap", gap: 11, paddingHorizontal: 16 },
   carte: {
-    width: (LARGEUR - 32 - 11) / 2, backgroundColor: T.carte, borderRadius: 18,
+    width: (LARGEUR - 32 - 11) / 2, backgroundColor: T.carte, borderRadius: coin(18),
     paddingHorizontal: 15, paddingVertical: 13, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },

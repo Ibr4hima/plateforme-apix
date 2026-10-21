@@ -18,7 +18,7 @@ import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { POLICE, T, TYPO } from "@/theme";
+import { coin, POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
 const formeCourte = (f?: string | null) => (f || "").replace(/\s*\([^)]*\)\s*$/, "");
@@ -238,7 +238,7 @@ const s = creerStyles(() => ({
   lettreCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.grisClair, fontVariant: ["tabular-nums"] },
 
   carte: {
-    backgroundColor: T.carte, borderRadius: 18,
+    backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3,
   },
@@ -251,21 +251,21 @@ const s = creerStyles(() => ({
 
   region: {
     flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: 18, padding: 12,
+    backgroundColor: T.carte, borderRadius: coin(18), padding: 12,
     borderWidth: 1, borderColor: T.carteBord,
   },
-  regionTuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  regionTuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
   regionCompte: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   regionNom: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   regionSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
   regionListe: {
-    backgroundColor: T.carte, borderRadius: 16, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: T.carte, borderRadius: coin(16), borderWidth: 1, borderColor: T.carteBord,
     marginTop: 8, overflow: "hidden",
   },
   regionEntreprise: { flexDirection: "row", alignItems: "center", gap: 11, paddingHorizontal: 13, paddingVertical: 10 },
   regionEntrepriseBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
   blocPetit: {
-    width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center",
+    width: 34, height: 34, borderRadius: coin(10), alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuVoile,
   },
   blocPetitTexte: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },

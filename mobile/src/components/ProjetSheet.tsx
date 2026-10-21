@@ -13,7 +13,7 @@ import { Feuille } from "@/components/ui";
 import { API } from "@/lib/api";
 import { fmtDateLong, fmtIntervalleDevise, fmtMontantDevise } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
@@ -155,7 +155,7 @@ const s = creerStyles(() => ({
   // Les chiffres dans un bloc blanc du groupe
   faits: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
   },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },

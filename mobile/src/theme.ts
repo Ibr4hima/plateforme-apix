@@ -205,6 +205,16 @@ export const ESPACE = { xxs: 4, xs: 8, s: 12, m: 16, l: 24, xl: 32 } as const;
 // ── Rayons normalisés ────────────────────────────────────────────────────────
 export const RAYON = { petit: 10, moyen: 16, grand: 22, pilule: 999 } as const;
 
+// ── Les coins des surfaces ───────────────────────────────────────────────────
+// iOS garde, pour chaque surface, l'arrondi choisi pour elle, sur sa courbe
+// continue. Android prend l'échelle de formes de Material 3 : 12 dp pour une
+// surface posée dans la page — carte, groupe, bloc, tuile —, 8 dp pour un
+// petit élément. Le reste suit déjà Material : les barres d'un bord à
+// l'autre droites, les feuilles à 28 dp, les boutons, la recherche, les
+// segments et l'indicateur de la barre en pilule, les puces de filtre à 8 dp.
+// Un seul endroit règle toute l'app : 12 et 8 se changent ici.
+export const coin = (r: number): number => (IOS ? r : r >= 12 ? 12 : 8);
+
 // ── Ombres : trois niveaux d'élévation ───────────────────────────────────────
 export const OMBRE = {
   // Posé : cards de liste

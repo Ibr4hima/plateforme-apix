@@ -33,7 +33,7 @@ import {
   chargerTableauProjets, chargerTableauSignaux, cleTableauInvestisseurs, cleTableauProjets,
   cleTableauSignaux, fmtEntier, fmtMontant, fmtPart, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
-import { ECHELLE, POLICE, T, TYPO } from "@/theme";
+import { coin, ECHELLE, POLICE, T, TYPO } from "@/theme";
 import { Drapeau } from "./AtomesFdi";
 import { FicheInvestisseurSheet, FicheProjetFdi, FicheSignal } from "./FichesFdi";
 
@@ -295,7 +295,7 @@ const s = creerStyles(() => ({
 
   // La carte vedette des investissements réalisés, à l'arrondi près
   carte: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 18, paddingTop: 17, paddingBottom: 4,
   },

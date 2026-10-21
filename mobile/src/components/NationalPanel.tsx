@@ -17,7 +17,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import type { SelNational } from "@/components/SourceNationalSheet";
 import { enPanne, getJson } from "@/lib/api";
-import { POLICE, T, TYPO } from "@/theme";
+import { coin, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { nfSig } from "@/lib/format";
 
@@ -180,7 +180,7 @@ const s = creerStyles(() => ({
 
   // La carte vedette — les styles exacts de l'accueil
   vedette: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },

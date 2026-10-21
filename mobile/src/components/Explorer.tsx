@@ -12,7 +12,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Chevron } from "@/components/ListeIOS";
 import { Apparition, Tapable } from "@/components/ui";
-import { ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
+import { coin, ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: string) => void }) {
@@ -60,14 +60,14 @@ const s = creerStyles(() => ({
   // Titres de section affirmés — la hiérarchie se voit avant de se lire
   titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   surface: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     overflow: "hidden", borderWidth: 1, borderColor: T.carteBord,
   },
   // 44 pt au minimum : la cible tactile d'Apple, même en gros texte
   ligne: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 11, paddingHorizontal: 14, minHeight: 56 },
   // Carré bleu plein, icône blanche — la couleur qui ancre chaque rangée
   pastille: {
-    width: 34, height: 34, borderRadius: 10.5, borderCurve: "continuous",
+    width: 34, height: 34, borderRadius: coin(10.5), borderCurve: "continuous",
     // Aplat bleu plein : le bleu APIX le jour, le bleu ardoise la nuit
     alignItems: "center", justifyContent: "center", backgroundColor: T.pastilleFond,
   },

@@ -19,7 +19,7 @@ import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -236,7 +236,7 @@ const s = creerStyles(() => ({
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 6 },
 
   // La frise est un bloc blanc du groupe
-  frise: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 },
+  frise: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 },
   etapes: { flexDirection: "row" },
   etape: { flex: 1, alignItems: "center", gap: 5 },
   connecteur: {

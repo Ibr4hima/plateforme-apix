@@ -19,7 +19,7 @@ import { API } from "@/lib/api";
 import { useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
@@ -404,7 +404,7 @@ const s = creerStyles(() => ({
     backgroundColor: T.bleu, borderWidth: 2, borderColor: "rgba(122,138,164,0.26)",
   },
   // Chaque échange est un bloc blanc posé sur le fond gris
-  echange: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 },
+  echange: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
   canalChip: {
@@ -413,7 +413,7 @@ const s = creerStyles(() => ({
   },
   canalChipTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.texte, flexShrink: 1 },
   echangeQui: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-  echangeCommentaire: { backgroundColor: T.fond, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
+  echangeCommentaire: { backgroundColor: T.fond, borderRadius: coin(12), paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
   echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19 },
   fichiers: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   fichierChip: {
@@ -426,7 +426,7 @@ const s = creerStyles(() => ({
   contrainte: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
   contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
-  cycle: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" },
+  cycle: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   cycleNum: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },

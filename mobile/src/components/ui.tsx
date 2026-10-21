@@ -26,7 +26,7 @@ import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
-import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
@@ -753,13 +753,14 @@ export function EtatVide({ texte, icone = "search_off", sousTexte, action }: {
 const sb = creerStyles(() => ({
   base: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
-    borderRadius: RAYON.petit, alignSelf: "center",
+    // Android : le bouton de Material 3, en pilule
+    borderRadius: IOS ? RAYON.petit : RAYON.pilule, alignSelf: "center",
   },
 }));
 
 const scarte = creerStyles(() => ({
   carte: {
-    backgroundColor: T.carte, borderRadius: RAYON.moyen,
+    backgroundColor: T.carte, borderRadius: coin(RAYON.moyen),
     borderWidth: 1, borderColor: T.carteBord,
   },
 }));
@@ -842,7 +843,7 @@ const sf = creerStyles(() => ({
 const se = creerStyles(() => ({
   centre: { alignItems: "center", justifyContent: "center", padding: 44, gap: ESPACE.xs },
   pastille: {
-    width: 52, height: 52, borderRadius: RAYON.moyen, backgroundColor: T.filet,
+    width: 52, height: 52, borderRadius: coin(RAYON.moyen), backgroundColor: T.filet,
     alignItems: "center", justifyContent: "center", marginBottom: 2,
   },
   titre: { ...TYPO.sousTitre, color: T.encre, textAlign: "center" },

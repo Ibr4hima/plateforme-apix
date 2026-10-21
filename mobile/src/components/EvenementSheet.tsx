@@ -20,7 +20,7 @@ import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const ROLE_PASTEL: Record<string, string> = {
@@ -221,11 +221,11 @@ const s = creerStyles(() => ({
   // L'essentiel est un bloc blanc du groupe
   essentiel: {
     flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: T.carte, borderRadius: 16, padding: 14,
+    backgroundColor: T.carte, borderRadius: coin(16), padding: 14,
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   bloc: {
-    width: 50, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    width: 50, height: 56, borderRadius: coin(14), alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuAction,
   },
   blocJour: { fontSize: 20, fontFamily: POLICE.gras, color: "#fff", lineHeight: 24, fontVariant: ["tabular-nums"] },

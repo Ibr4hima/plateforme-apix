@@ -21,7 +21,7 @@ import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 
@@ -177,7 +177,7 @@ const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
 
   carte: {
-    backgroundColor: T.carte, borderRadius: 18,
+    backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },

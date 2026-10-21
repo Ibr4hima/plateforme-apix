@@ -14,7 +14,7 @@ import { ChiffreAnime, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { POLICE, T, TYPO } from "@/theme";
+import { coin, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type GrapheVedette = {
@@ -161,7 +161,7 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
 const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 14 },
   vedette: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 8, overflow: "hidden",
   },
   etiquette: { ...TYPO.micro, color: T.gris },
@@ -184,7 +184,7 @@ const s = creerStyles(() => ({
   legendeDeltaTexte: { fontSize: 11, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
 
   carteListe: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16,
   },
   serieLigne: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 11 },

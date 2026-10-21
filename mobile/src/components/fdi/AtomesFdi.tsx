@@ -20,7 +20,7 @@ import {
   type Investisseur, type ProjetFdi, type Signal,
   accorder, fmtEntier, fmtMillions, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, POLICE, T } from "@/theme";
 import { fmtMillionsUSD } from "@/lib/format";
 
 /** Le drapeau d'un pays, quand le référentiel le connaît. Un pays non
@@ -195,7 +195,7 @@ export function CarteInvestisseur({ e, onPress }: { e: Investisseur; onPress: ()
 const s = creerStyles(() => ({
   // Le gabarit de Prospects et des Accords, au pixel près
   carte: {
-    flex: 1, backgroundColor: T.carte, borderRadius: 18,
+    flex: 1, backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3,
   },

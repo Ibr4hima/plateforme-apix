@@ -22,7 +22,7 @@ import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteShe
 import ProjetSheet from "@/components/ProjetSheet";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -451,7 +451,7 @@ const s = creerStyles(() => ({
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
 
   carte: {
-    backgroundColor: T.carte, borderRadius: 18,
+    backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },
@@ -466,7 +466,7 @@ const s = creerStyles(() => ({
   // arrondissement : les empiler dit cette hiérarchie, une grille 2×2 la perd
   grilleCompteurs: { gap: 10 },
   compteur: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 15, paddingTop: 14, paddingBottom: 13, gap: 10,
   },
   compteurEntete: { flexDirection: "row", alignItems: "center", gap: 7 },
@@ -481,7 +481,7 @@ const s = creerStyles(() => ({
 
   bandeau: {
     flexDirection: "row", alignItems: "center", gap: 13,
-    borderWidth: 1, borderRadius: 18, paddingHorizontal: 15, paddingVertical: 12, marginBottom: 10,
+    borderWidth: 1, borderRadius: coin(18), paddingHorizontal: 15, paddingVertical: 12, marginBottom: 10,
   },
   bandeauTuile: {
     width: 42, height: 42, borderRadius: 12, backgroundColor: T.carte, borderWidth: 1,
@@ -490,7 +490,7 @@ const s = creerStyles(() => ({
   bandeauCompte: { fontSize: 14, fontFamily: POLICE.gras, fontVariant: ["tabular-nums"] },
   bandeauSur: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.2, marginBottom: 3 },
   bandeauTitre: { fontSize: 15, fontFamily: POLICE.gras, color: T.encre },
-  groupe: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
+  groupe: { backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
   tuile: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   tuileBord: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: T.bordure },
   tuilePoint: { width: 6, height: 6, borderRadius: 3 },

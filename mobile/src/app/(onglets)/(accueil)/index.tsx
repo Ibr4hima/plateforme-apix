@@ -33,7 +33,7 @@ import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
-import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
 // Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
@@ -251,7 +251,7 @@ const s = creerStyles(() => ({
   titreSection: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.3, marginBottom: ESPACE.s + 2 },
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
-    borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
+    borderRadius: coin(RAYON.grand), borderCurve: "continuous", overflow: "hidden",
     // Le jour, le bleu de la maison ; la nuit, le bleu clair du chiffre
     // vedette, un cran plus foncé (theme : tuileEvenement)
     backgroundColor: T.tuileEvenement,
@@ -261,7 +261,7 @@ const s = creerStyles(() => ({
   // de la nuit
   evenementDate: {
     minWidth: 52, minHeight: 56, paddingHorizontal: 8, paddingVertical: 6,
-    borderRadius: 14, borderCurve: "continuous",
+    borderRadius: coin(14), borderCurve: "continuous",
     alignItems: "center", justifyContent: "center",
     backgroundColor: T.dateTuileEvenement,
     borderWidth: 1, borderColor: T.bordDateEvenement,

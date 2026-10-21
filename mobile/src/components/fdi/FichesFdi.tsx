@@ -21,7 +21,7 @@ import {
   type Investisseur, type ProjetFdi, type Signal, type ValeurSignal,
   accorder, fmtEntier, moisEnClair, useFicheInvestisseur,
 } from "@/lib/fdi";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, POLICE, T } from "@/theme";
 import { Montant, PaysDrapeau } from "./AtomesFdi";
 
 /** Sur tablette, la fiche se plafonne à la largeur d'une page de lecture. */
@@ -310,7 +310,7 @@ const s = creerStyles(() => ({
   // La définition se pose comme un bloc blanc du groupe
   definition: {
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
-    borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 16, paddingVertical: 14, gap: 8,
+    borderRadius: coin(16), borderCurve: "continuous", paddingHorizontal: 16, paddingVertical: 14, gap: 8,
   },
   definitionTexte: { fontSize: 13, lineHeight: 20, fontFamily: POLICE.normal, color: T.texte },
   definitionNom: { fontFamily: POLICE.gras, color: T.encre },

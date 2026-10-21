@@ -18,7 +18,7 @@ import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } f
 import { enPanne, fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
@@ -181,7 +181,7 @@ const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   carte: {
-    backgroundColor: T.carte, borderRadius: 18,
+    backgroundColor: T.carte, borderRadius: coin(18),
     borderWidth: 1, borderColor: T.carteBord,
   },
   carteCorps: { flex: 1, minWidth: 0, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, gap: 3 },

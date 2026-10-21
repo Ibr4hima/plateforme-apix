@@ -21,7 +21,7 @@ import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "
 import Icone from "@/components/Icone";
 import { enPanne, fetchTous } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
-import { POLICE, T, TYPO } from "@/theme";
+import { coin, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 
@@ -201,11 +201,11 @@ const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
   ligne: {
     flexDirection: "row", alignItems: "center", gap: 13,
-    backgroundColor: T.carte, borderRadius: 18, padding: 12,
+    backgroundColor: T.carte, borderRadius: coin(18), padding: 12,
     borderWidth: 1, borderColor: T.carteBord,
   },
   bloc: {
-    width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center",
     backgroundColor: T.bleuVoile,
   },
   blocProchain: { backgroundColor: T.bleuAction },

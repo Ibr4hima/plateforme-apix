@@ -18,7 +18,7 @@ import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type BaseCode = "code-investissement" | "modalites-application";
@@ -172,7 +172,7 @@ const s = creerStyles(() => ({
   pastilles: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   liste: { paddingHorizontal: 16, marginTop: 14 },
   meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
-  surface: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
+  surface: { backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },
   separateur: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginLeft: 72 },
   ligne: { flexDirection: "row", alignItems: "center", gap: 16, paddingVertical: 15, paddingHorizontal: 16 },
   numeroColonne: { width: 40, alignItems: "center" },
@@ -182,7 +182,7 @@ const s = creerStyles(() => ({
   ligneSous: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
 
   resultat: {
-    backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord,
+    backgroundColor: T.carte, borderRadius: coin(18), borderWidth: 1, borderColor: T.carteBord,
     paddingHorizontal: 16, paddingVertical: 13, marginBottom: 10,
   },
   resNumero: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },

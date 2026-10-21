@@ -22,7 +22,7 @@ import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/u
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
-import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { coin, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 type Point = { annee: number; valeur: number };
@@ -241,7 +241,7 @@ export default function VedetteIde() {
 
 const s = creerStyles(() => ({
   carte: {
-    marginHorizontal: ESPACE.m, backgroundColor: T.carte, borderRadius: RAYON.grand,
+    marginHorizontal: ESPACE.m, backgroundColor: T.carte, borderRadius: coin(RAYON.grand),
     borderCurve: "continuous", paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },

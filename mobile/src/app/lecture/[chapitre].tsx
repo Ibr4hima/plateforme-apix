@@ -20,7 +20,7 @@ import { getJson } from "@/lib/api";
 import { creerStyles, useSombre } from "@/lib/apparence";
 import { DEFILEMENT, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { romainDe } from "@/app/(onglets)/(accueil)/code/index";
 
 // Échelle typographique réglable (5 crans, Apple Books-like)
@@ -300,7 +300,7 @@ const s = creerStyles(() => ({
   },
   ornement: { width: 34, height: 2.5, borderRadius: 2, backgroundColor: T.orange, marginTop: 18, marginBottom: 8 },
   chapContenu: { fontFamily: POLICE.normal, color: T.texte, paddingHorizontal: MARGE, marginTop: 14 },
-  article: { paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 6, borderRadius: 14 },
+  article: { paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 6, borderRadius: coin(14) },
   articleSurligne: { backgroundColor: "#FFF6EB" },
   artEntete: { flexDirection: "row", alignItems: "center", gap: 12 },
   artNumero: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.1, textTransform: "uppercase" },

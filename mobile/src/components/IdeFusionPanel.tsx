@@ -19,7 +19,7 @@ import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
-import { POLICE, T, TYPO } from "@/theme";
+import { coin, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
 
@@ -199,7 +199,7 @@ const s = creerStyles(() => ({
   rangee: { paddingHorizontal: 16, marginTop: 30 },
 
   vedette: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     paddingHorizontal: 18, paddingVertical: 16, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord,
   },
@@ -226,7 +226,7 @@ const s = creerStyles(() => ({
 
   // Le compte d'opérations, année par année
   carteOperations: {
-    backgroundColor: T.carte, borderRadius: 18, borderCurve: "continuous",
+    backgroundColor: T.carte, borderRadius: coin(18), borderCurve: "continuous",
     paddingHorizontal: 18, paddingVertical: 6, overflow: "hidden",
     borderWidth: 1, borderColor: T.carteBord, marginTop: 12,
   },

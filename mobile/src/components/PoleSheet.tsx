@@ -14,7 +14,7 @@ import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
@@ -154,7 +154,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
 
 const s = creerStyles(() => ({
   entete: { flexDirection: "row", alignItems: "center", gap: 13 },
-  tuile: { width: 48, height: 54, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  tuile: { width: 48, height: 54, borderRadius: coin(14), alignItems: "center", justifyContent: "center" },
   surtitre: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 3 },
   titre: { fontSize: 20, fontFamily: POLICE.gras, color: T.encre, lineHeight: 26, letterSpacing: -0.4 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 8 },
@@ -162,7 +162,7 @@ const s = creerStyles(() => ({
   // Les chiffres dans un bloc blanc du groupe
   faits: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: coin(16), borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
   },
   pastilleType: { width: 9, height: 9, borderRadius: 5 },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },

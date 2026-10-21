@@ -35,7 +35,7 @@ import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier } from "@/lib/fdi";
 import { fmtUSD, fmtUnite } from "@/lib/format";
 import { dePays, lePays } from "@/lib/pays";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { coin, ECHELLE, POLICE, T } from "@/theme";
 
 type Indicateur = { code: string; libelle: string; unite: string; categorie: string };
 type Cellule = { valeur: number | null; annee?: number } | null;
@@ -511,7 +511,7 @@ const s = creerStyles(() => ({
   kpis: { gap: 10 },
   kpisRangee: { flexDirection: "row", gap: 10 },
   kpi: {
-    flex: 1, minWidth: 0, backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous",
+    flex: 1, minWidth: 0, backgroundColor: T.carte, borderRadius: coin(16), borderCurve: "continuous",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
     paddingHorizontal: 14, paddingTop: 13, paddingBottom: 12,
   },
@@ -539,7 +539,7 @@ const s = creerStyles(() => ({
 
   // Le face-à-face des échanges
   carte: {
-    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden",
+    backgroundColor: T.carte, borderRadius: coin(16), borderCurve: "continuous", overflow: "hidden",
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   faceAFace: { flexDirection: "row", gap: 14, paddingHorizontal: 16, paddingTop: 15, paddingBottom: 14 },

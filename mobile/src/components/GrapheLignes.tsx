@@ -18,7 +18,7 @@ import {
   runOnJS, useDerivedValue, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
 import { DUREE, RESSORT, SORTIE } from "@/lib/motion";
-import { POLICE, T } from "@/theme";
+import { coin, POLICE, T } from "@/theme";
 import { creerStyles, resoudre, useSombre } from "@/lib/apparence";
 
 export type Serie = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
@@ -353,7 +353,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelle
         {curseur !== null && lecturesCurseur.length > 0 && (
           <View pointerEvents="none" style={{
             position: "absolute", top: 2, left: bulleX, width: bulleL,
-            backgroundColor: "rgba(26,26,46,0.93)", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7,
+            backgroundColor: "rgba(26,26,46,0.93)", borderRadius: coin(10), paddingHorizontal: 10, paddingVertical: 7,
           }}>
             <TexteRN style={{ fontSize: 10.5, fontFamily: POLICE.gras, color: "#fff" }}>{curseur}</TexteRN>
             {lecturesCurseur.map(l => (
