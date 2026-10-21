@@ -77,14 +77,14 @@ export default function EnTetePage({ titre, titreCourt, recherche, bouton, segme
         {avecRecherche && (
           <BoutonBarre sf="magnifyingglass" materiel="search" label="Rechercher" onPress={basculerRecherche} />
         )}
-        {/* Le filtre : le symbole seul au repos, un disque PLEIN quand un
-            filtre est appliqué (iOS), le compte en pastille. Ce qui est filtré
-            ne s'affiche pas dans la page : il se lit dans la feuille des
-            filtres. */}
+        {/* Le filtre : le symbole seul, et quand un filtre est appliqué, son
+            compte dans une pastille bleue sur l'épaule du bouton — le filtre
+            de l'app Téléphone d'iOS 26. Ce qui est filtré ne s'affiche pas
+            dans la page : il se lit dans la feuille des filtres. */}
         {avecBouton && (
-          <BoutonBarre sf={badge ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease"}
+          <BoutonBarre sf="line.3.horizontal.decrease"
             materiel="filter_list" label={badge ? `Filtres, ${badge} actif${badge > 1 ? "s" : ""}` : "Filtres"} badge={badge}
-            onPress={() => rappels.current.bouton?.()} taille={IOS && badge ? 22 : undefined} />
+            onPress={() => rappels.current.bouton?.()} />
         )}
       </View>
     ) : undefined,
@@ -161,13 +161,17 @@ const s = creerStyles(() => ({
   boutonsBarre: { flexDirection: "row", alignItems: "center" },
   boutonIOS: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   boutonAndroid: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
-  // Le compte posé sur l'épaule du symbole, détouré de la couleur de la barre
+  // Le compte posé sur l'épaule du bouton, en bleu. iOS : le bleu du système,
+  // celui de la pastille du filtre de Téléphone, à cheval sur le bord du
+  // bouton. Android : la pastille de Material 3, à l'accent du téléphone,
+  // sur l'épaule de l'icône de 24 dp
   badge: {
-    position: "absolute", top: 2, right: 0, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 3.5,
-    backgroundColor: T.rouge, alignItems: "center", justifyContent: "center",
-    borderWidth: 1.5, borderColor: T.fond,
+    position: "absolute", top: -3, right: -5, minWidth: 17, height: 17, borderRadius: 8.5, paddingHorizontal: 4,
+    backgroundColor: IOS ? T.bleuSysteme : T.accent, alignItems: "center", justifyContent: "center",
   },
-  // Android : la pastille de Material 3 sur l'épaule de l'icône de 24 dp
-  badgeAndroid: { top: 8, right: 7 },
-  badgeTexte: { fontSize: 9.5, lineHeight: 12, ...FONTE.gras, color: "#fff", fontVariant: ["tabular-nums"] },
+  badgeAndroid: { top: 7, right: 6, minWidth: 16, height: 16, borderRadius: 8 },
+  badgeTexte: {
+    fontSize: 10, lineHeight: 13, ...FONTE.gras, fontVariant: ["tabular-nums"],
+    color: IOS ? "#FFFFFF" : T.surAccent,
+  },
 }));

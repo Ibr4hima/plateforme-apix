@@ -182,6 +182,11 @@ const JETONS = {
   // radio, en-tête de liste, bouton texte
   accent:      MATERIAL_YOU ? dyn(systeme("accent1_600"), systeme("accent1_200"))
     : dyn("#004f91", "#85B9EC"),
+  // iOS : le bleu du système (systemBlue), jour et nuit — celui des
+  // pastilles d'iOS, comme le compte du filtre de Téléphone
+  bleuSysteme: dyn("#007AFF", "#0A84FF"),
+  // Ce qui se pose sur l'accent (on primary) : le chiffre d'une pastille
+  surAccent:   MATERIAL_YOU ? dyn("#FFFFFF", systeme("accent1_800")) : dyn("#FFFFFF", "#0B1220"),
   // Android : la surface de la barre de navigation de Material 3 (surface
   // container) — un cran plus soutenue que la page le jour, plus claire la nuit
   surfaceBarre: dyn("#F1F3F6", "#151E2E"),
