@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import Reanime, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
-import { creerStyles } from "@/lib/apparence";
+import { creerStyles, useStyleResolu } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { ECHELLE, POLICE, T } from "@/theme";
@@ -275,10 +275,13 @@ export function SegmentsCapsule({ options, valeur, onChange, compact }: {
   useEffect(() => { position.value = withSpring(index, RESSORT.standard); }, [index, position]);
   const pas = largeur > 0 ? (largeur - 2 * BORD_CAPSULE) / options.length : 0;
   const styleCurseur = useAnimatedStyle(() => ({ width: pas, transform: [{ translateX: position.value * pas }] }));
+  // Le curseur est une vue Reanimated : sa couleur lui arrive résolue — un
+  // jeton dynamique d'iOS (DynamicColorIOS) y ferait tomber l'app
+  const curseur = useStyleResolu(s.curseur);
   return (
     <View style={[s.capsule, compact && s.capsuleCompacte]} accessibilityRole="tablist"
       onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
-      {pas > 0 && <Reanime.View style={[s.curseur, compact && s.curseurCompact, styleCurseur]} />}
+      {pas > 0 && <Reanime.View style={[curseur, compact && s.curseurCompact, styleCurseur]} />}
       {options.map((o, i) => (
         <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
           onPress={() => { if (o.cle !== valeur) { tick(); onChange(o.cle); } }}>

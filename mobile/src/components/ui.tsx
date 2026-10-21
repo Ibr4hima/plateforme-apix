@@ -58,6 +58,9 @@ type ProprietesTapable = {
 function TapableIOS({ onPress, onLongPress, disabled, style, surbrillance = true, hitSlop, onLayout, accessibilityRole, accessibilityState, accessibilityLabel, children }: ProprietesTapable) {
   const appui = useSharedValue(0);
   const styleResolu = useStyleResolu(style);
+  // Le voile est une vue Reanimated : sa couleur doit lui arriver RÉSOLUE. Un
+  // jeton dynamique d'iOS (DynamicColorIOS) y fait tomber l'app au lancement
+  const gris = useCouleur(T.surbrillance);
   const voileStyle = useAnimatedStyle(() => ({ opacity: appui.value }));
   const plat = (StyleSheet.flatten(styleResolu) || {}) as ViewStyle;
   return (
@@ -71,7 +74,7 @@ function TapableIOS({ onPress, onLongPress, disabled, style, surbrillance = true
       {children}
       {surbrillance ? (
         <Reanime.View pointerEvents="none" style={[StyleSheet.absoluteFill, {
-          backgroundColor: T.surbrillance,
+          backgroundColor: gris,
           borderRadius: plat.borderRadius, borderCurve: plat.borderCurve,
           borderTopLeftRadius: plat.borderTopLeftRadius, borderTopRightRadius: plat.borderTopRightRadius,
           borderBottomLeftRadius: plat.borderBottomLeftRadius, borderBottomRightRadius: plat.borderBottomRightRadius,
@@ -443,6 +446,9 @@ function FeuilleDessinee({
   // des feuilles de filtres ; Android garde sa feuille telle quelle
   const groupe = IOS && fondGroupe;
   const barre = IOS ? actions : undefined;
+  // La feuille est une vue Reanimated : son fond lui arrive résolu (un jeton
+  // dynamique d'iOS y ferait tomber l'app)
+  const fondFeuilleGroupe = useCouleur(T.fond);
   const H = Dimensions.get("window").height;
   // Point de départ : la card touchée si le tap vient d'avoir lieu, le bas sinon
   const [depart] = useState(() => {
@@ -546,7 +552,7 @@ function FeuilleDessinee({
         <FlouAnime animatedProps={propsFlou} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
       )}
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
-      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, groupe && { backgroundColor: T.fond },
+      <Reanime.View style={[feuilleResolue, { maxHeight: hauteur }, groupe && { backgroundColor: fondFeuilleGroupe },
         largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
         onLayout={e => { hauteurFeuille.value = e.nativeEvent.layout.height; }}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
