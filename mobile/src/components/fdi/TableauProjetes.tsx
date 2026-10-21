@@ -79,7 +79,9 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
       <Ondulable onPress={() => onChoisirPays()} style={s.pays} hitSlop={6}
         accessibilityRole="button" accessibilityLabel={`Pays : ${pays}. Changer`}>
         <Text style={s.paysNom} numberOfLines={1}>{pays}</Text>
-        <Icone sf="chevron.down" materiel="expand_more" taille={24} couleur={T.bleu} />
+        {/* Un chevron discret, détaché du nom, comme en tête des listes : il
+            dit qu'on peut changer de pays sans disputer le regard au nom */}
+        <Icone sf="chevron.down" materiel="expand_more" taille={15} couleur={T.bleu} poids="semibold" />
       </Ondulable>
 
       <CarteProjets q={projets} onOuvrir={p => setOuvert({ type: "projet", p })}
@@ -287,7 +289,7 @@ function Indispo({ onRetry }: { onRetry: () => void }) {
 
 const s = creerStyles(() => ({
   page: { paddingHorizontal: 16, paddingTop: 22, gap: 14 },
-  pays: { flexDirection: "row", alignItems: "center", gap: 2, alignSelf: "flex-start", paddingHorizontal: 4, marginBottom: 2 },
+  pays: { flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", paddingHorizontal: 4, marginBottom: 2 },
   paysNom: { fontSize: 27, lineHeight: 33, ...FONTE.gras, color: T.encre, letterSpacing: -0.6 },
 
   // La carte vedette des investissements réalisés, à l'arrondi près
