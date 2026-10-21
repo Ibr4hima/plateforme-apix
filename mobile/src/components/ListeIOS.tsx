@@ -228,19 +228,6 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
   );
 }
 
-/** Des valeurs énumérées en étiquettes, dans leur bloc (filiales, secteurs…). */
-export function Etiquettes({ valeurs }: { valeurs: string[] }) {
-  return (
-    <Bloc style={s.etiquettes}>
-      {valeurs.map(v => (
-        <View key={v} style={s.etiquette}>
-          <Text style={s.etiquetteTexte} maxFontSizeMultiplier={ECHELLE.texte}>{v}</Text>
-        </View>
-      ))}
-    </Bloc>
-  );
-}
-
 /** Le champ de recherche d'iOS 26 — celui de Podcasts : une CAPSULE grise,
     la loupe en tête, et à droite, hors du champ, le X rond d'iOS. Quand la
     recherche a été ouverte (la loupe d'un en-tête), le X la referme
@@ -377,9 +364,6 @@ const s = creerStyles(() => ({
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   tuileLabel: { fontSize: 11.5, fontFamily: POLICE.moyen, color: T.bleu },
-  etiquettes: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingVertical: 12 },
-  etiquette: { backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 5 },
-  etiquetteTexte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.encre },
   capsule: {
     flexDirection: "row", height: 42, padding: BORD_CAPSULE,
     borderRadius: 21, borderCurve: "continuous",

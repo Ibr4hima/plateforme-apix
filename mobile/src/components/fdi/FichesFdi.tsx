@@ -12,7 +12,7 @@
 // projet n'a que lui, un tiret tient la place.
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
-import { Bloc, EnTeteSection, Etiquettes, Groupe, Ligne, LigneValeur } from "@/components/ListeIOS";
+import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur } from "@/components/ListeIOS";
 import { Os } from "@/components/Squelette";
 import { Feuille } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
@@ -69,18 +69,22 @@ function Rangees({ children }: { children: React.ReactNode }) {
   return <View style={s.rangees}>{children}</View>;
 }
 
-/** Des valeurs ÉNUMÉRÉES, en jetons — une liste de noms, pas un tableau. */
-export function Jetons({ valeurs }: { valeurs: string[] }) {
-  if (IOS) return <Etiquettes valeurs={valeurs} />;
-  return (
-    <View style={s.jetons}>
+/** Des valeurs ÉNUMÉRÉES — filiales, secteurs, activités — en liste à puces :
+    des noms qui se lisent l'un sous l'autre. En badges, ils avaient l'air de
+    filtres à toucher, et un intitulé long (« Édition et diffusion sur Internet
+    et moteurs de recherche ») se cassait dans sa pastille. */
+function Puces({ valeurs }: { valeurs: string[] }) {
+  const liste = (
+    <View style={s.puces}>
       {valeurs.map(v => (
-        <View key={v} style={s.jeton}>
-          <Text style={s.jetonTexte} maxFontSizeMultiplier={ECHELLE.texte}>{v}</Text>
+        <View key={v} style={s.puce}>
+          <View style={s.puceRond} />
+          <Text style={s.puceTexte} maxFontSizeMultiplier={ECHELLE.texte}>{v}</Text>
         </View>
       ))}
     </View>
   );
+  return IOS ? <Bloc>{liste}</Bloc> : liste;
 }
 
 /** Les chiffres d'ouverture : deux ou trois valeurs en grand, côte à côte,
@@ -290,7 +294,7 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
               n'y figurent pas, d'où une somme souvent inférieure au total. */}
           {f.filiales.length > 0 && (
             <SectionFiche titre={f.filiales.length > 1 ? "Filiales" : "Filiale"}>
-              <Jetons valeurs={f.filiales.map(x => x.nom)} />
+              <Puces valeurs={f.filiales.map(x => x.nom)} />
             </SectionFiche>
           )}
           {/* OÙ, ET COMBIEN DE FOIS : trente-neuf projets dans un pays et un
@@ -319,18 +323,18 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
           )}
           {f.secteurs.length > 0 && (
             <SectionFiche titre={f.secteurs.length > 1 ? "Secteurs d'investissement" : "Secteur d'investissement"}>
-              <Jetons valeurs={f.secteurs.map(x => x.nom)} />
+              <Puces valeurs={f.secteurs.map(x => x.nom)} />
             </SectionFiche>
           )}
           {f.sous_secteurs.length > 0 && (
             <SectionFiche titre={f.sous_secteurs.length > 1 ? "Sous-secteurs" : "Sous-secteur"}>
-              <Jetons valeurs={f.sous_secteurs.map(x => x.nom)} />
+              <Puces valeurs={f.sous_secteurs.map(x => x.nom)} />
             </SectionFiche>
           )}
           {/* « MENÉES », non « prévues » : celles de projets déjà annoncés. */}
           {f.activites.length > 0 && (
             <SectionFiche titre={f.activites.length > 1 ? "Activités menées" : "Activité menée"}>
-              <Jetons valeurs={f.activites.map(x => x.nom)} />
+              <Puces valeurs={f.activites.map(x => x.nom)} />
             </SectionFiche>
           )}
         </>
@@ -373,12 +377,11 @@ const s = creerStyles(() => ({
   rangeeLabel: { width: 112, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
   rangeeValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
 
-  jetons: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  jeton: {
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.carteBord,
-    borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5,
-  },
-  jetonTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.texte },
+  puces: { gap: IOS ? 10 : 8 },
+  puce: { flexDirection: "row", alignItems: "flex-start", gap: 11 },
+  // Le point, centré sur la première ligne du texte
+  puceRond: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: T.bleu, marginTop: IOS ? 7.5 : 6.5 },
+  puceTexte: { flex: 1, fontSize: IOS ? 15 : 13, lineHeight: IOS ? 20 : 18, fontFamily: POLICE.normal, color: T.encre },
 
   // Un filet ALPHA, jamais un jeton dynamique : une bordure ne suit pas le
   // changement d'apparence (voir theme.ts)
