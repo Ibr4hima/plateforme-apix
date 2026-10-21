@@ -46,6 +46,9 @@
           "dark": {
             "image": "./assets/images/splash-icon.png",
             "backgroundColor": "#0B1220"
+          },
+          "ios": {
+            "imageWidth": 300
           }
         }
       ],

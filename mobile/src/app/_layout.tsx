@@ -10,17 +10,24 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
-import LancementAnime from "@/components/LancementAnime";
 import { EMPREINTE_API } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
 import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
+// LE LANCEMENT, C'EST LE SPLASH D'iOS, ET LUI SEUL : le logo net et fixe du
+// système, qui reste jusqu'à ce que l'app ait posé son premier écran, puis
+// s'efface en fondu. Une seconde page de lancement dessinée en JavaScript
+// prenait le relais — logo agrandi au-delà de sa définition, tracé de gauche
+// à droite au rythme d'un fil JS encore occupé au démarrage, liseré
+// lumineux, zoom en sortie : une image floue et instable, « une télé mal
+// branchée ».
+SplashScreen.setOptions({ fade: true, duration: 350 });
 
 // React Query suit l'état réseau réel : les requêtes se mettent en pause
 // hors ligne et repartent seules au retour de la connexion
@@ -46,13 +53,19 @@ export default function RacineLayout() {
   const [persister] = useState(() => createAsyncStoragePersister({
     storage: AsyncStorage, key: "apix-cache-v1", throttleTime: 5000,
   }));
-  const [lancement, setLancement] = useState(true);
-  const [polices] = useFonts({
+  const [polices, erreurPolices] = useFonts({
     GoogleSans_400Regular, GoogleSans_500Medium, GoogleSans_600SemiBold, GoogleSans_700Bold,
     // La police d'icônes de la plateforme (Material Symbols, rendu par ligature)
     MaterialSymbols: require("../../assets/fonts/MaterialSymbolsOutlined.ttf"),
   });
-  useEffect(() => { if (polices) SplashScreen.hideAsync(); }, [polices]);
+  // Le splash s'efface quand la racine est mesurée — l'app est alors dessinée
+  // sous lui, et le fondu la dévoile entière, sans écran vide entre les deux
+  const splashParti = useRef(false);
+  const surPremiereMesure = useCallback(() => {
+    if (splashParti.current) return;
+    splashParti.current = true;
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
   // Android : les feuilles de style lisent leur variante AU RENDU (creerStyles)
   // — encore faut-il que tout l'arbre re-rende quand l'apparence change. iOS
@@ -65,7 +78,9 @@ export default function RacineLayout() {
   const optionsPile = useOptionsPile();
   const cleApparence = Platform.OS === "android" ? (sombre ? "nuit" : "jour") : "app";
 
-  if (!polices) return null;
+  // Une police qui ne se charge pas ne doit pas bloquer l'app sous son splash :
+  // elle démarre alors avec les polices du système
+  if (!polices && !erreurPolices) return null;
 
   return (
     <PersistQueryClientProvider client={queryClient}
@@ -74,7 +89,7 @@ export default function RacineLayout() {
           système ; Android : blanche, sur les bandeaux bleus de l'app */}
       <StatusBar style={IOS ? "auto" : "light"} />
       <GestureHandlerRootView style={{ flex: 1 }}>
-      <View key={cleApparence} style={{ flex: 1 }}>
+      <View key={cleApparence} style={{ flex: 1 }} onLayout={surPremiereMesure}>
       {/* Tout vit sous les onglets : chaque onglet a sa pile, et ses écrans
           s'y empilent (voir lib/navigation et les _layout des onglets) — sauf
           la LECTURE d'un chapitre des lois, empilée au-dessus d'eux : la
@@ -86,7 +101,6 @@ export default function RacineLayout() {
       </Stack>
       {/* Hors ligne, rien ne l'annonce : l'app sert ses données en cache, en
           silence, et se remet à jour d'elle-même au retour du réseau */}
-      {lancement && <LancementAnime onFini={() => setLancement(false)} />}
       </View>
       </GestureHandlerRootView>
     </PersistQueryClientProvider>
