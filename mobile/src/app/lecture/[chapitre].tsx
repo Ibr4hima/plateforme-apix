@@ -28,11 +28,16 @@ const CORPS = [15, 16.5, 18, 19.5, 21];
 const CLE_TAILLE = "code.taille";
 const CLE_SOMBRE = "code.sombre";
 
-// Palettes de lecture jour / nuit
+// Palettes de lecture jour / nuit. DEUX TEINTES, DEUX RÔLES : l'orange dit
+// le chapitre — son surtitre, le trait sous son titre, la progression de sa
+// lecture ; le bleu dit la structure — articles, sections, fin du chapitre,
+// passage au chapitre voisin, article retrouvé par la recherche.
 const PALETTES = {
   jour: {
     fond: "#fff", titre: "#1a1a2e", corps: "#33383F", intro: "#4a5568",
-    bleu: "#004f91", filet: "#F2F0EF", surligne: "#FFF6EB",
+    bleu: "#004f91", filet: "#F2F0EF", surligne: "#EAF2FB",
+    bleuVoile: "rgba(0,79,145,0.05)", bleuBord: "rgba(0,79,145,0.28)", bleuPoint: "rgba(0,79,145,0.45)",
+    ondulation: "rgba(0,79,145,0.12)",
     neutreFond: "rgba(60,64,67,0.06)", neutreTexte: "#5F6368", neutreSep: "rgba(60,64,67,0.18)",
   },
   // Nuit : EXACTEMENT le bleu des CARTES de l'app (T.carte, #151E2E) — pas
@@ -41,7 +46,9 @@ const PALETTES = {
   // surfaces reposent. Les encres reprennent les jetons du thème.
   nuit: {
     fond: "#151E2E", titre: "#EDF1F7", corps: "#C3CDDA", intro: "#9AA7B8",
-    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(255,164,92,0.14)",
+    bleu: "#85B9EC", filet: "rgba(122,138,164,0.30)", surligne: "rgba(133,185,236,0.14)",
+    bleuVoile: "rgba(133,185,236,0.07)", bleuBord: "rgba(133,185,236,0.34)", bleuPoint: "rgba(133,185,236,0.55)",
+    ondulation: "rgba(133,185,236,0.16)",
     neutreFond: "rgba(122,138,164,0.16)", neutreTexte: "#B9C2CF", neutreSep: "rgba(122,138,164,0.34)",
   },
 } as const;
@@ -62,11 +69,14 @@ export default function Lecteur() {
       if (v !== null && !isNaN(n)) setCran(Math.min(CORPS.length - 1, Math.max(0, n)));
     }).catch(() => {});
   }, []);
-  const changerCran = (delta: number) => setCran(c => {
-    const n = Math.min(CORPS.length - 1, Math.max(0, c + delta));
-    AsyncStorage.setItem(CLE_TAILLE, String(n)).catch(() => {});
-    return n;
-  });
+  const changerCran = (delta: number) => {
+    retenirPlace();
+    setCran(c => {
+      const n = Math.min(CORPS.length - 1, Math.max(0, c + delta));
+      AsyncStorage.setItem(CLE_TAILLE, String(n)).catch(() => {});
+      return n;
+    });
+  };
   // Mode sombre de lecture : il SUIT l'apparence de l'app par défaut — une
   // app en nuit qui ouvre un lecteur en plein jour éblouit — et la bascule
   // du lecteur ne fait que trancher pour cette lecture-ci, mémorisée.
@@ -79,10 +89,13 @@ export default function Lecteur() {
       else if (v === "0") setSombre(false);
     }).catch(() => {});
   }, []);
-  const basculerSombre = () => setSombre(v => {
-    AsyncStorage.setItem(CLE_SOMBRE, v ? "0" : "1").catch(() => {});
-    return !v;
-  });
+  const basculerSombre = () => {
+    retenirPlace();
+    setSombre(v => {
+      AsyncStorage.setItem(CLE_SOMBRE, v ? "0" : "1").catch(() => {});
+      return !v;
+    });
+  };
   const P = sombre ? PALETTES.nuit : PALETTES.jour;
   // Progression de lecture : valeur animée alimentée par le défilement
   const defilementY = useRef(new Animated.Value(0)).current;
@@ -90,6 +103,33 @@ export default function Lecteur() {
   const hauteurEcran = useRef(0);
   const hauteurContenu = useRef(0);
   const majMax = () => setHauteurMax(Math.max(1, hauteurContenu.current - hauteurEcran.current));
+
+  // LE LECTEUR NE PERD PAS SA PLACE QUAND IL RÈGLE SA PAGE. Passer en lecture
+  // de nuit ou changer la taille du texte le ramenait en haut du chapitre :
+  // la barre du système, reconfigurée, réinitialisait le défilement. Avant
+  // chaque réglage, la place est retenue — en proportion du texte, que la
+  // taille allonge ou raccourcit —, puis rendue une fois la page recomposée ;
+  // un retour en haut qui survient dans l'instant (0,6 s : le temps que la
+  // barre se reconfigure) est aussitôt annulé.
+  const yCourant = useRef(0);
+  const place = useRef<{ part: number; y: number; jusqua: number } | null>(null);
+  const retenirPlace = () => {
+    place.current = {
+      y: yCourant.current, part: yCourant.current / Math.max(1, hauteurContenu.current), jusqua: Date.now() + 600,
+    };
+  };
+  const rendrePlace = () => {
+    const p = place.current;
+    if (!p || Date.now() > p.jusqua) { place.current = null; return; }
+    const max = Math.max(0, hauteurContenu.current - hauteurEcran.current);
+    const cible = Math.min(max, Math.round(p.part * hauteurContenu.current));
+    defileur.current?.scrollTo({ y: cible, animated: false });
+  };
+  const surDefilement = (y: number) => {
+    yCourant.current = y;
+    // Un saut en haut, que le lecteur n'a pas fait : la place est rendue
+    if (y <= 1 && place.current && place.current.y > 40) rendrePlace();
+  };
 
   const { data: chapitres, isLoading } = useQuery({
     queryKey: ["code", base],
@@ -101,6 +141,13 @@ export default function Lecteur() {
   const chap = index >= 0 ? liste[index] : null;
   const precedent = index > 0 ? liste[index - 1] : null;
   const suivant = index >= 0 && index < liste.length - 1 ? liste[index + 1] : null;
+
+  // Après un réglage, la page dessinée : la place est rendue (la lecture de
+  // nuit ne change pas la hauteur du texte, rien d'autre ne le ferait)
+  useEffect(() => {
+    const image = requestAnimationFrame(() => rendrePlace());
+    return () => cancelAnimationFrame(image);
+  }, [sombre, cran]);
 
   // Tailles dérivées du cran choisi
   const corps = CORPS[cran];
@@ -121,6 +168,8 @@ export default function Lecteur() {
   }, [art, chap?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const allerA = (id: string) => {
+    // Un autre chapitre s'ouvre en haut : aucune place à rendre
+    place.current = null;
     positions.current = {};
     defileur.current?.scrollTo({ y: 0, animated: false });
     router.replace({ pathname: "/lecture/[chapitre]", params: { chapitre: id, base } } as any);
@@ -128,20 +177,14 @@ export default function Lecteur() {
 
   const numeroChap = chap ? (chap.numero === 1 ? "PREMIER" : String(chap.num_display).toUpperCase()) : "";
 
-  const Article = ({ a }: { a: any }) => (
-    <View onLayout={e => enregistrerPosition(a.id, e.nativeEvent.layout.y)}
-      style={[s.article, a.id === surligneId && { backgroundColor: P.surligne }]}>
-      <View style={s.artEntete}>
-        <Text style={[s.artNumero, { color: P.bleu }]}>Article {a.num_display}</Text>
-        <View style={[s.artFilet, { backgroundColor: P.filet }]} />
-      </View>
-      {a.titre ? <Text style={[s.artTitre, { color: P.titre, fontSize: artTitreTaille, lineHeight: Math.round(artTitreTaille * 1.35) }]}>{a.titre}</Text> : null}
-      {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
-      <TexteRiche html={a.contenu || ""} couleur={P.corps} fontSize={corps} lineHeight={interligne} />
-    </View>
+  const article = (a: any) => (
+    <Article key={a.id} a={a} P={P} surligne={a.id === surligneId} corps={corps} interligne={interligne}
+      titreTaille={artTitreTaille} onPosition={enregistrerPosition} />
   );
 
   const deuxPilules = !!(precedent && suivant);
+  // Les pilules du chapitre voisin, au bleu de la page
+  const pilule = { borderColor: P.bleuBord, backgroundColor: P.bleuVoile };
 
   // La barre du système, à la couleur de la page — celle d'UIKit sur iOS,
   // celle de Material sur Android : le retour et les réglages à droite, en
@@ -150,7 +193,10 @@ export default function Lecteur() {
   // sur Android). Pas de titre : le chapitre s'ouvre dans la page, en grand ;
   // la barre ne porte que les commandes. Le retour prend l'encre de la page :
   // le bleu de l'app disparaîtrait sur la page de nuit. Mémoïsé : la barre
-  // n'est reconfigurée que si la page ou la taille changent.
+  // n'est reconfigurée qu'au passage jour / nuit et quand A− ou A+ s'éteint
+  // ou se rallume — pas à chaque cran (ses boutons agissent par mise à jour
+  // fonctionnelle de l'état, ils n'ont pas à être recréés).
+  const auPlusPetit = cran === 0, auPlusGrand = cran === CORPS.length - 1;
   const optionsBarre = useMemo(() => ({
     title: "",
     headerTintColor: P.titre,
@@ -161,13 +207,13 @@ export default function Lecteur() {
         <BoutonLecture sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
           couleur={P.titre} onPress={basculerSombre} label={sombre ? "Lecture de jour" : "Lecture de nuit"} />
         <BoutonLecture sf="textformat.size.smaller" materiel="text_decrease" couleur={P.titre}
-          onPress={() => changerCran(-1)} inactif={cran === 0} label="Texte plus petit" />
+          onPress={() => changerCran(-1)} inactif={auPlusPetit} label="Texte plus petit" />
         <BoutonLecture sf="textformat.size.larger" materiel="text_increase" couleur={P.titre}
-          onPress={() => changerCran(1)} inactif={cran === CORPS.length - 1} label="Texte plus grand" />
+          onPress={() => changerCran(1)} inactif={auPlusGrand} label="Texte plus grand" />
       </View>
     ),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [sombre, cran]);
+  }), [sombre, auPlusPetit, auPlusGrand]);
 
   return (
     <View style={{ flex: 1, backgroundColor: P.fond }}>
@@ -178,9 +224,14 @@ export default function Lecteur() {
         style={{ flex: 1 }}
         contentContainerStyle={[{ paddingTop: 18, paddingBottom: 60 }, cap]}
         scrollEventThrottle={16}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: defilementY } } }], { useNativeDriver: false })}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: defilementY } } }], {
+          useNativeDriver: false, listener: (e: any) => surDefilement(e.nativeEvent.contentOffset.y),
+        })}
+        // Le lecteur qui fait défiler reprend la main : plus rien à rendre
+        onScrollBeginDrag={() => { place.current = null; }}
         onLayout={e => { hauteurEcran.current = e.nativeEvent.layout.height; majMax(); }}
-        onContentSizeChange={(_, h) => { hauteurContenu.current = h; majMax(); }}>
+        // Le texte recomposé à sa nouvelle taille : la place est rendue
+        onContentSizeChange={(_, h) => { hauteurContenu.current = h; majMax(); rendrePlace(); }}>
         {isLoading && <ActivityIndicator color={T.bleu} style={{ marginTop: 40 }} />}
         {chap && (
           <>
@@ -196,29 +247,29 @@ export default function Lecteur() {
 
             {/* Articles directs */}
             <View>
-              {(chap.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
+              {(chap.articles || []).map(article)}
             </View>
 
             {/* Sections */}
             {(chap.sections || []).map((sec: any) => (
               <View key={sec.id}>
                 <View style={s.section}>
-                  <View style={s.sectionFilet} />
-                  <Text style={s.sectionNumero}>SECTION {String(sec.num_display).toUpperCase()}</Text>
+                  <View style={[s.sectionFilet, { backgroundColor: P.bleu }]} />
+                  <Text style={[s.sectionNumero, { color: P.bleu }]}>SECTION {String(sec.num_display).toUpperCase()}</Text>
                   <Text style={[s.sectionTitre, { color: P.titre }]}>{sec.titre}</Text>
                 </View>
                 {sec.contenu ? (
                   <TexteRiche html={sec.contenu} couleur={P.intro} fontSize={corps} lineHeight={interligne} />
                 ) : null}
-                {(sec.articles || []).map((a: any) => <Article key={a.id} a={a} />)}
+                {(sec.articles || []).map(article)}
               </View>
             ))}
 
             {/* Fin de chapitre : ornement centré */}
             <View style={s.fin}>
-              <View style={s.finPoint} />
-              <View style={[s.finPoint, { width: 5, height: 5, borderRadius: 3 }]} />
-              <View style={s.finPoint} />
+              <View style={[s.finPoint, { backgroundColor: P.bleuPoint }]} />
+              <View style={[s.finPoint, { width: 5, height: 5, borderRadius: 3, backgroundColor: P.bleuPoint }]} />
+              <View style={[s.finPoint, { backgroundColor: P.bleuPoint }]} />
             </View>
 
             {/* Navigation entre chapitres : pilules (flèches seulement quand
@@ -226,17 +277,17 @@ export default function Lecteur() {
             {(precedent || suivant) && (
               <View style={s.navigation}>
                 {precedent ? (
-                  <Pressable onPress={() => allerA(precedent.id)} android_ripple={{ color: "rgba(202,99,31,0.16)" }}
-                    style={({ pressed }) => [s.navPilule, IOS && pressed && { opacity: 0.5 }]}>
-                    {!deuxPilules && <Ionicons name="chevron-back" size={13} color={T.orange} />}
-                    <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={s.navTexte} />
+                  <Pressable onPress={() => allerA(precedent.id)} android_ripple={{ color: P.ondulation }}
+                    style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
+                    {!deuxPilules && <Ionicons name="chevron-back" size={13} color={P.bleu} />}
+                    <TexteDefilant texte={`${romainDe(precedent)}. ${precedent.titre}`} style={[s.navTexte, { color: P.bleu }]} />
                   </Pressable>
                 ) : null}
                 {suivant ? (
-                  <Pressable onPress={() => allerA(suivant.id)} android_ripple={{ color: "rgba(202,99,31,0.16)" }}
-                    style={({ pressed }) => [s.navPilule, IOS && pressed && { opacity: 0.5 }]}>
-                    <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={s.navTexte} />
-                    {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={T.orange} />}
+                  <Pressable onPress={() => allerA(suivant.id)} android_ripple={{ color: P.ondulation }}
+                    style={({ pressed }) => [s.navPilule, pilule, IOS && pressed && { opacity: 0.5 }]}>
+                    <TexteDefilant texte={`${romainDe(suivant)}. ${suivant.titre}`} style={[s.navTexte, { color: P.bleu }]} />
+                    {!deuxPilules && <Ionicons name="chevron-forward" size={13} color={P.bleu} />}
                   </Pressable>
                 ) : null}
               </View>
@@ -258,6 +309,27 @@ export default function Lecteur() {
           }]} />
         </View>
       </View>
+    </View>
+  );
+}
+
+/** Un article : son numéro, son titre, son texte. Un composant du module, et
+    non une fonction du lecteur : recréé à chaque rendu, il remontait tous les
+    articles à chaque réglage. */
+function Article({ a, P, surligne, corps, interligne, titreTaille, onPosition }: {
+  a: any; P: (typeof PALETTES)[keyof typeof PALETTES]; surligne: boolean; corps: number; interligne: number;
+  titreTaille: number; onPosition: (id: string, y: number) => void;
+}) {
+  return (
+    <View onLayout={e => onPosition(a.id, e.nativeEvent.layout.y)}
+      style={[s.article, surligne && { backgroundColor: P.surligne }]}>
+      <View style={s.artEntete}>
+        <Text style={[s.artNumero, { color: P.bleu }]}>Article {a.num_display}</Text>
+        <View style={[s.artFilet, { backgroundColor: P.filet }]} />
+      </View>
+      {a.titre ? <Text style={[s.artTitre, { color: P.titre, fontSize: titreTaille, lineHeight: Math.round(titreTaille * 1.35) }]}>{a.titre}</Text> : null}
+      {/* Le contenu est stocké en HTML riche (listes…) : converti en texte à puces */}
+      <TexteRiche html={a.contenu || ""} couleur={P.corps} fontSize={corps} lineHeight={interligne} />
     </View>
   );
 }
@@ -301,26 +373,26 @@ const s = creerStyles(() => ({
   ornement: { width: 34, height: 2.5, borderRadius: 2, backgroundColor: T.orange, marginTop: 18, marginBottom: 8 },
   chapContenu: { fontFamily: POLICE.normal, color: T.texte, paddingHorizontal: MARGE, marginTop: 14 },
   article: { paddingHorizontal: MARGE, paddingTop: 26, paddingBottom: 6, borderRadius: coin(14) },
-  articleSurligne: { backgroundColor: "#FFF6EB" },
   artEntete: { flexDirection: "row", alignItems: "center", gap: 12 },
   artNumero: { fontSize: 12, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.1, textTransform: "uppercase" },
   artFilet: { flex: 1, height: 1, backgroundColor: T.filet },
   artTitre: { fontFamily: POLICE.demi, color: T.encre, marginTop: 9, letterSpacing: -0.2 },
   artContenu: { fontFamily: POLICE.normal, color: "#33383F", marginTop: 9 },
   section: { alignItems: "center", paddingHorizontal: MARGE, paddingTop: 38, paddingBottom: 2 },
-  sectionFilet: { width: 26, height: 2, borderRadius: 2, backgroundColor: T.orange, marginBottom: 12 },
-  sectionNumero: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 2.2 },
+  // La teinte vient de la palette de lecture (le bleu de la page)
+  sectionFilet: { width: 26, height: 2, borderRadius: 2, marginBottom: 12 },
+  sectionNumero: { fontSize: 10.5, fontFamily: POLICE.gras, letterSpacing: 2.2 },
   sectionTitre: {
     fontSize: 16.5, fontFamily: POLICE.demi, color: T.encre, textAlign: "center",
     lineHeight: 22, letterSpacing: -0.2, marginTop: 7,
   },
   fin: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 40 },
-  finPoint: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: "rgba(202,99,31,0.55)" },
+  finPoint: { width: 3.5, height: 3.5, borderRadius: 2 },
   navigation: { flexDirection: "row", gap: 10, marginTop: 26, marginHorizontal: MARGE },
   navPilule: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
-    borderWidth: 1, borderColor: "rgba(202,99,31,0.42)", backgroundColor: "rgba(202,99,31,0.05)",
+    borderWidth: 1,
     borderRadius: 999, paddingVertical: 13, paddingHorizontal: 14, minWidth: 0,
   },
-  navTexte: { fontSize: 13, fontFamily: POLICE.demi, color: T.orange, letterSpacing: -0.2, flexShrink: 1 },
+  navTexte: { fontSize: 13, fontFamily: POLICE.demi, letterSpacing: -0.2, flexShrink: 1 },
 }));
