@@ -11,19 +11,21 @@ import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
   LayoutChangeEvent, Modal, Platform, Pressable, ScrollView,
-  StyleProp, StyleSheet, Text, View, ViewStyle,
+  StyleProp, StyleSheet, Text, View, ViewStyle, type ModalProps,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Reanime, {
   Easing, FadeInDown, LinearTransition,
   runOnJS, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
+import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
+import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const ANDROID = Platform.OS === "android";
@@ -308,20 +310,74 @@ export function RangeeStats({ items }: {
   );
 }
 
-// ── Feuille : l'échafaudage des bottom sheets ────────────────────────────────
-// Fond assombri, poignée, en-tête (titre + fermer), sous-en-tête libre
-// (pilules…), corps défilant. `pied` fixe optionnel (boutons de filtres).
-// Transition contextuelle : la feuille « pousse » depuis la card touchée
-// (origine capturée à la racine) au lieu de glisser génériquement.
-export function Feuille({ titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, largeurMax, children }: {
+// ── Feuille : l'échafaudage des feuilles — CHAQUE SYSTÈME LA SIENNE ──────────
+// Le même contenu partout : en-tête (titre + fermer), sous-en-tête libre
+// (pilules…), corps défilant, `pied` fixe optionnel (boutons de filtres).
+// Seule la feuille qui le porte change.
+//
+// SUR iOS : la feuille DU SYSTÈME (UIKit, présentation « pageSheet »). Elle
+// monte du bas et l'écran d'origine recule derrière elle ; elle se ferme d'un
+// glissement vers le bas, avec le suivi du doigt et l'inertie d'iOS — y
+// compris depuis le haut de son contenu ; sur iPad, iPadOS la centre. Une
+// feuille ouverte depuis une autre s'empile par-dessus, comme chez Apple.
+//
+// SUR ANDROID : la feuille dessinée ici. Fond assombri, poignée, transition
+// contextuelle : elle « pousse » depuis la card touchée (origine capturée à
+// la racine) au lieu de glisser génériquement.
+type ProprietesFeuille = {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
+  /** Hauteur maximale (Android) — sur iOS, la feuille du système a la sienne. */
   hauteur?: `${number}%`; ecart?: number; pied?: React.ReactNode; sansDefilement?: boolean;
   /** Sur tablette, la feuille se plafonne et se centre au lieu de s'étirer
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
    *  effet sur téléphone, plus étroit que le plafond. */
   largeurMax?: number;
   children: React.ReactNode;
-}) {
+};
+
+export function Feuille(props: ProprietesFeuille) {
+  return IOS ? <FeuilleIOS {...props} /> : <FeuilleAndroid {...props} />;
+}
+
+// Sur iPad, la feuille suit l'écran dans toutes ses orientations ; sur
+// iPhone, l'app reste en portrait
+const ORIENTATIONS_FEUILLE: ModalProps["supportedOrientations"] = IPAD
+  ? ["portrait", "portrait-upside-down", "landscape-left", "landscape-right"]
+  : ["portrait"];
+
+function FeuilleIOS({ titre, sousEntete, onClose, ecart = 20, pied, sansDefilement, largeurMax, children }: ProprietesFeuille) {
+  // Sur iPad, le contenu garde sa largeur de lecture au centre de la feuille
+  const colonne: ViewStyle | null = largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null;
+  return (
+    <Modal visible animationType="slide" presentationStyle="pageSheet"
+      allowSwipeDismissal onRequestClose={onClose} supportedOrientations={ORIENTATIONS_FEUILLE}>
+      <GestureHandlerRootView style={sf.feuilleIOS}>
+        <View style={[sf.entete, colonne]}>
+          {typeof titre === "string"
+            ? <Text style={sf.titre} accessibilityRole="header">{titre}</Text>
+            : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
+          {/* Le bouton fermer d'iOS : une croix grise dans un disque */}
+          <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Fermer"
+            style={({ pressed }) => [sf.fermer, pressed && { opacity: 0.5 }]}>
+            <Icone sf="xmark" materiel="close" taille={13} poids="bold" couleur={T.gris} />
+          </Pressable>
+        </View>
+        {sousEntete ? <View style={colonne}>{sousEntete}</View> : null}
+        {sansDefilement ? <View style={[{ flex: 1 }, colonne]}>{children}</View> : (
+          <ScrollView style={{ marginTop: ESPACE.m }}
+            contentContainerStyle={[{ gap: ecart, paddingBottom: pied ? ESPACE.m : 36 }, colonne]}
+            showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets>
+            {children}
+          </ScrollView>
+        )}
+        {pied ? <View style={colonne}>{pied}</View> : null}
+      </GestureHandlerRootView>
+    </Modal>
+  );
+}
+
+function FeuilleAndroid({ titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, largeurMax, children }: ProprietesFeuille) {
   const H = Dimensions.get("window").height;
   // Point de départ : la card touchée si le tap vient d'avoir lieu, le bas sinon
   const [depart] = useState(() => {
@@ -592,6 +648,9 @@ const sf = creerStyles(() => ({
     borderCurve: "continuous", overflow: "hidden",
     paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
   },
+  // iOS : la feuille du système porte déjà ses coins et sa présentation —
+  // reste à poser le fond et les marges du contenu
+  feuilleIOS: { flex: 1, backgroundColor: T.carte, paddingHorizontal: 22, paddingTop: 20 },
   zonePoignee: { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 },
   poignee: { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
