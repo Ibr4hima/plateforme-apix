@@ -220,10 +220,12 @@ export default function StatistiquesEcran() {
 
   return (
     <>
-      {/* L'en-tête est ancré hors du défilement */}
-      <View style={{ flex: 1, backgroundColor: T.fond }}>
+      {/* L'en-tête est ancré hors du défilement. AUCUNE VUE AUTOUR DE LA
+          LISTE : retoucher l'onglet remonte, sur iOS, la liste que le système
+          trouve en suivant le premier enfant de l'écran — elle doit être là,
+          comme sur l'Accueil. */}
         <EnTetePage titre="Échanges commerciaux" titreCourt="Économie" bouton={boutonHero} />
-        <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingBottom: margeBas }}>
+        <Animated.ScrollView ref={defilement} style={{ flex: 1, backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingBottom: margeBas }}>
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -259,7 +261,6 @@ export default function StatistiquesEcran() {
           rendreVedette()
         )}
         </Animated.ScrollView>
-      </View>
 
       {paysOuvert && (
         <PaysSheet pays={pays || []} choisi={paysId}

@@ -16,7 +16,7 @@
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, ScrollView } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import { ChipFiltre } from "@/components/ui";
 import { tick } from "@/lib/haptique";
@@ -93,10 +93,12 @@ export default function IdeEcran() {
   return (
     <>
     {/* L'en-tête est ANCRÉ hors du défilement : le retour et le sélecteur de
-        vue restent sous le pouce, même au bas d'une page de trois sections */}
-    <View style={{ flex: 1, backgroundColor: T.fond }}>
+        vue restent sous le pouce, même au bas d'une page de trois sections.
+        AUCUNE VUE AUTOUR DE LA LISTE : retoucher l'onglet remonte, sur iOS,
+        la liste que le système trouve en suivant le premier enfant de
+        l'écran — elle doit être là, comme sur l'Accueil. */}
       <EnTetePage titre="Investissements privés" titreCourt="Investissements" bouton={boutonHero} />
-      <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
+      <ScrollView ref={defilement} style={{ flex: 1, backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
 
       {/* Les trois familles en chips */}
       <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}
@@ -134,7 +136,6 @@ export default function IdeEcran() {
         </>
       )}
       </ScrollView>
-    </View>
 
     {sourceOuverte && (onglet === "nationaux" ? (
       <SourceNationalSheet refs={refsBdef} sel={selNat}
