@@ -240,12 +240,12 @@ export const BADGE = {
 // (navData.ts) : les deux surfaces signent avec les mêmes couleurs.
 export const MODULES = [
   { cle: "ide",          titre: "Investissements privés", sous: "Flux & stocks d'IDE",      icone: "finance_mode",      sf: "chart.line.uptrend.xyaxis", accent: "orange", href: "/investissements" },
-  { cle: "statistiques", titre: "Échanges commerciaux", sous: "Indicateurs & flux",         icone: "currency_exchange", sf: "arrow.left.arrow.right",    accent: "bleu",   href: "/flux" },
+  { cle: "statistiques", titre: "Échanges commerciaux", sous: "Flux bilatéraux et indicateurs éco.",         icone: "currency_exchange", sf: "arrow.left.arrow.right",    accent: "bleu",   href: "/flux" },
   { cle: "prospects",    titre: "Prospects",       sous: "Investisseurs suivis",     icone: "frame_inspect",     sf: "binoculars",                accent: "orange", href: "/prospects" },
-  { cle: "entreprises",  titre: "Entreprises",     sous: "Registre des installées",  icone: "enterprise",        sf: "building.2",                accent: "bleu",   href: "/entreprises" },
+  { cle: "entreprises",  titre: "Entreprises",     sous: "Registre des entreprises",  icone: "enterprise",        sf: "building.2",                accent: "bleu",   href: "/entreprises" },
   { cle: "zones",        titre: "Zones d'investissement", sous: "ZES, ZAI & pôles",         icone: "real_estate_agent", sf: "mappin.and.ellipse",        accent: "orange", href: "/zones" },
   { cle: "opportunites", titre: "Opportunités d'investissement", sous: "Projets & potentialités", icone: "bookmark_stacks",   sf: "lightbulb",                 accent: "bleu",   href: "/opportunites" },
-  { cle: "accords",      titre: "Accords & Traités", sous: "Traités bilatéraux d'investissement",            icone: "signature",         sf: "signature",                 accent: "orange", href: "/accords" },
+  { cle: "accords",      titre: "Accords & Traités", sous: "Traités Bilatéraux d'Investissement",            icone: "signature",         sf: "signature",                 accent: "orange", href: "/accords" },
   { cle: "evenements",   titre: "Événements",      sous: "Agenda investisseurs",     icone: "event",             sf: "calendar",                  accent: "bleu",   href: "/evenements" },
 ] as const;
 
