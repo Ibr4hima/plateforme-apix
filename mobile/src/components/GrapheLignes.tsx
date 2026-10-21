@@ -1,6 +1,6 @@
 // Graphe en lignes multi-séries — rendu Skia signature : courbes avec
-// glow et ombre portée, aires en dégradé riche, tracé progressif (trim),
-// morphing quand les filtres changent sans changer la structure,
+// glow et ombre portée, aires en dégradé riche, tracé progressif (trim) au
+// premier rendu seulement — ensuite les courbes changent en place —,
 // scrubbing aimanté exécuté sur le fil UI (ressort vif + crantage
 // haptique), annotation du pic historique en mono-série.
 // Les règles du site sont inchangées : graduations « propres »,
@@ -9,7 +9,7 @@
 import {
   BlurMask, Canvas, Circle, DashPathEffect, Group,
   LinearGradient as DegradeSkia, Line as LigneSkia, Path as CheminSkia,
-  Skia, vec, type SkPath,
+  Skia, vec,
 } from "@shopify/react-native-skia";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text as TexteRN, View } from "react-native";
@@ -52,29 +52,13 @@ function lisser(pts: { x: number; y: number }[]): string {
   return d;
 }
 
-const nbNombres = (d: string) => (d.match(/[\d.]+/g) || []).length;
-
-// ── Une série : aire riche, ombre portée, glow, ligne, avec trim + morph ─────
-function CourbeSerie({ deCourbe, versCourbe, deAire, versAire, morphT, trace, couleur, epaisseur, hauteur }: {
-  deCourbe: string | null; versCourbe: string; deAire: string | null; versAire: string;
-  morphT: any; trace: any; couleur: string; epaisseur: number; hauteur: number;
+// ── Une série : aire riche, ombre portée, glow, ligne — tracée au premier rendu ─
+function CourbeSerie({ courbe, aire: aireSvg, trace, couleur, epaisseur, hauteur }: {
+  courbe: string; aire: string; trace: any; couleur: string; epaisseur: number; hauteur: number;
 }) {
   const cheminVide = useMemo(() => Skia.Path.Make(), []);
-  const cibleCourbe = useMemo(() => Skia.Path.MakeFromSVGString(versCourbe) ?? cheminVide, [versCourbe, cheminVide]);
-  const departCourbe = useMemo(() => (deCourbe ? Skia.Path.MakeFromSVGString(deCourbe) : null), [deCourbe]);
-  const cibleAire = useMemo(() => Skia.Path.MakeFromSVGString(versAire) ?? cheminVide, [versAire, cheminVide]);
-  const departAire = useMemo(() => (deAire ? Skia.Path.MakeFromSVGString(deAire) : null), [deAire]);
-
-  const chemin = useDerivedValue<SkPath>(() => {
-    if (!departCourbe || morphT.value >= 1) return cibleCourbe;
-    return departCourbe.isInterpolatable(cibleCourbe)
-      ? departCourbe.interpolate(cibleCourbe, morphT.value) ?? cibleCourbe : cibleCourbe;
-  }, [departCourbe, cibleCourbe]);
-  const aire = useDerivedValue<SkPath>(() => {
-    if (!departAire || morphT.value >= 1) return cibleAire;
-    return departAire.isInterpolatable(cibleAire)
-      ? departAire.interpolate(cibleAire, morphT.value) ?? cibleAire : cibleAire;
-  }, [departAire, cibleAire]);
+  const chemin = useMemo(() => Skia.Path.MakeFromSVGString(courbe) ?? cheminVide, [courbe, cheminVide]);
+  const aire = useMemo(() => Skia.Path.MakeFromSVGString(aireSvg) ?? cheminVide, [aireSvg, cheminVide]);
 
   const aireOpacite = useDerivedValue(() => Math.max(0, Math.min(1, (trace.value - 0.4) / 0.6)));
   const ombreOpacite = useDerivedValue(() => 0.22 * Math.max(0, Math.min(1, (trace.value - 0.2) / 0.8)));
@@ -132,9 +116,8 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelle
   const [largeur, setLargeur] = useState(0);
   const [curseur, setCurseur] = useState<number | null>(null);
 
-  // Tracé progressif (trim) et morphing — les deux grandeurs du motion
+  // Le tracé progressif (trim) — seul mouvement du graphe, à son premier rendu
   const trace = useSharedValue(0);
-  const morphT = useSharedValue(1);
 
   const annees = useMemo(() =>
     [...new Set(series.flatMap(s => s.data.filter(d => d.valeur !== null).map(d => d.annee)))].sort((a, b) => a - b),
@@ -190,25 +173,18 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelle
     return { bi, ticksPartages, echelles, yDe, x, a0, a1, pointsDe, courbes, aires, fins, pic };
   }, [series, largeur, hauteur, annees, vide, echelleUnique]);
 
-  // ── Trim au montage / structure neuve, morph sinon ──
-  const precedent = useRef<{ structure: string; courbes: string[]; aires: string[] } | null>(null);
-  const [transition, setTransition] = useState<{ courbes: string[]; aires: string[] } | null>(null);
+  // ── Le tracé progressif, UNE FOIS : au premier rendu des courbes. Ensuite,
+  // une autre série, une autre période remplacent la courbe EN PLACE : la
+  // déformer de l'une vers l'autre la faisait onduler, la retracer à chaque
+  // toucher clignotait — des effets de trop pour un tableau de bord.
+  const dejaTrace = useRef(false);
+  const geoPrete = geo !== null;
   useEffect(() => {
-    if (!geo) return;
-    const structure = series.map((sr, i) => `${sr.nom}:${nbNombres(geo.courbes[i] || "")}`).join("|");
-    const prec = precedent.current;
-    precedent.current = { structure, courbes: geo.courbes, aires: geo.aires };
-    if (!prec || prec.structure !== structure) {
-      setTransition(null);
-      trace.value = 0;
-      trace.value = withTiming(1, { duration: DUREE.longue + 320, easing: SORTIE });
-    } else if (prec.courbes.join() !== geo.courbes.join()) {
-      setTransition({ courbes: prec.courbes, aires: prec.aires });
-      morphT.value = 0;
-      morphT.value = withTiming(1, { duration: DUREE.longue, easing: SORTIE });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geo ? geo.courbes.join("§") : ""]);
+    if (!geoPrete || dejaTrace.current) return;
+    dejaTrace.current = true;
+    trace.value = 0;
+    trace.value = withTiming(1, { duration: DUREE.longue + 320, easing: SORTIE });
+  }, [geoPrete, trace]);
 
   // ── Scrubbing aimanté sur le fil UI ──
   const xsAnnees = useMemo(() => (geo ? annees.map(a => geo.x(a)) : []), [geo, annees]);
@@ -305,10 +281,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelle
           {/* Séries : aire riche + ombre + glow + ligne */}
           {series.map((sr, i) => (
             geo.courbes[i] ? (
-              <CourbeSerie key={sr.nom}
-                deCourbe={transition?.courbes[i] || null} versCourbe={geo.courbes[i]}
-                deAire={transition?.aires[i] || null} versAire={geo.aires[i]}
-                morphT={morphT} trace={trace}
+              <CourbeSerie key={sr.nom} courbe={geo.courbes[i]} aire={geo.aires[i]} trace={trace}
                 couleur={sr.couleur} epaisseur={seule ? 2.6 : 2} hauteur={hauteur} />
             ) : null
           ))}

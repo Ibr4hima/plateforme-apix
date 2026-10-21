@@ -3,7 +3,7 @@
 // Un grand nombre et sa tendance, plus quatre repères en pied de carte
 // (2 × 2) : Flux d'IDE sortants, PIB, Importations et Exportations (commerce
 // extérieur NACE). Toucher un repère l'installe en vedette — le nombre
-// recompte, la silhouette se redessine — et les Flux d'IDE entrants (la
+// recompte, seul mouvement de la carte — et les Flux d'IDE entrants (la
 // vedette par défaut) redescendent dans la grille. L'en-tête mène au module
 // concerné.
 //
@@ -18,7 +18,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
-import { Apparition, ChiffreAnime, IconeTendance, Permutation, RangeeMouvante, Tapable } from "@/components/ui";
+import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
@@ -162,10 +162,10 @@ export default function VedetteIde() {
           <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
         </Tapable>
 
-        {/* Le nombre, puis sa variation — le mesureur reste monté, la
-            Permutation rejoue à chaque changement de vedette */}
+        {/* Le nombre, puis sa variation — le mesureur reste monté d'une
+            vedette à l'autre */}
         <View onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
-        <Permutation cle={actif}>
+        <View>
         {dernier ? (
           <>
             <ChiffreAnime texte={fmtDe(actif)(dernier.valeur)} style={[s.nombre, {
@@ -201,11 +201,10 @@ export default function VedetteIde() {
             <Text style={s.borne} maxFontSizeMultiplier={ECHELLE.compact}>{dernier!.annee}</Text>
           </View>
         )}
-        </Permutation>
+        </View>
         </View>
 
-        {/* Quatre repères (2 × 2) — ils glissent à leur nouvelle place quand
-            l'un d'eux monte en vedette */}
+        {/* Quatre repères (2 × 2) — le toucher de l'un l'installe en vedette */}
         <View style={s.pied}>
           {reperes.map((cle, i) => {
             const sx = series[cle];
@@ -215,7 +214,7 @@ export default function VedetteIde() {
             const texte = d ? fmtDe(cle)(d.valeur) : "—";
             const corps = corpsRepere(texte);
             return (
-              <RangeeMouvante key={cle} style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
+              <View key={cle} style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
               <Tapable echelle={0.96}
                 onPress={() => { tick(); setActif(cle); }}
                 style={{ flex: 1 }}>
@@ -232,7 +231,7 @@ export default function VedetteIde() {
                   <IconeTendance delta={dpc} />
                 </View>
               </Tapable>
-              </RangeeMouvante>
+              </View>
             );
           })}
         </View>

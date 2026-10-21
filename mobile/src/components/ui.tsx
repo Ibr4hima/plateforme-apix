@@ -10,13 +10,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
-  LayoutChangeEvent, Modal, Platform, Pressable, ScrollView,
+  LayoutChangeEvent, Modal, Platform, Pressable,
   StyleProp, StyleSheet, Text, View, ViewStyle, type ModalProps,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Reanime, {
-  Easing, FadeInDown, LinearTransition,
+  Easing,
   runOnJS, scrollTo, useAnimatedProps, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle,
   useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
@@ -141,37 +141,6 @@ export function BoutonVerre({ onPress, taille = 40, teinte, style, accessibility
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>{children}</View>
       </View>
     </Tapable>
-  );
-}
-
-// ── Permutation : l'accusé de réception d'un changement de vedette ───────────
-// Toucher un repère installe sa série en vedette. Sans transition, le nombre
-// se substituait d'un coup et l'ancienne série réapparaissait plus bas sans
-// mouvement : on doutait d'avoir cliqué. Ici le bloc vedette se rejoue —
-// fondu et légère montée — à chaque changement de clé, et les repères
-// glissent à leur nouvelle place (LinearTransition) au lieu de sauter.
-export function Permutation({ cle, children, style }: {
-  cle: string; children: React.ReactNode; style?: StyleProp<ViewStyle>;
-}) {
-  const styleResolu = useStyleResolu(style);
-  return (
-    <Reanime.View key={cle} style={styleResolu}
-      entering={FadeInDown.duration(230).easing(Easing.out(Easing.cubic))
-        .withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] })}>
-      {children}
-    </Reanime.View>
-  );
-}
-
-/** Rangée qui glisse à sa nouvelle place quand l'ordre de la liste change. */
-export function RangeeMouvante({ children, style }: {
-  children: React.ReactNode; style?: StyleProp<ViewStyle>;
-}) {
-  const styleResolu = useStyleResolu(style);
-  return (
-    <Reanime.View layout={LinearTransition.springify().damping(20).stiffness(180)} style={styleResolu}>
-      {children}
-    </Reanime.View>
   );
 }
 
@@ -667,6 +636,11 @@ export function Apparition({ index = 0, cle, style, children }: {
 // plafonnée (un nombre qui défile est parfaitement lisse à ~20 Hz, l'œil ne
 // distingue pas plus de valeurs dans du texte) et aucun rendu si la chaîne
 // formatée n'a pas bougé. La valeur finale, elle, est toujours posée exacte.
+//
+// C'EST LE SEUL MOUVEMENT d'une carte vedette quand on change d'indicateur. Le
+// bloc se rejouait (fondu, légère montée), les repères glissaient au ressort,
+// la courbe se déformait d'une série à l'autre : trop d'effets pour un tableau
+// de bord. Le nombre recompte ; tout le reste change en place.
 const CADENCE_MS = 50;
 
 export function ChiffreAnime({ texte, style, duree = 750, echelleMax = ECHELLE.chiffre }: {

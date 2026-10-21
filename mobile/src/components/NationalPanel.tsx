@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Permutation, RangeeMouvante, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -112,9 +112,9 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
           </Pressable>
         </View>
 
-        {/* Le mesureur reste monté ; la Permutation rejoue à chaque bascule */}
+        {/* Le mesureur reste monté d'une bascule à l'autre */}
         <View onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
-        <Permutation cle={indActif.code}>
+        <View>
         {dernier ? (
           <View style={s.nombreLigne}>
             <ChiffreAnime texte={fmtBdef(dernier.valeur, indActif.unite)} style={s.nombre} />
@@ -145,11 +145,11 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             <Text style={s.borne}>{dernier!.annee}</Text>
           </View>
         )}
-        </Permutation>
+        </View>
         </View>
 
-        {/* Les autres indicateurs, un par ligne, tous affichés — ils glissent
-            quand l'un d'eux monte en vedette */}
+        {/* Les autres indicateurs, un par ligne, tous affichés — toucher l'un
+            d'eux l'installe en vedette */}
         <View style={s.pied}>
           {autres.map((ind, i) => {
             const sx = serieDe(ind);
@@ -157,7 +157,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <RangeeMouvante key={ind.code}>
+              <View key={ind.code}>
                 <Tapable echelle={0.98}
                   onPress={() => { tick(); setActif(ind.code); }}
                   style={[s.repere, i > 0 && s.repereBord]}>
@@ -167,7 +167,7 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
                   </Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>
-              </RangeeMouvante>
+              </View>
             );
           })}
         </View>

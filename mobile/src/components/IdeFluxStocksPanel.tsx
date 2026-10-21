@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatVide, IconeTendance, Permutation, RangeeMouvante, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
@@ -115,10 +115,10 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
           </Pressable>
         </View>
 
-        {/* Le mesureur reste monté : la Permutation rejoue à chaque
-            changement de vedette, la largeur de la courbe ne se remesure pas */}
+        {/* Le mesureur reste monté : la largeur de la courbe ne se remesure pas
+            d'une vedette à l'autre */}
         <View onLayout={e => setLargeurTendance(e.nativeEvent.layout.width)}>
-          <Permutation cle={actif}>
+          <View>
             {dernier ? (
               <View style={s.nombreLigne}>
                 <ChiffreAnime texte={fmtMusd(dernier.valeur)} style={s.nombre} />
@@ -149,7 +149,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
                 <Text style={s.borne}>{dernier!.annee}</Text>
               </View>
             )}
-          </Permutation>
+          </View>
         </View>
 
         {/* Les cinq repères, un par ligne — ils GLISSENT à leur nouvelle place
@@ -161,7 +161,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
-              <RangeeMouvante key={cle}>
+              <View key={cle}>
                 <Tapable echelle={0.98}
                   onPress={() => { tick(); setActif(cle); }}
                   style={[s.repere, i > 0 && s.repereBord]}>
@@ -169,7 +169,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
                   <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>
-              </RangeeMouvante>
+              </View>
             );
           })}
         </View>
