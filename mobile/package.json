@@ -43,9 +43,11 @@
   "devDependencies": {
     "@types/react": "~19.1.10",
     "@types/topojson-client": "^3.1.5",
+    "patch-package": "^8.0.1",
     "typescript": "~5.9.2"
   },
   "scripts": {
+    "postinstall": "patch-package || true",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
