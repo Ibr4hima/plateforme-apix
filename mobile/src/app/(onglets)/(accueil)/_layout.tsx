@@ -1,14 +1,12 @@
 // La pile de l'onglet Accueil — l'accueil et tous les modules qu'il ouvre
 // (prospects, entreprises, zones, opportunités, accords, événements, fiche
-// pays, lois, recherche ; sur iOS, aussi les Investissements privés et les
-// Échanges commerciaux). Ils s'empilent DANS l'onglet : la barre d'onglets
-// reste visible, chacun a son retour, et retoucher « Accueil » ramène à la
-// racine.
+// pays, lois ; sur iOS, aussi les Investissements privés et les Échanges
+// commerciaux). Ils s'empilent DANS l'onglet : la barre d'onglets reste
+// visible, chacun a son retour, et retoucher « Accueil » ramène à la racine.
+// La recherche a son propre onglet.
 import { Stack } from "expo-router";
 import { titreListeFdi } from "@/lib/fdi";
 import { ecran, useOptionsPile } from "@/lib/navigation";
-import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
 
 export default function PileAccueil() {
   return (
@@ -33,11 +31,6 @@ export default function PileAccueil() {
       <Stack.Screen name="code/index" options={ecran("Lois & Règlementations")} />
       {/* Le chapitre pose son propre titre (voir l'écran) */}
       <Stack.Screen name="code/[chapitre]" options={ecran("")} />
-      {/* iOS : la recherche s'empile, avec son retour ; Android : en modale */}
-      <Stack.Screen name="recherche" options={IOS
-        ? ecran("Recherche")
-        : { headerShown: true, title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte as unknown as string },
-            headerTintColor: T.encre as unknown as string, headerTitleStyle: { fontFamily: POLICE.gras, color: T.encre as unknown as string } }} />
     </Stack>
   );
 }

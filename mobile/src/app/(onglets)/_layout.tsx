@@ -1,6 +1,7 @@
 // Barre d'onglets — CHAQUE SYSTÈME LA SIENNE.
 //
 // SUR iOS : la barre d'onglets DU SYSTÈME (UITabBar), plus une imitation.
+// Trois onglets et, tout à droite, la Recherche, avec le rôle d'iOS.
 // Sur iOS 26 elle est en verre Liquid Glass ; elle reste TOUJOURS visible —
 // jamais réduite au défilement, jamais cachée par un écran empilé : chaque
 // onglet a sa pile, où s'ouvrent ses écrans. Sur iPad, iPadOS la place en
@@ -28,6 +29,7 @@ const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIco
   { nom: "(accueil)",       titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
   { nom: "investissements", titre: "Investissements privés", court: "Investissements", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
   { nom: "flux",            titre: "Flux commerciaux",       court: "Économie",        sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
+  { nom: "recherche",       titre: "Recherche",              court: "Recherche",       sf: "magnifyingglass",           materiel: "search" },
 ] as const;
 
 export default function OngletsLayout() {
@@ -53,6 +55,12 @@ function OngletsIOS() {
         <Icon sf="arrow.left.arrow.right" />
         <Label>Économie</Label>
       </NativeTabs.Trigger>
+      {/* L'onglet de recherche d'iOS (rôle « search ») : sur iOS 26, la loupe
+          se détache au bout de la barre, dans sa propre capsule de verre,
+          comme dans Musique ou l'App Store ; avant, un onglet « Rechercher ».
+          Son symbole et son titre sont ceux du système (en français : l'app
+          déclare cette langue dans app.json). */}
+      <NativeTabs.Trigger name="recherche" role="search" />
     </NativeTabs>
   );
 }

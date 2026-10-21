@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BlurView } from "expo-blur";
@@ -89,7 +89,6 @@ export default function Accueil() {
   // hors ligne sans avoir été ouverts une première fois
   usePrechargement();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { width } = useWindowDimensions();
   const margeBas = useMargeBas({ sousOnglets: true });
   const qc = useQueryClient();
@@ -179,9 +178,10 @@ export default function Accueil() {
               {dateDuJour.toUpperCase()}
             </Text>
             <View style={s.boutonsIOS}>
+              {/* La recherche a son onglet, en bas : il ne reste ici que le jour
+                  et la nuit */}
               <BoutonRond sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
                 onPress={basculerTheme} label={sombre ? "Passer en mode clair" : "Passer en mode sombre"} />
-              <BoutonRond sf="magnifyingglass" materiel="search" onPress={() => router.push("/recherche")} label="Rechercher" />
             </View>
           </View>
           <View style={s.titreLigne}>
@@ -235,10 +235,6 @@ export default function Accueil() {
               accessibilityLabel={sombre ? "Passer en mode clair" : "Passer en mode sombre"}>
               <Icone sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
                 taille={17} couleur={T.encreHero} poids="semibold" />
-            </BoutonVerre>
-            <BoutonVerre onPress={() => router.push("/recherche")} taille={40}
-              accessibilityLabel="Rechercher">
-              <Icone sf="magnifyingglass" materiel="search" taille={17} couleur={T.encreHero} poids="semibold" />
             </BoutonVerre>
           </View>
         </View>

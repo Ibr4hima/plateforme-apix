@@ -242,16 +242,18 @@ export function Etiquettes({ valeurs }: { valeurs: string[] }) {
 }
 
 /** Le champ de recherche d'iOS : gris, arrondi, la loupe en tête. */
-export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus }: {
+export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus, refChamp }: {
   valeur: string; onChange: (v: string) => void; placeholder: string; style?: StyleProp<ViewStyle>;
   /** Le clavier s'ouvre avec le champ (la loupe d'un en-tête vient d'être touchée). */
   autoFocus?: boolean;
+  /** Pour donner le focus au champ de l'extérieur (l'onglet Recherche qu'on ouvre). */
+  refChamp?: React.Ref<TextInput>;
 }) {
   return (
     <View style={[s.champ, style]}>
       <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
       {/* Les champs de recherche d'iOS disent « Rechercher », sans points de suspension */}
-      <TextInput value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
+      <TextInput ref={refChamp} value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
         placeholderTextColor={T.gris as any} autoCorrect={false} autoCapitalize="none"
         clearButtonMode="while-editing" returnKeyType="search" autoFocus={autoFocus} style={s.champTexte} />
     </View>
