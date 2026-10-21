@@ -25,8 +25,7 @@ import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useSombre, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
-import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
-import { origineRecente } from "@/lib/origineTap";
+import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
@@ -365,9 +364,15 @@ export function RangeeStats({ items }: {
 // iOS, la feuille prend TOUTE LA PAGE, jusque sous la barre d'état, quel que
 // soit son contenu — la feuille d'iOS (pageSheet), une hauteur constante d'une
 // fiche à l'autre ; sur Android, la hauteur de son contenu, jusqu'à un
-// plafond (`hauteur`). Transition
-// contextuelle : elle « pousse » depuis la card touchée (origine capturée à la
-// racine) au lieu de glisser génériquement.
+// plafond (`hauteur`).
+//
+// L'OUVERTURE EST CELLE D'UNE FEUILLE D'iOS : elle monte du bas de l'écran,
+// toujours, sur la courbe des feuilles du système (lib/motion), sans échelle
+// ni rebond. Elle partait de la card touchée — d'en haut ou d'en bas selon
+// l'endroit du doigt, en grandissant de 86 à 100 % —, et démarrait au montage,
+// pendant que la fiche se construisait encore : ses premières images
+// sautaient. Elle part désormais une fois la feuille mesurée, une image plus
+// tard : le mouvement est entier, du premier pixel au dernier.
 //
 // LA FERMETURE AU DOIGT, comme une feuille d'iOS : on la tire vers le bas par
 // son en-tête OU PAR SON CONTENU dès que celui-ci est revenu en haut — le
@@ -404,6 +409,10 @@ export function Feuille(props: ProprietesFeuille) {
   return <FeuilleDessinee {...props} />;
 }
 
+// Ce que la feuille parcourt EN PLUS de sa hauteur pour quitter l'écran : son
+// ombre portée doit sortir avec elle
+const MARGE_SORTIE = 48;
+
 // Sur iPad, la feuille suit l'écran dans toutes ses orientations ; sur
 // iPhone, l'app reste en portrait
 const ORIENTATIONS_FEUILLE: ModalProps["supportedOrientations"] = IPAD
@@ -437,27 +446,36 @@ function FeuilleDessinee({
   // dynamique d'iOS y ferait tomber l'app)
   const fondFeuilleGroupe = useCouleur(T.fond);
   const H = Dimensions.get("window").height;
-  // Point de départ : la card touchée si le tap vient d'avoir lieu, le bas sinon
-  const [depart] = useState(() => {
-    const y = origineRecente();
-    if (y === null) return H * 0.35;
-    return Math.max(-H * 0.25, Math.min(y - H * 0.62, H * 0.35));
-  });
 
-  // Deux grandeurs pilotent tout : l'ouverture (0→1, ressort doux) et le
-  // tirage du doigt. Fond, échelle et position en dérivent en continu —
-  // pendant le geste, c'est l'écran entier qui suit la main.
+  // Deux grandeurs pilotent tout : l'ouverture (0→1) et le tirage du doigt.
+  // Fond, flou et position en dérivent en continu — pendant le geste, c'est
+  // l'écran entier qui suit la main.
   const feuilleResolue = useStyleResolu(sf.feuille);
   const progres = useSharedValue(0);
   const tirage = useSharedValue(0);
-  useEffect(() => { progres.value = withSpring(1, RESSORT.doux); }, [progres]);
+  // La hauteur réelle de la feuille (le seuil de fermeture en dépend), et la
+  // course de l'ouverture : de sous l'écran à sa place. Avant d'être mesurée,
+  // la feuille attend sous le bord.
+  const hauteurFeuille = useSharedValue(H);
+  const course = useSharedValue(H + MARGE_SORTIE);
+  const ouverte = useRef(false);
+
+  const mesurer = (h: number) => {
+    hauteurFeuille.value = h;
+    if (ouverte.current) return;
+    ouverte.current = true;
+    course.value = h + MARGE_SORTIE;
+    // Une image après la mesure : le montage du contenu est passé, et le
+    // mouvement ne perd aucune de ses images
+    requestAnimationFrame(() => { progres.value = withTiming(1, MOUVEMENT_FEUILLE.ouverture); });
+  };
 
   const fermer = () => {
-    progres.value = withTiming(0, { duration: DUREE.courte, easing: ENTREE },
+    // La feuille a pu grandir depuis son ouverture (Android) : elle sort entière
+    course.value = hauteurFeuille.value + MARGE_SORTIE;
+    progres.value = withTiming(0, MOUVEMENT_FEUILLE.fermeture,
       fini => { if (fini) runOnJS(onClose)(); });
   };
-  // La hauteur réelle de la feuille : le seuil de fermeture en dépend
-  const hauteurFeuille = useSharedValue(H * 0.6);
   // Le décalage du défilement du contenu : la feuille ne suit le doigt que
   // lorsque le contenu est en haut
   const refDefil = useAnimatedRef<Reanime.ScrollView>();
@@ -512,12 +530,9 @@ function FeuilleDessinee({
   const propsFlou = useAnimatedProps(() => ({
     intensity: 28 * progres.value * Math.max(0, 1 - Math.max(tirage.value, 0) / (hauteurFeuille.value + 40)),
   }));
+  // Un seul mouvement : la translation — ni fondu, ni échelle
   const styleFeuille = useAnimatedStyle(() => ({
-    opacity: Math.min(1, progres.value * 2.5),
-    transform: [
-      { translateY: (1 - progres.value) * depart + Math.max(tirage.value, -30) },
-      { scale: 0.86 + 0.14 * progres.value - Math.min(Math.max(tirage.value, 0) / (H * 14), 0.01) },
-    ],
+    transform: [{ translateY: (1 - progres.value) * course.value + Math.max(tirage.value, -30) }],
   }));
 
   return (
@@ -541,7 +556,7 @@ function FeuilleDessinee({
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[feuilleResolue, taille, groupe && { backgroundColor: fondFeuilleGroupe },
         largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
-        onLayout={e => { hauteurFeuille.value = e.nativeEvent.layout.height; }}>
+        onLayout={e => mesurer(e.nativeEvent.layout.height)}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
             poignée (~20 pt) était trop étroite pour être trouvée au pouce.
             Le Pan ne s'arme qu'après 4 pt de glissement vertical : les

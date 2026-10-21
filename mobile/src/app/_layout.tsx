@@ -17,7 +17,6 @@ import { majSchema, useSombre } from "@/lib/apparence";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { EMPREINTE_API } from "@/lib/api";
-import { marquerOrigine } from "@/lib/origineTap";
 import { useOptionsPile } from "@/lib/navigation";
 import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
@@ -75,11 +74,8 @@ export default function RacineLayout() {
       {/* iOS : la barre d'état suit l'apparence, sur les barres claires du
           système ; Android : blanche, sur les bandeaux bleus de l'app */}
       <StatusBar style={IOS ? "auto" : "light"} />
-      {/* Capture passive de l'origine de chaque toucher (transitions
-          contextuelles des feuilles) — ne revendique jamais le geste */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-      <View key={cleApparence} style={{ flex: 1 }}
-        onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
+      <View key={cleApparence} style={{ flex: 1 }}>
       {/* Tout vit sous les onglets : chaque onglet a sa pile, et ses écrans
           s'y empilent (voir lib/navigation et les _layout des onglets) — sauf
           la LECTURE d'un chapitre des lois, empilée au-dessus d'eux : la
