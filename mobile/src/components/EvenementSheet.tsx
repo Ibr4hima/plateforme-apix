@@ -18,7 +18,7 @@ import { Feuille } from "@/components/ui";
 import TexteRiche from "@/components/TexteRiche";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
-import { foncerPastel, useTeinte } from "@/lib/couleurs";
+import { foncerPastel } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
 import { coin, FONTE, T } from "@/theme";
@@ -109,9 +109,7 @@ function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
   // Les documents s'ouvrent dans l'app (visionneuse), pas dans Safari
   const { ouvrir: ouvrirDoc, element: visionneuse } = useVisionneuse();
-  const teinte = useTeinte();
   const statut = statutEvenement(e);
-  const st = statut ? ST_EVENT[statut] : null;
   const enCours = statut === "en_cours";
   const roleP = e.role_apix ? ROLE_PASTEL[e.role_apix] || "#C5BFBB" : null;
   const d = e.date_debut ? new Date(e.date_debut + "T00:00:00")
@@ -133,16 +131,16 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={e.nom_event}
-      sousEntete={
-        // Une seule ligne de méta : statut coloré · édition · rôle APIX
+      sousEntete={(e.edition != null || roleP) ? (
+        // Une seule ligne de méta : édition · rôle APIX. Le statut (à venir,
+        // en cours, terminé) n'y est pas : la date et l'échéance, juste
+        // dessous, le disent déjà
         <Text style={s.meta} numberOfLines={1}>
-          {st && <Text style={{ color: teinte(st.c), ...FONTE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
-          {st && e.edition != null ? "   ·   " : ""}
           {e.edition != null ? ordinal(e.edition) : ""}
-          {(st || e.edition != null) && roleP ? "   ·   " : ""}
+          {e.edition != null && roleP ? "   ·   " : ""}
           {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
         </Text>
-      }>
+      ) : undefined}>
 
       {/* ── L'essentiel : date, lieu, échéance — une seule carte ── */}
       <View style={s.essentiel}>

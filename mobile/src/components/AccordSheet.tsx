@@ -128,7 +128,11 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   // Identité : « Sénégal × France » quand le partenaire est unique, l'intitulé
   // officiel sinon — l'autre forme passe en légende
   const identite = partenaires.length === 1 ? `Sénégal × ${partenaires[0].nom}` : a.titre;
-  const legende = partenaires.length === 1 && a.titre !== identite ? a.titre : null;
+  // Sous le titre, l'intitulé de l'accord — sauf s'il ne fait que répéter
+  // les deux pays (« Sénégal — Canada ») : le titre les dit déjà
+  const plie = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const repete = partenaires.length === 1 && plie(a.titre).includes("senegal") && plie(a.titre).includes(plie(partenaires[0].nom));
+  const legende = partenaires.length === 1 && a.titre !== identite && !repete ? a.titre : null;
 
   // Thématiques : les ids à plat remontés en arbre pour la hiérarchie partagée
   const arbre: ArbreThemes = {};
