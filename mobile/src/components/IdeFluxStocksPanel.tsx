@@ -97,7 +97,7 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
 
   return (
     <View style={s.rangee}>
-      <SeparateurSection titre="FLUX & STOCKS" couleur={T.bleu as string} voile={T.bleuVoile as string} />
+      <SeparateurSection titre="FLUX & STOCKS" couleur={T.bleu as string} />
 
       {/* Le curseur d'années — le doigt remonte le temps */}
       <CurseurAnnees annees={anneesSerie}

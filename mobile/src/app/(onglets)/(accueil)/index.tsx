@@ -75,7 +75,7 @@ function ProchainEvenement() {
               {[ev.ville, ev.pays_hote_nom].filter(Boolean).join(" · ") || "Lieu à confirmer"}
             </Text>
           </View>
-          <Icone sf="chevron.right" materiel="chevron_right" taille={14} couleur="rgba(255,255,255,0.7)" poids="semibold" />
+          <Icone sf="chevron.right" materiel="chevron_right" taille={14} couleur={T.surTuileEvenementDoux} poids="semibold" />
         </View>
       </Tapable>
       {ouvert && <EvenementSheet ev={ev} onClose={() => setOuvert(false)} />}
@@ -329,21 +329,24 @@ const s = creerStyles(() => ({
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
-    backgroundColor: T.bleuAction,
+    // Le jour, le bleu de la maison ; la nuit, le bleu clair du chiffre
+    // vedette, un cran plus foncé (theme : tuileEvenement)
+    backgroundColor: T.tuileEvenement,
   },
   evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
-  // Bloc date en verre clair sur le bleu
+  // Bloc date en verre sur le bleu : clair le jour, sombre sur le bleu clair
+  // de la nuit
   evenementDate: {
     minWidth: 52, minHeight: 56, paddingHorizontal: 8, paddingVertical: 6,
     borderRadius: 14, borderCurve: "continuous",
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.16)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.24)",
+    backgroundColor: T.dateTuileEvenement,
+    borderWidth: 1, borderColor: T.bordDateEvenement,
   },
-  evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: "#fff", lineHeight: 25, fontVariant: ["tabular-nums"] },
-  evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.2, marginTop: 1 },
-  evenementNom: { ...TYPO.sousTitre, color: "#fff" },
-  // 4,9:1 sur la partie claire du dégradé — le seuil AA, alors que 72 %
-  // n'y arrivait qu'à 3,9:1
-  evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.86)", marginTop: 3 },
+  evenementJour: { fontSize: 21, fontFamily: POLICE.gras, color: T.surTuileEvenement, lineHeight: 25, fontVariant: ["tabular-nums"] },
+  evenementMois: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.surTuileEvenementDoux, letterSpacing: 1.2, marginTop: 1 },
+  evenementNom: { ...TYPO.sousTitre, color: T.surTuileEvenement },
+  // Blanc à 86 % sur le bleu du jour (au-dessus du seuil AA) ; l'encre de
+  // nuit à 74 % sur le bleu clair
+  evenementLieu: { ...TYPO.legende, color: T.surTuileEvenementDoux, marginTop: 3 },
 }));

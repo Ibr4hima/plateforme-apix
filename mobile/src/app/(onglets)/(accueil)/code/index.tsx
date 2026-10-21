@@ -11,9 +11,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
@@ -88,20 +88,24 @@ export default function CodeSommaire() {
 
   return (
     <>
-      {/* L'en-tête est ancré hors du défilement : la recherche et les deux
-          bases restent accessibles au fil de la lecture */}
+      {/* L'en-tête est ancré hors du défilement : la recherche reste
+          accessible au fil de la lecture */}
       <View style={{ flex: 1, backgroundColor: T.fond }}>
         <EnTetePage titre="Lois & Règlementations"
-          recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }}
-          segments={{
-            options: BASES.map(b => ({ cle: b.cle, label: b.label })),
-            valeur: base,
-            onChange: cle => setBase(cle as BaseCode),
-          }} />
+          recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
 
         <Animated.ScrollView {...DEFILEMENT}
           style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
           keyboardShouldPersistTaps="handled">
+        {/* Les deux bases en pastilles — le style des onglets des
+            Investissements privés */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }} contentContainerStyle={[s.pastilles, cap]}>
+          {BASES.map(b => (
+            <ChipFiltre key={b.cle} label={b.label} actif={base === b.cle} onPress={() => setBase(b.cle)} />
+          ))}
+        </ScrollView>
+
         {/* Résultats de recherche */}
         {enRecherche ? (
           <View style={[s.liste, cap]}>
@@ -164,6 +168,7 @@ export default function CodeSommaire() {
 
 const s = creerStyles(() => ({
 
+  pastilles: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 2 },
   liste: { paddingHorizontal: 16, marginTop: 14 },
   meta: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1.4, marginBottom: 10, marginLeft: 4 },
   surface: { backgroundColor: T.carte, borderRadius: 18, borderWidth: 1, borderColor: T.carteBord, overflow: "hidden" },

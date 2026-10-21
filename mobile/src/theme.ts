@@ -61,6 +61,14 @@ const JETONS = {
   vert:        dyn("#188038", "#48C9B0"),
   // Fonds pleins bleus (boutons, chips actives — texte blanc par-dessus)
   bleuAction:  dyn("#004f91", "#2E64A6"),
+  // La tuile « Événement à venir » de l'accueil : le bleu de la maison le
+  // jour ; la nuit, le bleu du chiffre vedette (T.bleu) d'un cran plus foncé
+  // — un bleu clair, sur lequel le texte passe à l'encre de nuit
+  tuileEvenement:      dyn("#004f91", "#79A9D9"),
+  surTuileEvenement:   dyn("#FFFFFF", "#0B1220"),
+  surTuileEvenementDoux: dyn("rgba(255,255,255,0.86)", "rgba(11,18,32,0.74)"),
+  dateTuileEvenement:  dyn("rgba(255,255,255,0.16)", "rgba(11,18,32,0.08)"),
+  bordDateEvenement:   dyn("rgba(255,255,255,0.24)", "rgba(11,18,32,0.16)"),
   // Hero et barres de navigation
   // Le hero : le bleu APIX de jour ; la nuit un bleu de minuit un cran
   // au-dessus des cartes (#151E2E) et du fond (#0B1220) — même famille de
@@ -237,7 +245,7 @@ export const MODULES = [
   { cle: "entreprises",  titre: "Entreprises",     sous: "Registre des installées",  icone: "enterprise",        sf: "building.2",                accent: "bleu",   href: "/entreprises" },
   { cle: "zones",        titre: "Zones d'investissement", sous: "ZES, ZAI & pôles",         icone: "real_estate_agent", sf: "mappin.and.ellipse",        accent: "orange", href: "/zones" },
   { cle: "opportunites", titre: "Opportunités d'investissement", sous: "Projets & potentialités", icone: "bookmark_stacks",   sf: "lightbulb",                 accent: "bleu",   href: "/opportunites" },
-  { cle: "accords",      titre: "Accords & Traités", sous: "TBI & traités internationaux",            icone: "signature",         sf: "signature",                 accent: "orange", href: "/accords" },
+  { cle: "accords",      titre: "Accords & Traités", sous: "Traités bilatéraux d'investissement",            icone: "signature",         sf: "signature",                 accent: "orange", href: "/accords" },
   { cle: "evenements",   titre: "Événements",      sous: "Agenda investisseurs",     icone: "event",             sf: "calendar",                  accent: "bleu",   href: "/evenements" },
 ] as const;
 

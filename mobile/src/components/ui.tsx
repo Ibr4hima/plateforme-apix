@@ -176,21 +176,23 @@ export function RangeeMouvante({ children, style }: {
 
 // ── SeparateurSection : la césure entre deux blocs d'une même page ───────────
 // Deux filets qui s'éteignent vers les bords de l'écran et, au centre, le nom
-// de la section dans un tag teinté à sa couleur. Empilées sans marque, les
+// de la section dans un tag au liseré et au texte de sa couleur, sur le fond
+// de la page. Empilées sans marque, les
 // sections d'une page longue (Flux & Stocks, Greenfield, Fusion & Acquisition)
 // se confondaient ; ici la coupure se voit avant même d'être lue, et la teinte
 // annonce celle des cartes qui suivent.
-export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, voile: voileBrut = T.bleuVoile as string, style }: {
-  titre: string; couleur?: string; voile?: string; style?: StyleProp<ViewStyle>;
+export function SeparateurSection({ titre, couleur: teinte = T.bleu as string, style }: {
+  titre: string; couleur?: string; style?: StyleProp<ViewStyle>;
 }) {
   // La teinte part en concaténation (`${couleur}33`) : il lui faut une chaîne
   const couleur = useCouleur(teinte);
-  const voile = useCouleur(voileBrut);
   return (
     <View style={[ss.rangee, style]} accessibilityRole="header">
       <LinearGradient colors={["rgba(122,138,164,0)", "rgba(122,138,164,0.42)"]}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.filet} />
-      <View style={[ss.tag, { backgroundColor: voile, borderColor: `${couleur}33` }]}>
+      {/* Le tag sur le fond de la page (#FAFAFA) : sa couleur tient au
+          liseré et au texte, sans aplat teinté */}
+      <View style={[ss.tag, { backgroundColor: T.fond, borderColor: `${couleur}33` }]}>
         <Text style={[ss.texte, { color: couleur }]} numberOfLines={1}
           maxFontSizeMultiplier={ECHELLE.compact}>{titre}</Text>
       </View>
@@ -275,12 +277,12 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   label: string; actif: boolean; compte?: number | null;
   onPress: () => void; onLayout?: (e: LayoutChangeEvent) => void;
 }) {
-  // iOS : les pastilles de filtre des apps d'Apple, sans aplat bleu. Les
-  // autres sont blanches au liseré fin, posées sur le fond clair comme les
-  // cartes ; la choisie se remplit à l'ENCRE de l'app (et s'inverse la nuit)
-  // — un contraste franc qui désigne sans crier. Le nom reste complet, le
-  // compte se lit en second, dans la pastille. Elle s'estompe au toucher,
-  // comme un bouton d'iOS, au lieu de se rétracter.
+  // iOS : le style des onglets du site (Investissements réalisés · projetés).
+  // Les autres sont des pastilles grises, au texte gris ; la choisie est
+  // BLANCHE, son nom en bleu APIX, en gras, légèrement soulevée par une ombre
+  // douce. Aucun aplat de couleur : la sélection se lit au relief et au bleu
+  // du texte. Le nom reste complet, le compte se lit en second, dans la
+  // pastille. Elle s'estompe au toucher, comme un bouton d'iOS.
   if (IOS) return (
     <Pressable onPress={() => { tick(); onPress(); }} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
@@ -329,14 +331,21 @@ const scf = creerStyles(() => ({
   // iOS
   capsule: {
     flexDirection: "row", alignItems: "center", gap: 6,
-    paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule, borderCurve: "continuous",
-    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: RAYON.pilule, borderCurve: "continuous",
+    backgroundColor: T.voile, borderWidth: StyleSheet.hairlineWidth, borderColor: "transparent",
+    // La rangée défile : sur iOS elle rogne ce qui dépasse — ce jeu garde
+    // l'ombre de la choisie entière
+    marginVertical: 3,
   },
-  capsuleActive: { backgroundColor: T.encre, borderColor: T.encre },
-  capsuleTexte: { fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-  capsuleTexteActif: { color: T.carte, fontFamily: POLICE.demi },
-  capsuleCompte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.gris, fontVariant: ["tabular-nums"] },
-  capsuleCompteActif: { color: T.carte, opacity: 0.72 },
+  // La choisie : blanche, soulevée (l'ombre du site : 0 1 4, 10 %)
+  capsuleActive: {
+    backgroundColor: T.carte, borderColor: T.carteBord,
+    shadowColor: "#0B1220", shadowOpacity: 0.1, shadowRadius: 3, shadowOffset: { width: 0, height: 1 },
+  },
+  capsuleTexte: { fontSize: 14, fontFamily: POLICE.demi, color: T.gris },
+  capsuleTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
+  capsuleCompte: { fontSize: 13, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
+  capsuleCompteActif: { color: T.bleu, opacity: 0.7 },
 }));
 
 // ── Carte : la surface de base ───────────────────────────────────────────────

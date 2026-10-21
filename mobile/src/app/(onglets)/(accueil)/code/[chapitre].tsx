@@ -126,7 +126,6 @@ export default function Lecteur() {
     router.replace({ pathname: "/code/[chapitre]", params: { chapitre: id, base } } as any);
   };
 
-  const etiquette = `${base === "modalites-application" ? "MODALITÉS D'APPLICATION" : "CODE DES INVESTISSEMENTS"}`;
   const numeroChap = chap ? (chap.numero === 1 ? "PREMIER" : String(chap.num_display).toUpperCase()) : "";
 
   const Article = ({ a }: { a: any }) => (
@@ -143,7 +142,6 @@ export default function Lecteur() {
   );
 
   const deuxPilules = !!(precedent && suivant);
-  const titreChapitre = chap ? `Chapitre ${numeroChap.toLowerCase() === "premier" ? "premier" : numeroChap}` : "";
 
   // Les réglages de lecture : le mode nuit et la taille du texte
   const reglages = (
@@ -167,14 +165,15 @@ export default function Lecteur() {
     </>
   );
 
-  // iOS : la barre du système, à la couleur de la page — le retour, le
-  // chapitre en titre, les réglages à droite en boutons de barre (SF
-  // Symbols, sans pastilles : sur iOS 26 la barre les pose déjà dans sa
-  // capsule de verre). Le retour prend l'encre de la page : le bleu de l'app
+  // iOS : la barre du système, à la couleur de la page — le retour et les
+  // réglages à droite, en boutons de barre (SF Symbols, sans pastilles : sur
+  // iOS 26 la barre les pose déjà dans sa capsule de verre). Pas de titre :
+  // le chapitre s'ouvre dans la page, en grand ; la barre ne porte que les
+  // commandes. Le retour prend l'encre de la page : le bleu de l'app
   // disparaîtrait sur la page de nuit. Mémoïsé : la barre n'est reconfigurée
-  // que si le chapitre, la page ou la taille changent.
+  // que si la page ou la taille changent.
   const optionsIOS = useMemo(() => ({
-    title: titreChapitre,
+    title: "",
     headerTintColor: P.bleu,
     headerStyle: { backgroundColor: P.fond },
     headerTitleStyle: { fontFamily: POLICE.demi, color: P.titre },
@@ -189,7 +188,7 @@ export default function Lecteur() {
       </View>
     ),
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [titreChapitre, sombre, cran]);
+  }), [sombre, cran]);
 
   return (
     <View style={{ flex: 1, backgroundColor: P.fond }}>
@@ -267,16 +266,19 @@ export default function Lecteur() {
         )}
       </Animated.ScrollView>
 
-      {/* Barre haute : chapitre courant, mode nuit, réglage du texte,
-          progression. Sur iOS, la barre du système porte le reste : il ne
-          reste ici que la progression, collée sous elle. */}
+      {/* Barre haute : les boutons seuls — le retour, le mode nuit, le réglage
+          du texte — et la progression. Pas de chapitre : il s'ouvre dans la
+          page. Sur iOS, la barre du système porte les boutons : il ne reste
+          ici que la progression, collée sous elle. */}
       <View style={[s.barre, { paddingTop: IOS ? 0 : insets.top + 6, backgroundColor: P.fond }]}>
         {!IOS && (
           <View style={s.barreContenu}>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text style={s.barreEtiquette} numberOfLines={1}>{etiquette}</Text>
-              {chap ? <Text style={[s.barreChapitre, { color: P.titre }]} numberOfLines={1}>{titreChapitre}</Text> : null}
-            </View>
+            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.navigate("/code" as any))}
+              hitSlop={6} accessibilityRole="button" accessibilityLabel="Retour"
+              style={({ pressed }) => [s.sombreBouton, { backgroundColor: P.neutreFond }, pressed && { opacity: 0.7 }]}>
+              <Ionicons name="arrow-back" size={17} color={P.neutreTexte} />
+            </Pressable>
+            <View style={{ flex: 1 }} />
             {reglages}
           </View>
         )}
@@ -314,8 +316,6 @@ const s = creerStyles(() => ({
   reglagesIOS: { flexDirection: "row", alignItems: "center" },
   boutonLecture: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   barreContenu: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: MARGE, paddingBottom: 8 },
-  barreEtiquette: { fontSize: 8.5, fontFamily: POLICE.gras, color: T.orange, letterSpacing: 1.6 },
-  barreChapitre: { fontSize: 13, fontFamily: POLICE.demi, marginTop: 1.5, letterSpacing: -0.2 },
   sombreBouton: { width: 34, height: 34, borderRadius: 999, alignItems: "center", justifyContent: "center" },
   tailleGroupe: {
     flexDirection: "row", alignItems: "center",

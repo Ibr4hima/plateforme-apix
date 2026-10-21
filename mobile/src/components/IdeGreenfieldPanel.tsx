@@ -102,7 +102,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
 
   return (
     <View style={s.rangee}>
-      <SeparateurSection titre="GREENFIELD" couleur={T.orange as string} voile={T.orangeVoile as string} />
+      <SeparateurSection titre="GREENFIELD" couleur={T.orange as string} />
 
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}

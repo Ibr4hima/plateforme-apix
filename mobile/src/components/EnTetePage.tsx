@@ -98,13 +98,14 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
         {avecRecherche && (
           <BoutonBarre sf="magnifyingglass" materiel="search" label="Rechercher" onPress={basculerRecherche} />
         )}
-        {/* Le filtre de Mail : un cercle au repos, PLEIN quand un filtre est
-            appliqué — le compte en pastille. Ce qui est filtré ne s'affiche
-            pas dans la page : il se lit dans la feuille des filtres. */}
+        {/* Le filtre : le symbole seul au repos — la barre d'iOS 26 le pose
+            déjà dans un cercle de verre —, un disque PLEIN quand un filtre est
+            appliqué, le compte en pastille. Ce qui est filtré ne s'affiche pas
+            dans la page : il se lit dans la feuille des filtres. */}
         {avecBouton && (
-          <BoutonBarre sf={badge ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"}
+          <BoutonBarre sf={badge ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease"}
             materiel="tune" label={badge ? `Filtres, ${badge} actif${badge > 1 ? "s" : ""}` : "Filtres"} badge={badge}
-            onPress={() => rappels.current.bouton?.()} taille={21} />
+            onPress={() => rappels.current.bouton?.()} taille={badge ? 22 : 18} />
         )}
       </View>
     ) : undefined,

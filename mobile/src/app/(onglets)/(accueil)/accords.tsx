@@ -11,13 +11,12 @@
 // récent au plus ancien — l'ordre d'un portefeuille, pas d'une archive.
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
-import Symbole from "@/components/Symbole";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
@@ -25,10 +24,6 @@ import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
-const TYPES = [
-  { cle: "tbi",   label: "Traités Bilatéraux" },
-  { cle: "inter", label: "Traités Internationaux" },
-] as const;
 
 // ── La carte d'accord ────────────────────────────────────────────────────────
 // Le gabarit carte de la plateforme : contour fin (T.carteBord), sans ombre.
@@ -78,7 +73,6 @@ function CarteAccord({ a, partenaires, onPress }: {
 export default function Accords() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
-  const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState("en_vigueur");
   const [selec, setSelec] = useState<any>(null);
@@ -152,33 +146,6 @@ export default function Accords() {
       segments={{ options: segments, valeur: statut, onChange: setStatut }} />
   );
 
-  const hero = (
-    <>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={[s.chipsRangee, cap]}>
-        {TYPES.map(o => {
-          const actif = onglet === o.cle;
-          return (
-            <ChipFiltre key={o.cle} label={o.label} actif={actif} onPress={() => setOnglet(o.cle)} />
-          );
-        })}
-      </ScrollView>
-    </>
-  );
-
-  if (onglet === "inter") {
-    return (
-      <View style={{ flex: 1, backgroundColor: T.fond }}>
-        {entete}
-        {hero}
-        <View style={s.centre}>
-          <View style={s.bientotPastille}><Symbole nom="signature" taille={26} couleur={T.bleu} /></View>
-          <Text style={s.bientotTitre}>Traités Internationaux</Text>
-          <Text style={s.bientotTexte}>Cette section arrive prochainement.{"\n"}Les traités bilatéraux d'investissement restent disponibles.</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {entete}
@@ -191,12 +158,10 @@ export default function Accords() {
             <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
           </Apparition>
         )}
-        contentContainerStyle={{ paddingBottom: margeBas }}
-        ListHeaderComponentStyle={{ marginBottom: 14 }}
+        contentContainerStyle={{ paddingTop: 14, paddingBottom: margeBas }}
         refreshing={isRefetching}
         onRefresh={refetch}
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={hero}
         ListEmptyComponent={
           isLoading ? <SqueletteListe />
           : enPanne({ isError, data }) ? <EtatErreur onRetry={() => refetch()} />
@@ -209,9 +174,7 @@ export default function Accords() {
 }
 
 const s = creerStyles(() => ({
-  centre: { alignItems: "center", justifyContent: "center", padding: 40, gap: 8 },
   rangee: { paddingHorizontal: 16, marginBottom: 10 },
-  chipsRangee: { gap: 8, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12 },
 
   carte: {
     backgroundColor: T.carte, borderRadius: 18,
@@ -225,7 +188,4 @@ const s = creerStyles(() => ({
   dateLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   dateVal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.encre, fontVariant: ["tabular-nums"] },
 
-  bientotPastille: { width: 56, height: 56, borderRadius: 17, backgroundColor: T.bleuVoile, alignItems: "center", justifyContent: "center", marginBottom: 6 },
-  bientotTitre: { fontSize: 17, fontFamily: POLICE.gras, color: T.encre },
-  bientotTexte: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", lineHeight: 19 },
 }));

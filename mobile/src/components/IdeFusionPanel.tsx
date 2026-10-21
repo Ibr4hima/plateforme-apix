@@ -101,7 +101,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
 
   return (
     <View style={s.rangee}>
-      <SeparateurSection titre="FUSION & ACQUISITION" couleur={T.vert as string} voile={T.vertVoile as string} />
+      <SeparateurSection titre="FUSION & ACQUISITION" couleur={T.vert as string} />
 
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
