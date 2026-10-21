@@ -211,7 +211,8 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         </Section>
       )}
 
-      {/* ── Invités ── */}
+      {/* ── Invités — pays et entreprises dans les mêmes pastilles neutres :
+          deux listes de la même nature, un seul dessin ── */}
       {paysInvites.length > 0 && (
         <Section titre="Pays invités">
           <View style={s.chips}>
@@ -222,7 +223,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       {entreprisesInvitees.length > 0 && (
         <Section titre="Entreprises invitées">
           <View style={s.chips}>
-            {entreprisesInvitees.map(n => <View key={n} style={s.chipVoile}><Text style={s.chipVoileTexte}>{n}</Text></View>)}
+            {entreprisesInvitees.map(n => <View key={n} style={s.chip}><Text style={s.chipTexte}>{n}</Text></View>)}
           </View>
         </Section>
       )}
@@ -263,6 +264,4 @@ const s = creerStyles(() => ({
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { backgroundColor: IOS ? T.voile : T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
-  chipVoile: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
-  chipVoileTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.bleu },
 }));
