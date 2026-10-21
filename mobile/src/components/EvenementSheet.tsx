@@ -243,7 +243,7 @@ const s = creerStyles(() => ({
   blocMois: { fontSize: 9, fontFamily: POLICE.gras, color: "rgba(255,255,255,0.85)", letterSpacing: 1.1, marginTop: 1 },
   essentielDate: { fontSize: 15, fontFamily: POLICE.demi, color: T.encre, letterSpacing: -0.2 },
   essentielLieu: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte },
-  essentielEcheance: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.orange, marginTop: 1 },
+  essentielEcheance: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.bleu, marginTop: 1 },
 
   sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   rangees: { gap: 9 },

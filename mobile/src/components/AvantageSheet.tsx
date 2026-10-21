@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Linking, StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
-import { useTeinte } from "@/lib/couleurs";
 import Icone from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
@@ -17,14 +16,6 @@ import { creerStyles } from "@/lib/apparence";
 
 // Couleur du secteur économique : primaire bleu, secondaire orange,
 // tertiaire vert (teal la nuit)
-const couleurSecteur = (nom?: string, teinte: (c: string) => string = c => c): string => {
-  const n = (nom || "").toLowerCase();
-  if (n.includes("primaire")) return teinte("#004f91");
-  if (n.includes("secondaire")) return teinte("#ca631f");
-  if (n.includes("tertiaire")) return teinte("#188038");
-  return T.gris as string;
-};
-
 // SUR iOS, la fiche se lit en listes groupées : les avantages accordés en
 // liste (la coche verte en tête, le commentaire en légende), la description
 // dans son bloc, les documents en liste.
@@ -47,7 +38,6 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
     queryKey: ["avantage", a.id],
     queryFn: () => getJson<any>(`/opportunites/avantages/${a.id}`).catch(() => null),
   });
-  const teinte = useTeinte();
   const d = detail || a;
   const selections: any[] = Array.isArray(d.selections) ? d.selections : [];
   const fichiers: any[] = Array.isArray(d.fichiers) ? d.fichiers : [];
@@ -57,10 +47,12 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
       titre={<Text style={s.titre}>{d.activite_nom}</Text>}
       sousEntete={(d.secteur_nom || d.branche_nom) ? (
         <Text style={s.meta} numberOfLines={2}>
+          {/* Le secteur à l'encre, la branche en gris — sans code couleur,
+              comme la hiérarchie des thématiques */}
           {d.secteur_nom ? (
-            <Text style={{ color: couleurSecteur(d.secteur_nom, teinte), fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
+            <Text style={{ color: T.encre, fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
           ) : null}
-          {d.secteur_nom && d.branche_nom ? "   ·   " : ""}
+          {d.secteur_nom && d.branche_nom ? " · " : ""}
           {d.branche_nom || ""}
         </Text>
       ) : undefined}>
