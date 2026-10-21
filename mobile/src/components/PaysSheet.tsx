@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
 import { Feuille } from "@/components/ui";
+import { IOS } from "@/lib/plateforme";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -29,12 +30,15 @@ export type PaysOption = {
 
 const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** Un pays de la liste — sa marque dit celui qui est lu. */
+/** Un pays de la liste — sa marque dit celui qui est lu. Sans pays courant
+    (la liste posée dans la Fiche Pays), rien n'est à marquer : Android n'y
+    dessine pas cent quarante boutons radio vides. */
 function LignePays({ p, legende, retrait, choisi, onChoisir }: {
   p: PaysOption; legende?: string; retrait?: boolean; choisi?: number | null; onChoisir: (id: number) => void;
 }) {
+  const marque = choisi != null || IOS ? p.id === choisi : undefined;
   return (
-    <Ligne label={p.nom} legende={legende} coche={p.id === choisi} lignes={1}
+    <Ligne label={p.nom} legende={legende} coche={marque} lignes={1}
       retrait={retrait ? 16 : 0} onPress={() => onChoisir(p.id)} />
   );
 }

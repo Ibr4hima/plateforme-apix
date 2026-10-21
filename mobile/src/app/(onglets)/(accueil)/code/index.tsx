@@ -17,6 +17,7 @@ import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from
 import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -149,7 +150,8 @@ export default function CodeSommaire() {
                             <Text style={s.ligneTitre} numberOfLines={2}>{c.titre}</Text>
                             <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
                           </View>
-                          <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
+                          {/* Le chevron d'iOS ; la ligne d'Android ondule et ouvre, sans lui */}
+                          {IOS && <Ionicons name="chevron-forward" size={14} color={T.grisClair} />}
                         </Ondulable>
                       </View>
                     );

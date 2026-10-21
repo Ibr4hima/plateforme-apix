@@ -3,12 +3,14 @@
 // Les noms complets de la plateforme (Investissements privés, Échanges
 // commerciaux, Zones d'investissement…) ne tiennent pas en demi-tuiles :
 // l'index devient une liste — carré bleu plein à glyphe blanc, nom complet,
-// sous-titre, chevron — rangées à filets hairline dans une seule carte à
-// coins continus. Simple, dense, scannable d'un pouce.
+// sous-titre, le chevron d'iOS (les listes d'Android n'en portent pas : la
+// ligne entière ondule et ouvre) — rangées à filets hairline dans une seule
+// carte à coins continus. Simple, dense, scannable d'un pouce.
 import { useRouter } from "expo-router";
 import { routeDepuisAccueil } from "@/lib/navigation";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
+import { Chevron } from "@/components/ListeIOS";
 import { Apparition, Tapable } from "@/components/ui";
 import { ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -27,7 +29,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
               <Text style={s.titre} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{m.titre}</Text>
               <Text style={s.sous} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.texte}>{m.sous}</Text>
             </View>
-            <Icone sf="chevron.right" materiel="chevron_right" taille={13} couleur={T.grisClair} poids="semibold" />
+            <Chevron />
           </Tapable>
         </View>
       ))}
