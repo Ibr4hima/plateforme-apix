@@ -259,10 +259,6 @@ export default function Accueil() {
 
         {/* ── Explorer ── */}
         <Explorer />
-
-        <Text style={s.pied} maxFontSizeMultiplier={ECHELLE.texte}>
-          Direction de l&apos;Intelligence et des Perspectives Économiques
-        </Text>
       </View>
     </Animated.ScrollView>
     {IOS && (
@@ -354,8 +350,4 @@ const s = creerStyles(() => ({
   // 4,9:1 sur la partie claire du dégradé — le seuil AA, alors que 72 %
   // n'y arrivait qu'à 3,9:1
   evenementLieu: { ...TYPO.legende, color: "rgba(255,255,255,0.86)", marginTop: 3 },
-  pied: {
-    textAlign: "center", fontSize: 10.5, fontFamily: POLICE.normal,
-    color: T.grisClair, marginTop: ESPACE.xl,
-  },
 }));
