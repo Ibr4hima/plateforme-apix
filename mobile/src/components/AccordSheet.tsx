@@ -172,7 +172,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
   const duree = anciennete(a);
 
   return (
-    <Feuille onClose={onClose} hauteur="78%" ecart={22} fondGroupe
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{identite}</Text>}
       sousEntete={
         <View>

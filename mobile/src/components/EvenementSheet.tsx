@@ -142,7 +142,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
     : null;
 
   return (
-    <Feuille onClose={onClose} hauteur="78%" ecart={22} fondGroupe
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titre}>{e.nom_event}</Text>}
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX

@@ -133,7 +133,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
   const sen = senId !== null ? { sel: f.selection.includes(senId) } : null;
 
   return (
-    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
+    <Feuille onClose={onClose} titre="Filtres" ecart={22}
       pied={
         <View style={s.pied}>
           <Tapable onPress={() => reinitialiser()} style={s.boutonSecondaire}>

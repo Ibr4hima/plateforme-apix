@@ -284,7 +284,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
   };
 
   return (
-    <Feuille onClose={onClose} ecart={16} hauteur="86%"
+    <Feuille onClose={onClose} ecart={16}
       titre={<Text style={s.titre}>Choisir une vue</Text>}
       sousEntete={
         <>

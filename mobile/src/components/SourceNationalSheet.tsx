@@ -178,7 +178,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   };
 
   return (
-    <Feuille onClose={onClose} ecart={16} hauteur="86%"
+    <Feuille onClose={onClose} ecart={16}
       titre={<Text style={st.titre}>Choisir une vue</Text>}
       sousEntete={
         <>

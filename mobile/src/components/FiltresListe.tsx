@@ -238,7 +238,7 @@ export function FeuilleFiltres({ onClose, onReinitialiser, largeurMax, children 
     </Feuille>
   );
   return (
-    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22} largeurMax={largeurMax}
+    <Feuille onClose={onClose} titre="Filtres" ecart={22} largeurMax={largeurMax}
       pied={
         <View style={s.pied}>
           <Tapable onPress={() => onReinitialiser()} style={s.boutonSecondaire}>

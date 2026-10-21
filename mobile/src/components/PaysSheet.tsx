@@ -218,7 +218,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   );
 
   return (
-    <Feuille onClose={onClose} ecart={16} hauteur="84%"
+    <Feuille onClose={onClose} ecart={16}
       titre={<Text style={s.titre}>{titre}</Text>}
       sousEntete={
         <View style={s.champ}>

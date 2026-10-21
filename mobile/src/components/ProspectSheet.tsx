@@ -305,7 +305,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
   ].filter(Boolean);
 
   return (
-    <Feuille onClose={onClose} hauteur="84%" ecart={22} fondGroupe
+    <Feuille onClose={onClose} ecart={22} fondGroupe
       titre={<Text style={s.titreFiche}>{p.nom}</Text>}
       sousEntete={
         <>

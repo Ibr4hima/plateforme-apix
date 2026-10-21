@@ -4,7 +4,6 @@
 // Chip, Carte, Badge pastel, RangeeStats (rangée basse des cards),
 // Feuille (échafaudage des bottom sheets) et les états de chargement /
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
-import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
@@ -350,12 +349,11 @@ export function RangeeStats({ items }: {
 }
 
 // ── Feuille : l'échafaudage des feuilles ─────────────────────────────────────
-// Fond flouté, poignée, en-tête (titre + fermer), sous-en-tête libre
-// (pilules…), corps défilant, `pied` fixe optionnel (boutons de filtres). Sur
-// iOS, la feuille prend TOUTE LA PAGE, jusque sous la barre d'état, quel que
-// soit son contenu — la feuille d'iOS (pageSheet), une hauteur constante d'une
-// fiche à l'autre ; sur Android, la hauteur de son contenu, jusqu'à un
-// plafond (`hauteur`).
+// Fond voilé, poignée, en-tête (titre + fermer), sous-en-tête libre
+// (pilules…), corps défilant, `pied` fixe optionnel. La feuille prend TOUTE
+// LA PAGE, jusque sous la barre d'état, quel que soit son contenu : une
+// hauteur constante d'une fiche à l'autre. Sur iOS, c'est la feuille d'iOS
+// (pageSheet) ; sur Android, la feuille de Material 3 dépliée.
 //
 // L'OUVERTURE EST CELLE D'UNE FEUILLE D'iOS : elle monte du bas de l'écran,
 // toujours, sur la courbe des feuilles du système (lib/motion), sans échelle
@@ -373,16 +371,21 @@ export function RangeeStats({ items }: {
 // garde la vitesse du doigt (durée raccourcie d'autant) et le fond se
 // dévoile en même temps.
 //
-// SUR iOS : la croix d'iOS ; le fond gris des listes groupées (fondGroupe),
-// sur lequel se posent les groupes blancs de ListeIOS ; la barre d'une
-// feuille d'UIKit pour les filtres (actions : « Réinitialiser » · « OK »).
+// SUR iOS : le fond flouté, la croix d'iOS ; le fond gris des listes
+// groupées (fondGroupe), sur lequel se posent les groupes blancs de ListeIOS ;
+// la barre d'une feuille d'UIKit pour les filtres (actions : « Réinitialiser »
+// · « OK »).
+//
+// SUR ANDROID, LA FEUILLE DE MATERIAL 3 : coins de 28 dp, la poignée de
+// 32 × 4 dp, le voile noir à 32 % sans flou ; le titre à gauche en 22 sp, la
+// croix en bouton icône ; les actions en boutons texte au bout de la ligne
+// du titre. La fenêtre est bord à bord : la feuille descend sous la barre de
+// navigation, et son contenu s'arrête au-dessus.
 type ActionFeuille = { label: string; onPress: () => void };
 
 type ProprietesFeuille = {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
-  /** Android : hauteur maximale — en deçà, la feuille prend celle de son
-      contenu. Sur iOS, la feuille prend toute la page. */
-  hauteur?: `${number}%`; ecart?: number; pied?: React.ReactNode; sansDefilement?: boolean;
+  ecart?: number; pied?: React.ReactNode;
   /** Sur tablette, la feuille se plafonne et se centre au lieu de s'étirer
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
    *  effet sur téléphone, plus étroit que le plafond. */
@@ -390,8 +393,9 @@ type ProprietesFeuille = {
   /** iOS : le fond gris des listes groupées, sur lequel se posent les groupes
    *  blancs (ListeIOS) — celui des feuilles de réglages et de filtres. */
   fondGroupe?: boolean;
-  /** iOS : la barre de la feuille à la manière d'UIKit — titre centré, une
-   *  commande de chaque côté (« Réinitialiser » · « OK »), sans croix. */
+  /** La barre des filtres, sans croix. iOS : celle d'UIKit — le titre centré,
+   *  une commande de chaque côté (« Réinitialiser » · « OK »). Android : le
+   *  titre à gauche, les deux commandes en boutons texte au bout. */
   actions?: { gauche?: ActionFeuille; droite?: ActionFeuille };
   children: React.ReactNode;
 };
@@ -410,9 +414,15 @@ const ORIENTATIONS_FEUILLE: ModalProps["supportedOrientations"] = IPAD
   ? ["portrait", "portrait-upside-down", "landscape-left", "landscape-right"]
   : ["portrait"];
 
-/** Une commande de la barre d'une feuille iOS : du texte à la teinte de
-    l'app, en gras pour celle qui conclut (« OK »). */
+/** Une commande de la barre d'une feuille. iOS : du texte à la teinte de
+    l'app, en gras pour celle qui conclut (« OK »). Android : le bouton texte
+    de Material 3 — 40 dp, l'ondulation en pilule. */
 function ActionBarre({ action, principale }: { action: ActionFeuille; principale?: boolean }) {
+  if (!IOS) return (
+    <Ondulable onPress={action.onPress} accessibilityRole="button" style={sf.actionAndroid}>
+      <Text style={sf.actionAndroidTexte} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{action.label}</Text>
+    </Ondulable>
+  );
   return (
     <Pressable onPress={action.onPress} hitSlop={10} accessibilityRole="button"
       style={({ pressed }) => [sf.action, pressed && { opacity: 0.4 }]}>
@@ -423,16 +433,23 @@ function ActionBarre({ action, principale }: { action: ActionFeuille; principale
 }
 
 function FeuilleDessinee({
-  titre, sousEntete, onClose, hauteur = "82%", ecart = 20, pied, sansDefilement, largeurMax, fondGroupe, actions, children,
+  titre, sousEntete, onClose, ecart = 20, pied, largeurMax, fondGroupe, actions, children,
 }: ProprietesFeuille) {
-  // iOS : le fond gris des listes groupées, et la barre « Réinitialiser · OK »
-  // des feuilles de filtres ; Android garde sa feuille telle quelle
+  // iOS : le fond gris des listes groupées, sur lequel se posent ses groupes
   const groupe = IOS && fondGroupe;
-  const barre = IOS ? actions : undefined;
-  // iOS : toute la page, jusque sous la barre d'état (8 pt laissent voir le
-  // fond flouté, comme une feuille d'iOS) ; Android : le contenu, plafonné
+  // Toute la page, jusque sous la barre d'état — 8 pt laissent voir le fond.
+  // iOS : la hauteur de l'écran. Android : la fenêtre de la feuille couvre
+  // tout l'écran, bord à bord, quand les dimensions de la fenêtre de l'app en
+  // retranchent la barre de navigation — la feuille s'ancre donc aux bords de
+  // sa fenêtre, centrée sous son plafond de largeur sur tablette.
   const insets = useSafeAreaInsets();
-  const taille = IOS ? { height: Dimensions.get("window").height - insets.top - 8 } : { maxHeight: hauteur };
+  const largeurEcran = Dimensions.get("window").width;
+  const cote = largeurMax ? Math.max(0, (largeurEcran - largeurMax) / 2) : 0;
+  const taille: ViewStyle = IOS
+    ? { height: Dimensions.get("window").height - insets.top - 8 }
+    : { position: "absolute", top: insets.top + 8, bottom: 0, left: cote, right: cote };
+  // Android : le contenu s'arrête au-dessus de la barre de navigation
+  const basSysteme = IOS ? 0 : insets.bottom;
   // La feuille est une vue Reanimated : son fond lui arrive résolu (un jeton
   // dynamique d'iOS y ferait tomber l'app)
   const fondFeuilleGroupe = useCouleur(T.fond);
@@ -462,7 +479,8 @@ function FeuilleDessinee({
   };
 
   const fermer = () => {
-    // La feuille a pu grandir depuis son ouverture (Android) : elle sort entière
+    // La feuille a pu changer de taille depuis son ouverture (rotation sur
+    // iPad) : elle sort entière
     course.value = hauteurFeuille.value + MARGE_SORTIE;
     progres.value = withTiming(0, MOUVEMENT_FEUILLE.fermeture,
       fini => { if (fini) runOnJS(onClose)(); });
@@ -546,7 +564,7 @@ function FeuilleDessinee({
       )}
       <PressableReanime style={[sf.fond, styleFond]} onPress={fermer} />
       <Reanime.View style={[feuilleResolue, taille, groupe && { backgroundColor: fondFeuilleGroupe },
-        largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
+        IOS && largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null, styleFeuille]}
         onLayout={e => mesurer(e.nativeEvent.layout.height)}>
         {/* Tout l'en-tête est une zone de tirage : la seule bande de la
             poignée (~20 pt) était trop étroite pour être trouvée au pouce.
@@ -557,52 +575,66 @@ function FeuilleDessinee({
             <View style={sf.zonePoignee}>
               <View style={sf.poignee} />
             </View>
-            {barre ? (
+            {actions && IOS ? (
               // iOS : la barre d'une feuille d'UIKit — les deux côtés ont la
               // même largeur, le titre reste au centre optique
               <View style={sf.barreIOS}>
                 <View style={sf.barreCote}>
-                  {barre.gauche ? <ActionBarre action={barre.gauche} /> : null}
+                  {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
                 </View>
                 <Text style={sf.barreTitre} numberOfLines={1} accessibilityRole="header">
                   {typeof titre === "string" ? titre : null}
                 </Text>
                 <View style={[sf.barreCote, { alignItems: "flex-end" }]}>
-                  {barre.droite ? <ActionBarre action={barre.droite} principale /> : null}
+                  {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
                 </View>
+              </View>
+            ) : actions ? (
+              // Android : le titre à gauche, les commandes au bout
+              <View style={sf.barreAndroid}>
+                <Text style={sf.titreAndroid} numberOfLines={1} accessibilityRole="header">
+                  {typeof titre === "string" ? titre : null}
+                </Text>
+                {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
+                {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
               </View>
             ) : (
               <View style={sf.entete}>
                 {typeof titre === "string"
-                  ? <Text style={sf.titre} accessibilityRole="header">{titre}</Text>
+                  ? <Text style={IOS ? sf.titre : sf.titreAndroid} accessibilityRole="header">{titre}</Text>
                   : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
-                <Tapable onPress={fermer} hitSlop={10} style={sf.fermer} accessibilityLabel="Fermer">
-                  {/* iOS : la croix d'iOS ; Android : celle de Material */}
-                  {IOS
-                    ? <Icone sf="xmark" materiel="close" taille={13} poids="bold" couleur={T.gris} />
-                    : <Ionicons name="close" size={17} color={T.texte} />}
-                </Tapable>
+                {IOS ? (
+                  <Tapable onPress={fermer} hitSlop={10} style={sf.fermer} accessibilityLabel="Fermer">
+                    <Icone sf="xmark" materiel="close" taille={13} poids="bold" couleur={T.gris} />
+                  </Tapable>
+                ) : (
+                  // Android : le bouton icône de Material 3
+                  <Pressable onPress={fermer} accessibilityRole="button" accessibilityLabel="Fermer"
+                    android_ripple={{ color: T.surbrillance as unknown as string, borderless: true, radius: 20 }}
+                    style={sf.fermerAndroid}>
+                    <Icone sf="xmark" materiel="close" taille={24} couleur={T.gris} />
+                  </Pressable>
+                )}
               </View>
             )}
             {sousEntete}
           </View>
         </GestureDetector>
-        {sansDefilement ? children : (
-          <GestureDetector gesture={gesteContenu}>
-            <View style={sf.corps}>
-              <GestureDetector gesture={natif}>
-                {/* Pas de rebond en haut : tiré vers le bas, c'est la feuille
-                    qui descend, pas son contenu dans la feuille */}
-                <Reanime.ScrollView ref={refDefil} onScroll={surDefil} scrollEventThrottle={16} bounces={false}
-                  style={{ marginTop: ESPACE.m }} contentContainerStyle={{ gap: ecart, paddingBottom: pied ? ESPACE.m : 36 }}
-                  showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-                  {children}
-                </Reanime.ScrollView>
-              </GestureDetector>
-            </View>
-          </GestureDetector>
-        )}
-        {pied}
+        <GestureDetector gesture={gesteContenu}>
+          <View style={sf.corps}>
+            <GestureDetector gesture={natif}>
+              {/* Pas de rebond en haut : tiré vers le bas, c'est la feuille
+                  qui descend, pas son contenu dans la feuille */}
+              <Reanime.ScrollView ref={refDefil} onScroll={surDefil} scrollEventThrottle={16} bounces={false}
+                style={{ marginTop: ESPACE.m }}
+                contentContainerStyle={{ gap: ecart, paddingBottom: (pied ? ESPACE.m : 36) + basSysteme }}
+                showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
+                {children}
+              </Reanime.ScrollView>
+            </GestureDetector>
+          </View>
+        </GestureDetector>
+        {pied && basSysteme ? <View style={{ paddingBottom: basSysteme }}>{pied}</View> : pied}
       </Reanime.View>
       </GestureHandlerRootView>
     </Modal>
@@ -760,19 +792,24 @@ const sf = creerStyles(() => ({
   // Android, où il est seul à isoler la feuille de ce qu'il y a derrière
   fond: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: ANDROID ? "rgba(2,20,38,0.62)" : "rgba(2,20,38,0.28)",
+    // Android : le voile de Material 3, noir à 32 %
+    backgroundColor: ANDROID ? "rgba(0,0,0,0.32)" : "rgba(2,20,38,0.28)",
   },
-  feuille: {
+  feuille: IOS ? {
     backgroundColor: T.carte, borderTopLeftRadius: 34, borderTopRightRadius: 34,
     // La courbe continue (« squircle ») : c'est elle qui fait les coins
     // d'une vraie feuille iOS — un rayon circulaire paraît toujours
     // légèrement faux sans qu'on sache dire pourquoi.
     borderCurve: "continuous", overflow: "hidden",
     paddingHorizontal: 22, paddingTop: 10, ...OMBRE.n3,
+  } : {
+    // Android : la feuille de Material 3 — coins de 28 dp, les marges de
+    // 16 dp du système
+    backgroundColor: T.carte, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: "hidden",
+    paddingHorizontal: 16, elevation: 1,
   },
-  // Le corps défilant remplit la feuille pleine page (iOS) ; il se resserre
-  // sous son plafond ailleurs
-  corps: IOS ? { flex: 1 } : { flexShrink: 1 },
+  // Le corps défilant remplit la feuille pleine page
+  corps: { flex: 1 },
   // iOS : la barre d'une feuille d'UIKit — titre centré, une commande de
   // chaque côté
   barreIOS: { flexDirection: "row", alignItems: "center", minHeight: 44, gap: 8 },
@@ -781,11 +818,23 @@ const sf = creerStyles(() => ({
   action: { paddingVertical: 6 },
   actionTexte: { fontSize: 16, fontFamily: POLICE.moyen, color: T.bleu },
   actionPrincipale: { fontFamily: POLICE.gras },
-  zonePoignee: { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 },
-  poignee: { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 },
+  // Android : la poignée de Material 3 — 32 × 4 dp, 22 dp au-dessus
+  zonePoignee: IOS
+    ? { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 }
+    : { alignSelf: "stretch", alignItems: "center", paddingTop: 22, paddingBottom: 14 },
+  poignee: IOS
+    ? { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 }
+    : { width: 32, height: 4, borderRadius: 2, backgroundColor: T.gris, opacity: 0.4 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
   titre: { ...TYPO.titre, flex: 1, color: T.encre },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
+  // Android : le titre d'une feuille de Material 3, le bouton icône de 48 dp
+  // (son icône calée sur la marge), les boutons texte
+  titreAndroid: { flex: 1, fontSize: 22, lineHeight: 28, fontFamily: POLICE.normal, color: T.encre },
+  fermerAndroid: { width: 48, height: 48, alignItems: "center", justifyContent: "center", marginTop: -10, marginRight: -12 },
+  barreAndroid: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 48 },
+  actionAndroid: { height: 40, paddingHorizontal: 12, borderRadius: 20, justifyContent: "center" },
+  actionAndroidTexte: { fontSize: 14, fontFamily: POLICE.moyen, color: T.bleu, letterSpacing: 0.1 },
 }));
 
 const se = creerStyles(() => ({

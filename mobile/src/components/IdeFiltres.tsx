@@ -193,7 +193,7 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
   };
 
   return (
-    <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
+    <Feuille onClose={onClose} titre="Filtres" ecart={22}
       pied={
         <View style={s.pied}>
           <Tapable onPress={() => reinitialiser()} style={s.boutonSecondaire}>

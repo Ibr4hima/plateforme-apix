@@ -1,6 +1,6 @@
 // Fiche de détail générique — feuille montante affichant l'essentiel d'un
 // résultat de recherche (accord, événement, entreprise, zone, pays).
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Groupe, LigneValeur, LigneVide } from "@/components/ListeIOS";
 import { Feuille } from "@/components/ui";
 import { fmtDate } from "@/lib/format";
@@ -72,7 +72,7 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
   }
 
   return (
-    <Feuille onClose={onClose} hauteur="72%" ecart={10} fondGroupe
+    <Feuille onClose={onClose} ecart={10} fondGroupe
       titre={<Text style={s.type}>{r.type === "pays" ? "PAYS" : r.type.toUpperCase()}</Text>}
       sousEntete={
         <>

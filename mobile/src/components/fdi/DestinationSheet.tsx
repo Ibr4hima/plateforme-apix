@@ -190,7 +190,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   };
 
   return (
-    <Feuille onClose={onClose} ecart={12} hauteur="86%" largeurMax={LARGEUR_FICHE}
+    <Feuille onClose={onClose} ecart={12} largeurMax={LARGEUR_FICHE}
       titre={<Text style={s.titre}>Destination</Text>}
       sousEntete={
         <View style={{ gap: 10, marginTop: 10 }}>
