@@ -27,7 +27,6 @@ import {
   type FiltresSignaux, fmtEntier, plier, usePerimetreEntreprises, usePerimetreProjets,
   usePerimetreSignaux,
 } from "@/lib/fdi";
-import { tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 import CurseurPeriode from "./CurseurPeriode";
@@ -62,10 +61,10 @@ function Ligne({ label, nb, sel, onPress, retrait = 0, orange, filetPlein }: {
   if (IOS) return (
     <LigneIOS label={label} detail={nb != null ? fmtEntier(nb) : undefined} coche={sel}
       couleurCoche={orange ? T.orange : T.bleu} retrait={retrait} attenue={vide} filetPlein={filetPlein}
-      role="checkbox" onPress={() => { tick(); onPress(); }} />
+      role="checkbox" onPress={() => onPress()} />
   );
   return (
-    <Pressable onPress={() => { tick(); onPress(); }}
+    <Pressable onPress={() => onPress()}
       accessibilityRole="checkbox" accessibilityState={{ checked: sel }}
       accessibilityLabel={nb != null ? `${label}, ${nb}` : label}
       style={({ pressed }) => [s.ligne, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }, vide && { opacity: 0.45 }]}>
@@ -376,7 +375,7 @@ export function Segments({ options, valeur, onChange }: {
       {options.map(o => {
         const actif = valeur === o.cle;
         return (
-          <Pressable key={o.cle} onPress={() => { if (!actif) { tick(); onChange(o.cle); } }}
+          <Pressable key={o.cle} onPress={() => { if (!actif) onChange(o.cle); }}
             accessibilityRole="tab" accessibilityState={{ selected: actif }}
             style={[s.segment, actif && s.segmentActif]}>
             <Text style={[s.segmentTexte, actif && s.segmentTexteActif]} numberOfLines={1}

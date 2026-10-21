@@ -144,10 +144,11 @@ const JETONS = {
   // contrôles d'iOS, sans la teinte bleutée des voiles de l'app
   pastilleSegment: dyn("rgba(118,118,128,0.14)", "rgba(235,235,245,0.16)"),
   voileFort:   "rgba(130,148,176,0.30)",
-  // La surbrillance d'une surface touchée sur iOS — le gris des cellules
-  // d'UIKit, posé par-dessus la carte le temps de l'appui ; sur Android, la
-  // couleur de l'ondulation de Material
-  surbrillance: dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)"),
+  // La surbrillance d'une surface touchée. iOS : le gris des cellules
+  // d'UIKit, posé par-dessus la carte le temps de l'appui. Android :
+  // l'ondulation de Material, à l'opacité de son état « pressé » (10 %)
+  surbrillance: IOS ? dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)")
+    : dyn("rgba(0,0,0,0.10)", "rgba(255,255,255,0.12)"),
   // Android : le ton de sélection de Material 3 (secondary container) — le
   // segment, la pastille ou la ligne choisis s'en remplissent
   selection:   dyn("rgba(0,79,145,0.12)", "rgba(133,185,236,0.22)"),

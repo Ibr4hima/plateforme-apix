@@ -18,7 +18,6 @@ import {
   ChampRecherche, Groupe, Ligne as LigneIOS, LigneDepliable, LigneVide, SegmentsIOS, SousEnTete,
 } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
-import { cran, tick } from "@/lib/haptique";
 import type { SourceIde } from "@/lib/ideSource";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
@@ -64,7 +63,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
   const [ouverts, setOuverts] = useState<Set<string>>(
     () => new Set([paysCourant?.continent || "Afrique"]));
 
-  const valider = (s: SourceIde) => { cran(); onChoisir(s); onClose(); };
+  const valider = (s: SourceIde) => { onChoisir(s); onClose(); };
 
   // Le Sénégal, épinglé en tête — et retiré de la hiérarchie pour ne pas y
   // figurer deux fois
@@ -255,7 +254,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
   }) => {
     const actif = estChoisi(src);
     return (
-      <Tapable echelle={0.99} onPress={() => valider(src)} style={[s.ligne, !premier && s.ligneBord]}>
+      <Tapable onPress={() => valider(src)} style={[s.ligne, !premier && s.ligneBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[s.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
           {legende ? <Text style={s.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
@@ -272,8 +271,8 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
     const ouvert = ouverts.has(cle);
     return (
       <View>
-        <Tapable echelle={0.99}
-          onPress={() => { tick(); basculer(cle); }}
+        <Tapable
+          onPress={() => basculer(cle)}
           style={[s.groupe, ouvert && s.groupeOuvert]}>
           <Text style={s.groupeTexte}>{titre.toUpperCase()}</Text>
           {compte != null && <Text style={s.groupeCompte}>{compte}</Text>}
@@ -294,8 +293,8 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
             {SEGMENTS.map(sg => {
               const actif = vue === sg.cle;
               return (
-                <Tapable key={sg.cle} echelle={0.97} surbrillance={false}
-                  onPress={() => { tick(); setVue(sg.cle); setQ(""); }}
+                <Tapable key={sg.cle} surbrillance={false}
+                  onPress={() => { setVue(sg.cle); setQ(""); }}
                   style={[s.segment, actif && s.segmentActif]}>
                   <Text style={[s.segmentTexte, actif && s.segmentTexteActif]}>{sg.label}</Text>
                 </Tapable>

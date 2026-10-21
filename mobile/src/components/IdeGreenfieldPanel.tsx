@@ -9,14 +9,13 @@
 // années d'abord, la série entière à la demande.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { ChiffreAnime, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
+import { StyleSheet, Text, View } from "react-native";
+import { ChiffreAnime, IconeTendance, Ondulable, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
@@ -114,9 +113,9 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
           <Text style={s.etiquette} numberOfLines={1}>
             {(secteur ? "VALEUR DES PROJETS ANNONCÉS" : LABELS[actif])}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
-          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
+          <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
             <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
-          </Pressable>
+          </Ondulable>
         </View>
 
         {dernier ? (
@@ -153,7 +152,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
         {/* Le sens opposé en repère (la vue Secteurs n'en a pas) */}
         {!secteur && (
           <View style={s.pied}>
-            <Tapable echelle={0.98} onPress={() => { tick(); setActif(repere); setListeDepliee(false); }}
+            <Tapable onPress={() => { setActif(repere); setListeDepliee(false); }}
               style={s.repere}>
               <Text style={s.repereLabel} numberOfLines={1}>{LABELS[repere]}</Text>
               <Text style={s.repereValeur} numberOfLines={1}>{dRep ? fmtMusd(dRep.valeur) : "—"}</Text>
@@ -184,7 +183,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
             );
           })}
           {projets.length > 6 && (
-            <Tapable echelle={0.98} onPress={() => { tick(); setListeDepliee(v => !v); }}
+            <Tapable onPress={() => setListeDepliee(v => !v)}
               style={[s.projetLigne, s.projetBord, { justifyContent: "center" }]}>
               <Text style={s.deplierTexte}>
                 {listeDepliee ? "Réduire" : `Voir les ${projets.length - 6} années précédentes`}

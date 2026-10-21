@@ -10,23 +10,21 @@
 // groupées par branche).
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Reanime, { FadeIn, FadeInUp, FadeOut, FadeOutUp, LinearTransition } from "react-native-reanimated";
 import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
 import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
-import { tick } from "@/lib/haptique";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
-import { IOS } from "@/lib/plateforme";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -74,7 +72,7 @@ const potTitre = (p: any) => (p.titre || "")
 // ── La carte de projet — le gabarit de la plateforme ─────────────────────────
 function CarteProjet({ p, onPress }: { p: any; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+    <Tapable onPress={onPress} style={s.carte}>
       <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{p.titre_projet}</Text>
         {p.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{p.pole_nom}</Text> : null}
@@ -100,8 +98,8 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
   actif: boolean; onPress?: () => void; largeur?: any;
 }) {
   return (
-    <Pressable onPress={onPress} disabled={!onPress}
-      style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && (IOS ? { opacity: 0.6 } : { transform: [{ scale: 0.99 }] }), !onPress && { opacity: 0.55 }]}>
+    <Ondulable onPress={onPress} disabled={!onPress}
+      style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && { opacity: 0.6 }, !onPress && { opacity: 0.55 }]}>
       <View style={s.compteurEntete}>
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
         {/* Un simple Text : depuis que les cartes tiennent toute la largeur,
@@ -120,7 +118,7 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
         <View style={[s.compteurBar, { width: `${Math.max(pct > 0 ? 4 : 0, pct)}%`, backgroundColor: couleur }]} />
       </View>
       <Text style={s.compteurSous} numberOfLines={1}>{sousLigne}</Text>
-    </Pressable>
+    </Ondulable>
   );
 }
 
@@ -142,12 +140,12 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
 // Tuile d'une fiche (potentialité ou activité) dans un groupe
 function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; titre: string; droite?: string | null; onPress: () => void; dernier: boolean }) {
   return (
-    <Pressable onPress={onPress}
-      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: IOS ? T.surbrillance : T.blocFond }]}>
+    <Ondulable onPress={onPress}
+      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.surbrillance }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
       <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
-    </Pressable>
+    </Ondulable>
   );
 }
 
@@ -178,7 +176,6 @@ export default function Opportunites() {
   const { data: regions } = useQuery({ queryKey: ["ref", "regions"], queryFn: () => getJson<any[]>("/entreprises/ref/regions"), staleTime: Infinity });
   const { data: departements } = useQuery({ queryKey: ["ref", "departements"], queryFn: () => getJson<any[]>("/entreprises/ref/departements"), staleTime: Infinity });
   const { data: arrondissements } = useQuery({ queryKey: ["ref", "arrondissements"], queryFn: () => getJson<any[]>("/entreprises/ref/arrondissements"), staleTime: Infinity });
-  const { data: refAvgTypes } = useQuery({ queryKey: ["ref-avg-types"], queryFn: () => getJson<any[]>("/ref-avantages"), staleTime: Infinity });
 
   const projets: any[] = projetsQ.data || [];
   const pots: any[]    = potsQ.data || [];
@@ -353,7 +350,7 @@ export default function Opportunites() {
                         valeur={total} unite={n.unite} pct={pct}
                         sousLigne={count > 0 ? `${count} fiche${count > 1 ? "s" : ""} définie${count > 1 ? "s" : ""} · ${pct} %` : "Aucune fiche définie"}
                         actif={niveauSel === n.cle}
-                        onPress={count > 0 ? () => { tick(); setNiveauSel(niveauSel === n.cle ? null : n.cle); } : undefined} />
+                        onPress={count > 0 ? () => setNiveauSel(niveauSel === n.cle ? null : n.cle) : undefined} />
                       {niveauSel === n.cle && (
                         <Reanime.View entering={PARAITRE} exiting={DISPARAITRE}>
                           {meta && groupes.map(g => (
@@ -420,7 +417,7 @@ export default function Opportunites() {
                       valeur={nbActs} unite="activité" pct={pct}
                       sousLigne={count > 0 ? `${count} avantage${count > 1 ? "s" : ""} défini${count > 1 ? "s" : ""} · ${pct} %` : "Aucun avantage défini"}
                       actif={secteurSel === sec.cle}
-                      onPress={count > 0 ? () => { tick(); setSecteurSel(secteurSel === sec.cle ? null : sec.cle); } : undefined} />
+                      onPress={count > 0 ? () => setSecteurSel(secteurSel === sec.cle ? null : sec.cle) : undefined} />
                     {secteurSel === sec.cle && (
                       <Reanime.View entering={PARAITRE} exiting={DISPARAITRE}>
                         {metaSect && branchesGroupes.map(bra => (

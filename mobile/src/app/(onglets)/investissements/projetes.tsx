@@ -41,7 +41,6 @@ import {
   paramsEntreprises, paramsProjets, paramsSignaux, titreListeFdi, useEntreprisesInfinies,
   usePerimetreProjets, useProjetsInfinis, useSignauxInfinis,
 } from "@/lib/fdi";
-import { tick } from "@/lib/haptique";
 import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { ECHELLE, POLICE, T } from "@/theme";
@@ -122,7 +121,7 @@ export default function InvestissementsProjetes() {
     else setFe(f => ({ ...FILTRES_ENTREPRISES_VIDES, destinations: f.destinations }));
   };
 
-  const ouvrirFiltres = () => { tick(); setFeuille("filtres"); };
+  const ouvrirFiltres = () => setFeuille("filtres");
 
   const totalProjets = qP.data?.pages[0]?.kpis.projets;
   const totalSignaux = qS.data?.pages[0]?.kpis.signaux;
@@ -147,7 +146,7 @@ export default function InvestissementsProjetes() {
             <Contexte
               principal={
                 <PuceDestination libelle={(fp.echelle === "regions" ? fp.region : fp.pays) ?? "—"}
-                  onPress={() => { tick(); setFeuille("destination"); }} />
+                  onPress={() => setFeuille("destination")} />
               }
               compte={totalProjets != null ? `${fmtEntier(totalProjets)} ${totalProjets > 1 ? "projets" : "projet"}` : null}
               chargement={qP.isPlaceholderData} />
@@ -326,7 +325,7 @@ function Contexte({ principal, compte, chargement }: {
 /** La destination lue : un titre qui se touche pour en changer. */
 function PuceDestination({ libelle, onPress }: { libelle: string; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.97} style={s.destination}
+    <Tapable onPress={onPress} style={s.destination}
       accessibilityRole="button" accessibilityLabel={`Destination : ${libelle}. Changer`}>
       <Text style={s.contexteTitre} numberOfLines={1}>{libelle}</Text>
       {/* Un chevron discret, détaché du nom : il dit qu'on peut changer de

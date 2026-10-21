@@ -13,11 +13,11 @@ import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsIOS, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/lib/liens";
 import { useVisionneuse } from "@/components/Visionneuse";
-import { Feuille, Tapable } from "@/components/ui";
+import { Feuille, Ondulable, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
-import { foncerPastel, useTeinte } from "@/lib/couleurs";
+import { useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { IOS } from "@/lib/plateforme";
 import { fmtPhone } from "@/lib/telephone";
@@ -130,7 +130,7 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
       <Text style={[s.rangeeValeur, onPress && { color: T.bleu }]} numberOfLines={2}>{valeur}</Text>
     </View>
   );
-  return onPress ? <Tapable onPress={onPress} echelle={0.99}>{contenu}</Tapable> : contenu;
+  return onPress ? <Tapable onPress={onPress}>{contenu}</Tapable> : contenu;
 }
 
 /** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
@@ -142,7 +142,7 @@ function Rangees({ children }: { children: React.ReactNode }) {
 // Bouton de la rangée d'actions — n'apparaît que si la donnée existe
 function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.95} style={s.action}>
+    <Tapable onPress={onPress} style={s.action}>
       <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
       <Text style={s.actionLabel}>{label}</Text>
     </Tapable>
@@ -181,7 +181,6 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
   });
 
   const badge = badgeProspect(p);
-  const pastel = badge ? PROSPECT_PASTELS[badge.label] || "#C5BFBB" : null;
   const secIds: number[] = p.secteur_ids || [];
   const braIds: number[] = p.branche_ids || [];
   const actIds: number[] = p.activite_ids || [];
@@ -221,11 +220,11 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
         {e.fichiers?.length > 0 ? (
           <View style={s.fichiers}>
             {e.fichiers.map((f: any) => (
-              <Pressable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
-                style={({ pressed }) => [s.fichierChip, pressed && (IOS ? { opacity: 0.5 } : { backgroundColor: T.bleuVoile })]}>
+              <Ondulable key={f.id} onPress={() => ouvrirDoc(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`, f.titre || f.nom)}
+                style={({ pressed }) => [s.fichierChip, pressed && { opacity: 0.5 }]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
                 <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
-              </Pressable>
+              </Ondulable>
             ))}
           </View>
         ) : null}
@@ -265,7 +264,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
     const ouvert = cyclesOuverts.has(id);
     return (
       <View style={s.cycle}>
-        <Pressable onPress={() => basculerCycle(id)}
+        <Ondulable onPress={() => basculerCycle(id)}
           style={({ pressed }) => [s.cycleEntete, (ouvert || pressed) && { backgroundColor: T.carteDouce }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={s.cycleLigne}>
@@ -275,7 +274,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
             {concluLe ? <Text style={s.cycleDate}>Conclu le {fmtDateLong(concluLe.slice(0, 10))}</Text> : null}
           </View>
           <Ionicons name={ouvert ? "chevron-up" : "chevron-down"} size={14} color={T.grisClair} />
-        </Pressable>
+        </Ondulable>
         {ouvert && (
           <View style={s.cycleCorps}>
             {commentaire ? <Text style={s.cycleCommentaire}>{htmlEnTexte(commentaire)}</Text> : null}

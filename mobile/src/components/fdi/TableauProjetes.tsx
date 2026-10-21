@@ -19,11 +19,11 @@
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 import { useRouter, useSegments } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { Os } from "@/components/Squelette";
-import { ChiffreAnime, Tapable } from "@/components/ui";
+import { ChiffreAnime, Ondulable, Tapable } from "@/components/ui";
 import { enPanne } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import {
@@ -33,7 +33,6 @@ import {
   chargerTableauProjets, chargerTableauSignaux, cleTableauInvestisseurs, cleTableauProjets,
   cleTableauSignaux, fmtEntier, fmtMontant, fmtPart, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
-import { tick } from "@/lib/haptique";
 import { ECHELLE, POLICE, T, TYPO } from "@/theme";
 import { Drapeau } from "./AtomesFdi";
 import { FicheInvestisseurSheet, FicheProjetFdi, FicheSignal } from "./FichesFdi";
@@ -74,18 +73,17 @@ export default function TableauProjetes({ pays, onChoisirPays }: {
   const totalAfrique = useQuery({ queryKey: CLE_INVESTISSEURS_AFRIQUE, queryFn: chargerInvestisseursAfrique, staleTime: 10 * MINUTE });
 
   const ouvrirListe = (params: Record<string, string>) => {
-    tick();
     router.push({ pathname: depuisAccueil ? "/projetes" : "/investissements/projetes", params } as any);
   };
 
   return (
     <View style={s.page}>
       {/* LE PAYS, UNE FOIS : les trois cartes en dépendent */}
-      <Pressable onPress={() => { tick(); onChoisirPays(); }} style={s.pays} hitSlop={6}
+      <Ondulable onPress={() => onChoisirPays()} style={s.pays} hitSlop={6}
         accessibilityRole="button" accessibilityLabel={`Pays : ${pays}. Changer`}>
         <Text style={s.paysNom} numberOfLines={1}>{pays}</Text>
         <Icone sf="chevron.down" materiel="expand_more" taille={24} couleur={T.bleu} />
-      </Pressable>
+      </Ondulable>
 
       <CarteProjets q={projets} onOuvrir={p => setOuvert({ type: "projet", p })}
         onListe={() => ouvrirListe({ vue: "projets", pays })} />
@@ -251,7 +249,7 @@ function Derniers({ lignes }: {
   return (
     <View style={s.derniers}>
       {lignes.map(l => (
-        <Tapable key={l.cle} onPress={() => { tick(); l.onPress(); }} echelle={0.99} style={s.dernier}
+        <Tapable key={l.cle} onPress={() => l.onPress()} style={s.dernier}
           accessibilityRole="button" accessibilityLabel={[l.nom, l.date].filter(Boolean).join(", ")}>
           <View style={s.drapeau}><Drapeau iso={l.iso} taille={15} /></View>
           <Text style={s.dernierNom} numberOfLines={1}>{l.nom}</Text>
@@ -265,7 +263,7 @@ function Derniers({ lignes }: {
 /** La suite : la liste entière, dans la couleur de la carte. */
 function Lien({ texte, couleur, onPress }: { texte: string; couleur: string; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.99} style={s.lien} accessibilityRole="button" accessibilityLabel={texte}>
+    <Tapable onPress={onPress} style={s.lien} accessibilityRole="button" accessibilityLabel={texte}>
       <Text style={[s.lienTexte, { color: couleur }]} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.texte}>{texte}</Text>
       <Icone sf="chevron.right" materiel="chevron_right" taille={18} couleur={T.grisClair} />
     </Tapable>
@@ -284,9 +282,9 @@ function Attente() {
 
 function Indispo({ onRetry }: { onRetry: () => void }) {
   return (
-    <Pressable onPress={onRetry} style={{ paddingVertical: 12 }} accessibilityRole="button">
+    <Ondulable onPress={onRetry} style={{ paddingVertical: 12 }} accessibilityRole="button">
       <Text style={s.vide}>Données indisponibles. Toucher pour réessayer.</Text>
-    </Pressable>
+    </Ondulable>
   );
 }
 

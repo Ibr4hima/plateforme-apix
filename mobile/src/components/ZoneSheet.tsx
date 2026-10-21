@@ -8,7 +8,7 @@
 // filets fins, l'écran respire.
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
@@ -74,7 +74,7 @@ function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress
       lignes={1} onPress={onPress} accessoire={<Chevron />} />
   );
   return (
-    <Tapable onPress={onPress} echelle={0.99} style={[s.ent, !premier && s.entBord]}>
+    <Tapable onPress={onPress} style={[s.ent, !premier && s.entBord]}>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={s.entNom} numberOfLines={1}>{ze.entreprise?.nom}</Text>
         {ze.entreprise?.forme_juridique ? (
@@ -218,7 +218,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
-              <Tapable key={f.id} echelle={0.98} style={s.doc}
+              <Tapable key={f.id} style={s.doc}
                 onPress={() => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>

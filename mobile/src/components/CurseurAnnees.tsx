@@ -4,7 +4,7 @@
 // et l'année choisie dans une pilule qui suit le pouce — au style des
 // étiquettes de section (SeparateurSection) : le fond de la page, un liseré
 // et le chiffre à la teinte de la section. Le glissement est
-// AIMANTÉ aux années (crantage haptique à chaque changement), le tap saute
+// AIMANTÉ aux années, le tap saute
 // directement à l'année visée. Par défaut, le pouce est à droite : la
 // dernière année connue.
 import { useEffect, useState } from "react";
@@ -12,7 +12,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
-import { cran } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
 
@@ -58,7 +57,7 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
     if (largeur <= 0 || n === 0) return;
     const ratio = Math.min(1, Math.max(0, (x - PAD) / Math.max(1, largeur - 2 * PAD)));
     const a = annees[Math.round(ratio * (n - 1))];
-    if (a !== valeur) { cran(); onChange(a); }
+    if (a !== valeur) onChange(a);
   };
 
   // Pan à distance nulle : le tap ET le glissement passent par le même geste

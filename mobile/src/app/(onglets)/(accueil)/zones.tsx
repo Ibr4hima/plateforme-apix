@@ -38,7 +38,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
   const entreprises = (z.entreprises || []).length;
   const locStr = [z.departement_nom, z.region_nom].filter(Boolean).join(", ");
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+    <Tapable onPress={onPress} style={s.carte}>
       <View style={s.carteCorps}>
         <Text style={s.titre} numberOfLines={2}>{z.nom_zone}</Text>
         {z.pole_nom ? <Text style={s.sousTitre} numberOfLines={1}>{z.pole_nom}</Text> : null}
@@ -198,7 +198,7 @@ export default function Zones() {
             const nbZones = (zones || []).filter((z: any) => z.pole_id === p.id).length;
             return (
               <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-                <Tapable onPress={() => setPoleSelec(p)} echelle={0.985} style={[s.carte, s.pole]}>
+                <Tapable onPress={() => setPoleSelec(p)} style={[s.carte, s.pole]}>
                   {/* La forme unie du pôle dans sa couleur, tuile assortie en
                       très clair — le même gabarit que la vue régionale des
                       Entreprises */}

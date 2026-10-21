@@ -14,8 +14,8 @@ import { useEffect, useRef, useState } from "react";
 import Reanime, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
+import { Ondulable } from "@/components/ui";
 import { creerStyles, useStyleResolu } from "@/lib/apparence";
-import { tick } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { IOS } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
@@ -91,11 +91,11 @@ export function Ligne({
   const pose = [s.ligne, { paddingLeft: MARGE + retrait }];
   if (!onPress) return <View style={[pose, attenue && s.attenue]}>{corps}</View>;
   return (
-    <Pressable onPress={onPress} accessibilityRole={role}
+    <Ondulable onPress={onPress} accessibilityRole={role}
       accessibilityState={coche === undefined ? undefined : role === "checkbox" ? { checked: coche } : { selected: coche }}
       style={({ pressed }) => [pose, pressed && s.enfoncee, attenue && s.attenue]}>
       {corps}
-    </Pressable>
+    </Ondulable>
   );
 }
 
@@ -138,9 +138,10 @@ export function GroupeDocuments({ fichiers, ouvrir }: { fichiers: any[]; ouvrir:
 /** Le chevron qui déplie une ligne — vers la droite fermé, vers le bas ouvert. */
 export function Deplier({ ouvert, onPress, label }: { ouvert: boolean; onPress: () => void; label: string }) {
   return (
-    <Pressable onPress={() => { tick(); onPress(); }} hitSlop={10}
+    <Pressable onPress={() => onPress()} hitSlop={10}
       accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: ouvert }}
-      style={({ pressed }) => [s.deplier, pressed && { opacity: 0.4 }]}>
+      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 18 }}
+      style={({ pressed }) => [s.deplier, IOS && pressed && { opacity: 0.4 }]}>
       <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_more" : "chevron_right"}
         taille={13} poids="semibold" couleur={T.bleu} />
     </Pressable>
@@ -153,7 +154,7 @@ export function LigneDepliable({ titre, compte, ouvert, onPress }: {
   titre: string; compte?: number | string; ouvert: boolean; onPress: () => void;
 }) {
   return (
-    <Pressable onPress={() => { tick(); onPress(); }}
+    <Ondulable onPress={() => onPress()}
       accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
       style={({ pressed }) => [s.ligne, { paddingLeft: MARGE }, pressed && s.enfoncee]}>
       <View style={[s.filet, { left: MARGE }]} />
@@ -161,7 +162,7 @@ export function LigneDepliable({ titre, compte, ouvert, onPress }: {
       {compte != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text> : null}
       <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_more" : "chevron_right"}
         taille={13} poids="semibold" couleur={T.bleu} />
-    </Pressable>
+    </Ondulable>
   );
 }
 
@@ -197,10 +198,10 @@ export function LigneValeur({ label, valeur, children, onPress, lignes }: {
   );
   if (!onPress) return <View style={s.ligneValeur}>{corps}</View>;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button"
+    <Ondulable onPress={onPress} accessibilityRole="button"
       style={({ pressed }) => [s.ligneValeur, pressed && s.enfoncee]}>
       {corps}
-    </Pressable>
+    </Ondulable>
   );
 }
 
@@ -219,11 +220,11 @@ export function TuilesActions({ actions }: { actions: (TuileAction | null | fals
   return (
     <View style={s.tuiles}>
       {liste.map(a => (
-        <Pressable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label}
+        <Ondulable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label}
           style={({ pressed }) => [s.tuile, pressed && s.enfoncee]}>
           <Icone sf={a.sf} materiel={a.materiel} taille={20} couleur={T.bleu} />
           <Text style={s.tuileLabel} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</Text>
-        </Pressable>
+        </Ondulable>
       ))}
     </View>
   );
@@ -335,7 +336,7 @@ function SegmentsCapsuleIOS({ options, valeur, onChange, compact, teinte }: Prop
       {pas > 0 && <Reanime.View style={[curseur, compact && s.curseurCompact, styleCurseur]} />}
       {options.map((o, i) => (
         <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
-          onPress={() => { if (o.cle !== valeur) { tick(); onChange(o.cle); } }}>
+          onPress={() => { if (o.cle !== valeur) onChange(o.cle); }}>
           <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif, teinte ? { color: teinte } : null]}
             numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} maxFontSizeMultiplier={ECHELLE.compact}>
             {o.label}

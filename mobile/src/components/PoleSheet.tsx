@@ -6,7 +6,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import Symbole from "@/components/Symbole";
 import ZoneSheet from "@/components/ZoneSheet";
@@ -130,7 +130,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
               const tc = teinte(zoneTypeMeta(z.type_zone).color);
               const nbEnts = (z.entreprises || []).filter((ze: any) => ze.statut === "installee").length;
               return (
-                <Tapable key={z.id} onPress={() => setZoneOuverte(z)} echelle={0.99}
+                <Tapable key={z.id} onPress={() => setZoneOuverte(z)}
                   style={[s.zone, i > 0 && s.zoneBord]}>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.zoneNom} numberOfLines={1}>{z.nom_zone}</Text>
@@ -179,7 +179,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
-              <Tapable key={f.id} echelle={0.98} style={s.doc}
+              <Tapable key={f.id} style={s.doc}
                 onPress={() => ouvrirDoc(`${API}/zones-types/poles/${pole.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>

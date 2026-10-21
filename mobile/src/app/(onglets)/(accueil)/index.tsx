@@ -30,7 +30,6 @@ import VedetteIde from "@/components/VedetteIde";
 import { Apparition, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { appliquerSchema, creerStyles, useSombre } from "@/lib/apparence";
-import { tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
@@ -58,7 +57,7 @@ function ProchainEvenement() {
       <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>Événement à venir</Text>
       {/* Un bleu UNI — le bloc de couleur qui ancre la page, sans dégradé ni
           reflet : la couleur de la maison, franche */}
-      <Tapable onPress={() => setOuvert(true)} echelle={0.98} style={s.evenementCoquille}
+      <Tapable onPress={() => setOuvert(true)} style={s.evenementCoquille}
         accessibilityRole="button" accessibilityLabel={`${ev.nom_event}, ouvrir la fiche`}>
         <View style={s.evenement}>
           <View style={s.evenementDate}>
@@ -107,7 +106,6 @@ export default function Accueil() {
     }).catch(() => {});
   }, []);
   const basculerTheme = () => {
-    tick();
     const suivant = sombre ? "clair" : "sombre";
     appliquerSchema(suivant === "sombre");
     AsyncStorage.setItem("apix.theme", suivant).catch(() => {});

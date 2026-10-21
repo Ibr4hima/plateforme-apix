@@ -77,13 +77,13 @@ export function CarteContact({ nom, sous, telephones, mails }: { nom: string; so
       {(telephones.length > 0 || mails.length > 0) && (
         <View style={s.contactChips}>
           {telephones.map((t, i) => (
-            <Tapable key={`t${i}`} echelle={0.95} onPress={() => ouvrirTel(t)}
+            <Tapable key={`t${i}`} onPress={() => ouvrirTel(t)}
               style={[s.contactChip, { backgroundColor: T.bleuVoile }]}>
               <Text style={[s.contactChipTexte, { color: T.bleu }]}>{fmtPhone(t.trim())}</Text>
             </Tapable>
           ))}
           {mails.map((m, i) => (
-            <Tapable key={`m${i}`} echelle={0.95} onPress={() => ouvrirMail(m)}
+            <Tapable key={`m${i}`} onPress={() => ouvrirMail(m)}
               style={[s.contactChip, { backgroundColor: "rgba(24,128,56,0.07)" }]}>
               <Text style={[s.contactChipTexte, { color: T.vert }]}>{m.trim()}</Text>
             </Tapable>
@@ -178,7 +178,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
-              <Tapable key={f.id} echelle={0.98} style={s.doc}
+              <Tapable key={f.id} style={s.doc}
                 onPress={() => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>

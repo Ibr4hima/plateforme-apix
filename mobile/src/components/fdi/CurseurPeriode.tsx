@@ -2,8 +2,8 @@
 //
 // Le frère du curseur d'années de la carte vedette (CurseurAnnees) : même
 // piste fine, même pouce blanc à ombre douce, même pilule qui suit le pouce,
-// même crantage haptique à chaque année franchie. Il en faut deux ici : une
-// période a un début et une fin.
+// même aimantation aux années. Il en faut deux ici : une période a un début
+// et une fin.
 //
 // LA SÉLECTION NE PART QU'AU LÂCHER. Un glissement traverse dix années en une
 // seconde ; envoyer chacune au serveur ferait dix requêtes de liste et dix de
@@ -21,7 +21,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Reanime, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
-import { cran } from "@/lib/haptique";
 import { RESSORT } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
 
@@ -71,10 +70,10 @@ export default function CurseurPeriode({ min, max, debut, fin, onChange }: {
     const c = courant.current;
     if (c.actif === "d") {
       const v = Math.min(a, c.f);
-      if (v !== c.d) { c.d = v; cran(); setD(v); }
+      if (v !== c.d) { c.d = v; setD(v); }
     } else {
       const v = Math.max(a, c.d);
-      if (v !== c.f) { c.f = v; cran(); setF(v); }
+      if (v !== c.f) { c.f = v; setF(v); }
     }
   };
   const commencer = (x: number) => {

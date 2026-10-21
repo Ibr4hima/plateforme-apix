@@ -10,7 +10,6 @@ import { routeDepuisAccueil } from "@/lib/navigation";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Apparition, Tapable } from "@/components/ui";
-import { tick } from "@/lib/haptique";
 import { ECHELLE, ESPACE, MODULES, PLUS, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -20,7 +19,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
       {items.map((m, i) => (
         <View key={m.cle}>
           {i > 0 && <View style={s.separateur} />}
-          <Tapable onPress={() => ouvrir(m.href)} echelle={0.98} style={s.ligne}>
+          <Tapable onPress={() => ouvrir(m.href)} style={s.ligne}>
             <View style={s.pastille}>
               <Icone sf={m.sf} materiel={m.icone} taille={17} couleur={T.surBleu} />
             </View>
@@ -38,7 +37,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
 
 export default function Explorer() {
   const router = useRouter();
-  const ouvrir = (href: string) => { tick(); router.push(routeDepuisAccueil(href) as any); };
+  const ouvrir = (href: string) => router.push(routeDepuisAccueil(href) as any);
 
   return (
     <View style={s.bloc}>

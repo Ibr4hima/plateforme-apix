@@ -4,9 +4,8 @@
 // (secteur → branche → activité) et cascade Localisation (région →
 // département → arrondissement), pied Réinitialiser / Terminé.
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { Feuille, Tapable } from "@/components/ui";
-import { succes, tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
@@ -33,7 +32,7 @@ export function Coche({ label, sel, onPress, retrait = 0 }: {
   const bleuPoint = useCouleur(T.bleu);
   const grisPoint = useCouleur(T.grisClair);
   return (
-    <Pressable onPress={() => { tick(); onPress(); }}
+    <Pressable onPress={() => onPress()}
       style={({ pressed }) => [s.coche, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }]}>
       <View style={[s.point, { borderColor: grisPoint }, sel && { borderColor: bleuPoint, backgroundColor: bleuPoint }]} />
       <Text style={[s.cocheTexte, sel && { fontFamily: POLICE.gras, color: T.encre }]} numberOfLines={1}>{label}</Text>
@@ -232,8 +231,8 @@ export function FeuilleFiltres({ onClose, onReinitialiser, largeurMax, children 
   if (IOS) return (
     <Feuille onClose={onClose} titre="Filtres" ecart={26} largeurMax={largeurMax} fondGroupe
       actions={{
-        gauche: { label: "Réinitialiser", onPress: () => { tick(); onReinitialiser(); } },
-        droite: { label: "OK", onPress: () => { succes(); onClose(); } },
+        gauche: { label: "Réinitialiser", onPress: () => onReinitialiser() },
+        droite: { label: "OK", onPress: () => onClose() },
       }}>
       {children}
     </Feuille>
@@ -242,10 +241,10 @@ export function FeuilleFiltres({ onClose, onReinitialiser, largeurMax, children 
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22} largeurMax={largeurMax}
       pied={
         <View style={s.pied}>
-          <Tapable onPress={() => { tick(); onReinitialiser(); }} style={s.boutonSecondaire}>
+          <Tapable onPress={() => onReinitialiser()} style={s.boutonSecondaire}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
           </Tapable>
-          <Tapable onPress={() => { succes(); onClose(); }} style={s.boutonPrincipal}>
+          <Tapable onPress={() => onClose()} style={s.boutonPrincipal}>
             <Text style={s.boutonPrincipalTexte}>Terminé</Text>
           </Tapable>
         </View>

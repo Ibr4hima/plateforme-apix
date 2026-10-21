@@ -270,7 +270,7 @@ function BoutonLecture({ sf, materiel, couleur, onPress, label, inactif }: {
 }) {
   if (!IOS) return (
     <Pressable onPress={onPress} disabled={inactif} accessibilityRole="button" accessibilityLabel={label}
-      android_ripple={{ color: "rgba(122,138,164,0.24)", borderless: true, radius: 20 }}
+      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 20 }}
       style={[s.boutonLectureAndroid, inactif && { opacity: 0.38 }]}>
       <Icone sf={sf} materiel={materiel} taille={24} couleur={couleur} />
     </Pressable>

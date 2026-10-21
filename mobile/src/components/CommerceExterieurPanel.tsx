@@ -23,7 +23,6 @@ import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtMFCFA } from "@/lib/format";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -285,8 +284,8 @@ export default function CommerceExterieurPanel() {
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
               <View key={cle}>
-                <Tapable echelle={0.98}
-                  onPress={() => { tick(); setActif(cle); }}
+                <Tapable
+                  onPress={() => setActif(cle)}
                   style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
@@ -365,8 +364,8 @@ export default function CommerceExterieurPanel() {
                       const p = sx.length > 1 ? sx[sx.length - 2] : null;
                       const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
                       return (
-                        <Tapable key={x.produit} echelle={0.98}
-                          onPress={() => { tick(); setProduitChoisi(x.produit); }}
+                        <Tapable key={x.produit}
+                          onPress={() => setProduitChoisi(x.produit)}
                           style={[s.repere, i > 0 && s.repereBord]}>
                           <Text style={s.repereLabel} numberOfLines={1}>{x.produit.toUpperCase()}</Text>
                           <Text style={s.repereValeur} numberOfLines={1}>
@@ -377,8 +376,8 @@ export default function CommerceExterieurPanel() {
                       );
                     })}
                     {autres.length > 5 && (
-                      <Tapable echelle={0.98}
-                        onPress={() => { tick(); setListeDepliee(v => !v); }}
+                      <Tapable
+                        onPress={() => setListeDepliee(v => !v)}
                         style={[s.repere, s.repereBord, s.deplier]}>
                         <Text style={s.deplierTexte}>
                           {listeDepliee ? "Réduire la liste" : `Voir les ${autres.length - 5} autres produits`}
@@ -412,8 +411,8 @@ export default function CommerceExterieurPanel() {
             {(["continent", "region"] as const).map(z => {
               const actifZ = zone === z;
               return (
-                <Tapable key={z} echelle={0.96}
-                  onPress={() => { tick(); setZone(z); setZoneChoisie(null); }}
+                <Tapable key={z}
+                  onPress={() => { setZone(z); setZoneChoisie(null); }}
                   style={[s.chipZone, actifZ && s.chipZoneActif]}>
                   <Text style={[s.chipZoneTexte, actifZ && { color: T.vert }]}>
                     {z === "continent" ? "Continent" : "Région"}
@@ -472,8 +471,8 @@ export default function CommerceExterieurPanel() {
                 const p = sx.length > 1 ? sx[sx.length - 2] : null;
                 const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
                 return (
-                  <Tapable key={x.nom} echelle={0.98}
-                    onPress={() => { tick(); setZoneChoisie(x.nom); }}
+                  <Tapable key={x.nom}
+                    onPress={() => setZoneChoisie(x.nom)}
                     style={[s.repere, i > 0 && s.repereBord]}>
                     <Text style={s.repereLabel} numberOfLines={1}>{x.nom.toUpperCase()}</Text>
                     <Text style={s.repereValeur} numberOfLines={1}>

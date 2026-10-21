@@ -3,7 +3,7 @@
 // sections plates : activités porteuses (arbre NAEMA), atouts groupés par
 // catégorie (chips colorées, à plat), description riche, documents.
 import { useQuery } from "@tanstack/react-query";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
@@ -123,7 +123,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
-              <Tapable key={f.id} echelle={0.98} style={s.doc}
+              <Tapable key={f.id} style={s.doc}
                 onPress={() => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>

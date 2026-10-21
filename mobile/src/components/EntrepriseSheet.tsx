@@ -8,7 +8,7 @@
 // Structure éditoriale, comme les autres fiches : identité (nom en grand,
 // une ligne de méta forme · pôle · région), actions, puis sections plates —
 // rangées clé-valeur, activités NAEMA, points focaux.
-import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, Linking, Platform, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur, TuilesActions } from "@/components/ListeIOS";
@@ -44,13 +44,13 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
       <Text style={[s.rangeeValeur, onPress && { color: T.bleu }]} numberOfLines={2}>{valeur}</Text>
     </View>
   );
-  return onPress ? <Tapable onPress={onPress} echelle={0.99}>{contenu}</Tapable> : contenu;
+  return onPress ? <Tapable onPress={onPress}>{contenu}</Tapable> : contenu;
 }
 
 // Bouton de la rangée d'actions — n'apparaît que si la donnée existe
 function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.95} style={s.action}>
+    <Tapable onPress={onPress} style={s.action}>
       <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
       <Text style={s.actionLabel}>{label}</Text>
     </Tapable>
@@ -60,7 +60,7 @@ function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; o
 // Chip tappable (téléphone / email des points focaux)
 function ChipContact({ texte, couleur, fond, onPress }: { texte: string; couleur: string; fond: string; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.95} style={[s.chip, { backgroundColor: fond }]}>
+    <Tapable onPress={onPress} style={[s.chip, { backgroundColor: fond }]}>
       <Text style={[s.chipTexte, { color: couleur }]}>{texte}</Text>
     </Tapable>
   );

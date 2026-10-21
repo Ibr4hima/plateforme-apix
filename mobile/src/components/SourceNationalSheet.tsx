@@ -13,7 +13,6 @@ import {
   ChampRecherche, Groupe, Ligne as LigneIOS, LigneDepliable, LigneVide, SegmentsIOS,
 } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
-import { cran, tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -58,7 +57,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   const groupes: any[] = refs?.groupe || [];
   const secteurs: any[] = refs?.secteur || [];
 
-  const valider = (s: SelNational) => { cran(); onChoisir(s); onClose(); };
+  const valider = (s: SelNational) => { onChoisir(s); onClose(); };
   const estChoisi = (s: SelNational) => s.niveau === sel.niveau && s.cible_id === sel.cible_id;
 
   // La recherche sert à plat, dans le niveau affiché
@@ -150,7 +149,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
   }) => {
     const actif = estChoisi(cible);
     return (
-      <Tapable echelle={0.99} onPress={() => valider(cible)} style={[st.ligne, !premier && st.ligneBord]}>
+      <Tapable onPress={() => valider(cible)} style={[st.ligne, !premier && st.ligneBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[st.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={2}>{nom}</Text>
           {legende ? <Text style={st.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
@@ -166,8 +165,8 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
     const ouvert = ouverts.has(id);
     return (
       <View>
-        <Tapable echelle={0.99}
-          onPress={() => { tick(); basculer(id); }}
+        <Tapable
+          onPress={() => basculer(id)}
           style={[st.groupe, ouvert && st.groupeOuvert]}>
           <Text style={st.groupeTexte} numberOfLines={1}>{titre.toUpperCase()}</Text>
           {compte != null && <Text style={st.groupeCompte}>{compte}</Text>}
@@ -187,8 +186,8 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
             {SEGMENTS.map(sg => {
               const actif = vue === sg.cle;
               return (
-                <Tapable key={sg.cle} echelle={0.97} surbrillance={false}
-                  onPress={() => { tick(); setVue(sg.cle); setQ(""); }}
+                <Tapable key={sg.cle} surbrillance={false}
+                  onPress={() => { setVue(sg.cle); setQ(""); }}
                   style={[st.segment, actif && st.segmentActif]}>
                   <Text style={[st.segmentTexte, actif && st.segmentTexteActif]} numberOfLines={1}>{sg.label}</Text>
                 </Tapable>

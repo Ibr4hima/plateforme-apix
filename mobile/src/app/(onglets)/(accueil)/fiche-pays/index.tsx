@@ -24,7 +24,6 @@ import type { PaysFiche } from "@/components/fichePays/AtomesFiche";
 import { enPanne, getJson } from "@/lib/api";
 import { creerStyles } from "@/lib/apparence";
 import { drapeauEmoji } from "@/lib/drapeaux";
-import { cran } from "@/lib/haptique";
 import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { ECHELLE, POLICE, T } from "@/theme";
 
@@ -123,7 +122,7 @@ export default function FichePays() {
         ) : (
           <View style={s.liste}>
             <ListePays pays={liste.filter(p => p.id !== autre)} q={q}
-              onChoisir={id => { cran(); choisir(vide, id); }} />
+              onChoisir={id => choisir(vide, id)} />
           </View>
         )}
       </ScrollView>

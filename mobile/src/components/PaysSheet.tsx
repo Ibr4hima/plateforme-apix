@@ -20,7 +20,6 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
-import { cran, tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -143,7 +142,7 @@ export function ListePays({ pays, choisi, q, onChoisir }: {
   }) => {
     const actif = p.id === choisi;
     return (
-      <Tapable echelle={0.99} onPress={() => onChoisir(p.id)} style={[s.pays, !premier && s.paysBord]}>
+      <Tapable onPress={() => onChoisir(p.id)} style={[s.pays, !premier && s.paysBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[s.paysNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
           {legende && (p.continent || p.region_geo) ? (
@@ -176,8 +175,8 @@ export function ListePays({ pays, choisi, q, onChoisir }: {
         const ouvert = ouverts.has(sec.continent);
         return (
           <View key={sec.continent}>
-            <Tapable echelle={0.99}
-              onPress={() => { tick(); basculer(sec.continent); }}
+            <Tapable
+              onPress={() => basculer(sec.continent)}
               style={[s.continent, ouvert && s.continentOuvert]}>
               <Text style={s.continentTexte}>{sec.continent.toUpperCase()}</Text>
               <Text style={s.continentCompte}>{sec.nb}</Text>
@@ -208,7 +207,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   onClose: () => void;
 }) {
   const [q, setQ] = useState("");
-  const valider = (id: number) => { cran(); onChoisir(id); onClose(); };
+  const valider = (id: number) => { onChoisir(id); onClose(); };
 
   if (IOS) return (
     <Feuille onClose={onClose} ecart={22} fondGroupe

@@ -17,7 +17,6 @@ import SilhouetteRegion, { regionConnue } from "@/components/SilhouetteRegion";
 import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
-import { tick } from "@/lib/haptique";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
@@ -40,7 +39,7 @@ function lettreDe(nom: string): string {
 // ── La carte d'entreprise — le gabarit des accords ───────────────────────────
 function CarteEntreprise({ e, onPress }: { e: any; onPress: () => void }) {
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+    <Tapable onPress={onPress} style={s.carte}>
       <Text style={s.nom} numberOfLines={2}>{e.nom}</Text>
       {e.forme_juridique ? <Text style={s.sous} numberOfLines={1}>{formeCourte(e.forme_juridique)}</Text> : null}
       <View style={s.dates}>
@@ -175,7 +174,7 @@ export default function Entreprises() {
             const part = filtres.length ? r.entreprises.length / filtres.length : 0;
             return (
               <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-                <Tapable onPress={() => { tick(); setRegionOuverte(ouvert ? null : r.nom); }} echelle={0.98}
+                <Tapable onPress={() => setRegionOuverte(ouvert ? null : r.nom)}
                   style={[s.region, ouvert && { borderColor: bleuBord }]}>
                   {/* La forme réelle du territoire — un chiffre abstrait
                       n'identifie pas une région, sa silhouette si. La couleur
@@ -198,7 +197,7 @@ export default function Entreprises() {
                 {ouvert && (
                   <View style={s.regionListe}>
                     {r.entreprises.map((e: any, i: number) => (
-                      <Tapable key={e.id} onPress={() => setSelec(e)} echelle={0.99}
+                      <Tapable key={e.id} onPress={() => setSelec(e)}
                         style={[s.regionEntreprise, i > 0 && s.regionEntrepriseBord]}>
                         <View style={s.blocPetit}>
                           <Text style={s.blocPetitTexte}>{monogramme(e.nom)}</Text>

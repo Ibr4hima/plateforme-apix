@@ -27,7 +27,6 @@ import { Pressable, Text, View } from "react-native";
 import Reanime, { FadeIn, FadeOut } from "react-native-reanimated";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { ChampRecherche, SegmentsCapsule } from "@/components/ListeIOS";
-import { tick } from "@/lib/haptique";
 import { creerStyles } from "@/lib/apparence";
 import { useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
@@ -137,7 +136,7 @@ function BoutonBarre({ sf, materiel, onPress, badge, label, taille }: NomsIcone 
     <View style={[s.badge, !IOS && s.badgeAndroid]}><Text style={s.badgeTexte}>{badge}</Text></View>
   ) : null;
   if (IOS) return (
-    <Pressable onPress={() => { tick(); onPress(); }} hitSlop={6} accessibilityRole="button"
+    <Pressable onPress={() => onPress()} hitSlop={6} accessibilityRole="button"
       accessibilityLabel={label} style={({ pressed }) => [s.boutonIOS, pressed && { opacity: 0.35 }]}>
       {/* À l'encre, comme le chevron de retour : la barre ne porte qu'une couleur */}
       <Icone sf={sf} materiel={materiel} taille={taille ?? 18} couleur={T.encre} poids="medium" />

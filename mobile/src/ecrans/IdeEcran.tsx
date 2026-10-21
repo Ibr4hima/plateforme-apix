@@ -19,7 +19,6 @@ import { useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
 import { ChipFiltre } from "@/components/ui";
-import { tick } from "@/lib/haptique";
 import IdeFluxStocksPanel from "@/components/IdeFluxStocksPanel";
 import IdeFusionPanel from "@/components/IdeFusionPanel";
 import IdeGreenfieldPanel from "@/components/IdeGreenfieldPanel";
@@ -88,7 +87,7 @@ export default function IdeEcran() {
   const secteurVue = source.type === "secteur";
 
   // Le bouton de l'en-tête ouvre le sélecteur de vue, dans les deux familles
-  const boutonHero = { icone: "more_horiz", onPress: () => { tick(); setSourceOuverte(true); } };
+  const boutonHero = { icone: "more_horiz", onPress: () => setSourceOuverte(true) };
 
   return (
     <>

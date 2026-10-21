@@ -11,15 +11,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Animated, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
-import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
+import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
 import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import { IOS } from "@/lib/plateforme";
 
 export type BaseCode = "code-investissement" | "modalites-application";
 
@@ -113,7 +112,7 @@ export default function CodeSommaire() {
             {recherche.data?.length === 0 && <EtatVide texte={`Aucun article pour « ${qDebounce} »`} />}
             {(recherche.data || []).map((r: any, i: number) => (
               <Apparition key={r.id} index={Math.min(i, 8)}>
-                <Tapable echelle={0.985}
+                <Tapable
                   onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
                   style={s.resultat}>
                   <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
@@ -140,8 +139,8 @@ export default function CodeSommaire() {
                     return (
                       <View key={c.id}>
                         {i > 0 && <View style={s.separateur} />}
-                        <Pressable onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: c.id, base } } as any)}
-                          style={({ pressed }) => [s.ligne, pressed && { backgroundColor: IOS ? T.surbrillance : T.bleuVoile }]}>
+                        <Ondulable onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: c.id, base } } as any)}
+                          style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.surbrillance }]}>
                           <View style={s.numeroColonne}>
                             <Text style={s.numeroRomain}>{romainDe(c)}</Text>
                             <Text style={s.numeroLegende}>CHAP.</Text>
@@ -151,7 +150,7 @@ export default function CodeSommaire() {
                             <Text style={s.ligneSous}>{nb} article{nb > 1 ? "s" : ""}{c.sections?.length ? ` · ${c.sections.length} section${c.sections.length > 1 ? "s" : ""}` : ""}</Text>
                           </View>
                           <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
-                        </Pressable>
+                        </Ondulable>
                       </View>
                     );
                   })}

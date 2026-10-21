@@ -21,7 +21,6 @@ import { Os } from "@/components/Squelette";
 import { Apparition, ChiffreAnime, IconeTendance, Tapable } from "@/components/ui";
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
-import { tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
@@ -154,7 +153,7 @@ export default function VedetteIde() {
     <Apparition index={0} cle="accueil-vedette">
       <View style={s.carte}>
         {/* En-tête : la série vedette, la flèche mène à son module */}
-        <Tapable onPress={() => router.push(routeDepuisAccueil(LABELS[actif].route) as any)} echelle={0.99} surbrillance={false}
+        <Tapable onPress={() => router.push(routeDepuisAccueil(LABELS[actif].route) as any)} surbrillance={false}
           style={s.enTete}>
           <Text style={s.etiquette} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}
@@ -215,8 +214,8 @@ export default function VedetteIde() {
             const corps = corpsRepere(texte);
             return (
               <View key={cle} style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
-              <Tapable echelle={0.96}
-                onPress={() => { tick(); setActif(cle); }}
+              <Tapable
+                onPress={() => setActif(cle)}
                 style={{ flex: 1 }}>
                 <Text style={s.repereLabel} numberOfLines={2} maxFontSizeMultiplier={ECHELLE.compact}>{LABELS[cle].court}</Text>
                 <View style={s.repereLigne}>

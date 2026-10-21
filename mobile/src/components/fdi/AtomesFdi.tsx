@@ -103,7 +103,7 @@ function Gabarit({ onPress, titre, sousTitre, faits, libelle }: {
   faits: Fait[]; libelle: string;
 }) {
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={s.carte} accessibilityRole="button" accessibilityLabel={libelle}>
+    <Tapable onPress={onPress} style={s.carte} accessibilityRole="button" accessibilityLabel={libelle}>
       {/* La tête prend la hauteur libre : en grille, la carte s'étire à la
           hauteur de sa rangée, et les faits d'une même rangée restent alignés */}
       <View style={s.tete}>

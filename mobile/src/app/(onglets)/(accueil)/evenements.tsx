@@ -45,7 +45,7 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
   const echeance = enCours ? "En ce moment" : passe ? null : dansCombienEvenement(e);
 
   return (
-    <Tapable onPress={onPress} echelle={0.98} style={[s.ligne, passe && { backgroundColor: T.carteDouce }]}>
+    <Tapable onPress={onPress} style={[s.ligne, passe && { backgroundColor: T.carteDouce }]}>
       {/* Bloc date : bleu plein pour le prochain, vert pour l'en cours */}
       <View style={[s.bloc, prochain && s.blocProchain, enCours && s.blocEnCours, passe && s.blocPasse]}>
         {d ? (

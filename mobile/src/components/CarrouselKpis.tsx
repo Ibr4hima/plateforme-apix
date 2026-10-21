@@ -2,9 +2,8 @@
 // rotation automatique douce et points de navigation (motif de l'accueil).
 // Partagé entre Indicateurs économiques et Flux bilatéraux.
 import { memo, useEffect, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, ScrollView, Text, View } from "react-native";
 import { Apparition, ChiffreAnime } from "@/components/ui";
-import { tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -24,7 +23,6 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
   const [page, setPage] = useState(0);
   const defileur = useRef<ScrollView>(null);
   const pageRef = useRef(0);
-  const parGeste = useRef(false); // tick haptique sur geste seulement, pas sur la rotation auto
   pageRef.current = page;
 
   useEffect(() => {
@@ -41,13 +39,7 @@ function CarrouselKpis({ kpis }: { kpis: KpiCarrousel[] }) {
     <View>
       <ScrollView
         ref={defileur} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        onScrollBeginDrag={() => { parGeste.current = true; }}
-        onMomentumScrollEnd={e => {
-          const suivante = Math.round(e.nativeEvent.contentOffset.x / LARGEUR);
-          if (parGeste.current && suivante !== pageRef.current) tick();
-          parGeste.current = false;
-          setPage(suivante);
-        }}>
+        onMomentumScrollEnd={e => setPage(Math.round(e.nativeEvent.contentOffset.x / LARGEUR))}>
         {pages.map((groupe, i) => (
           <View key={i} style={[s.page, { width: LARGEUR }]}>
             {groupe.map((kpi, k) => (

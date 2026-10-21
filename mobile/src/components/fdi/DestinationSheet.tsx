@@ -24,7 +24,6 @@ import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide } from "@/comp
 import { Feuille, Tapable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
 import { type ComptePays, PAYS_REFERENCE, fmtEntier, plier } from "@/lib/fdi";
-import { cran, tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { LARGEUR_FICHE } from "./FichesFdi";
@@ -106,7 +105,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
     return pays.filter(p => plier(p.nom).includes(t)).sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
   }, [q, pays]);
 
-  const choisir = (d: Destination) => { cran(); onChoisir(d); onClose(); };
+  const choisir = (d: Destination) => { onChoisir(d); onClose(); };
   const basculerRegion = (cle: string) =>
     setOuverts(prev => { const n = new Set(prev); n.has(cle) ? n.delete(cle) : n.add(cle); return n; });
 
@@ -163,7 +162,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   const LignePays = ({ p, premier, estRef }: { p: ComptePays; premier: boolean; estRef?: boolean }) => {
     const actif = valeur.echelle === "pays" && valeur.pays === p.nom;
     return (
-      <Tapable echelle={0.99} onPress={() => choisir({ echelle: "pays", pays: p.nom, region: valeur.region })}
+      <Tapable onPress={() => choisir({ echelle: "pays", pays: p.nom, region: valeur.region })}
         style={[s.ligne, !premier && s.ligneBord]} accessibilityRole="button"
         accessibilityState={{ selected: actif }} accessibilityLabel={`${p.nom}, ${p.nb} projets`}>
         <Text style={[s.ligneNom, actif && s.ligneNomActif]} numberOfLines={1}>{p.nom}</Text>
@@ -179,7 +178,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   const LigneZone = ({ nom, nb, premier, retrait }: { nom: string; nb: number; premier: boolean; retrait?: boolean }) => {
     const actif = valeur.echelle === "regions" && valeur.region === nom;
     return (
-      <Tapable echelle={0.99} onPress={() => choisir({ echelle: "regions", pays: valeur.pays, region: nom })}
+      <Tapable onPress={() => choisir({ echelle: "regions", pays: valeur.pays, region: nom })}
         style={[s.ligne, !premier && s.ligneBord, retrait && s.ligneRetrait]} accessibilityRole="button"
         accessibilityState={{ selected: actif }} accessibilityLabel={`${nom}, ${nb} projets`}>
         <Text style={[s.ligneNom, !retrait && s.ligneContinent, actif && s.ligneNomActif]} numberOfLines={1}>{nom}</Text>
@@ -236,8 +235,8 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
             const ouvert = ouverts.has(r.cle);
             return (
               <View key={r.cle}>
-                <Tapable echelle={0.99} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
-                  onPress={() => { tick(); basculerRegion(r.cle); }}
+                <Tapable accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
+                  onPress={() => basculerRegion(r.cle)}
                   style={[s.groupe, ouvert && s.groupeOuvert]}>
                   <Text style={s.groupeTexte} numberOfLines={1}>{r.zone.toUpperCase()}</Text>
                   <Text style={s.groupeCompte}>{fmtEntier(r.nb)}</Text>

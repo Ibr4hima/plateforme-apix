@@ -5,10 +5,9 @@
 // Brouillon local, appliqué d'un bloc par « Appliquer ».
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { Feuille, Tapable } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
-import { succes, tick } from "@/lib/haptique";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -137,10 +136,10 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22}
       pied={
         <View style={s.pied}>
-          <Tapable onPress={() => { tick(); reinitialiser(); }} style={s.boutonSecondaire}>
+          <Tapable onPress={() => reinitialiser()} style={s.boutonSecondaire}>
             <Text style={s.boutonSecondaireTexte}>Réinitialiser</Text>
           </Tapable>
-          <Tapable onPress={() => { succes(); onAppliquer(f); onClose(); }} style={s.boutonPrincipal}>
+          <Tapable onPress={() => { onAppliquer(f); onClose(); }} style={s.boutonPrincipal}>
             <Text style={s.boutonPrincipalTexte}>Appliquer</Text>
           </Tapable>
         </View>

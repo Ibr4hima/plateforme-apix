@@ -1,6 +1,6 @@
 // Bibliothèque de composants canoniques de l'app — chaque brique est
-// définie UNE fois ici et consommée partout : Tapable (retour physique
-// à ressort), Bouton (primaire / secondaire / fantôme, trois tailles),
+// définie UNE fois ici et consommée partout : Tapable (le toucher de
+// chaque système), Bouton (primaire / secondaire / fantôme, trois tailles),
 // Chip, Carte, Badge pastel, RangeeStats (rangée basse des cards),
 // Feuille (échafaudage des bottom sheets) et les états de chargement /
 // erreur / vide. Jetons : T, TYPO, ESPACE, RAYON, OMBRE (theme.ts).
@@ -12,6 +12,7 @@ import {
   AccessibilityRole, AccessibilityState, ActivityIndicator, Animated, Dimensions,
   LayoutChangeEvent, Modal, Platform, Pressable,
   StyleProp, StyleSheet, Text, View, ViewStyle, type ModalProps,
+  type PressableProps, type PressableStateCallbackType,
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,7 +25,6 @@ import Icone from "@/components/Icone";
 import Symbole from "@/components/Symbole";
 import { creerStyles, useCouleur, useStyleResolu } from "@/lib/apparence";
 import { foncerPastel } from "@/lib/couleurs";
-import { tick } from "@/lib/haptique";
 import { MOUVEMENT_FEUILLE, RESSORT, apparition } from "@/lib/motion";
 import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
@@ -34,17 +34,16 @@ const PressableReanime = Reanime.createAnimatedComponent(Pressable);
 const FlouAnime = Reanime.createAnimatedComponent(BlurView);
 
 // ── Tapable : le retour tactile de toute l'app — CHAQUE SYSTÈME LE SIEN ─────
-// iOS : la surbrillance des cellules d'UIKit (voir TapableIOS). Android : à
-// l'appui le contenu se resserre (échelle) et s'assombrit très légèrement ;
-// une seule valeur partagée pilote les deux, exécutée sur le fil UI : entrée
-// courte et nette (90 ms), relâcher au ressort standard.
+// iOS : la surbrillance des cellules d'UIKit (voir TapableIOS). Android :
+// l'ondulation de Material (voir TapableAndroid). Ni l'un ni l'autre ne
+// rétrécit ce qu'on touche, et rien ne vibre.
 export function Tapable(props: ProprietesTapable) {
   return IOS ? <TapableIOS {...props} /> : <TapableAndroid {...props} />;
 }
 
 type ProprietesTapable = {
   onPress?: () => void; onLongPress?: () => void; disabled?: boolean;
-  style?: StyleProp<ViewStyle>; echelle?: number; surbrillance?: boolean; hitSlop?: number;
+  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: number;
   onLayout?: (e: LayoutChangeEvent) => void;
   accessibilityRole?: AccessibilityRole; accessibilityState?: AccessibilityState;
   accessibilityLabel?: string;
@@ -84,26 +83,75 @@ function TapableIOS({ onPress, onLongPress, disabled, style, surbrillance = true
   );
 }
 
-function TapableAndroid({ onPress, onLongPress, disabled, style, echelle = 0.97, surbrillance = true, hitSlop, onLayout, accessibilityRole, accessibilityState, accessibilityLabel, children }: ProprietesTapable) {
-  const appui = useSharedValue(0);
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + (echelle - 1) * appui.value }],
-    opacity: (disabled ? 0.45 : 1) * (1 - (surbrillance ? 0.14 : 0) * appui.value),
-  }));
-  // Reanimated ne sait pas lire une couleur dynamique : le style reçu est
-  // résolu ici, une fois, pour les 177 emplois de Tapable dans l'app
-  const styleResolu = useStyleResolu(style);
-  return (
-    <PressableReanime
-      onPress={onPress} onLongPress={onLongPress} disabled={disabled} hitSlop={hitSlop}
-      onLayout={onLayout} accessibilityRole={accessibilityRole}
-      accessibilityState={accessibilityState} accessibilityLabel={accessibilityLabel}
-      onPressIn={() => { appui.value = withTiming(1, { duration: 90 }); }}
-      onPressOut={() => { appui.value = withSpring(0, RESSORT.standard); }}
-      style={[animStyle, styleResolu]}>
+// SUR ANDROID, LE TOUCHER D'ANDROID : l'ondulation de Material — le
+// RippleDrawable du système, qui part du doigt et s'étale sur la surface —,
+// sans ressort ni rétrécissement. C'est ce que fait une carte de Google Agenda
+// ou une ligne des Paramètres.
+//
+// L'ondulation vit dans le fond de la vue, que les coins arrondis ne rognent
+// pas : sur une carte, elle déborderait en rectangle. Une surface arrondie se
+// pose donc en deux étages — dehors, la boîte (sa place, sa taille, son fond,
+// son bord, son ombre), qui rogne à ses coins ; dedans, le Pressable qui
+// ondule et range le contenu.
+// Ce que reçoit la surface d'Android : les propriétés d'un Pressable, son
+// style à plat
+type ProprietesSurfaceAndroid = Omit<PressableProps, "style" | "children" | "hitSlop"> & {
+  style?: StyleProp<ViewStyle>; surbrillance?: boolean; hitSlop?: number; children?: React.ReactNode;
+};
+
+function TapableAndroid({ style, surbrillance = true, disabled, onLayout, children, ...reste }: ProprietesSurfaceAndroid) {
+  const plat = (StyleSheet.flatten(style) || {}) as ViewStyle;
+  const commun = {
+    ...reste, disabled,
+    android_ripple: surbrillance ? { color: T.surbrillance as unknown as string } : undefined,
+  };
+  if (!surbrillance || !arrondi(plat)) return (
+    <Pressable {...commun} onLayout={onLayout} style={[plat, disabled && { opacity: 0.45 }]}>
       {children}
-    </PressableReanime>
+    </Pressable>
   );
+  const { dehors, dedans } = repartirStyle(plat);
+  return (
+    <View onLayout={onLayout} style={[dehors, { overflow: "hidden" }, disabled && { opacity: 0.45 }]}>
+      <Pressable {...commun} style={dedans}>{children}</Pressable>
+    </View>
+  );
+}
+
+/** Une surface touchable qu'iOS dessine à sa façon — sans retour (un badge,
+    un libellé qui ouvre un sélecteur) ou avec le sien (`style` en fonction de
+    `pressed`) — et qui, sur Android, ondule comme toute surface de Material.
+    Sur iOS, c'est le Pressable d'avant, à l'identique. */
+type ProprietesOndulable = Omit<PressableProps, "style" | "children" | "hitSlop"> & {
+  style?: StyleProp<ViewStyle> | ((etat: PressableStateCallbackType) => StyleProp<ViewStyle>);
+  hitSlop?: number;
+  children?: React.ReactNode;
+};
+export function Ondulable({ style, children, ...reste }: ProprietesOndulable) {
+  if (IOS) return <Pressable {...reste} style={style}>{children}</Pressable>;
+  return (
+    <TapableAndroid {...reste} style={typeof style === "function" ? style({ pressed: false }) : style}>
+      {children}
+    </TapableAndroid>
+  );
+}
+
+const arrondi = (st: ViewStyle) => !!(st.borderRadius || st.borderTopLeftRadius || st.borderTopRightRadius
+  || st.borderBottomLeftRadius || st.borderBottomRightRadius);
+
+// Ce qui range le contenu passe dans le Pressable ; tout le reste (place dans
+// le flux, taille, fond, bord, coins, ombre) fait la boîte. Le Pressable
+// remplit la boîte : toute la surface répond au doigt.
+const DEDANS = new Set([
+  "padding", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight", "paddingHorizontal",
+  "paddingVertical", "paddingStart", "paddingEnd", "flexDirection", "flexWrap", "alignItems",
+  "alignContent", "justifyContent", "gap", "rowGap", "columnGap",
+]);
+function repartirStyle(plat: ViewStyle) {
+  const dehors: Record<string, unknown> = {};
+  const dedans: Record<string, unknown> = { flexGrow: 1 };
+  for (const [cle, valeur] of Object.entries(plat)) (DEDANS.has(cle) ? dedans : dehors)[cle] = valeur;
+  return { dehors: dehors as ViewStyle, dedans: dedans as ViewStyle };
 }
 
 // ── SeparateurSection : la césure entre deux blocs d'une même page ───────────
@@ -192,7 +240,7 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
     : { backgroundColor: `${c}14`, borderColor: `${c}66` };
   const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, fontFamily: POLICE.gras };
   return (
-    <Tapable onPress={() => { tick(); onPress(); }} disabled={desactive} style={[sc.chip, actif && fondActif]}>
+    <Tapable onPress={() => onPress()} disabled={desactive} style={[sc.chip, actif && fondActif]}>
       <Text style={[sc.texte, couleur && !actif && { color: c }, actif && texteActif]}>{label}</Text>
     </Tapable>
   );
@@ -216,7 +264,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   // du texte. Le nom reste complet, le compte se lit en second, dans la
   // pastille. Elle s'estompe au toucher, comme un bouton d'iOS.
   if (IOS) return (
-    <Pressable onPress={() => { tick(); onPress(); }} onLayout={onLayout}
+    <Pressable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
       style={({ pressed }) => [scf.capsule, actif && scf.capsuleActive, pressed && { opacity: 0.6 }]}>
       <Text style={[scf.capsuleTexte, actif && scf.capsuleTexteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
@@ -230,7 +278,7 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
     </Pressable>
   );
   return (
-    <Tapable onPress={() => { tick(); onPress(); }} onLayout={onLayout} echelle={0.97}
+    <Tapable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
       style={[scf.chip, actif && scf.chipActif]}>
       <Text style={[scf.texte, actif && scf.texteActif]} maxFontSizeMultiplier={ECHELLE.compact}>

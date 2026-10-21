@@ -3,7 +3,7 @@
 // des sections plates : avantages & incitations en lignes à filets (le type
 // en vert, le commentaire dessous), description riche, documents.
 import { useQuery } from "@tanstack/react-query";
-import { Linking, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import Icone from "@/components/Icone";
@@ -102,7 +102,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
           ) : (
           <View style={{ gap: 8 }}>
             {fichiers.map((f: any) => (
-              <Tapable key={f.id} echelle={0.98} style={s.doc}
+              <Tapable key={f.id} style={s.doc}
                 onPress={() => ouvrirDoc(`${API}/opportunites/avantages/${d.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
                 <Symbole nom="description" taille={16} couleur={T.bleu} />
                 <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>

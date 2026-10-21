@@ -7,8 +7,9 @@
 // RUBRIQUES : l'icône dans son carré voilé, le titre en capitales bleues, le
 // compte dans sa pastille, un filet jusqu'au bord. Toute la page se lit de
 // la même façon, de l'IDE aux signaux.
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Icone, { type NomsIcone } from "@/components/Icone";
+import { Ondulable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
 import { ECHELLE, POLICE, T } from "@/theme";
 
@@ -49,13 +50,13 @@ export function Suite({ reste, tout, onPress }: { reste: number; tout: boolean; 
   if (reste <= 0) return null;
   const texte = tout ? "Réduire" : reste > 1 ? `Afficher les ${reste} autres` : "Afficher le dernier";
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ expanded: tout }}
+    <Ondulable onPress={onPress} accessibilityRole="button" accessibilityState={{ expanded: tout }}
       style={({ pressed }) => [s.suite, pressed && s.enfoncee]}>
       <View style={s.suiteFilet} />
       <Text style={s.suiteTexte} maxFontSizeMultiplier={ECHELLE.texte}>{texte}</Text>
       <Icone sf={tout ? "chevron.up" : "chevron.down"} materiel={tout ? "expand_less" : "expand_more"}
         taille={12} couleur={T.bleu} poids="semibold" />
-    </Pressable>
+    </Ondulable>
   );
 }
 

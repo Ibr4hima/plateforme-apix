@@ -1,8 +1,8 @@
 // Graphe en lignes multi-séries — rendu Skia signature : courbes avec
 // glow et ombre portée, aires en dégradé riche, tracé progressif (trim) au
 // premier rendu seulement — ensuite les courbes changent en place —,
-// scrubbing aimanté exécuté sur le fil UI (ressort vif + crantage
-// haptique), annotation du pic historique en mono-série.
+// scrubbing aimanté exécuté sur le fil UI (ressort vif), annotation du
+// pic historique en mono-série.
 // Les règles du site sont inchangées : graduations « propres »,
 // lissage Catmull-Rom, double échelle quand les amplitudes divergent
 // (ratio > 4, graduations aux couleurs des deux séries).
@@ -17,7 +17,6 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
   runOnJS, useDerivedValue, useSharedValue, withSpring, withTiming,
 } from "react-native-reanimated";
-import { cran } from "@/lib/haptique";
 import { DUREE, RESSORT, SORTIE } from "@/lib/motion";
 import { POLICE, T } from "@/theme";
 import { creerStyles, resoudre, useSombre } from "@/lib/apparence";
@@ -190,12 +189,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure, echelle
   const xsAnnees = useMemo(() => (geo ? annees.map(a => geo.x(a)) : []), [geo, annees]);
   const curseurX = useSharedValue(-1);
   const derniereAnneeUI = useSharedValue(-1);
-  const changerAnnee = (a: number | null) => {
-    setCurseur(prev => {
-      if (a !== null && prev !== null && a !== prev) cran();
-      return a;
-    });
-  };
+  const changerAnnee = (a: number | null) => setCurseur(a);
   const geste = useMemo(() => Gesture.Pan()
     .minDistance(0)
     .onBegin(e => {

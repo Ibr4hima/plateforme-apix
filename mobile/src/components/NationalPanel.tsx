@@ -9,15 +9,14 @@
 // groupe ou secteur) ; le badge de la carte ouvre le même sélecteur.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import type { SelNational } from "@/components/SourceNationalSheet";
 import { enPanne, getJson } from "@/lib/api";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { nfSig } from "@/lib/format";
@@ -107,9 +106,9 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             {indActif.libelle.toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
           {/* La vue en badge — le tap ouvre le sélecteur */}
-          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgeVue}>
+          <Ondulable onPress={() => onOuvrirSource()} style={s.badgeVue}>
             <Text style={s.badgeVueTexte} numberOfLines={1}>{sel.libelle}</Text>
-          </Pressable>
+          </Ondulable>
         </View>
 
         {/* Le mesureur reste monté d'une bascule à l'autre */}
@@ -158,8 +157,8 @@ export default function NationalPanel({ sel, onOuvrirSource }: {
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
               <View key={ind.code}>
-                <Tapable echelle={0.98}
-                  onPress={() => { tick(); setActif(ind.code); }}
+                <Tapable
+                  onPress={() => setActif(ind.code)}
                   style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={2}>{ind.libelle.toUpperCase()}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>

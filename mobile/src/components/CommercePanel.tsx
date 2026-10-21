@@ -13,15 +13,14 @@
 // Le curseur d'années, sous la bascule, pilote les deux cartes.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatErreur, EtatVide, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUSD } from "@/lib/format";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { SegmentsCapsule } from "@/components/ListeIOS";
@@ -151,7 +150,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
   const hausse = (delta ?? 0) >= 0;
   // L'autre flux, puis la balance
   const reperes: CleSerie[] = [actif === "exports" ? "imports" : "exports", "balance"];
-  const basculer = (s: Sens) => { if (s !== sens) { tick(); setSens(s); } };
+  const basculer = (s: Sens) => { if (s !== sens) setSens(s); };
 
   // ── La ressource en vedette : sa série, sa dernière valeur, sa variation ──
   const serieRes: Point[] = jusqu(balRes
@@ -186,9 +185,9 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
               {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
             </Text>
             {/* Le pays en badge bleu, sans point — le tap ouvre le sélecteur */}
-            <Pressable onPress={() => { tick(); onOuvrirPays(); }} style={s.badgePays}>
+            <Ondulable onPress={() => onOuvrirPays()} style={s.badgePays}>
               <Text style={s.badgePaysTexte} numberOfLines={1}>{selPays?.nom || "—"}</Text>
-            </Pressable>
+            </Ondulable>
           </View>
 
           {/* Le mesureur reste monté d'une bascule à l'autre */}
@@ -248,7 +247,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
                   {contenu}
                 </View>
               ) : (
-                <Tapable key={cle} echelle={0.98} onPress={() => basculer(cle === "exports" ? "exportateur" : "importateur")}
+                <Tapable key={cle} onPress={() => basculer(cle === "exports" ? "exportateur" : "importateur")}
                   style={[s.repere, i > 0 && s.repereBord]} accessibilityRole="button">
                   {contenu}
                 </Tapable>
@@ -305,8 +304,8 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
                 const vPrec = valPrecDe(r.nom);
                 const dpc = vPrec != null && vPrec !== 0 ? ((r.valeur - vPrec) / Math.abs(vPrec)) * 100 : null;
                 return (
-                  <Tapable key={r.nom} echelle={0.98}
-                    onPress={() => { tick(); setResChoisi(r.nom); }}
+                  <Tapable key={r.nom}
+                    onPress={() => setResChoisi(r.nom)}
                     style={[s.repere, i > 0 && s.repereBord]}>
                     <Text style={s.repereLabel} numberOfLines={1}>{r.nom.toUpperCase()}</Text>
                     <Text style={s.repereValeur} numberOfLines={1}>{fmtUSD(r.valeur)}</Text>

@@ -10,15 +10,14 @@
 // année, sur les couples complets. Valeurs CNUCED en millions USD.
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, EtatVide, IconeTendance, SeparateurSection, Tapable } from "@/components/ui";
+import { ChiffreAnime, EtatVide, IconeTendance, Ondulable, SeparateurSection, Tapable } from "@/components/ui";
 import CurseurAnnees from "@/components/CurseurAnnees";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import { getJson } from "@/lib/api";
 import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { fmtMillionsUSD } from "@/lib/format";
@@ -110,9 +109,9 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
             {LABELS[actif]}{dernier ? ` · ${dernier.annee}` : ""}
           </Text>
           {/* La source en badge, sans point — le tap ouvre le sélecteur */}
-          <Pressable onPress={() => { tick(); onOuvrirSource(); }} style={s.badgePays}>
+          <Ondulable onPress={() => onOuvrirSource()} style={s.badgePays}>
             <Text style={s.badgePaysTexte} numberOfLines={1}>{libelleSource(source)}</Text>
-          </Pressable>
+          </Ondulable>
         </View>
 
         {/* Le mesureur reste monté : la largeur de la courbe ne se remesure pas
@@ -162,8 +161,8 @@ export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
             return (
               <View key={cle}>
-                <Tapable echelle={0.98}
-                  onPress={() => { tick(); setActif(cle); }}
+                <Tapable
+                  onPress={() => setActif(cle)}
                   style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{LABELS[cle]}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>{d ? fmtMusd(d.valeur) : "—"}</Text>

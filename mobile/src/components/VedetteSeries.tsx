@@ -14,7 +14,6 @@ import { ChiffreAnime, Tapable } from "@/components/ui";
 import GrapheLignes, { Serie } from "@/components/GrapheLignes";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -118,8 +117,8 @@ export default function VedetteSeries({ graphes }: { graphes: GrapheVedette[] })
               const bHausse = (b?.delta ?? 0) >= 0;
               const rMulti = g.series.length > 1;
               return (
-                <Tapable key={g.cle} echelle={0.99}
-                  onPress={() => { tick(); setActif(i); }}
+                <Tapable key={g.cle}
+                  onPress={() => setActif(i)}
                   style={[s.serieLigne, pos > 0 && s.serieLigneBord]}>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.serieLabel} numberOfLines={1}>{g.label}</Text>

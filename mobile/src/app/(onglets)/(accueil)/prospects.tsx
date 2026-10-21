@@ -68,7 +68,7 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
   const sousTitre = sousTitreDe(p, onglet);
   const info2 = info2De(p, onglet);
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={s.carte}>
+    <Tapable onPress={onPress} style={s.carte}>
       <View style={s.carteCorps}>
         <View style={s.ligneTitre}>
           <View style={{ flex: 1, minWidth: 0 }}>

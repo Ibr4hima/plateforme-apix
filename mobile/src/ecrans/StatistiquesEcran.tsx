@@ -12,9 +12,9 @@
 import { useScrollToTop } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteDonnees } from "@/components/Squelette";
-import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Tapable } from "@/components/ui";
+import { ChiffreAnime, ChipFiltre, EtatErreur, IconeTendance, Ondulable, Tapable } from "@/components/ui";
 import CommerceExterieurPanel from "@/components/CommerceExterieurPanel";
 import CommercePanel from "@/components/CommercePanel";
 import CurseurAnnees from "@/components/CurseurAnnees";
@@ -25,7 +25,6 @@ import PaysSheet from "@/components/PaysSheet";
 import { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
-import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
@@ -131,7 +130,7 @@ export default function StatistiquesEcran() {
   // (plus d'analyse comparative sur l'app) ; Commerce extérieur est Sénégal
   // uniquement, sans bouton
   const boutonHero = vue === "exterieur" ? undefined
-    : { icone: "more_horiz", onPress: () => { tick(); setPaysOuvert(true); } };
+    : { icone: "more_horiz", onPress: () => setPaysOuvert(true) };
 
   // ── La vedette (grammaire exacte de l'accueil) ──
   const rendreVedette = () => {
@@ -156,9 +155,9 @@ export default function StatistiquesEcran() {
             <Text style={s.etiquette} numberOfLines={1}>
               {String(repereActif.ind.libelle).toUpperCase()}{dernier ? ` · ${dernier.annee}` : ""}
             </Text>
-            <Pressable onPress={() => { tick(); setPaysOuvert(true); }} style={s.badgePays}>
+            <Ondulable onPress={() => setPaysOuvert(true)} style={s.badgePays}>
               <Text style={s.badgePaysTexte} numberOfLines={1}>{paysNom(paysId) || "—"}</Text>
-            </Pressable>
+            </Ondulable>
           </View>
 
           {dernier ? (
@@ -201,8 +200,8 @@ export default function StatistiquesEcran() {
               const p = sx.length > 1 ? sx[sx.length - 2] : null;
               const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
               return (
-                <Tapable key={r.cle} echelle={0.98}
-                  onPress={() => { tick(); setActif(r.cle); }}
+                <Tapable key={r.cle}
+                  onPress={() => setActif(r.cle)}
                   style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>

@@ -29,7 +29,7 @@ export default function DocumentsFiche({ fichiers, urlDe, ouvrir }: {
       <Text style={s.titre}>{titre.toUpperCase()}</Text>
       <View style={{ gap: 8 }}>
         {fichiers.map((f: any) => (
-          <Tapable key={f.id} echelle={0.98} style={s.doc} onPress={() => ouvrir(urlDe(f), nomDe(f))}>
+          <Tapable key={f.id} style={s.doc} onPress={() => ouvrir(urlDe(f), nomDe(f))}>
             <Symbole nom="description" taille={16} couleur={T.bleu} />
             <Text style={s.docTexte} numberOfLines={1}>{nomDe(f)}</Text>
           </Tapable>

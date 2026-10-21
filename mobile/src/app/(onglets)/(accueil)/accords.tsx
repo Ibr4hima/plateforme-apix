@@ -44,7 +44,7 @@ function CarteAccord({ a, partenaires, onPress }: {
     : { label: "EXPIRATION", val: "Non définie" };
 
   return (
-    <Tapable onPress={onPress} echelle={0.985} style={[s.carte, expire && { backgroundColor: T.carteDouce }]}>
+    <Tapable onPress={onPress} style={[s.carte, expire && { backgroundColor: T.carteDouce }]}>
       <View style={s.carteCorps}>
         <Text style={[s.titre, expire && { color: T.texte }]} numberOfLines={2}>{titre}</Text>
         {sousTitreStatut(a) ? (
