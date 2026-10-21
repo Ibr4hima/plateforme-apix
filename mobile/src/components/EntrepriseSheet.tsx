@@ -12,7 +12,7 @@ import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur, TuilesActions } from "@/components/ListeIOS";
-import { ouvrirLien } from "@/components/MenuContextuel";
+import { ouvrirLien } from "@/lib/liens";
 import { Feuille, Tapable } from "@/components/ui";
 import { IOS } from "@/lib/plateforme";
 import { fmtDateLong } from "@/lib/format";
@@ -113,7 +113,7 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
     (e.forme_juridique || "").replace(/\s*\([^)]*\)\s*$/, ""),
     e.pole_territoire_nom,
     e.region_nom ? `Région de ${e.region_nom}` : null,
-  ].filter(Boolean).join("   ·   ");
+  ].filter(Boolean).join(" · ");
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe

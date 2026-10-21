@@ -15,15 +15,13 @@ import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-n
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
-import { lignes } from "@/lib/partage";
 import AccordSheet, { sousTitreStatut } from "@/components/AccordSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Symbole from "@/components/Symbole";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -78,7 +76,7 @@ function CarteAccord({ a, partenaires, onPress }: {
 }
 
 export default function Accords() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [onglet, setOnglet] = useState("tbi");
   const [q, setQ] = useState("");
@@ -184,24 +182,13 @@ export default function Accords() {
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {entete}
-      <ListeRapide
+      <ListeRapide {...DEFILEMENT}
         style={{ backgroundColor: T.fond }}
         data={filtres}
         keyExtractor={(a: any) => String(a.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <MenuContextuel titre={item.titre} actions={[
-              actionFiche(() => setSelec(item)),
-              actionPartager(lignes(
-                item.titre,
-                partenairesDe(item).map((p: { nom: string }) => p.nom).join(", ") || null,
-                item.date_signature ? `Signé le ${fmtDate(item.date_signature)}` : null,
-                "Source : APIX · Accords & Traités",
-              )),
-              actionCopier(item.titre, "Copier l'intitulé"),
-            ]}>
-              <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
-            </MenuContextuel>
+            <CarteAccord a={item} partenaires={partenairesDe(item)} onPress={() => setSelec(item)} />
           </Apparition>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}

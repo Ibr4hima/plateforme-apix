@@ -6,16 +6,18 @@
 // une coche à droite de ce qui est choisi, un chevron pour ce qui se déplie.
 // Ce sont les briques des feuilles de filtres et des sélecteurs sur iOS ;
 // Android garde les siennes. La police reste Google Sans, comme partout.
-import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import {
   Pressable, ScrollView, StyleSheet, Text, TextInput, View,
   type AccessibilityRole, type ColorValue, type StyleProp, type ViewStyle,
 } from "react-native";
+import { useEffect, useState } from "react";
+import Reanime, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import type { SFSymbol } from "sf-symbols-typescript";
 import Icone from "@/components/Icone";
 import { creerStyles } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
-import { ECHELLE, POLICE, POLICE_POSTSCRIPT, T } from "@/theme";
+import { RESSORT } from "@/lib/motion";
+import { ECHELLE, POLICE, T } from "@/theme";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
 const MARGE = 16;
@@ -181,7 +183,14 @@ export function LigneValeur({ label, valeur, children, onPress, lignes }: {
       <View style={[s.filet, { left: MARGE }]} />
       <Text style={s.valeurLabel}>{label}</Text>
       <View style={{ flex: 1, minWidth: 0 }}>
-        {children ?? <Text style={[s.valeur, onPress && { color: T.bleu }]} numberOfLines={lignes}>{valeur}</Text>}
+        {/* Une valeur qui agit (numéro, adresse, site) tient sur une ligne et
+            se resserre au besoin : une adresse ne se coupe pas au milieu */}
+        {children ?? (
+          <Text style={[s.valeur, onPress && { color: T.bleu }]} numberOfLines={lignes ?? (onPress ? 1 : undefined)}
+            adjustsFontSizeToFit={!!onPress && lignes == null} minimumFontScale={0.75}>
+            {valeur}
+          </Text>
+        )}
       </View>
     </>
   );
@@ -233,8 +242,10 @@ export function Etiquettes({ valeurs }: { valeurs: string[] }) {
 }
 
 /** Le champ de recherche d'iOS : gris, arrondi, la loupe en tête. */
-export function ChampRecherche({ valeur, onChange, placeholder, style }: {
+export function ChampRecherche({ valeur, onChange, placeholder, style, autoFocus }: {
   valeur: string; onChange: (v: string) => void; placeholder: string; style?: StyleProp<ViewStyle>;
+  /** Le clavier s'ouvre avec le champ (la loupe d'un en-tête vient d'être touchée). */
+  autoFocus?: boolean;
 }) {
   return (
     <View style={[s.champ, style]}>
@@ -242,27 +253,54 @@ export function ChampRecherche({ valeur, onChange, placeholder, style }: {
       {/* Les champs de recherche d'iOS disent « Rechercher », sans points de suspension */}
       <TextInput value={valeur} onChangeText={onChange} placeholder={placeholder.replace(/(…|\.\.\.)$/, "")}
         placeholderTextColor={T.gris as any} autoCorrect={false} autoCapitalize="none"
-        clearButtonMode="while-editing" returnKeyType="search" style={s.champTexte} />
+        clearButtonMode="while-editing" returnKeyType="search" autoFocus={autoFocus} style={s.champTexte} />
     </View>
   );
 }
 
-/** Le contrôle segmenté d'iOS (UISegmentedControl), en Google Sans. */
-export function SegmentsIOS({ options, valeur, onChange }: {
-  options: { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
+/** Les segments d'iOS 26 — ceux de Podcasts ou de Musique : une capsule
+    blanche au liseré fin, le choix posé dans une pastille grise qui glisse de
+    l'un à l'autre. Dessinés ici plutôt que confiés au contrôle du système :
+    même dessin sur tous les iPhone, en Google Sans, et sans compteurs — un
+    segment nomme une vue, il ne la mesure pas. Les libellés se resserrent
+    plutôt que de se couper sur les petits écrans. */
+export function SegmentsCapsule({ options, valeur, onChange, compact }: {
+  options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
+  /** Dans une feuille : un cran plus bas. */
+  compact?: boolean;
 }) {
+  const [largeur, setLargeur] = useState(0);
+  const index = Math.max(0, options.findIndex(o => o.cle === valeur));
+  const position = useSharedValue(index);
+  useEffect(() => { position.value = withSpring(index, RESSORT.standard); }, [index, position]);
+  const pas = largeur > 0 ? (largeur - 2 * BORD_CAPSULE) / options.length : 0;
+  const styleCurseur = useAnimatedStyle(() => ({ width: pas, transform: [{ translateX: position.value * pas }] }));
   return (
-    <SegmentedControl
-      values={options.map(o => o.label)}
-      selectedIndex={Math.max(0, options.findIndex(o => o.cle === valeur))}
-      fontStyle={{ fontFamily: POLICE_POSTSCRIPT.moyen, fontSize: 13 }}
-      activeFontStyle={{ fontFamily: POLICE_POSTSCRIPT.demi, fontSize: 13 }}
-      onChange={e => {
-        const o = options[e.nativeEvent.selectedSegmentIndex];
-        if (o && o.cle !== valeur) { tick(); onChange(o.cle); }
-      }} />
+    <View style={[s.capsule, compact && s.capsuleCompacte]} accessibilityRole="tablist"
+      onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
+      {pas > 0 && <Reanime.View style={[s.curseur, compact && s.curseurCompact, styleCurseur]} />}
+      {options.map((o, i) => (
+        <Pressable key={o.cle} style={s.segment} accessibilityRole="tab" accessibilityState={{ selected: i === index }}
+          onPress={() => { if (o.cle !== valeur) { tick(); onChange(o.cle); } }}>
+          <Text style={[s.segmentTexte, compact && s.segmentTexteCompact, i === index && s.segmentTexteActif]}
+            numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} maxFontSizeMultiplier={ECHELLE.compact}>
+            {o.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
+
+/** Les segments d'une feuille : la même capsule, en compact. */
+export function SegmentsIOS(props: {
+  options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
+}) {
+  return <SegmentsCapsule {...props} compact />;
+}
+
+// L'épaisseur entre le bord de la capsule et la pastille
+const BORD_CAPSULE = 4;
 
 const s = creerStyles(() => ({
   entete: {
@@ -271,7 +309,12 @@ const s = creerStyles(() => ({
   },
   enteteTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 },
   enteteNb: { fontSize: 13, fontFamily: POLICE.demi, color: T.bleu, fontVariant: ["tabular-nums"] },
-  groupe: { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" },
+  // Les surfaces blanches portent un liseré fin : sur le fond très clair de
+  // l'app, c'est lui qui les détache
+  groupe: {
+    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+  },
   interieur: { marginTop: -StyleSheet.hairlineWidth },
   ligne: {
     flexDirection: "row", alignItems: "center", gap: 10,
@@ -304,11 +347,28 @@ const s = creerStyles(() => ({
   tuile: {
     flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
     backgroundColor: T.carte, borderRadius: 14, borderCurve: "continuous",
+    borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   tuileLabel: { fontSize: 11.5, fontFamily: POLICE.moyen, color: T.bleu },
   etiquettes: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingVertical: 12 },
   etiquette: { backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 5 },
   etiquetteTexte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.encre },
+  capsule: {
+    flexDirection: "row", height: 42, padding: BORD_CAPSULE,
+    borderRadius: 21, borderCurve: "continuous",
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+    shadowColor: "#0B1220", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+  },
+  capsuleCompacte: { height: 38, borderRadius: 19 },
+  curseur: {
+    position: "absolute", top: BORD_CAPSULE, bottom: BORD_CAPSULE, left: BORD_CAPSULE,
+    borderRadius: 17, borderCurve: "continuous", backgroundColor: T.pastilleSegment,
+  },
+  curseurCompact: { borderRadius: 15 },
+  segment: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
+  segmentTexte: { fontSize: 15, fontFamily: POLICE.moyen, color: T.encre },
+  segmentTexteCompact: { fontSize: 14 },
+  segmentTexteActif: { fontFamily: POLICE.demi },
   champ: {
     flexDirection: "row", alignItems: "center", gap: 6,
     backgroundColor: T.voile, borderRadius: 10, borderCurve: "continuous",

@@ -16,8 +16,6 @@ import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } f
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
-import { lignes } from "@/lib/partage";
 import EnTetePage from "@/components/EnTetePage";
 import { SilhouettePole } from "@/components/SilhouetteRegion";
 import PoleSheet, { splitLocalisation } from "@/components/PoleSheet";
@@ -25,7 +23,7 @@ import ZoneSheet from "@/components/ZoneSheet";
 import { enPanne, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole } from "@/lib/couleurs";
 import { ZONE_TYPE_META, ZONE_TYPE_ORDER } from "@/lib/zoneTypes";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -68,7 +66,7 @@ function CarteZone({ z, onPress }: { z: any; onPress: () => void }) {
 }
 
 export default function Zones() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("zones");
@@ -173,24 +171,13 @@ export default function Zones() {
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {entete}
       {vue === "zones" ? (
-        <ListeRapide
+        <ListeRapide {...DEFILEMENT}
           style={{ backgroundColor: T.fond }}
           data={filtres}
           keyExtractor={(z: any) => String(z.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <MenuContextuel titre={item.nom_zone} actions={[
-                actionFiche(() => setZoneSelec(item)),
-                actionPartager(lignes(
-                  item.nom_zone,
-                  [item.region_nom, item.departement_nom].filter(Boolean).join(" · ") || null,
-                  item.pole_nom ? `Pôle : ${item.pole_nom}` : null,
-                  "Source : APIX · Zones d'investissement",
-                )),
-                actionCopier(item.nom_zone),
-              ]}>
-                <CarteZone z={item} onPress={() => setZoneSelec(item)} />
-              </MenuContextuel>
+              <CarteZone z={item} onPress={() => setZoneSelec(item)} />
             </Apparition>
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}
@@ -201,7 +188,7 @@ export default function Zones() {
           ListEmptyComponent={vide}
         />
       ) : (
-        <ListeRapide
+        <ListeRapide {...DEFILEMENT}
           style={{ backgroundColor: T.fond }}
           data={polesFiltres}
           keyExtractor={(p: any) => String(p.id)}

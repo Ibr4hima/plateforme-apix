@@ -11,7 +11,7 @@
 // projet ne déclare pas (il arrive par expo-router). Un second exemplaire
 // installé un jour dans l'arbre donnerait un contexte différent de celui du
 // navigateur, donc undefined, et la marge redeviendrait silencieusement fausse.
-// Ici, seuls trois écrans vivent sous les onglets : autant l'écrire.
+// Tous les écrans vivent désormais sous les onglets : ils le disent.
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IOS } from "@/lib/plateforme";
@@ -22,7 +22,7 @@ import { IOS } from "@/lib/plateforme";
 export const HAUTEUR_ONGLETS = 60;
 
 export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
-  /** L'écran est-il l'un des trois onglets ? (la barre le recouvre) */
+  /** L'écran vit-il sous la barre d'onglets ? (elle le recouvre) */
   sousOnglets?: boolean;
   /** Espace visuel souhaité EN PLUS des zones réservées. */
   respiration?: number;
@@ -30,11 +30,16 @@ export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
   const insets = useSafeAreaInsets();
   // iOS : sous la barre d'onglets DU SYSTÈME, la liste règle ses marges
   // d'elle-même (contentInsetAdjustmentBehavior="automatic") — barre et
-  // indicateur d'accueil y sont déjà comptés, et la barre se réduit au
-  // défilement sur iOS 26 : il ne reste que la respiration
+  // indicateur d'accueil y sont déjà comptés : il ne reste que la respiration
   if (IOS && sousOnglets) return respiration;
   return insets.bottom + (sousOnglets ? HAUTEUR_ONGLETS : 0) + respiration;
 }
+
+/** Les props d'une liste ou d'un défilement principal. Sur iOS, la liste règle
+    ses marges d'elle-même (contentInsetAdjustmentBehavior) : sous la barre de
+    navigation, et au-dessus de la barre d'onglets, qui reste visible sur tous
+    les écrans. Ailleurs, rien. */
+export const DEFILEMENT = IOS ? { contentInsetAdjustmentBehavior: "automatic" as const } : {};
 
 /**
  * Plafond de largeur du contenu sur grand écran.

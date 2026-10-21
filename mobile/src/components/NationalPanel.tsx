@@ -20,6 +20,7 @@ import { enPanne, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { nfSig } from "@/lib/format";
 
 type BdefIndic = { code: string; libelle: string; unite: string; categorie: string; valeurs: Record<string, number | null> };
 
@@ -33,11 +34,12 @@ export function fmtBdef(v: number | null, unite: string, court = false): string 
   if (unite === "%") return `${nf1(v)} %`;
   if (unite === "ratio") return v.toLocaleString("fr-FR", { maximumFractionDigits: 3 });
   if (unite === "jours") return `${Math.round(v)} j`;
+  // La règle commune des montants (lib/format) : trois chiffres significatifs
   const suf = court ? "" : " FCFA";
   const a = Math.abs(v);
-  if (a >= 1e9) return `${nf1(v / 1e9)} Md${suf}`;
-  if (a >= 1e6) return `${nf1(v / 1e6)} M${suf}`;
-  if (a >= 1e3) return `${Math.round(v / 1e3).toLocaleString("fr-FR")} k${suf}`;
+  if (a >= 999.5e6) return `${nfSig(v / 1e9)} Md${suf}`;
+  if (a >= 999.5e3) return `${nfSig(v / 1e6)} M${suf}`;
+  if (a >= 999.5) return `${nfSig(v / 1e3)} k${suf}`;
   return `${Math.round(v).toLocaleString("fr-FR")} FCFA`;
 }
 

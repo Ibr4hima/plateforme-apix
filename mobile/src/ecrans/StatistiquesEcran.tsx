@@ -143,7 +143,7 @@ export default function StatistiquesEcran() {
       ? ((dernier.valeur - precedent.valeur) / Math.abs(precedent.valeur)) * 100 : null;
     const hausse = (delta ?? 0) >= 0;
     const autres = reperes.filter(r => r.cle !== repereActif.cle);
-    const fmt = (v: number) => fmtUnite(v, repereActif.ind.unite);
+    const fmt = (v: number) => fmtUnite(v, repereActif.ind.unite, repereActif.ind.code);
     return (
       <View style={[s.rangee, cap]}>
         {/* Le curseur d'années — le doigt remonte le temps */}
@@ -206,7 +206,7 @@ export default function StatistiquesEcran() {
                   style={[s.repere, i > 0 && s.repereBord]}>
                   <Text style={s.repereLabel} numberOfLines={1}>{r.court}</Text>
                   <Text style={s.repereValeur} numberOfLines={1}>
-                    {d ? fmtUnite(d.valeur, r.ind.unite) : "—"}
+                    {d ? fmtUnite(d.valeur, r.ind.unite, r.ind.code) : "—"}
                   </Text>
                   <IconeTendance delta={dpc} />
                 </Tapable>

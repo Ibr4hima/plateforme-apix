@@ -1,12 +1,13 @@
 // Barre d'onglets — CHAQUE SYSTÈME LA SIENNE.
 //
 // SUR iOS : la barre d'onglets DU SYSTÈME (UITabBar), plus une imitation.
-// Sur iOS 26 elle est en verre Liquid Glass et se réduit quand on fait
-// défiler vers le bas ; sur iPad, iPadOS la place en haut de l'écran ; elle
-// porte les SF Symbols, la teinte de l'app et ses libellés en Google Sans,
-// aux tailles d'iOS (10 pt sur iPhone, plus grands sur iPad). Retoucher
-// l'onglet actif ramène en haut et à la racine — le réflexe iOS, assuré par
-// le système.
+// Sur iOS 26 elle est en verre Liquid Glass ; elle reste TOUJOURS visible —
+// jamais réduite au défilement, jamais cachée par un écran empilé : chaque
+// onglet a sa pile, où s'ouvrent ses écrans. Sur iPad, iPadOS la place en
+// haut de l'écran. Elle porte les SF Symbols, la teinte de l'app et ses
+// libellés en Google Sans, aux tailles d'iOS (10 pt sur iPhone, plus grands
+// sur iPad). Retoucher l'onglet actif ramène en haut et à la racine — le
+// réflexe iOS, assuré par le système.
 //
 // SUR ANDROID : une barre ANCRÉE, à plat, d'un bord à l'autre, la pastille
 // d'indication derrière l'icône — la grammaire de Material 3. Elle est
@@ -24,7 +25,7 @@ import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
-  { nom: "index",           titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
+  { nom: "(accueil)",       titre: "Accueil",                court: "Accueil",         sf: "house",                     materiel: "home" },
   { nom: "investissements", titre: "Investissements privés", court: "Investissements", sf: "chart.line.uptrend.xyaxis", materiel: "finance_mode" },
   { nom: "flux",            titre: "Flux commerciaux",       court: "Économie",        sf: "arrow.left.arrow.right",    materiel: "currency_exchange" },
 ] as const;
@@ -38,9 +39,9 @@ export default function OngletsLayout() {
 function OngletsIOS() {
   const bleu = useCouleur(T.bleu) as unknown as string;
   return (
-    <NativeTabs tintColor={bleu} minimizeBehavior="onScrollDown"
+    <NativeTabs tintColor={bleu}
       labelStyle={{ fontFamily: POLICE.moyen, fontSize: IPAD ? 13 : 10 }}>
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="(accueil)">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
         <Label>Accueil</Label>
       </NativeTabs.Trigger>

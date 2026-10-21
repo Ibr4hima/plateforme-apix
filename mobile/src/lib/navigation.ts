@@ -1,20 +1,16 @@
-// Les options des piles de navigation — la barre du système sur iOS.
+// Les options des piles de navigation — chaque onglet a la sienne.
 //
-// SUR iOS, CHAQUE ÉCRAN A LA BARRE DE NAVIGATION D'UIKit :
-//   · aux RACINES des onglets, le grand titre (34 pt) qui se replie en titre
-//     en ligne au défilement. La barre y est TRANSLUCIDE : le contenu passe
-//     dessous — c'est là qu'iOS 26 pose son verre — et la liste de l'écran
-//     règle ses marges d'elle-même (contentInsetAdjustmentBehavior) ;
-//   · sur les écrans EMPILÉS, le titre en ligne, le chevron de retour seul
-//     (« minimal » : le titre de l'écran précédent n'est pas toujours celui
-//     qu'on croit — l'accueil n'a pas de barre) et le balayage depuis le bord.
-//     La barre y est OPAQUE, à la couleur de la page : ces écrans posent sous
-//     elle des segments fixes, que le contenu ne doit pas recouvrir — d'où
-//     headerTransparent: false, qui empêche native-stack de la rendre
-//     translucide dès qu'un champ de recherche s'y loge.
-// Les titres sont en Google Sans, la police de l'app sur les deux systèmes :
-// demi-gras pour le titre en ligne, gras pour le grand titre — les graisses
-// qu'iOS donne à ses propres titres.
+// TOUS LES ÉCRANS VIVENT DANS LA PILE DE LEUR ONGLET : la barre d'onglets
+// reste donc visible partout, et l'on passe d'un onglet à l'autre sans
+// perdre où l'on était dans chacun.
+//
+// SUR iOS, chaque écran a la barre de navigation d'UIKit, en TITRE EN LIGNE :
+// le même corps sur tous les écrans, et une barre OPAQUE, à la couleur du
+// fond, qui reste fixe en haut — le contenu défile dessous sans jamais la
+// traverser. Les écrans empilés portent le chevron de retour seul
+// (« minimal » : le titre de l'écran précédent n'est pas toujours celui qu'on
+// croit) et le balayage depuis le bord. Les titres sont en Google Sans
+// demi-gras, la graisse qu'iOS donne aux siens.
 //
 // SUR ANDROID, rien ne change : les écrans dessinent leur bandeau bleu, la
 // barre du système reste cachée.
@@ -24,47 +20,43 @@ import { useCouleur } from "@/lib/apparence";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 
-/** Les options communes de la pile principale. */
+/** Les options communes d'une pile d'onglet. */
 export function useOptionsPile(): NativeStackNavigationOptions {
   const bleu = useCouleur(T.bleu) as unknown as string;
   const fond = useCouleur(T.fond) as unknown as string;
-  const heroFond = useCouleur(T.heroFond) as unknown as string;
+  const encre = useCouleur(T.encre) as unknown as string;
   return useMemo(() => (IOS ? {
     headerBackButtonDisplayMode: "minimal",
     headerTintColor: bleu,
     headerShadowVisible: false,
+    headerTransparent: false,
+    headerLargeTitleEnabled: false,
+    // Le titre au CENTRE, sur tous les écrans : c'est la place que lui donne
+    // UIKit pour un titre en ligne (l'option est explicite pour que rien —
+    // ni un écran, ni une autre plateforme de rendu — ne le décale)
+    headerTitleAlign: "center",
     headerStyle: { backgroundColor: fond },
-    headerTitleStyle: { fontFamily: POLICE.demi },
-    contentStyle: { backgroundColor: T.fond as unknown as string },
-  } : {
-    headerStyle: { backgroundColor: heroFond },
-    headerTintColor: "#fff",
-    headerTitleStyle: { fontFamily: POLICE.gras },
-    headerBackTitleStyle: { fontFamily: POLICE.moyen },
-    contentStyle: { backgroundColor: T.fond as unknown as string },
-  }), [bleu, fond, heroFond]);
-}
-
-/** Un écran empilé : la barre du système sur iOS (son titre est posé dès la
-    transition, avant même que l'écran se dessine), aucune sur Android. */
-export const ecranEmpile = (titre: string): NativeStackNavigationOptions =>
-  IOS ? { headerShown: true, title: titre, headerTransparent: false } : { headerShown: false };
-
-/** La racine d'un onglet : le grand titre d'iOS, qui se replie au défilement. */
-export function useOptionsRacineOnglet(titre: string): NativeStackNavigationOptions {
-  const bleu = useCouleur(T.bleu) as unknown as string;
-  return useMemo(() => (IOS ? {
-    headerShown: true,
-    title: titre,
-    headerLargeTitleEnabled: true,
-    headerShadowVisible: false,
-    headerLargeTitleShadowVisible: false,
-    headerTintColor: bleu,
-    headerTitleStyle: { fontFamily: POLICE.demi },
-    headerLargeTitleStyle: { fontFamily: POLICE.gras },
+    headerTitleStyle: { fontFamily: POLICE.demi, color: encre },
     contentStyle: { backgroundColor: T.fond as unknown as string },
   } : {
     headerShown: false,
     contentStyle: { backgroundColor: T.fond as unknown as string },
-  }), [titre, bleu]);
+  }), [bleu, fond, encre]);
+}
+
+/** Un écran de la pile : la barre du système et son titre sur iOS (posé dès
+    la transition, avant même que l'écran se dessine), aucune sur Android. */
+export const ecran = (titre: string): NativeStackNavigationOptions =>
+  IOS ? { headerShown: true, title: titre } : { headerShown: false };
+
+/** La route d'un module ouvert DEPUIS L'ACCUEIL. Sur iOS, les deux modules
+    qui ont leur onglet (Investissements, Économie) s'empilent sur l'Accueil
+    au lieu de basculer d'onglet : la page ouverte a son chevron de retour,
+    comme toutes les autres. Android garde la bascule d'onglet (son bandeau
+    porte un retour qui ramène à l'accueil). */
+export function routeDepuisAccueil(href: string): string {
+  if (!IOS) return href;
+  if (href === "/investissements") return "/ide";
+  if (href === "/flux") return "/economie";
+  return href;
 }

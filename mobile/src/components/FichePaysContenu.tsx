@@ -102,10 +102,10 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
         </View>
         <View style={s.duelValeurs}>
           <Text style={[s.duelVal, { color: a != null ? COL_SEN_() : T.grisClair }]} numberOfLines={1}>
-            {fmtUnite(a, ind.unite)}{cSen?.annee ? <Text style={s.duelAnnee}>  {cSen.annee}</Text> : null}
+            {fmtUnite(a, ind.unite, ind.code)}{cSen?.annee ? <Text style={s.duelAnnee}>  {cSen.annee}</Text> : null}
           </Text>
           <Text style={[s.duelVal, { color: b != null ? COL_AUTRE : T.grisClair, textAlign: "right" }]} numberOfLines={1}>
-            {cAutre?.annee ? <Text style={s.duelAnnee}>{cAutre.annee}  </Text> : null}{fmtUnite(b, ind.unite)}
+            {cAutre?.annee ? <Text style={s.duelAnnee}>{cAutre.annee}  </Text> : null}{fmtUnite(b, ind.unite, ind.code)}
           </Text>
         </View>
         <View style={s.duelPiste}>

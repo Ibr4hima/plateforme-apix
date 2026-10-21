@@ -17,8 +17,9 @@ import { Image as ImageCache } from "expo-image";
 import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { POLICE, T } from "@/theme";
-import { useCap, useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
+import { IOS } from "@/lib/plateforme";
 
 const CONT_ORDER = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -26,7 +27,7 @@ type Pays = { id: number; nom: string; code_iso3: string; code_iso2?: string | n
 type Section = { continent: string; zones: { zone: string; pays: Pays[] }[]; nb: number };
 
 export default function FichePaysIndex() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const cap = useCap();
   const [q, setQ] = useState("");
   const [selec, setSelec] = useState<Pays | null>(null);
@@ -106,7 +107,7 @@ export default function FichePaysIndex() {
       // restent accessibles au fil de la comparaison
       <View style={{ flex: 1, backgroundColor: T.fond }}>
         {hero}
-        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView {...DEFILEMENT} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingTop: 14, paddingBottom: margeBas }, cap]} keyboardShouldPersistTaps="handled">
           <FichePaysContenu senId={senId!} autreId={selec!.id} autreNom={selec!.nom} />
         </Animated.ScrollView>
       </View>
@@ -119,7 +120,7 @@ export default function FichePaysIndex() {
     {/* Une FlatList, pas la FlashList : les continents CHANGENT de hauteur
         en s'ouvrant, et le recyclage garde une taille estimée par cellule.
         Ils sont six : le recyclage n'apporterait rien. */}
-    <Animated.FlatList
+    <Animated.FlatList {...DEFILEMENT}
       style={{ backgroundColor: T.fond }}
       data={sections}
       keyExtractor={(c: any) => c.continent}
@@ -135,7 +136,7 @@ export default function FichePaysIndex() {
             <Pressable onPress={() => setOuverts(prev => {
               const n = new Set(prev); n.has(c.continent) ? n.delete(c.continent) : n.add(c.continent); return n;
             })}
-              style={({ pressed }) => [s.continent, pressed && { backgroundColor: T.bleuVoile }]}>
+              style={({ pressed }) => [s.continent, pressed && (IOS ? { opacity: 0.6 } : { backgroundColor: T.bleuVoile })]}>
               <Text style={s.continentTexte}>{c.continent.toUpperCase()}</Text>
               <View style={s.continentDroite}>
                 <Text style={s.continentCompte}>{c.nb}</Text>
@@ -149,7 +150,7 @@ export default function FichePaysIndex() {
                     <Text style={[s.zone, zi > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure }]}>{z.zone.toUpperCase()}</Text>
                     {z.pays.map((p: any) => (
                       <Pressable key={p.id} onPress={() => choisir(p)}
-                        style={({ pressed }) => [s.pays, pressed && { backgroundColor: T.blocFond }]}>
+                        style={({ pressed }) => [s.pays, pressed && { backgroundColor: IOS ? T.surbrillance : T.blocFond }]}>
                         {drapeauEmoji(p.code_iso2) ? <Text style={s.paysDrapeau}>{drapeauEmoji(p.code_iso2)}</Text> : null}
                         <Text style={s.paysNom} numberOfLines={1}>{p.nom}</Text>
                         <Text style={s.paysIso}>{p.code_iso3}</Text>

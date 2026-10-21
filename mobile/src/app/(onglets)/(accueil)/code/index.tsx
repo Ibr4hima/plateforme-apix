@@ -16,9 +16,10 @@ import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import EnTetePage from "@/components/EnTetePage";
 import { enPanne, getJson } from "@/lib/api";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { IOS } from "@/lib/plateforme";
 
 export type BaseCode = "code-investissement" | "modalites-application";
 
@@ -49,7 +50,7 @@ export const romainDe = (c: any) => (c.numero === 1 ? "I" : String(c.num_display
 
 export default function CodeSommaire() {
   const router = useRouter();
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [base, setBase] = useState<BaseCode>("code-investissement");
   const [q, setQ] = useState("");
@@ -98,7 +99,7 @@ export default function CodeSommaire() {
             onChange: cle => setBase(cle as BaseCode),
           }} />
 
-        <Animated.ScrollView
+        <Animated.ScrollView {...DEFILEMENT}
           style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}
           keyboardShouldPersistTaps="handled">
         {/* Résultats de recherche */}
@@ -136,7 +137,7 @@ export default function CodeSommaire() {
                       <View key={c.id}>
                         {i > 0 && <View style={s.separateur} />}
                         <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
-                          style={({ pressed }) => [s.ligne, pressed && { backgroundColor: T.bleuVoile }]}>
+                          style={({ pressed }) => [s.ligne, pressed && { backgroundColor: IOS ? T.surbrillance : T.bleuVoile }]}>
                           <View style={s.numeroColonne}>
                             <Text style={s.numeroRomain}>{romainDe(c)}</Text>
                             <Text style={s.numeroLegende}>CHAP.</Text>

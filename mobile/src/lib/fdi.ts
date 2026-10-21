@@ -21,7 +21,7 @@
 //   · toute la période vaut « pas de filtre ».
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getJson } from "@/lib/api";
-import { fmtMillionsUSD } from "@/lib/format";
+import { fmtMillionsUSD, nfSig } from "@/lib/format";
 
 // ── Le périmètre de lecture ──────────────────────────────────────────────────
 
@@ -313,8 +313,7 @@ export const fmtMontant = (v: number | null | undefined): string =>
 
 /** Le montant d'une carte : le nombre de millions tel quel, comme sur les
     cartes du site (« 1 410 »), l'unité étant posée à côté. */
-export const fmtMillions = (v: number): string =>
-  v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+export const fmtMillions = (v: number): string => nfSig(v);
 
 export const fmtEntier = (v: number | null | undefined): string =>
   v == null || !isFinite(v) ? "—" : Math.round(v).toLocaleString("fr-FR");

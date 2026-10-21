@@ -12,6 +12,7 @@
 // en cache — et réciproquement.
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { routeDepuisAccueil } from "@/lib/navigation";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
@@ -21,6 +22,7 @@ import { Apparition, ChiffreAnime, IconeTendance, Permutation, RangeeMouvante, T
 import { getJson } from "@/lib/api";
 import { fmtMFCFA, fmtMillionsUSD, fmtUnite } from "@/lib/format";
 import { tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -109,6 +111,16 @@ export default function VedetteIde() {
   const fmtDe = (cle: Cle) => (v: number) =>
     cle === "pib" ? fmtUnite(v, unitePib) : cle === "imports" || cle === "exports" ? fmtMFCFA(v) : fmtMillionsUSD(v);
 
+  // LES VALEURS LONGUES SE RÉDUISENT, ELLES NE SE COUPENT PAS. « 6 974 Md
+  // FCFA » ne tenait pas dans un repère et finissait en « 6 973,9 Md FCF… » :
+  // le chiffre lu n'était plus le vrai. Le corps se choisit d'après la
+  // longueur du texte — la valeur reste entière et exacte —, et l'ajustement
+  // du système ne sert plus que de filet (iOS le fait au plus juste ; Android
+  // rétrécit trop, d'où son plancher plus haut).
+  const corpsRepere = (texte: string) => (texte.length >= 13 ? 13 : texte.length >= 10 ? 14 : 15);
+  const corpsVedette = (texte: string) => (texte.length >= 13 ? 30 : texte.length >= 10 ? 34 : 38);
+  const plancher = IOS ? 0.6 : 0.82;
+
   if (cnuced.isLoading) {
     return (
       <View style={[s.carte, { gap: ESPACE.s }]}>
@@ -142,7 +154,7 @@ export default function VedetteIde() {
     <Apparition index={0} cle="accueil-vedette">
       <View style={s.carte}>
         {/* En-tête : la série vedette, la flèche mène à son module */}
-        <Tapable onPress={() => router.push(LABELS[actif].route as any)} echelle={0.99} surbrillance={false}
+        <Tapable onPress={() => router.push(routeDepuisAccueil(LABELS[actif].route) as any)} echelle={0.99} surbrillance={false}
           style={s.enTete}>
           <Text style={s.etiquette} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
             {LABELS[actif].long}{dernier ? ` · ${dernier.annee}` : ""}
@@ -156,7 +168,10 @@ export default function VedetteIde() {
         <Permutation cle={actif}>
         {dernier ? (
           <>
-            <ChiffreAnime texte={fmtDe(actif)(dernier.valeur)} style={s.nombre} />
+            <ChiffreAnime texte={fmtDe(actif)(dernier.valeur)} style={[s.nombre, {
+              fontSize: corpsVedette(fmtDe(actif)(dernier.valeur)),
+              lineHeight: Math.round(corpsVedette(fmtDe(actif)(dernier.valeur)) * 1.16),
+            }]} />
             {delta !== null && (
               <View style={s.deltaLigne}>
                 <Icone sf={hausse ? "arrow.up.right" : "arrow.down.right"}
@@ -197,6 +212,8 @@ export default function VedetteIde() {
             const d = sx.at(-1) ?? null;
             const p = sx.length > 1 ? sx[sx.length - 2] : null;
             const dpc = d && p && p.valeur !== 0 ? ((d.valeur - p.valeur) / Math.abs(p.valeur)) * 100 : null;
+            const texte = d ? fmtDe(cle)(d.valeur) : "—";
+            const corps = corpsRepere(texte);
             return (
               <RangeeMouvante key={cle} style={[s.repere, i % 2 === 1 && s.repereDroit, i >= 2 && s.repereBas]}>
               <Tapable echelle={0.96}
@@ -207,10 +224,10 @@ export default function VedetteIde() {
                   {/* minimumFontScale : sans plancher, Android rétrécit le
                       texte bien au-delà du nécessaire — « 7 161,4 Md FCFA »
                       finissait deux fois plus petit que son voisin */}
-                  <Text style={s.repereValeur} numberOfLines={1} adjustsFontSizeToFit
-                    minimumFontScale={0.82} maxFontSizeMultiplier={ECHELLE.chiffre}>
-                    {d ? fmtDe(cle)(d.valeur) : "—"}
-                    {d ? <Text style={s.repereAnnee}>  {d.annee}</Text> : null}
+                  <Text style={[s.repereValeur, { fontSize: corps, lineHeight: corps + 5 }]} numberOfLines={1}
+                    adjustsFontSizeToFit minimumFontScale={plancher} maxFontSizeMultiplier={ECHELLE.chiffre}>
+                    {texte}
+                    {d ? <Text style={[s.repereAnnee, corps < 15 && { fontSize: 10 }]}>  {d.annee}</Text> : null}
                   </Text>
                   <IconeTendance delta={dpc} />
                 </View>

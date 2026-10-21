@@ -21,6 +21,7 @@ import {
   accorder, fmtEntier, fmtMillions, moisEnClair, periodeEnClair,
 } from "@/lib/fdi";
 import { ECHELLE, POLICE, T } from "@/theme";
+import { fmtMillionsUSD } from "@/lib/format";
 
 /** Le drapeau d'un pays, quand le référentiel le connaît. Un pays non
     rapproché n'en a pas : le nom reste, sans place réservée. */
@@ -43,6 +44,13 @@ export function PaysDrapeau({ iso, nom, style, taille = 14, lignes = 1 }: {
   );
 }
 
+/** « 640 k $ » → ["640", "k$"] : le nombre et son unité, que la fiche
+    compose en deux corps. */
+function separerMontant(texte: string): [string, string] {
+  const m = /^(.*?)\s((?:Md|M|k)\s\$|\$)$/.exec(texte);
+  return m ? [m[1], m[2].replace(/\s/g, "")] : [texte, ""];
+}
+
 /** Un montant de fiche : la valeur, son unité petite à côté, et l'estimation
     signalée par « ≈ » sans occuper la ligne. Le « ≈ » reste à l'encre : il
     qualifie la valeur, il ne l'alerte pas. */
@@ -50,13 +58,17 @@ export function Montant({ v, estime, unite, taille = 13.5, couleur }: {
   v: number | null; estime: boolean | null; unite: string; taille?: number; couleur?: string;
 }) {
   if (v == null) return <Text style={[s.montant, { fontSize: taille, color: T.grisClair }]}>—</Text>;
+  // Un montant en millions de dollars suit la règle commune (lib/format) :
+  // trois chiffres significatifs, et l'unité inférieure sous le million —
+  // 0,64 M$ se lit « 640 k$ », pas « 0,6 M$ »
+  const [nombre, uniteLue] = unite === "M$" ? separerMontant(fmtMillionsUSD(v)) : [fmtMillions(v), unite];
   return (
     <Text style={[s.montant, { fontSize: taille }, couleur ? { color: couleur } : null]} numberOfLines={1}
       maxFontSizeMultiplier={ECHELLE.chiffre}
-      accessibilityLabel={`${estime ? "environ " : ""}${fmtMillions(v)} ${unite}${estime ? ", valeur estimée" : ""}`}>
+      accessibilityLabel={`${estime ? "environ " : ""}${nombre} ${uniteLue}${estime ? ", valeur estimée" : ""}`}>
       {estime ? <Text style={{ fontSize: taille * 0.85 }}>≈ </Text> : null}
-      {fmtMillions(v)}
-      <Text style={[s.unite, { fontSize: Math.max(9.5, taille * 0.66) }]}> {unite}</Text>
+      {nombre}
+      <Text style={[s.unite, { fontSize: Math.max(9.5, taille * 0.66) }]}> {uniteLue}</Text>
     </Text>
   );
 }
@@ -71,11 +83,11 @@ export const NoteEstimation = ({ style }: { style?: StyleProp<TextStyle> }) => (
 
 // ── Les trois cartes ─────────────────────────────────────────────────────────
 
-/** Un montant de carte, en millions de dollars : « 56,6 M $ », « 1,4 Md $ ». */
+/** Un montant de carte, en millions de dollars, à la règle commune (trois
+    chiffres significatifs) : « 56,6 M $ », « 1,42 Md $ », « 640 k $ ». */
 function montantCourt(v: number | null, estime: boolean | null): string {
   if (v == null) return "—";
-  const nf = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-  return `${estime ? "≈ " : ""}${Math.abs(v) >= 1000 ? `${nf(v / 1000)} Md $` : `${nf(v)} M $`}`;
+  return `${estime ? "≈ " : ""}${fmtMillionsUSD(v)}`;
 }
 
 /** Des emplois de carte : « 415 », « ≈ 38 ». */
@@ -103,7 +115,9 @@ function Gabarit({ onPress, titre, sousTitre, faits, libelle }: {
       {/* La tête prend la hauteur libre : en grille, la carte s'étire à la
           hauteur de sa rangée, et les faits d'une même rangée restent alignés */}
       <View style={s.tete}>
-        <Text style={s.titre} numberOfLines={1}>{titre}</Text>
+        {/* Deux lignes : un nom de groupe ne se coupe pas au premier mot long
+            (« Banque de développement des États… ») */}
+        <Text style={s.titre} numberOfLines={2}>{titre}</Text>
         {sousTitre ? <Text style={s.sousTitre} numberOfLines={1}>{sousTitre}</Text> : null}
       </View>
       <View style={s.faits}>

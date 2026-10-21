@@ -236,7 +236,7 @@ const s = creerStyles(() => ({
   // iOS : les trois chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
   faits: IOS ? {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 14,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 14,
   } : {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,

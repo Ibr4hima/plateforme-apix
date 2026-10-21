@@ -16,13 +16,11 @@ import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
-import { lignes } from "@/lib/partage";
 import EnTetePage from "@/components/EnTetePage";
 import EvenementSheet, { dansCombienEvenement, ordinal, statutEvenement } from "@/components/EvenementSheet";
 import Icone from "@/components/Icone";
 import { enPanne, fetchTous } from "@/lib/api";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -83,7 +81,7 @@ function LigneEvenement({ e, prochain, onPress }: { e: any; prochain: boolean; o
 }
 
 export default function Evenements() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [lentille, setLentille] = useState("a_venir");
@@ -166,24 +164,13 @@ export default function Evenements() {
     // restent sous le pouce, quelle que soit la position dans la liste
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {hero}
-      <Animated.SectionList
+      <Animated.SectionList {...DEFILEMENT}
         style={{ backgroundColor: T.fond }}
         sections={sections}
         keyExtractor={(e: any) => String(e.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            <MenuContextuel titre={item.nom} actions={[
-              actionFiche(() => setSelec(item)),
-              actionPartager(lignes(
-                item.nom,
-                [item.ville, item.pays_hote_nom].filter(Boolean).join(" · ") || null,
-                dateDe(item)?.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
-                "Source : APIX · Événements",
-              )),
-              actionCopier(item.nom),
-            ]}>
-              <LigneEvenement e={item} prochain={item.id === prochainId} onPress={() => setSelec(item)} />
-            </MenuContextuel>
+            <LigneEvenement e={item} prochain={item.id === prochainId} onPress={() => setSelec(item)} />
           </Apparition>
         )}
         renderSectionHeader={({ section }: any) => (

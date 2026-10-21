@@ -232,7 +232,7 @@ const s = creerStyles(() => ({
 
   // iOS : la frise est un bloc blanc du groupe ; ailleurs, un voile bleu
   frise: IOS
-    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 }
+    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 }
     : { backgroundColor: T.blocFond, borderRadius: 18, paddingVertical: 16, paddingHorizontal: 10 },
   etapes: { flexDirection: "row" },
   etape: { flex: 1, alignItems: "center", gap: 5 },

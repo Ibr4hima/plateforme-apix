@@ -77,6 +77,9 @@ const JETONS = {
   bleuClair:   "#1a6ab0",
   // Encres
   encre:       dyn("#1a1a2e", "#EDF1F7"),
+  // Le grand titre de l'accueil iOS (« Invest in ») : le bleu de la maison le
+  // jour, l'encre claire la nuit
+  titreAccueil: dyn("#004f91", "#EDF1F7"),
   texte:       dyn("#4a5568", "#B9C2CF"),
   // Gris de TEXTE — 4,8:1 sur blanc : le seuil AA des petites tailles
   gris:        dyn("#6b7280", "#9AA7B8"),
@@ -84,7 +87,9 @@ const JETONS = {
   // éléments non textuels. Aucun texte ne doit le porter.
   grisClair:   dyn("#8b93a1", "#6B7A8D"),
   // Surfaces
-  fond:        dyn("#F6F5F3", "#0B1220"),
+  // Le fond : un gris très clair, sur lequel les surfaces blanches (cartes,
+  // tuiles, tableaux) se détachent — de leur liseré et d'une ombre légère
+  fond:        dyn("#FAFAFA", "#0B1220"),
   carte:       dyn("#FFFFFF", "#151E2E"),
   // ── Bordures : des gris ALPHA, jamais des couleurs dynamiques ──
   //
@@ -120,7 +125,13 @@ const JETONS = {
   surBleu:     "#FFFFFF",
   // Voiles neutres (pistes de segments, rails de curseur, pastilles de compte)
   voile:       "rgba(122,138,164,0.13)",
+  // La pastille du segment choisi (SegmentsCapsule, iOS) : le gris neutre des
+  // contrôles d'iOS, sans la teinte bleutée des voiles de l'app
+  pastilleSegment: dyn("rgba(118,118,128,0.14)", "rgba(235,235,245,0.16)"),
   voileFort:   "rgba(130,148,176,0.30)",
+  // La surbrillance d'une surface touchée sur iOS — le gris des cellules
+  // d'UIKit, posé par-dessus la carte le temps de l'appui
+  surbrillance: dyn("rgba(0,0,0,0.075)", "rgba(255,255,255,0.09)"),
   blocBord:    "rgba(90,145,205,0.30)",
   rayonCarte:  18,
 } as const;

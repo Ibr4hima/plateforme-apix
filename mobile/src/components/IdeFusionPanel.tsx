@@ -22,6 +22,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { fmtMillionsUSD } from "@/lib/format";
 
 type Sens = "entrant" | "sortant";
 const LABELS: Record<Sens, string> = {
@@ -35,12 +36,10 @@ const LABELS_NOMBRE: Record<Sens, string> = {
 
 type Point = { annee: number; valeur: number };
 
-const fmtMusd = (v: number | null): string => {
-  if (v === null || v === undefined || isNaN(v)) return "—";
-  const abs = Math.abs(v);
-  if (abs >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} M $`;
-};
+// La règle commune des montants (lib/format) : trois chiffres significatifs,
+// et l'unité inférieure sous le million — 0,64 → « 640 k $ », pas « 1 M $ »
+const fmtMusd = (v: number | null): string =>
+  v === null || v === undefined || isNaN(v) ? "—" : fmtMillionsUSD(v);
 const fmtNombre = (v: number | null): string =>
   v === null || v === undefined || isNaN(v) ? "—" : Math.round(v).toLocaleString("fr-FR");
 

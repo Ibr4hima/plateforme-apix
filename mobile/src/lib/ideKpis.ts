@@ -1,3 +1,4 @@
+import { fmtMillionsUSD } from "@/lib/format";
 // ── Moteur de calcul KPIs IDE ─────────────────────────────────────────────────
 // 105 KPIs calculés depuis les données brutes CNUCED
 
@@ -352,11 +353,10 @@ export function fmtKpi(kpi: KpiResult): string {
   switch(kpi.format) {
     case "monnaie":
     case "monnaie_signe": {
-      const abs=Math.abs(v);
       const sign = kpi.format==="monnaie_signe"&&v>0?"+":"";
-      // Valeurs en millions USD — style commun : fr-FR, 1 décimale, « Md $ / M $ »
-      if(abs>=1000) return `${sign}${nf1(v/1000)} Md $`;
-      return `${sign}${Math.round(v).toLocaleString("fr-FR")} M $`;
+      // Valeurs en millions USD — la règle commune (lib/format) : trois
+      // chiffres significatifs, « k $ » sous le million
+      return `${sign}${fmtMillionsUSD(v)}`;
     }
     case "pourcentage": return `${v>0?"+":""}${nf1(v)} %`;
     case "ratio":       return v.toLocaleString("fr-FR", { maximumFractionDigits: 2 });

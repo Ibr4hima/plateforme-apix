@@ -21,6 +21,7 @@ import { SourceIde, libelleSource, useSeriesIde } from "@/lib/ideSource";
 import { tick } from "@/lib/haptique";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
+import { fmtMillionsUSD } from "@/lib/format";
 
 type CleSerie = "flux_e" | "flux_s" | "stock_e" | "stock_s" | "flux_net" | "stock_net";
 const LABELS: Record<CleSerie, string> = {
@@ -33,13 +34,11 @@ const INDICATEURS = ["flux", "stock"];
 
 type Point = { annee: number; valeur: number };
 
-// Valeurs CNUCED en millions USD (règle d'affichage du site)
-const fmtMusd = (v: number | null): string => {
-  if (v === null || v === undefined || isNaN(v)) return "—";
-  const abs = Math.abs(v);
-  if (abs >= 1000) return `${(v / 1000).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} M $`;
-};
+// Valeurs CNUCED en millions USD
+// La règle commune des montants (lib/format) : trois chiffres significatifs,
+// et l'unité inférieure sous le million — 0,64 → « 640 k $ », pas « 1 M $ »
+const fmtMusd = (v: number | null): string =>
+  v === null || v === undefined || isNaN(v) ? "—" : fmtMillionsUSD(v);
 
 export default function IdeFluxStocksPanel({ source, onOuvrirSource }: {
   source: SourceIde; onOuvrirSource: () => void;

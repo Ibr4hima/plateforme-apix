@@ -367,7 +367,7 @@ const s = creerStyles(() => ({
     paddingHorizontal: 14, paddingVertical: 12, gap: 8,
   },
   // iOS : la définition se pose comme un bloc blanc du groupe
-  definitionIOS: { backgroundColor: T.carte, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14 },
+  definitionIOS: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14 },
   definitionTexte: { fontSize: 13, lineHeight: 20, fontFamily: POLICE.normal, color: T.texte },
   definitionNom: { fontFamily: POLICE.gras, color: T.encre },
 

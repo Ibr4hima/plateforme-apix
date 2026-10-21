@@ -27,8 +27,8 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import EnTetePage from "@/components/EnTetePage";
+import { IOS } from "@/lib/plateforme";
 import Icone from "@/components/Icone";
-import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
 import { SqueletteListe } from "@/components/Squelette";
 import { EtatErreur, EtatVide, Tapable } from "@/components/ui";
 import { CarteInvestisseur, CarteProjetFdi, CarteSignal } from "@/components/fdi/AtomesFdi";
@@ -46,8 +46,7 @@ import {
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
 import { GOUTTIERE, MARGE, useGrille } from "@/lib/grille";
-import { partageInvestisseur, partageProjetFdi, partageSignal } from "@/lib/partage";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 const VUES: { cle: Vue; label: string }[] = [
@@ -76,7 +75,7 @@ export default function InvestissementsProjetes() {
   const params = useLocalSearchParams<{
     vue?: string; pays?: string; region?: string; destination?: string; destinations?: string;
   }>();
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { colonnes, cap, largeur } = useGrille();
 
   const [vue, setVue] = useState<Vue>(() =>
@@ -139,6 +138,9 @@ export default function InvestissementsProjetes() {
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       <EnTetePage titre="Investissements projetés"
+        // iOS : les filtres dans la barre, à côté de la loupe — à la même
+        // place que sur les autres écrans ; Android les garde près de la liste
+        bouton={IOS ? { icone: "tune", onPress: ouvrirFiltres, badge: nbFiltres || undefined } : undefined}
         recherche={{
           valeur: saisies[vue],
           onChange: v => setSaisies(s => ({ ...s, [vue]: v })),
@@ -153,15 +155,8 @@ export default function InvestissementsProjetes() {
           elements={qP.data?.pages.flatMap(p => p.projets) ?? []}
           cle={(p: ProjetFdi) => String(p.id)}
           rendre={(p: ProjetFdi) => (
-            // iOS : l'appui long ouvre le menu du système (voir MenuContextuel)
-            <MenuContextuel titre={p.entreprise ?? undefined} actions={[
-              actionFiche(() => setOuvert({ type: "projet", p })),
-              actionPartager(partageProjetFdi(p, fp.sens === "source")),
-              actionCopier(p.entreprise),
-            ]}>
-              <CarteProjetFdi p={p} avecDestination={fp.echelle === "regions"} sensSource={fp.sens === "source"}
-                onPress={() => setOuvert({ type: "projet", p })} />
-            </MenuContextuel>
+            <CarteProjetFdi p={p} avecDestination={fp.echelle === "regions"} sensSource={fp.sens === "source"}
+              onPress={() => setOuvert({ type: "projet", p })} />
           )}
           entete={
             <Contexte
@@ -189,15 +184,7 @@ export default function InvestissementsProjetes() {
           cleFiltre={paramsSignaux(fsR).toString()}
           elements={qS.data?.pages.flatMap(p => p.signaux) ?? []}
           cle={(x: Signal) => String(x.id)}
-          rendre={(x: Signal) => (
-            <MenuContextuel titre={x.entreprise ?? undefined} actions={[
-              actionFiche(() => setOuvert({ type: "signal", s: x })),
-              actionPartager(partageSignal(x)),
-              actionCopier(x.entreprise),
-            ]}>
-              <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />
-            </MenuContextuel>
-          )}
+          rendre={(x: Signal) => <CarteSignal s={x} onPress={() => setOuvert({ type: "signal", s: x })} />}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[
@@ -219,15 +206,7 @@ export default function InvestissementsProjetes() {
           cleFiltre={paramsEntreprises(feR).toString()}
           elements={qE.data?.pages.flatMap(p => p.entreprises) ?? []}
           cle={(e: Investisseur) => `${e.nom}|${e.origine ?? ""}`}
-          rendre={(e: Investisseur) => (
-            <MenuContextuel titre={e.nom} actions={[
-              actionFiche(() => setOuvert({ type: "investisseur", e })),
-              actionPartager(partageInvestisseur(e)),
-              actionCopier(e.nom),
-            ]}>
-              <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />
-            </MenuContextuel>
-          )}
+          rendre={(e: Investisseur) => <CarteInvestisseur e={e} onPress={() => setOuvert({ type: "investisseur", e })} />}
           entete={
             <Contexte principal={<Text style={s.contexteTitre}>{PERIMETRE_AFRIQUE}</Text>}
               description={[
@@ -313,7 +292,7 @@ function Liste<E>({ visible, requete, elements, cle, rendre, entete, vide, colon
 
   return (
     <View style={[{ flex: 1 }, !visible && { display: "none" }]}>
-      <FlatList
+      <FlatList {...DEFILEMENT}
         ref={liste}
         key={`grille-${colonnes}`}
         data={uniques}
@@ -364,15 +343,16 @@ function Contexte({ principal, description, nbFiltres, onFiltres, chargement, pu
       <View style={s.contexteLigne}>
         <View style={s.contexteGauche}>{principal}</View>
         {/* Les filtres, À CÔTÉ DE LA LISTE qu'ils restreignent ; le nombre de
-            ceux qui sont actifs s'y lit sans ouvrir la feuille */}
-        <Tapable onPress={onFiltres} echelle={0.95} style={[s.bouton, nbFiltres > 0 && s.boutonActif]}
+            ceux qui sont actifs s'y lit sans ouvrir la feuille. Sur iOS, ils
+            sont dans la barre de navigation. */}
+        {!IOS && <Tapable onPress={onFiltres} echelle={0.95} style={[s.bouton, nbFiltres > 0 && s.boutonActif]}
           accessibilityRole="button"
           accessibilityLabel={nbFiltres ? `Filtres, ${nbFiltres} actif${nbFiltres > 1 ? "s" : ""}` : "Filtres"}>
           <Icone sf="line.3.horizontal.decrease" materiel="tune" taille={16} couleur={T.bleu} />
           <Text style={s.boutonTexte} maxFontSizeMultiplier={ECHELLE.compact}>
             {nbFiltres > 0 ? `Filtres · ${nbFiltres}` : "Filtres"}
           </Text>
-        </Tapable>
+        </Tapable>}
       </View>
       <View style={s.descriptionLigne}>
         <Text style={s.description} numberOfLines={2}>{description.filter(Boolean).join(" · ")}</Text>

@@ -10,8 +10,6 @@ import { useMemo, useState } from "react";
 import { Animated, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionAppeler, actionCopier, actionEcrire, actionFiche, actionPartager, actionSite } from "@/components/MenuContextuel";
-import { lignes } from "@/lib/partage";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
 import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
@@ -20,7 +18,7 @@ import { enPanne, fetchTous } from "@/lib/api";
 import { couleurRegion, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { tick } from "@/lib/haptique";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
@@ -66,7 +64,7 @@ export default function Entreprises() {
   // Chaque région a sa teinte ; le hook la traduit pour l'apparence courante
   const teinte = useTeinte();
   const bleuBord = useCouleur(T.bleu);
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [q, setQ] = useState("");
   const [vue, setVue] = useState("annuaire");
@@ -140,24 +138,13 @@ export default function Entreprises() {
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {hero}
       {vue === "annuaire" ? (
-        <Animated.SectionList
+        <Animated.SectionList {...DEFILEMENT}
           style={{ backgroundColor: T.fond }}
           sections={sections}
           keyExtractor={(e: any) => String(e.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              {/* iOS : l'appui long ouvre le menu du système ; le partage dit qui
-                  et où, jamais les contacts */}
-              <MenuContextuel titre={item.nom} actions={[
-                actionFiche(() => setSelec(item)),
-                actionAppeler((item.telephone || "").split(",")),
-                actionEcrire((item.mail || "").split(",")),
-                actionSite(item.siteweb),
-                actionPartager(lignes(item.nom, item.region_nom, "Source : APIX · Entreprises installées")),
-                actionCopier(item.nom),
-              ]}>
-                <CarteEntreprise e={item} onPress={() => setSelec(item)} />
-              </MenuContextuel>
+              <CarteEntreprise e={item} onPress={() => setSelec(item)} />
             </Apparition>
           )}
           renderSectionHeader={({ section }: any) => (
@@ -179,7 +166,7 @@ export default function Entreprises() {
         // la liste se décalait, l'en-tête disparaissait, un blanc s'installait
         // au-dessus. Il n'y a de toute façon que quatorze régions : le
         // recyclage n'apportait rien qu'un défaut.
-        <Animated.FlatList
+        <Animated.FlatList {...DEFILEMENT}
           style={{ backgroundColor: T.fond }}
           data={regions}
           keyExtractor={(r: any) => r.nom}

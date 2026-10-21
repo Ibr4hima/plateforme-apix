@@ -6,6 +6,7 @@
 // sous-titre, chevron — rangées à filets hairline dans une seule carte à
 // coins continus. Simple, dense, scannable d'un pouce.
 import { useRouter } from "expo-router";
+import { routeDepuisAccueil } from "@/lib/navigation";
 import { StyleSheet, Text, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Apparition, Tapable } from "@/components/ui";
@@ -37,7 +38,7 @@ function Surface({ items, ouvrir }: { items: readonly any[]; ouvrir: (href: stri
 
 export default function Explorer() {
   const router = useRouter();
-  const ouvrir = (href: string) => { tick(); router.push(href as any); };
+  const ouvrir = (href: string) => { tick(); router.push(routeDepuisAccueil(href) as any); };
 
   return (
     <View style={s.bloc}>

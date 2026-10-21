@@ -11,7 +11,7 @@ import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, 
 import ArbreNaema from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsIOS, TuilesActions } from "@/components/ListeIOS";
-import { ouvrirLien } from "@/components/MenuContextuel";
+import { ouvrirLien } from "@/lib/liens";
 import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
@@ -219,7 +219,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           <View style={s.fichiers}>
             {e.fichiers.map((f: any) => (
               <Pressable key={f.id} onPress={() => Linking.openURL(`${API}/prospects/echanges/${e.id}/fichiers/${f.id}/download`)}
-                style={({ pressed }) => [s.fichierChip, pressed && { backgroundColor: T.bleuVoile }]}>
+                style={({ pressed }) => [s.fichierChip, pressed && (IOS ? { opacity: 0.5 } : { backgroundColor: T.bleuVoile })]}>
                 <Ionicons name="document-text-outline" size={11} color={T.bleu} />
                 <Text style={s.fichierChipTexte} numberOfLines={1}>{f.titre}</Text>
               </Pressable>
@@ -477,7 +477,7 @@ const s = creerStyles(() => ({
   },
   // iOS : chaque échange est un bloc blanc posé sur le fond gris, sans liseré
   echange: IOS
-    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 }
+    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 }
     : { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
@@ -503,7 +503,7 @@ const s = creerStyles(() => ({
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
   contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
   cycle: IOS
-    ? { backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" }
+    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" }
     : { borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },

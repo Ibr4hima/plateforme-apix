@@ -84,7 +84,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
         </View>
       }
       sousEntete={regions.length > 0 ? (
-        <Text style={s.meta} numberOfLines={1}>{regions.join("   ·   ")}</Text>
+        <Text style={s.meta} numberOfLines={1}>{regions.join(" · ")}</Text>
       ) : undefined}
       pied={zoneOuverte ? <ZoneSheet zone={zoneOuverte} onClose={() => setZoneOuverte(null)} /> : null}>
 
@@ -200,7 +200,7 @@ const s = creerStyles(() => ({
   // iOS : les chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
   faits: IOS ? {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
   } : {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,

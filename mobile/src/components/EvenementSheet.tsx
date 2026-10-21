@@ -233,6 +233,7 @@ const s = creerStyles(() => ({
   essentiel: {
     flexDirection: "row", alignItems: "center", gap: 14,
     backgroundColor: IOS ? T.carte : T.blocFond, borderRadius: IOS ? 16 : 18, padding: 14,
+    ...(IOS ? { borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord } : null),
   },
   bloc: {
     width: 50, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",

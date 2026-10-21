@@ -102,7 +102,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
   const actIds: number[] = p.activite_ids || [];
 
   const meta = [p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
-    .filter(Boolean).join("   ·   ");
+    .filter(Boolean).join(" · ");
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
@@ -194,7 +194,7 @@ const s = creerStyles(() => ({
   // iOS : les chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
   faits: IOS ? {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: T.carte, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
   } : {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,

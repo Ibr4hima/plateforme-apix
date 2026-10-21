@@ -25,6 +25,7 @@ import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import EvenementSheet from "@/components/EvenementSheet";
 import Explorer from "@/components/Explorer";
 import Icone, { type NomsIcone } from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
@@ -35,12 +36,13 @@ import { tick } from "@/lib/haptique";
 import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
-import { DEGRADE_EVENEMENT, DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 // ── Prochain événement — le bloc bleu de la page, tappable ───────────────────
+// Le toucher ouvre SA fiche, directement : c'est elle qu'on vient chercher,
+// pas la liste de tous les événements (l'Explorer y mène).
 function ProchainEvenement() {
-  const router = useRouter();
-  const sombre = useSombre();
+  const [ouvert, setOuvert] = useState(false);
   const { data: ev } = useQuery({
     queryKey: ["prochain-evenement"],
     queryFn: async () => {
@@ -55,24 +57,11 @@ function ProchainEvenement() {
   const d = new Date(ev.date_debut.slice(0, 10) + "T00:00:00");
   return (
     <Apparition index={1} cle="accueil-evenement" style={s.blocEvenement}>
-      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>À venir</Text>
-      {/* Bleu plein en dégradé profond — le bloc de couleur qui ancre la
-          page (l'idiome du bandeau « reprendre » des grandes apps) */}
-      <Tapable onPress={() => router.push("/evenements")} echelle={0.98} style={s.evenementCoquille}>
-        <LinearGradient colors={[...(sombre ? DEGRADE_EVENEMENT.sombre : DEGRADE_EVENEMENT.clair)]}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-        {/* La lumière du bloc — exactement celle du hero : un dégradé en
-            diagonale qui s'éteint de lui-même. Le disque translucide qui
-            tenait ce rôle se coupait net sur le bord droit et sur le
-            chevron : on voyait le cercle, pas la lumière. */}
-        <LinearGradient
-          colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
-          locations={[0, 0.45, 1]}
-          // Coordonnées toutes dans [0,1] : un départ hors du cadre (y négatif)
-          // n'est pas interprété pareil par CAGradientLayer et par le shader
-          // d'Android — le bandeau y perdait sa parité entre les deux
-          start={{ x: 1, y: 0 }} end={{ x: 0.15, y: 1 }}
-          pointerEvents="none" style={StyleSheet.absoluteFill} />
+      <Text style={s.titreSection} maxFontSizeMultiplier={ECHELLE.texte}>Événement à venir</Text>
+      {/* Un bleu UNI — le bloc de couleur qui ancre la page, sans dégradé ni
+          reflet : la couleur de la maison, franche */}
+      <Tapable onPress={() => setOuvert(true)} echelle={0.98} style={s.evenementCoquille}
+        accessibilityRole="button" accessibilityLabel={`${ev.nom_event}, ouvrir la fiche`}>
         <View style={s.evenement}>
           <View style={s.evenementDate}>
             <Text style={s.evenementJour} maxFontSizeMultiplier={ECHELLE.chiffre}>{d.getDate()}</Text>
@@ -89,6 +78,7 @@ function ProchainEvenement() {
           <Icone sf="chevron.right" materiel="chevron_right" taille={14} couleur="rgba(255,255,255,0.7)" poids="semibold" />
         </View>
       </Tapable>
+      {ouvert && <EvenementSheet ev={ev} onClose={() => setOuvert(false)} />}
     </Apparition>
   );
 }
@@ -171,7 +161,7 @@ export default function Accueil() {
       ref={defilement}
       style={{ backgroundColor: T.fond }}
       // iOS : sous la barre d'état et au-dessus de la barre d'onglets, les
-      // marges se règlent d'elles-mêmes (la barre se réduit sur iOS 26)
+      // marges se règlent d'elles-mêmes
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingBottom: margeBas }}
       scrollEventThrottle={16}
@@ -317,7 +307,8 @@ const s = creerStyles(() => ({
   // Le verre réagit lui-même au toucher (isInteractive) : pas d'opacité en plus
   boutonVerre: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   // Le grand titre d'iOS : 34 pt gras, interligne 41
-  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.7 },
+  // « Invest in » au bleu de la maison le jour ; la nuit, l'encre claire
+  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.titreAccueil, letterSpacing: -0.7 },
   voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },
 
   // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,
@@ -346,6 +337,7 @@ const s = creerStyles(() => ({
   blocEvenement: { marginTop: ESPACE.l, paddingHorizontal: ESPACE.m },
   evenementCoquille: {
     borderRadius: RAYON.grand, borderCurve: "continuous", overflow: "hidden",
+    backgroundColor: T.bleuAction,
   },
   evenement: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16 },
   // Bloc date en verre clair sur le bleu

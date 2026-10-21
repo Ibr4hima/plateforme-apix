@@ -13,14 +13,13 @@ import { Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } f
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionAppeler, actionCopier, actionEcrire, actionFiche, actionSite } from "@/components/MenuContextuel";
 import EnTetePage from "@/components/EnTetePage";
 import ProspectSheet, { OngletProspect, badgeProspect, couleurProspect, ilYa } from "@/components/ProspectSheet";
 import { enPanne, fetchTous } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
 import { POLICE, T } from "@/theme";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -99,7 +98,7 @@ function CarteProspect({ p, onglet, onPress }: { p: any; onglet: OngletProspect;
 }
 
 export default function Prospects() {
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState<OngletProspect>("cibles");
   const [q, setQ] = useState("");
@@ -134,23 +133,13 @@ export default function Prospects() {
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       <EnTetePage titre="Prospects"
         recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
-      <ListeRapide
+      <ListeRapide {...DEFILEMENT}
         style={{ backgroundColor: T.fond }}
         data={filtres}
         keyExtractor={(p: any) => String(p.id)}
         renderItem={({ item, index }: any) => (
           <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-            {/* iOS : l'appui long ouvre le menu du système. Pas de « Partager » :
-                un prospect est une cible suivie, pas une information publique */}
-            <MenuContextuel titre={item.nom} actions={[
-              actionFiche(() => setSelec(item)),
-              actionAppeler(item.telephones || []),
-              actionEcrire(item.mails || []),
-              actionSite(item.siteweb),
-              actionCopier(item.nom),
-            ]}>
-              <CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} />
-            </MenuContextuel>
+            <CarteProspect p={item} onglet={vue} onPress={() => setSelec(item)} />
           </Apparition>
         )}
         contentContainerStyle={{ paddingBottom: margeBas }}

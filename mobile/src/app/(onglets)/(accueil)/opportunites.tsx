@@ -16,18 +16,17 @@ import { useNaemaArbre } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Tapable } from "@/components/ui";
-import { MenuContextuel, actionCopier, actionFiche, actionPartager } from "@/components/MenuContextuel";
-import { lignes } from "@/lib/partage";
 import AvantageSheet from "@/components/AvantageSheet";
 import EnTetePage from "@/components/EnTetePage";
 import PotentialiteSheet, { NIVEAU_COULEURS } from "@/components/PotentialiteSheet";
 import ProjetSheet from "@/components/ProjetSheet";
 import { enPanne, fetchTous, getJson } from "@/lib/api";
 import { tick } from "@/lib/haptique";
-import { useMargeBas } from "@/lib/marges";
+import { DEFILEMENT, useMargeBas } from "@/lib/marges";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
+import { IOS } from "@/lib/plateforme";
 
 // Les trois lentilles — chips colorées comme les types de zones
 const LENTILLES = [
@@ -102,7 +101,7 @@ function CarteCompteur({ couleur, label, valeur, unite, sousLigne, pct, actif, o
 }) {
   return (
     <Pressable onPress={onPress} disabled={!onPress}
-      style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && { transform: [{ scale: 0.99 }] }, !onPress && { opacity: 0.55 }]}>
+      style={({ pressed }) => [s.compteur, largeur, actif && { borderColor: `${couleur}88`, borderWidth: 1.5 }, pressed && (IOS ? { opacity: 0.6 } : { transform: [{ scale: 0.99 }] }), !onPress && { opacity: 0.55 }]}>
       <View style={s.compteurEntete}>
         <View style={[s.compteurPoint, { backgroundColor: couleur }]} />
         {/* Un simple Text : depuis que les cartes tiennent toute la largeur,
@@ -144,7 +143,7 @@ function Bandeau({ couleur, surtitre, titre, count }: { couleur: string; surtitr
 function Tuile({ couleur, titre, droite, onPress, dernier }: { couleur: string; titre: string; droite?: string | null; onPress: () => void; dernier: boolean }) {
   return (
     <Pressable onPress={onPress}
-      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: T.blocFond }]}>
+      style={({ pressed }) => [s.tuile, !dernier && s.tuileBord, pressed && { backgroundColor: IOS ? T.surbrillance : T.blocFond }]}>
       <View style={[s.tuilePoint, { backgroundColor: couleur }]} />
       <Text style={s.tuileTitre} numberOfLines={1}>{titre}</Text>
       {droite ? <Text style={s.tuileDroite}>{droite}</Text> : null}
@@ -156,7 +155,7 @@ export default function Opportunites() {
   // Les couleurs de secteur et de niveau sont écrites en dur : la nuit, elles
   // passent par leur équivalent clair, sans quoi le bleu profond disparaît
   const teinte = useTeinte();
-  const margeBas = useMargeBas();
+  const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
   const [vue, setVue] = useState("projets");
   const [q, setQ] = useState("");
@@ -292,23 +291,13 @@ export default function Opportunites() {
     return (
       <View style={{ flex: 1, backgroundColor: T.fond }}>
         {entete}
-        <ListeRapide
+        <ListeRapide {...DEFILEMENT}
           style={{ backgroundColor: T.fond }}
           data={chargement || enErreur ? [] : projetsFiltres}
           keyExtractor={(p: any) => String(p.id)}
           renderItem={({ item, index }: any) => (
             <Apparition index={Math.min(index, 8)} style={[s.rangee, cap]}>
-              <MenuContextuel titre={item.titre_projet} actions={[
-                actionFiche(() => setProjetOuvert(item)),
-                actionPartager(lignes(
-                  item.titre_projet,
-                  [item.region_nom, item.pole_nom].filter(Boolean).join(" · ") || null,
-                  "Source : APIX · Opportunités d'investissement",
-                )),
-                actionCopier(item.titre_projet, "Copier l'intitulé"),
-              ]}>
-                <CarteProjet p={item} onPress={() => setProjetOuvert(item)} />
-              </MenuContextuel>
+              <CarteProjet p={item} onPress={() => setProjetOuvert(item)} />
             </Apparition>
           )}
           contentContainerStyle={{ paddingBottom: margeBas }}
@@ -344,7 +333,7 @@ export default function Opportunites() {
     return (
       <View style={{ flex: 1, backgroundColor: T.fond }}>
         {entete}
-        <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView {...DEFILEMENT} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
           {hero}
           {chargement || enErreur ? vide : (
             <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
@@ -412,7 +401,7 @@ export default function Opportunites() {
   return (
     <View style={{ flex: 1, backgroundColor: T.fond }}>
       {entete}
-      <Animated.ScrollView style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
+      <Animated.ScrollView {...DEFILEMENT} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }} keyboardShouldPersistTaps="handled">
         {hero}
         {chargement || enErreur ? vide : (
           <View style={[{ paddingHorizontal: 16, marginTop: 14 }, cap]}>
