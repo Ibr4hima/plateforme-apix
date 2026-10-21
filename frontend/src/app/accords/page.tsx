@@ -2,7 +2,7 @@
 
 import PanneauFiltres, { carteCliquable } from "@/components/shared/PanneauFiltres";
 import NavActions from "@/components/layout/NavActions";
-import BarreTitre, { BarreTitreSegment } from "@/components/shared/BarreTitre";
+import BarreTitre from "@/components/shared/BarreTitre";
 import ErreurChargement from "@/components/shared/ErreurChargement";
 import { SkeletonCards } from "@/components/shared/Skeleton";
 import { grilleCartes, COLONNES_OUVERT, COLONNES_REPLIE } from "@/lib/grilles";
@@ -12,7 +12,6 @@ import { useAuthGate } from "@/lib/authGate";
 import AccordVueModal, { computeStatut, fmtDate } from "@/components/shared/AccordVueModal";
 import { useNaemaArbre, useRefPays } from "@/lib/referentiels";
 import { useDonnees, useTous, VIDE } from "@/lib/donnees";
-import { useEtatUrl } from "@/lib/useEtatUrl";
 import { badge_vert, badge_bleu, badge_gris } from "@/lib/couleurs";
 import { ThematiquesCascadeFilter, BoutonEffacerFiltres } from "@/components/shared/FiltresLateraux";
 import { useFicheUrl } from "@/lib/ficheUrl";
@@ -48,8 +47,6 @@ export default function AccordsPage() {
 
   const [recherche,      setRecherche]      = useState("");
   const [statutFiltre,   setStatutFiltre]   = useState("");
-  // Type de traité (onglet hero) : bilatéraux d'investissement / internationaux (à venir)
-  const [typeTraite,     setTypeTraite]     = useEtatUrl<"tbi"|"inter">("type", "tbi", ["tbi","inter"]);
   const [paysIdsFiltres, setPaysIdsFiltres] = useState<number[]>([]);
   const [secteursSel,    setSecteursSel]    = useState<string[]>([]);
   const [branchesSel,    setBranchesSel]    = useState<string[]>([]);
@@ -80,7 +77,8 @@ export default function AccordsPage() {
   };
 
   const accords = useMemo(() => tous.filter(a=>{
-    // Onglet actif = Traités Bilatéraux d'Investissement (l'existant sans type est bilatéral)
+    // Les traités bilatéraux d'investissement seuls (l'existant sans type est
+    // bilatéral) : la rubrique des traités internationaux, vide, est retirée
     if ((a.type_accord || "tbi") !== "tbi") return false;
     if (recherche) {
       const q=recherche.toLowerCase();
@@ -143,30 +141,9 @@ export default function AccordsPage() {
       background:"var(--champ)", fontFamily:"var(--font-google-sans)" }}>
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
       {/* Hero */}
-      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>}>
-        <BarreTitreSegment options={[
-          {v:"tbi",   l:"Traités Bilatéraux d'Investissement", count: accords.length},
-          {v:"inter", l:"Traités Internationaux", badge:"Bientôt"},
-        ]} value={typeTraite} onChange={setTypeTraite}/>
-      </BarreTitre>
+      <BarreTitre titre={"Accords & Traités"} compact actions={<NavActions onDark home flouFond/>} />
 
-      {typeTraite === "inter" ? (
-      /* Traités internationaux — à venir */
-      <div style={{flex:1,minHeight:0,overflowY:"auto",overscrollBehavior:"contain",
-          maxWidth:1400,margin:"0 auto",padding:"80px 40px",textAlign:"center" as const,width:"100%"}}>
-        <div style={{display:"inline-flex",flexDirection:"column" as const,alignItems:"center",gap:16}}>
-          <div style={{width:64,height:64,borderRadius:16,background:"rgb(var(--bleu-rgb) / 0.08)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <FileText size={28} style={{color:"var(--bleu)"}}/>
-          </div>
-          <h2 style={{fontWeight:800,fontSize:"1.4rem",color:"var(--encre)"}}>Traités Internationaux</h2>
-          <p style={{fontSize:14,color:"var(--gris)",maxWidth:380,lineHeight:1.7}}>Les traités internationaux seront disponibles prochainement.</p>
-          <div style={{background:"rgb(var(--bleu-rgb) / 0.07)",border:"1px solid rgb(var(--bleu-rgb) / 0.2)",borderRadius:10,padding:"10px 20px"}}>
-            <span style={{fontSize:12,fontWeight:700,color:"var(--bleu)"}}>Disponible prochainement</span>
-          </div>
-        </div>
-      </div>
-      ) : (
-      /* Layout sidebar + contenu */
+      {/* Layout sidebar + contenu */}
       <div style={{display:"flex",flex:1,minHeight:0}}>
 
           {/* Sidebar bande */}
@@ -334,7 +311,6 @@ export default function AccordsPage() {
             )}
           </div>
       </div>
-      )}
 
       {selec&&<AccordVueModal accord={selec} onClose={()=>setSelec(null)}/>}
     </main>
