@@ -14,8 +14,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
+import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -26,6 +28,16 @@ export type PaysOption = {
 };
 
 const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** iOS : un pays de la liste — la coche dit celui qui est lu. */
+function PaysIOS({ p, legende, retrait, choisi, onChoisir }: {
+  p: PaysOption; legende?: string; retrait?: boolean; choisi?: number | null; onChoisir: (id: number) => void;
+}) {
+  return (
+    <Ligne label={p.nom} legende={legende} coche={p.id === choisi} lignes={1}
+      retrait={retrait ? 16 : 0} onPress={() => onChoisir(p.id)} />
+  );
+}
 
 export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onChoisir, onClose }: {
   pays: PaysOption[];
@@ -82,6 +94,54 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   }, [pays, q]);
 
   const valider = (id: number) => { cran(); onChoisir(id); onClose(); };
+  const basculer = (cle: string) => setOuverts(prev => {
+    const n = new Set(prev);
+    n.has(cle) ? n.delete(cle) : n.add(cle);
+    return n;
+  });
+
+  // ── iOS : les listes groupées du système ──
+  // La référence en tête dans son groupe ; les continents en UNE liste à
+  // déplier, leurs régions en légende et leurs pays en retrait.
+  if (IOS) {
+    const ligne = { choisi, onChoisir: valider };
+    return (
+      <Feuille onClose={onClose} ecart={22} fondGroupe
+        titre={<Text style={s.titre}>{titre}</Text>}
+        sousEntete={<ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" style={{ marginTop: 14 }} />}>
+        {resultats ? (
+          <Groupe>
+            {resultats.map(p => (
+              <PaysIOS key={p.id} p={p} {...ligne}
+                legende={[p.continent, p.region_geo].filter(Boolean).join(" · ") || undefined} />
+            ))}
+            {!resultats.length && <LigneVide texte="Aucun pays ne correspond." />}
+          </Groupe>
+        ) : (
+          <>
+            {senegal && <Groupe><PaysIOS p={senegal} legende="Pays de référence" {...ligne} /></Groupe>}
+            <Groupe>
+              {sections.map(sec => {
+                const ouvert = ouverts.has(sec.continent);
+                return (
+                  <View key={sec.continent}>
+                    <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
+                      onPress={() => basculer(sec.continent)} />
+                    {ouvert && sec.regions.map(r => (
+                      <View key={r.region}>
+                        <SousEnTete texte={r.region} retrait={16} />
+                        {r.liste.map(p => <PaysIOS key={p.id} p={p} retrait {...ligne} />)}
+                      </View>
+                    ))}
+                  </View>
+                );
+              })}
+            </Groupe>
+          </>
+        )}
+      </Feuille>
+    );
+  }
 
   const LignePays = ({ p, premier, legende, reference }: {
     p: PaysOption; premier: boolean; legende?: boolean; reference?: boolean;
@@ -132,14 +192,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
             return (
               <View key={sec.continent}>
                 <Tapable echelle={0.99}
-                  onPress={() => {
-                    tick();
-                    setOuverts(prev => {
-                      const n = new Set(prev);
-                      n.has(sec.continent) ? n.delete(sec.continent) : n.add(sec.continent);
-                      return n;
-                    });
-                  }}
+                  onPress={() => { tick(); basculer(sec.continent); }}
                   style={[s.continent, ouvert && s.continentOuvert]}>
                   <Text style={s.continentTexte}>{sec.continent.toUpperCase()}</Text>
                   <Text style={s.continentCompte}>{sec.nb}</Text>

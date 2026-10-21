@@ -9,8 +9,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
+import {
+  ChampRecherche, Groupe, Ligne as LigneIOS, LigneDepliable, LigneVide, SegmentsIOS,
+} from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -27,6 +31,17 @@ const SEGMENTS = [
 ] as const;
 
 const GLOBAL: SelNational = { niveau: "global", cible_id: null, libelle: "Global des secteurs" };
+
+/** iOS : une ligne de la liste — la coche dit la vue lue. */
+function LigneVueIOS({ cible, nom, legende, retrait, estChoisi, onChoisir }: {
+  cible: SelNational; nom: string; legende?: string; retrait?: boolean;
+  estChoisi: (s: SelNational) => boolean; onChoisir: (s: SelNational) => void;
+}) {
+  return (
+    <LigneIOS label={nom} legende={legende} coche={estChoisi(cible)}
+      retrait={retrait ? 16 : 0} onPress={() => onChoisir(cible)} />
+  );
+}
 const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
@@ -63,6 +78,73 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
       }));
   }, [q, vue, macros, groupes, secteurs]);
 
+  const basculer = (id: number) => setOuverts(prev => {
+    const n = new Set(prev);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+
+  // ── iOS : les listes groupées du système ──
+  // Le global en tête dans son groupe ; la hiérarchie en UNE liste à
+  // déplier, les enfants en retrait sous la ligne à chevron de leur parent.
+  if (IOS) {
+    const ligne = { estChoisi, onChoisir: valider };
+    return (
+      <Feuille onClose={onClose} ecart={22} fondGroupe
+        titre={<Text style={st.titre}>Choisir une vue</Text>}
+        sousEntete={
+          <View style={{ gap: 10, marginTop: 14 }}>
+            <SegmentsIOS options={SEGMENTS.map(sg => ({ cle: sg.cle, label: sg.label }))} valeur={vue}
+              onChange={v => { setVue(v); setQ(""); }} />
+            <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher" />
+          </View>
+        }>
+        {resultats ? (
+          <Groupe>
+            {resultats.map(r => <LigneVueIOS key={r.cle} cible={r.sel} nom={r.nom} legende={r.legende} {...ligne} />)}
+            {!resultats.length && <LigneVide texte="Aucun résultat." />}
+          </Groupe>
+        ) : (
+          <>
+            <Groupe>
+              <LigneVueIOS cible={GLOBAL} nom="Global des secteurs" legende="Tous secteurs confondus" {...ligne} />
+            </Groupe>
+            {vue === "macro_secteur" && (
+              <Groupe>
+                {macros.map((m: any) => (
+                  <LigneVueIOS key={m.id} cible={{ niveau: "macro_secteur", cible_id: m.id, libelle: m.libelle }}
+                    nom={m.libelle} {...ligne} />
+                ))}
+              </Groupe>
+            )}
+            {vue !== "macro_secteur" && (
+              <Groupe>
+                {(vue === "groupe" ? macros : groupes).map((parent: any) => {
+                  const enfants = vue === "groupe"
+                    ? groupes.filter((g: any) => g.macro_secteur_id === parent.id)
+                    : secteurs.filter((sx: any) => sx.groupe_id === parent.id);
+                  if (!enfants.length) return null;
+                  const ouvert = ouverts.has(parent.id);
+                  return (
+                    <View key={parent.id}>
+                      <LigneDepliable titre={parent.libelle} compte={enfants.length} ouvert={ouvert}
+                        onPress={() => basculer(parent.id)} />
+                      {ouvert && enfants.map((x: any) => (
+                        <LigneVueIOS key={x.id} retrait {...ligne}
+                          cible={{ niveau: vue as SelNational["niveau"], cible_id: x.id, libelle: x.libelle }}
+                          nom={x.libelle} />
+                      ))}
+                    </View>
+                  );
+                })}
+              </Groupe>
+            )}
+          </>
+        )}
+      </Feuille>
+    );
+  }
+
   const Ligne = ({ s: cible, nom, legende, premier }: {
     s: SelNational; nom: string; legende?: string; premier: boolean;
   }) => {
@@ -85,14 +167,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
     return (
       <View>
         <Tapable echelle={0.99}
-          onPress={() => {
-            tick();
-            setOuverts(prev => {
-              const n = new Set(prev);
-              n.has(id) ? n.delete(id) : n.add(id);
-              return n;
-            });
-          }}
+          onPress={() => { tick(); basculer(id); }}
           style={[st.groupe, ouvert && st.groupeOuvert]}>
           <Text style={st.groupeTexte} numberOfLines={1}>{titre.toUpperCase()}</Text>
           {compte != null && <Text style={st.groupeCompte}>{compte}</Text>}

@@ -20,10 +20,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
+import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
 import { type ComptePays, PAYS_REFERENCE, fmtEntier, plier } from "@/lib/fdi";
 import { cran, tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { LARGEUR_FICHE } from "./FichesFdi";
 import { Segments } from "./FiltresFdi";
@@ -52,6 +54,28 @@ export function regionsDe(pays: ComptePays[]) {
       nb: r.dedans.reduce((t, p) => t + p.nb, 0),
     }))
     .sort((a, b) => rangContinent(a.continent) - rangContinent(b.continent) || a.zone.localeCompare(b.zone, "fr"));
+}
+
+// ── iOS : les lignes des listes groupées ──
+function PaysIOS({ p, retrait, valeur, choisir }: {
+  p: ComptePays; retrait?: boolean; valeur: Destination; choisir: (d: Destination) => void;
+}) {
+  return (
+    <Ligne label={p.nom} legende={p.nom === PAYS_REFERENCE ? "Pays de référence" : undefined}
+      detail={fmtEntier(p.nb)} coche={valeur.echelle === "pays" && valeur.pays === p.nom}
+      retrait={retrait ? 16 : 0} lignes={1}
+      onPress={() => choisir({ echelle: "pays", pays: p.nom, region: valeur.region })} />
+  );
+}
+
+function ZoneIOS({ nom, nb, retrait, valeur, choisir }: {
+  nom: string; nb: number; retrait?: boolean; valeur: Destination; choisir: (d: Destination) => void;
+}) {
+  return (
+    <Ligne label={nom} gras={!retrait} detail={fmtEntier(nb)} lignes={1}
+      coche={valeur.echelle === "regions" && valeur.region === nom} retrait={retrait ? 16 : 0}
+      onPress={() => choisir({ echelle: "regions", pays: valeur.pays, region: nom })} />
+  );
 }
 
 export default function DestinationSheet({ pays, valeur, regionsPermises = true, onChoisir, onClose }: {
@@ -83,6 +107,58 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   }, [q, pays]);
 
   const choisir = (d: Destination) => { cran(); onChoisir(d); onClose(); };
+  const basculerRegion = (cle: string) =>
+    setOuverts(prev => { const n = new Set(prev); n.has(cle) ? n.delete(cle) : n.add(cle); return n; });
+
+  // ── iOS : les listes groupées du système ──
+  // Les régions forment UNE liste à déplier (le chevron dit si elle est
+  // ouverte, ses pays viennent en retrait) plutôt qu'une pile d'accordéons ;
+  // la référence garde sa place en tête, sa légende dit pourquoi.
+  if (IOS) {
+    return (
+      <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
+        titre={<Text style={s.titre}>Destination</Text>}
+        sousEntete={
+          <View style={{ gap: 10, marginTop: 14 }}>
+            {regionsPermises && (
+              <Segments valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
+                options={[{ cle: "pays", label: "Pays" }, { cle: "regions", label: "Régions" }]} />
+            )}
+            {echelle === "pays" && <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" />}
+          </View>
+        }>
+        {echelle === "regions" ? (
+          continents.length ? continents.map(c => (
+            <Groupe key={c.nom}>
+              <ZoneIOS valeur={valeur} choisir={choisir} nom={c.nom} nb={c.nb} />
+              {c.zones.map(z => <ZoneIOS valeur={valeur} choisir={choisir} key={z.cle} nom={z.zone} nb={z.nb} retrait />)}
+            </Groupe>
+          )) : <LigneVide texte="Aucune région relevée." />
+        ) : resultats ? (
+          <Groupe>
+            {resultats.map(p => <PaysIOS valeur={valeur} choisir={choisir} key={p.nom} p={p} />)}
+            {!resultats.length && <LigneVide texte="Aucun pays trouvé." />}
+          </Groupe>
+        ) : (
+          <>
+            {reference && <Groupe><PaysIOS valeur={valeur} choisir={choisir} p={reference} /></Groupe>}
+            <Groupe>
+              {regions.map(r => {
+                const ouvert = ouverts.has(r.cle);
+                return (
+                  <View key={r.cle}>
+                    <LigneDepliable titre={r.zone} compte={fmtEntier(r.nb)} ouvert={ouvert}
+                      onPress={() => basculerRegion(r.cle)} />
+                    {ouvert && r.dedans.map(p => <PaysIOS valeur={valeur} choisir={choisir} key={p.nom} p={p} retrait />)}
+                  </View>
+                );
+              })}
+            </Groupe>
+          </>
+        )}
+      </Feuille>
+    );
+  }
 
   const LignePays = ({ p, premier, estRef }: { p: ComptePays; premier: boolean; estRef?: boolean }) => {
     const actif = valeur.echelle === "pays" && valeur.pays === p.nom;
@@ -161,10 +237,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
             return (
               <View key={r.cle}>
                 <Tapable echelle={0.99} accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
-                  onPress={() => {
-                    tick();
-                    setOuverts(prev => { const n = new Set(prev); n.has(r.cle) ? n.delete(r.cle) : n.add(r.cle); return n; });
-                  }}
+                  onPress={() => { tick(); basculerRegion(r.cle); }}
                   style={[s.groupe, ouvert && s.groupeOuvert]}>
                   <Text style={s.groupeTexte} numberOfLines={1}>{r.zone.toUpperCase()}</Text>
                   <Text style={s.groupeCompte}>{fmtEntier(r.nb)}</Text>

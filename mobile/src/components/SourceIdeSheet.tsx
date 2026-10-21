@@ -14,9 +14,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
+import {
+  ChampRecherche, Groupe, Ligne as LigneIOS, LigneDepliable, LigneVide, SegmentsIOS, SousEnTete,
+} from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
 import type { SourceIde } from "@/lib/ideSource";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
@@ -34,6 +38,17 @@ export type GroupementOption = { code: string; nom_fr: string; categorie: string
 export type SecteurOption = { id: number; nom_fr: string; branches?: { id: number; nom_fr: string }[] };
 
 const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** iOS : une ligne de la liste — la coche dit la vue lue. */
+function LigneSourceIOS({ src, nom, legende, retrait, estChoisi, onChoisir }: {
+  src: SourceIde; nom: string; legende?: string; retrait?: boolean;
+  estChoisi: (s: SourceIde) => boolean; onChoisir: (s: SourceIde) => void;
+}) {
+  return (
+    <LigneIOS label={nom} legende={legende} coche={estChoisi(src)} lignes={1}
+      retrait={retrait ? 16 : 0} onPress={() => onChoisir(src)} />
+  );
+}
 
 export default function SourceIdeSheet({ pays, groupements, secteurs, source, onChoisir, onClose }: {
   pays: PaysOption[];
@@ -119,6 +134,122 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
       : s.type === "monde" ? s.code === (source as any).code
       : s.id === (source as any).id);
 
+  const basculer = (cle: string) => setOuverts(prev => {
+    const n = new Set(prev);
+    n.has(cle) ? n.delete(cle) : n.add(cle);
+    return n;
+  });
+  const placeholder = vue === "pays" ? "Rechercher un pays" : vue === "monde" ? "Rechercher une zone" : "Rechercher un secteur";
+
+  // ── iOS : les listes groupées du système ──
+  // Une liste à déplier par vue : continents, secteurs ou zones sont des
+  // lignes à chevron, leur contenu vient en retrait dessous ; ce qui est
+  // choisi porte la coche. La référence et les totaux gardent leur place en
+  // tête, dans leur propre groupe.
+  if (IOS) {
+    return (
+      <Feuille onClose={onClose} ecart={22} fondGroupe
+        titre={<Text style={s.titre}>Choisir une vue</Text>}
+        sousEntete={
+          <View style={{ gap: 10, marginTop: 14 }}>
+            <SegmentsIOS options={SEGMENTS.map(sg => ({ cle: sg.cle, label: sg.label }))} valeur={vue}
+              onChange={v => { setVue(v); setQ(""); }} />
+            <ChampRecherche valeur={q} onChange={setQ} placeholder={placeholder} />
+          </View>
+        }>
+        {resultats ? (
+          <Groupe>
+            {resultats.map(r => <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} key={r.cle} src={r.src} nom={r.nom} legende={r.legende} />)}
+            {!resultats.length && <LigneVide texte="Aucun résultat." />}
+          </Groupe>
+        ) : vue === "pays" ? (
+          <>
+            {senegal && (
+              <Groupe><LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} src={{ type: "pays", nom: senegal.nom }} nom={senegal.nom} legende="Pays de référence" /></Groupe>
+            )}
+            <Groupe>
+              {sections.map(sec => {
+                const ouvert = ouverts.has(sec.continent);
+                return (
+                  <View key={sec.continent}>
+                    <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
+                      onPress={() => basculer(sec.continent)} />
+                    {ouvert && sec.regions.map(r => (
+                      <View key={r.region}>
+                        <SousEnTete texte={r.region} retrait={16} />
+                        {r.liste.map(p => <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} key={p.id} src={{ type: "pays", nom: p.nom }} nom={p.nom} retrait />)}
+                      </View>
+                    ))}
+                  </View>
+                );
+              })}
+            </Groupe>
+          </>
+        ) : vue === "monde" ? (
+          <>
+            <Groupe><LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} src={{ type: "monde", code: null, label: "Monde" }} nom="Monde" legende="Total mondial" /></Groupe>
+            <Groupe>
+              {continents.map(c => {
+                const cle = `m${c.code}`, ouvert = ouverts.has(cle);
+                return (
+                  <View key={c.code}>
+                    <LigneDepliable titre={c.nom_fr} ouvert={ouvert} onPress={() => basculer(cle)} />
+                    {ouvert && (
+                      <>
+                        <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} src={{ type: "monde", code: c.code, label: c.nom_fr }} nom={c.nom_fr}
+                          legende="Continent entier" retrait />
+                        {regionsDe(c.nom_fr).map(r => (
+                          <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} key={r.code} src={{ type: "monde", code: r.code, label: r.nom_fr }} nom={r.nom_fr} retrait />
+                        ))}
+                      </>
+                    )}
+                  </View>
+                );
+              })}
+              {groupes.length > 0 && (
+                <View>
+                  <LigneDepliable titre="Groupements" compte={groupes.length} ouvert={ouverts.has("mgroupes")}
+                    onPress={() => basculer("mgroupes")} />
+                  {ouverts.has("mgroupes") && groupes.map(g => (
+                    <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} key={g.code} src={{ type: "monde", code: g.code, label: g.nom_fr }}
+                      nom={g.nom_fr} legende={g.code.replace(/_/g, " ")} retrait />
+                  ))}
+                </View>
+              )}
+            </Groupe>
+          </>
+        ) : (
+          <>
+            <Groupe>
+              <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} src={{ type: "secteur", id: 0, label: "Global des secteurs" }} nom="Global des secteurs"
+                legende="Tous secteurs confondus" />
+            </Groupe>
+            <Groupe>
+              {secteurs.map(sx => {
+                const cle = `s${sx.id}`, ouvert = ouverts.has(cle);
+                return (
+                  <View key={sx.id}>
+                    <LigneDepliable titre={sx.nom_fr} compte={(sx.branches || []).length} ouvert={ouvert}
+                      onPress={() => basculer(cle)} />
+                    {ouvert && (
+                      <>
+                        <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} src={{ type: "secteur", id: sx.id, label: sx.nom_fr }} nom={sx.nom_fr}
+                          legende="Secteur entier" retrait />
+                        {(sx.branches || []).map(b => (
+                          <LigneSourceIOS estChoisi={estChoisi} onChoisir={valider} key={b.id} src={{ type: "secteur", id: b.id, label: b.nom_fr }} nom={b.nom_fr} retrait />
+                        ))}
+                      </>
+                    )}
+                  </View>
+                );
+              })}
+            </Groupe>
+          </>
+        )}
+      </Feuille>
+    );
+  }
+
   const Ligne = ({ src, nom, legende, premier, reference }: {
     src: SourceIde; nom: string; legende?: string; premier: boolean; reference?: boolean;
   }) => {
@@ -142,14 +273,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
     return (
       <View>
         <Tapable echelle={0.99}
-          onPress={() => {
-            tick();
-            setOuverts(prev => {
-              const n = new Set(prev);
-              n.has(cle) ? n.delete(cle) : n.add(cle);
-              return n;
-            });
-          }}
+          onPress={() => { tick(); basculer(cle); }}
           style={[s.groupe, ouvert && s.groupeOuvert]}>
           <Text style={s.groupeTexte}>{titre.toUpperCase()}</Text>
           {compte != null && <Text style={s.groupeCompte}>{compte}</Text>}
@@ -181,7 +305,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
           <View style={s.champ}>
             <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
             <TextInput value={q} onChangeText={setQ}
-              placeholder={vue === "pays" ? "Rechercher un pays" : vue === "monde" ? "Rechercher une zone" : "Rechercher un secteur"}
+              placeholder={placeholder}
               placeholderTextColor={T.grisClair as any} autoCorrect={false}
               clearButtonMode="while-editing" style={s.champTexte} />
           </View>

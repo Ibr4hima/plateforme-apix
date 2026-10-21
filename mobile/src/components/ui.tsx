@@ -324,6 +324,8 @@ export function RangeeStats({ items }: {
 // SUR ANDROID : la feuille dessinée ici. Fond assombri, poignée, transition
 // contextuelle : elle « pousse » depuis la card touchée (origine capturée à
 // la racine) au lieu de glisser génériquement.
+type ActionFeuille = { label: string; onPress: () => void };
+
 type ProprietesFeuille = {
   titre: React.ReactNode; sousEntete?: React.ReactNode; onClose: () => void;
   /** Hauteur maximale (Android) — sur iOS, la feuille du système a la sienne. */
@@ -332,6 +334,12 @@ type ProprietesFeuille = {
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
    *  effet sur téléphone, plus étroit que le plafond. */
   largeurMax?: number;
+  /** iOS : le fond gris des listes groupées, sur lequel se posent les groupes
+   *  blancs (ListeIOS) — celui des feuilles de réglages et de filtres. */
+  fondGroupe?: boolean;
+  /** iOS : la barre de la feuille à la manière d'UIKit — titre centré, une
+   *  commande de chaque côté (« Réinitialiser » · « OK »), sans croix. */
+  actions?: { gauche?: ActionFeuille; droite?: ActionFeuille };
   children: React.ReactNode;
 };
 
@@ -345,23 +353,41 @@ const ORIENTATIONS_FEUILLE: ModalProps["supportedOrientations"] = IPAD
   ? ["portrait", "portrait-upside-down", "landscape-left", "landscape-right"]
   : ["portrait"];
 
-function FeuilleIOS({ titre, sousEntete, onClose, ecart = 20, pied, sansDefilement, largeurMax, children }: ProprietesFeuille) {
+function FeuilleIOS({
+  titre, sousEntete, onClose, ecart = 20, pied, sansDefilement, largeurMax, fondGroupe, actions, children,
+}: ProprietesFeuille) {
   // Sur iPad, le contenu garde sa largeur de lecture au centre de la feuille
   const colonne: ViewStyle | null = largeurMax ? { width: "100%", maxWidth: largeurMax, alignSelf: "center" } : null;
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet"
       allowSwipeDismissal onRequestClose={onClose} supportedOrientations={ORIENTATIONS_FEUILLE}>
-      <GestureHandlerRootView style={sf.feuilleIOS}>
-        <View style={[sf.entete, colonne]}>
-          {typeof titre === "string"
-            ? <Text style={sf.titre} accessibilityRole="header">{titre}</Text>
-            : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
-          {/* Le bouton fermer d'iOS : une croix grise dans un disque */}
-          <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Fermer"
-            style={({ pressed }) => [sf.fermer, pressed && { opacity: 0.5 }]}>
-            <Icone sf="xmark" materiel="close" taille={13} poids="bold" couleur={T.gris} />
-          </Pressable>
-        </View>
+      <GestureHandlerRootView style={[sf.feuilleIOS, fondGroupe && { backgroundColor: T.fond }, actions && { paddingTop: 10 }]}>
+        {actions ? (
+          // La barre d'une feuille d'UIKit : les deux côtés ont la même largeur,
+          // le titre reste au centre optique
+          <View style={[sf.barreIOS, colonne]}>
+            <View style={sf.barreCote}>
+              {actions.gauche ? <ActionBarre action={actions.gauche} /> : null}
+            </View>
+            <Text style={sf.barreTitre} numberOfLines={1} accessibilityRole="header">
+              {typeof titre === "string" ? titre : null}
+            </Text>
+            <View style={[sf.barreCote, { alignItems: "flex-end" }]}>
+              {actions.droite ? <ActionBarre action={actions.droite} principale /> : null}
+            </View>
+          </View>
+        ) : (
+          <View style={[sf.entete, colonne]}>
+            {typeof titre === "string"
+              ? <Text style={sf.titre} accessibilityRole="header">{titre}</Text>
+              : <View style={{ flex: 1, minWidth: 0 }}>{titre}</View>}
+            {/* Le bouton fermer d'iOS : une croix grise dans un disque */}
+            <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Fermer"
+              style={({ pressed }) => [sf.fermer, pressed && { opacity: 0.5 }]}>
+              <Icone sf="xmark" materiel="close" taille={13} poids="bold" couleur={T.gris} />
+            </Pressable>
+          </View>
+        )}
         {sousEntete ? <View style={colonne}>{sousEntete}</View> : null}
         {sansDefilement ? <View style={[{ flex: 1 }, colonne]}>{children}</View> : (
           <ScrollView style={{ marginTop: ESPACE.m }}
@@ -374,6 +400,18 @@ function FeuilleIOS({ titre, sousEntete, onClose, ecart = 20, pied, sansDefileme
         {pied ? <View style={colonne}>{pied}</View> : null}
       </GestureHandlerRootView>
     </Modal>
+  );
+}
+
+/** Une commande de la barre d'une feuille iOS : du texte à la teinte de
+    l'app, en gras pour celle qui conclut (« OK »). */
+function ActionBarre({ action, principale }: { action: ActionFeuille; principale?: boolean }) {
+  return (
+    <Pressable onPress={action.onPress} hitSlop={10} accessibilityRole="button"
+      style={({ pressed }) => [sf.action, pressed && { opacity: 0.4 }]}>
+      <Text style={[sf.actionTexte, principale && sf.actionPrincipale]} numberOfLines={1}
+        maxFontSizeMultiplier={ECHELLE.compact}>{action.label}</Text>
+    </Pressable>
   );
 }
 
@@ -651,6 +689,12 @@ const sf = creerStyles(() => ({
   // iOS : la feuille du système porte déjà ses coins et sa présentation —
   // reste à poser le fond et les marges du contenu
   feuilleIOS: { flex: 1, backgroundColor: T.carte, paddingHorizontal: 22, paddingTop: 20 },
+  barreIOS: { flexDirection: "row", alignItems: "center", minHeight: 44, gap: 8 },
+  barreCote: { flex: 1, alignItems: "flex-start" },
+  barreTitre: { flexShrink: 1, fontSize: 17, fontFamily: POLICE.demi, color: T.encre, textAlign: "center" },
+  action: { paddingVertical: 6 },
+  actionTexte: { fontSize: 16, fontFamily: POLICE.moyen, color: T.bleu },
+  actionPrincipale: { fontFamily: POLICE.gras },
   zonePoignee: { alignSelf: "stretch", alignItems: "center", paddingTop: 2, paddingBottom: ESPACE.s, marginTop: -6 },
   poignee: { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },

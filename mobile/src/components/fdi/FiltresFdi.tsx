@@ -17,6 +17,9 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FeuilleFiltres } from "@/components/FiltresListe";
+import {
+  ChampRecherche, EnTeteSection, Groupe, Ligne as LigneIOS, LigneVide, SegmentsIOS, SousEnTete,
+} from "@/components/ListeIOS";
 import { Os } from "@/components/Squelette";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import {
@@ -25,6 +28,7 @@ import {
   usePerimetreSignaux,
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 import CurseurPeriode from "./CurseurPeriode";
 import { LARGEUR_FICHE } from "./FichesFdi";
@@ -32,6 +36,8 @@ import { LARGEUR_FICHE } from "./FichesFdi";
 // ── Briques ──────────────────────────────────────────────────────────────────
 
 function Titre({ titre, nb }: { titre: string; nb?: number }) {
+  // iOS : l'en-tête d'une section groupée
+  if (IOS) return <EnTeteSection titre={titre} nb={nb} />;
   return (
     <View style={s.titreLigne}>
       <Text style={s.titre} accessibilityRole="header">{titre.toUpperCase()}</Text>
@@ -43,12 +49,21 @@ function Titre({ titre, nb }: { titre: string; nb?: number }) {
 /** Une ligne de choix : le point de sélection de la plateforme, le libellé,
     et le nombre que le choix rendrait. À zéro, la ligne s'estompe sans
     disparaître — elle dit ce qui n'existe pas dans la sélection. */
-function Ligne({ label, nb, sel, onPress, retrait = 0, orange }: {
+function Ligne({ label, nb, sel, onPress, retrait = 0, orange, filetPlein }: {
   label: string; nb?: number; sel: boolean; onPress: () => void; retrait?: number; orange?: boolean;
+  /** iOS : la ligne ouvre une autre famille de la liste (régions, puis pays). */
+  filetPlein?: boolean;
 }) {
   const couleur = useCouleur(orange ? T.orange : T.bleu) as unknown as string;
   const grisPoint = useCouleur(T.grisClair) as unknown as string;
   const vide = nb === 0 && !sel;
+  // iOS : la ligne d'une liste groupée — le nombre en détail gris, la coche
+  // à droite (orange pour un sous-secteur, comme le point de la plateforme)
+  if (IOS) return (
+    <LigneIOS label={label} detail={nb != null ? fmtEntier(nb) : undefined} coche={sel}
+      couleurCoche={orange ? T.orange : T.bleu} retrait={retrait} attenue={vide} filetPlein={filetPlein}
+      role="checkbox" onPress={() => { tick(); onPress(); }} />
+  );
   return (
     <Pressable onPress={() => { tick(); onPress(); }}
       accessibilityRole="checkbox" accessibilityState={{ checked: sel }}
@@ -64,6 +79,7 @@ function Ligne({ label, nb, sel, onPress, retrait = 0, orange }: {
 
 /** Le cadre d'une liste de choix : elle défile dedans, rien ne déborde. */
 function Cadre({ hauteurMax = 280, children }: { hauteurMax?: number; children: React.ReactNode }) {
+  if (IOS) return <Groupe hauteurMax={hauteurMax}>{children}</Groupe>;
   return (
     <View style={s.cadre}>
       <ScrollView style={{ maxHeight: hauteurMax }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
@@ -74,11 +90,18 @@ function Cadre({ hauteurMax = 280, children }: { hauteurMax?: number; children: 
 }
 
 function Champ({ valeur, onChange, placeholder }: { valeur: string; onChange: (v: string) => void; placeholder: string }) {
+  if (IOS) return <ChampRecherche valeur={valeur} onChange={onChange} placeholder={placeholder} style={{ marginBottom: 8 }} />;
   return (
     <TextInput value={valeur} onChangeText={onChange} placeholder={placeholder}
       placeholderTextColor={T.gris as any} autoCorrect={false} clearButtonMode="while-editing"
       style={s.champ} />
   );
+}
+
+/** Le message d'une liste que la recherche a vidée. */
+function Aucun() {
+  if (IOS) return <LigneVide texte="Aucune valeur ne correspond." />;
+  return <Text style={s.aucun}>Aucune valeur ne correspond.</Text>;
 }
 
 /** Les options d'une facette, plus celles qui sont cochées et que les autres
@@ -108,7 +131,7 @@ function FacetteMulti({ titre, options, choix, onChange, chercher }: {
         {visibles.map(o => (
           <Ligne key={o.nom} label={o.nom} nb={o.nb} sel={choix.includes(o.nom)} onPress={() => basculer(o.nom)} />
         ))}
-        {!visibles.length && <Text style={s.aucun}>Aucune valeur ne correspond.</Text>}
+        {!visibles.length && <Aucun />}
       </Cadre>
     </View>
   );
@@ -134,14 +157,17 @@ function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
       <Titre titre={titre} nb={valeur ? 1 : 0} />
       {chercher && toutes.length > 12 && <Champ valeur={q} onChange={setQ} placeholder={chercher} />}
       <Cadre>
-        {visibles.map((o, i) => (
-          <View key={`${o.groupe ?? ""}${o.nom}`}>
-            {i > 0 && o.groupe !== visibles[i - 1].groupe && <View style={s.filetGroupe} />}
-            <Ligne label={o.nom} nb={o.nb} sel={valeur === o.nom}
-              onPress={() => onChange(valeur === o.nom ? "" : o.nom)} />
-          </View>
-        ))}
-        {!visibles.length && <Text style={s.aucun}>Aucune valeur ne correspond.</Text>}
+        {visibles.map((o, i) => {
+          const autreFamille = i > 0 && o.groupe !== visibles[i - 1].groupe;
+          return (
+            <View key={`${o.groupe ?? ""}${o.nom}`}>
+              {autreFamille && !IOS && <View style={s.filetGroupe} />}
+              <Ligne label={o.nom} nb={o.nb} sel={valeur === o.nom} filetPlein={autreFamille}
+                onPress={() => onChange(valeur === o.nom ? "" : o.nom)} />
+            </View>
+          );
+        })}
+        {!visibles.length && <Aucun />}
       </Cadre>
     </View>
   );
@@ -179,7 +205,17 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange
           return (
             <View key={o.nom}>
               <Ligne label={o.nom} nb={o.nb} sel={ouvert} onPress={() => basculerSecteur(o.nom)} />
-              {ouvert && dedans.length > 0 && (
+              {ouvert && dedans.length > 0 && (IOS ? (
+                // iOS : les sous-secteurs en retrait, sous leur légende orange
+                <>
+                  <SousEnTete texte="Sous-secteurs" retrait={16} couleur={T.orange} />
+                  {dedans.map(x => (
+                    <Ligne key={x.nom} label={x.nom} nb={x.nb} orange retrait={16}
+                      sel={choixSous.some(c => c.nom === x.nom && c.secteur === o.nom)}
+                      onPress={() => basculerSous(o.nom, x.nom)} />
+                  ))}
+                </>
+              ) : (
                 <View style={s.sous}>
                   <Text style={s.sousTitre}>SOUS-SECTEUR</Text>
                   {dedans.map(x => (
@@ -188,7 +224,7 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange
                       onPress={() => basculerSous(o.nom, x.nom)} />
                   ))}
                 </View>
-              )}
+              ))}
             </View>
           );
         })}
@@ -206,13 +242,15 @@ function Periode({ bornes, debut, fin, onChange }: {
   const [b0, b1] = bornes;
   if (b0 == null || b1 == null || b1 <= b0) return null;
   const d = debut ?? b0, f = fin ?? b1;
+  const curseur = (
+    <CurseurPeriode min={b0} max={b1} debut={d} fin={f}
+      onChange={(a, b) => onChange(a === b0 && b === b1 ? null : a, a === b0 && b === b1 ? null : b)} />
+  );
   return (
     <View>
       <Titre titre="Période" nb={d !== b0 || f !== b1 ? 1 : 0} />
-      <View style={s.periode}>
-        <CurseurPeriode min={b0} max={b1} debut={d} fin={f}
-          onChange={(a, b) => onChange(a === b0 && b === b1 ? null : a, a === b0 && b === b1 ? null : b)} />
-      </View>
+      {/* iOS : le curseur dans son groupe, comme une commande de réglages */}
+      {IOS ? <Groupe style={s.periodeIOS}>{curseur}</Groupe> : <View style={s.periode}>{curseur}</View>}
     </View>
   );
 }
@@ -331,6 +369,8 @@ export function FiltresEntreprisesSheet({ filtres, onChange, onReinitialiser, on
 export function Segments({ options, valeur, onChange }: {
   options: { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
 }) {
+  // iOS : le contrôle segmenté du système
+  if (IOS) return <SegmentsIOS options={options} valeur={valeur} onChange={onChange} />;
   return (
     <View style={s.segments}>
       {options.map(o => {
@@ -375,6 +415,7 @@ const s = creerStyles(() => ({
     paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, fontFamily: POLICE.normal, color: T.encre, marginBottom: 8,
   },
   periode: { paddingHorizontal: 4 },
+  periodeIOS: { paddingHorizontal: 16, paddingVertical: 14 },
   segments: { flexDirection: "row", padding: 3.5, gap: 4, backgroundColor: T.voile, borderRadius: 999 },
   segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 999 },
   segmentActif: {

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
@@ -226,6 +227,17 @@ export function FeuilleFiltres({ onClose, onReinitialiser, largeurMax, children 
   largeurMax?: number;
   children: React.ReactNode;
 }) {
+  // iOS : la feuille de filtres d'UIKit — les listes groupées sur fond gris,
+  // « Réinitialiser » et « OK » dans sa barre, comme les filtres de Mail
+  if (IOS) return (
+    <Feuille onClose={onClose} titre="Filtres" ecart={26} largeurMax={largeurMax} fondGroupe
+      actions={{
+        gauche: { label: "Réinitialiser", onPress: () => { tick(); onReinitialiser(); } },
+        droite: { label: "OK", onPress: () => { succes(); onClose(); } },
+      }}>
+      {children}
+    </Feuille>
+  );
   return (
     <Feuille onClose={onClose} titre="Filtres" hauteur="88%" ecart={22} largeurMax={largeurMax}
       pied={
