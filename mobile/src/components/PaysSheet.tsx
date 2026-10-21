@@ -1,12 +1,14 @@
-// Sélecteur de pays — la liste du monde, groupée comme on la pense :
-// continents en accordéons, régions géographiques à l'intérieur, pays à plat
-// dessous. Le continent du pays courant s'ouvre à l'arrivée, et le pays
-// choisi porte une coche bleue : on sait toujours où l'on est.
+// Sélecteur de pays — la liste du monde, groupée comme on la pense, dans
+// les listes du système (ListeIOS) : les continents en UNE liste à déplier,
+// leurs régions en sous-titre, leurs pays en retrait. Le continent du pays
+// courant s'ouvre à l'arrivée, et le pays choisi est marqué — la coche
+// d'iOS, le bouton radio d'Android : on sait toujours où l'on est.
 //
-// Le Sénégal est ÉPINGLÉ au-dessus des continents, sous un tag « Réf. » : il
-// est la référence de toute la plateforme, et le chercher dans l'Afrique de
-// l'Ouest comme un pays parmi les autres n'avait pas de sens. Il est retiré
-// du groupe pour ne pas y figurer deux fois.
+// Le Sénégal est ÉPINGLÉ au-dessus des continents, dans son propre groupe,
+// sa légende dit « Pays de référence » : il est la référence de toute la
+// plateforme, et le chercher dans l'Afrique de l'Ouest comme un pays parmi
+// les autres n'avait pas de sens. Il est retiré du groupe pour ne pas y
+// figurer deux fois.
 //
 // La recherche court-circuite la hiérarchie — elle sert les résultats à plat,
 // avec le rattachement en légende (Afrique · Afrique de l'Ouest).
@@ -14,15 +16,10 @@
 // LA LISTE VIT AUSSI HORS DE LA FEUILLE : la Fiche Pays la pose dans sa page
 // tant qu'aucun pays n'est choisi (ListePays). C'est la même liste aux deux
 // endroits, et le même geste.
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import Icone from "@/components/Icone";
+import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SousEnTete } from "@/components/ListeIOS";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
-import { creerStyles } from "@/lib/apparence";
+import { Feuille } from "@/components/ui";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 
@@ -32,8 +29,8 @@ export type PaysOption = {
 
 const plier = (x: string) => (x || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-/** iOS : un pays de la liste — la coche dit celui qui est lu. */
-function PaysIOS({ p, legende, retrait, choisi, onChoisir }: {
+/** Un pays de la liste — sa marque dit celui qui est lu. */
+function LignePays({ p, legende, retrait, choisi, onChoisir }: {
   p: PaysOption; legende?: string; retrait?: boolean; choisi?: number | null; onChoisir: (id: number) => void;
 }) {
   return (
@@ -99,102 +96,38 @@ export function ListePays({ pays, choisi, q, onChoisir }: {
     return n;
   });
 
-  // ── iOS : les listes groupées du système ──
   // La référence en tête dans son groupe ; les continents en UNE liste à
-  // déplier, leurs régions en légende et leurs pays en retrait.
-  if (IOS) {
-    const ligne = { choisi, onChoisir };
-    if (resultats) return (
-      <Groupe>
-        {resultats.map(p => (
-          <PaysIOS key={p.id} p={p} {...ligne}
-            legende={[p.continent, p.region_geo].filter(Boolean).join(" · ") || undefined} />
-        ))}
-        {!resultats.length && <LigneVide texte="Aucun pays ne correspond." />}
-      </Groupe>
-    );
-    return (
-      <View style={{ gap: 22 }}>
-        {senegal && <Groupe><PaysIOS p={senegal} legende="Pays de référence" {...ligne} /></Groupe>}
-        <Groupe>
-          {sections.map(sec => {
-            const ouvert = ouverts.has(sec.continent);
-            return (
-              <View key={sec.continent}>
-                <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
-                  onPress={() => basculer(sec.continent)} />
-                {ouvert && sec.regions.map(r => (
-                  <View key={r.region}>
-                    <SousEnTete texte={r.region} retrait={16} />
-                    {r.liste.map(p => <PaysIOS key={p.id} p={p} retrait {...ligne} />)}
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-        </Groupe>
-      </View>
-    );
-  }
-
-  const LignePays = ({ p, premier, legende, reference }: {
-    p: PaysOption; premier: boolean; legende?: boolean; reference?: boolean;
-  }) => {
-    const actif = p.id === choisi;
-    return (
-      <Tapable onPress={() => onChoisir(p.id)} style={[s.pays, !premier && s.paysBord]}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.paysNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
-          {legende && (p.continent || p.region_geo) ? (
-            <Text style={s.paysLegende} numberOfLines={1}>
-              {[p.continent, p.region_geo].filter(Boolean).join(" · ")}
-            </Text>
-          ) : null}
-        </View>
-        {reference ? <View style={s.tagRef}><Text style={s.tagRefTexte}>Réf.</Text></View> : null}
-        {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}
-      </Tapable>
-    );
-  };
-
+  // déplier, leurs régions en sous-titre et leurs pays en retrait.
+  const ligne = { choisi, onChoisir };
   if (resultats) return (
-    <View style={s.surface}>
-      {resultats.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} legende />)}
-      {!resultats.length && <Text style={s.vide}>Aucun pays ne correspond.</Text>}
-    </View>
+    <Groupe>
+      {resultats.map(p => (
+        <LignePays key={p.id} p={p} {...ligne}
+          legende={[p.continent, p.region_geo].filter(Boolean).join(" · ") || undefined} />
+      ))}
+      {!resultats.length && <LigneVide texte="Aucun pays ne correspond." />}
+    </Groupe>
   );
   return (
-    <View style={{ gap: 10 }}>
-      {/* La référence, au-dessus de tout le reste */}
-      {senegal && (
-        <View style={[s.surface, { marginTop: 0 }]}>
-          <LignePays p={senegal} premier reference />
-        </View>
-      )}
-      {sections.map(sec => {
-        const ouvert = ouverts.has(sec.continent);
-        return (
-          <View key={sec.continent}>
-            <Tapable
-              onPress={() => basculer(sec.continent)}
-              style={[s.continent, ouvert && s.continentOuvert]}>
-              <Text style={s.continentTexte}>{sec.continent.toUpperCase()}</Text>
-              <Text style={s.continentCompte}>{sec.nb}</Text>
-              <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu} />
-            </Tapable>
-            {ouvert && (
-              <View style={s.surface}>
-                {sec.regions.map((r, ri) => (
-                  <View key={r.region}>
-                    <Text style={[s.region, ri > 0 && s.regionBord]}>{r.region.toUpperCase()}</Text>
-                    {r.liste.map((p, i) => <LignePays key={p.id} p={p} premier={i === 0} />)}
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        );
-      })}
+    <View style={{ gap: 22 }}>
+      {senegal && <Groupe><LignePays p={senegal} legende="Pays de référence" {...ligne} /></Groupe>}
+      <Groupe>
+        {sections.map(sec => {
+          const ouvert = ouverts.has(sec.continent);
+          return (
+            <View key={sec.continent}>
+              <LigneDepliable titre={sec.continent} compte={sec.nb} ouvert={ouvert}
+                onPress={() => basculer(sec.continent)} />
+              {ouvert && sec.regions.map(r => (
+                <View key={r.region}>
+                  <SousEnTete texte={r.region} retrait={16} />
+                  {r.liste.map(p => <LignePays key={p.id} p={p} retrait {...ligne} />)}
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </Groupe>
     </View>
   );
 }
@@ -209,62 +142,11 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
   const [q, setQ] = useState("");
   const valider = (id: number) => { onChoisir(id); onClose(); };
 
-  if (IOS) return (
+  return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{titre}</Text>}
+      titre={titre}
       sousEntete={<ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" style={{ marginTop: 14 }} />}>
       <ListePays pays={pays} choisi={choisi} q={q} onChoisir={valider} />
     </Feuille>
   );
-
-  return (
-    <Feuille onClose={onClose} ecart={16}
-      titre={<Text style={s.titre}>{titre}</Text>}
-      sousEntete={
-        <View style={s.champ}>
-          <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
-          <TextInput value={q} onChangeText={setQ} placeholder="Rechercher un pays"
-            placeholderTextColor={T.grisClair as any} autoCorrect={false}
-            clearButtonMode="while-editing" style={s.champTexte} />
-        </View>
-      }>
-      <ListePays pays={pays} choisi={choisi} q={q} onChoisir={valider} />
-    </Feuille>
-  );
 }
-
-const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
-  champ: {
-    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12,
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordure,
-    borderRadius: 12, borderCurve: "continuous", paddingHorizontal: 12, height: 38,
-  },
-  champTexte: { flex: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-
-  continent: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, borderCurve: "continuous",
-    paddingHorizontal: 14, paddingVertical: 10,
-  },
-  continentOuvert: { borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
-  continentTexte: { flex: 1, fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
-  continentCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, opacity: 0.6, fontVariant: ["tabular-nums"] },
-
-  surface: {
-    backgroundColor: T.carte, borderRadius: 14, borderCurve: "continuous",
-    borderWidth: 1, borderColor: T.carteBord, overflow: "hidden", marginTop: 6,
-  },
-  region: {
-    fontSize: 9, fontFamily: POLICE.gras, color: T.grisClair, letterSpacing: 1.1,
-    paddingHorizontal: 14, paddingTop: 11, paddingBottom: 4,
-  },
-  regionBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure, marginTop: 4 },
-  pays: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 10.5 },
-  paysBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  paysNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
-  paysLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-  tagRef: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2.5 },
-  tagRefTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
-}));

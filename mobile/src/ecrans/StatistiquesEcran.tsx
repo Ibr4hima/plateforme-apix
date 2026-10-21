@@ -22,7 +22,6 @@ import EnTetePage from "@/components/EnTetePage";
 import Icone from "@/components/Icone";
 import MiniTendance from "@/components/MiniTendance";
 import PaysSheet from "@/components/PaysSheet";
-import { FiltresStatistiques } from "@/components/StatistiquesFiltres";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUnite } from "@/lib/format";
 import { POLICE, T, TYPO } from "@/theme";
@@ -54,6 +53,17 @@ const VOULUS: { cle: string; court: string; test: (ind: any) => boolean }[] = [
 
 type Point = { annee: number; valeur: number };
 
+// Ce que l'écran lit : le pays choisi, et la période (toute la série par défaut)
+type FiltresStatistiques = {
+  vue: string;
+  typeAnalyse?: string;
+  selection: number[];
+  modeAnnees: "plage" | "specifiques";
+  anneeMin: number;
+  anneeMax: number;
+  anneesSpec: number[];
+};
+
 export default function StatistiquesEcran() {
   const margeBas = useMargeBas({ sousOnglets: true });
   const { width } = useWindowDimensions();
@@ -73,7 +83,7 @@ export default function StatistiquesEcran() {
   const { data: indicateurs } = useQuery({ queryKey: ["stat-indicateurs"], queryFn: () => getJson<any[]>("/statistiques/indicateurs"), staleTime: Infinity });
   const senId = useMemo(() => (pays || []).find((p: any) => p.code_iso3 === "SEN")?.id ?? null, [pays]);
 
-  // Filtres appliqués (pays et période via la feuille)
+  // Le pays lu (choisi dans sa feuille) et la période
   const [filtres, setFiltres] = useState<FiltresStatistiques | null>(null);
   const f: FiltresStatistiques = filtres ?? {
     vue: "pays", selection: senId !== null ? [senId] : [],

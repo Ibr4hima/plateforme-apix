@@ -1,6 +1,7 @@
 // Les filtres des Investissements projetés — une feuille par vue, appliquée
-// en direct comme toutes les feuilles de filtres de l'app (Réinitialiser /
-// Terminé), avec les règles de la colonne de filtres du site :
+// en direct comme toutes les feuilles de filtres de l'app (Réinitialiser ·
+// OK), dans les listes du système (ListeIOS), avec les règles de la colonne
+// de filtres du site :
 //
 //   · AUCUNE FACETTE N'EN EXCLUT UNE AUTRE. Les valeurs restent toutes
 //     affichées ; ce que la sélection change, c'est le COMPTE en regard —
@@ -15,93 +16,46 @@
 //   · La période ouvre la feuille : c'est le cadre dans lequel tout le reste
 //     se lit. Toute la période vaut « pas de filtre ».
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { FeuilleFiltres } from "@/components/FiltresListe";
+import { View } from "react-native";
 import {
-  ChampRecherche, EnTeteSection, Groupe, Ligne as LigneIOS, LigneVide, SegmentsCapsule, SousEnTete,
+  ChampRecherche, EnTeteSection, Groupe, Ligne, LigneVide, SegmentsCapsule, SousEnTete,
 } from "@/components/ListeIOS";
 import { Os } from "@/components/Squelette";
-import { creerStyles, useCouleur } from "@/lib/apparence";
+import { Feuille } from "@/components/ui";
+import { creerStyles } from "@/lib/apparence";
 import {
   type ChoixSous, type Compte, type CompteSous, type FiltresEntreprises, type FiltresProjets,
   type FiltresSignaux, fmtEntier, plier, usePerimetreEntreprises, usePerimetreProjets,
   usePerimetreSignaux,
 } from "@/lib/fdi";
 import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
+import { T } from "@/theme";
 import CurseurPeriode from "./CurseurPeriode";
 import { LARGEUR_FICHE } from "./FichesFdi";
 
 // ── Briques ──────────────────────────────────────────────────────────────────
 
-function Titre({ titre, nb }: { titre: string; nb?: number }) {
-  // iOS : l'en-tête d'une section groupée
-  if (IOS) return <EnTeteSection titre={titre} nb={nb} />;
-  return (
-    <View style={s.titreLigne}>
-      <Text style={s.titre} accessibilityRole="header">{titre.toUpperCase()}</Text>
-      {nb ? <Text style={s.titreBadge}>{nb}</Text> : null}
-    </View>
-  );
-}
-
-/** Une ligne de choix : le point de sélection de la plateforme, le libellé,
-    et le nombre que le choix rendrait. À zéro, la ligne s'estompe sans
-    disparaître — elle dit ce qui n'existe pas dans la sélection. */
-function Ligne({ label, nb, sel, onPress, retrait = 0, orange, filetPlein }: {
+/** Une ligne de choix : le libellé, et le nombre que le choix rendrait. À
+    zéro, la ligne s'estompe sans disparaître — elle dit ce qui n'existe pas
+    dans la sélection. La coche d'iOS (orange pour un sous-secteur, comme le
+    point de la plateforme) ; sur Android, la case à cocher — ou le bouton
+    radio d'un choix unique (`unique`). */
+function LigneChoix({ label, nb, sel, onPress, retrait = 0, orange, filetPlein, unique }: {
   label: string; nb?: number; sel: boolean; onPress: () => void; retrait?: number; orange?: boolean;
-  /** iOS : la ligne ouvre une autre famille de la liste (régions, puis pays). */
+  /** La ligne ouvre une autre famille de la liste (régions, puis pays). */
   filetPlein?: boolean;
+  unique?: boolean;
 }) {
-  const couleur = useCouleur(orange ? T.orange : T.bleu) as unknown as string;
-  const grisPoint = useCouleur(T.grisClair) as unknown as string;
-  const vide = nb === 0 && !sel;
-  // iOS : la ligne d'une liste groupée — le nombre en détail gris, la coche
-  // à droite (orange pour un sous-secteur, comme le point de la plateforme)
-  if (IOS) return (
-    <LigneIOS label={label} detail={nb != null ? fmtEntier(nb) : undefined} coche={sel}
-      couleurCoche={orange ? T.orange : T.bleu} retrait={retrait} attenue={vide} filetPlein={filetPlein}
-      role="checkbox" onPress={() => onPress()} />
-  );
   return (
-    <Pressable onPress={() => onPress()}
-      accessibilityRole="checkbox" accessibilityState={{ checked: sel }}
-      accessibilityLabel={nb != null ? `${label}, ${nb}` : label}
-      style={({ pressed }) => [s.ligne, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }, vide && { opacity: 0.45 }]}>
-      <View style={[s.point, { borderColor: grisPoint }, sel && { borderColor: couleur, backgroundColor: couleur }]} />
-      <Text style={[s.ligneTexte, sel && { fontFamily: POLICE.gras, color: orange ? couleur : T.encre }]}
-        numberOfLines={2}>{label}</Text>
-      {nb != null && <Text style={s.ligneNb}>{fmtEntier(nb)}</Text>}
-    </Pressable>
+    <Ligne label={label} detail={nb != null ? fmtEntier(nb) : undefined} coche={sel}
+      couleurCoche={orange ? T.orange : T.bleu} retrait={retrait} attenue={nb === 0 && !sel} filetPlein={filetPlein}
+      role={unique && !IOS ? "radio" : "checkbox"} onPress={() => onPress()} />
   );
 }
 
-/** Le cadre d'une liste de choix : elle défile dedans, rien ne déborde. */
-function Cadre({ hauteurMax = 280, children }: { hauteurMax?: number; children: React.ReactNode }) {
-  if (IOS) return <Groupe hauteurMax={hauteurMax}>{children}</Groupe>;
-  return (
-    <View style={s.cadre}>
-      <ScrollView style={{ maxHeight: hauteurMax }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-        {children}
-      </ScrollView>
-    </View>
-  );
-}
-
-function Champ({ valeur, onChange, placeholder }: { valeur: string; onChange: (v: string) => void; placeholder: string }) {
-  if (IOS) return <ChampRecherche valeur={valeur} onChange={onChange} placeholder={placeholder} style={{ marginBottom: 8 }} />;
-  return (
-    <TextInput value={valeur} onChangeText={onChange} placeholder={placeholder}
-      placeholderTextColor={T.gris as any} autoCorrect={false} clearButtonMode="while-editing"
-      style={s.champ} />
-  );
-}
-
-/** Le message d'une liste que la recherche a vidée. */
-function Aucun() {
-  if (IOS) return <LigneVide texte="Aucune valeur ne correspond." />;
-  return <Text style={s.aucun}>Aucune valeur ne correspond.</Text>;
-}
+// Une liste de choix défile en elle-même au-delà de cette hauteur
+const HAUTEUR_LISTE = 280;
+const AUCUN = "Aucune valeur ne correspond.";
 
 /** Les options d'une facette, plus celles qui sont cochées et que les autres
     filtres ont fait sortir de la liste. */
@@ -124,14 +78,16 @@ function FacetteMulti({ titre, options, choix, onChange, chercher }: {
     onChange(choix.includes(nom) ? choix.filter(x => x !== nom) : [...choix, nom]);
   return (
     <View>
-      <Titre titre={titre} nb={choix.length} />
-      {toutes.length > 12 && <Champ valeur={q} onChange={setQ} placeholder={chercher ?? "Rechercher…"} />}
-      <Cadre>
+      <EnTeteSection titre={titre} nb={choix.length} />
+      {toutes.length > 12 && (
+        <ChampRecherche valeur={q} onChange={setQ} placeholder={chercher ?? "Rechercher…"} style={{ marginBottom: 8 }} />
+      )}
+      <Groupe hauteurMax={HAUTEUR_LISTE}>
         {visibles.map(o => (
-          <Ligne key={o.nom} label={o.nom} nb={o.nb} sel={choix.includes(o.nom)} onPress={() => basculer(o.nom)} />
+          <LigneChoix key={o.nom} label={o.nom} nb={o.nb} sel={choix.includes(o.nom)} onPress={() => basculer(o.nom)} />
         ))}
-        {!visibles.length && <Aucun />}
-      </Cadre>
+        {!visibles.length && <LigneVide texte={AUCUN} />}
+      </Groupe>
     </View>
   );
 }
@@ -153,21 +109,18 @@ function FacetteUnique({ titre, options, valeur, onChange, chercher }: {
   const visibles = t ? toutes.filter(o => o.cherchable !== false && plier(o.nom).includes(t)) : toutes;
   return (
     <View>
-      <Titre titre={titre} nb={valeur ? 1 : 0} />
-      {chercher && toutes.length > 12 && <Champ valeur={q} onChange={setQ} placeholder={chercher} />}
-      <Cadre>
-        {visibles.map((o, i) => {
-          const autreFamille = i > 0 && o.groupe !== visibles[i - 1].groupe;
-          return (
-            <View key={`${o.groupe ?? ""}${o.nom}`}>
-              {autreFamille && !IOS && <View style={s.filetGroupe} />}
-              <Ligne label={o.nom} nb={o.nb} sel={valeur === o.nom} filetPlein={autreFamille}
-                onPress={() => onChange(valeur === o.nom ? "" : o.nom)} />
-            </View>
-          );
-        })}
-        {!visibles.length && <Aucun />}
-      </Cadre>
+      <EnTeteSection titre={titre} nb={valeur ? 1 : 0} />
+      {chercher && toutes.length > 12 && (
+        <ChampRecherche valeur={q} onChange={setQ} placeholder={chercher} style={{ marginBottom: 8 }} />
+      )}
+      <Groupe hauteurMax={HAUTEUR_LISTE}>
+        {visibles.map((o, i) => (
+          <LigneChoix key={`${o.groupe ?? ""}${o.nom}`} label={o.nom} nb={o.nb} sel={valeur === o.nom} unique
+            filetPlein={i > 0 && o.groupe !== visibles[i - 1].groupe}
+            onPress={() => onChange(valeur === o.nom ? "" : o.nom)} />
+        ))}
+        {!visibles.length && <LigneVide texte={AUCUN} />}
+      </Groupe>
     </View>
   );
 }
@@ -196,38 +149,29 @@ function FacetteSecteurs({ secteurs, sousSecteurs, choixSec, choixSous, onChange
   };
   return (
     <View>
-      <Titre titre="Secteurs économiques" nb={choixSous.length || choixSec.length} />
-      <Cadre hauteurMax={340}>
+      <EnTeteSection titre="Secteurs économiques" nb={choixSous.length || choixSec.length} />
+      <Groupe hauteurMax={340}>
         {visibles.map(o => {
           const ouvert = choixSec.includes(o.nom);
           const dedans = sousSecteurs.filter(x => x.secteur === o.nom);
           return (
             <View key={o.nom}>
-              <Ligne label={o.nom} nb={o.nb} sel={ouvert} onPress={() => basculerSecteur(o.nom)} />
-              {ouvert && dedans.length > 0 && (IOS ? (
-                // iOS : les sous-secteurs en retrait, sous leur légende orange
+              <LigneChoix label={o.nom} nb={o.nb} sel={ouvert} onPress={() => basculerSecteur(o.nom)} />
+              {/* Les sous-secteurs en retrait, sous leur légende orange */}
+              {ouvert && dedans.length > 0 && (
                 <>
                   <SousEnTete texte="Sous-secteurs" retrait={16} couleur={T.orange} />
                   {dedans.map(x => (
-                    <Ligne key={x.nom} label={x.nom} nb={x.nb} orange retrait={16}
+                    <LigneChoix key={x.nom} label={x.nom} nb={x.nb} orange retrait={16}
                       sel={choixSous.some(c => c.nom === x.nom && c.secteur === o.nom)}
                       onPress={() => basculerSous(o.nom, x.nom)} />
                   ))}
                 </>
-              ) : (
-                <View style={s.sous}>
-                  <Text style={s.sousTitre}>SOUS-SECTEUR</Text>
-                  {dedans.map(x => (
-                    <Ligne key={x.nom} label={x.nom} nb={x.nb} orange
-                      sel={choixSous.some(c => c.nom === x.nom && c.secteur === o.nom)}
-                      onPress={() => basculerSous(o.nom, x.nom)} />
-                  ))}
-                </View>
-              ))}
+              )}
             </View>
           );
         })}
-      </Cadre>
+      </Groupe>
     </View>
   );
 }
@@ -247,9 +191,9 @@ function Periode({ bornes, debut, fin, onChange }: {
   );
   return (
     <View>
-      <Titre titre="Période" nb={d !== b0 || f !== b1 ? 1 : 0} />
-      {/* iOS : le curseur dans son groupe, comme une commande de réglages */}
-      {IOS ? <Groupe style={s.periodeIOS}>{curseur}</Groupe> : <View style={s.periode}>{curseur}</View>}
+      <EnTeteSection titre="Période" nb={d !== b0 || f !== b1 ? 1 : 0} />
+      {/* Le curseur dans son groupe, comme une commande de réglages */}
+      <Groupe style={s.periode}>{curseur}</Groupe>
     </View>
   );
 }
@@ -267,20 +211,37 @@ function Attente() {
 
 // ── Les trois feuilles ───────────────────────────────────────────────────────
 
+/** La feuille des filtres, appliqués en direct : « Réinitialiser » et « OK »
+    dans sa barre — celle d'une feuille d'UIKit sur iOS, des boutons texte de
+    Material 3 sur Android —, les listes du système sur le fond des groupes. */
+function FeuilleFiltres({ onClose, onReinitialiser, children }: {
+  onClose: () => void; onReinitialiser: () => void; children: React.ReactNode;
+}) {
+  return (
+    <Feuille onClose={onClose} titre="Filtres" ecart={26} largeurMax={LARGEUR_FICHE} fondGroupe
+      actions={{
+        gauche: { label: "Réinitialiser", onPress: () => onReinitialiser() },
+        droite: { label: "OK", onPress: () => onClose() },
+      }}>
+      {children}
+    </Feuille>
+  );
+}
+
 export function FiltresProjetsSheet({ filtres, onChange, onReinitialiser, onClose }: {
   filtres: FiltresProjets; onChange: (f: FiltresProjets) => void;
   onReinitialiser: () => void; onClose: () => void;
 }) {
   const per = usePerimetreProjets(filtres).data;
   return (
-    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser} largeurMax={LARGEUR_FICHE}>
+    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser}>
       {!per ? <Attente /> : (
         <>
           {/* La bascule de sens n'apparaît que si les deux relevés existent :
               offrir la lecture inverse sans lui ouvrirait une liste vide. */}
           {per.sens_disponibles.length > 1 && (
             <View>
-              <Titre titre="Sens de lecture" />
+              <EnTeteSection titre="Sens de lecture" />
               <SegmentsCapsule compact valeur={filtres.sens}
                 options={[{ cle: "destination", label: "Reçoit" }, { cle: "source", label: "Investit" }]}
                 onChange={v => onChange({ ...filtres, sens: v as FiltresProjets["sens"] })} />
@@ -313,7 +274,7 @@ export function FiltresSignauxSheet({ filtres, onChange, onReinitialiser, onClos
   })), [per]);
   const set = <K extends keyof FiltresSignaux>(k: K) => (v: FiltresSignaux[K]) => onChange({ ...filtres, [k]: v });
   return (
-    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser} largeurMax={LARGEUR_FICHE}>
+    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser}>
       {!per ? <Attente /> : (
         <>
           <Periode bornes={per.annees} debut={filtres.anneeMin} fin={filtres.anneeMax}
@@ -340,7 +301,7 @@ export function FiltresEntreprisesSheet({ filtres, onChange, onReinitialiser, on
 }) {
   const per = usePerimetreEntreprises(filtres).data;
   return (
-    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser} largeurMax={LARGEUR_FICHE}>
+    <FeuilleFiltres onClose={onClose} onReinitialiser={onReinitialiser}>
       {!per ? <Attente /> : (
         <>
           {/* LE PAYS D'ORIGINE OUVRE LA FEUILLE : il dit QUI l'on regarde —
@@ -365,31 +326,5 @@ export function FiltresEntreprisesSheet({ filtres, onChange, onReinitialiser, on
 }
 
 const s = creerStyles(() => ({
-  titreLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
-  titreBadge: {
-    fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, backgroundColor: T.blocBord,
-    borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: "hidden", fontVariant: ["tabular-nums"],
-  },
-  cadre: {
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce,
-    borderRadius: 12, borderCurve: "continuous", paddingHorizontal: 6, paddingVertical: 4, overflow: "hidden",
-  },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9, paddingRight: 8, borderRadius: 8 },
-  point: { width: 11, height: 11, borderRadius: 6, borderWidth: 2 },
-  ligneTexte: { flex: 1, fontSize: 13, lineHeight: 17, fontFamily: POLICE.normal, color: T.texte },
-  ligneNb: { fontSize: 11, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
-  sous: {
-    marginLeft: 13, paddingLeft: 6, marginBottom: 4,
-    borderLeftWidth: 2, borderLeftColor: "rgba(202,99,31,0.28)",
-  },
-  sousTitre: { fontSize: 9, fontFamily: POLICE.gras, letterSpacing: 1.1, color: T.orange, paddingHorizontal: 8, paddingTop: 4, paddingBottom: 2 },
-  filetGroupe: { height: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginVertical: 5, marginHorizontal: 8 },
-  aucun: { fontSize: 11.5, fontFamily: POLICE.normal, color: T.gris, paddingVertical: 8, paddingLeft: 8 },
-  champ: {
-    backgroundColor: T.champ, borderWidth: 1, borderColor: T.bordure, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, fontFamily: POLICE.normal, color: T.encre, marginBottom: 8,
-  },
-  periode: { paddingHorizontal: 4 },
-  periodeIOS: { paddingHorizontal: 16, paddingVertical: 14 },
+  periode: { paddingHorizontal: 16, paddingVertical: 14 },
 }));

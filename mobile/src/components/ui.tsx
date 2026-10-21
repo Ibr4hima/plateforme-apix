@@ -390,7 +390,7 @@ type ProprietesFeuille = {
    *  d'un bord à l'autre : une fiche de 1 000 pt de large ne se lit pas. Sans
    *  effet sur téléphone, plus étroit que le plafond. */
   largeurMax?: number;
-  /** iOS : le fond gris des listes groupées, sur lequel se posent les groupes
+  /** Le fond gris des listes groupées, sur lequel se posent les groupes
    *  blancs (ListeIOS) — celui des feuilles de réglages et de filtres. */
   fondGroupe?: boolean;
   /** La barre des filtres, sans croix. iOS : celle d'UIKit — le titre centré,
@@ -435,8 +435,9 @@ function ActionBarre({ action, principale }: { action: ActionFeuille; principale
 function FeuilleDessinee({
   titre, sousEntete, onClose, ecart = 20, pied, largeurMax, fondGroupe, actions, children,
 }: ProprietesFeuille) {
-  // iOS : le fond gris des listes groupées, sur lequel se posent ses groupes
-  const groupe = IOS && fondGroupe;
+  // Le fond gris des listes groupées, sur lequel se posent leurs groupes
+  // blancs — sur iOS comme sur Android
+  const groupe = fondGroupe;
   // Toute la page, jusque sous la barre d'état — 8 pt laissent voir le fond.
   // iOS : la hauteur de l'écran. Android : la fenêtre de la feuille couvre
   // tout l'écran, bord à bord, quand les dimensions de la fenêtre de l'app en
@@ -826,7 +827,8 @@ const sf = creerStyles(() => ({
     ? { width: 38, height: 4, borderRadius: 2, backgroundColor: T.bordure, marginTop: 6 }
     : { width: 32, height: 4, borderRadius: 2, backgroundColor: T.gris, opacity: 0.4 },
   entete: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: ESPACE.s },
-  titre: { ...TYPO.titre, flex: 1, color: T.encre },
+  // Le titre d'une feuille de choix (« Choisir un pays », « Destination »)
+  titre: { flex: 1, fontSize: 21, lineHeight: 27, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.4 },
   fermer: { width: 30, height: 30, borderRadius: 15, backgroundColor: T.filet, alignItems: "center", justifyContent: "center" },
   // Android : le titre d'une feuille de Material 3, le bouton icône de 48 dp
   // (son icône calée sur la marge), les boutons texte

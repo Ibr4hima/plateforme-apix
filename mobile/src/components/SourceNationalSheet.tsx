@@ -5,17 +5,12 @@
 // secteurs sous leur groupe.
 //
 // La recherche court-circuite la hiérarchie et sert les résultats à plat.
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import Icone from "@/components/Icone";
+import { View } from "react-native";
 import {
-  ChampRecherche, Groupe, Ligne as LigneIOS, LigneDepliable, LigneVide, SegmentsIOS,
+  ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule,
 } from "@/components/ListeIOS";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
-import { creerStyles } from "@/lib/apparence";
+import { Feuille } from "@/components/ui";
 
 export type SelNational = {
   niveau: "global" | "macro_secteur" | "groupe" | "secteur";
@@ -31,13 +26,13 @@ const SEGMENTS = [
 
 const GLOBAL: SelNational = { niveau: "global", cible_id: null, libelle: "Global des secteurs" };
 
-/** iOS : une ligne de la liste — la coche dit la vue lue. */
-function LigneVueIOS({ cible, nom, legende, retrait, estChoisi, onChoisir }: {
+/** Une ligne de la liste — sa marque dit la vue lue. */
+function LigneVue({ cible, nom, legende, retrait, estChoisi, onChoisir }: {
   cible: SelNational; nom: string; legende?: string; retrait?: boolean;
   estChoisi: (s: SelNational) => boolean; onChoisir: (s: SelNational) => void;
 }) {
   return (
-    <LigneIOS label={nom} legende={legende} coche={estChoisi(cible)}
+    <Ligne label={nom} legende={legende} coche={estChoisi(cible)}
       retrait={retrait ? 16 : 0} onPress={() => onChoisir(cible)} />
   );
 }
@@ -83,212 +78,61 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
     return n;
   });
 
-  // ── iOS : les listes groupées du système ──
   // Le global en tête dans son groupe ; la hiérarchie en UNE liste à
   // déplier, les enfants en retrait sous la ligne à chevron de leur parent.
-  if (IOS) {
-    const ligne = { estChoisi, onChoisir: valider };
-    return (
-      <Feuille onClose={onClose} ecart={22} fondGroupe
-        titre={<Text style={st.titre}>Choisir une vue</Text>}
-        sousEntete={
-          <View style={{ gap: 10, marginTop: 14 }}>
-            <SegmentsIOS options={SEGMENTS.map(sg => ({ cle: sg.cle, label: sg.label }))} valeur={vue}
-              onChange={v => { setVue(v); setQ(""); }} />
-            <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher" />
-          </View>
-        }>
-        {resultats ? (
-          <Groupe>
-            {resultats.map(r => <LigneVueIOS key={r.cle} cible={r.sel} nom={r.nom} legende={r.legende} {...ligne} />)}
-            {!resultats.length && <LigneVide texte="Aucun résultat." />}
-          </Groupe>
-        ) : (
-          <>
-            <Groupe>
-              <LigneVueIOS cible={GLOBAL} nom="Global des secteurs" legende="Tous secteurs confondus" {...ligne} />
-            </Groupe>
-            {vue === "macro_secteur" && (
-              <Groupe>
-                {macros.map((m: any) => (
-                  <LigneVueIOS key={m.id} cible={{ niveau: "macro_secteur", cible_id: m.id, libelle: m.libelle }}
-                    nom={m.libelle} {...ligne} />
-                ))}
-              </Groupe>
-            )}
-            {vue !== "macro_secteur" && (
-              <Groupe>
-                {(vue === "groupe" ? macros : groupes).map((parent: any) => {
-                  const enfants = vue === "groupe"
-                    ? groupes.filter((g: any) => g.macro_secteur_id === parent.id)
-                    : secteurs.filter((sx: any) => sx.groupe_id === parent.id);
-                  if (!enfants.length) return null;
-                  const ouvert = ouverts.has(parent.id);
-                  return (
-                    <View key={parent.id}>
-                      <LigneDepliable titre={parent.libelle} compte={enfants.length} ouvert={ouvert}
-                        onPress={() => basculer(parent.id)} />
-                      {ouvert && enfants.map((x: any) => (
-                        <LigneVueIOS key={x.id} retrait {...ligne}
-                          cible={{ niveau: vue as SelNational["niveau"], cible_id: x.id, libelle: x.libelle }}
-                          nom={x.libelle} />
-                      ))}
-                    </View>
-                  );
-                })}
-              </Groupe>
-            )}
-          </>
-        )}
-      </Feuille>
-    );
-  }
-
-  const Ligne = ({ s: cible, nom, legende, premier }: {
-    s: SelNational; nom: string; legende?: string; premier: boolean;
-  }) => {
-    const actif = estChoisi(cible);
-    return (
-      <Tapable onPress={() => valider(cible)} style={[st.ligne, !premier && st.ligneBord]}>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[st.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={2}>{nom}</Text>
-          {legende ? <Text style={st.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
-        </View>
-        {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}
-      </Tapable>
-    );
-  };
-
-  const Accordeon = ({ id, titre, compte, enfants }: {
-    id: number; titre: string; compte?: number; enfants: React.ReactNode;
-  }) => {
-    const ouvert = ouverts.has(id);
-    return (
-      <View>
-        <Tapable
-          onPress={() => basculer(id)}
-          style={[st.groupe, ouvert && st.groupeOuvert]}>
-          <Text style={st.groupeTexte} numberOfLines={1}>{titre.toUpperCase()}</Text>
-          {compte != null && <Text style={st.groupeCompte}>{compte}</Text>}
-          <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu} />
-        </Tapable>
-        {ouvert && <View style={st.surface}>{enfants}</View>}
-      </View>
-    );
-  };
-
+  const ligne = { estChoisi, onChoisir: valider };
   return (
-    <Feuille onClose={onClose} ecart={16}
-      titre={<Text style={st.titre}>Choisir une vue</Text>}
+    <Feuille onClose={onClose} ecart={22} fondGroupe
+      titre="Choisir une vue"
       sousEntete={
-        <>
-          <View style={st.segments}>
-            {SEGMENTS.map(sg => {
-              const actif = vue === sg.cle;
-              return (
-                <Tapable key={sg.cle} surbrillance={false}
-                  onPress={() => { setVue(sg.cle); setQ(""); }}
-                  style={[st.segment, actif && st.segmentActif]}>
-                  <Text style={[st.segmentTexte, actif && st.segmentTexteActif]} numberOfLines={1}>{sg.label}</Text>
-                </Tapable>
-              );
-            })}
-          </View>
-          <View style={st.champ}>
-            <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
-            <TextInput value={q} onChangeText={setQ} placeholder="Rechercher"
-              placeholderTextColor={T.grisClair as any} autoCorrect={false}
-              clearButtonMode="while-editing" style={st.champTexte} />
-          </View>
-        </>
+        <View style={{ gap: 10, marginTop: 14 }}>
+          <SegmentsCapsule compact options={SEGMENTS.map(sg => ({ cle: sg.cle, label: sg.label }))} valeur={vue}
+            onChange={v => { setVue(v); setQ(""); }} />
+          <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher" />
+        </View>
       }>
       {resultats ? (
-        <View style={st.surface}>
-          {resultats.map((r, i) => <Ligne key={r.cle} s={r.sel} nom={r.nom} legende={r.legende} premier={i === 0} />)}
-          {!resultats.length && <Text style={st.vide}>Aucun résultat.</Text>}
-        </View>
+        <Groupe>
+          {resultats.map(r => <LigneVue key={r.cle} cible={r.sel} nom={r.nom} legende={r.legende} {...ligne} />)}
+          {!resultats.length && <LigneVide texte="Aucun résultat." />}
+        </Groupe>
       ) : (
-        <View style={{ gap: 10 }}>
-          {/* Le global, toujours à portée */}
-          <View style={st.surface}>
-            <Ligne s={GLOBAL} nom="Global des secteurs" legende="Tous secteurs confondus" premier />
-          </View>
-
+        <>
+          <Groupe>
+            <LigneVue cible={GLOBAL} nom="Global des secteurs" legende="Tous secteurs confondus" {...ligne} />
+          </Groupe>
           {vue === "macro_secteur" && (
-            <View style={st.surface}>
-              {macros.map((m: any, i: number) => (
-                <Ligne key={m.id} s={{ niveau: "macro_secteur", cible_id: m.id, libelle: m.libelle }}
-                  nom={m.libelle} premier={i === 0} />
+            <Groupe>
+              {macros.map((m: any) => (
+                <LigneVue key={m.id} cible={{ niveau: "macro_secteur", cible_id: m.id, libelle: m.libelle }}
+                  nom={m.libelle} {...ligne} />
               ))}
-            </View>
+            </Groupe>
           )}
-
-          {vue === "groupe" && macros.map((m: any) => {
-            const enfants = groupes.filter((g: any) => g.macro_secteur_id === m.id);
-            if (!enfants.length) return null;
-            return (
-              <Accordeon key={m.id} id={m.id} titre={m.libelle} compte={enfants.length}
-                enfants={enfants.map((g: any, i: number) => (
-                  <Ligne key={g.id} s={{ niveau: "groupe", cible_id: g.id, libelle: g.libelle }}
-                    nom={g.libelle} premier={i === 0} />
-                ))} />
-            );
-          })}
-
-          {vue === "secteur" && groupes.map((g: any) => {
-            const enfants = secteurs.filter((sx: any) => sx.groupe_id === g.id);
-            if (!enfants.length) return null;
-            return (
-              <Accordeon key={g.id} id={g.id} titre={g.libelle} compte={enfants.length}
-                enfants={enfants.map((sx: any, i: number) => (
-                  <Ligne key={sx.id} s={{ niveau: "secteur", cible_id: sx.id, libelle: sx.libelle }}
-                    nom={sx.libelle} premier={i === 0} />
-                ))} />
-            );
-          })}
-        </View>
+          {vue !== "macro_secteur" && (
+            <Groupe>
+              {(vue === "groupe" ? macros : groupes).map((parent: any) => {
+                const enfants = vue === "groupe"
+                  ? groupes.filter((g: any) => g.macro_secteur_id === parent.id)
+                  : secteurs.filter((sx: any) => sx.groupe_id === parent.id);
+                if (!enfants.length) return null;
+                const ouvert = ouverts.has(parent.id);
+                return (
+                  <View key={parent.id}>
+                    <LigneDepliable titre={parent.libelle} compte={enfants.length} ouvert={ouvert}
+                      onPress={() => basculer(parent.id)} />
+                    {ouvert && enfants.map((x: any) => (
+                      <LigneVue key={x.id} retrait {...ligne}
+                        cible={{ niveau: vue as SelNational["niveau"], cible_id: x.id, libelle: x.libelle }}
+                        nom={x.libelle} />
+                    ))}
+                  </View>
+                );
+              })}
+            </Groupe>
+          )}
+        </>
       )}
     </Feuille>
   );
 }
-
-const st = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
-  segments: {
-    flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
-    backgroundColor: T.voile, borderRadius: 999,
-  },
-  segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 999 },
-  segmentActif: {
-    backgroundColor: T.carte,
-    shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  segmentTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
-  segmentTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
-  champ: {
-    flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10,
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordure,
-    borderRadius: 12, borderCurve: "continuous", paddingHorizontal: 12, height: 38,
-  },
-  champTexte: { flex: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-
-  groupe: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, borderCurve: "continuous",
-    paddingHorizontal: 14, paddingVertical: 10,
-  },
-  groupeOuvert: { borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
-  groupeTexte: { flex: 1, fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
-  groupeCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, opacity: 0.6, fontVariant: ["tabular-nums"] },
-
-  surface: {
-    backgroundColor: T.carte, borderRadius: 14, borderCurve: "continuous",
-    borderWidth: 1, borderColor: T.carteBord, overflow: "hidden", marginTop: 6,
-  },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 10.5 },
-  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  ligneNom: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-  ligneLegende: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
-}));

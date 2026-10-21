@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Reanime, { FadeIn, FadeInUp, FadeOut, FadeOutUp, LinearTransition } from "react-native-reanimated";
-import { useNaemaArbre } from "@/components/ArbreNaema";
+import { useNaema } from "@/components/ArbreNaema";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
@@ -165,7 +165,7 @@ export default function Opportunites() {
   const chipsRef = useRef<ScrollView>(null);
   const chipsPos = useRef<Record<string, { x: number; largeur: number }>>({});
   // Le référentiel NAEMA nourrit les compteurs d'activités des avantages
-  const { secteurs, branches, activites } = useNaemaArbre();
+  const { secteurs, branches, activites } = useNaema();
 
 
   const projetsQ = useQuery({ queryKey: ["projets"], queryFn: () => fetchTous("/projets") });

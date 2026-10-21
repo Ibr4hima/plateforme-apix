@@ -5,27 +5,23 @@
 // reçoit l'Afrique de l'Ouest »). Les deux s'excluent : une seule part dans la
 // requête, et la feuille ne montre jamais les deux listes à la fois.
 //
-//   · Pays    — le Sénégal épinglé en tête sous un tag « Réf. » (il est la
-//               référence de la plateforme), puis les pays rangés par région
-//               en accordéons. La recherche court-circuite la hiérarchie.
+//   · Pays    — le Sénégal épinglé en tête dans son groupe (il est la
+//               référence de la plateforme), puis les régions en UNE liste à
+//               déplier, leurs pays en retrait. La recherche court-circuite
+//               la hiérarchie.
 //   · Régions — le continent d'abord (le plus large : on restreint depuis le
-//               large), puis ses régions, raccrochées à lui par un rail.
+//               large), puis ses régions en retrait, dans son groupe.
 //
 // Ne sont proposés que les pays dont le relevé est COMPLET : les autres
 // n'apparaissent dans la base que pour ce qu'ils ont échangé avec un pays
 // relevé, et les proposer laisserait croire à une couverture qu'on n'a pas.
 // Le compte d'une région est la somme de ses pays : un projet n'a qu'une
 // destination, aucun n'est compté deux fois.
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import Icone from "@/components/Icone";
+import { View } from "react-native";
 import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule } from "@/components/ListeIOS";
-import { Feuille, Tapable } from "@/components/ui";
-import { creerStyles } from "@/lib/apparence";
+import { Feuille } from "@/components/ui";
 import { type ComptePays, PAYS_REFERENCE, fmtEntier, plier } from "@/lib/fdi";
-import { IOS } from "@/lib/plateforme";
-import { POLICE, T } from "@/theme";
 import { LARGEUR_FICHE } from "./FichesFdi";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -54,8 +50,8 @@ export function regionsDe(pays: ComptePays[]) {
     .sort((a, b) => rangContinent(a.continent) - rangContinent(b.continent) || a.zone.localeCompare(b.zone, "fr"));
 }
 
-// ── iOS : les lignes des listes groupées ──
-function PaysIOS({ p, retrait, valeur, choisir }: {
+// ── Les lignes des listes ──
+function LignePays({ p, retrait, valeur, choisir }: {
   p: ComptePays; retrait?: boolean; valeur: Destination; choisir: (d: Destination) => void;
 }) {
   return (
@@ -66,7 +62,7 @@ function PaysIOS({ p, retrait, valeur, choisir }: {
   );
 }
 
-function ZoneIOS({ nom, nb, retrait, valeur, choisir }: {
+function LigneZone({ nom, nb, retrait, valeur, choisir }: {
   nom: string; nb: number; retrait?: boolean; valeur: Destination; choisir: (d: Destination) => void;
 }) {
   return (
@@ -108,184 +104,50 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
   const basculerRegion = (cle: string) =>
     setOuverts(prev => { const n = new Set(prev); n.has(cle) ? n.delete(cle) : n.add(cle); return n; });
 
-  // ── iOS : les listes groupées du système ──
-  // Les régions forment UNE liste à déplier (le chevron dit si elle est
+  // Les régions forment UNE liste à déplier (sa flèche dit si elle est
   // ouverte, ses pays viennent en retrait) plutôt qu'une pile d'accordéons ;
   // la référence garde sa place en tête, sa légende dit pourquoi.
-  if (IOS) {
-    return (
-      <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
-        titre={<Text style={s.titre}>Destination</Text>}
-        sousEntete={
-          <View style={{ gap: 10, marginTop: 14 }}>
-            {regionsPermises && (
-              <SegmentsCapsule compact valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
-                options={[{ cle: "pays", label: "Pays" }, { cle: "regions", label: "Régions" }]} />
-            )}
-            {echelle === "pays" && <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" />}
-          </View>
-        }>
-        {echelle === "regions" ? (
-          continents.length ? continents.map(c => (
-            <Groupe key={c.nom}>
-              <ZoneIOS valeur={valeur} choisir={choisir} nom={c.nom} nb={c.nb} />
-              {c.zones.map(z => <ZoneIOS valeur={valeur} choisir={choisir} key={z.cle} nom={z.zone} nb={z.nb} retrait />)}
-            </Groupe>
-          )) : <LigneVide texte="Aucune région relevée." />
-        ) : resultats ? (
-          <Groupe>
-            {resultats.map(p => <PaysIOS valeur={valeur} choisir={choisir} key={p.nom} p={p} />)}
-            {!resultats.length && <LigneVide texte="Aucun pays trouvé." />}
-          </Groupe>
-        ) : (
-          <>
-            {reference && <Groupe><PaysIOS valeur={valeur} choisir={choisir} p={reference} /></Groupe>}
-            <Groupe>
-              {regions.map(r => {
-                const ouvert = ouverts.has(r.cle);
-                return (
-                  <View key={r.cle}>
-                    <LigneDepliable titre={r.zone} compte={fmtEntier(r.nb)} ouvert={ouvert}
-                      onPress={() => basculerRegion(r.cle)} />
-                    {ouvert && r.dedans.map(p => <PaysIOS valeur={valeur} choisir={choisir} key={p.nom} p={p} retrait />)}
-                  </View>
-                );
-              })}
-            </Groupe>
-          </>
-        )}
-      </Feuille>
-    );
-  }
-
-  const LignePays = ({ p, premier, estRef }: { p: ComptePays; premier: boolean; estRef?: boolean }) => {
-    const actif = valeur.echelle === "pays" && valeur.pays === p.nom;
-    return (
-      <Tapable onPress={() => choisir({ echelle: "pays", pays: p.nom, region: valeur.region })}
-        style={[s.ligne, !premier && s.ligneBord]} accessibilityRole="button"
-        accessibilityState={{ selected: actif }} accessibilityLabel={`${p.nom}, ${p.nb} projets`}>
-        <Text style={[s.ligneNom, actif && s.ligneNomActif]} numberOfLines={1}>{p.nom}</Text>
-        {estRef && <View style={s.tagRef}><Text style={s.tagRefTexte}>Réf.</Text></View>}
-        <Text style={s.ligneNb}>{fmtEntier(p.nb)}</Text>
-        <View style={s.coche}>
-          {actif && <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} />}
-        </View>
-      </Tapable>
-    );
-  };
-
-  const LigneZone = ({ nom, nb, premier, retrait }: { nom: string; nb: number; premier: boolean; retrait?: boolean }) => {
-    const actif = valeur.echelle === "regions" && valeur.region === nom;
-    return (
-      <Tapable onPress={() => choisir({ echelle: "regions", pays: valeur.pays, region: nom })}
-        style={[s.ligne, !premier && s.ligneBord, retrait && s.ligneRetrait]} accessibilityRole="button"
-        accessibilityState={{ selected: actif }} accessibilityLabel={`${nom}, ${nb} projets`}>
-        <Text style={[s.ligneNom, !retrait && s.ligneContinent, actif && s.ligneNomActif]} numberOfLines={1}>{nom}</Text>
-        <Text style={s.ligneNb}>{fmtEntier(nb)}</Text>
-        <View style={s.coche}>
-          {actif && <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} />}
-        </View>
-      </Tapable>
-    );
-  };
-
   return (
-    <Feuille onClose={onClose} ecart={12} largeurMax={LARGEUR_FICHE}
-      titre={<Text style={s.titre}>Destination</Text>}
+    <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
+      titre="Destination"
       sousEntete={
-        <View style={{ gap: 10, marginTop: 10 }}>
+        <View style={{ gap: 10, marginTop: 14 }}>
           {regionsPermises && (
             <SegmentsCapsule compact valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
               options={[{ cle: "pays", label: "Pays" }, { cle: "regions", label: "Régions" }]} />
           )}
-          {echelle === "pays" && (
-            <View style={s.champ}>
-              <Icone sf="magnifyingglass" materiel="search" taille={15} couleur={T.gris} />
-              <TextInput value={q} onChangeText={setQ} placeholder="Rechercher un pays"
-                placeholderTextColor={T.grisClair as any} autoCorrect={false}
-                clearButtonMode="while-editing" style={s.champTexte} />
-            </View>
-          )}
+          {echelle === "pays" && <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" />}
         </View>
       }>
       {echelle === "regions" ? (
-        <View style={{ gap: 10 }}>
-          {continents.map(c => (
-            <View key={c.nom} style={s.surface}>
-              <LigneZone nom={c.nom} nb={c.nb} premier />
-              {c.zones.map(z => <LigneZone key={z.cle} nom={z.zone} nb={z.nb} premier={false} retrait />)}
-            </View>
-          ))}
-          {!continents.length && <Text style={s.vide}>Aucune région relevée.</Text>}
-        </View>
+        continents.length ? continents.map(c => (
+          <Groupe key={c.nom}>
+            <LigneZone valeur={valeur} choisir={choisir} nom={c.nom} nb={c.nb} />
+            {c.zones.map(z => <LigneZone valeur={valeur} choisir={choisir} key={z.cle} nom={z.zone} nb={z.nb} retrait />)}
+          </Groupe>
+        )) : <LigneVide texte="Aucune région relevée." />
       ) : resultats ? (
-        <View style={s.surface}>
-          {resultats.map((p, i) => <LignePays key={p.nom} p={p} premier={i === 0} estRef={p.nom === PAYS_REFERENCE} />)}
-          {!resultats.length && <Text style={s.vide}>Aucun pays trouvé.</Text>}
-        </View>
+        <Groupe>
+          {resultats.map(p => <LignePays valeur={valeur} choisir={choisir} key={p.nom} p={p} />)}
+          {!resultats.length && <LigneVide texte="Aucun pays trouvé." />}
+        </Groupe>
       ) : (
-        <View style={{ gap: 10 }}>
-          {/* La référence, au-dessus de tout le reste. Elle garde aussi sa
-              place dans sa région, où l'œil ira la chercher s'il y descend. */}
-          {reference && (
-            <View style={s.surface}><LignePays p={reference} premier estRef /></View>
-          )}
-          {regions.map(r => {
-            const ouvert = ouverts.has(r.cle);
-            return (
-              <View key={r.cle}>
-                <Tapable accessibilityRole="button" accessibilityState={{ expanded: ouvert }}
-                  onPress={() => basculerRegion(r.cle)}
-                  style={[s.groupe, ouvert && s.groupeOuvert]}>
-                  <Text style={s.groupeTexte} numberOfLines={1}>{r.zone.toUpperCase()}</Text>
-                  <Text style={s.groupeCompte}>{fmtEntier(r.nb)}</Text>
-                  <Ionicons name={ouvert ? "chevron-down" : "chevron-forward"} size={13} color={T.bleu as any} />
-                </Tapable>
-                {ouvert && (
-                  <View style={s.surface}>
-                    {r.dedans.map((p, i) => <LignePays key={p.nom} p={p} premier={i === 0} estRef={p.nom === PAYS_REFERENCE} />)}
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </View>
+        <>
+          {reference && <Groupe><LignePays valeur={valeur} choisir={choisir} p={reference} /></Groupe>}
+          <Groupe>
+            {regions.map(r => {
+              const ouvert = ouverts.has(r.cle);
+              return (
+                <View key={r.cle}>
+                  <LigneDepliable titre={r.zone} compte={fmtEntier(r.nb)} ouvert={ouvert}
+                    onPress={() => basculerRegion(r.cle)} />
+                  {ouvert && r.dedans.map(p => <LignePays valeur={valeur} choisir={choisir} key={p.nom} p={p} retrait />)}
+                </View>
+              );
+            })}
+          </Groupe>
+        </>
       )}
     </Feuille>
   );
 }
-
-const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
-  champ: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordure,
-    borderRadius: 12, borderCurve: "continuous", paddingHorizontal: 12, height: 38,
-  },
-  champTexte: { flex: 1, fontSize: 14, fontFamily: POLICE.moyen, color: T.encre },
-
-  groupe: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, borderCurve: "continuous",
-    paddingHorizontal: 14, paddingVertical: 10,
-  },
-  groupeOuvert: { borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
-  groupeTexte: { flex: 1, fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.2 },
-  groupeCompte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, opacity: 0.6, fontVariant: ["tabular-nums"] },
-
-  surface: {
-    backgroundColor: T.carte, borderRadius: 14, borderCurve: "continuous",
-    borderWidth: 1, borderColor: T.carteBord, overflow: "hidden", marginTop: 6,
-  },
-  ligne: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 11 },
-  ligneBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  ligneRetrait: { paddingLeft: 28 },
-  ligneNom: { flex: 1, fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre },
-  ligneContinent: { fontFamily: POLICE.gras },
-  ligneNomActif: { color: T.bleu, fontFamily: POLICE.gras },
-  ligneNb: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.gris, fontVariant: ["tabular-nums"] },
-  coche: { width: 18, alignItems: "center" },
-  tagRef: { backgroundColor: T.bleuVoile, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2.5 },
-  tagRefTexte: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 0.4 },
-  vide: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 20 },
-}));

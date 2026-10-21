@@ -1,11 +1,20 @@
-// Les listes d'iOS — les sections groupées de Réglages, de Mail ou de Santé.
+// Les listes du système — les sections groupées de Réglages, de Mail ou de
+// Santé sur iOS, les listes de Material 3 sur Android.
 //
 // Sur iOS, une liste de choix ne se dessine ni en pastilles ni en points :
 // c'est un GROUPE arrondi posé sur le fond gris de la feuille, des lignes
 // d'au moins 44 pt séparées par un filet fin qui part du texte (pas du bord),
 // une coche à droite de ce qui est choisi, un chevron pour ce qui se déplie.
-// Ce sont les briques des feuilles de filtres et des sélecteurs sur iOS ;
-// Android garde les siennes. La police reste Google Sans, comme partout.
+//
+// Sur Android, les mêmes groupes portent les lignes de Material 3 : 56 dp au
+// moins, le libellé en 16 sp, la case à cocher ou le bouton radio EN TÊTE de
+// ce qui se choisit, le compte au bout, la flèche qui se retourne pour ce qui
+// se déplie, l'ondulation au toucher — et pas de chevron pour ce qui mène
+// ailleurs. Les en-têtes de section sont ceux de Material : la teinte de
+// l'app, sans capitales.
+//
+// Ce sont les briques des feuilles de filtres et des sélecteurs, sur les deux
+// systèmes. La police reste Google Sans, comme partout.
 import {
   Pressable, ScrollView, StyleSheet, Text, TextInput, View,
   type AccessibilityRole, type ColorValue, type StyleProp, type ViewStyle,
@@ -22,8 +31,12 @@ import { ECHELLE, POLICE, T } from "@/theme";
 
 // Le retrait du texte dans une ligne — c'est de là que part son filet
 const MARGE = 16;
-// La place d'une icône de tête
-const LARGEUR_AVANT = 22;
+// La place d'une icône de tête, et l'écart qui la sépare du texte (Material :
+// 16 dp)
+const LARGEUR_AVANT = IOS ? 22 : 24;
+const ECART_AVANT = IOS ? 10 : 16;
+// Android : la place de la case à cocher ou du bouton radio de tête
+const LARGEUR_COMMANDE = 24;
 
 /** L'en-tête d'une section : petites capitales grises ; à droite, le nombre
     de choix faits, à la teinte de l'app. */
@@ -31,7 +44,7 @@ export function EnTeteSection({ titre, nb }: { titre: string; nb?: number }) {
   return (
     <View style={s.entete}>
       <Text style={s.enteteTexte} accessibilityRole="header" maxFontSizeMultiplier={ECHELLE.compact}>
-        {titre.toUpperCase()}
+        {IOS ? titre.toUpperCase() : titre}
       </Text>
       {nb ? <Text style={s.enteteNb} maxFontSizeMultiplier={ECHELLE.compact}>{nb}</Text> : null}
     </View>
@@ -71,16 +84,23 @@ export function Ligne({
   avant?: React.ReactNode;
   onPress?: () => void; accessoire?: React.ReactNode; role?: AccessibilityRole;
 }) {
+  // Android : ce qui se choisit porte sa commande en tête — la case à cocher
+  // d'un choix multiple, le bouton radio d'un choix unique
+  const commande = !IOS && coche !== undefined
+    ? (role === "checkbox" ? <CaseACocher cochee={coche} couleur={couleurCoche} /> : <BoutonRadio choisi={coche} couleur={couleurCoche} />)
+    : null;
+  const tete = (avant ? LARGEUR_AVANT + ECART_AVANT : 0) + (commande ? LARGEUR_COMMANDE + ECART_AVANT : 0);
   const corps = (
     <>
-      <View style={[s.filet, { left: filetPlein ? 0 : MARGE + retrait + (avant ? LARGEUR_AVANT + 10 : 0) }]} />
+      <View style={[s.filet, { left: filetPlein ? 0 : MARGE + retrait + tete }]} />
+      {commande}
       {avant ? <View style={s.avant}>{avant}</View> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[s.label, gras && s.labelGras]} numberOfLines={lignes}>{label}</Text>
         {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
       </View>
       {detail != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{detail}</Text> : null}
-      {coche !== undefined ? (
+      {IOS && coche !== undefined ? (
         <View style={s.zoneCoche}>
           {coche ? <Icone sf="checkmark" materiel="check" taille={15} poids="semibold" couleur={couleurCoche ?? T.bleu} /> : null}
         </View>
@@ -88,14 +108,44 @@ export function Ligne({
       {accessoire}
     </>
   );
-  const pose = [s.ligne, { paddingLeft: MARGE + retrait }];
+  const pose = [s.ligne, { paddingLeft: MARGE + retrait }, !IOS && legende ? s.ligneDeuxLignes : null];
   if (!onPress) return <View style={[pose, attenue && s.attenue]}>{corps}</View>;
+  // Un choix unique se dit « radio » à TalkBack
+  const roleSysteme = !IOS && role === "button" && coche !== undefined ? "radio" : role;
   return (
-    <Ondulable onPress={onPress} accessibilityRole={role}
-      accessibilityState={coche === undefined ? undefined : role === "checkbox" ? { checked: coche } : { selected: coche }}
+    <Ondulable onPress={onPress} accessibilityRole={roleSysteme}
+      accessibilityState={coche === undefined ? undefined : role === "checkbox" || !IOS ? { checked: coche } : { selected: coche }}
       style={({ pressed }) => [pose, pressed && s.enfoncee, attenue && s.attenue]}>
       {corps}
     </Ondulable>
+  );
+}
+
+/** Android : la case à cocher de Material 3 — 18 dp, coins de 2 dp, le
+    contour de 2 dp au repos ; choisie, pleine de la teinte et cochée de la
+    couleur de la surface (blanche le jour, sombre la nuit, sur un bleu
+    clair). */
+function CaseACocher({ cochee, couleur }: { cochee: boolean; couleur?: ColorValue }) {
+  const teinte = couleur ?? T.bleu;
+  return (
+    <View style={s.commande}>
+      <View style={[s.case, cochee ? { backgroundColor: teinte, borderColor: teinte } : null]}>
+        {cochee ? <Icone sf="checkmark" materiel="check" taille={14} couleur={T.carte} /> : null}
+      </View>
+    </View>
+  );
+}
+
+/** Android : le bouton radio de Material 3 — un anneau de 20 dp, le point de
+    10 dp au centre une fois choisi. */
+function BoutonRadio({ choisi, couleur }: { choisi: boolean; couleur?: ColorValue }) {
+  const teinte = couleur ?? T.bleu;
+  return (
+    <View style={s.commande}>
+      <View style={[s.radio, choisi ? { borderColor: teinte } : null]}>
+        {choisi ? <View style={[s.radioPoint, { backgroundColor: teinte }]} /> : null}
+      </View>
+    </View>
   );
 }
 
@@ -105,7 +155,7 @@ export function SousEnTete({ texte, retrait = 0, couleur }: { texte: string; ret
     <View style={[s.sousEntete, { paddingLeft: MARGE + retrait }]}>
       <View style={[s.filet, { left: MARGE + retrait }]} />
       <Text style={[s.sousEnteteTexte, couleur ? { color: couleur } : null]} maxFontSizeMultiplier={ECHELLE.compact}>
-        {texte.toUpperCase()}
+        {IOS ? texte.toUpperCase() : texte}
       </Text>
     </View>
   );
@@ -116,8 +166,10 @@ export function LigneVide({ texte }: { texte: string }) {
   return <Text style={s.vide}>{texte}</Text>;
 }
 
-/** Le chevron d'une ligne qui mène ailleurs (une fiche, un document). */
+/** Le chevron d'une ligne qui mène ailleurs (une fiche, un document). Les
+    listes d'Android n'en portent pas : la ligne entière ondule et ouvre. */
 export function Chevron() {
+  if (!IOS) return null;
   return <Icone sf="chevron.right" materiel="chevron_right" taille={13} poids="semibold" couleur={T.grisClair} />;
 }
 
@@ -140,10 +192,11 @@ export function Deplier({ ouvert, onPress, label }: { ouvert: boolean; onPress: 
   return (
     <Pressable onPress={() => onPress()} hitSlop={10}
       accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ expanded: ouvert }}
-      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 18 }}
+      android_ripple={{ color: T.surbrillance as any, borderless: true, radius: 20 }}
       style={({ pressed }) => [s.deplier, IOS && pressed && { opacity: 0.4 }]}>
-      <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_more" : "chevron_right"}
-        taille={13} poids="semibold" couleur={T.bleu} />
+      {/* Android : la flèche de Material, qui se retourne */}
+      <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_less" : "expand_more"}
+        taille={IOS ? 13 : 24} poids="semibold" couleur={IOS ? T.bleu : T.gris} />
     </Pressable>
   );
 }
@@ -160,8 +213,8 @@ export function LigneDepliable({ titre, compte, ouvert, onPress }: {
       <View style={[s.filet, { left: MARGE }]} />
       <Text style={[s.label, s.labelGras, { flex: 1 }]} numberOfLines={1}>{titre}</Text>
       {compte != null ? <Text style={s.detail} maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text> : null}
-      <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_more" : "chevron_right"}
-        taille={13} poids="semibold" couleur={T.bleu} />
+      <Icone sf={ouvert ? "chevron.down" : "chevron.right"} materiel={ouvert ? "expand_less" : "expand_more"}
+        taille={IOS ? 13 : 24} poids="semibold" couleur={IOS ? T.bleu : T.gris} />
     </Ondulable>
   );
 }
@@ -373,13 +426,6 @@ function SegmentsAndroid({ options, valeur, onChange, compact, teinte }: Proprie
   );
 }
 
-/** Les segments d'une feuille : la même capsule, en compact. */
-export function SegmentsIOS(props: {
-  options: readonly { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
-}) {
-  return <SegmentsCapsule {...props} compact />;
-}
-
 // L'épaisseur entre le bord de la capsule et la pastille
 const BORD_CAPSULE = 4;
 
@@ -388,7 +434,10 @@ const s = creerStyles(() => ({
     flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 8,
     paddingHorizontal: MARGE, marginBottom: 7,
   },
-  enteteTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 },
+  enteteTexte: IOS
+    ? { flex: 1, fontSize: 12.5, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 }
+    // Android : l'en-tête de section de Material 3, à la teinte de l'app
+    : { flex: 1, fontSize: 14, lineHeight: 20, fontFamily: POLICE.moyen, color: T.bleu, letterSpacing: 0.1 },
   enteteNb: { fontSize: 13, fontFamily: POLICE.demi, color: T.bleu, fontVariant: ["tabular-nums"] },
   // Les surfaces blanches portent un liseré fin : sur le fond très clair de
   // l'app, c'est lui qui les détache
@@ -397,25 +446,50 @@ const s = creerStyles(() => ({
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   interieur: { marginTop: -StyleSheet.hairlineWidth },
-  ligne: {
+  ligne: IOS ? {
     flexDirection: "row", alignItems: "center", gap: 10,
     minHeight: 44, paddingVertical: 10, paddingRight: MARGE - 2,
+  } : {
+    // Android : la ligne de liste de Material 3 — 56 dp, 16 dp de chaque côté
+    flexDirection: "row", alignItems: "center", gap: ECART_AVANT,
+    minHeight: 56, paddingVertical: 8, paddingRight: MARGE,
   },
+  // Android : une ligne à légende — la ligne de deux lignes de Material
+  ligneDeuxLignes: { minHeight: 64 },
   // Le gris de la ligne touchée — celui des cellules d'iOS
   enfoncee: { backgroundColor: T.voileFort },
   attenue: { opacity: 0.45 },
   avant: { width: LARGEUR_AVANT, alignItems: "center" },
   filet: { position: "absolute", top: 0, right: 0, height: StyleSheet.hairlineWidth, backgroundColor: T.voileFort },
-  label: { fontSize: 15, lineHeight: 20, fontFamily: POLICE.normal, color: T.encre },
+  label: IOS
+    ? { fontSize: 15, lineHeight: 20, fontFamily: POLICE.normal, color: T.encre }
+    : { fontSize: 16, lineHeight: 24, fontFamily: POLICE.normal, color: T.encre },
   labelGras: { fontFamily: POLICE.demi },
-  legende: { fontSize: 12.5, lineHeight: 16, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
+  legende: IOS
+    ? { fontSize: 12.5, lineHeight: 16, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 }
+    : { fontSize: 14, lineHeight: 20, fontFamily: POLICE.normal, color: T.gris },
   detail: { fontSize: 14, fontFamily: POLICE.normal, color: T.gris, fontVariant: ["tabular-nums"] },
+  // Android : la case à cocher et le bouton radio, centrés dans leur place
+  commande: { width: LARGEUR_COMMANDE, height: LARGEUR_COMMANDE, alignItems: "center", justifyContent: "center" },
+  case: {
+    width: 18, height: 18, borderRadius: 2, borderWidth: 2, borderColor: T.gris,
+    alignItems: "center", justifyContent: "center",
+  },
+  radio: {
+    width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: T.gris,
+    alignItems: "center", justifyContent: "center",
+  },
+  radioPoint: { width: 10, height: 10, borderRadius: 5 },
   // La place de la coche est réservée : les détails restent alignés, cochés ou non
   zoneCoche: { width: 18, alignItems: "flex-end" },
   sousEntete: { paddingTop: 12, paddingBottom: 5, paddingRight: MARGE },
-  sousEnteteTexte: { fontSize: 11, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 },
+  sousEnteteTexte: IOS
+    ? { fontSize: 11, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 }
+    : { fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.gris, letterSpacing: 0.5 },
   vide: { fontSize: 14, fontFamily: POLICE.normal, color: T.gris, textAlign: "center", paddingVertical: 16, paddingHorizontal: MARGE },
-  deplier: { width: 28, height: 28, alignItems: "center", justifyContent: "center", marginRight: -6 },
+  deplier: IOS
+    ? { width: 28, height: 28, alignItems: "center", justifyContent: "center", marginRight: -6 }
+    : { width: 40, height: 40, alignItems: "center", justifyContent: "center", marginRight: -8 },
   bloc: { paddingHorizontal: MARGE, paddingVertical: 14 },
   ligneValeur: {
     flexDirection: "row", alignItems: "flex-start", gap: 14,
