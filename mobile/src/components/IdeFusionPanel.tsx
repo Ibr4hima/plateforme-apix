@@ -105,7 +105,7 @@ export default function IdeFusionPanel({ source, onOuvrirSource }: {
 
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
-        couleur={T.vert as string} voile={T.vertVoile as string}
+        couleur={T.vert as string}
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
 
       <View style={s.vedette}>

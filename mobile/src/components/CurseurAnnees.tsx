@@ -1,7 +1,9 @@
 // Curseur d'années — le doigt remonte le temps au-dessus de la carte vedette.
 //
 // Une piste fine, la portion parcourue en bleu, un pouce blanc à ombre douce
-// et l'année choisie dans une pilule qui suit le pouce. Le glissement est
+// et l'année choisie dans une pilule qui suit le pouce — au style des
+// étiquettes de section (SeparateurSection) : le fond de la page, un liseré
+// et le chiffre à la teinte de la section. Le glissement est
 // AIMANTÉ aux années (crantage haptique à chaque changement), le tap saute
 // directement à l'année visée. Par défaut, le pouce est à droite : la
 // dernière année connue.
@@ -17,16 +19,19 @@ import { POLICE, T } from "@/theme";
 const POUCE = 24;      // diamètre du pouce
 const PAD = POUCE / 2; // demi-pouce de marge : il ne sort jamais de la piste
 
-export default function CurseurAnnees({ annees, valeur, onChange, couleur: teinte, voile: voileBrut }: {
+export default function CurseurAnnees({ annees, valeur, onChange, couleur: teinte }: {
   annees: number[]; valeur: number; onChange: (annee: number) => void;
-  // Teinte d'accent (portion parcourue, année) et son voile (fond de la
-  // pilule) — bleu par défaut, orange sous les modules orange
-  couleur?: string; voile?: string;
+  // Teinte d'accent (portion parcourue, année, liseré de la pilule) — bleu
+  // par défaut, orange ou vert sous les sections de cette couleur
+  couleur?: string;
 }) {
   // Les teintes arrivent par les PROPS (couleur={T.orange}) : ce sont des
   // jetons dynamiques, que Reanimated refuse tout autant que dans un style
   const couleur = useCouleur(teinte);
-  const voile = useCouleur(voileBrut);
+  const bleu = useCouleur(T.bleu) as unknown as string;
+  // La pilule est une vue Reanimated : son fond lui arrive résolu
+  const fond = useCouleur(T.fond);
+  const accent = (couleur as string | undefined) ?? bleu;
   const [largeur, setLargeur] = useState(0);
   // Reanimated exige des couleurs simples : les styles teintés sont résolus
   const pilule = useStyleResolu(s.pilule);
@@ -72,7 +77,7 @@ export default function CurseurAnnees({ annees, valeur, onChange, couleur: teint
       <View style={s.zone} onLayout={e => setLargeur(e.nativeEvent.layout.width)}
         accessible accessibilityRole="adjustable" accessibilityLabel={`Année : ${valeur}`}>
         {/* L'année choisie suit le pouce */}
-        <Reanime.View style={[pilule, voile != null && { backgroundColor: voile }, stylePilule]}>
+        <Reanime.View style={[pilule, { backgroundColor: fond, borderColor: `${accent}33` }, stylePilule]}>
           <Text style={[piluleTexte, couleur != null && { color: couleur }]}>{valeur}</Text>
         </Reanime.View>
         {/* Piste, portion parcourue, pouce */}
@@ -88,7 +93,7 @@ const s = creerStyles(() => ({
   zone: { height: 54, justifyContent: "flex-end", paddingBottom: 10 },
   pilule: {
     position: "absolute", top: 0, width: 48, alignItems: "center",
-    backgroundColor: T.bleuVoile, borderRadius: 999, paddingVertical: 2.5,
+    borderRadius: 999, borderCurve: "continuous", borderWidth: 1, paddingVertical: 2,
   },
   piluleTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
   piste: {

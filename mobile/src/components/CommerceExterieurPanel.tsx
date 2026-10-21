@@ -307,7 +307,7 @@ export default function CommerceExterieurPanel() {
           <View style={{ marginTop: 18 }}>
             <CurseurAnnees annees={anneesPr}
               valeur={anneeRefPr ?? 0}
-              couleur={T.orange as string} voile={T.orangeVoile as string}
+              couleur={T.orange as string}
               onChange={a => setAnneeSelPr(a === anneesPr[anneesPr.length - 1] ? null : a)} />
           </View>
           <View style={s.vedette}>
@@ -403,7 +403,7 @@ export default function CommerceExterieurPanel() {
           <View style={{ marginTop: 18 }}>
             <CurseurAnnees annees={anneesZg}
               valeur={anneeRefZg ?? 0}
-              couleur={T.vert as string} voile={T.vertVoile as string}
+              couleur={T.vert as string}
               onChange={a => setAnneeSelZg(a === anneesZg[anneesZg.length - 1] ? null : a)} />
           </View>
 

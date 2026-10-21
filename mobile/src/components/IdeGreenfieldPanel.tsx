@@ -106,7 +106,7 @@ export default function IdeGreenfieldPanel({ source, onOuvrirSource }: {
 
       <CurseurAnnees annees={anneesSerie}
         valeur={anneeSel ?? anneesSerie[anneesSerie.length - 1]}
-        couleur={T.orange as string} voile={T.orangeVoile as string}
+        couleur={T.orange as string}
         onChange={a => setAnneeSel(a === anneesSerie[anneesSerie.length - 1] ? null : a)} />
 
       <View style={s.vedette}>
