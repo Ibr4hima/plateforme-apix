@@ -133,13 +133,16 @@ function Visionneuse({ doc, onClose }: { doc: Document; onClose: () => void }) {
 
 const s = creerStyles(() => ({
   page: { flex: 1, backgroundColor: T.fond },
+  // La barre d'une feuille d'iOS, à sa hauteur : elle respire sous les
+  // grands coins de la feuille d'iOS 26 au lieu de s'y coller
   barre: {
-    flexDirection: "row", alignItems: "center", gap: 8, minHeight: 52, paddingHorizontal: 16,
+    flexDirection: "row", alignItems: "center", gap: 10, minHeight: 60,
+    paddingTop: 14, paddingBottom: 10, paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: T.voileFort, backgroundColor: T.carte,
   },
-  cote: { width: 56, paddingVertical: 6 },
+  cote: { width: 60, paddingVertical: 8 },
   ok: { fontSize: 17, fontFamily: POLICE.gras, color: T.bleu },
-  titre: { flex: 1, textAlign: "center", fontSize: 16, fontFamily: POLICE.demi, color: T.encre },
+  titre: { flex: 1, textAlign: "center", fontSize: 17, fontFamily: POLICE.demi, color: T.encre },
   vue: { flex: 1, backgroundColor: T.fond },
   centre: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32, gap: 6 },
   erreurTitre: { fontSize: 17, fontFamily: POLICE.demi, color: T.encre },
