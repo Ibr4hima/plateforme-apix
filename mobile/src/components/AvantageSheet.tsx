@@ -5,6 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Text, View } from "react-native";
 import TexteRiche from "@/components/TexteRiche";
+import { htmlEnTexte } from "@/components/ZoneSheet";
 import Icone from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne } from "@/components/ListeIOS";
 import { useVisionneuse } from "@/components/Visionneuse";
@@ -56,7 +57,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
         <Section titre="Avantages & incitations" liste>
           <Groupe>
             {selections.map((sel: any) => (
-              <Ligne key={sel.id} label={sel.type_libelle} legende={sel.commentaire || undefined}
+              <Ligne key={sel.id} label={sel.type_libelle} legende={sel.commentaire ? htmlEnTexte(sel.commentaire) : undefined}
                 avant={<Icone sf="checkmark.circle.fill" materiel="check_circle" taille={IOS ? 17 : 24} couleur={T.vert} />} />
             ))}
           </Groupe>

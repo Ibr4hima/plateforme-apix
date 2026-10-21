@@ -14,6 +14,7 @@ import { Bloc, EnTeteSection } from "@/components/ListeIOS";
 import DocumentsFiche from "@/components/DocumentsFiche";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
+import TexteRiche from "@/components/TexteRiche";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
 import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
@@ -219,9 +220,10 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
       )}
 
       {/* ── Commentaires ── */}
+      {/* Les commentaires, saisis en texte riche sur le site */}
       {a.commentaires ? (
         <Section titre="Commentaires">
-          <Text style={s.commentaires}>{a.commentaires}</Text>
+          <TexteRiche html={a.commentaires} couleur={T.texte as any} fontSize={13.5} lineHeight={21} />
         </Section>
       ) : null}
       {/* ── Documents — ceux de la fiche du site ── */}
@@ -253,5 +255,4 @@ const s = creerStyles(() => ({
   chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipDrapeau: { fontSize: 13 },
   chipTexte: { fontSize: 11.5, ...FONTE.demi, color: T.texte },
-  commentaires: { fontSize: 13.5, ...FONTE.normal, color: T.texte, lineHeight: 21 },
 }));

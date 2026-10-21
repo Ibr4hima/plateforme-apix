@@ -15,6 +15,7 @@ import { API } from "@/lib/api";
 import DocumentsFiche from "@/components/DocumentsFiche";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
+import TexteRiche from "@/components/TexteRiche";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
@@ -178,10 +179,11 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
         </Section>
       )}
 
-      {/* ── Description ── */}
+      {/* ── Description — saisie en texte riche sur le site (paragraphes,
+          listes) : elle se lit mise en forme, comme sur la plateforme ── */}
       {e.description ? (
         <Section titre="Description">
-          <Text style={s.description}>{e.description}</Text>
+          <TexteRiche html={e.description} couleur={T.texte as any} fontSize={13.5} lineHeight={21} />
         </Section>
       ) : null}
 
@@ -234,7 +236,6 @@ const s = creerStyles(() => ({
   essentielLieu: { fontSize: 12.5, ...FONTE.normal, color: T.texte },
   essentielEcheance: { fontSize: 11.5, ...FONTE.gras, color: T.bleu, marginTop: 1 },
 
-  description: { fontSize: 13.5, ...FONTE.normal, color: T.texte, lineHeight: 21 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },

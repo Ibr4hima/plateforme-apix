@@ -13,6 +13,7 @@ import { useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import Reanime, { FadeIn, FadeInUp, FadeOut, FadeOutUp, LinearTransition } from "react-native-reanimated";
 import { useNaema } from "@/components/ArbreNaema";
+import { htmlEnTexte } from "@/components/ZoneSheet";
 import { ListeRapide } from "@/components/ListeRapide";
 import { SqueletteListe } from "@/components/Squelette";
 import { Apparition, ChipFiltre, EtatErreur, EtatVide, Ondulable, Tapable } from "@/components/ui";
@@ -195,7 +196,7 @@ export default function Opportunites() {
   const potsFiltres = useMemo(() => {
     let liste = pots;
     if (requete) liste = liste.filter((p: any) =>
-      [p.titre, p.description, p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
+      [p.titre, htmlEnTexte(p.description || ""), p.pole_nom, p.region_nom, p.departement_nom, p.arrondissement_nom]
         .some(x => (x || "").toLowerCase().includes(requete)));
     return liste;
   }, [pots, requete]);
