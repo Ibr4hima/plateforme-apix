@@ -27,7 +27,9 @@ export function useOptionsPile(): NativeStackNavigationOptions {
   const encre = useCouleur(T.encre) as unknown as string;
   return useMemo(() => (IOS ? {
     headerBackButtonDisplayMode: "minimal",
-    headerTintColor: bleu,
+    // Le retour et les boutons de la barre à l'ENCRE (noir le jour, blanc la
+    // nuit) — la teinte d'iOS 26 pour les commandes de la barre
+    headerTintColor: encre,
     headerShadowVisible: false,
     headerTransparent: false,
     headerLargeTitleEnabled: false,

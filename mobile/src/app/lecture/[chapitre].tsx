@@ -21,7 +21,7 @@ import { creerStyles, useSombre } from "@/lib/apparence";
 import { DEFILEMENT, useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
-import { romainDe } from "./index";
+import { romainDe } from "@/app/(onglets)/(accueil)/code/index";
 
 // Échelle typographique réglable (5 crans, Apple Books-like)
 const CORPS = [15, 16.5, 18, 19.5, 21];
@@ -123,7 +123,7 @@ export default function Lecteur() {
   const allerA = (id: string) => {
     positions.current = {};
     defileur.current?.scrollTo({ y: 0, animated: false });
-    router.replace({ pathname: "/code/[chapitre]", params: { chapitre: id, base } } as any);
+    router.replace({ pathname: "/lecture/[chapitre]", params: { chapitre: id, base } } as any);
   };
 
   const numeroChap = chap ? (chap.numero === 1 ? "PREMIER" : String(chap.num_display).toUpperCase()) : "";
@@ -174,16 +174,16 @@ export default function Lecteur() {
   // que si la page ou la taille changent.
   const optionsIOS = useMemo(() => ({
     title: "",
-    headerTintColor: P.bleu,
+    headerTintColor: P.titre,
     headerStyle: { backgroundColor: P.fond },
     headerTitleStyle: { fontFamily: POLICE.demi, color: P.titre },
     headerRight: () => (
       <View style={s.reglagesIOS}>
-        <BoutonLecture sf={sombre ? "sun.max" : "moon"} couleur={P.bleu} onPress={basculerSombre}
+        <BoutonLecture sf={sombre ? "sun.max" : "moon"} couleur={P.titre} onPress={basculerSombre}
           label={sombre ? "Lecture de jour" : "Lecture de nuit"} />
-        <BoutonLecture sf="textformat.size.smaller" couleur={P.bleu} onPress={() => changerCran(-1)}
+        <BoutonLecture sf="textformat.size.smaller" couleur={P.titre} onPress={() => changerCran(-1)}
           inactif={cran === 0} label="Texte plus petit" />
-        <BoutonLecture sf="textformat.size.larger" couleur={P.bleu} onPress={() => changerCran(1)}
+        <BoutonLecture sf="textformat.size.larger" couleur={P.titre} onPress={() => changerCran(1)}
           inactif={cran === CORPS.length - 1} label="Texte plus grand" />
       </View>
     ),

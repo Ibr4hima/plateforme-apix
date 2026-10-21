@@ -272,7 +272,8 @@ export default function Accueil() {
 const VERRE = IOS && isLiquidGlassAvailable();
 
 function BoutonRond({ sf, materiel, onPress, label }: NomsIcone & { onPress: () => void; label: string }) {
-  const icone = <Icone sf={sf} materiel={materiel} taille={16} couleur={T.bleu} poids="semibold" />;
+  // À l'encre, comme les boutons des barres de toutes les pages
+  const icone = <Icone sf={sf} materiel={materiel} taille={16} couleur={T.encre} poids="semibold" />;
   if (VERRE) return (
     <Pressable onPress={onPress} hitSlop={6} accessibilityRole="button" accessibilityLabel={label}>
       <GlassView isInteractive glassEffectStyle="regular" style={s.boutonVerre}>{icone}</GlassView>

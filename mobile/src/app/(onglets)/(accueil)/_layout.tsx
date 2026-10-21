@@ -29,8 +29,6 @@ export default function PileAccueil() {
       <Stack.Screen name="evenements" options={ecran("Événements")} />
       <Stack.Screen name="fiche-pays/index" options={ecran("Fiche Pays")} />
       <Stack.Screen name="code/index" options={ecran("Lois & Règlementations")} />
-      {/* Le chapitre pose son propre titre (voir l'écran) */}
-      <Stack.Screen name="code/[chapitre]" options={ecran("")} />
     </Stack>
   );
 }

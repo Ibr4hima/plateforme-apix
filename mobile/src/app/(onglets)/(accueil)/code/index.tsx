@@ -114,7 +114,7 @@ export default function CodeSommaire() {
             {(recherche.data || []).map((r: any, i: number) => (
               <Apparition key={r.id} index={Math.min(i, 8)}>
                 <Tapable echelle={0.985}
-                  onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
+                  onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: r.chapitre_id, base, art: r.id } } as any)}
                   style={s.resultat}>
                   <Text style={s.resNumero}>ARTICLE {String(r.num_display).toUpperCase()}</Text>
                   {r.titre ? <Text style={s.resTitre} numberOfLines={1}>{r.titre}</Text> : null}
@@ -140,7 +140,7 @@ export default function CodeSommaire() {
                     return (
                       <View key={c.id}>
                         {i > 0 && <View style={s.separateur} />}
-                        <Pressable onPress={() => router.push({ pathname: "/code/[chapitre]", params: { chapitre: c.id, base } } as any)}
+                        <Pressable onPress={() => router.push({ pathname: "/lecture/[chapitre]", params: { chapitre: c.id, base } } as any)}
                           style={({ pressed }) => [s.ligne, pressed && { backgroundColor: IOS ? T.surbrillance : T.bleuVoile }]}>
                           <View style={s.numeroColonne}>
                             <Text style={s.numeroRomain}>{romainDe(c)}</Text>

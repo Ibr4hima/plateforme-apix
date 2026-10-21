@@ -18,6 +18,7 @@ import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { EMPREINTE_API } from "@/lib/api";
 import { marquerOrigine } from "@/lib/origineTap";
+import { useOptionsPile } from "@/lib/navigation";
 import { IOS } from "@/lib/plateforme";
 import { T } from "@/theme";
 
@@ -61,6 +62,9 @@ export default function RacineLayout() {
   // pour ne rien y remonter.
   const sombre = useSombre();
   majSchema(sombre);
+  // Les options des piles (iOS) : le lecteur des lois, empilé au-dessus des
+  // onglets, porte la même barre que les autres pages
+  const optionsPile = useOptionsPile();
   const cleApparence = Platform.OS === "android" ? (sombre ? "nuit" : "jour") : "app";
 
   if (!polices) return null;
@@ -77,9 +81,13 @@ export default function RacineLayout() {
       <View key={cleApparence} style={{ flex: 1 }}
         onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
       {/* Tout vit sous les onglets : chaque onglet a sa pile, et ses écrans
-          s'y empilent (voir lib/navigation et les _layout des onglets) */}
+          s'y empilent (voir lib/navigation et les _layout des onglets) — sauf
+          la LECTURE d'un chapitre des lois, empilée au-dessus d'eux : la
+          barre du bas s'efface le temps de lire, et revient au retour */}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: T.fond as unknown as string } }}>
         <Stack.Screen name="(onglets)" />
+        <Stack.Screen name="lecture/[chapitre]"
+          options={IOS ? { ...optionsPile, headerShown: true, title: "" } : { headerShown: false }} />
       </Stack>
       <BandeauHorsLigne />
       {lancement && <LancementAnime onFini={() => setLancement(false)} />}

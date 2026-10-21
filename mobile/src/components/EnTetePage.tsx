@@ -154,7 +154,8 @@ function BoutonBarre({ sf, materiel, onPress, badge, label, taille = 18 }: NomsI
   return (
     <Pressable onPress={() => { tick(); onPress(); }} hitSlop={6} accessibilityRole="button"
       accessibilityLabel={label} style={({ pressed }) => [s.boutonBarre, pressed && { opacity: 0.35 }]}>
-      <Icone sf={sf} materiel={materiel} taille={taille} couleur={T.bleu} poids="medium" />
+      {/* À l'encre, comme le chevron de retour : la barre ne porte qu'une couleur */}
+      <Icone sf={sf} materiel={materiel} taille={taille} couleur={T.encre} poids="medium" />
       {badge ? (
         <View style={s.badgeIOS}><Text style={s.badgeTexteIOS}>{badge}</Text></View>
       ) : null}
