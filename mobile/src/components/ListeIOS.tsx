@@ -180,7 +180,7 @@ export function GroupeDocuments({ fichiers, ouvrir }: { fichiers: any[]; ouvrir:
     <Groupe>
       {fichiers.map((f: any) => (
         <Ligne key={f.id} label={f.titre || f.nom || f.fichier_nom || "Document"} lignes={1}
-          avant={<Icone sf="doc.text" materiel="description" taille={17} couleur={T.bleu} />}
+          avant={<Icone sf="doc.text" materiel="description" taille={IOS ? 17 : 24} couleur={T.bleu} />}
           accessoire={<Chevron />} onPress={() => ouvrir(f)} />
       ))}
     </Groupe>
@@ -227,12 +227,14 @@ export function Bloc({ style, children }: { style?: StyleProp<ViewStyle>; childr
   return <View style={[s.groupe, s.bloc, style]}>{children}</View>;
 }
 
-/** Une ligne de fiche : le libellé à gauche, la valeur à côté — les
-    « Informations » d'une page de l'App Store. La valeur se teinte quand elle
-    agit (appeler, écrire, ouvrir). */
+/** Une ligne de fiche. iOS : le libellé à gauche, la valeur à côté — les
+    « Informations » d'une page de l'App Store. Android : la valeur en 16 sp,
+    son libellé dessous, comme une fiche de Google Contacts. La valeur se
+    teinte quand elle agit (appeler, écrire, ouvrir). */
 export function LigneValeur({ label, valeur, children, onPress, lignes }: {
   label: string; valeur?: string | null; children?: React.ReactNode; onPress?: () => void; lignes?: number;
 }) {
+  if (!IOS) return <LigneValeurAndroid label={label} valeur={valeur} onPress={onPress} lignes={lignes}>{children}</LigneValeurAndroid>;
   const corps = (
     <>
       <View style={[s.filet, { left: MARGE }]} />
@@ -258,6 +260,28 @@ export function LigneValeur({ label, valeur, children, onPress, lignes }: {
   );
 }
 
+function LigneValeurAndroid({ label, valeur, children, onPress, lignes }: {
+  label: string; valeur?: string | null; children?: React.ReactNode; onPress?: () => void; lignes?: number;
+}) {
+  const corps = (
+    <>
+      <View style={[s.filet, { left: MARGE }]} />
+      {children ?? (
+        <Text style={[s.valeurAndroid, onPress && { color: T.bleu }]} numberOfLines={lignes ?? (onPress ? 1 : undefined)}>
+          {valeur}
+        </Text>
+      )}
+      {label ? <Text style={s.legende} numberOfLines={1}>{label}</Text> : null}
+    </>
+  );
+  if (!onPress) return <View style={s.ligneValeurAndroid}>{corps}</View>;
+  return (
+    <Ondulable onPress={onPress} accessibilityRole="button" style={s.ligneValeurAndroid}>
+      {corps}
+    </Ondulable>
+  );
+}
+
 /** La note sous un groupe — le pied de section d'iOS. */
 export function PiedSection({ texte }: { texte: string }) {
   return <Text style={s.pied}>{texte}</Text>;
@@ -265,11 +289,26 @@ export function PiedSection({ texte }: { texte: string }) {
 
 export type TuileAction = { sf: SFSymbol; materiel: string; label: string; onPress: () => void };
 
-/** Les tuiles d'action d'une fiche — Appeler · E-mail · Site web, comme la
-    fiche Contacts d'iOS : blanches sur le fond gris, l'icône et le mot teintés. */
+/** Les tuiles d'action d'une fiche — Appeler · E-mail · Site web. iOS :
+    comme la fiche Contacts, blanches sur le fond gris, l'icône et le mot
+    teintés. Android : comme Google Contacts, l'icône dans sa pilule tonale,
+    le mot dessous. */
 export function TuilesActions({ actions }: { actions: (TuileAction | null | false | undefined)[] }) {
   const liste = actions.filter(Boolean) as TuileAction[];
   if (!liste.length) return null;
+  if (!IOS) return (
+    <View style={s.tuiles}>
+      {liste.map(a => (
+        <Ondulable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label}
+          style={s.tuileAndroid}>
+          <View style={s.pastilleAction}>
+            <Icone sf={a.sf} materiel={a.materiel} taille={24} couleur={T.bleu} />
+          </View>
+          <Text style={s.tuileLabelAndroid} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{a.label}</Text>
+        </Ondulable>
+      ))}
+    </View>
+  );
   return (
     <View style={s.tuiles}>
       {liste.map(a => (
@@ -505,6 +544,16 @@ const s = creerStyles(() => ({
     borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   tuileLabel: { fontSize: 11.5, fontFamily: POLICE.moyen, color: T.bleu },
+  // Android : la fiche de Google Contacts — la valeur, son libellé dessous ;
+  // les actions en pilules tonales
+  ligneValeurAndroid: { minHeight: 56, paddingVertical: 10, paddingHorizontal: MARGE, justifyContent: "center" },
+  valeurAndroid: { fontSize: 16, lineHeight: 24, fontFamily: POLICE.normal, color: T.encre },
+  tuileAndroid: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 6, borderRadius: 16 },
+  pastilleAction: {
+    width: 64, height: 40, borderRadius: 20, backgroundColor: T.selection,
+    alignItems: "center", justifyContent: "center",
+  },
+  tuileLabelAndroid: { fontSize: 12, lineHeight: 16, fontFamily: POLICE.moyen, color: T.encre },
   capsule: {
     flexDirection: "row", height: 42, padding: BORD_CAPSULE,
     borderRadius: 21, borderCurve: "continuous",

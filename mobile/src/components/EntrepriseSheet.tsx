@@ -1,75 +1,35 @@
 // Fiche entreprise — une fiche de contact, pas un modal de back-office.
 //
 // Le gain décisif du téléphone sur le web : il sait APPELER. La fiche mène
-// donc par l'action — une rangée Appeler · Email · Site web sous l'identité,
-// l'idiome de la fiche Contacts d'iOS — et chaque numéro ou adresse des
-// points focaux est lui-même tappable (tel: / mailto:).
+// donc par l'action — une rangée Appeler · E-mail · Site web sous l'identité,
+// l'idiome de la fiche Contacts d'iOS et de Google Contacts — et chaque
+// numéro ou adresse des points focaux est lui-même tappable (tel: / mailto:).
 //
 // Structure éditoriale, comme les autres fiches : identité (nom en grand,
 // une ligne de méta forme · pôle · région), actions, puis sections plates —
 // rangées clé-valeur, activités NAEMA, points focaux.
 import { ActionSheetIOS, Alert, Linking, Platform, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
-import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, Ligne, LigneValeur, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/lib/liens";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
+import { Feuille } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
-// SUR iOS, la fiche prend la grammaire de la fiche Contacts : les tuiles
-// d'action blanches sur le fond gris, les informations en lignes groupées
-// (la valeur bleue quand elle appelle, écrit ou ouvre), un groupe par point
-// focal.
+// La fiche prend la grammaire de la fiche Contacts, sur iOS comme sur
+// Android (ListeIOS) : les tuiles d'action, les informations en lignes
+// groupées (la valeur bleue quand elle appelle, écrit ou ouvre), un groupe
+// par point focal.
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{children}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{children}</View>;
 }
 
 function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | null; onPress?: () => void }) {
   if (!valeur) return null;
-  if (IOS) return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
-  const contenu = (
-    <View style={s.rangee}>
-      <Text style={s.rangeeLabel}>{label}</Text>
-      <Text style={[s.rangeeValeur, onPress && { color: T.bleu }]} numberOfLines={2}>{valeur}</Text>
-    </View>
-  );
-  return onPress ? <Tapable onPress={onPress}>{contenu}</Tapable> : contenu;
-}
-
-// Bouton de la rangée d'actions — n'apparaît que si la donnée existe
-function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
-  return (
-    <Tapable onPress={onPress} style={s.action}>
-      <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
-      <Text style={s.actionLabel}>{label}</Text>
-    </Tapable>
-  );
-}
-
-// Chip tappable (téléphone / email des points focaux)
-function ChipContact({ texte, couleur, fond, onPress }: { texte: string; couleur: string; fond: string; onPress: () => void }) {
-  return (
-    <Tapable onPress={onPress} style={[s.chip, { backgroundColor: fond }]}>
-      <Text style={[s.chipTexte, { color: couleur }]}>{texte}</Text>
-    </Tapable>
-  );
-}
-
-/** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
-function Rangees({ children }: { children: React.ReactNode }) {
-  if (IOS) return <Groupe>{children}</Groupe>;
-  return <View style={s.rangees}>{children}</View>;
+  return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
 }
 
 const decouper = (v: string | null | undefined) => (v || "").split(",").map(x => x.trim()).filter(Boolean);
@@ -117,37 +77,21 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{e.nom}</Text>}
+      titre={e.nom}
       sousEntete={meta ? <Text style={s.meta} numberOfLines={1}>{meta}</Text> : undefined}>
 
       {/* ── Agir : appeler, écrire, visiter — l'atout du téléphone ── */}
-      {IOS ? (
-        <TuilesActions actions={[
-          telephones.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
-            onPress: () => proposer("Appeler", telephones.map(fmtPhone), i => ouvrirTel(telephones[i])) },
-          mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
-            onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
-          !!e.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => ouvrirSite(e.siteweb) },
-        ]} />
-      ) : (telephones.length > 0 || mails.length > 0 || e.siteweb) && (
-        <View style={s.actions}>
-          {telephones.length > 0 && (
-            <Action sf="phone" materiel="call" label="Appeler"
-              onPress={() => proposer("Appeler", telephones.map(fmtPhone), i => ouvrirTel(telephones[i]))} />
-          )}
-          {mails.length > 0 && (
-            <Action sf="envelope" materiel="mail" label="Email"
-              onPress={() => proposer("Écrire à", mails, i => ouvrirMail(mails[i]))} />
-          )}
-          {e.siteweb && (
-            <Action sf="safari" materiel="language" label="Site web" onPress={() => ouvrirSite(e.siteweb)} />
-          )}
-        </View>
-      )}
+      <TuilesActions actions={[
+        telephones.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
+          onPress: () => proposer("Appeler", telephones.map(fmtPhone), i => ouvrirTel(telephones[i])) },
+        mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
+          onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
+        !!e.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => ouvrirSite(e.siteweb) },
+      ]} />
 
       {/* ── Informations ── */}
       <Section titre="Informations">
-        <Rangees>
+        <Groupe>
           <Rangee label="Création" valeur={e.date_creation ? fmtDateLong(e.date_creation) : null} />
           <Rangee label="Pays du siège" valeur={paysStr} />
           <Rangee label="Localisation" valeur={locStr || null} />
@@ -161,66 +105,36 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
               valeur={m} onPress={() => ouvrirMail(m)} />
           ))}
           <Rangee label="Site web" valeur={e.siteweb} onPress={e.siteweb ? () => ouvrirSite(e.siteweb) : undefined} />
-        </Rangees>
+        </Groupe>
       </Section>
 
       {/* ── Activités (hiérarchie NAEMA existante) ── */}
       {hasNaema && secteurs.length > 0 ? (
         <Section titre="Activités de l'entreprise">
-          {IOS
-            ? <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
-            : <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />}
+          <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
         </Section>
       ) : null}
 
       {/* ── Points focaux : les personnes, avec leurs actions ── */}
       {focaux.length > 0 ? (
         <Section titre="Points focaux">
-          {IOS ? (
-            // iOS : un groupe par personne — son nom et son poste, puis ses
-            // numéros et adresses, chacun d'un toucher
-            <View style={{ gap: 12 }}>
-              {focaux.map((pf: any, i: number) => (
-                <Groupe key={i}>
-                  <Ligne gras label={[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}
-                    legende={pf.poste || undefined}
-                    accessoire={pf.est_principal ? <Text style={s.principalIOS}>Principal</Text> : undefined} />
-                  {decouper(pf.telephone).map((t, ti) => (
-                    <LigneValeur key={`t${ti}`} label="Téléphone" valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
-                  ))}
-                  {decouper(pf.mail).map((m, mi) => (
-                    <LigneValeur key={`m${mi}`} label="E-mail" valeur={m} onPress={() => ouvrirMail(m)} />
-                  ))}
-                </Groupe>
-              ))}
-            </View>
-          ) : (
-          <View style={{ gap: 8 }}>
+          {/* Un groupe par personne — son nom et son poste, puis ses numéros
+              et adresses, chacun d'un toucher */}
+          <View style={{ gap: 12 }}>
             {focaux.map((pf: any, i: number) => (
-              <View key={i} style={s.focal}>
-                <View style={s.focalEntete}>
-                  <Text style={s.focalNom}>{[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}</Text>
-                  {pf.est_principal ? (
-                    <View style={s.focalPrincipal}><Text style={s.focalPrincipalTexte}>Principal</Text></View>
-                  ) : null}
-                </View>
-                {pf.poste ? <Text style={s.focalPoste}>{pf.poste}</Text> : null}
-                {(pf.telephone || pf.mail) ? (
-                  <View style={s.focalChips}>
-                    {(pf.telephone || "").split(",").map((t: string) => t.trim()).filter(Boolean).map((t: string, ti: number) => (
-                      <ChipContact key={`t${ti}`} texte={fmtPhone(t)} couleur={T.bleu as string}
-                        fond={T.bleuVoile as string} onPress={() => ouvrirTel(t)} />
-                    ))}
-                    {(pf.mail || "").split(",").map((m: string) => m.trim()).filter(Boolean).map((m: string, mi: number) => (
-                      <ChipContact key={`m${mi}`} texte={m} couleur={T.vert as string}
-                        fond="rgba(24,128,56,0.07)" onPress={() => ouvrirMail(m)} />
-                    ))}
-                  </View>
-                ) : null}
-              </View>
+              <Groupe key={i}>
+                <Ligne gras label={[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}
+                  legende={pf.poste || undefined}
+                  accessoire={pf.est_principal ? <Text style={s.principal}>Principal</Text> : undefined} />
+                {decouper(pf.telephone).map((t, ti) => (
+                  <LigneValeur key={`t${ti}`} label="Téléphone" valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
+                ))}
+                {decouper(pf.mail).map((m, mi) => (
+                  <LigneValeur key={`m${mi}`} label="E-mail" valeur={m} onPress={() => ouvrirMail(m)} />
+                ))}
+              </Groupe>
             ))}
           </View>
-          )}
         </Section>
       ) : null}
     </Feuille>
@@ -228,31 +142,6 @@ export default function EntrepriseSheet({ entreprise: e, onClose }: { entreprise
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
-
-  actions: { flexDirection: "row", gap: 8 },
-  action: {
-    flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
-    backgroundColor: T.bleuVoile, borderRadius: 14,
-  },
-  actionLabel: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu },
-
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  rangees: { gap: 9 },
-  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
-  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
-  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-
-  chip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  chipTexte: { fontSize: 11, fontFamily: POLICE.demi },
-
-  focal: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.carteBord, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11 },
-  focalEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
-  focalNom: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
-  focalPoste: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 2 },
-  focalPrincipal: { backgroundColor: "rgba(202,99,31,0.08)", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  focalPrincipalTexte: { fontSize: 10, fontFamily: POLICE.gras, color: T.orange },
-  focalChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-  principalIOS: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.orange },
+  principal: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.orange },
 }));

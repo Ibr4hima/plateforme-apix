@@ -14,13 +14,12 @@ import { Bloc, EnTeteSection } from "@/components/ListeIOS";
 import DocumentsFiche from "@/components/DocumentsFiche";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
 import Thematiques, { type ArbreThemes } from "@/components/Thematiques";
 import { getJson, API } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -73,18 +72,13 @@ function anciennete(a: any): string | null {
 }
 
 // ── Briques ──────────────────────────────────────────────────────────────────
-// SUR iOS, la fiche se lit en blocs blancs sur le fond gris des listes
-// groupées : la frise du traité, les signataires, les thématiques et les
-// commentaires ont chacun le leur, sous leur en-tête de section.
+// La fiche se lit en blocs blancs sur le fond gris des listes groupées, sur
+// iOS comme sur Android (ListeIOS) : la frise du traité, les signataires, les
+// thématiques et les commentaires ont chacun le leur, sous leur en-tête de
+// section.
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} /><Bloc>{children}</Bloc></View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} /><Bloc>{children}</Bloc></View>;
 }
 
 // Une étape de la frise : point (plein quand l'étape est atteinte), label, date
@@ -173,7 +167,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{identite}</Text>}
+      titre={identite}
       sousEntete={
         <View>
           {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
@@ -238,14 +232,11 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   legende: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris, marginTop: 5 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 6 },
 
-  // iOS : la frise est un bloc blanc du groupe ; ailleurs, un voile bleu
-  frise: IOS
-    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 }
-    : { backgroundColor: T.blocFond, borderRadius: 18, paddingVertical: 16, paddingHorizontal: 10 },
+  // La frise est un bloc blanc du groupe
+  frise: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 16, paddingHorizontal: 10 },
   etapes: { flexDirection: "row" },
   etape: { flex: 1, alignItems: "center", gap: 5 },
   connecteur: {
@@ -258,9 +249,8 @@ const s = creerStyles(() => ({
   echeanceLigne: { alignItems: "center", marginTop: 12, paddingTop: 11, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.blocBord },
   echeanceTexte: { fontSize: 12, fontFamily: POLICE.gras },
 
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: IOS ? T.voile : T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipDrapeau: { fontSize: 13 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
   commentaires: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },

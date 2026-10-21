@@ -21,7 +21,7 @@ import {
   type Investisseur, type ProjetFdi, type Signal, type ValeurSignal,
   accorder, fmtEntier, moisEnClair, useFicheInvestisseur,
 } from "@/lib/fdi";
-import { ECHELLE, POLICE, T, TYPO } from "@/theme";
+import { ECHELLE, POLICE, T } from "@/theme";
 import { Montant, PaysDrapeau } from "./AtomesFdi";
 
 /** Sur tablette, la fiche se plafonne à la largeur d'une page de lecture. */
@@ -29,44 +29,24 @@ export const LARGEUR_FICHE = 720;
 
 // ── Briques de fiche ─────────────────────────────────────────────────────────
 
-// SUR iOS, la page se lit en LISTES GROUPÉES, comme une fiche Contacts ou un
-// lieu de Plans : le fond gris de la feuille, les chiffres, le trajet et la
-// description dans des blocs blancs arrondis, les détails en lignes séparées
-// d'un filet fin. L'ordre de lecture ne change pas.
+// La page se lit en LISTES GROUPÉES, comme une fiche Contacts ou un lieu de
+// Plans — sur iOS comme sur Android (ListeIOS) : le fond gris de la feuille,
+// les chiffres, le trajet et la description dans des blocs blancs arrondis,
+// les détails en lignes séparées d'un filet fin. L'ordre de lecture ne
+// change pas.
 
 export function SectionFiche({ titre, children }: { titre: string; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{children}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre} accessibilityRole="header">{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{children}</View>;
 }
 
-/** Une ligne de fiche : le libellé à gauche, la valeur à droite. Pas de damier
-    — « Fabrication » d'un côté, « Commerce de détail de vêtements et
-    d'accessoires vestimentaires » de l'autre : une grille étirerait tout à la
+/** Une ligne de fiche — la LigneValeur du système. Pas de damier :
+    « Fabrication » d'un côté, « Commerce de détail de vêtements et
+    d'accessoires vestimentaires » de l'autre, une grille étirerait tout à la
     taille du plus long. */
 export function RangeeFiche({ label, children }: { label: string; children: React.ReactNode }) {
-  if (IOS) return typeof children === "string" || typeof children === "number"
+  return typeof children === "string" || typeof children === "number"
     ? <LigneValeur label={label} valeur={String(children)} />
     : <LigneValeur label={label}>{children}</LigneValeur>;
-  return (
-    <View style={s.rangee}>
-      <Text style={s.rangeeLabel}>{label}</Text>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        {typeof children === "string" || typeof children === "number"
-          ? <Text style={s.rangeeValeur}>{children}</Text> : children}
-      </View>
-    </View>
-  );
-}
-
-/** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
-function Rangees({ children }: { children: React.ReactNode }) {
-  if (IOS) return <Groupe>{children}</Groupe>;
-  return <View style={s.rangees}>{children}</View>;
 }
 
 /** Des valeurs ÉNUMÉRÉES — filiales, secteurs, activités — en liste à puces :
@@ -84,25 +64,14 @@ function Puces({ valeurs }: { valeurs: string[] }) {
       ))}
     </View>
   );
-  return IOS ? <Bloc>{liste}</Bloc> : liste;
+  return <Bloc>{liste}</Bloc>;
 }
 
 /** Les chiffres d'ouverture : deux ou trois valeurs en grand, côte à côte,
-    séparées d'un filet. Sans cadre — ils sont le sujet de la fiche. */
+    séparées d'un filet, dans leur bloc blanc en tête de la fiche. */
 function Chiffres({ items }: { items: { label: string; contenu: React.ReactNode }[] }) {
-  const blocs = items.map((it, i) => (
-    <View key={it.label} style={s.chiffreBloc}>
-      {i > 0 && <View style={s.chiffreSep} />}
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={s.chiffreLabel} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>{it.label}</Text>
-        {it.contenu}
-      </View>
-    </View>
-  ));
-  // iOS : les chiffres dans leur bloc blanc, en tête de la fiche
-  if (IOS) return <Bloc style={s.chiffresIOS}>{blocs}</Bloc>;
   return (
-    <View style={s.chiffres}>
+    <Bloc style={s.chiffres}>
       {items.map((it, i) => (
         <View key={it.label} style={s.chiffreBloc}>
           {i > 0 && <View style={s.chiffreSep} />}
@@ -112,7 +81,7 @@ function Chiffres({ items }: { items: { label: string; contenu: React.ReactNode 
           </View>
         </View>
       ))}
-    </View>
+    </Bloc>
   );
 }
 
@@ -125,7 +94,7 @@ function Trajet({ de, vers }: { de: React.ReactNode; vers: React.ReactNode }) {
       <View style={{ flex: 1, minWidth: 0 }}>{vers}</View>
     </View>
   );
-  return IOS ? <Bloc>{ligne}</Bloc> : ligne;
+  return <Bloc>{ligne}</Bloc>;
 }
 
 /** La description, quand il y en a une. Absente, la section ne s'affiche pas :
@@ -135,13 +104,7 @@ function Description({ texte }: { texte: string | null }) {
   if (!texte) return null;
   return (
     <SectionFiche titre="Description">
-      {IOS ? (
-        <Bloc><Text style={s.descriptionTexte}>{texte}</Text></Bloc>
-      ) : (
-        <View style={s.description}>
-          <Text style={s.descriptionTexte}>{texte}</Text>
-        </View>
-      )}
+      <Bloc><Text style={s.descriptionTexte}>{texte}</Text></Bloc>
     </SectionFiche>
   );
 }
@@ -154,7 +117,7 @@ const grand = (v: number | null, estime: boolean | null, unite: string) =>
 export function FicheProjetFdi({ p, onClose }: { p: ProjetFdi; onClose: () => void }) {
   return (
     <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
-      titre={<Text style={s.titre}>{p.entreprise ?? "Projet"}</Text>}
+      titre={p.entreprise ?? "Projet"}
       sousEntete={
         <View style={s.meta}>
           <Text style={s.metaTexte}>Annoncé en {moisEnClair(p.periode).toLowerCase()}</Text>
@@ -171,12 +134,12 @@ export function FicheProjetFdi({ p, onClose }: { p: ProjetFdi; onClose: () => vo
 
       {/* Le type de projet, en clair parmi les détails — pas en pastille */}
       <SectionFiche titre="Détails du projet">
-        <Rangees>
+        <Groupe>
           <RangeeFiche label="Type de projet">{p.type_projet ?? "—"}</RangeeFiche>
           <RangeeFiche label="Secteur">{p.secteur ?? "—"}</RangeeFiche>
           <RangeeFiche label="Sous-secteur">{p.sous_secteur ?? "—"}</RangeeFiche>
           <RangeeFiche label="Activité prévue">{p.activite ?? "—"}</RangeeFiche>
-        </Rangees>
+        </Groupe>
       </SectionFiche>
 
       <Description texte={p.description_fr} />
@@ -192,7 +155,7 @@ export function FicheSignal({ s: sg, onClose }: { s: Signal; onClose: () => void
   const definitions = sg.natures.filter(n => n.definition);
   return (
     <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
-      titre={<Text style={s.titre}>{sg.entreprise ?? "Signal"}</Text>}
+      titre={sg.entreprise ?? "Signal"}
       sousEntete={
         <View style={s.meta}>
           <Text style={s.metaTexte}>Repéré en {moisEnClair(sg.periode).toLowerCase()}</Text>
@@ -220,7 +183,7 @@ export function FicheSignal({ s: sg, onClose }: { s: Signal; onClose: () => void
           le cadre ne s'affiche pas du tout. Le stade y est nommé en gras :
           aucune pastille ne le dit plus au-dessus. */}
       {definitions.length > 0 && (
-        <View style={[s.definition, IOS && s.definitionIOS]}>
+        <View style={s.definition}>
           {definitions.map(n => (
             <Text key={n.id} style={s.definitionTexte}>
               <Text style={s.definitionNom}>{n.court ?? n.libelle} — </Text>
@@ -231,12 +194,12 @@ export function FicheSignal({ s: sg, onClose }: { s: Signal; onClose: () => void
       )}
 
       <SectionFiche titre="Détails du signal">
-        <Rangees>
+        <Groupe>
           <RangeeFiche label="Repéré en">{moisEnClair(sg.periode)}</RangeeFiche>
           <RangeeFiche label="Stade">{enListe(sg.natures)}</RangeeFiche>
           <RangeeFiche label="Secteur">{enListe(sg.secteurs)}</RangeeFiche>
           <RangeeFiche label="Activité prévue">{enListe(sg.activites)}</RangeeFiche>
-        </Rangees>
+        </Groupe>
       </SectionFiche>
 
       <Description texte={sg.description_fr} />
@@ -255,7 +218,7 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
   const f = q.data;
   return (
     <Feuille onClose={onClose} ecart={22} largeurMax={LARGEUR_FICHE} fondGroupe
-      titre={<Text style={s.titre}>{e.nom}</Text>}
+      titre={e.nom}
       sousEntete={
         // Le pays d'origine et la période tiennent la ligne de méta : deux
         // nombres seulement en tête, la largeur d'un téléphone n'en porte pas
@@ -301,24 +264,12 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
               dans un autre, ce n'est pas la même présence. */}
           {f.destinations.length > 0 && (
             <SectionFiche titre="Pays d'implantation">
-              {IOS ? (
-                // iOS : une liste, le nombre de projets en détail gris
-                <Groupe>
-                  {f.destinations.map(d => (
-                    <Ligne key={d.nom} label={d.nom} detail={`${fmtEntier(d.nb)} ${accorder(d.nb, "projet")}`} />
-                  ))}
-                </Groupe>
-              ) : (
-                <View style={s.rangees}>
-                  {f.destinations.map(d => (
-                    <RangeeFiche key={d.nom} label={d.nom}>
-                      <Text style={[s.rangeeValeur, { color: T.gris, textAlign: "right" }]}>
-                        {fmtEntier(d.nb)} {accorder(d.nb, "projet")}
-                      </Text>
-                    </RangeeFiche>
-                  ))}
-                </View>
-              )}
+              {/* Une liste, le nombre de projets en détail gris */}
+              <Groupe>
+                {f.destinations.map(d => (
+                  <Ligne key={d.nom} label={d.nom} detail={`${fmtEntier(d.nb)} ${accorder(d.nb, "projet")}`} />
+                ))}
+              </Groupe>
             </SectionFiche>
           )}
           {f.secteurs.length > 0 && (
@@ -344,16 +295,10 @@ export function FicheInvestisseurSheet({ e, onClose }: { e: Investisseur; onClos
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 9 },
   metaTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },
 
-  chiffres: {
-    flexDirection: "row", alignItems: "stretch",
-    paddingVertical: 13, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: T.bordure,
-  },
-  chiffresIOS: { flexDirection: "row", alignItems: "stretch" },
+  chiffres: { flexDirection: "row", alignItems: "stretch" },
   chiffreBloc: { flex: 1, minWidth: 0, flexDirection: "row" },
   chiffreSep: { width: StyleSheet.hairlineWidth, backgroundColor: T.bordure, marginHorizontal: 14 },
   chiffreLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 5, textTransform: "uppercase" },
@@ -362,30 +307,22 @@ const s = creerStyles(() => ({
   trajet: { flexDirection: "row", alignItems: "center", gap: 12 },
   trajetNom: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre },
 
+  // La définition se pose comme un bloc blanc du groupe
   definition: {
-    backgroundColor: T.blocFond, borderRadius: 14, borderCurve: "continuous",
-    paddingHorizontal: 14, paddingVertical: 12, gap: 8,
+    backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
+    borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 16, paddingVertical: 14, gap: 8,
   },
-  // iOS : la définition se pose comme un bloc blanc du groupe
-  definitionIOS: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14 },
   definitionTexte: { fontSize: 13, lineHeight: 20, fontFamily: POLICE.normal, color: T.texte },
   definitionNom: { fontFamily: POLICE.gras, color: T.encre },
 
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  rangees: { gap: 9 },
-  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
-  rangeeLabel: { width: 112, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
-  rangeeValeur: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-
+  // Les puces au corps des lignes de liste de chaque système : 15 pt sur iOS,
+  // 16 sp sur Android
   puces: { gap: IOS ? 10 : 8 },
   puce: { flexDirection: "row", alignItems: "flex-start", gap: 11 },
   // Le point, centré sur la première ligne du texte
-  puceRond: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: T.bleu, marginTop: IOS ? 7.5 : 6.5 },
-  puceTexte: { flex: 1, fontSize: IOS ? 15 : 13, lineHeight: IOS ? 20 : 18, fontFamily: POLICE.normal, color: T.encre },
+  puceRond: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: T.bleu, marginTop: IOS ? 7.5 : 9.5 },
+  puceTexte: { flex: 1, fontSize: IOS ? 15 : 16, lineHeight: IOS ? 20 : 24, fontFamily: POLICE.normal, color: T.encre },
 
-  // Un filet ALPHA, jamais un jeton dynamique : une bordure ne suit pas le
-  // changement d'apparence (voir theme.ts)
-  description: { borderLeftWidth: 2, borderLeftColor: T.blocBord, paddingLeft: 13 },
   descriptionTexte: { fontSize: 13.5, lineHeight: 22, fontFamily: POLICE.normal, color: T.texte },
   indispo: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.gris },
 }));

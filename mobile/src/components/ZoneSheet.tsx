@@ -4,24 +4,22 @@
 // vient chercher — puis des sections plates : description, activités NAEMA,
 // entreprises (chaque ligne ouvre la fiche entreprise), documents.
 //
-// Plus de grille de blocs ni d'encadrés : du texte bien hiérarchisé, des
-// filets fins, l'écran respire.
-import { Ionicons } from "@expo/vector-icons";
+// Les listes du système (ListeIOS), sur iOS comme sur Android : les trois
+// chiffres dans un bloc blanc, les informations en lignes, la description et
+// les activités chacune dans son bloc, les entreprises et les documents en
+// listes qui mènent à leur fiche ou à leur fichier.
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import EntrepriseSheet from "@/components/EntrepriseSheet";
-import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
-import Icone from "@/components/Icone";
-import { Bloc, Chevron, EnTeteSection, Groupe, Ligne, LigneValeur } from "@/components/ListeIOS";
+import { Bloc, Chevron, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneValeur } from "@/components/ListeIOS";
 import { useVisionneuse } from "@/components/Visionneuse";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
+import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -39,50 +37,22 @@ export function htmlEnTexte(html: string): string {
     .trim();
 }
 
-// SUR iOS, la fiche se lit en listes groupées : les trois chiffres dans un
-// bloc blanc, les informations en lignes, la description et les activités
-// chacune dans son bloc, les entreprises et les documents en listes qui mènent
-// à leur fiche ou à leur fichier.
-
-/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
-    contenu libre (un bloc sur iOS). */
+/** `liste` : la section porte des lignes (un groupe) plutôt qu'un contenu
+    libre (un bloc). */
 function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
 }
 
 function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
-  if (IOS) return <LigneValeur label={label} valeur={valeur} />;
-  return (
-    <View style={s.rangee}>
-      <Text style={s.rangeeLabel}>{label}</Text>
-      <Text style={s.rangeeValeur}>{valeur}</Text>
-    </View>
-  );
+  return <LigneValeur label={label} valeur={valeur} />;
 }
 
-// Une ligne d'entreprise — plate, filet entre les lignes, la fiche au tap
-function LigneEnt({ ze, premier, onPress }: { ze: any; premier: boolean; onPress: () => void }) {
-  if (IOS) return (
+// Une ligne d'entreprise — la fiche au toucher
+function LigneEnt({ ze, onPress }: { ze: any; onPress: () => void }) {
+  return (
     <Ligne label={ze.entreprise?.nom ?? "—"} legende={ze.entreprise?.forme_juridique || undefined}
       lignes={1} onPress={onPress} accessoire={<Chevron />} />
-  );
-  return (
-    <Tapable onPress={onPress} style={[s.ent, !premier && s.entBord]}>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={s.entNom} numberOfLines={1}>{ze.entreprise?.nom}</Text>
-        {ze.entreprise?.forme_juridique ? (
-          <Text style={s.entForme} numberOfLines={1}>{ze.entreprise.forme_juridique}</Text>
-        ) : null}
-      </View>
-      <Ionicons name="chevron-forward" size={14} color={T.grisClair} />
-    </Tapable>
   );
 }
 
@@ -110,7 +80,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{zone.nom_zone}</Text>}
+      titre={zone.nom_zone}
       sousEntete={
         <Text style={s.meta} numberOfLines={1}>
           <Text style={{ color: col, fontFamily: POLICE.gras }}>{zone.type_zone}</Text>
@@ -143,9 +113,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       {/* ── Informations complémentaires ── */}
       {zone.decret_creation ? (
         <Section titre="Informations" liste>
-          {IOS
-            ? <Groupe><Rangee label="Décret" valeur={zone.decret_creation} /></Groupe>
-            : <View style={s.rangees}><Rangee label="Décret" valeur={zone.decret_creation} /></View>}
+          <Groupe><Rangee label="Décret" valeur={zone.decret_creation} /></Groupe>
         </Section>
       ) : null}
 
@@ -166,66 +134,28 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       {/* ── Entreprises — chaque ligne ouvre la fiche ── */}
       {installes.length > 0 ? (
         <Section titre={`Entreprises installées (${installes.length})`} liste>
-          {IOS ? (
-            <Groupe>
-              {installes.map((ze: any, i: number) => (
-                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-              ))}
-            </Groupe>
-          ) : (
-            <View>
-              {installes.map((ze: any, i: number) => (
-                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-              ))}
-            </View>
-          )}
+          <Groupe>
+            {installes.map((ze: any) => (
+              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+            ))}
+          </Groupe>
         </Section>
       ) : null}
       {eligibles.length > 0 ? (
         <Section titre={`Entreprises éligibles (${eligibles.length})`} liste>
-          {IOS ? (
-            <Groupe>
-              {eligibles.map((ze: any, i: number) => (
-                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-              ))}
-            </Groupe>
-          ) : (
-            <View>
-              {eligibles.map((ze: any, i: number) => (
-                <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} premier={i === 0}
-                  onPress={() => ouvrirFiche(ze.entreprise?.id)} />
-              ))}
-            </View>
-          )}
+          <Groupe>
+            {eligibles.map((ze: any) => (
+              <LigneEnt key={ze.id || ze.entreprise?.id} ze={ze} onPress={() => ouvrirFiche(ze.entreprise?.id)} />
+            ))}
+          </Groupe>
         </Section>
       ) : null}
 
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
-          {IOS ? (
-            <Groupe>
-              {fichiers.map((f: any) => (
-                <Ligne key={f.id} label={f.titre || f.nom} lignes={1}
-                  avant={<Icone sf="doc.text" materiel="description" taille={17} couleur={T.bleu} />}
-                  accessoire={<Chevron />}
-                  onPress={() => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
-              ))}
-            </Groupe>
-          ) : (
-          <View style={{ gap: 8 }}>
-            {fichiers.map((f: any) => (
-              <Tapable key={f.id} style={s.doc}
-                onPress={() => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
-                <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.nom}</Text>
-              </Tapable>
-            ))}
-          </View>
-          )}
+          <GroupeDocuments fichiers={fichiers}
+            ouvrir={f => ouvrirDoc(`${API}/zones-types/${zone.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
         </Section>
       ) : null}
       {visionneuse}
@@ -234,36 +164,14 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
-  // iOS : les trois chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
-  faits: IOS ? {
+  // Les trois chiffres dans un bloc blanc du groupe
+  faits: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 14,
-  } : {
-    flexDirection: "row", alignItems: "center",
-    paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: T.bordure,
   },
-  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: IOS ? 11 : 14 },
+  faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 11 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  rangees: { gap: 9 },
-  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
-  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
-  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-
-  ent: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 },
-  entBord: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.bordure },
-  entNom: { fontSize: 13, fontFamily: POLICE.demi, color: T.encre },
-  entForme: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 1 },
-
-  doc: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
-  },
-  docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
 }));

@@ -9,19 +9,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
-import Icone, { type NomsIcone } from "@/components/Icone";
 import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsCapsule, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/lib/liens";
 import { useVisionneuse } from "@/components/Visionneuse";
-import { Feuille, Ondulable, Tapable } from "@/components/ui";
+import { Feuille, Ondulable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
 import { API } from "@/lib/api";
 import { useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
-import { IOS } from "@/lib/plateforme";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
@@ -110,43 +108,19 @@ const CANAL_ICONES: Record<string, string> = {
   "LinkedIn": "logo-linkedin", "Courrier postal": "send-outline",
 };
 
-// SUR iOS, la fiche prend la grammaire de la fiche Contacts : tuiles d'action
-// blanches sur le fond gris, coordonnées en lignes groupées, la bascule
-// Échanges ⇄ Infos en contrôle segmenté, les échanges et les cycles en blocs
-// blancs du groupe.
+// La fiche prend la grammaire de la fiche Contacts, sur iOS comme sur
+// Android (ListeIOS) : tuiles d'action, coordonnées en lignes groupées, la
+// bascule Échanges ⇄ Infos en segments du système, les échanges et les
+// cycles en blocs blancs posés sur le fond des groupes.
 
 function SecTitle({ children }: { children: string }) {
-  if (IOS) return <EnTeteSection titre={children} />;
-  return <Text style={s.secTitle}>{children.toUpperCase()}</Text>;
+  return <EnTeteSection titre={children} />;
 }
 
 // Rangée clé-valeur, tappable quand la valeur agit (tel:, mailto:, https:)
 function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | null; onPress?: () => void }) {
   if (!valeur) return null;
-  if (IOS) return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
-  const contenu = (
-    <View style={s.rangee}>
-      <Text style={s.rangeeLabel}>{label}</Text>
-      <Text style={[s.rangeeValeur, onPress && { color: T.bleu }]} numberOfLines={2}>{valeur}</Text>
-    </View>
-  );
-  return onPress ? <Tapable onPress={onPress}>{contenu}</Tapable> : contenu;
-}
-
-/** Les rangées d'une section : un groupe sur iOS, une colonne aérée ailleurs. */
-function Rangees({ children }: { children: React.ReactNode }) {
-  if (IOS) return <Groupe>{children}</Groupe>;
-  return <View style={s.rangees}>{children}</View>;
-}
-
-// Bouton de la rangée d'actions — n'apparaît que si la donnée existe
-function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
-  return (
-    <Tapable onPress={onPress} style={s.action}>
-      <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
-      <Text style={s.actionLabel}>{label}</Text>
-    </Tapable>
-  );
+  return <LigneValeur label={label} valeur={valeur} onPress={onPress} />;
 }
 
 const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
@@ -306,7 +280,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titreFiche}>{p.nom}</Text>}
+      titre={p.nom}
       sousEntete={
         <>
           {meta.length > 0 && (
@@ -332,34 +306,18 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {vue === "infos" && (
             <>
               {/* Agir : appeler, écrire, visiter — l'atout du téléphone */}
-              {IOS ? (
-                <TuilesActions actions={[
-                  tels.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
-                    onPress: () => proposer("Appeler", tels.map(fmtPhone), i => ouvrirTel(tels[i])) },
-                  mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
-                    onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
-                  !!p.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => lien(p.siteweb) },
-                ]} />
-              ) : (tels.length > 0 || mails.length > 0 || p.siteweb) && (
-                <View style={s.actions}>
-                  {tels.length > 0 && (
-                    <Action sf="phone" materiel="call" label="Appeler"
-                      onPress={() => proposer("Appeler", tels.map(fmtPhone), i => ouvrirTel(tels[i]))} />
-                  )}
-                  {mails.length > 0 && (
-                    <Action sf="envelope" materiel="mail" label="Email"
-                      onPress={() => proposer("Écrire à", mails, i => ouvrirMail(mails[i]))} />
-                  )}
-                  {p.siteweb && (
-                    <Action sf="safari" materiel="language" label="Site web" onPress={() => lien(p.siteweb)} />
-                  )}
-                </View>
-              )}
+              <TuilesActions actions={[
+                tels.length > 0 && { sf: "phone", materiel: "call", label: "Appeler",
+                  onPress: () => proposer("Appeler", tels.map(fmtPhone), i => ouvrirTel(tels[i])) },
+                mails.length > 0 && { sf: "envelope", materiel: "mail", label: "E-mail",
+                  onPress: () => proposer("Écrire à", mails, i => ouvrirMail(mails[i])) },
+                !!p.siteweb && { sf: "safari", materiel: "language", label: "Site web", onPress: () => lien(p.siteweb) },
+              ]} />
 
               {(tels.length > 0 || mails.length > 0 || p.siteweb || p.linkedin) ? (
                 <View>
                   <SecTitle>Contact</SecTitle>
-                  <Rangees>
+                  <Groupe>
                     {tels.map((t, i) => (
                       <Rangee key={`t${i}`} label={i === 0 ? (tels.length > 1 ? "Téléphones" : "Téléphone") : ""}
                         valeur={fmtPhone(t)} onPress={() => ouvrirTel(t)} />
@@ -370,16 +328,14 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
                     ))}
                     <Rangee label="Site web" valeur={p.siteweb} onPress={p.siteweb ? () => lien(p.siteweb) : undefined} />
                     <Rangee label="LinkedIn" valeur={p.linkedin} onPress={p.linkedin ? () => lien(p.linkedin) : undefined} />
-                  </Rangees>
+                  </Groupe>
                 </View>
               ) : null}
 
               {(secIds.length > 0 || braIds.length > 0 || actIds.length > 0) ? (
                 <View>
                   <SecTitle>Activités spécialisées</SecTitle>
-                  {IOS
-                    ? <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
-                    : <ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} />}
+                  <Bloc><ArbreNaema secIds={secIds} braIds={braIds} actIds={actIds} /></Bloc>
                 </View>
               ) : null}
 
@@ -437,22 +393,8 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
 }
 
 const s = creerStyles(() => ({
-  titreFiche: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
-  actions: { flexDirection: "row", gap: 8 },
-  action: {
-    flex: 1, alignItems: "center", gap: 5, paddingVertical: 11,
-    backgroundColor: T.bleuVoile, borderRadius: 14,
-  },
-  actionLabel: { fontSize: 11, fontFamily: POLICE.demi, color: T.bleu },
-
-  rangees: { gap: 9 },
-  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
-  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
-  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
-
-  secTitle: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   sousTitreGris: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
   frise: { position: "relative" },
   friseRail: { position: "absolute", left: 4, top: 10, bottom: 10, width: 2, borderRadius: 2, backgroundColor: T.bordureDouce },
@@ -461,10 +403,8 @@ const s = creerStyles(() => ({
     position: "absolute", left: 0, top: 15, width: 10, height: 10, borderRadius: 5,
     backgroundColor: T.bleu, borderWidth: 2, borderColor: "rgba(122,138,164,0.26)",
   },
-  // iOS : chaque échange est un bloc blanc posé sur le fond gris, sans liseré
-  echange: IOS
-    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 }
-    : { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  // Chaque échange est un bloc blanc posé sur le fond gris
+  echange: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingHorizontal: 15, paddingVertical: 13 },
   echangeDate: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
   echangeMeta: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 },
   canalChip: {
@@ -473,9 +413,7 @@ const s = creerStyles(() => ({
   },
   canalChipTexte: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.texte, flexShrink: 1 },
   echangeQui: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris },
-  echangeCommentaire: IOS
-    ? { backgroundColor: T.fond, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 }
-    : { backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 10, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
+  echangeCommentaire: { backgroundColor: T.fond, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, marginTop: 10 },
   echangeCommentaireTexte: { fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 19 },
   fichiers: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   fichierChip: {
@@ -488,16 +426,14 @@ const s = creerStyles(() => ({
   contrainte: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   contraintePoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: T.bleu, marginTop: 6 },
   contrainteTexte: { flex: 1, fontSize: 12, fontFamily: POLICE.normal, color: T.texte, lineHeight: 18 },
-  cycle: IOS
-    ? { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" }
-    : { borderWidth: 1, borderColor: T.bordureDouce, borderRadius: 12, overflow: "hidden" },
+  cycle: { backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", overflow: "hidden" },
   cycleEntete: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 15, paddingVertical: 12 },
   cycleLigne: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   cycleNum: { fontSize: 10, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 0.8 },
   cycleIssue: { fontSize: 11, fontFamily: POLICE.gras },
   cycleDate: { fontSize: 11, fontFamily: POLICE.normal, color: T.gris, marginTop: 3 },
   cycleCorps: {
-    borderTopWidth: IOS ? StyleSheet.hairlineWidth : 1, borderTopColor: IOS ? T.voileFort : T.bordureDouce,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: T.voileFort,
     paddingHorizontal: 15, paddingVertical: 14, gap: 14,
   },
   cycleCommentaire: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 20, fontStyle: "italic" },

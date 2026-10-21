@@ -8,17 +8,6 @@ import { computeStatutAccord, computeStatutEvenement } from "@/lib/statuts";
 import type { Resultat } from "@/lib/indexRecherche";
 import { BADGE, T, POLICE } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
-import { IOS } from "@/lib/plateforme";
-
-function Champ({ label, valeur }: { label: string; valeur?: string | null }) {
-  if (!valeur) return null;
-  return (
-    <View style={s.champ}>
-      <Text style={s.champLabel}>{label.toUpperCase()}</Text>
-      <Text style={s.champValeur}>{valeur}</Text>
-    </View>
-  );
-}
 
 const ST_EVENT: Record<string, { label: string; c: string; bg: string }> = {
   a_venir:  { label: "À venir",  c: T.bleu,    bg: T.bleuVoile },
@@ -84,18 +73,11 @@ export default function FicheSheet({ resultat: r, onClose }: { resultat: Resulta
           )}
         </>
       }>
-      {IOS ? (
-        // iOS : les champs en lignes d'un même groupe, sur le fond gris
-        <Groupe>
-          {champs.filter(c => c.valeur).map(c => <LigneValeur key={c.label} label={c.label} valeur={c.valeur} />)}
-          {champs.every(c => !c.valeur) && <LigneVide texte="Détails non renseignés." />}
-        </Groupe>
-      ) : (
-        <>
-          {champs.filter(c => c.valeur).map(c => <Champ key={c.label} {...c} />)}
-          {champs.every(c => !c.valeur) && <Text style={s.vide}>Détails non renseignés.</Text>}
-        </>
-      )}
+      {/* Les champs en lignes d'un même groupe, sur le fond gris */}
+      <Groupe>
+        {champs.filter(c => c.valeur).map(c => <LigneValeur key={c.label} label={c.label} valeur={c.valeur} />)}
+        {champs.every(c => !c.valeur) && <LigneVide texte="Détails non renseignés." />}
+      </Groupe>
     </Feuille>
   );
 }
@@ -105,8 +87,4 @@ const s = creerStyles(() => ({
   titre: { fontSize: 19, fontFamily: POLICE.gras, color: T.encre, marginTop: 8, lineHeight: 25 },
   badge: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4, marginTop: 10 },
   badgeTexte: { fontSize: 11, fontFamily: POLICE.gras },
-  champ: { backgroundColor: T.blocFond, borderWidth: 1, borderColor: T.blocBord, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
-  champLabel: { fontSize: 9, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1 },
-  champValeur: { fontSize: 13.5, fontFamily: POLICE.demi, color: T.encre, marginTop: 3 },
-  vide: { fontSize: 12.5, color: T.gris, textAlign: "center", paddingVertical: 18 },
 }));

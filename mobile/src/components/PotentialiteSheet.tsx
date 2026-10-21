@@ -5,15 +5,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
-import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { Bloc, EnTeteSection, GroupeDocuments } from "@/components/ListeIOS";
 import { useVisionneuse } from "@/components/Visionneuse";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
+import { Feuille } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Couleurs des niveaux territoriaux (palette du site)
@@ -25,19 +23,14 @@ const NIVEAU_LABELS: Record<string, string> = {
   pole: "PÔLE TERRITOIRE", region: "RÉGION", departement: "DÉPARTEMENT", arrondissement: "ARRONDISSEMENT",
 };
 
-// SUR iOS, la fiche se lit en listes groupées : chaque section dans son bloc
-// blanc sur le fond gris, les documents en liste.
+// La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
+// chaque section dans son bloc blanc sur le fond gris, les documents en
+// liste.
 
-/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
-    contenu libre (un bloc sur iOS). */
+/** `liste` : la section porte des lignes (un groupe) plutôt qu'un contenu
+    libre (un bloc). */
 function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
 }
 
 export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { pot: any; refAvantages: any[]; onClose: () => void }) {
@@ -69,7 +62,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{p.titre}</Text>}
+      titre={p.titre}
       sousEntete={zoneNom ? (
         <Text style={s.meta} numberOfLines={1}>
           <Text style={{ color: nivCouleur, fontFamily: POLICE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
@@ -117,20 +110,8 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
-          {IOS ? (
-            <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
-          ) : (
-          <View style={{ gap: 8 }}>
-            {fichiers.map((f: any) => (
-              <Tapable key={f.id} style={s.doc}
-                onPress={() => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
-                <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
-              </Tapable>
-            ))}
-          </View>
-          )}
+          <GroupeDocuments fichiers={fichiers}
+            ouvrir={f => ouvrirDoc(`${API}/opportunites/potentialites/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
         </Section>
       ) : null}
       {visionneuse}
@@ -139,19 +120,10 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
-
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
 
   categorieNom: { fontSize: 10, fontFamily: POLICE.gras, letterSpacing: 0.8, marginBottom: 8 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   chip: { borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi },
-
-  doc: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
-  },
-  docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
 }));

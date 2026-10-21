@@ -6,16 +6,14 @@
 // téléphone sait appeler), documents.
 import { Linking, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
-import Symbole from "@/components/Symbole";
 import TexteRiche from "@/components/TexteRiche";
 import { Bloc, EnTeteSection, Groupe, GroupeDocuments, Ligne, LigneValeur } from "@/components/ListeIOS";
 import { useVisionneuse } from "@/components/Visionneuse";
-import { Feuille, Tapable } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
+import { Feuille } from "@/components/ui";
 import { API } from "@/lib/api";
 import { fmtDateLong, fmtIntervalleDevise, fmtMontantDevise } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const DEVISE_SYM: Record<string, string> = { XOF: "FCFA", USD: "$", EUR: "€", GBP: "£", CNY: "¥" };
@@ -36,28 +34,22 @@ export function fmtInvest(p: any): string | null {
 const ouvrirTel = (t: string) => Linking.openURL(`tel:${t.replace(/[^\d+]/g, "")}`).catch(() => {});
 const ouvrirMail = (m: string) => Linking.openURL(`mailto:${m.trim()}`).catch(() => {});
 
-// SUR iOS, la fiche se lit en listes groupées : les deux chiffres dans un
-// bloc blanc, la description et les thématiques dans le leur, un groupe par
-// personne (CarteContact), les documents en liste.
+// La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
+// les deux chiffres dans un bloc blanc, la description et les thématiques
+// dans le leur, un groupe par personne (CarteContact), les documents en
+// liste.
 
-/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
-    contenu libre (un bloc sur iOS). */
+/** `liste` : la section porte des lignes (un groupe) plutôt qu'un contenu
+    libre (un bloc). */
 function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
 }
 
-// Carte contact (porteur ou point focal) : nom + chips téléphone / mail
-// tappables — partagée avec la fiche prospect
+// Carte contact (porteur ou point focal) — partagée avec la fiche prospect.
+// Un groupe par personne, comme une fiche Contacts : le nom, puis chaque
+// numéro et chaque adresse sur sa ligne, d'un toucher
 export function CarteContact({ nom, sous, telephones, mails }: { nom: string; sous?: string | null; telephones: string[]; mails: string[] }) {
-  // iOS : un groupe par personne, comme une fiche Contacts — le nom, puis
-  // chaque numéro et chaque adresse sur sa ligne, d'un toucher
-  if (IOS) return (
+  return (
     <Groupe>
       <Ligne gras label={nom} legende={sous || undefined} />
       {telephones.map((t, i) => (
@@ -67,30 +59,6 @@ export function CarteContact({ nom, sous, telephones, mails }: { nom: string; so
         <LigneValeur key={`m${i}`} label="E-mail" valeur={m.trim()} onPress={() => ouvrirMail(m)} />
       ))}
     </Groupe>
-  );
-  return (
-    <View style={s.contact}>
-      <View style={s.contactEntete}>
-        <Text style={s.contactNom}>{nom}</Text>
-        {sous ? <Text style={s.contactSous}>{sous}</Text> : null}
-      </View>
-      {(telephones.length > 0 || mails.length > 0) && (
-        <View style={s.contactChips}>
-          {telephones.map((t, i) => (
-            <Tapable key={`t${i}`} onPress={() => ouvrirTel(t)}
-              style={[s.contactChip, { backgroundColor: T.bleuVoile }]}>
-              <Text style={[s.contactChipTexte, { color: T.bleu }]}>{fmtPhone(t.trim())}</Text>
-            </Tapable>
-          ))}
-          {mails.map((m, i) => (
-            <Tapable key={`m${i}`} onPress={() => ouvrirMail(m)}
-              style={[s.contactChip, { backgroundColor: "rgba(24,128,56,0.07)" }]}>
-              <Text style={[s.contactChipTexte, { color: T.vert }]}>{m.trim()}</Text>
-            </Tapable>
-          ))}
-        </View>
-      )}
-    </View>
   );
 }
 
@@ -110,7 +78,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{p.titre_projet}</Text>}
+      titre={p.titre_projet}
       sousEntete={meta ? <Text style={s.meta} numberOfLines={2}>{meta}</Text> : undefined}>
 
       {/* ── Les deux chiffres qu'on vient chercher ── */}
@@ -148,7 +116,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
       {/* ── Porteurs — les personnes, avec leurs actions ── */}
       {porteurs.length > 0 ? (
         <Section titre={porteurs.length > 1 ? "Porteurs du projet" : "Porteur du projet"} liste>
-          <View style={{ gap: IOS ? 12 : 8 }}>
+          <View style={{ gap: 12 }}>
             {porteurs.map((por: any, i: number) => (
               <CarteContact key={i} nom={por.nom || "—"}
                 telephones={(por.telephones || []).filter(Boolean)} mails={(por.mails || []).filter(Boolean)} />
@@ -160,7 +128,7 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
       {/* ── Points focaux ── */}
       {focaux.length > 0 ? (
         <Section titre="Points focaux" liste>
-          <View style={{ gap: IOS ? 12 : 8 }}>
+          <View style={{ gap: 12 }}>
             {focaux.map((pf: any, i: number) => (
               <CarteContact key={i} nom={[pf.civilite, pf.prenom, pf.nom].filter(Boolean).join(" ")}
                 telephones={(pf.telephones || []).filter(Boolean)} mails={(pf.mails || []).filter(Boolean)} />
@@ -172,20 +140,8 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
       {/* ── Documents ── */}
       {fichiers.length > 0 ? (
         <Section titre={fichiers.length > 1 ? "Documents" : "Document"} liste>
-          {IOS ? (
-            <GroupeDocuments fichiers={fichiers}
-              ouvrir={f => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
-          ) : (
-          <View style={{ gap: 8 }}>
-            {fichiers.map((f: any) => (
-              <Tapable key={f.id} style={s.doc}
-                onPress={() => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)}>
-                <Symbole nom="description" taille={16} couleur={T.bleu} />
-                <Text style={s.docTexte} numberOfLines={1}>{f.titre || f.fichier_nom}</Text>
-              </Tapable>
-            ))}
-          </View>
-          )}
+          <GroupeDocuments fichiers={fichiers}
+            ouvrir={f => ouvrirDoc(`${API}/projets/${p.id}/fichiers/${f.id}/download`, f.titre || f.nom)} />
         </Section>
       ) : null}
       {visionneuse}
@@ -194,35 +150,14 @@ export default function ProjetSheet({ projet: p, onClose }: { projet: any; onClo
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7, lineHeight: 18 },
 
-  // iOS : les chiffres dans un bloc blanc du groupe ; ailleurs, entre deux filets
-  faits: IOS ? {
+  // Les chiffres dans un bloc blanc du groupe
+  faits: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: T.carte, borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord, borderRadius: 16, borderCurve: "continuous", paddingVertical: 14, paddingHorizontal: 16,
-  } : {
-    flexDirection: "row", alignItems: "center",
-    paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: T.bordure,
   },
   faitSep: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: T.bordure, marginHorizontal: 14 },
   faitLabel: { fontSize: 8.5, fontFamily: POLICE.gras, letterSpacing: 1, color: T.gris, marginBottom: 3 },
   faitVal: { fontSize: 14, fontFamily: POLICE.gras, color: T.encre, fontVariant: ["tabular-nums"] },
-
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-
-  contact: { backgroundColor: T.carteDouce, borderWidth: 1, borderColor: T.carteBord, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11 },
-  contactEntete: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8 },
-  contactNom: { fontSize: 13, fontFamily: POLICE.gras, color: T.encre },
-  contactSous: { fontSize: 12, fontFamily: POLICE.normal, color: T.gris },
-  contactChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-  contactChip: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  contactChipTexte: { fontSize: 11, fontFamily: POLICE.demi },
-
-  doc: {
-    flexDirection: "row", alignItems: "center", gap: 9,
-    backgroundColor: T.bleuVoile, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10,
-  },
-  docTexte: { flex: 1, fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
 }));

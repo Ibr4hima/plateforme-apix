@@ -15,13 +15,12 @@ import { API } from "@/lib/api";
 import DocumentsFiche from "@/components/DocumentsFiche";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille } from "@/components/ui";
-import { IOS } from "@/lib/plateforme";
 import Thematiques from "@/components/Thematiques";
 import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { POLICE, T, TYPO } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const ROLE_PASTEL: Record<string, string> = {
@@ -90,31 +89,20 @@ function plageComplete(e: any): string | null {
 }
 
 // ── Briques de la fiche ──────────────────────────────────────────────────────
-// SUR iOS, la fiche se lit en listes groupées : l'essentiel (date, lieu,
-// échéance) dans un bloc blanc, l'organisation en lignes séparées d'un filet,
-// la description, les thématiques et les invités chacun dans son bloc.
+// La fiche se lit en listes groupées, sur iOS comme sur Android (ListeIOS) :
+// l'essentiel (date, lieu, échéance) dans un bloc blanc, l'organisation en
+// lignes séparées d'un filet, la description, les thématiques et les invités
+// chacun dans son bloc.
 
-/** `liste` : la section porte des lignes (un groupe sur iOS) plutôt qu'un
-    contenu libre (un bloc sur iOS). */
+/** `liste` : la section porte des lignes (un groupe) plutôt qu'un contenu
+    libre (un bloc). */
 function Section({ titre, liste, children }: { titre: string; liste?: boolean; children: React.ReactNode }) {
-  if (IOS) return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
-  return (
-    <View>
-      <Text style={s.sectionTitre}>{titre.toUpperCase()}</Text>
-      {children}
-    </View>
-  );
+  return <View><EnTeteSection titre={titre} />{liste ? children : <Bloc>{children}</Bloc>}</View>;
 }
 
 function Rangee({ label, valeur }: { label: string; valeur?: string | null }) {
   if (!valeur) return null;
-  if (IOS) return <LigneValeur label={label} valeur={valeur} />;
-  return (
-    <View style={s.rangee}>
-      <Text style={s.rangeeLabel}>{label}</Text>
-      <Text style={s.rangeeValeur} numberOfLines={2}>{valeur}</Text>
-    </View>
-  );
+  return <LigneValeur label={label} valeur={valeur} />;
 }
 
 export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: () => void }) {
@@ -143,7 +131,7 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
 
   return (
     <Feuille onClose={onClose} ecart={22} fondGroupe
-      titre={<Text style={s.titre}>{e.nom_event}</Text>}
+      titre={e.nom_event}
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX
         <Text style={s.meta} numberOfLines={1}>
@@ -183,17 +171,10 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       {/* ── Organisation ── */}
       {(e.organisateur || recurrence) && (
         <Section titre="Organisation" liste>
-          {IOS ? (
-            <Groupe>
-              <Rangee label="Organisateur" valeur={e.organisateur} />
-              <Rangee label="Récurrence" valeur={recurrence} />
-            </Groupe>
-          ) : (
-            <View style={s.rangees}>
-              <Rangee label="Organisateur" valeur={e.organisateur} />
-              <Rangee label="Récurrence" valeur={recurrence} />
-            </View>
-          )}
+          <Groupe>
+            <Rangee label="Organisateur" valeur={e.organisateur} />
+            <Rangee label="Récurrence" valeur={recurrence} />
+          </Groupe>
         </Section>
       )}
 
@@ -235,14 +216,13 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
 }
 
 const s = creerStyles(() => ({
-  titre: { fontSize: 21, fontFamily: POLICE.gras, color: T.encre, lineHeight: 27, letterSpacing: -0.4, flex: 1 },
   meta: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris, marginTop: 7 },
 
-  // iOS : l'essentiel est un bloc blanc du groupe ; ailleurs, un voile bleu
+  // L'essentiel est un bloc blanc du groupe
   essentiel: {
     flexDirection: "row", alignItems: "center", gap: 14,
-    backgroundColor: IOS ? T.carte : T.blocFond, borderRadius: IOS ? 16 : 18, padding: 14,
-    ...(IOS ? { borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord } : null),
+    backgroundColor: T.carte, borderRadius: 16, padding: 14,
+    borderWidth: StyleSheet.hairlineWidth, borderColor: T.carteBord,
   },
   bloc: {
     width: 50, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center",
@@ -254,14 +234,9 @@ const s = creerStyles(() => ({
   essentielLieu: { fontSize: 12.5, fontFamily: POLICE.normal, color: T.texte },
   essentielEcheance: { fontSize: 11.5, fontFamily: POLICE.gras, color: T.bleu, marginTop: 1 },
 
-  sectionTitre: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
-  rangees: { gap: 9 },
-  rangee: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
-  rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
-  rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
   description: { fontSize: 13.5, fontFamily: POLICE.normal, color: T.texte, lineHeight: 21 },
 
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  chip: { backgroundColor: IOS ? T.voile : T.filet, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
+  chip: { backgroundColor: T.voile, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 4.5 },
   chipTexte: { fontSize: 11.5, fontFamily: POLICE.demi, color: T.texte },
 }));
