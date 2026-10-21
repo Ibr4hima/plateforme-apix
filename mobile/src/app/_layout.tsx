@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { majSchema, useSombre } from "@/lib/apparence";
-import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { EMPREINTE_API } from "@/lib/api";
 import { useOptionsPile } from "@/lib/navigation";
@@ -85,7 +84,8 @@ export default function RacineLayout() {
         <Stack.Screen name="lecture/[chapitre]"
           options={IOS ? { ...optionsPile, headerShown: true, title: "" } : { headerShown: false }} />
       </Stack>
-      <BandeauHorsLigne />
+      {/* Hors ligne, rien ne l'annonce : l'app sert ses données en cache, en
+          silence, et se remet à jour d'elle-même au retour du réseau */}
       {lancement && <LancementAnime onFini={() => setLancement(false)} />}
       </View>
       </GestureHandlerRootView>
