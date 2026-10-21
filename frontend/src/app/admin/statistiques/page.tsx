@@ -10,6 +10,7 @@ import {
   Avis, Carte, ChampRecherche, Compteur, FileZone, Ligne, LigneVide, Segments, Tableau,
   IS, NUM, TD, TH, btnPrincipal,
 } from "@/components/admin/UIAdmin";
+import { fmtUSD } from "@/lib/format";
 
 import { API_BASE as API } from "@/lib/api";
 
@@ -400,13 +401,6 @@ function TransactionsPanel({ headers }: { headers: () => Record<string, string> 
   useEffect(() => { loadTable(); }, [page, fAnnee, fRessource, qDebounce, couv.length]);
   useEffect(() => { setPage(1); }, [fAnnee, fRessource]);
 
-  const fmtVal = (v: number | null) => {
-    if (v == null) return "—";
-    if (v >= 1e9) return (v / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " Md$";
-    if (v >= 1e6) return (v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " M$";
-    if (v >= 1e3) return (v / 1e3).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " k$";
-    return v.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " $";
-  };
   const nbPages = Math.max(1, Math.ceil(total / TAILLE));
 
   async function handleImport() {
@@ -536,7 +530,7 @@ function TransactionsPanel({ headers }: { headers: () => Record<string, string> 
                   <td style={{ ...TD, borderTop: "1px solid var(--bordure)", ...NUM, color: "var(--texte)" }}>{l.annee}</td>
                   <td style={{ ...TD, borderTop: "1px solid var(--bordure)", color: "var(--texte)" }}>{l.ressource}</td>
                   <td style={{ ...TD, borderTop: "1px solid var(--bordure)", textAlign: "right", ...NUM, fontWeight: 700, color: "var(--bleu)" }}
-                    title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtVal(l.valeur)}</td>
+                    title={l.valeur != null ? l.valeur.toLocaleString("fr-FR") + " $" : ""}>{fmtUSD(l.valeur)}</td>
                 </Ligne>
               ))}
             </tbody>

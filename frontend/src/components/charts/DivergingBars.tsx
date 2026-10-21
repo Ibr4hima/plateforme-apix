@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { d3 } from "@/lib/d3lazy";
+import { fmtAxe, fmtMillionsUSD } from "@/lib/format";
 
 // ── Diverging bars — Net (entrant − sortant) (vue Monde, page IDE) ────────────
 export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: boolean }) {
@@ -56,10 +57,14 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
 
     const y = d3.scaleBand().domain(data.map(d=>d.pays)).range([MT, MT+data.length*rowH]).padding(0.2);
 
-    const fmt = (v:number) => {
-      const abs = Math.abs(v), sign = v>0?"+":"-";
-      return abs>=1000 ? `${sign}${(abs/1000).toLocaleString("fr-FR",{maximumFractionDigits:1})}k` : `${sign}${Math.round(abs)}`;
-    };
+    // Valeurs en millions USD (CNUCED). Les graduations restent compactes,
+    // dans l'unité de la carte (« M$ USD »), comme les autres axes IDE. Les
+    // étiquettes des barres, elles, sont des montants : la règle commune
+    // (lib/format) les écrit « +1,2 Md $ », là où « +1,2k » laissait deviner
+    // qu'il s'agissait d'un millier de millions.
+    const signe = (v:number) => v>0 ? "+" : v<0 ? "-" : "";
+    const fmt = (v:number) => `${signe(v)}${fmtAxe(Math.abs(v))}`;
+    const fmtMontant = (v:number) => `${v>0 ? "+" : ""}${fmtMillionsUSD(v)}`;
 
     // Axes indépendants en haut (full uniquement)
     if (!mini) {
@@ -118,7 +123,7 @@ export function DivergingBars({ donnees, mini=false }: { donnees: any[]; mini?: 
         .attr("text-anchor",d=>d.net>=0?"start":"end")
         .attr("font-size",8).attr("font-weight","600")
         .style("fill",d=>d.net>=0?COLOR_POS:COLOR_NEG)
-        .text(d=>fmt(d.net));
+        .text(d=>fmtMontant(d.net));
     }
   }, [donnees, annee, ind, mini]);
 

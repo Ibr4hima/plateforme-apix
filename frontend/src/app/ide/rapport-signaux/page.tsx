@@ -319,8 +319,11 @@ export default function RapportSignaux() {
             <section style={{ marginTop: 26 }}>
               {d3Pret && serie[0].data.length > 0 && (
                 <Carte titre="Signaux relevés par année" tag={periode}>
+                  {/* Un NOMBRE de signaux : sans `fmt`, le graphe de l'onglet
+                      IDE écrit ses valeurs en millions de dollars, et
+                      l'infobulle lisait « 12 M $ » pour douze signaux. */}
                   <GrapheMultiPays series={serie} height={250} type="line"
-                    titre="rap-signaux" showDots />
+                    titre="rap-signaux" showDots fmt={fmtNombre} />
                 </Carte>
               )}
 

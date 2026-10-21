@@ -15,7 +15,8 @@ import DrapeauPays from "@/components/shared/DrapeauPays";
 import { API_BASE as API } from "@/lib/api";
 export { API };
 
-// Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, « Md $ / M $ »)
+// Valeurs CNUCED en millions USD → formatteur partagé (fr-FR, trois chiffres
+// significatifs, « Md $ / M $ / k $ »)
 export const fmtVal = fmtMillionsUSD;
 
 // ── Pastilles d'en-tête (période + séries) — styles badge_* de la plateforme ──
@@ -404,14 +405,14 @@ export function CarteTableauAnnees({ titre, rows, accent = "var(--bleu)", fmt = 
    *  dénombrement ; un montant appelle « Montant ». */
   libelleValeur?: string;
   /** Les deux colonnes chiffrées s'élargissent pour les valeurs longues :
-   *  « 1,2 Md $ » ne tient pas dans les 34 px d'un nombre de projets. */
+   *  « 1,23 Md $ » ne tient pas dans les 34 px d'un nombre de projets. */
   largeurValeur?: number;
   largeurEcart?: number;
   /** La barrette de proportion en fin de ligne.
    *
    *  ELLE SE RETIRE QUAND IL N'Y A PLUS DE PLACE POUR ELLE. Sur trois colonnes,
-   *  un tableau de montants dépense ses colonnes chiffrées en « 2,3 Md $ » et
-   *  « +1,9 Md $ » ; il ne restait à la barre qu'une vingtaine de pixels, où
+   *  un tableau de montants dépense ses colonnes chiffrées en « 2,34 Md $ » et
+   *  « +1,94 Md $ » ; il ne restait à la barre qu'une vingtaine de pixels, où
    *  toutes les années se ressemblent. Une barre qui ne compare plus rien vaut
    *  moins que la place qu'elle prend. Le PIC, lui, reste : c'est lui qui
    *  désigne le sommet, et il tient en une pastille. */
@@ -814,7 +815,7 @@ function interpreterKpi(k: KpiResult, pays: string, couleur: string): string {
     case "max_fe": return `Le pic historique des flux entrants est de ${fmt}, atteint en ${k.annee}. Toute valeur récente proche de ce niveau est remarquable.`;
     case "min_fe": return `Le minimum historique est de ${fmt} en ${k.annee}. ${v<0?"Ce minimum négatif représente une phase de désinvestissement.":"C'est le plancher de référence pour contextualiser les flux faibles."}`;
     case "std_fe": return `L'écart-type de ${fmt} mesure la volatilité des flux entrants. ${v>500?"Forte variabilité — les flux sont très irréguliers d'une année à l'autre.":v>100?"Variabilité modérée.":"Flux relativement stables dans le temps."}`;
-    case "trend_fe": return v>0?`La tendance linéaire de +${fmt}/an indique une progression structurelle des flux entrants sur la période. Le pays gagne en attractivité sur le long terme.`:`La tendance de ${fmt}/an révèle une érosion structurelle des flux entrants. Sans redressement, la trajectoire est préoccupante.`;
+    case "trend_fe": return v>0?`La tendance linéaire de ${fmt}/an indique une progression structurelle des flux entrants sur la période. Le pays gagne en attractivité sur le long terme.`:`La tendance de ${fmt}/an révèle une érosion structurelle des flux entrants. Sans redressement, la trajectoire est préoccupante.`;
     case "accel_fe": return v>0?`L'accélération positive (${fmt}) montre que la 2e moitié de la période a été meilleure que la 1ère — la dynamique s'améliore.`:`L'accélération négative (${fmt}) indique que la tendance ralentit — la 2e moitié est moins bonne que la 1ère.`;
     case "tv5_fe": return v>0?`Sur 5 ans, le taux de croissance annuel des flux entrants est de ${fmt}. ${v>15?"Dynamique très forte.":v>5?"Croissance soutenue.":"Progression modeste."}`:`Taux de variation négatif sur 5 ans (${fmt}) — déclin récent des flux entrants.`;
     case "tv10_fe": return v>0?`Sur 10 ans, le taux annuel moyen est de ${fmt}. Cela confirme une trajectoire de fond ${v>10?"très positive":"positive"}.`:`Sur 10 ans, tendance négative (${fmt}). Déclin structurel sur la décennie.`;

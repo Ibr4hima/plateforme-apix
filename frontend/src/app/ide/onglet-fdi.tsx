@@ -30,6 +30,7 @@ import { SkeletonChartGrid } from "@/components/shared/Skeleton";
 import { useDebounced } from "@/lib/useDebounced";
 import { useDonnees } from "@/lib/donnees";
 import { demarrerRedimension } from "@/lib/redimension";
+import { fmtMillionsUSDParts } from "@/lib/format";
 import { API, BadgePeriode, btnSegment, btnVue, CARTE_CLIQUABLE, type ChoixSous, ETIQ, Facette,
          FacetteSecteurs, Filet, fmtNombre, groupByContinent, LigneFiche, LIGNE_FACETTE,
          moisEnClair, Pagination, Pastille, survolCarte, TEXTE_DESC, TitreFiche } from "./partage";
@@ -953,11 +954,17 @@ export default function OngletFdi({ onVue }: {
 }
 
 /** Un montant, écrit comme un chiffre de tableau de bord : la valeur grande,
-    son unité petite à côté, et l'estimation signalée sans occuper la ligne. */
+    son unité petite à côté, et l'estimation signalée sans occuper la ligne.
+    Les millions de dollars suivent la règle commune (lib/format) : 0,64 M$
+    s'écrit « 640 k $ », 2 940 M$ « 2,94 Md $ » — à une décimale, le premier
+    devenait « 0,6 M$ ». Un effectif (« postes ») garde son écriture. */
 function Montant({ v, estime, unite, taille = 16 }: {
   v: number | null; estime: boolean | null; unite: string; taille?: number;
 }) {
   if (v == null) return <span style={{ fontSize: taille, fontWeight: 700, color: "var(--gris)" }}>—</span>;
+  const { nombre, unite: suffixe } = unite === "M$"
+    ? fmtMillionsUSDParts(v)
+    : { nombre: v.toLocaleString("fr-FR", { maximumFractionDigits: 1 }), unite };
   return (
     <span style={{ display: "inline-flex", alignItems: "baseline", gap: 4, whiteSpace: "nowrap" as const }}
       title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée" : "Valeur déclarée par l'entreprise"}>
@@ -966,9 +973,9 @@ function Montant({ v, estime, unite, taille = 16 }: {
       {estime && <span style={{ fontSize: taille * 0.8, fontWeight: 800, color: "var(--encre)" }}>≈</span>}
       <span style={{ fontSize: taille, fontWeight: 800, color: "var(--encre)",
         fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>
-        {v.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}
+        {nombre}
       </span>
-      <span style={{ fontSize: taille * 0.62, fontWeight: 700, color: "var(--gris)" }}>{unite}</span>
+      <span style={{ fontSize: taille * 0.62, fontWeight: 700, color: "var(--gris)" }}>{suffixe}</span>
     </span>
   );
 }

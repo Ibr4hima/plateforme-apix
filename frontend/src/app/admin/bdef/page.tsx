@@ -5,22 +5,24 @@ import { CheckCircle, Link2, Loader2, UploadCloud, X, FileSpreadsheet, ShieldChe
 import { authHeaders } from "@/lib/authHeaders";
 import { confirmer } from "@/components/shared/Confirmation";
 import { voile } from "@/lib/couleurs";
+import { fmtCompact, nf } from "@/lib/format";
 
 import { API_BASE as API } from "@/lib/api";
 
 const SEC: any = { fontSize: 11, fontWeight: 700, color: "var(--bleu)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 12, paddingBottom: 8, borderBottom: "1px solid var(--bordure-forte)" };
 const IS: any  = { background: "var(--fond)", border: "1px solid var(--bordure-forte)", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "var(--encre)", outline: "none", width: "100%", boxSizing: "border-box", fontFamily: "var(--font-google-sans)" };
 
+// La virgule décimale de fr-FR, et non le point de `toFixed`. Les taux et
+// ratios gardent la précision de contrôle de l'administration (2 et 4
+// décimales) ; un montant suit la règle commune (lib/format) — trois chiffres
+// significatifs, l'unité inférieure sous 1 : l'arrondi en kilo faisait de
+// 1 499 FCFA « 1 k ». Pas de « FCFA » : la colonne Unité le porte déjà.
 function fmtAdmin(v: number | null | undefined, unite: string): string {
   if (v == null) return "–";
-  if (unite === "%")     return `${v.toFixed(2)} %`;
-  if (unite === "ratio") return v.toFixed(4);
-  if (unite === "jours") return `${v.toFixed(0)} j`;
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${(v / 1e9).toFixed(2)} Md`;
-  if (a >= 1e6) return `${(v / 1e6).toFixed(1)} M`;
-  if (a >= 1e3) return `${(v / 1e3).toFixed(0)} k`;
-  return v.toFixed(0);
+  if (unite === "%")     return `${nf(v, 2)} %`;
+  if (unite === "ratio") return nf(v, 4);
+  if (unite === "jours") return `${nf(v)} j`;
+  return fmtCompact(v);
 }
 
 const NIVEAU_LABEL: Record<string, string> = {
@@ -93,7 +95,7 @@ function ScoreGauge({ score }: { score: number }) {
     <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 12, background: bg, border: `1px solid ${voile(color, 20)}`, borderRadius: 10, padding: "12px 18px" }}>
       <ShieldCheck size={26} color={color} />
       <div>
-        <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{score.toFixed(1)} %</div>
+        <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{score.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %</div>
         <div style={{ fontSize: 11, color: "var(--gris-fort)", marginTop: 2 }}>Valeurs sans erreur</div>
       </div>
     </div>

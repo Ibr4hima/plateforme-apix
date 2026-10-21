@@ -34,7 +34,8 @@ import { useDonnees } from "@/lib/donnees";
 import { badge_ambre, badge_bleu, badge_gris, badge_orange, badge_vert,
          badge_violet } from "@/lib/couleurs";
 import { CurseurPlageNace } from "@/components/shared/CurseurNace";
-import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet, fmtNombre,
+import { fmtMillionsUSDParts } from "@/lib/format";
+import { API, BadgePeriode, CARTE_CLIQUABLE, ETIQ, FacetteUnique, Filet,
          LigneFiche, ListeJetons, moisEnClair, Pagination, survolCarte, TEXTE_DESC,
          TITRE_FACETTE, TitreFiche } from "./partage";
 
@@ -532,16 +533,19 @@ export function FicheSignal({ s, onClose }: { s: Signal; onClose: () => void }) 
 }
 
 /** Un montant en tête de fiche : la valeur grande, l'unité petite, et
-    l'estimation signalée sans occuper la ligne. */
+    l'estimation signalée sans occuper la ligne. Les millions de dollars
+    suivent la règle commune (lib/format) : arrondis à l'entier, 0,64 M$
+    s'écrivaient « 1 M$ » ; ils s'écrivent « 640 k $ ». */
 function GrandMontant({ v, estime }: { v: number | null; estime: boolean | null }) {
   if (v == null) return <span style={{ fontSize: 30, fontWeight: 800, color: "var(--gris)" }}>—</span>;
+  const { nombre, unite } = fmtMillionsUSDParts(v);
   return (
     <span title={estime ? "Valeur estimée par l'algorithme du Financial Times, non déclarée"
                         : "Valeur déclarée"}
       style={{ fontSize: 30, fontWeight: 800, color: "var(--encre)", letterSpacing: "-0.02em",
         fontVariantNumeric: "tabular-nums" }}>
-      {estime ? "≈ " : ""}{fmtNombre(v)}
-      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gris)" }}> M$</span>
+      {estime ? "≈ " : ""}{nombre}
+      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--gris)" }}> {unite}</span>
     </span>
   );
 }

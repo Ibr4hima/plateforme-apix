@@ -53,9 +53,11 @@ type NaceMesure = "valeur" | "poids";
 // Cellule d'une statistique d'intervalle. L'année accompagne le minimum et le
 // maximum : sans elle, on saurait qu'un creux a eu lieu sans savoir quand,
 // ce qui est justement ce qu'on cherche en lisant plusieurs années.
-// « 16 395,8 Md FCFA » et « 303,9 Md FCFA · 2018 » sont les gabarits les plus
-// larges : les colonnes sont dimensionnées dessus, faute de quoi les nombres se
-// chevauchent d'une colonne à l'autre.
+// « 16 395,8 Md FCFA » et « 303,9 Md FCFA · 2018 », les gabarits les plus
+// larges de l'écriture à une décimale, ont dimensionné les colonnes, faute de
+// quoi les nombres se chevauchaient d'une colonne à l'autre. La règle des trois
+// chiffres significatifs (lib/format) n'écrit jamais plus large : « 16 396 Md
+// FCFA », « 99,9 Md FCFA · 2018 ».
 const L_SOMME = 106, L_MOY = 98, L_EXT = 130;
 function CelluleStat({ v, an, fmt, large, attenue }: {
   v: number | null; an?: number | null; fmt: (x: number | null) => string; large: number; attenue?: boolean;

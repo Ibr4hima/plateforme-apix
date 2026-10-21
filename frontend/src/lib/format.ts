@@ -1,7 +1,19 @@
 // ── Formatage des nombres — style unique de la plateforme ────────────────────
-// Règles : locale fr-FR (virgule décimale, espaces de milliers), 1 décimale
-// maximum, suffixes « Md $ / M $ / k $ » avec espaces. Toute nouvelle vue doit
-// passer par ces helpers plutôt que redéfinir son propre formatteur.
+// Règles : locale fr-FR (virgule décimale, espaces de milliers), suffixes
+// « Md $ / M $ / k $ » avec espaces. Toute nouvelle vue doit passer par ces
+// helpers plutôt que redéfinir son propre formatteur.
+//
+// LA PRÉCISION D'UN MONTANT : TROIS CHIFFRES SIGNIFICATIFS. Un arrondi ne doit
+// jamais tromper. Des flux d'IDE de 0,64 M $ (640 000 $ — l'ordre
+// des sortants du Sénégal en 2025) s'affichaient « 1 M $ », plus de la moitié en trop ;
+// 18,6 M $ devenait « 19 M $ », et 1 049 M $ « 1 Md $ ». La règle est celle
+// des tableaux financiers — aucune décimale à partir de 100, une entre 10 et
+// 100, deux en dessous de 10 —, et un montant qui ne vaut pas 1 dans son
+// unité passe à l'unité inférieure au lieu de s'arrondir à 0 ou à 1 :
+// 0,64 M $ s'écrit « 640 k $ ». L'écart d'affichage ne dépasse jamais 0,5 %.
+// La même règle vaut dans l'app mobile (mobile/src/lib/format.ts). Les taux,
+// ratios, durées et effectifs gardent leur écriture propre, et les exports
+// (xlsx, csv) leurs valeurs brutes.
 
 const nf1 = (v: number) => v.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
 
@@ -10,22 +22,59 @@ const nf1 = (v: number) => v.toLocaleString("fr-FR", { maximumFractionDigits: 1 
 export const nf = (v: number | null | undefined, d = 0) =>
   v != null && isFinite(v) ? v.toLocaleString("fr-FR", { maximumFractionDigits: d }) : "—";
 
-// Montant en USD (valeur brute en dollars)
-export function fmtUSD(v?: number | null): string {
-  if (v == null || !isFinite(v)) return "—";
+/** Le nombre de décimales qui garde trois chiffres significatifs. */
+export const decimalesSignificatives = (a: number): number => (a >= 100 ? 0 : a >= 10 ? 1 : 2);
+
+/** Un nombre à trois chiffres significatifs (au plus deux décimales), sans
+    zéro final : 2,90 s'écrit « 2,9 ». Un négatif que l'arrondi efface
+    (−0,004) s'écrit « 0 » — `toLocaleString` rendait « -0 ». */
+export const nfSig = (v: number): string => {
+  const s = v.toLocaleString("fr-FR", { maximumFractionDigits: decimalesSignificatives(Math.abs(v)) });
+  return s === "-0" ? "0" : s;
+};
+
+// Les paliers d'unité se franchissent à 999,5 et non à 1 000 : arrondi à
+// l'entier, 999,7 M $ s'écrirait « 1 000 M $ » au lieu de « 1 Md $ »
+const PALIER = 999.5;
+
+type Paliers = readonly (readonly [string, number])[];
+const PALIERS_USD: Paliers = [["Md $", 1e9], ["M $", 1e6], ["k $", 1e3]];
+const PALIERS_FCFA: Paliers = [["Md FCFA", 1e9], ["M FCFA", 1e6], ["k FCFA", 1e3]];
+
+/** Un montant à l'échelle de ses paliers — ["Md", 1e9], ["M", 1e6]… : la
+    plus grande unité où il vaut au moins 1 —, en deux morceaux, le nombre et
+    son unité. */
+function echelonneParts(v: number, paliers: Paliers, base: string): { nombre: string; unite: string } {
   const a = Math.abs(v);
-  if (a >= 1e9) return `${nf1(v / 1e9)} Md $`;
-  if (a >= 1e6) return `${nf1(v / 1e6)} M $`;
-  if (a >= 1e3) return `${nf1(v / 1e3)} k $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} $`;
+  for (const [unite, facteur] of paliers) {
+    if (a >= PALIER * facteur / 1000) return { nombre: nfSig(v / facteur), unite };
+  }
+  return { nombre: nfSig(v), unite: base };
 }
 
-// Montant dont la valeur d'entrée est déjà en MILLIONS d'USD (séries CNUCED)
+function echelonne(v: number, paliers: Paliers, base: string): string {
+  const { nombre, unite } = echelonneParts(v, paliers, base);
+  return unite ? `${nombre} ${unite}` : nombre;
+}
+
+// Montant en USD (valeur brute en dollars) — « 2,94 Md $ », « 640 k $ »
+export function fmtUSD(v?: number | null): string {
+  if (v == null || !isFinite(v)) return "—";
+  return echelonne(v, PALIERS_USD, "$");
+}
+
+// Montant dont la valeur d'entrée est déjà en MILLIONS d'USD (séries CNUCED,
+// fDi) — 0,64 → « 640 k $ », 18,55 → « 18,6 M $ », 2 940 → « 2,94 Md $ »
 export function fmtMillionsUSD(v?: number | null): string {
   if (v == null || !isFinite(v)) return "—";
-  const a = Math.abs(v);
-  if (a >= 1000) return `${nf1(v / 1000)} Md $`;
-  return `${Math.round(v).toLocaleString("fr-FR")} M $`;
+  return fmtUSD(v * 1e6);
+}
+
+/** Le même montant en deux morceaux, pour les fiches qui posent l'unité en
+    petit à côté du chiffre : 2 940 → { nombre: "2,94", unite: "Md $" }. */
+export function fmtMillionsUSDParts(v?: number | null): { nombre: string; unite: string } {
+  if (v == null || !isFinite(v)) return { nombre: "—", unite: "" };
+  return echelonneParts(v * 1e6, PALIERS_USD, "$");
 }
 
 // ── FCFA ─────────────────────────────────────────────────────────────────────
@@ -33,38 +82,65 @@ export function fmtMillionsUSD(v?: number | null): string {
 // se tromper de formateur décale les montants d'un facteur mille sans que rien
 // ne le signale — c'est arrivé, le nom porte donc l'unité attendue.
 
-// Entrée en MILLIONS de FCFA (familles NACE).
+// Entrée en MILLIONS de FCFA (familles NACE) — 52,1 → « 52,1 M FCFA »,
+// 0,42 → « 420 k FCFA », 6 973,9 → « 6,97 Md FCFA »
 export function fmtMFCFA(v: number | null | undefined): string {
   if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1000) return `${nf1(v / 1000)} Md FCFA`;
-  return `${nf(v)} M FCFA`;
+  return fmtFCFA(v * 1e6);
 }
 
-// Entrée en FCFA bruts (séries des graphes du tableau de bord).
+// Entrée en FCFA bruts (séries des graphes du tableau de bord, BDEF) — les
+// mêmes paliers que les dollars : « 6 974 Md FCFA », « 52,1 M FCFA »,
+// « 420 k FCFA ». Il écrivait tout en milliards : 420 000 FCFA s'y lisaient
+// « 0 Md FCFA ».
 export function fmtFCFA(v: number | null | undefined): string {
   if (v == null || !isFinite(v)) return "—";
-  return `${nf1(v / 1e9)} Md FCFA`;
+  return echelonne(v, PALIERS_FCFA, "FCFA");
 }
 
-// Poids en tonnes (NACE) : Mt / kt / t.
+// ── Tableaux à échelle commune ───────────────────────────────────────────────
+// Un tableau de montants peut poser l'unité une fois, en tête de ligne
+// (« Chiffre d'affaires · Md FCFA »), et n'écrire que des nombres nus. L'échelle
+// est celle du plus grand terme, choisie aux mêmes paliers que les montants ;
+// les termes plus petits ne doivent pas pour autant tomber à « 0 » : 40 M FCFA
+// dans une ligne en Md FCFA s'écrit « 0,04 ».
+
+/** L'échelle commune d'une série de montants en FCFA : celle de son plus grand
+    terme (en valeur absolue). */
+export function echelleFCFA(max: number): { unite: string; facteur: number } {
+  const a = Math.abs(max);
+  for (const [unite, facteur] of PALIERS_FCFA) {
+    if (a >= PALIER * facteur / 1000) return { unite, facteur };
+  }
+  return { unite: "FCFA", facteur: 1 };
+}
+
+/** Un nombre nu à l'échelle `facteur` de son tableau, trois chiffres
+    significatifs. Sous l'unité de l'échelle, il en garde deux : 0,004 et non
+    « 0 », qui ferait d'un montant réel un montant nul. */
+export function nfEchelle(v: number, facteur: number): string {
+  const x = v / facteur;
+  if (x !== 0 && Math.abs(x) < 1) return x.toLocaleString("fr-FR", { maximumSignificantDigits: 2 });
+  return nfSig(x);
+}
+
+// Poids en tonnes (NACE) : Mt / kt / t, à la précision des montants — l'écriture
+// à l'entier faisait de 1 499 t « 1 kt »
 export function fmtTonnes(v: number | null | undefined): string {
   if (v == null || !isFinite(v)) return "—";
-  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Mt`;
-  if (Math.abs(v) >= 1000) return `${nf(v / 1000)} kt`;
-  return `${nf(v)} t`;
+  return echelonne(v, [["Mt", 1e6], ["kt", 1e3]], "t");
 }
 
-// Grandeur sans devise (axes et tooltips multi-unités : population, USD, %…)
+// Grandeur sans devise (étiquettes et tooltips multi-unités : population, USD,
+// %…) — même précision que les montants : « 2,94 Md », « 640 k »
 export function fmtCompact(v?: number | null): string {
   if (v == null || !isFinite(v)) return "—";
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${nf1(v / 1e9)} Md`;
-  if (a >= 1e6) return `${nf1(v / 1e6)} M`;
-  if (a >= 1e3) return `${nf1(v / 1e3)} k`;
-  return `${Math.round(v).toLocaleString("fr-FR")}`;
+  return echelonne(v, [["Md", 1e9], ["M", 1e6], ["k", 1e3]], "");
 }
 
-// Graduations d'axe (compact, sans espace, pour ne pas déborder des marges)
+// Graduations d'axe (compact, sans espace, pour ne pas déborder des marges).
+// Elles restent à une décimale : ce sont des valeurs rondes — 250k, 1,5Md —,
+// que trois chiffres significatifs n'éclaireraient pas davantage.
 export function fmtAxe(v: number): string {
   const a = Math.abs(v);
   if (a >= 1e9) return `${nf1(v / 1e9)}Md`;
@@ -74,11 +150,11 @@ export function fmtAxe(v: number): string {
 }
 
 // Les grandeurs « par habitant » s'écrivent en entier — 2 873,6 $ et non
-// 2,9 k $. L'abréviation gagne trois caractères et perd l'information : entre
-// deux pays, l'écart de PIB par habitant se joue sur les centaines. Le partage
-// se fait par CODE d'indicateur et non par unité, car « USD » sert aussi aux
-// flux de commerce extérieur, qui se comptent en milliards et se lisent mieux
-// abrégés.
+// 2,87 k $. L'abréviation n'y gagne qu'un caractère et perd le détail : entre
+// deux pays proches, l'écart de PIB par habitant se lit au dollar près. Le
+// partage se fait par CODE d'indicateur et non par unité, car « USD » sert
+// aussi aux flux de commerce extérieur, qui se comptent en milliards et se
+// lisent mieux abrégés.
 const PAR_HABITANT = new Set(["pib_hab"]);
 
 // Valeur avec unité métier (fiches et cartes KPI des indicateurs).
@@ -95,7 +171,7 @@ export function fmtUnite(valeur: number | null | undefined, unite: string, code?
     if (code && PAR_HABITANT.has(code)) return `${v.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} $`;
     return fmtUSD(v);
   }
-  if (unite === "Md USD") return `${nf1(v)} Md $`;
+  if (unite === "Md USD") return fmtUSD(v * 1e9);
   if (unite === "hab/km²") return `${nf1(v)} hab/km²`;
   if (unite === "km²") return `${Math.round(v).toLocaleString("fr-FR")} km²`;
   if (unite === "habitants") {

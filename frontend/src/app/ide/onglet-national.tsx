@@ -15,6 +15,7 @@ import { API, BadgePeriode, BadgeSerie, btnSegment, GrapheMultiPays, BdefRow, BD
 import { requeteDonnees, useDonnees } from "@/lib/donnees";
 import { useQueries } from "@tanstack/react-query";
 import { voile } from "@/lib/couleurs";
+import { echelleFCFA, fmtFCFA, nf, nfEchelle } from "@/lib/format";
 
 
 // ── BDEF (Investissements nationaux) ──────────────────────────────────────────
@@ -22,7 +23,7 @@ const BDEF_CAT_COULEURS = ["var(--bleu)","var(--orange)","var(--vert)","var(--vi
 
 /**
  * La valeur BDEF découpée en NOMBRE et UNITÉ, pour que la carte KPI puisse
- * poser l'unité en suffixe discret. « 21 927,4 Md FCFA » d'un seul tenant et
+ * poser l'unité en suffixe discret. « 21 927 Md FCFA » d'un seul tenant et
  * en gras vole la vedette au chiffre ; le nombre porte l'information, l'unité
  * la qualifie — deux rôles, deux traitements typographiques.
  */
@@ -38,18 +39,16 @@ function fmtBdefParts(v: number|null, unite: string): { nombre: string; unite: s
 }
 
 function fmtBdef(v: number|null, unite: string, short = false): string {
-  if (v === null || v === undefined || isNaN(v)) return "N/A";
-  const nf1 = (x: number) => x.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-  if (unite === "%")     return `${nf1(v)} %`;
-  if (unite === "ratio") return v.toLocaleString("fr-FR", { maximumFractionDigits: 3 });
+  if (v === null || v === undefined || !isFinite(v)) return "N/A";
+  if (unite === "%")     return `${nf(v, 1)} %`;
+  if (unite === "ratio") return nf(v, 3);
   if (unite === "jours") return `${Math.round(v)} j`;
-  // Montants en FCFA réels (le fichier source était en millions de FCFA).
-  const suf = short ? "" : " FCFA";
-  const a = Math.abs(v);
-  if (a >= 1e9) return `${nf1(v/1e9)} Md${suf}`;
-  if (a >= 1e6) return `${nf1(v/1e6)} M${suf}`;
-  if (a >= 1e3) return `${Math.round(v/1e3).toLocaleString("fr-FR")} k${suf}`;
-  return `${Math.round(v).toLocaleString("fr-FR")} FCFA`;
+  // Montants en FCFA réels (le fichier source était en millions de FCFA) : la
+  // règle commune des montants (lib/format), trois chiffres significatifs.
+  // La forme courte — l'aperçu du sélecteur de KPI — laisse tomber « FCFA »
+  // et garde l'échelle (Md, M, k), qui fait partie du nombre.
+  const s = fmtFCFA(v);
+  return short ? s.replace(/ (Md|M|k) FCFA$/, " $1") : s;
 }
 
 type BdefNode = { id:number; code:string; libelle:string; macro_secteur_id?:number; groupe_id?:number };
@@ -114,20 +113,20 @@ function ModalBdefTable({ open, onClose, blocs, annees }: {
   };
   const multi = blocs.length > 1;
   const nbInds = blocs.reduce((n,b)=>n+b.indicateurs.length,0);
-  // Unité affichée à côté du libellé (échelle commune par indicateur) — valeurs nues dans les cellules
+  // Unité affichée à côté du libellé (échelle commune par indicateur) — valeurs nues dans les cellules.
+  // L'échelle et les nombres suivent la règle des montants (lib/format) : une
+  // cellule de 0,04 dans une ligne en Md FCFA ne s'écrit plus « 0 ».
   const uniteEtEchelle = (ind: BdefIndic): { unite:string; scale:number } => {
     if (ind.unite==="%"||ind.unite==="ratio"||ind.unite==="jours") return { unite:ind.unite, scale:1 };
     const m = Math.max(0, ...annees.map(a=>Math.abs((ind.valeurs[a] as number)||0)));
-    if (m>=1e9) return { unite:"Md FCFA", scale:1e9 };
-    if (m>=1e6) return { unite:"M FCFA", scale:1e6 };
-    if (m>=1e3) return { unite:"k FCFA", scale:1e3 };
-    return { unite:"FCFA", scale:1 };
+    const { unite, facteur } = echelleFCFA(m);
+    return { unite, scale:facteur };
   };
   const fmtNu = (ind: BdefIndic, v: number, scale: number) =>
-    ind.unite==="%" ? v.toLocaleString("fr-FR",{maximumFractionDigits:1})
-    : ind.unite==="ratio" ? v.toLocaleString("fr-FR",{maximumFractionDigits:3})
+    ind.unite==="%" ? nf(v, 1)
+    : ind.unite==="ratio" ? nf(v, 3)
     : ind.unite==="jours" ? String(Math.round(v))
-    : (v/scale).toLocaleString("fr-FR",{maximumFractionDigits:scale>=1e6?1:0});
+    : nfEchelle(v, scale);
 
   const exporter = async () => {
     // SheetJS chargé à la demande (~400 Ko) : uniquement au clic Export
@@ -285,13 +284,14 @@ function MiniModalBdefKpi({ ind, annees, libelle, onClose }: {
   // Échelle commune de l'historique : unité affichée à côté du titre, valeurs nues dans les blocs
   const estMontant = !isTaux && ind.unite !== "jours";
   const histMax = Math.max(0, ...historique.map(a=>Math.abs(ind.valeurs[a] as number)));
-  const histScale = estMontant ? (histMax>=1e9 ? 1e9 : histMax>=1e6 ? 1e6 : histMax>=1e3 ? 1e3 : 1) : 1;
-  const histUnite = estMontant ? (histScale===1e9 ? "Md FCFA" : histScale===1e6 ? "M FCFA" : histScale===1e3 ? "k FCFA" : "FCFA") : ind.unite;
+  const histEchelle = estMontant ? echelleFCFA(histMax) : { unite:ind.unite, facteur:1 };
+  const histScale = histEchelle.facteur;
+  const histUnite = histEchelle.unite;
   const fmtHist = (val:number) =>
-    ind.unite==="%" ? val.toLocaleString("fr-FR",{maximumFractionDigits:1})
-    : ind.unite==="ratio" ? val.toLocaleString("fr-FR",{maximumFractionDigits:3})
+    ind.unite==="%" ? nf(val, 1)
+    : ind.unite==="ratio" ? nf(val, 3)
     : ind.unite==="jours" ? String(Math.round(val))
-    : (val/histScale).toLocaleString("fr-FR",{maximumFractionDigits:histScale>=1e6?1:0});
+    : nfEchelle(val, histScale);
   const SecTitle = ({ children }: { children: React.ReactNode }) => (
     <p style={{ fontSize:10.5, fontWeight:700, color:"var(--bleu)", letterSpacing:"0.14em", textTransform:"uppercase" as const, marginBottom:10 }}>{children}</p>
   );
