@@ -18,7 +18,6 @@ import {
   Appearance, Dimensions, Platform, StyleSheet, useColorScheme,
   type ImageStyle, type StyleProp, type TextStyle, type ViewStyle,
 } from "react-native";
-import { IOS } from "@/lib/plateforme";
 
 // ── Android : le schéma courant, lisible hors React ──────────────────────────
 //
@@ -71,54 +70,19 @@ const FACTEUR = Math.max(0.88, Math.min(1.05,
 /** La taille adaptée à cet écran — arrondie au demi-point près. */
 export const pt = (taille: number): number => Math.round(taille * FACTEUR * 2) / 2;
 
-// ── La police du système sur iOS ─────────────────────────────────────────────
-//
-// iOS se lit en SF Pro : c'est la police de chaque écran du système, celle que
-// l'œil y attend. Les feuilles de style nomment Google Sans (POLICE), qui
-// reste la police d'Android ; sur iOS, toute famille Google Sans devient la
-// police du système À LA MÊME GRAISSE.
-//
-// SF porte son propre interlettrage optique, réglé pour chaque taille :
-// l'interlettrage NÉGATIF posé pour resserrer Google Sans le resserrerait
-// encore — il est retiré. Le positif (les petites capitales espacées) reste.
-//
-// Une famille Google Sans oubliée quelque part reste simplement en Google
-// Sans : les polices sont toujours chargées, rien ne casse.
-const GRAISSES: Record<string, TextStyle["fontWeight"]> = {
-  GoogleSans_400Regular: "400",
-  GoogleSans_500Medium: "500",
-  GoogleSans_600SemiBold: "600",
-  GoogleSans_700Bold: "700",
-};
-
-/** Le style, sur iOS, dans la police du système (sans effet ailleurs). */
-export function versPoliceSysteme<S>(style: S): S {
-  const st: any = style;
-  if (!IOS || !st || typeof st !== "object") return style;
-  const graisse = typeof st.fontFamily === "string" ? GRAISSES[st.fontFamily] : undefined;
-  if (!graisse) return style;
-  // La graisse de la famille l'emporte : avec Google Sans, c'est elle qui
-  // choisissait le dessin, quel que soit un fontWeight voisin
-  const { fontFamily: _famille, ...reste } = st;
-  if (typeof reste.letterSpacing === "number" && reste.letterSpacing < 0) delete reste.letterSpacing;
-  return { ...reste, fontWeight: graisse } as S;
-}
-
 const adapter = (styles: any) => {
+  if (FACTEUR === 1) return styles;
   for (const cle of Object.keys(styles)) {
-    let st = styles[cle];
+    const st = styles[cle];
     if (!st) continue;
-    st = versPoliceSysteme(st);
     const { fontSize, lineHeight, letterSpacing } = st;
-    if (FACTEUR !== 1 && (fontSize != null || lineHeight != null)) {
-      st = {
-        ...st,
-        ...(fontSize != null ? { fontSize: pt(fontSize) } : null),
-        ...(lineHeight != null ? { lineHeight: pt(lineHeight) } : null),
-        ...(letterSpacing != null ? { letterSpacing: letterSpacing * FACTEUR } : null),
-      };
-    }
-    styles[cle] = st;
+    if (fontSize == null && lineHeight == null) continue;
+    styles[cle] = {
+      ...st,
+      ...(fontSize != null ? { fontSize: pt(fontSize) } : null),
+      ...(lineHeight != null ? { lineHeight: pt(lineHeight) } : null),
+      ...(letterSpacing != null ? { letterSpacing: letterSpacing * FACTEUR } : null),
+    };
   }
   return styles;
 };

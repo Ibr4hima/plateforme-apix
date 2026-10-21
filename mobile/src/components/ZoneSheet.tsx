@@ -17,7 +17,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { fmtDate } from "@/lib/format";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { FONTE, POLICE, T, TYPO } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -94,7 +94,7 @@ export default function ZoneSheet({ zone, onClose }: { zone: any; onClose: () =>
       titre={<Text style={s.titre}>{zone.nom_zone}</Text>}
       sousEntete={
         <Text style={s.meta} numberOfLines={1}>
-          <Text style={{ color: col, ...FONTE.gras }}>{zone.type_zone}</Text>
+          <Text style={{ color: col, fontFamily: POLICE.gras }}>{zone.type_zone}</Text>
           {[zone.pole_nom, locStr].filter(Boolean).map(p => `   ·   ${p}`).join("")}
         </Text>
       }

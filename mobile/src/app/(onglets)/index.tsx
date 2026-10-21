@@ -297,14 +297,14 @@ const s = creerStyles(() => ({
   // iOS — l'en-tête « Aujourd'hui » : date en petites capitales, grand titre
   enTeteIOS: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 6 },
   ligneDateIOS: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 34 },
-  dateIOS: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris },
+  dateIOS: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris, letterSpacing: 0.6 },
   boutonsIOS: { flexDirection: "row", alignItems: "center", gap: 10 },
   boutonRond: {
     width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
     backgroundColor: T.voile,
   },
   // Le grand titre d'iOS : 34 pt gras, interligne 41
-  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.encre },
+  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.encre, letterSpacing: -0.7 },
   voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },
 
   // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,

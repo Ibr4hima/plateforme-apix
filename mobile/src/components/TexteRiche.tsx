@@ -5,7 +5,7 @@
 // htmlEnTexte qui perdait tout le formatage voulu à l'upload.
 import { memo, useMemo } from "react";
 import { Text, TextStyle, View } from "react-native";
-import { FONTE } from "@/theme";
+import { POLICE } from "@/theme";
 
 type Noeud =
   | { type: "el"; tag: string; classe: string; enfants: Noeud[] }
@@ -86,7 +86,7 @@ function rendreInline(noeuds: Noeud[], ctx: Ctx, herite: TextStyle, cle = "i"): 
     if (n.type === "txt") return n.texte;
     if (n.tag === "br") return "\n";
     let style: TextStyle = { ...herite };
-    if (n.tag === "b" || n.tag === "strong") style = { ...style, ...FONTE.gras };
+    if (n.tag === "b" || n.tag === "strong") style = { ...style, fontFamily: POLICE.gras };
     if (n.tag === "i" || n.tag === "em") style = { ...style, fontStyle: "italic" };
     if (n.tag === "u") style = { ...style, textDecorationLine: "underline" };
     return <Text key={`${cle}${i}`} style={style}>{rendreInline(n.enfants, ctx, style, `${cle}${i}`)}</Text>;
@@ -96,7 +96,7 @@ function rendreInline(noeuds: Noeud[], ctx: Ctx, herite: TextStyle, cle = "i"): 
 function Paragraphe({ noeuds, ctx, dernier }: { noeuds: Noeud[]; ctx: Ctx; dernier: boolean }) {
   return (
     <Text style={{
-      ...FONTE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
+      fontFamily: POLICE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
       lineHeight: ctx.lineHeight, marginBottom: dernier ? 0 : ctx.fontSize * 0.55,
     }}>
       {rendreInline(noeuds, ctx, {})}
@@ -180,14 +180,14 @@ function Liste({ el, ctx, dernier, profondeur = 0 }: {
           <View key={i}>
             <View style={{ flexDirection: "row" }}>
               <Text style={{
-                ...FONTE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
+                fontFamily: POLICE.normal, color: ctx.couleur, fontSize: ctx.fontSize,
                 lineHeight: ctx.lineHeight, width: retrait,
               }}>{marqueur}</Text>
               {enBlocs ? (
                 <View style={{ flex: 1 }}>{rendreBlocs(contenu, ctx, `l${i}`)}</View>
               ) : (
                 <Text style={{
-                  flex: 1, ...FONTE.normal, color: ctx.couleur,
+                  flex: 1, fontFamily: POLICE.normal, color: ctx.couleur,
                   fontSize: ctx.fontSize, lineHeight: ctx.lineHeight,
                 }}>
                   {rendreInline(contenu, ctx, {})}

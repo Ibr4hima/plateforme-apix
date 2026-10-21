@@ -12,7 +12,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Feuille, Tapable } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
-import { FONTE, POLICE, T } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const MAX_SEL_IDE = 4;
@@ -178,7 +178,7 @@ export default function IdeFiltres({ pays, senId, groupements, refSecteurs, anne
     <Pressable onPress={() => !desactive && onPress()}
       style={({ pressed }) => [s.ligne, indent && { paddingLeft: 26 }, pressed && { backgroundColor: T.champ }, desactive && { opacity: 0.4 }]}>
       <View style={[s.point, { borderColor: actif ? couleur : T.grisClair, backgroundColor: actif ? couleur : "transparent" }]} />
-      <Text style={[s.ligneNom, actif && { ...FONTE.gras }]} numberOfLines={1}>{nom}</Text>
+      <Text style={[s.ligneNom, actif && { fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
       {badge ? <View style={s.refBadge}><Text style={s.refBadgeTexte}>{badge}</Text></View> : null}
     </Pressable>
   );

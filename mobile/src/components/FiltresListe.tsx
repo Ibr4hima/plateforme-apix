@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feuille, Tapable } from "@/components/ui";
 import { succes, tick } from "@/lib/haptique";
-import { FONTE, POLICE, T } from "@/theme";
+import { POLICE, T } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
 export const basculer = (liste: string[], v: string) =>
@@ -35,7 +35,7 @@ export function Coche({ label, sel, onPress, retrait = 0 }: {
     <Pressable onPress={() => { tick(); onPress(); }}
       style={({ pressed }) => [s.coche, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }]}>
       <View style={[s.point, { borderColor: grisPoint }, sel && { borderColor: bleuPoint, backgroundColor: bleuPoint }]} />
-      <Text style={[s.cocheTexte, sel && { ...FONTE.gras, color: T.encre }]} numberOfLines={1}>{label}</Text>
+      <Text style={[s.cocheTexte, sel && { fontFamily: POLICE.gras, color: T.encre }]} numberOfLines={1}>{label}</Text>
     </Pressable>
   );
 }
@@ -210,7 +210,7 @@ export function PlageAnnees({ titre, min, max, debut, fin, onChange }: {
         <TextInput defaultValue={String(debut)} keyboardType="number-pad" maxLength={4}
           onEndEditing={e => { const v = parseInt(e.nativeEvent.text, 10); if (!isNaN(v)) onChange(Math.max(min, Math.min(v, fin)), fin); }}
           style={[s.champ, { flex: 1, marginBottom: 0, textAlign: "center" }]} />
-        <Text style={{ alignSelf: "center", color: T.gris, ...FONTE.normal }}>—</Text>
+        <Text style={{ alignSelf: "center", color: T.gris, fontFamily: POLICE.normal }}>—</Text>
         <TextInput defaultValue={String(fin)} keyboardType="number-pad" maxLength={4}
           onEndEditing={e => { const v = parseInt(e.nativeEvent.text, 10); if (!isNaN(v)) onChange(debut, Math.min(max, Math.max(v, debut))); }}
           style={[s.champ, { flex: 1, marginBottom: 0, textAlign: "center" }]} />

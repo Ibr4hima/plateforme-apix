@@ -17,7 +17,7 @@ import { API } from "@/lib/api";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { FONTE, POLICE, T, TYPO } from "@/theme";
+import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
@@ -293,7 +293,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {meta.length > 0 && (
             <Text style={s.meta} numberOfLines={1}>
               {onglet !== "cibles" && badge ? (
-                <Text style={{ color: teinte(couleurProspect(badge.label)), ...FONTE.gras }}>{badge.label}</Text>
+                <Text style={{ color: teinte(couleurProspect(badge.label)), fontFamily: POLICE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}

@@ -12,6 +12,9 @@
 //     elle des segments fixes, que le contenu ne doit pas recouvrir — d'où
 //     headerTransparent: false, qui empêche native-stack de la rendre
 //     translucide dès qu'un champ de recherche s'y loge.
+// Les titres sont en Google Sans, la police de l'app sur les deux systèmes :
+// demi-gras pour le titre en ligne, gras pour le grand titre — les graisses
+// qu'iOS donne à ses propres titres.
 //
 // SUR ANDROID, rien ne change : les écrans dessinent leur bandeau bleu, la
 // barre du système reste cachée.
@@ -31,6 +34,7 @@ export function useOptionsPile(): NativeStackNavigationOptions {
     headerTintColor: bleu,
     headerShadowVisible: false,
     headerStyle: { backgroundColor: fond },
+    headerTitleStyle: { fontFamily: POLICE.demi },
     contentStyle: { backgroundColor: T.fond as unknown as string },
   } : {
     headerStyle: { backgroundColor: heroFond },
@@ -56,6 +60,8 @@ export function useOptionsRacineOnglet(titre: string): NativeStackNavigationOpti
     headerShadowVisible: false,
     headerLargeTitleShadowVisible: false,
     headerTintColor: bleu,
+    headerTitleStyle: { fontFamily: POLICE.demi },
+    headerLargeTitleStyle: { fontFamily: POLICE.gras },
     contentStyle: { backgroundColor: T.fond as unknown as string },
   } : {
     headerShown: false,

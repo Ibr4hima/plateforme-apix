@@ -7,7 +7,9 @@
 // iOS 26, tout cela prend le verre Liquid Glass sans rien demander. Les
 // segments deviennent le contrôle segmenté d'iOS, posé juste sous la barre.
 // Ce composant ne dessine alors presque rien : il DÉCRIT la barre au
-// navigateur (Stack.Screen), qui la fait dessiner par UIKit.
+// navigateur (Stack.Screen), qui la fait dessiner par UIKit. Les titres et
+// les segments restent en Google Sans, la police de l'app sur les deux
+// systèmes.
 //
 // SUR ANDROID : le gabarit de l'accueil, un BANDEAU BLEU qui part du haut de
 // l'écran (barre d'état comprise) et englobe les commandes et le titre ; la
@@ -42,7 +44,7 @@ import { tick } from "@/lib/haptique";
 import { creerStyles, useCouleur, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { useCap } from "@/lib/marges";
 import { IOS } from "@/lib/plateforme";
-import { DEGRADE_HERO, ECHELLE, POLICE, T } from "@/theme";
+import { DEGRADE_HERO, ECHELLE, POLICE, POLICE_POSTSCRIPT, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
@@ -130,6 +132,8 @@ function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }:
       {segments && (
         <View style={[s.segmentsIOS, cap]}>
           <SegmentedControl
+            fontStyle={{ fontFamily: POLICE_POSTSCRIPT.moyen, fontSize: 13 }}
+            activeFontStyle={{ fontFamily: POLICE_POSTSCRIPT.demi, fontSize: 13 }}
             values={segments.options.map(o => (o.compte != null ? `${o.label} (${o.compte})` : o.label))}
             selectedIndex={Math.max(0, segments.options.findIndex(o => o.cle === segments.valeur))}
             onChange={e => {

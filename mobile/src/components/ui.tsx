@@ -24,7 +24,7 @@ import { foncerPastel } from "@/lib/couleurs";
 import { tick } from "@/lib/haptique";
 import { DUREE, ENTREE, RESSORT, apparition } from "@/lib/motion";
 import { origineRecente } from "@/lib/origineTap";
-import { ECHELLE, ESPACE, FONTE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
+import { ECHELLE, ESPACE, OMBRE, POLICE, RAYON, T, TYPO } from "@/theme";
 
 const ANDROID = Platform.OS === "android";
 const PressableReanime = Reanime.createAnimatedComponent(Pressable);
@@ -198,7 +198,7 @@ export function Bouton({ label, onPress, variante = "primaire", taille = "moyenn
     <Tapable onPress={onPress} disabled={disabled}
       style={[sb.base, fond, { paddingVertical: dims.pv, paddingHorizontal: dims.ph }, style]}>
       {icone ? <Symbole nom={icone} taille={dims.fs + 3} couleur={texteCouleur} /> : null}
-      <Text style={{ fontSize: dims.fs, ...FONTE.gras, color: texteCouleur }}>{label}</Text>
+      <Text style={{ fontSize: dims.fs, fontFamily: POLICE.gras, color: texteCouleur }}>{label}</Text>
     </Tapable>
   );
 }
@@ -215,7 +215,7 @@ export function Chip({ label, actif, onPress, variante = "pastel", couleur, desa
   const fondActif = variante === "pleine"
     ? { backgroundColor: T.bleuAction, borderColor: "transparent" }
     : { backgroundColor: `${c}14`, borderColor: `${c}66` };
-  const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, ...FONTE.gras };
+  const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, fontFamily: POLICE.gras };
   return (
     <Tapable onPress={() => { tick(); onPress(); }} disabled={desactive} style={[sc.chip, actif && fondActif]}>
       <Text style={[sc.texte, couleur && !actif && { color: c }, actif && texteActif]}>{label}</Text>

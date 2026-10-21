@@ -3,8 +3,10 @@
 // SUR iOS : la barre d'onglets DU SYSTÈME (UITabBar), plus une imitation.
 // Sur iOS 26 elle est en verre Liquid Glass et se réduit quand on fait
 // défiler vers le bas ; sur iPad, iPadOS la place en haut de l'écran ; elle
-// porte les SF Symbols et la teinte de l'app. Retoucher l'onglet actif
-// ramène en haut et à la racine — le réflexe iOS, assuré par le système.
+// porte les SF Symbols, la teinte de l'app et ses libellés en Google Sans,
+// aux tailles d'iOS (10 pt sur iPhone, plus grands sur iPad). Retoucher
+// l'onglet actif ramène en haut et à la racine — le réflexe iOS, assuré par
+// le système.
 //
 // SUR ANDROID : une barre ANCRÉE, à plat, d'un bord à l'autre, la pastille
 // d'indication derrière l'icône — la grammaire de Material 3. Elle est
@@ -18,7 +20,7 @@ import Icone, { type NomsIcone } from "@/components/Icone";
 import { Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
 import { creerStyles, useCouleur } from "@/lib/apparence";
-import { IOS } from "@/lib/plateforme";
+import { IOS, IPAD } from "@/lib/plateforme";
 import { ECHELLE, POLICE, T } from "@/theme";
 
 const ONGLETS: readonly ({ nom: string; titre: string; court: string } & NomsIcone)[] = [
@@ -36,7 +38,8 @@ export default function OngletsLayout() {
 function OngletsIOS() {
   const bleu = useCouleur(T.bleu) as unknown as string;
   return (
-    <NativeTabs tintColor={bleu} minimizeBehavior="onScrollDown">
+    <NativeTabs tintColor={bleu} minimizeBehavior="onScrollDown"
+      labelStyle={{ fontFamily: POLICE.moyen, fontSize: IPAD ? 13 : 10 }}>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
         <Label>Accueil</Label>
