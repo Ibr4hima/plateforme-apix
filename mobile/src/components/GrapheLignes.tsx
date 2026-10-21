@@ -19,7 +19,7 @@ import {
 } from "react-native-reanimated";
 import { cran } from "@/lib/haptique";
 import { DUREE, RESSORT, SORTIE } from "@/lib/motion";
-import { POLICE, T } from "@/theme";
+import { FONTE, POLICE, T } from "@/theme";
 import { creerStyles, resoudre, useSombre } from "@/lib/apparence";
 
 export type Serie = { nom: string; couleur: string; data: { annee: number; valeur: number | null }[] };
@@ -256,7 +256,7 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
       <View style={{ height: hauteur }} onLayout={e => setLargeur(e.nativeEvent.layout.width)}>
         {vide && (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-            <TexteRN style={{ fontSize: 11.5, fontFamily: POLICE.normal, color: T.grisClair }}>Aucune donnée sur la période</TexteRN>
+            <TexteRN style={{ fontSize: 11.5, ...FONTE.normal, color: T.grisClair }}>Aucune donnée sur la période</TexteRN>
           </View>
         )}
       </View>
@@ -384,16 +384,16 @@ function GrapheLignes({ series: seriesBrutes, hauteur = 170, fmt, epure }: {
             position: "absolute", top: 2, left: bulleX, width: bulleL,
             backgroundColor: "rgba(26,26,46,0.93)", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7,
           }}>
-            <TexteRN style={{ fontSize: 10.5, fontFamily: POLICE.gras, color: "#fff" }}>{curseur}</TexteRN>
+            <TexteRN style={{ fontSize: 10.5, ...FONTE.gras, color: "#fff" }}>{curseur}</TexteRN>
             {lecturesCurseur.map(l => (
               <View key={l.nom} style={{ flexDirection: "row", alignItems: "center", gap: 5, marginTop: 3 }}>
                 {!seule && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: l.couleur }} />}
-                {!seule && <TexteRN style={{ flexShrink: 1, fontSize: 10, fontFamily: POLICE.normal, color: "rgba(255,255,255,0.75)" }} numberOfLines={1}>{l.nom}</TexteRN>}
-                <TexteRN style={{ marginLeft: "auto", fontSize: 10.5, fontFamily: POLICE.demi, color: "rgba(255,255,255,0.95)" }} numberOfLines={1}>
+                {!seule && <TexteRN style={{ flexShrink: 1, fontSize: 10, ...FONTE.normal, color: "rgba(255,255,255,0.75)" }} numberOfLines={1}>{l.nom}</TexteRN>}
+                <TexteRN style={{ marginLeft: "auto", fontSize: 10.5, ...FONTE.demi, color: "rgba(255,255,255,0.95)" }} numberOfLines={1}>
                   {fmt(l.valeur)}
                 </TexteRN>
                 {l.delta !== null && (
-                  <TexteRN style={{ fontSize: 9.5, fontFamily: POLICE.gras, color: l.delta >= 0 ? "#7FE0A7" : "#FCA5A5", fontVariant: ["tabular-nums"] }} numberOfLines={1}>
+                  <TexteRN style={{ fontSize: 9.5, ...FONTE.gras, color: l.delta >= 0 ? "#7FE0A7" : "#FCA5A5", fontVariant: ["tabular-nums"] }} numberOfLines={1}>
                     {l.delta >= 0 ? "▲" : "▼"} {Math.abs(l.delta).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
                   </TexteRN>
                 )}

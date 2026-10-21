@@ -17,7 +17,9 @@ import { majSchema, useSombre } from "@/lib/apparence";
 import BandeauHorsLigne from "@/components/BandeauHorsLigne";
 import LancementAnime from "@/components/LancementAnime";
 import { EMPREINTE_API } from "@/lib/api";
+import { ecranEmpile, useOptionsPile } from "@/lib/navigation";
 import { marquerOrigine } from "@/lib/origineTap";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -61,38 +63,41 @@ export default function RacineLayout() {
   const sombre = useSombre();
   majSchema(sombre);
   const cleApparence = Platform.OS === "android" ? (sombre ? "nuit" : "jour") : "app";
+  const optionsPile = useOptionsPile();
 
   if (!polices) return null;
 
   return (
     <PersistQueryClientProvider client={queryClient}
       persistOptions={{ persister, maxAge: UNE_SEMAINE, buster: EMPREINTE_API }}>
-      <StatusBar style="light" />
+      {/* iOS : la barre d'état suit l'apparence, sur les barres claires du
+          système ; Android : blanche, sur les bandeaux bleus de l'app */}
+      <StatusBar style={IOS ? "auto" : "light"} />
       {/* Capture passive de l'origine de chaque toucher (transitions
           contextuelles des feuilles) — ne revendique jamais le geste */}
       <GestureHandlerRootView style={{ flex: 1 }}>
       <View key={cleApparence} style={{ flex: 1 }}
         onStartShouldSetResponderCapture={e => { marquerOrigine(e.nativeEvent.pageY); return false; }}>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: T.heroFond },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontFamily: POLICE.gras },
-          headerBackTitleStyle: { fontFamily: POLICE.moyen },
-          contentStyle: { backgroundColor: T.fond },
-        }}>
+      {/* iOS : la barre de navigation du système sur chaque écran empilé
+          (voir lib/navigation) ; Android : les bandeaux de l'app */}
+      <Stack screenOptions={optionsPile}>
         <Stack.Screen name="(onglets)" options={{ headerShown: false }} />
-        <Stack.Screen name="recherche" options={{ title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte }, headerTintColor: T.encre, headerTitleStyle: { fontFamily: POLICE.gras, color: T.encre } }} />
-        <Stack.Screen name="accords" options={{ headerShown: false }} />
-        <Stack.Screen name="evenements" options={{ headerShown: false }} />
-        <Stack.Screen name="entreprises" options={{ headerShown: false }} />
-        <Stack.Screen name="zones" options={{ headerShown: false }} />
-        <Stack.Screen name="opportunites" options={{ headerShown: false }} />
-        <Stack.Screen name="prospects" options={{ headerShown: false }} />
-        <Stack.Screen name="fiche-pays/index" options={{ headerShown: false }} />
-        <Stack.Screen name="code/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recherche" options={IOS
+          ? { title: "Recherche", presentation: "modal", headerTransparent: false }
+          : { title: "Recherche", presentation: "modal", headerStyle: { backgroundColor: T.carte }, headerTintColor: T.encre, headerTitleStyle: { fontFamily: POLICE.gras, color: T.encre } }} />
+        <Stack.Screen name="accords" options={ecranEmpile("Accords & Traités")} />
+        <Stack.Screen name="evenements" options={ecranEmpile("Événements")} />
+        <Stack.Screen name="entreprises" options={ecranEmpile("Entreprises installées")} />
+        <Stack.Screen name="zones" options={ecranEmpile("Zones d'investissement")} />
+        <Stack.Screen name="opportunites" options={ecranEmpile("Opportunités")} />
+        <Stack.Screen name="prospects" options={ecranEmpile("Prospects")} />
+        <Stack.Screen name="fiche-pays/index" options={ecranEmpile("Fiche Pays")} />
+        <Stack.Screen name="code/index" options={ecranEmpile("Lois & Règlementations")} />
+        {/* Le lecteur reste plein écran sur les deux systèmes — comme Apple
+            Books, il a sa propre barre, discrète ; le retour se fait d'un
+            balayage depuis le bord */}
         <Stack.Screen name="code/[chapitre]" options={{ headerShown: false }} />
-        <Stack.Screen name="investissements-projetes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="investissements-projetes/index" options={ecranEmpile("Investissements projetés")} />
       </Stack>
       <BandeauHorsLigne />
       {lancement && <LancementAnime onFini={() => setLancement(false)} />}

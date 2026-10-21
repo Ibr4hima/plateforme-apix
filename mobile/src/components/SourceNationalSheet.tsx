@@ -11,7 +11,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { FONTE, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type SelNational = {
@@ -70,7 +70,7 @@ export default function SourceNationalSheet({ refs, sel, onChoisir, onClose }: {
     return (
       <Tapable echelle={0.99} onPress={() => valider(cible)} style={[st.ligne, !premier && st.ligneBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[st.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={2}>{nom}</Text>
+          <Text style={[st.ligneNom, actif && { color: T.bleu, ...FONTE.gras }]} numberOfLines={2}>{nom}</Text>
           {legende ? <Text style={st.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
         </View>
         {actif ? <Icone sf="checkmark" materiel="check" taille={16} couleur={T.bleu} poids="semibold" /> : null}

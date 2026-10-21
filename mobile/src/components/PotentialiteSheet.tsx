@@ -10,7 +10,7 @@ import TexteRiche from "@/components/TexteRiche";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { COMP_PALETTE, useTeinte } from "@/lib/couleurs";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Couleurs des niveaux territoriaux (palette du site)
@@ -61,7 +61,7 @@ export default function PotentialiteSheet({ pot: p, refAvantages, onClose }: { p
       titre={<Text style={s.titre}>{p.titre}</Text>}
       sousEntete={zoneNom ? (
         <Text style={s.meta} numberOfLines={1}>
-          <Text style={{ color: nivCouleur, fontFamily: POLICE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
+          <Text style={{ color: nivCouleur, ...FONTE.gras }}>{NIVEAU_LABELS[p.niveau] || ""}</Text>
           {`   ·   ${zoneNom}`}
         </Text>
       ) : undefined}>

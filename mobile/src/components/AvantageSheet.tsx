@@ -9,7 +9,7 @@ import TexteRiche from "@/components/TexteRiche";
 import { useTeinte } from "@/lib/couleurs";
 import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Couleur du secteur économique : primaire bleu, secondaire orange,
@@ -48,7 +48,7 @@ export default function AvantageSheet({ avantage: a, onClose }: { avantage: any;
       sousEntete={(d.secteur_nom || d.branche_nom) ? (
         <Text style={s.meta} numberOfLines={2}>
           {d.secteur_nom ? (
-            <Text style={{ color: couleurSecteur(d.secteur_nom, teinte), fontFamily: POLICE.gras }}>{d.secteur_nom}</Text>
+            <Text style={{ color: couleurSecteur(d.secteur_nom, teinte), ...FONTE.gras }}>{d.secteur_nom}</Text>
           ) : null}
           {d.secteur_nom && d.branche_nom ? "   ·   " : ""}
           {d.branche_nom || ""}

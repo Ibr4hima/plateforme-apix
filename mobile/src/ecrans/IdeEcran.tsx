@@ -95,8 +95,8 @@ export default function IdeEcran() {
     {/* L'en-tête est ANCRÉ hors du défilement : le retour et le sélecteur de
         vue restent sous le pouce, même au bas d'une page de trois sections */}
     <View style={{ flex: 1, backgroundColor: T.fond }}>
-      <EnTetePage titre="Investissements privés" bouton={boutonHero} />
-      <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
+      <EnTetePage titre="Investissements privés" titreCourt="Investissements" bouton={boutonHero} />
+      <ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[{ paddingBottom: margeBas }, cap]}>
 
       {/* Les trois familles en chips */}
       <ScrollView ref={ongletsRef} horizontal showsHorizontalScrollIndicator={false}

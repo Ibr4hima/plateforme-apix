@@ -252,7 +252,7 @@ export default function Opportunites() {
 
   // L'en-tête est ancré hors du défilement ; les chips suivent le contenu
   const entete = (
-    <EnTetePage titre="Opportunités d'investissement"
+    <EnTetePage titre="Opportunités d'investissement" titreCourt="Opportunités"
       recherche={{ valeur: q, onChange: setQ, placeholder: "Rechercher" }} />
   );
 

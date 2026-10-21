@@ -14,10 +14,11 @@
 // Ici, seuls trois écrans vivent sous les onglets : autant l'écrire.
 import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { IOS } from "@/lib/plateforme";
 
-/** Hauteur du contenu de la barre d'onglets, hors marge système. */
-// Barre ancrée en verre : ~7 pt de haut + capsule 29 + libellé ≈ 52 pt hors
-// zone sûre — 60 laisse la respiration au-dessus du contenu
+/** Hauteur du contenu de la barre d'onglets d'Android, hors marge système. */
+// Barre ancrée : ~8 pt de haut + pastille 29 + libellé ≈ 52 pt hors zone
+// sûre — 60 laisse la respiration au-dessus du contenu
 export const HAUTEUR_ONGLETS = 60;
 
 export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
@@ -27,6 +28,11 @@ export function useMargeBas({ sousOnglets = false, respiration = 24 }: {
   respiration?: number;
 } = {}): number {
   const insets = useSafeAreaInsets();
+  // iOS : sous la barre d'onglets DU SYSTÈME, la liste règle ses marges
+  // d'elle-même (contentInsetAdjustmentBehavior="automatic") — barre et
+  // indicateur d'accueil y sont déjà comptés, et la barre se réduit au
+  // défilement sur iOS 26 : il ne reste que la respiration
+  if (IOS && sousOnglets) return respiration;
   return insets.bottom + (sousOnglets ? HAUTEUR_ONGLETS : 0) + respiration;
 }
 

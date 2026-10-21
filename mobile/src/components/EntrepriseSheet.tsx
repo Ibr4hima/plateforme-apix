@@ -10,7 +10,7 @@
 // rangées clé-valeur, activités NAEMA, points focaux.
 import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema, { useNaema } from "@/components/ArbreNaema";
-import Icone from "@/components/Icone";
+import Icone, { type NomsIcone } from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
@@ -38,7 +38,7 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
 }
 
 // Bouton de la rangée d'actions — n'apparaît que si la donnée existe
-function Action({ sf, materiel, label, onPress }: { sf: string; materiel: string; label: string; onPress: () => void }) {
+function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} echelle={0.95} style={s.action}>
       <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />

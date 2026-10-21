@@ -3,9 +3,16 @@
 // Sur téléphone, l'écran d'ouverture répond à trois questions, dans l'ordre :
 // où en est l'investissement au Sénégal (chiffre vedette + tendance), qu'est-ce
 // qui arrive (prochain événement), où est-ce que je creuse (Explorer).
-// L'en-tête garde sa composition (date, « Invest in Senegal », recherche)
-// mais se pose sur un bandeau bleu institutionnel qui part du haut de
-// l'écran — compact : le reste de la page reste clair, le bleu en accent.
+//
+// L'EN-TÊTE, CHAQUE SYSTÈME LE SIEN :
+//   · iOS — l'en-tête « Aujourd'hui » de l'App Store : la date en petites
+//     capitales grises, les boutons ronds sur sa ligne, et dessous le grand
+//     titre de 34 pt, « Senegal » dans le dégradé de la marque. Pas de barre
+//     de navigation sur cet écran : un flou de matériau se pose sous la barre
+//     d'état dès qu'on fait défiler, pour que le texte ne passe jamais sous
+//     l'heure ;
+//   · Android — la même composition sur un bandeau bleu institutionnel qui
+//     part du haut de l'écran.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,16 +20,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFocusEffect, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { BlurView } from "expo-blur";
+import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useScrollToTop } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Explorer from "@/components/Explorer";
-import Icone from "@/components/Icone";
+import Icone, { type NomsIcone } from "@/components/Icone";
 import VedetteIde from "@/components/VedetteIde";
 import { Apparition, BoutonVerre, Tapable } from "@/components/ui";
 import { fetchTous } from "@/lib/api";
 import { appliquerSchema, creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
 import { tick } from "@/lib/haptique";
+import { IOS } from "@/lib/plateforme";
 import { useMargeBas } from "@/lib/marges";
 import { usePrechargement } from "@/lib/prechargement";
 import { DEGRADE_EVENEMENT, DEGRADE_HERO, ECHELLE, ESPACE, POLICE, RAYON, T, TYPO } from "@/theme";
@@ -122,9 +131,17 @@ export default function Accueil() {
   // montés simultanément, des composants par écran se disputeraient le style.
   const styleParDefaut = useStyleBarreParDefaut();
   useFocusEffect(useCallback(() => {
+    if (IOS) return;
     setStatusBarStyle("light");
     return () => setStatusBarStyle(styleParDefaut);
   }, [styleParDefaut]));
+
+  // iOS : le flou sous la barre d'état apparaît dès que le contenu y passe.
+  // Les marges automatiques font démarrer le défilement à -insets.top.
+  const defil = useRef(new Animated.Value(0)).current;
+  const voileHaut = defil.interpolate({
+    inputRange: [-insets.top, -insets.top + 18], outputRange: [0, 1], extrapolate: "clamp",
+  });
 
   const rafraichir = async () => {
     setRafraichit(true);
@@ -148,15 +165,47 @@ export default function Accueil() {
   const titre = { fontSize: tailleTitre, lineHeight: Math.round(tailleTitre * 1.21) };
 
   return (
-    <ScrollView
+    <>
+    <Animated.ScrollView
       ref={defilement}
       style={{ backgroundColor: T.fond }}
+      // iOS : sous la barre d'état et au-dessus de la barre d'onglets, les
+      // marges se règlent d'elles-mêmes (la barre se réduit sur iOS 26)
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingBottom: margeBas }}
-      refreshControl={<RefreshControl refreshing={rafraichit} onRefresh={rafraichir}
-        tintColor="#fff" progressViewOffset={insets.top} />}
+      scrollEventThrottle={16}
+      onScroll={IOS ? Animated.event([{ nativeEvent: { contentOffset: { y: defil } } }], { useNativeDriver: true }) : undefined}
+      refreshControl={IOS
+        ? <RefreshControl refreshing={rafraichit} onRefresh={rafraichir} />
+        : <RefreshControl refreshing={rafraichit} onRefresh={rafraichir} tintColor="#fff" progressViewOffset={insets.top} />}
       showsVerticalScrollIndicator={false}>
 
-      {/* ── En-tête : le bandeau bleu, du haut de l'écran au titre ── */}
+      {IOS ? (
+        // ── En-tête iOS : « Aujourd'hui », façon App Store ──
+        <View style={[s.enTeteIOS, cap]}>
+          <View style={s.ligneDateIOS}>
+            <Text style={s.dateIOS} numberOfLines={1} maxFontSizeMultiplier={ECHELLE.compact}>
+              {dateDuJour.toUpperCase()}
+            </Text>
+            <View style={s.boutonsIOS}>
+              <BoutonRond sf={sombre ? "sun.max" : "moon"} materiel={sombre ? "light_mode" : "dark_mode"}
+                onPress={basculerTheme} label={sombre ? "Passer en mode clair" : "Passer en mode sombre"} />
+              <BoutonRond sf="magnifyingglass" materiel="search" onPress={() => router.push("/recherche")} label="Rechercher" />
+            </View>
+          </View>
+          <View style={s.titreLigne}>
+            <Text style={s.titreIOS} maxFontSizeMultiplier={1.1} accessibilityRole="header">Invest in </Text>
+            <MaskedView maskElement={<Text style={s.titreIOS} maxFontSizeMultiplier={1.1}>Senegal</Text>}>
+              <LinearGradient colors={["#F5B26B", "#E8823C", "#d96f28"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                <Text style={[s.titreIOS, { opacity: 0 }]} maxFontSizeMultiplier={1.1}>Senegal</Text>
+              </LinearGradient>
+            </MaskedView>
+          </View>
+        </View>
+      ) : (
+      <>
+      {/* ── En-tête Android : le bandeau bleu, du haut de l'écran au titre ── */}
       <View style={[s.enTete, { paddingTop: insets.top + 10 }]}>
         {/* La matière du bandeau — la même que le bloc « À venir » */}
         <LinearGradient colors={[...(sombre ? DEGRADE_HERO.sombre : DEGRADE_HERO.clair)]}
@@ -204,6 +253,9 @@ export default function Accueil() {
         </View>
       </View>
 
+      </>
+      )}
+
       {/* Sur tablette, le contenu se plafonne et se centre : une carte de
           1 000 pt de large aplatit la courbe et rend les lignes illisibles */}
       <View style={cap}>
@@ -221,11 +273,40 @@ export default function Accueil() {
           Direction de l&apos;Intelligence et des Perspectives Économiques
         </Text>
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
+    {IOS && (
+      <Animated.View pointerEvents="none" style={[s.voileHaut, { height: insets.top, opacity: voileHaut }]}>
+        <BlurView tint="systemChromeMaterial" intensity={100} style={StyleSheet.absoluteFill} />
+      </Animated.View>
+    )}
+    </>
+  );
+}
+
+/** Un bouton rond d'iOS : un SF Symbol sur un fond gris discret. */
+function BoutonRond({ sf, materiel, onPress, label }: NomsIcone & { onPress: () => void; label: string }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={6} accessibilityRole="button" accessibilityLabel={label}
+      style={({ pressed }) => [s.boutonRond, pressed && { opacity: 0.5 }]}>
+      <Icone sf={sf} materiel={materiel} taille={16} couleur={T.bleu} poids="semibold" />
+    </Pressable>
   );
 }
 
 const s = creerStyles(() => ({
+  // iOS — l'en-tête « Aujourd'hui » : date en petites capitales, grand titre
+  enTeteIOS: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 6 },
+  ligneDateIOS: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 34 },
+  dateIOS: { flex: 1, minWidth: 0, fontSize: 13, fontFamily: POLICE.demi, color: T.gris },
+  boutonsIOS: { flexDirection: "row", alignItems: "center", gap: 10 },
+  boutonRond: {
+    width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center",
+    backgroundColor: T.voile,
+  },
+  // Le grand titre d'iOS : 34 pt gras, interligne 41
+  titreIOS: { fontSize: 34, lineHeight: 41, fontFamily: POLICE.gras, color: T.encre },
+  voileHaut: { position: "absolute", top: 0, left: 0, right: 0 },
+
   // Le bandeau bleu compact — coins bas arrondis, franc mais posé (18 pt,
   // moitié moins que les 28 du grand hero d'origine). L'aplat va d'un bord à
   // l'autre de l'écran ; seul son CONTENU se plafonne (cap).

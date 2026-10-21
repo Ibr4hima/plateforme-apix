@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
-import Icone from "@/components/Icone";
+import Icone, { type NomsIcone } from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { CarteContact } from "@/components/ProjetSheet";
 import { htmlEnTexte } from "@/components/ZoneSheet";
@@ -17,7 +17,7 @@ import { API } from "@/lib/api";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDateLong } from "@/lib/format";
 import { fmtPhone } from "@/lib/telephone";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export type OngletProspect = "cibles" | "historique" | "termines";
@@ -123,7 +123,7 @@ function Rangee({ label, valeur, onPress }: { label: string; valeur?: string | n
 }
 
 // Bouton de la rangée d'actions — n'apparaît que si la donnée existe
-function Action({ sf, materiel, label, onPress }: { sf: string; materiel: string; label: string; onPress: () => void }) {
+function Action({ sf, materiel, label, onPress }: NomsIcone & { label: string; onPress: () => void }) {
   return (
     <Tapable onPress={onPress} echelle={0.95} style={s.action}>
       <Icone sf={sf} materiel={materiel} taille={19} couleur={T.bleu} />
@@ -293,7 +293,7 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           {meta.length > 0 && (
             <Text style={s.meta} numberOfLines={1}>
               {onglet !== "cibles" && badge ? (
-                <Text style={{ color: teinte(couleurProspect(badge.label)), fontFamily: POLICE.gras }}>{badge.label}</Text>
+                <Text style={{ color: teinte(couleurProspect(badge.label)), ...FONTE.gras }}>{badge.label}</Text>
               ) : null}
               {onglet !== "cibles" && badge && p.siege_nom ? "   ·   " : ""}
               {p.siege_nom || ""}

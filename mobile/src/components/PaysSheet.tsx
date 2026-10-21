@@ -16,7 +16,7 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { FONTE, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -90,7 +90,7 @@ export default function PaysSheet({ pays, choisi, titre = "Choisir un pays", onC
     return (
       <Tapable echelle={0.99} onPress={() => valider(p.id)} style={[s.pays, !premier && s.paysBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.paysNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
+          <Text style={[s.paysNom, actif && { color: T.bleu, ...FONTE.gras }]} numberOfLines={1}>{p.nom}</Text>
           {legende && (p.continent || p.region_geo) ? (
             <Text style={s.paysLegende} numberOfLines={1}>
               {[p.continent, p.region_geo].filter(Boolean).join(" · ")}

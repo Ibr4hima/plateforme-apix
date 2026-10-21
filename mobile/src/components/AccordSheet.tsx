@@ -16,7 +16,7 @@ import { getJson } from "@/lib/api";
 import { drapeauEmoji } from "@/lib/drapeaux";
 import { fmtDate } from "@/lib/format";
 import { computeStatutAccord } from "@/lib/statuts";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles, useCouleur } from "@/lib/apparence";
 import { useTeinte } from "@/lib/couleurs";
 
@@ -162,7 +162,7 @@ export default function AccordSheet({ accord: a, onClose }: { accord: any; onClo
         <View>
           {legende ? <Text style={s.legende} numberOfLines={1}>{legende}</Text> : null}
           <Text style={s.meta} numberOfLines={1}>
-            {statut && <Text style={{ color: couleur, fontFamily: POLICE.gras }}>{ST_PASTEL[statut].label}</Text>}
+            {statut && <Text style={{ color: couleur, ...FONTE.gras }}>{ST_PASTEL[statut].label}</Text>}
             {statut && duree ? ` ${duree}` : ""}
             {a.reference ? `   ·   ${a.reference}` : ""}
           </Text>

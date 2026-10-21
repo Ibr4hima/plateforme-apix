@@ -222,8 +222,8 @@ export default function StatistiquesEcran() {
     <>
       {/* L'en-tête est ancré hors du défilement */}
       <View style={{ flex: 1, backgroundColor: T.fond }}>
-        <EnTetePage titre="Échanges commerciaux" bouton={boutonHero} />
-        <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentContainerStyle={{ paddingBottom: margeBas }}>
+        <EnTetePage titre="Échanges commerciaux" titreCourt="Économie" bouton={boutonHero} />
+        <Animated.ScrollView ref={defilement} style={{ backgroundColor: T.fond }} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ paddingBottom: margeBas }}>
 
         {/* Les trois lentilles en chips colorées */}
         <ScrollView ref={chipsRef} horizontal showsHorizontalScrollIndicator={false}

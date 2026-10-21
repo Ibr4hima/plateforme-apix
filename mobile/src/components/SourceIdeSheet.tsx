@@ -17,7 +17,7 @@ import Icone from "@/components/Icone";
 import { Feuille, Tapable } from "@/components/ui";
 import { cran, tick } from "@/lib/haptique";
 import type { SourceIde } from "@/lib/ideSource";
-import { POLICE, T } from "@/theme";
+import { FONTE, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
@@ -126,7 +126,7 @@ export default function SourceIdeSheet({ pays, groupements, secteurs, source, on
     return (
       <Tapable echelle={0.99} onPress={() => valider(src)} style={[s.ligne, !premier && s.ligneBord]}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.ligneNom, actif && { color: T.bleu, fontFamily: POLICE.gras }]} numberOfLines={1}>{nom}</Text>
+          <Text style={[s.ligneNom, actif && { color: T.bleu, ...FONTE.gras }]} numberOfLines={1}>{nom}</Text>
           {legende ? <Text style={s.ligneLegende} numberOfLines={1}>{legende}</Text> : null}
         </View>
         {reference ? <View style={s.tagRef}><Text style={s.tagRefTexte}>Réf.</Text></View> : null}

@@ -16,7 +16,7 @@ import EntrepriseSheet from "@/components/EntrepriseSheet";
 import Symbole from "@/components/Symbole";
 import { enPanne, getJson } from "@/lib/api";
 import { fmtUSD, fmtUnite } from "@/lib/format";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // Lu au rendu (voir PoleSheet) : sur Android un jeton fige a l'import.
@@ -174,10 +174,10 @@ export default function FichePaysContenu({ senId, autreId, autreNom }: { senId: 
             <ChiffreAnime texte={fmtUSD(totalEchanges)} style={s.nombre} />
             <Text style={s.balancePhrase}>
               {diff === 0
-                ? <>Échanges <Text style={{ fontFamily: POLICE.gras, color: T.encre }}>équilibrés</Text> sur la période.</>
+                ? <>Échanges <Text style={{ ...FONTE.gras, color: T.encre }}>équilibrés</Text> sur la période.</>
                 : <>Balance excédentaire en faveur {diff >= 0 ? "du " : "de "}
-                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>{diff >= 0 ? "Sénégal" : autreNom}</Text>
-                    <Text style={{ fontFamily: POLICE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>  +{fmtUSD(Math.abs(diff))}</Text>
+                    <Text style={{ ...FONTE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>{diff >= 0 ? "Sénégal" : autreNom}</Text>
+                    <Text style={{ ...FONTE.gras, color: diff >= 0 ? COL_SEN_() : COL_AUTRE }}>  +{fmtUSD(Math.abs(diff))}</Text>
                   </>}
             </Text>
           </>

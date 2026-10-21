@@ -14,7 +14,7 @@ import { Feuille, Tapable } from "@/components/ui";
 import { API, getJson } from "@/lib/api";
 import { POLE_COULEURS, foncerPastel, normPole, useTeinte } from "@/lib/couleurs";
 import { zoneTypeMeta } from "@/lib/zoneTypes";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 // « Kaolack, Fatick et Kaffrine » → ["Kaolack","Fatick","Kaffrine"] (règle du site)
@@ -110,7 +110,7 @@ export default function PoleSheet({ pole, zones, onClose }: { pole: any; zones: 
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.zoneNom} numberOfLines={1}>{z.nom_zone}</Text>
                     <Text style={s.zoneSous} numberOfLines={1}>
-                      <Text style={{ color: tc, fontFamily: POLICE.gras }}>{z.type_zone}</Text>
+                      <Text style={{ color: tc, ...FONTE.gras }}>{z.type_zone}</Text>
                       {`   ·   ${nbEnts} entreprise${nbEnts > 1 ? "s" : ""} installée${nbEnts > 1 ? "s" : ""}`}
                     </Text>
                   </View>

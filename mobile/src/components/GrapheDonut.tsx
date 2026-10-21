@@ -5,7 +5,13 @@ import { memo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { G, Path, Text as TexteSvg } from "react-native-svg";
 import { degradeBleu } from "@/components/GrapheBarres";
+import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
+
+// Le texte SVG choisit sa police par attributs : sur iOS, celle du système à
+// la graisse voulue ; ailleurs, Google Sans (voir POLICE)
+const policeSvg = (famille: string, graisse: "400" | "700") =>
+  IOS ? { fontWeight: graisse } : { fontFamily: famille };
 import { creerStyles, useCouleur } from "@/lib/apparence";
 
 function arc(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
@@ -49,8 +55,8 @@ function GrapheDonut({ data, fmt, centre }: {
               fill={degradeBleu(sec.i, secteurs.length)} opacity={0.92} />
           ))}
         </G>
-        <TexteSvg x={cx} y={cy - 2} fontSize={17} fontFamily={POLICE.gras} fill={encreSvg} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
-        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} fontFamily={POLICE.normal} fill={grisSvg} textAnchor="middle">total</TexteSvg>
+        <TexteSvg x={cx} y={cy - 2} fontSize={17} {...policeSvg(POLICE.gras, "700")} fill={encreSvg} textAnchor="middle">{centre ?? fmt(total)}</TexteSvg>
+        <TexteSvg x={cx} y={cy + 14} fontSize={9.5} {...policeSvg(POLICE.normal, "400")} fill={grisSvg} textAnchor="middle">total</TexteSvg>
       </Svg>
       <View style={s.legende}>
         {secteurs.map(sec => (

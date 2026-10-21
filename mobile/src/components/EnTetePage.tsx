@@ -1,6 +1,17 @@
-// En-tête de page — le gabarit de l'accueil : un BANDEAU BLEU qui part du
-// haut de l'écran (barre d'état comprise) et englobe les commandes et le
-// titre ; la page reprend en clair juste dessous.
+// En-tête de page — CHAQUE SYSTÈME LE SIEN.
+//
+// SUR iOS : la barre de navigation DU SYSTÈME. Titre en ligne sur les écrans
+// empilés, grand titre qui se replie au défilement aux racines des onglets
+// (posé par leur pile), chevron de retour et balayage depuis le bord, champ
+// de recherche natif sous le titre, bouton de barre en SF Symbol — sur
+// iOS 26, tout cela prend le verre Liquid Glass sans rien demander. Les
+// segments deviennent le contrôle segmenté d'iOS, posé juste sous la barre.
+// Ce composant ne dessine alors presque rien : il DÉCRIT la barre au
+// navigateur (Stack.Screen), qui la fait dessiner par UIKit.
+//
+// SUR ANDROID : le gabarit de l'accueil, un BANDEAU BLEU qui part du haut de
+// l'écran (barre d'état comprise) et englobe les commandes et le titre ; la
+// page reprend en clair juste dessous.
 //
 //   ┌ bandeau bleu ─────────────────────────────────────┐
 //   │ [←]            Titre centré        [🔍] [≡ …]     │
@@ -16,29 +27,140 @@
 // plus une barre : la loupe ouvre le champ à la demande, la croix le referme.
 // La barre d'état passe en blanc tant que la page a le focus — le bandeau est
 // bleu jusqu'en haut.
+import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { setStatusBarStyle } from "expo-status-bar";
-import { useCallback, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
+import type { SearchBarCommands } from "react-native-screens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icone from "@/components/Icone";
 import { BoutonVerre, Tapable } from "@/components/ui";
 import { tick } from "@/lib/haptique";
-import { creerStyles, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { creerStyles, useCouleur, useSombre, useStyleBarreParDefaut } from "@/lib/apparence";
+import { useCap } from "@/lib/marges";
+import { IOS } from "@/lib/plateforme";
 import { DEGRADE_HERO, ECHELLE, POLICE, T } from "@/theme";
 
 export type SegmentOption = { cle: string; label: string; compte?: number };
 
-export default function EnTetePage({ titre, retour = true, recherche, bouton, segments, children }: {
+type ProprietesEnTete = {
   titre: string;
+  /** Le titre de la barre iOS quand le titre complet n'y tiendrait pas —
+      « Opportunités » pour « Opportunités d'investissement ». */
+  titreCourt?: string;
   retour?: boolean;
   recherche?: { valeur: string; onChange: (v: string) => void; placeholder?: string };
   bouton?: { icone: string; onPress: () => void; badge?: number };
   segments?: { options: readonly SegmentOption[]; valeur: string; onChange: (cle: string) => void };
   children?: React.ReactNode;
-}) {
+};
+
+export default function EnTetePage(props: ProprietesEnTete) {
+  return IOS ? <EnTeteIOS {...props} /> : <EnTeteAndroid {...props} />;
+}
+
+// ── iOS : la barre du système ────────────────────────────────────────────────
+
+function EnTeteIOS({ titre, titreCourt, recherche, bouton, segments, children }: ProprietesEnTete) {
+  const cap = useCap();
+  const bleu = useCouleur(T.bleu) as unknown as string;
+
+  // LE CHAMP DE RECHERCHE EST NATIF, donc maître de son texte. L'écran, lui,
+  // peut changer la valeur de son côté — une vue qui a sa propre recherche,
+  // un filtre remis à zéro : le champ est alors réaligné, sans boucle (on
+  // retient le dernier texte venu du champ).
+  const champ = useRef<SearchBarCommands>(null);
+  const dernierTexte = useRef(recherche?.valeur ?? "");
+  const valeur = recherche?.valeur ?? "";
+  useEffect(() => {
+    if (valeur !== dernierTexte.current) {
+      dernierTexte.current = valeur;
+      champ.current?.setText(valeur);
+    }
+  }, [valeur]);
+
+  // LES OPTIONS DE LA BARRE NE CHANGENT QUE SI CE QU'ELLE MONTRE CHANGE.
+  // expo-router repasse les options au navigateur à chaque nouvel objet ; les
+  // rappels de l'écran (souvent des fonctions recréées à chaque rendu) sont
+  // donc lus dans une référence, et l'objet ne dépend que du visible.
+  const rappels = useRef({ recherche: recherche?.onChange, bouton: bouton?.onPress });
+  rappels.current = { recherche: recherche?.onChange, bouton: bouton?.onPress };
+  const avecRecherche = !!recherche;
+  const indication = recherche?.placeholder || "Rechercher";
+  const avecBouton = !!bouton;
+  const badge = bouton?.badge;
+  const options = useMemo(() => ({
+    title: titreCourt ?? titre,
+    ...(avecRecherche ? {
+      headerSearchBarOptions: {
+        // Le type de react-native-screens attend une référence jamais vide ;
+        // celle de React 19 l'est avant le montage du champ
+        ref: champ as React.RefObject<SearchBarCommands>,
+        placeholder: indication,
+        // Toujours visible, sous le titre : on y revient sans faire défiler,
+        // et le segment du dessous ne bouge pas
+        placement: "stacked" as const,
+        hideWhenScrolling: false,
+        autoCapitalize: "none" as const,
+        tintColor: bleu,
+        onChangeText: (e: any) => {
+          const texte = e.nativeEvent.text ?? "";
+          dernierTexte.current = texte;
+          rappels.current.recherche?.(texte);
+        },
+        onCancelButtonPress: () => { dernierTexte.current = ""; rappels.current.recherche?.(""); },
+      },
+    } : null),
+    ...(avecBouton ? {
+      headerRight: () => (
+        <BoutonBarre onPress={() => rappels.current.bouton?.()} badge={badge} label="Filtres" />
+      ),
+    } : null),
+  }), [titre, titreCourt, avecRecherche, indication, avecBouton, badge, bleu]);
+
+  return (
+    <>
+      <Stack.Screen options={options} />
+
+      {/* Le contrôle segmenté d'iOS, sous la barre — les compteurs, quand il
+          y en a, entre parenthèses : le contrôle natif ne porte que du texte */}
+      {segments && (
+        <View style={[s.segmentsIOS, cap]}>
+          <SegmentedControl
+            values={segments.options.map(o => (o.compte != null ? `${o.label} (${o.compte})` : o.label))}
+            selectedIndex={Math.max(0, segments.options.findIndex(o => o.cle === segments.valeur))}
+            onChange={e => {
+              const o = segments.options[e.nativeEvent.selectedSegmentIndex];
+              if (o && o.cle !== segments.valeur) { tick(); segments.onChange(o.cle); }
+            }} />
+        </View>
+      )}
+
+      {children ? <View style={[s.sousBarreIOS, cap]}>{children}</View> : null}
+    </>
+  );
+}
+
+/** Un bouton de barre iOS : un SF Symbol à la teinte de l'app ; sur iOS 26,
+    la barre le pose dans sa capsule de verre. */
+function BoutonBarre({ onPress, badge, label }: { onPress: () => void; badge?: number; label: string }) {
+  return (
+    <Pressable onPress={() => { tick(); onPress(); }} hitSlop={10} accessibilityRole="button"
+      accessibilityLabel={label} style={({ pressed }) => [s.boutonBarre, pressed && { opacity: 0.35 }]}>
+      <Icone sf="line.3.horizontal.decrease.circle" materiel="tune" taille={22} couleur={T.bleu} poids="medium" />
+      {badge ? (
+        <View style={s.badge}><Text style={s.badgeTexte}>{badge}</Text></View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+// ── Android : le bandeau bleu ────────────────────────────────────────────────
+
+function EnTeteAndroid({ titre, retour = true, recherche, bouton, segments, children }: ProprietesEnTete) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const sombre = useSombre();
@@ -165,6 +287,11 @@ export default function EnTetePage({ titre, retour = true, recherche, bouton, se
 }
 
 const s = creerStyles(() => ({
+  // iOS : le segment sous la barre, aux marges du système
+  segmentsIOS: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 10 },
+  sousBarreIOS: { paddingHorizontal: 16, paddingBottom: 8 },
+  boutonBarre: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+
   // Mêmes coins bas que le bandeau de l'accueil : 18 pt, franc mais posé
   bandeau: {
     paddingHorizontal: 20, paddingBottom: 14,

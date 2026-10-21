@@ -4,14 +4,27 @@
 // éclaircis pour rester lisibles. iOS tranche nativement (DynamicColorIOS),
 // Android au moment de la lecture (Proxy + creerStyles) ; même rendu.
 import { DynamicColorIOS, Platform } from "react-native";
-import { estSombreCourant } from "@/lib/apparence";
+import { estSombreCourant, versPoliceSysteme } from "@/lib/apparence";
 
-// Google Sans — mêmes graisses que la plateforme web (400/500/600/700)
+// Google Sans — mêmes graisses que la plateforme web (400/500/600/700).
+// C'est la police d'Android. Sur iOS, creerStyles (lib/apparence) la remplace
+// par la police du système, SF Pro, à la même graisse : les feuilles de style
+// n'ont pas à le savoir.
 export const POLICE = {
   normal:   "GoogleSans_400Regular",
   moyen:    "GoogleSans_500Medium",
   demi:     "GoogleSans_600SemiBold",
   gras:     "GoogleSans_700Bold",
+} as const;
+
+/** La police en fragment de style, pour les styles écrits EN LIGNE — hors
+    creerStyles, qui convertit d'office : Google Sans sur Android, la police
+    du système à la même graisse sur iOS. `{ ...FONTE.gras, color }` */
+export const FONTE = {
+  normal: versPoliceSysteme({ fontFamily: POLICE.normal }),
+  moyen:  versPoliceSysteme({ fontFamily: POLICE.moyen }),
+  demi:   versPoliceSysteme({ fontFamily: POLICE.demi }),
+  gras:   versPoliceSysteme({ fontFamily: POLICE.gras }),
 } as const;
 
 // Couleur clair/sombre — ACTIF.
@@ -130,7 +143,7 @@ export const T: typeof JETONS = ANDROID && SOMBRE_ACTIF
 // ── Échelle typographique unique ─────────────────────────────────────────────
 // Cinq crans, interlignes fixés. Toute taille de texte de l'app doit venir
 // d'ici (plus de 13.5 / 11.5 dispersés au cas par cas).
-export const TYPO = {
+const TYPO_GOOGLE = {
   display: { fontSize: 29,   lineHeight: 35, fontFamily: POLICE.gras,   letterSpacing: -0.6 },
   titre:   { fontSize: 19,   lineHeight: 25, fontFamily: POLICE.gras,   letterSpacing: -0.3 },
   sousTitre: { fontSize: 15, lineHeight: 20, fontFamily: POLICE.demi,   letterSpacing: -0.2 },
@@ -139,6 +152,11 @@ export const TYPO = {
   legende: { fontSize: 12.5, lineHeight: 18, fontFamily: POLICE.normal },
   micro:   { fontSize: 10.5, lineHeight: 14, fontFamily: POLICE.gras,   letterSpacing: 1.4 }, // étiquettes uppercase
 } as const;
+
+// Sur iOS, chaque cran passe dans la police du système (voir POLICE)
+export const TYPO = Object.fromEntries(
+  Object.entries(TYPO_GOOGLE).map(([cle, st]) => [cle, versPoliceSysteme(st)]),
+) as typeof TYPO_GOOGLE;
 
 // ── Dynamic Type : jusqu'où le texte a le droit de grossir ───────────────────
 // iOS laisse l'utilisateur agrandir le texte jusqu'à ×3,5 en accessibilité.

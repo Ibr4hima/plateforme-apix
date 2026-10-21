@@ -16,7 +16,7 @@ import Icone from "@/components/Icone";
 import { foncerPastel, useTeinte } from "@/lib/couleurs";
 import { fmtDate } from "@/lib/format";
 import { computeStatutEvenement } from "@/lib/statuts";
-import { POLICE, T, TYPO } from "@/theme";
+import { FONTE, POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const ROLE_PASTEL: Record<string, string> = {
@@ -132,11 +132,11 @@ export default function EvenementSheet({ ev: e, onClose }: { ev: any; onClose: (
       sousEntete={
         // Une seule ligne de méta : statut coloré · édition · rôle APIX
         <Text style={s.meta} numberOfLines={1}>
-          {st && <Text style={{ color: teinte(st.c), fontFamily: POLICE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
+          {st && <Text style={{ color: teinte(st.c), ...FONTE.gras }}>{enCours ? "En ce moment" : st.label}</Text>}
           {st && e.edition != null ? "   ·   " : ""}
           {e.edition != null ? ordinal(e.edition) : ""}
           {(st || e.edition != null) && roleP ? "   ·   " : ""}
-          {roleP && <Text style={{ color: foncerPastel(roleP), fontFamily: POLICE.gras }}>{e.role_apix}</Text>}
+          {roleP && <Text style={{ color: foncerPastel(roleP), ...FONTE.gras }}>{e.role_apix}</Text>}
         </Text>
       }>
 

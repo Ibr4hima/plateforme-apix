@@ -25,7 +25,7 @@ import {
   usePerimetreSignaux,
 } from "@/lib/fdi";
 import { tick } from "@/lib/haptique";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { ECHELLE, FONTE, POLICE, T } from "@/theme";
 import CurseurPeriode from "./CurseurPeriode";
 import { LARGEUR_FICHE } from "./FichesFdi";
 
@@ -55,7 +55,7 @@ function Ligne({ label, nb, sel, onPress, retrait = 0, orange }: {
       accessibilityLabel={nb != null ? `${label}, ${nb}` : label}
       style={({ pressed }) => [s.ligne, { paddingLeft: 8 + retrait }, pressed && { backgroundColor: T.champ }, vide && { opacity: 0.45 }]}>
       <View style={[s.point, { borderColor: grisPoint }, sel && { borderColor: couleur, backgroundColor: couleur }]} />
-      <Text style={[s.ligneTexte, sel && { fontFamily: POLICE.gras, color: orange ? couleur : T.encre }]}
+      <Text style={[s.ligneTexte, sel && { ...FONTE.gras, color: orange ? couleur : T.encre }]}
         numberOfLines={2}>{label}</Text>
       {nb != null && <Text style={s.ligneNb}>{fmtEntier(nb)}</Text>}
     </Pressable>

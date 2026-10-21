@@ -9,7 +9,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 import { Feuille, Tapable } from "@/components/ui";
 import { COMP_PALETTE } from "@/lib/couleurs";
 import { succes, tick } from "@/lib/haptique";
-import { POLICE, T } from "@/theme";
+import { FONTE, POLICE, T } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 
 export const MAX_SEL = 4;
@@ -120,7 +120,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
       <Pressable onPress={() => !desactive && clicPays(p.id)}
         style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: T.champ }, desactive && { opacity: 0.4 }]}>
         <View style={[s.point, { borderColor: col, backgroundColor: sel ? col : "transparent" }]} />
-        <Text style={[s.paysNom, sel && { fontFamily: POLICE.gras }]} numberOfLines={1}>{p.nom}</Text>
+        <Text style={[s.paysNom, sel && { ...FONTE.gras }]} numberOfLines={1}>{p.nom}</Text>
       </Pressable>
     );
   };
@@ -184,7 +184,7 @@ export default function StatistiquesFiltres({ pays, senId, anneesDispo, valeurs,
               <Pressable onPress={() => clicPays(senId)}
                 style={({ pressed }) => [s.paysLigne, pressed && { backgroundColor: T.champ }]}>
                 <View style={[s.point, { borderColor: sen.sel ? couleurDe(senId) : T.grisClair, backgroundColor: sen.sel ? couleurDe(senId) : "transparent" }]} />
-                <Text style={[s.paysNom, sen.sel && { fontFamily: POLICE.gras }]}>Sénégal</Text>
+                <Text style={[s.paysNom, sen.sel && { ...FONTE.gras }]}>Sénégal</Text>
                 <View style={s.refBadge}><Text style={s.refBadgeTexte}>Réf.</Text></View>
               </Pressable>
             )}
