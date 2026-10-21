@@ -20,14 +20,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import Icone from "@/components/Icone";
-import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide } from "@/components/ListeIOS";
+import { ChampRecherche, Groupe, Ligne, LigneDepliable, LigneVide, SegmentsCapsule } from "@/components/ListeIOS";
 import { Feuille, Tapable } from "@/components/ui";
 import { creerStyles } from "@/lib/apparence";
 import { type ComptePays, PAYS_REFERENCE, fmtEntier, plier } from "@/lib/fdi";
 import { IOS } from "@/lib/plateforme";
 import { POLICE, T } from "@/theme";
 import { LARGEUR_FICHE } from "./FichesFdi";
-import { Segments } from "./FiltresFdi";
 
 const ORDRE_CONTINENTS = ["Afrique", "Amérique", "Asie", "Europe", "Océanie", "Autre"];
 const rangContinent = (c: string) => {
@@ -120,7 +119,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
         sousEntete={
           <View style={{ gap: 10, marginTop: 14 }}>
             {regionsPermises && (
-              <Segments valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
+              <SegmentsCapsule compact valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
                 options={[{ cle: "pays", label: "Pays" }, { cle: "regions", label: "Régions" }]} />
             )}
             {echelle === "pays" && <ChampRecherche valeur={q} onChange={setQ} placeholder="Rechercher un pays" />}
@@ -196,7 +195,7 @@ export default function DestinationSheet({ pays, valeur, regionsPermises = true,
       sousEntete={
         <View style={{ gap: 10, marginTop: 10 }}>
           {regionsPermises && (
-            <Segments valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
+            <SegmentsCapsule compact valeur={echelle} onChange={v => { setEchelle(v as "pays" | "regions"); setQ(""); }}
               options={[{ cle: "pays", label: "Pays" }, { cle: "regions", label: "Régions" }]} />
           )}
           {echelle === "pays" && (

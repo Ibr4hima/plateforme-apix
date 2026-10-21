@@ -1,7 +1,7 @@
 // Prospects — le pipeline de prospection en trois lentilles : Ciblés /
-// En contact / Transformés, en chips bleues à compteurs. Les compteurs
-// suivent la recherche : on voit où se trouvent les résultats sans changer
-// de chip.
+// En contact / Transformés, en pastilles à compteurs. Les compteurs suivent
+// la recherche : on voit où se trouvent les résultats sans changer de
+// pastille.
 //
 // Cartes au gabarit de la plateforme (contour fin, sans ombre) : dénomination,
 // ancienneté contextuelle, statut en badge de la maison — fond blanc, liseré

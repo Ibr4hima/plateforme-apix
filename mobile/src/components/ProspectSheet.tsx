@@ -7,10 +7,10 @@
 // commentaire, fichiers), contraintes exprimées, cycles archivés repliables.
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ActionSheetIOS, Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, Linking, Platform, StyleSheet, Text, View } from "react-native";
 import ArbreNaema from "@/components/ArbreNaema";
 import Icone, { type NomsIcone } from "@/components/Icone";
-import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsIOS, TuilesActions } from "@/components/ListeIOS";
+import { Bloc, EnTeteSection, Groupe, LigneValeur, SegmentsCapsule, TuilesActions } from "@/components/ListeIOS";
 import { ouvrirLien } from "@/lib/liens";
 import { useVisionneuse } from "@/components/Visionneuse";
 import { Feuille, Ondulable, Tapable } from "@/components/ui";
@@ -320,19 +320,10 @@ export default function ProspectSheet({ prospect: p, onglet, onClose }: { prospe
           )}
 
           {/* Bascule Échanges ⇄ Infos (hors ciblés) */}
-          {onglet !== "cibles" && IOS && (
+          {onglet !== "cibles" && (
             <View style={{ marginTop: 14 }}>
-              <SegmentsIOS valeur={vue} onChange={v => setVue(v as "echanges" | "infos")}
+              <SegmentsCapsule compact valeur={vue} onChange={v => setVue(v as "echanges" | "infos")}
                 options={[{ cle: "echanges", label: "Échanges" }, { cle: "infos", label: "Infos investisseur" }]} />
-            </View>
-          )}
-          {onglet !== "cibles" && !IOS && (
-            <View style={s.bascule}>
-              {([["echanges", "Échanges"], ["infos", "Infos investisseur"]] as const).map(([cle, label]) => (
-                <Pressable key={cle} onPress={() => setVue(cle)} style={[s.basculeBouton, vue === cle && s.basculeActif]}>
-                  <Text style={[s.basculeTexte, vue === cle && s.basculeTexteActif]}>{label}</Text>
-                </Pressable>
-              ))}
             </View>
           )}
         </>
@@ -461,14 +452,6 @@ const s = creerStyles(() => ({
   rangeeLabel: { width: 104, fontSize: 13, fontFamily: POLICE.normal, color: T.gris, lineHeight: 18 },
   rangeeValeur: { flex: 1, fontSize: 13, fontFamily: POLICE.demi, color: T.encre, lineHeight: 18 },
 
-  bascule: {
-    flexDirection: "row", marginTop: 12, padding: 3.5, gap: 4,
-    backgroundColor: T.filet, borderRadius: 999,
-  },
-  basculeBouton: { flex: 1, alignItems: "center", paddingVertical: 7.5, borderRadius: 999 },
-  basculeActif: { backgroundColor: T.carte, shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
-  basculeTexte: { fontSize: 12, fontFamily: POLICE.demi, color: T.gris },
-  basculeTexteActif: { color: T.bleu },
   secTitle: { ...TYPO.micro, color: T.bleu, marginBottom: 10 },
   sousTitreGris: { fontSize: 9.5, fontFamily: POLICE.gras, color: T.gris, letterSpacing: 1, marginBottom: 8 },
   frise: { position: "relative" },

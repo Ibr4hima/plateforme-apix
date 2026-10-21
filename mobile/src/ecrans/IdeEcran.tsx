@@ -1,5 +1,5 @@
 // Investissements privés — repensé sur la grammaire des Échanges
-// commerciaux : le bandeau bleu d'EnTetePage, trois familles en chips bleues
+// commerciaux : la barre du système (EnTetePage), trois familles en pastilles
 // (Investissements Directs Étrangers · Investissements projetés ·
 // Investissements nationaux), puis des SECTIONS vedettes empilées.
 //
@@ -34,7 +34,7 @@ import { T } from "@/theme";
 import { useCap, useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
-// Les trois familles — chips bleues, la teinte unique du module
+// Les trois familles, en pastilles (ChipFiltre)
 const ONGLETS = [
   { cle: "ide",       label: "Investissements Directs Étrangers", couleur: "bleu" },
   { cle: "projetes",  label: "Investissements projetés",          couleur: "bleu" },

@@ -1,4 +1,4 @@
-// Échanges commerciaux — trois lentilles en chips colorées : Indicateurs
+// Échanges commerciaux — trois lentilles en pastilles : Indicateurs
 // économiques, Flux bilatéraux, Commerce extérieur.
 //
 // Les Indicateurs économiques reprennent EXACTEMENT la grammaire de la carte
@@ -29,7 +29,7 @@ import { POLICE, T, TYPO } from "@/theme";
 import { useMargeBas } from "@/lib/marges";
 import { creerStyles } from "@/lib/apparence";
 
-// Les trois lentilles — chips bleues, la teinte unique du module
+// Les trois lentilles, en pastilles (ChipFiltre)
 const LENTILLES = [
   { cle: "indicateurs", label: "Indicateurs économiques", couleur: "bleu" },
   { cle: "commerce",    label: "Flux bilatéraux",         couleur: "bleu" },

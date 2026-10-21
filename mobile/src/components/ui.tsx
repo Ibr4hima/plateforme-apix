@@ -226,33 +226,11 @@ export function Bouton({ label, onPress, variante = "primaire", taille = "moyenn
   );
 }
 
-// ── Chip (filtres, catégories) ───────────────────────────────────────────────
-// « pleine » : active en bleu plein, texte blanc. « pastel » : active en
-// voile de sa couleur, texte coloré gras (style zones / IDE).
-export function Chip({ label, actif, onPress, variante = "pastel", couleur, desactive }: {
-  label: string; actif: boolean; onPress: () => void;
-  variante?: "pleine" | "pastel"; couleur?: string; desactive?: boolean;
-}) {
-  // La teinte part en concaténation (`${c}14`) : jamais un jeton dynamique
-  const c = useCouleur(couleur) || "#004f91";
-  const fondActif = variante === "pleine"
-    ? { backgroundColor: T.bleuAction, borderColor: "transparent" }
-    : { backgroundColor: `${c}14`, borderColor: `${c}66` };
-  const texteActif = variante === "pleine" ? { color: "#fff" } : { color: c, fontFamily: POLICE.gras };
-  return (
-    <Tapable onPress={() => onPress()} disabled={desactive} style={[sc.chip, actif && fondActif]}>
-      <Text style={[sc.texte, couleur && !actif && { color: c }, actif && texteActif]}>{label}</Text>
-    </Tapable>
-  );
-}
-
-// ── ChipFiltre : la barre d'onglets en pilules, en haut des écrans ───────────
-// L'actif était signalé par un voile de bleu à 8 % et un liseré : sur une
-// carte de nuit, ce voile ne se voyait pas — et comme tous les libellés
-// étaient déjà bleus, plus rien ne disait lequel était choisi. L'actif prend
-// donc un APLAT PLEIN et une encre blanche : l'écart ne tient plus à une
-// nuance, il se lit d'un coup d'œil et il vaut dans les deux apparences.
-// Défini ici une seule fois — six écrans en recopiaient la mise en forme.
+// ── ChipFiltre : la barre d'onglets en pastilles, en haut des écrans ─────────
+// Une rangée qui défile, une pastille par vue, une seule choisie. Chaque
+// système la dessine à sa façon : les pastilles grises des onglets du site
+// sur iOS, la puce de filtre de Material 3 sur Android. Défini ici une seule
+// fois — six écrans en recopiaient la mise en forme.
 export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
   label: string; actif: boolean; compte?: number | null;
   onPress: () => void; onLayout?: (e: LayoutChangeEvent) => void;
@@ -277,37 +255,39 @@ export function ChipFiltre({ label, actif, compte, onPress, onLayout }: {
       )}
     </Pressable>
   );
+  // Android : la puce de filtre de Material 3 — 32 dp, coins de 8 dp. Au
+  // repos, un contour fin et l'encre ; choisie, le ton de sélection, sans
+  // contour, sa coche en tête, l'ondulation au toucher. Le compte suit le
+  // nom, plus discret.
   return (
     <Tapable onPress={() => onPress()} onLayout={onLayout}
       accessibilityRole="tab" accessibilityState={{ selected: actif }}
-      style={[scf.chip, actif && scf.chipActif]}>
-      <Text style={[scf.texte, actif && scf.texteActif]} maxFontSizeMultiplier={ECHELLE.compact}>
+      style={[scf.puce, actif && scf.puceChoisie]}>
+      {actif ? <Icone sf="checkmark" materiel="check" taille={18} couleur={T.bleu} /> : null}
+      <Text style={[scf.puceTexte, actif && scf.puceTexteChoisie]} maxFontSizeMultiplier={ECHELLE.compact}>
         {label}
       </Text>
       {compte != null && (
-        <View style={[scf.compte, actif && scf.compteActif]}>
-          <Text style={[scf.compteTexte, actif && scf.compteTexteActif]}
-            maxFontSizeMultiplier={ECHELLE.compact}>{compte}</Text>
-        </View>
+        <Text style={[scf.puceCompte, actif && scf.puceCompteChoisie]} maxFontSizeMultiplier={ECHELLE.compact}>
+          {compte}
+        </Text>
       )}
     </Tapable>
   );
 }
 
 const scf = creerStyles(() => ({
-  chip: {
-    flexDirection: "row", alignItems: "center", gap: 6,
-    paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
+  // Android : la puce de filtre de Material 3
+  puce: {
+    flexDirection: "row", alignItems: "center", gap: 8, height: 32, paddingHorizontal: 16,
+    borderRadius: 8, borderWidth: 1, borderColor: T.voileFort,
   },
-  // L'aplat plein : porte du blanc dans les deux schémas
-  chipActif: { backgroundColor: T.chipActif, borderColor: "transparent", ...OMBRE.n1 },
-  texte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.bleu },
-  texteActif: { color: "#fff", fontFamily: POLICE.gras },
-  compte: { backgroundColor: T.bleuVoile, borderRadius: RAYON.pilule, minWidth: 20, paddingHorizontal: 5.5, paddingVertical: 1, alignItems: "center" },
-  compteActif: { backgroundColor: "rgba(255,255,255,0.22)" },
-  compteTexte: { fontSize: 11, fontFamily: POLICE.gras, color: T.bleu, fontVariant: ["tabular-nums"] },
-  compteTexteActif: { color: "#fff" },
+  // Choisie : la coche prend la place de la marge de tête
+  puceChoisie: { paddingLeft: 8, backgroundColor: T.selection, borderColor: "transparent" },
+  puceTexte: { fontSize: 14, lineHeight: 20, fontFamily: POLICE.moyen, color: T.encre },
+  puceTexteChoisie: { color: T.bleu },
+  puceCompte: { fontSize: 13, fontFamily: POLICE.moyen, color: T.gris, fontVariant: ["tabular-nums"] },
+  puceCompteChoisie: { color: T.bleu, opacity: 0.7 },
   // iOS
   capsule: {
     flexDirection: "row", alignItems: "center", gap: 6,
@@ -742,14 +722,6 @@ const sb = creerStyles(() => ({
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
     borderRadius: RAYON.petit, alignSelf: "center",
   },
-}));
-
-const sc = creerStyles(() => ({
-  chip: {
-    paddingHorizontal: 15, paddingVertical: 8, borderRadius: RAYON.pilule,
-    backgroundColor: T.carte, borderWidth: 1, borderColor: T.bordure,
-  },
-  texte: { ...TYPO.legende, fontFamily: POLICE.demi, color: T.texte },
 }));
 
 const scarte = creerStyles(() => ({

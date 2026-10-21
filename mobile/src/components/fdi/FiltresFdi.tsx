@@ -18,7 +18,7 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { FeuilleFiltres } from "@/components/FiltresListe";
 import {
-  ChampRecherche, EnTeteSection, Groupe, Ligne as LigneIOS, LigneVide, SegmentsIOS, SousEnTete,
+  ChampRecherche, EnTeteSection, Groupe, Ligne as LigneIOS, LigneVide, SegmentsCapsule, SousEnTete,
 } from "@/components/ListeIOS";
 import { Os } from "@/components/Squelette";
 import { creerStyles, useCouleur } from "@/lib/apparence";
@@ -28,7 +28,7 @@ import {
   usePerimetreSignaux,
 } from "@/lib/fdi";
 import { IOS } from "@/lib/plateforme";
-import { ECHELLE, POLICE, T } from "@/theme";
+import { POLICE, T } from "@/theme";
 import CurseurPeriode from "./CurseurPeriode";
 import { LARGEUR_FICHE } from "./FichesFdi";
 
@@ -281,7 +281,7 @@ export function FiltresProjetsSheet({ filtres, onChange, onReinitialiser, onClos
           {per.sens_disponibles.length > 1 && (
             <View>
               <Titre titre="Sens de lecture" />
-              <Segments valeur={filtres.sens}
+              <SegmentsCapsule compact valeur={filtres.sens}
                 options={[{ cle: "destination", label: "Reçoit" }, { cle: "source", label: "Investit" }]}
                 onChange={v => onChange({ ...filtres, sens: v as FiltresProjets["sens"] })} />
             </View>
@@ -364,29 +364,6 @@ export function FiltresEntreprisesSheet({ filtres, onChange, onReinitialiser, on
   );
 }
 
-/** Une bascule segmentée — la piste de la plateforme, l'actif en carte. */
-export function Segments({ options, valeur, onChange }: {
-  options: { cle: string; label: string }[]; valeur: string; onChange: (cle: string) => void;
-}) {
-  // iOS : le contrôle segmenté du système
-  if (IOS) return <SegmentsIOS options={options} valeur={valeur} onChange={onChange} />;
-  return (
-    <View style={s.segments}>
-      {options.map(o => {
-        const actif = valeur === o.cle;
-        return (
-          <Pressable key={o.cle} onPress={() => { if (!actif) onChange(o.cle); }}
-            accessibilityRole="tab" accessibilityState={{ selected: actif }}
-            style={[s.segment, actif && s.segmentActif]}>
-            <Text style={[s.segmentTexte, actif && s.segmentTexteActif]} numberOfLines={1}
-              maxFontSizeMultiplier={ECHELLE.compact}>{o.label}</Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
 const s = creerStyles(() => ({
   titreLigne: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   titre: { fontSize: 10.5, fontFamily: POLICE.gras, color: T.bleu, letterSpacing: 1.6 },
@@ -415,13 +392,4 @@ const s = creerStyles(() => ({
   },
   periode: { paddingHorizontal: 4 },
   periodeIOS: { paddingHorizontal: 16, paddingVertical: 14 },
-  segments: { flexDirection: "row", padding: 3.5, gap: 4, backgroundColor: T.voile, borderRadius: 999 },
-  segment: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: 999 },
-  segmentActif: {
-    backgroundColor: T.carte,
-    shadowColor: "#001e3c", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  segmentTexte: { fontSize: 12.5, fontFamily: POLICE.demi, color: T.gris },
-  segmentTexteActif: { color: T.bleu, fontFamily: POLICE.gras },
 }));

@@ -24,8 +24,6 @@ import { fmtUSD } from "@/lib/format";
 import { POLICE, T, TYPO } from "@/theme";
 import { creerStyles } from "@/lib/apparence";
 import { SegmentsCapsule } from "@/components/ListeIOS";
-import { Segments } from "@/components/fdi/FiltresFdi";
-import { IOS } from "@/lib/plateforme";
 
 type CleSerie = "exports" | "imports" | "balance";
 const LABELS: Record<CleSerie, string> = {
@@ -170,11 +168,7 @@ export default function CommercePanel({ pays, paysId, onOuvrirPays }: {
       {/* ── La bascule du sens, puis la vedette ── */}
       <View style={s.rangee}>
         <View style={s.bascule}>
-          {IOS ? (
-            <SegmentsCapsule options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} teinte={T.bleu} />
-          ) : (
-            <Segments options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} />
-          )}
+          <SegmentsCapsule options={SENS} valeur={sens} onChange={c => basculer(c as Sens)} teinte={T.bleu} />
         </View>
         <CurseurAnnees annees={anneesSerie}
           valeur={anneeRef ?? 0}

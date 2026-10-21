@@ -17,10 +17,9 @@
 // fdi_fiche_pays) ; une fiche Mali × France n'a rien à en dire.
 import { useMemo, useState } from "react";
 import { Text, View } from "react-native";
-import { Chevron, Groupe, Ligne } from "@/components/ListeIOS";
+import { Chevron, Groupe, Ligne, SegmentsCapsule } from "@/components/ListeIOS";
 import { SeparateurSection } from "@/components/ui";
 import { FicheProjetFdi, FicheSignal } from "@/components/fdi/FichesFdi";
-import { Segments } from "@/components/fdi/FiltresFdi";
 import { Rubrique, Suite, type PaysFiche } from "@/components/fichePays/AtomesFiche";
 import { creerStyles } from "@/lib/apparence";
 import { type ProjetFdi, type Signal, fmtEntier, moisEnClair } from "@/lib/fdi";
@@ -85,7 +84,7 @@ function ListeProjets({ projets, onOuvrir }: { projets: ProjetFdi[]; onOuvrir: (
     <>
       {projets.length > 3 && (
         <View style={s.tri}>
-          <Segments options={TRIS_PROJETS} valeur={tri} onChange={c => setTri(c as TriProjets)} />
+          <SegmentsCapsule compact options={TRIS_PROJETS} valeur={tri} onChange={c => setTri(c as TriProjets)} />
         </View>
       )}
       <Groupe>
@@ -110,7 +109,7 @@ function ListeSignaux({ signaux, onOuvrir }: { signaux: Signal[]; onOuvrir: (s: 
     <>
       {signaux.length > 3 && (
         <View style={s.tri}>
-          <Segments options={TRIS_SIGNAUX} valeur={tri} onChange={c => setTri(c as TriSignaux)} />
+          <SegmentsCapsule compact options={TRIS_SIGNAUX} valeur={tri} onChange={c => setTri(c as TriSignaux)} />
         </View>
       )}
       <Groupe>
